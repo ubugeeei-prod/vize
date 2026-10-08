@@ -31,17 +31,17 @@ fn result_view(
         .map(|file| {
             file.original_path
                 .strip_prefix(root)
-                .unwrap()
+                .unwrap_or(&file.original_path)
                 .to_string_lossy()
                 .replace('\\', "/")
         })
         .collect::<Vec<_>>();
     files.sort();
     let mut diagnostics = result.diagnostics.iter().map(|row| {
-        let severity = match row.severity {1=>"error",2=>"warning",3=>"info",4=>"hint",other=>panic!("unexpected severity {other}")};
+        let severity = match row.severity {1=>cstr!("error"),2=>cstr!("warning"),3=>cstr!("info"),4=>cstr!("hint"),other=>cstr!("unknown-severity-{other}")};
         let code = row.code.map(|code| cstr!(" [TS{code}]")).unwrap_or_default();
-        json!({"file":row.file.strip_prefix(root).unwrap().to_string_lossy().replace('\\', "/"),
-            "rendered":cstr!("{severity}:{}:{}{code} {}",row.line+1,row.column+1,row.message).as_str()})
+        json!({"file":row.file.strip_prefix(root).unwrap_or(&row.file).to_string_lossy().replace('\\', "/"),
+            "rendered":cstr!("{severity}:{}:{}{code} {}",u64::from(row.line)+1,u64::from(row.column)+1,row.message).as_str()})
     }).collect::<Vec<_>>();
     diagnostics.sort_by_key(Value::to_string);
     json!({"success":result.success,"exitCode":result.exit_code,"files":files,"diagnostics":diagnostics})
@@ -65,6 +65,11 @@ fn original_literal_roots_reuse_one_native_owner_and_clean_its_storage() {
         .iter()
         .map(|path| root.join(path.as_str().unwrap()))
         .collect::<Vec<_>>();
+    // Declared before the checker: unwind drops the checker before recording cleanup.
+    let mut cleanup_receipt = CleanupReceipt {
+        storage: None,
+        namespace: None,
+    };
     let scan_started = std::time::Instant::now();
     let mut checker = BatchTypeChecker::with_options_and_corsa_path(
         &root,
@@ -89,6 +94,8 @@ fn original_literal_roots_reuse_one_native_owner_and_clean_its_storage() {
         .unwrap()
         .to_path_buf();
     let storage = namespace.parent().unwrap().parent().unwrap().to_path_buf();
+    cleanup_receipt.storage = Some(storage.clone());
+    cleanup_receipt.namespace = Some(namespace.clone());
     assert_ne!(namespace, vize_canon::batch::project_virtual_root(&root));
     assert!(!namespace.starts_with(&root));
     let virtual_paths = checker
@@ -97,6 +104,7 @@ fn original_literal_roots_reuse_one_native_owner_and_clean_its_storage() {
         .map(|file| file.virtual_path.clone())
         .collect::<Vec<_>>();
     let mut observations = Vec::new();
+    let mut assertions = Vec::new();
     for phase in ["clean", "broken", "repair"] {
         write(
             &root,
@@ -126,51 +134,84 @@ fn original_literal_roots_reuse_one_native_owner_and_clean_its_storage() {
                     "nativeBinary":native,"projectRoot":root,"namespace":namespace,"storage":storage,
                     "scanNs":scan_ns,"observations":observations})).unwrap()).unwrap();
             }
-            assert_eq!(
-                package_after, package_before,
-                "raw native owner conservation"
-            );
-            assert_eq!(
+            assertions.push((
+                phase,
+                repeat,
                 whole,
-                expected_result(case, phase == "broken"),
-                "{phase}/{repeat}"
-            );
-            assert_eq!(
+                metrics,
+                package_before,
+                package_after,
                 checker
                     .virtual_files()
                     .into_iter()
                     .map(|file| file.virtual_path.clone())
                     .collect::<Vec<_>>(),
-                virtual_paths
-            );
-            assert_eq!(metrics.session_to_cli_fallbacks, 0);
-            if phase == "clean" && repeat == 0 {
-                assert_eq!(metrics.session_starts, 1);
-                assert!(metrics.last_session_started);
-            } else {
-                assert!(metrics.last_session_reused);
-                assert_eq!(metrics.session_starts, 1);
-                assert_eq!(metrics.last_tree_entries_scanned, 0);
-                assert!(!metrics.last_full_rebuild);
-            }
+            ));
         }
     }
-    assert_eq!(checker.incremental_metrics().checks, 6);
-    assert_eq!(checker.incremental_metrics().session_reuses, 5);
-    assert!(storage.is_dir());
+    let final_metrics = checker.incremental_metrics();
+    let existed_before_drop = storage.is_dir();
     drop(checker);
-    let cleanup = json!({"sourceSha":std::env::var("SOURCE_SHA").ok(),"storage":storage,
-        "namespace":namespace,"storageExistsAfterDrop":storage.exists(),"namespaceExistsAfterDrop":namespace.exists()});
-    if let Some(capture) = std::env::var_os("VIZE_TSCONFIG_TYPES_CAPTURE") {
-        std::fs::write(
-            PathBuf::from(capture).join("ignore-literal/warm-owner/cleanup.json"),
-            serde_json::to_vec_pretty(&cleanup).unwrap(),
-        )
-        .unwrap();
+    cleanup_receipt.write();
+    assert!(existed_before_drop);
+    assert!(!storage.exists());
+    for (phase, repeat, whole, metrics, package_before, package_after, observed_paths) in assertions
+    {
+        assert_eq!(
+            package_after, package_before,
+            "raw native owner conservation"
+        );
+        assert_eq!(
+            whole,
+            expected_result(case, phase == "broken"),
+            "{phase}/{repeat}"
+        );
+        assert_eq!(observed_paths, virtual_paths);
+        assert_eq!(metrics.session_to_cli_fallbacks, 0);
+        assert_eq!(metrics.session_starts, 1);
+        if phase == "clean" && repeat == 0 {
+            assert!(metrics.last_session_started);
+        } else {
+            assert!(metrics.last_session_reused);
+            assert_eq!(metrics.last_tree_entries_scanned, 0);
+            assert!(!metrics.last_full_rebuild);
+        }
     }
-    assert!(!storage.exists(), "{cleanup}");
+    assert_eq!(final_metrics.checks, 6);
+    assert_eq!(final_metrics.session_reuses, 5);
     println!(
         "complete configured ignore warm-owner: 6 actual native API calls, one start/five reuses, exact original roots/diagnostics and cleanup"
     );
     std::fs::remove_dir_all(root).unwrap();
+}
+
+struct CleanupReceipt {
+    storage: Option<PathBuf>,
+    namespace: Option<PathBuf>,
+}
+
+impl CleanupReceipt {
+    fn write(&self) {
+        let Some(capture) = std::env::var_os("VIZE_TSCONFIG_TYPES_CAPTURE") else {
+            return;
+        };
+        let dir = PathBuf::from(capture).join("ignore-literal/warm-owner");
+        let cleanup = json!({"sourceSha":std::env::var("SOURCE_SHA").ok(),
+            "storage":self.storage,"namespace":self.namespace,
+            "storageExistsAfterDrop":self.storage.as_ref().map(|path|path.exists()),
+            "namespaceExistsAfterDrop":self.namespace.as_ref().map(|path|path.exists())});
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(
+            dir.join("cleanup.json"),
+            serde_json::to_vec_pretty(&cleanup).unwrap(),
+        )
+        .unwrap();
+    }
+}
+
+impl Drop for CleanupReceipt {
+    fn drop(&mut self) {
+        // Never replace an existing assertion panic with a capture write panic.
+        let _ = std::panic::catch_unwind(|| self.write());
+    }
 }
