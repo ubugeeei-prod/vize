@@ -1,5 +1,6 @@
 mod anchors;
 mod auto_import_stubs;
+mod binding_output;
 mod component_constructors;
 mod component_export;
 mod component_public_types;
@@ -106,6 +107,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     let mut mappings: Vec<VizeMapping> = Vec::new();
     let mut semantic_links = Vec::new();
+    let mut prop_default_key_links = Vec::new();
     let preserve_unused_diagnostics = generation_options.preserve_unused_diagnostics;
     let (template_usage_names, has_template_scope) =
         template_usage(summary, template_ast, generation_options);
@@ -661,6 +663,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     src,
                     check_props && !legacy_vue2,
                     &mut semantic_links,
+                    &mut prop_default_key_links,
                     template_ref_unwraps.props_shadow_anchor(),
                 )
             });
@@ -844,8 +847,5 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
-    super::mapping::publish_virtual_ts(VirtualTsOutput {
-        code: ts,
-        mapping: super::mapping::ProjectionMapping::from_parts(mappings, semantic_links),
-    })
+    binding_output::publish(ts, mappings, semantic_links, prop_default_key_links)
 }

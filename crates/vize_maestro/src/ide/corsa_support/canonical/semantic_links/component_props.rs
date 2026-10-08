@@ -284,6 +284,7 @@ mod tests {
             code: "".to_owned(),
             source_mappings: Vec::new(),
             semantic_links: Vec::new(),
+            prop_default_key_links: Vec::new(),
             import_source_map: ImportSourceMap::empty(),
         }
     }

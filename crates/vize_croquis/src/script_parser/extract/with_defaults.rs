@@ -3,16 +3,16 @@
 mod invalidation;
 
 use oxc_ast::ast::{
-    CallExpression, Expression, ObjectPropertyKind, PropertyKey, PropertyKind,
+    Argument, CallExpression, Expression, ObjectPropertyKind, PropertyKey, PropertyKind,
     VariableDeclarationKind,
 };
 use oxc_span::GetSpan;
 use oxc_syntax::number::ToJsString;
-use vize_carton::CompactString;
+use vize_carton::{CompactString, FxHashMap};
 
 use super::super::ScriptParseResult;
-use crate::macros::MacroTracker;
 use crate::macros::defaults::StaticDefaultObject;
+use crate::macros::{MacroKind, MacroTracker};
 use crate::scope::ScopeKind;
 
 pub(in crate::script_parser) use invalidation::{
@@ -33,7 +33,60 @@ pub(super) fn record_defaults(
         .and_then(|expression| collect_object(result, expression, source))
         .unwrap_or_default()
         .values;
-    result.macros.set_with_defaults(expression, values);
+    let keys = inline_owned_keys(result, call);
+    let owner = if keys.is_empty() {
+        None
+    } else {
+        result.macros.define_props().map(|owner| owner.start)
+    };
+    result
+        .macros
+        .set_with_defaults(expression, values, keys, owner);
+}
+
+fn inline_owned_keys(
+    result: &ScriptParseResult,
+    call: &CallExpression<'_>,
+) -> FxHashMap<CompactString, Vec<(u32, u32)>> {
+    let mut keys = FxHashMap::default();
+    let Some(Argument::CallExpression(props)) = call.arguments.first() else {
+        return keys;
+    };
+    if !matches!(&props.callee, Expression::Identifier(id)
+        if MacroKind::from_name(id.name.as_str()) == Some(MacroKind::DefineProps))
+        || !result
+            .macros
+            .define_props()
+            .is_some_and(|owner| owner.start == props.span.start)
+    {
+        return keys;
+    }
+    let Some(Expression::ObjectExpression(object)) =
+        call.arguments.get(1).and_then(Argument::as_expression)
+    else {
+        return keys;
+    };
+    // A separate object, spread, shorthand value or computed/accessor key has
+    // a distinct owner or evaluation role. Its spelling is not ownership proof.
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            return FxHashMap::default();
+        };
+        let PropertyKey::StaticIdentifier(key) = &property.key else {
+            return FxHashMap::default();
+        };
+        if property.kind != PropertyKind::Init
+            || property.computed
+            || property.shorthand
+            || property.method
+        {
+            return FxHashMap::default();
+        }
+        keys.entry(CompactString::new(key.name.as_str()))
+            .or_insert_with(Vec::new)
+            .push((key.span.start, key.span.end));
+    }
+    keys
 }
 
 pub(super) fn record_object_binding(

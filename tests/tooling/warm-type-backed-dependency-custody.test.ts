@@ -67,3 +67,34 @@ test("the path host move rebuilds both exact foundation owners", () => {
     /changed vize_carton must actually compile/u,
   );
 });
+
+test("changed Croquis macros cannot reuse the baseline analysis crate", () => {
+  const dependencies = changedSourceDependencies([
+    "crates/vize_croquis/src/macros/defaults.rs",
+    "crates/vize_canon/src/virtual_ts/props/mappings.rs",
+  ]);
+  assert.deepEqual(dependencies, ["vize_croquis"]);
+  assert.deepEqual(changedSourceDependencies(["crates/vize_croquis_other/src/macros.rs"]), []);
+  for (const side of ["before", "after"]) {
+    assert.doesNotThrow(() =>
+      assertChangedDependenciesBuilt(dependencies, [
+        { target: { name: "vize_croquis" }, fresh: false },
+      ]),
+    );
+    assert.throws(
+      () =>
+        assertChangedDependenciesBuilt(dependencies, [
+          { target: { name: "vize_croquis" }, fresh: true },
+        ]),
+      /changed vize_croquis must actually compile/u,
+      `${side} must execute the changed dependency compiler`,
+    );
+    assert.throws(
+      () =>
+        assertChangedDependenciesBuilt(dependencies, [
+          { target: { name: "vize_canon" }, fresh: false },
+        ]),
+      /changed vize_croquis must supply an actual linked artifact/u,
+    );
+  }
+});

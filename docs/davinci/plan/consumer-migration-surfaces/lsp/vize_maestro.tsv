@@ -110,8 +110,9 @@ lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/canonical/open.rs	140
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/project.rs	8	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/project.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	2
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/corsa_support/canonical/rename/merged_class_tests.rs	131	l0	L0	stage	vize_l0	preferred	2
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links.rs	4	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	2
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links.rs	3	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	2
+lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/binding_links.rs	5	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/binding_roles.rs	5	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/binding_roles.rs	5	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 lsp	LSP	source	crates/vize_maestro/src/ide/corsa_support/canonical/semantic_links/binding_roles.rs	5	raw_oxc	raw OXC	raw	oxc_ast	raw	1
@@ -163,13 +164,14 @@ lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/collectors.rs	13	raw_oxc	
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	12	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/component_props.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	3
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/collect_script.rs	94	l0	L0	stage	vize_l0	preferred	1
-lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/collect_script.rs	94	carton	Carton host/compatibility	old	vize_carton	legacy	2
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/collect_script.rs	95	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/collect_script.rs	95	carton	Carton host/compatibility	old	vize_carton	legacy	2
 lsp	LSP	source	crates/vize_maestro/src/ide/diagnostics/corsa/collect_virtual.rs	15	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/collect_virtual.rs	56	l0	L0	stage	vize_l0	preferred	2
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/collect.rs	17	l0	L0	stage	vize_l0	preferred	4
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/log_preview.rs	11	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/message.rs	97	l0	L0	stage	vize_l0	preferred	1
+lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/prop_default_key_link_tests.rs	10	l0	L0	stage	vize_l0	preferred	1
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	151	l0	L0	stage	vize_l0	preferred	6
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	151	carton	Carton host/compatibility	old	vize_carton	legacy	3
 lsp	LSP	test/dev	crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs	151	raw_oxc	raw OXC	raw	oxc_allocator	raw	1

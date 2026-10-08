@@ -1,0 +1,40 @@
+{
+  "kind": "historical-changed-dependency-cache-failure-before-workload",
+  "pr": 8262,
+  "prHead": "3e1f18d5d0888d0cc89086e998dd2d49fbc01f0d",
+  "runId": 37738930121,
+  "jobId": 113184860823,
+  "attempt": 1,
+  "conclusion": "failure",
+  "artifactId": 11533351378,
+  "artifactZipSha256": "ef8178bfa20aba65fe4138d54a26a720f4321a7305a048f285fe37d3bd155d0a",
+  "archiveDigestVerified": true,
+  "failure": "E0599: Canon requested with_defaults_key_ranges from a reused baseline Croquis artifact; Croquis was absent from the changed-source dependency clean table. No workload ran and no resource/performance acceptance is granted.",
+  "logs": [
+    {
+      "file": "paired-original400-job.log.gz",
+      "rawSha256": "982d13b4704960bce086a4f2baf39e13cd099a52153cf8cf0270c186b5989442",
+      "gzipSha256": "11f6e98b7799ebdfd8f6ea353869fd17cbc8a3cf099d33509395af0b58625a9e"
+    },
+    {
+      "file": "after-cargo.stdout.gz",
+      "rawSha256": "493199701fe3cab31a8bf1bc2f1cf9287646a1951f6302e9bb9a27edac3d43e1",
+      "gzipSha256": "75491a0bb5bfab9ec84753a29a6e6f95fb66e634b59392433e029081cfba0f87"
+    },
+    {
+      "file": "after-cargo.stderr.gz",
+      "rawSha256": "3419b7202dc93e9ff2a8e97dab30d5d87d6bdc312f136133d457891936295179",
+      "gzipSha256": "f21dd871df1a5d6bcd6de058b5cc5639fa86df723ddc609a6fc7347b927159ad"
+    },
+    {
+      "file": "after-clean.process.json.gz",
+      "rawSha256": "c3e477ec24f8fbbc879354bd5fc8bba2ddf2b5ff2e0be5e5dda2f53bdf7d602a",
+      "gzipSha256": "f48fc04cd5190532089e71e119c5f0b1031430d3bd4f17dbe0903b6bedbe1e78"
+    },
+    {
+      "file": "workflow-source.json.gz",
+      "rawSha256": "25e98b27ef00c5704e9d025c0f0deb9017512e0d298fd37281e57a428d08f2e6",
+      "gzipSha256": "69daabd817c2ad43704c083204c8b38a36d2f23b706fa05d517cfc7895ae2640"
+    }
+  ]
+}

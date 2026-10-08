@@ -40,7 +40,7 @@ pub(crate) use semantic_links::materialized_semantic_positions;
 pub(crate) use semantic_links::{
     CanonicalSemanticPosition, ComponentPropNavigationIdentities, ComponentPropSourceCache,
     component_prop_location_matches, component_prop_navigation_identity_matches,
-    linked_semantic_position, matching_component_prop_navigation_positions, tower_range,
+    linked_semantic_positions, matching_component_prop_navigation_positions, tower_range,
 };
 
 pub(crate) struct CanonicalVirtualDocument {

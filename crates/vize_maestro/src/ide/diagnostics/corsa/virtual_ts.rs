@@ -74,11 +74,16 @@ impl VirtualTsResult {
         mapping: vize_canon::virtual_ts::ProjectionMapping,
         import_source_map: ImportSourceMap,
     ) -> Self {
-        let (source_mappings, semantic_links) = mapping.into_parts();
+        let (source_mappings, semantic_links, prop_default_key_links) =
+            mapping.into_binding_parts();
         Self {
             code,
             source_mappings,
             semantic_links: semantic_links_after_import_rewrite(semantic_links, &import_source_map),
+            prop_default_key_links: semantic_links_after_import_rewrite(
+                prop_default_key_links,
+                &import_source_map,
+            ),
             import_source_map,
         }
     }

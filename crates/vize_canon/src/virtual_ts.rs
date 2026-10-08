@@ -11,6 +11,8 @@
 mod class_component_props_tests;
 mod component_reference;
 #[cfg(test)]
+mod defaults_key_links_tests;
+#[cfg(test)]
 mod define_emits_usage_tests;
 #[cfg(test)]
 mod dynamic_component_names_tests;

@@ -156,6 +156,7 @@ impl MacroTracker {
 
     /// Shift every stored script-relative source offset by `delta`.
     pub fn shift_offsets(&mut self, delta: u32) {
+        self.shift_with_defaults_key_ranges(delta);
         for call in &mut self.calls {
             call.start = call.start.saturating_add(delta);
             call.end = call.end.saturating_add(delta);

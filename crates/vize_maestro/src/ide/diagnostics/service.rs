@@ -12,6 +12,7 @@ pub(in crate::ide) struct VirtualTsResult {
     pub(in crate::ide) code: String,
     pub(in crate::ide) source_mappings: Vec<vize_canon::virtual_ts::VizeMapping>,
     pub(in crate::ide) semantic_links: Vec<vize_canon::virtual_ts::VizeSemanticLink>,
+    pub(in crate::ide) prop_default_key_links: Vec<vize_canon::virtual_ts::VizeSemanticLink>,
     /// Byte-offset mapping from post-rewrite to pre-rewrite virtual TS.
     /// Empty when no `.vue` import specifiers were rewritten.
     pub(in crate::ide) import_source_map: vize_canon::ImportSourceMap,

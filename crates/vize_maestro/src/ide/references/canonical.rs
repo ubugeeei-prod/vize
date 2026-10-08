@@ -297,8 +297,8 @@ fn linked_positions(
 ) -> FxHashSet<corsa_support::CanonicalSemanticPosition> {
     locations
         .iter()
-        .filter_map(|location| {
-            corsa_support::linked_semantic_position(document, &location.uri, &location.range)
+        .flat_map(|location| {
+            corsa_support::linked_semantic_positions(document, &location.uri, &location.range)
         })
         .collect()
 }

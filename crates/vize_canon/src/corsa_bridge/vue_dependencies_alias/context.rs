@@ -204,10 +204,13 @@ impl AliasContext {
                             source_path: document.source_path,
                             source: document.source,
                             code: document.code,
-                            mapping: crate::virtual_ts::ProjectionMapping::from_parts(
-                                document.mappings,
-                                document.semantic_links,
-                            ),
+                            mapping: {
+                                let mut mapping = crate::virtual_ts::ProjectionMapping::from_parts(
+                                    document.mappings, document.semantic_links,
+                                );
+                                mapping.set_prop_default_key_links(document.prop_default_key_links);
+                                mapping
+                            },
                             import_source_map: document.import_source_map,
                             mapping_kind: match document.mapping_kind {
                                 crate::batch::virtual_project::MaterializedSourceMappingKind::Generated => {

@@ -1,0 +1,266 @@
+{
+  "actual": {
+    "nativeGuard": {
+      "invalidDiagnostics": [
+        {
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'.",
+          "range": {
+            "end": {
+              "character": 17,
+              "line": 1
+            },
+            "start": {
+              "character": 6,
+              "line": 1
+            }
+          },
+          "severity": 1,
+          "source": "vize/types"
+        }
+      ],
+      "repairedDiagnostics": [],
+      "repairedSource": "<script setup lang=\"ts\">\nconst nativeGuard: number = 1;\n</script>\n<template>{{ nativeGuard }}</template>\n",
+      "source": "<script setup lang=\"ts\">\nconst nativeGuard: number = 'wrong';\n</script>\n<template>{{ nativeGuard }}</template>\n"
+    },
+    "transaction": {
+      "files": [
+        {
+          "diagnostics": [
+            {
+              "code": 2353,
+              "message": "Object literal may only specify known properties, and 'tone' does not exist in type '__WithDefaultsArgs<__LooseRequired<Props>>'.",
+              "range": {
+                "end": {
+                  "character": 41,
+                  "line": 5
+                },
+                "start": {
+                  "character": 37,
+                  "line": 5
+                }
+              },
+              "severity": 1,
+              "source": "vize/types"
+            }
+          ],
+          "disk": "<script setup lang=\"ts\">\r\ntype Props = {\r\n  hidden?: boolean;\r\n  palette?: \"dark\" | \"light\";\r\n};\r\nwithDefaults(defineProps<Props>(), { tone: \"light\" });\r\n</script>\r\n\r\n<template>\r\n  <span v-if=\"!hidden\" :class=\"palette\">x</span>\r\n</template>\r\n",
+          "file": "E.vue",
+          "text": "<script setup lang=\"ts\">\r\ntype Props = {\r\n  hidden?: boolean;\r\n  palette?: \"dark\" | \"light\";\r\n};\r\nwithDefaults(defineProps<Props>(), { tone: \"light\" });\r\n</script>\r\n\r\n<template>\r\n  <span v-if=\"!hidden\" :class=\"palette\">x</span>\r\n</template>\r\n"
+        }
+      ],
+      "independentRepair": [
+        {
+          "diagnostics": [],
+          "disk": "<script setup lang=\"ts\">\r\ntype Props = {\r\n  hidden?: boolean;\r\n  palette?: \"dark\" | \"light\";\r\n};\r\nwithDefaults(defineProps<Props>(), { palette: \"light\" });\r\n</script>\r\n\r\n<template>\r\n  <span v-if=\"!hidden\" :class=\"palette\">x</span>\r\n</template>\r\n",
+          "file": "E.vue",
+          "text": "<script setup lang=\"ts\">\r\ntype Props = {\r\n  hidden?: boolean;\r\n  palette?: \"dark\" | \"light\";\r\n};\r\nwithDefaults(defineProps<Props>(), { palette: \"light\" });\r\n</script>\r\n\r\n<template>\r\n  <span v-if=\"!hidden\" :class=\"palette\">x</span>\r\n</template>\r\n",
+          "version": 3
+        }
+      ],
+      "references": [
+        {
+          "range": {
+            "end": {
+              "character": 6,
+              "line": 3
+            },
+            "start": {
+              "character": 2,
+              "line": 3
+            }
+          },
+          "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-R5WrF1/E.vue"
+        },
+        {
+          "range": {
+            "end": {
+              "character": 35,
+              "line": 9
+            },
+            "start": {
+              "character": 31,
+              "line": 9
+            }
+          },
+          "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-R5WrF1/E.vue"
+        }
+      ],
+      "rename": {
+        "changes": {
+          "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-R5WrF1/E.vue": [
+            {
+              "newText": "palette",
+              "range": {
+                "end": {
+                  "character": 6,
+                  "line": 3
+                },
+                "start": {
+                  "character": 2,
+                  "line": 3
+                }
+              }
+            },
+            {
+              "newText": "palette",
+              "range": {
+                "end": {
+                  "character": 35,
+                  "line": 9
+                },
+                "start": {
+                  "character": 31,
+                  "line": 9
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "cliBinary": "/home/runner/_work/vize/vize/target/ci/vize",
+  "context": "alias Defaults, tone, tone?:, newline=\"\\r\\n\"",
+  "disableTsgo": "1",
+  "expected": {
+    "nativeGuard": {
+      "invalidDiagnostics": [
+        {
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'.",
+          "range": {
+            "end": {
+              "character": 17,
+              "line": 1
+            },
+            "start": {
+              "character": 6,
+              "line": 1
+            }
+          },
+          "severity": 1,
+          "source": "vize/types"
+        }
+      ],
+      "repairedDiagnostics": [],
+      "repairedSource": "<script setup lang=\"ts\">\nconst nativeGuard: number = 1;\n</script>\n<template>{{ nativeGuard }}</template>\n",
+      "source": "<script setup lang=\"ts\">\nconst nativeGuard: number = 'wrong';\n</script>\n<template>{{ nativeGuard }}</template>\n"
+    },
+    "transaction": {
+      "files": [
+        {
+          "diagnostics": [],
+          "disk": "<script setup lang=\"ts\">\r\ntype Props = {\r\n  hidden?: boolean;\r\n  palette?: \"dark\" | \"light\";\r\n};\r\nwithDefaults(defineProps<Props>(), { palette: \"light\" });\r\n</script>\r\n\r\n<template>\r\n  <span v-if=\"!hidden\" :class=\"palette\">x</span>\r\n</template>\r\n",
+          "file": "E.vue",
+          "text": "<script setup lang=\"ts\">\r\ntype Props = {\r\n  hidden?: boolean;\r\n  palette?: \"dark\" | \"light\";\r\n};\r\nwithDefaults(defineProps<Props>(), { palette: \"light\" });\r\n</script>\r\n\r\n<template>\r\n  <span v-if=\"!hidden\" :class=\"palette\">x</span>\r\n</template>\r\n"
+        }
+      ],
+      "independentRepair": [
+        {
+          "diagnostics": [],
+          "disk": "<script setup lang=\"ts\">\r\ntype Props = {\r\n  hidden?: boolean;\r\n  palette?: \"dark\" | \"light\";\r\n};\r\nwithDefaults(defineProps<Props>(), { palette: \"light\" });\r\n</script>\r\n\r\n<template>\r\n  <span v-if=\"!hidden\" :class=\"palette\">x</span>\r\n</template>\r\n",
+          "file": "E.vue",
+          "text": "<script setup lang=\"ts\">\r\ntype Props = {\r\n  hidden?: boolean;\r\n  palette?: \"dark\" | \"light\";\r\n};\r\nwithDefaults(defineProps<Props>(), { palette: \"light\" });\r\n</script>\r\n\r\n<template>\r\n  <span v-if=\"!hidden\" :class=\"palette\">x</span>\r\n</template>\r\n",
+          "version": 3
+        }
+      ],
+      "references": [
+        {
+          "range": {
+            "end": {
+              "character": 6,
+              "line": 3
+            },
+            "start": {
+              "character": 2,
+              "line": 3
+            }
+          },
+          "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-R5WrF1/E.vue"
+        },
+        {
+          "range": {
+            "end": {
+              "character": 41,
+              "line": 5
+            },
+            "start": {
+              "character": 37,
+              "line": 5
+            }
+          },
+          "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-R5WrF1/E.vue"
+        },
+        {
+          "range": {
+            "end": {
+              "character": 35,
+              "line": 9
+            },
+            "start": {
+              "character": 31,
+              "line": 9
+            }
+          },
+          "uri": "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-R5WrF1/E.vue"
+        }
+      ],
+      "rename": {
+        "changes": {
+          "file:///home/runner/_work/vize/vize/target/vize-tests/tests/lsp-vue-R5WrF1/E.vue": [
+            {
+              "newText": "palette",
+              "range": {
+                "end": {
+                  "character": 6,
+                  "line": 3
+                },
+                "start": {
+                  "character": 2,
+                  "line": 3
+                }
+              }
+            },
+            {
+              "newText": "palette",
+              "range": {
+                "end": {
+                  "character": 41,
+                  "line": 5
+                },
+                "start": {
+                  "character": 37,
+                  "line": 5
+                }
+              }
+            },
+            {
+              "newText": "palette",
+              "range": {
+                "end": {
+                  "character": 35,
+                  "line": 9
+                },
+                "start": {
+                  "character": 31,
+                  "line": 9
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  },
+  "initialFiles": [
+    {
+      "file": "E.vue",
+      "text": "<script setup lang=\"ts\">\r\ntype Props = {\r\n  hidden?: boolean;\r\n  tone?: \"dark\" | \"light\";\r\n};\r\nwithDefaults(defineProps<Props>(), { tone: \"light\" });\r\n</script>\r\n\r\n<template>\r\n  <span v-if=\"!hidden\" :class=\"tone\">x</span>\r\n</template>\r\n"
+    }
+  ],
+  "requireTsgo": null,
+  "sourceSha": null,
+  "tsconfig": "{\n            \"compilerOptions\": { \"strict\": true, \"target\": \"ES2022\", \"module\": \"ESNext\", \"moduleResolution\": \"bundler\", \"noEmit\": true },\n            \"include\": [\"*.vue\"]\n        }",
+  "vizeConfig": "{\"experimentals\":{\"patternedTemplate\":false},\"lsp\":{\"crossFile\":true,\"hover\":true,\"lint\":false,\"typecheck\":true},\"typeChecker\":{\"checkFallthroughAttrs\":false,\"corsaPath\":\"/home/runner/_work/vize/vize/node_modules/@typescript/typescript-linux-x64/lib/tsc\",\"optionsApi\":false}}"
+}

@@ -119,6 +119,7 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         mut code,
         mut mappings,
         mut semantic_links,
+        mut prop_default_key_links,
         ..
     } = generate_vue_virtual_ts(
         path,
@@ -146,7 +147,12 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         },
     )?;
     if use_tsx_virtual {
-        prepend_vue_jsx_reference(&mut code, &mut mappings, &mut semantic_links);
+        prepend_vue_jsx_reference(
+            &mut code,
+            &mut mappings,
+            &mut semantic_links,
+            &mut prop_default_key_links,
+        );
     }
 
     let rewritten = match alias_resolver {
@@ -164,10 +170,12 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
             document_options.preserve_missing_vue_diagnostics,
         ),
     };
+    let mut mapping = ProjectionMapping::from_parts(mappings, semantic_links);
+    mapping.set_prop_default_key_links(prop_default_key_links);
     Ok(VueDocumentVirtualTs {
         code: rewritten.code,
         pre_rewrite_code: code,
-        mapping: ProjectionMapping::from_parts(mappings, semantic_links),
+        mapping,
         import_source_map: rewritten.source_map,
         source_type,
         virtual_suffix: if use_tsx_virtual { ".tsx" } else { ".ts" },

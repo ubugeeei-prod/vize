@@ -1,0 +1,11 @@
+<script setup lang="ts">
+type Props = {
+  hidden?: boolean;
+  palette?: "dark" | "light";
+};
+defineProps<Props>();
+</script>
+
+<template>
+  <span v-if="!hidden" :class="palette">x</span>
+</template>

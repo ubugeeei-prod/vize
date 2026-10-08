@@ -148,11 +148,17 @@ pub(super) fn build_vue_registered_file(
         mut code,
         mut mappings,
         mut semantic_links,
+        mut prop_default_key_links,
         diagnostics,
         typed_router_import,
     } = generated;
     if use_tsx_virtual {
-        prepend_vue_jsx_reference(&mut code, &mut mappings, &mut semantic_links);
+        prepend_vue_jsx_reference(
+            &mut code,
+            &mut mappings,
+            &mut semantic_links,
+            &mut prop_default_key_links,
+        );
     }
     let rewritten = profile!(
         "canon.import.rewrite.vue",
@@ -171,12 +177,10 @@ pub(super) fn build_vue_registered_file(
                 },
             )
     );
+    let mut projection = crate::virtual_ts::ProjectionMapping::from_parts(mappings, semantic_links);
+    projection.set_prop_default_key_links(prop_default_key_links);
     let source_map = CompositeSourceMap::new_vue(
-        SfcSourceMap::new_with_semantic_links(
-            mappings,
-            collect_sfc_block_ranges(&descriptor),
-            semantic_links,
-        ),
+        SfcSourceMap::from_projection(projection, collect_sfc_block_ranges(&descriptor)),
         rewritten.source_map,
     );
     let virtual_path = virtual_vue_path(
@@ -223,6 +227,7 @@ pub(super) fn prepend_vue_jsx_reference(
     code: &mut CompactString,
     mappings: &mut [VizeMapping],
     semantic_links: &mut [crate::virtual_ts::VizeSemanticLink],
+    prop_default_key_links: &mut [crate::virtual_ts::VizeSemanticLink],
 ) {
     if code.starts_with(VUE_JSX_REFERENCE_DIRECTIVE) {
         return;
@@ -240,7 +245,7 @@ pub(super) fn prepend_vue_jsx_reference(
             sub_span.gen_range.end += offset;
         }
     }
-    for link in semantic_links {
+    for link in semantic_links.iter_mut().chain(prop_default_key_links) {
         link.shift_generated_ranges(offset);
     }
 }
