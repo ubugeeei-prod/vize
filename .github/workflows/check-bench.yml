@@ -70,7 +70,7 @@ jobs:
           run-install: false
 
       - name: Test check benchmark report helpers
-        run: node --test tools/benchmarks/scripts/check-gate-report.test.mjs
+        run: node --test tools/benchmarks/scripts/check-gate-report.test.ts
 
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline

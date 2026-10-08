@@ -8,8 +8,7 @@ import { fileURLToPath } from "node:url";
 
 // @ts-expect-error plain-JS bench module without type declarations
 import { generateCorpus } from "../../tools/benchmarks/scripts/generate.mjs";
-// @ts-expect-error plain-JS bench module without type declarations
-import { evaluateBudget } from "../../tools/benchmarks/scripts/check-gate-report.mjs";
+import { evaluateBudget } from "../../tools/benchmarks/scripts/check-gate-report.ts";
 import { resolveVizeCommand } from "../_helpers/realworld-typecheck.ts";
 import {
   requireTypecheckDependency,

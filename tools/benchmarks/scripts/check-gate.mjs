@@ -8,7 +8,7 @@
  * runtime, a missing binary, or a failed plant gate exits non-zero without
  * writing any timing, so a fast no-op can never rank. JS-engine (vue-tsc) and
  * native-TS-engine rows are reported as separate comparison classes; see
- * tools/benchmarks/scripts/check-gate-report.mjs for cold/steady separation and rotation.
+ * tools/benchmarks/scripts/check-gate-report.ts for cold/steady separation and rotation.
  */
 
 import os from "node:os";
@@ -34,7 +34,7 @@ import {
   prepareMinimalPlants,
 } from "./check-gate-plants.mjs";
 import { assertBinariesUnchanged, hashInPlace, pinExecutable } from "./benchmark-binary.mjs";
-import { evaluateBudget, measureRows, renderMarkdown } from "./check-gate-report.mjs";
+import { evaluateBudget, measureRows, renderMarkdown } from "./check-gate-report.ts";
 
 const benchDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(benchDir, "..", "..", "..");
