@@ -6,8 +6,8 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
+use vize_carton::source_io as fs;
 use vize_glyph::{Allocator, FormatOptions, FormatResult, VueVersion};
-use vize_l0::source_io as fs;
 use vize_l0::{cstr, profile, profiler::global_profiler};
 
 use super::atomic_write::atomic_write;

@@ -93,7 +93,13 @@ void test("safe carriers preserve complete original packets and activate malform
       cwd: root,
       encoding: "utf8",
       timeout: 30_000,
-      env: { ...process.env, VIZE_OXLINT_NATIVE_CONTROL: args.at(-1) },
+      env: {
+        ...process.env,
+        VIZE_OXLINT_NATIVE_CONTROL: args.at(-1),
+        VIZE_OXLINT_NATIVE_HINT: String(
+          Boolean(JSON.parse(fs.readFileSync(configPath, "utf8")).settings?.vize?.rules),
+        ),
+      },
     });
     save({ entry, args, configBytes: fs.readFileSync(configPath, "utf8"), ...result });
     assert.equal(result.status, 1, result.stderr);

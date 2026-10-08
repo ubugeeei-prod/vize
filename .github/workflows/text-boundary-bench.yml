@@ -5,6 +5,8 @@ on:
     paths:
       - "davinci/vize_l0/src/source_io/**"
       - "davinci/vize_l0/src/source_io.rs"
+      - "crates/vize_carton/src/source_io/**"
+      - "crates/vize_carton/src/source_io.rs"
       - "crates/vize_carton/examples/source_io_bench.rs"
       - ".github/workflows/text-boundary-bench.yml"
   workflow_dispatch:
@@ -40,7 +42,7 @@ jobs:
           key: text-boundary
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Verify exact UTF-8 and filesystem contracts
-        run: cargo test --locked -p vize_carton source_io
+        run: cargo test --locked -p vize_l0 -p vize_carton source_io
       - name: Check the source boundary and benchmark with Clippy
         run: cargo clippy --locked -p vize_carton --lib --tests --examples -- -D warnings
       - name: Measure validation and actual file reads separately

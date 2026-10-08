@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { frozenCorpus, root, sha256 } from "./css-external-target-reference.mjs";
+import { compoundTransition } from "./css-global-compound-transition.mjs";
 
 export { root, sha256 };
 export const fixture = path.join(root, "crates/vize_patina/tests/fixtures/issue-7976-global");
@@ -42,5 +43,5 @@ export function globalCorpus() {
     assert.equal(row.expectedCli[0].messages.length, row.expectedStarts.length);
     assert(row.expectedCssStarts.length >= row.expectedStarts.length, row.id);
   }
-  return { source, cases };
+  return { source, cases: compoundTransition(cases) };
 }
