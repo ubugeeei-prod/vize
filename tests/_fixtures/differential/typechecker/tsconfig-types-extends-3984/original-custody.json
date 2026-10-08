@@ -1,0 +1,295 @@
+{
+  "schema": 1,
+  "wholeInputs": {
+    "common/node_modules/vue/package.json": {
+      "bytes": 44,
+      "sha256": "cea60ab11b5418edc32be920e0b9e0ee57fbd6fa52e8ccc4f6bfb5bf937d5957"
+    },
+    "common/node_modules/vue/index.d.ts": {
+      "bytes": 1220,
+      "sha256": "d13d248743aacfb399540190ed5951e3b0f60873ac4ffbe7260bfcfa1fe3bd13"
+    },
+    "common/node_modules/vue/jsx.d.ts": {
+      "bytes": 124,
+      "sha256": "a6af7b4cbf1ad2cadbc3eb54f1bcd8ecd919240f6f50e669b03f9ee50a95186e"
+    },
+    "common/configs/shared.json": {
+      "bytes": 226,
+      "sha256": "2157cf26883831c84f969eefcec8927c782344cd5bba75bc2d730edae7b41d86"
+    },
+    "common/configs/first.json": {
+      "bytes": 96,
+      "sha256": "c9744d9d26ef41df0f32b099a5647cff548e2a00a4536f5a76651af84ecc0656"
+    },
+    "common/configs/second.json": {
+      "bytes": 33,
+      "sha256": "2ebfb483371204a1f1254e5b3eb937119b052f7fc431b9e53f61f5f887428398"
+    },
+    "common/configs/other.json": {
+      "bytes": 97,
+      "sha256": "7479704046a0eab5295f7f41e9419e8a668f2a437e73ac64fb3f8ac9c3de9549"
+    },
+    "common/configs/empty.json": {
+      "bytes": 77,
+      "sha256": "f43e6b0f8fb6b6c3d6027782291dccd7f21e30e7e2330a865191c6e5fbab99b3"
+    },
+    "common/configs/absent.json": {
+      "bytes": 3,
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    "common/node_modules/@types/base/package.json": {
+      "bytes": 75,
+      "sha256": "fad5440bfd70ecde30f1c80ab9e9de91704914d72cb55288ddc88a5d65ed3132"
+    },
+    "common/node_modules/@types/base/index.d.ts": {
+      "bytes": 52,
+      "sha256": "cdaf02b64ebd737fec15b5f67fe1ff80039c2752e7bc592dee5e377cad5111de"
+    },
+    "common/node_modules/@types/base/globals.d.mts": {
+      "bytes": 241,
+      "sha256": "51b19d00c190f96f5cde198c23808a5706d4692f98dd1b991dbbb88f2e73ca30"
+    },
+    "common/node_modules/@types/first/package.json": {
+      "bytes": 76,
+      "sha256": "27bfaf59ae7ee29cd1476cd3db79bd57f7da1edf24ecefd4bb4e89b9f7652a22"
+    },
+    "common/node_modules/@types/first/index.d.ts": {
+      "bytes": 52,
+      "sha256": "d42fd17fb0cdb21a3c65bc3955517565ccf03baac35d4dc872483acfbb78e848"
+    },
+    "common/node_modules/@types/first/globals.d.cts": {
+      "bytes": 243,
+      "sha256": "d675641c0cd43ed2c17eed2b4e6c5446acdb042aa1ea4da1b2148a70251f37a6"
+    },
+    "common/node_modules/@types/second/package.json": {
+      "bytes": 77,
+      "sha256": "953ace214903b6d3adf22eb569658a17d67bee22a0195915e6c23a9ec91b7f83"
+    },
+    "common/node_modules/@types/second/index.d.ts": {
+      "bytes": 52,
+      "sha256": "cdaf02b64ebd737fec15b5f67fe1ff80039c2752e7bc592dee5e377cad5111de"
+    },
+    "common/node_modules/@types/second/globals.d.mts": {
+      "bytes": 246,
+      "sha256": "99f6568c79811e1d8a96e157716d09e25176a19e922f476e8cefe24b1eeb3ff7"
+    },
+    "common/node_modules/explicit/package.json": {
+      "bytes": 72,
+      "sha256": "28d5ef98c03c2c2318eed0a3c50e77a14f81b6d6b370f295a425582846f45a7c"
+    },
+    "common/node_modules/explicit/index.d.ts": {
+      "bytes": 33,
+      "sha256": "4f9de35325442ff49612eb272a95757131f36c093e47f9e94e791b5438fadda8"
+    },
+    "common/node_modules/@types/directive/package.json": {
+      "bytes": 80,
+      "sha256": "ee0f69da6fb3eddef281afb1b804e90787a8b9418853ba61bde6010bf58ff496"
+    },
+    "common/node_modules/@types/directive/index.d.ts": {
+      "bytes": 44,
+      "sha256": "81b54a034dfd0ce66ba0fd40a3537c5effefc714eb4623fe80dd5fd4615d589f"
+    },
+    "diamond/tsconfig.json": {
+      "bytes": 79,
+      "sha256": "ed939c6beac1e6f69a2d054a7c74678cdbc2939920637cb74b70fa4c3fb2719f"
+    },
+    "diamond/src/App.vue": {
+      "bytes": 112,
+      "sha256": "0e790e23f0117f7ce3003e04982dff67b2cf550cc9c62f3cde54bde24bf4c713"
+    },
+    "diamond/src/main.ts": {
+      "bytes": 221,
+      "sha256": "4b66cb6acb4df9f76711836e1f0c6c50549d0da822af919ee510c2b4f8004ad2"
+    },
+    "diamond/brokenSource": {
+      "bytes": 350,
+      "sha256": "3f0ffee40cd88c2eaea9eade8f21566c8c95b608ef545753b00f4d56b0997523"
+    },
+    "diamond/repairSource": {
+      "bytes": 221,
+      "sha256": "4b66cb6acb4df9f76711836e1f0c6c50549d0da822af919ee510c2b4f8004ad2"
+    },
+    "reverse/tsconfig.json": {
+      "bytes": 79,
+      "sha256": "f36dd5b3d674e62c417b691cb0245494867458b9d20c8b28a6749dd9ee6bb607"
+    },
+    "reverse/src/App.vue": {
+      "bytes": 110,
+      "sha256": "161b2a8077de51e6233b9d0b9a09b03523dc6513b4e3bdfaa9053a04e052839d"
+    },
+    "reverse/src/main.ts": {
+      "bytes": 221,
+      "sha256": "d9a1f378fa999a4052d759fe3e0c75f1b4ced74fe1ead633b4c22e444d654ece"
+    },
+    "reverse/brokenSource": {
+      "bytes": 355,
+      "sha256": "2aa27061f3011c740d0e284525c161c0eba6f9bb3fcfbf2faed01585f4205b9a"
+    },
+    "reverse/repairSource": {
+      "bytes": 221,
+      "sha256": "d9a1f378fa999a4052d759fe3e0c75f1b4ced74fe1ead633b4c22e444d654ece"
+    },
+    "disjoint/tsconfig.json": {
+      "bytes": 78,
+      "sha256": "f4be772a1fd6f4a5e8210de011f788f519dc71cbae3b5bd46f1dacf014f416b9"
+    },
+    "disjoint/src/App.vue": {
+      "bytes": 112,
+      "sha256": "85d46ba86bd521d59655cce9f35c7c760ae4e5a3d47a9feaee3b29cad86c9aff"
+    },
+    "disjoint/src/main.ts": {
+      "bytes": 225,
+      "sha256": "412274089980f163ef6e89a328fbedfe1ca59b1ce71d208c0c8835df243446aa"
+    },
+    "disjoint/brokenSource": {
+      "bytes": 352,
+      "sha256": "d5ce0df5a5e696b5f21a5d20c960fa1829f2abea6577980b9c079ec054de5240"
+    },
+    "disjoint/repairSource": {
+      "bytes": 225,
+      "sha256": "412274089980f163ef6e89a328fbedfe1ca59b1ce71d208c0c8835df243446aa"
+    },
+    "empty/tsconfig.json": {
+      "bytes": 78,
+      "sha256": "f2dac8772fdd07b35ad4357f64f09f83f826ce2c8cedb932d9483ea91648a5b5"
+    },
+    "empty/src/local.d.ts": {
+      "bytes": 36,
+      "sha256": "c0701460d1a11f717227c88cf626bb2b01aa66ecec35b6bb973b73d96aba6056"
+    },
+    "empty/src/main.ts": {
+      "bytes": 220,
+      "sha256": "634360a9ef024dded4e28c5bab0f9f11bb94fe70d0ac0791b313e32a7c25f5ec"
+    },
+    "empty/brokenSource": {
+      "bytes": 270,
+      "sha256": "dd24ab9708954c5062cd00889455a9e3eb080a63d4ee344febce0b460b1dec74"
+    },
+    "empty/repairSource": {
+      "bytes": 220,
+      "sha256": "634360a9ef024dded4e28c5bab0f9f11bb94fe70d0ac0791b313e32a7c25f5ec"
+    },
+    "local-empty/tsconfig.json": {
+      "bytes": 84,
+      "sha256": "92e40e4cb04894d52510df24c8b773093bca1655c386067cbbcb38bddec198b4"
+    },
+    "local-empty/src/local.d.ts": {
+      "bytes": 36,
+      "sha256": "c0701460d1a11f717227c88cf626bb2b01aa66ecec35b6bb973b73d96aba6056"
+    },
+    "local-empty/src/main.ts": {
+      "bytes": 220,
+      "sha256": "634360a9ef024dded4e28c5bab0f9f11bb94fe70d0ac0791b313e32a7c25f5ec"
+    },
+    "local-empty/brokenSource": {
+      "bytes": 270,
+      "sha256": "dd24ab9708954c5062cd00889455a9e3eb080a63d4ee344febce0b460b1dec74"
+    },
+    "local-empty/repairSource": {
+      "bytes": 220,
+      "sha256": "634360a9ef024dded4e28c5bab0f9f11bb94fe70d0ac0791b313e32a7c25f5ec"
+    },
+    "absent/tsconfig.json": {
+      "bytes": 79,
+      "sha256": "c53f2df833354f6467f8abe6dcf5551085615897046fd1e7014202ef5befb250"
+    },
+    "absent/src/App.vue": {
+      "bytes": 110,
+      "sha256": "161b2a8077de51e6233b9d0b9a09b03523dc6513b4e3bdfaa9053a04e052839d"
+    },
+    "absent/src/main.ts": {
+      "bytes": 221,
+      "sha256": "d9a1f378fa999a4052d759fe3e0c75f1b4ced74fe1ead633b4c22e444d654ece"
+    },
+    "absent/brokenSource": {
+      "bytes": 355,
+      "sha256": "2aa27061f3011c740d0e284525c161c0eba6f9bb3fcfbf2faed01585f4205b9a"
+    },
+    "absent/repairSource": {
+      "bytes": 221,
+      "sha256": "d9a1f378fa999a4052d759fe3e0c75f1b4ced74fe1ead633b4c22e444d654ece"
+    },
+    "local-override/tsconfig.json": {
+      "bytes": 102,
+      "sha256": "0a349eb8412ed01935900f0da909ca1a19431b397f59dcb8201e520814369102"
+    },
+    "local-override/src/App.vue": {
+      "bytes": 112,
+      "sha256": "0e790e23f0117f7ce3003e04982dff67b2cf550cc9c62f3cde54bde24bf4c713"
+    },
+    "local-override/src/main.ts": {
+      "bytes": 221,
+      "sha256": "4b66cb6acb4df9f76711836e1f0c6c50549d0da822af919ee510c2b4f8004ad2"
+    },
+    "local-override/brokenSource": {
+      "bytes": 350,
+      "sha256": "3f0ffee40cd88c2eaea9eade8f21566c8c95b608ef545753b00f4d56b0997523"
+    },
+    "local-override/repairSource": {
+      "bytes": 221,
+      "sha256": "4b66cb6acb4df9f76711836e1f0c6c50549d0da822af919ee510c2b4f8004ad2"
+    }
+  },
+  "files": {
+    "diamond-typescript-6.0.3-showconfig.json": {
+      "bytes": 326,
+      "sha256": "f232ba7abffdf8c6379dea8279ddebe78d4036ff2e757aa3a30e8f1ff6d8f8fd"
+    },
+    "reverse-typescript-6.0.3-showconfig.json": {
+      "bytes": 327,
+      "sha256": "aa82f56aa4c67dc1c3c9b2ce520fcbb412085d2e11d4bcb64825cd6dfdaf9dc7"
+    },
+    "local-override-typescript-7.0.2-showconfig.json": {
+      "bytes": 325,
+      "sha256": "08f45d5318557acf75c55ab1853d127db8916250fa8a7c086c0fba37667ce788"
+    },
+    "empty-typescript-7.0.2-showconfig.json": {
+      "bytes": 325,
+      "sha256": "0c0ef249ebcb4160e3d639e8726aa039bfb379648ade2a92be0c9da6be2954c8"
+    },
+    "disjoint-typescript-6.0.3-showconfig.json": {
+      "bytes": 328,
+      "sha256": "3b5467363f44ff6609a82afcead570f0c20156a4ebc64a0ea5bab75b5664e5fd"
+    },
+    "input.json": {
+      "bytes": 28331,
+      "sha256": "b01dfbb12d28be7f34743ee4061dd545a61f2ceb66e40bc8955f5ef129a60e21"
+    },
+    "disjoint-typescript-7.0.2-showconfig.json": {
+      "bytes": 327,
+      "sha256": "55be60882478f8ebedcee64cc976d00de4b6d1ac5fffa9645a742f38c302a0e8"
+    },
+    "empty-typescript-6.0.3-showconfig.json": {
+      "bytes": 326,
+      "sha256": "b5516f302ffb1232c42ceaa32f3e6d350c7e10e3b14850db0cf155f7ba7f2473"
+    },
+    "diamond-typescript-7.0.2-showconfig.json": {
+      "bytes": 325,
+      "sha256": "08f45d5318557acf75c55ab1853d127db8916250fa8a7c086c0fba37667ce788"
+    },
+    "local-override-typescript-6.0.3-showconfig.json": {
+      "bytes": 326,
+      "sha256": "f232ba7abffdf8c6379dea8279ddebe78d4036ff2e757aa3a30e8f1ff6d8f8fd"
+    },
+    "reverse-typescript-7.0.2-showconfig.json": {
+      "bytes": 326,
+      "sha256": "aa93361b8f50964c7f477b48d5f1472eb0ac72b345802d4782d0aa20816a1d06"
+    },
+    "absent-typescript-6.0.3-showconfig.json": {
+      "bytes": 327,
+      "sha256": "aa82f56aa4c67dc1c3c9b2ce520fcbb412085d2e11d4bcb64825cd6dfdaf9dc7"
+    },
+    "local-empty-typescript-7.0.2-showconfig.json": {
+      "bytes": 325,
+      "sha256": "0c0ef249ebcb4160e3d639e8726aa039bfb379648ade2a92be0c9da6be2954c8"
+    },
+    "local-empty-typescript-6.0.3-showconfig.json": {
+      "bytes": 326,
+      "sha256": "b5516f302ffb1232c42ceaa32f3e6d350c7e10e3b14850db0cf155f7ba7f2473"
+    },
+    "absent-typescript-7.0.2-showconfig.json": {
+      "bytes": 326,
+      "sha256": "aa93361b8f50964c7f477b48d5f1472eb0ac72b345802d4782d0aa20816a1d06"
+    }
+  }
+}
