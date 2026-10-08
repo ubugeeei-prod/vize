@@ -51,6 +51,16 @@ impl<'a> IdeContext<'a> {
         Self::assemble(state, uri, offset, content, false)
     }
 
+    /// Consume the request's cursor snapshot, retaining completion insertion boundaries.
+    pub(crate) fn completion_with_content(
+        state: &'a ServerState,
+        uri: &'a Url,
+        offset: usize,
+        content: String,
+    ) -> Self {
+        Self::assemble(state, uri, offset, content, true)
+    }
+
     /// A buffer that is not an open document (another file's text, or a test
     /// fixture). Request handlers use [`Self::new`].
     #[cfg(feature = "native")]
@@ -239,6 +249,7 @@ fn root_match_subject_at(
     })
 }
 
+#[cfg(test)]
 impl<'a> IdeContext<'a> {
     /// Completion context for an open document. Script-body ends stay insertion points.
     pub(crate) fn at_completion(

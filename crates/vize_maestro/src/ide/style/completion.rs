@@ -12,9 +12,12 @@ use tower_lsp::lsp_types::{CompletionItem, CompletionTextEdit, InsertTextFormat,
 pub(crate) fn complete(ctx: &IdeContext<'_>, index: usize) -> Vec<CompletionItem> {
     let lazy = ctx.state.supports_completion_documentation_resolve();
     let mut items = vue_completions(lazy);
-    let Some((content, base)) = super::region(ctx, index) else {
+    let Some((content, base, standard_css)) = super::region(ctx, index) else {
         return items;
     };
+    if !standard_css {
+        return items;
+    }
     let (candidates, span, has_colon) = match context::at(content, ctx.offset - base) {
         CssContext::Property {
             prefix,

@@ -19,7 +19,10 @@ for (const [label, binary, source] of [
   ["head", headBinary, headSha],
 ] as const) {
   const absolute = resolve(binary);
-  const observations = await observeCss(absolute, false, label === "head", 80);
+  const observations = [
+    ...(await observeCss(absolute, false, label === "head", 80, true)),
+    ...(await observeCss(absolute, false, label === "head", 80, false)),
+  ];
   rows.push({
     label,
     source,
@@ -45,6 +48,7 @@ writeFileSync(
       samples: 80,
       instructionCounts: null,
       serverAllocations: null,
+      eagerResolve: "Not requested: the client does not advertise documentation resolve support.",
       unavailableCounters:
         "Existing stdio measurement path has no instruction or server allocation instrumentation.",
       rows,

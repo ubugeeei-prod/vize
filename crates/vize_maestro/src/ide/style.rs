@@ -21,19 +21,19 @@ use super::IdeContext;
 use tower_lsp::lsp_types::{Position, Range};
 
 /// Borrow the region already located by the resident SFC descriptor.
-fn region<'a>(ctx: &'a IdeContext<'_>, index: usize) -> Option<(&'a str, usize)> {
+fn region<'a>(ctx: &'a IdeContext<'_>, index: usize) -> Option<(&'a str, usize, bool)> {
     let style = ctx.descriptor()?.styles.get(index)?;
-    if style
+    let standard_css = !style
         .lang
         .as_deref()
-        .is_some_and(|lang| !matches!(lang, "css" | "scss" | "less"))
-    {
-        return None;
-    }
+        .is_some_and(|lang| !matches!(lang, "css" | "scss" | "less"));
     let start = style.loc.start;
     let end = style.loc.end;
-    (ctx.offset >= start && ctx.offset <= end)
-        .then(|| ctx.content.get(start..end).map(|text| (text, start)))?
+    (ctx.offset >= start && ctx.offset <= end).then(|| {
+        ctx.content
+            .get(start..end)
+            .map(|text| (text, start, standard_css))
+    })?
 }
 
 fn range(ctx: &IdeContext<'_>, base: usize, span: (usize, usize)) -> Range {

@@ -66,6 +66,10 @@ in one conservative per-server flag, independently of typecheck configuration.
 Style-only hover/completion bypass Corsa before initialization; selected CSS
 resolve runs before all native typecheck routing. Property replacement ranges
 are computed once per request and shared by the prefix-filtered items.
+Completion consumes the same owned text snapshot used to locate its cursor,
+removing a second whole-SFC copy while retaining completion insertion boundaries.
+The original Vue suggestions and hover remain available in other style dialects;
+only the new standard catalog requires CSS, SCSS or Less syntax.
 
 ## Validation and remaining evidence
 
@@ -78,16 +82,43 @@ raw fixture bytes and the original hover tests in move-only extraction.
 Use the existing source Actions and ordinary LSP/performance paths. Compare
 repeated completion, resolve and hover against the existing server baseline,
 including long comments/strings and a representative large style block.
-Record actual latency and available instruction/allocation observations;
+Record actual latency and available instruction/allocation observations.
 The existing Benchmark workflow reuses its identical-profile base/head CLI
-builds for repeated real stdio CSS observations. Raw latency samples, response
-sizes and exact binary hashes distinguish the previous four-item behavior
+builds for repeated real stdio CSS observations with lazy and eager clients.
+Eager clients request completion and hover; only clients advertising resolve
+support request and measure completion resolve.
+Keep the original eight scenarios and also measure an empty prefix with all
+candidates and 48 KiB unterminated comments/strings with bounded fallback.
+Raw latency samples, response sizes and exact binary hashes distinguish the previous four-item behavior
 from the new product responses. The existing path has no instruction/server
 allocation instrumentation; those counters stay unavailable, not inferred.
 No speedup, unchanged budget or delivery claim precedes measurement.
+The [initial ordinary Benchmark run](https://github.com/ubugeeei-prod/vize/actions/runs/37778966280)
+passed for base `2f9fe178ab7ce2d66a17c9e7fe84570cc86cfbb5` and
+head `e774474f5c46c2f02b15c4c77045f3d2f679b217`, using five warmups and
+80 samples per operation. The head's completion p95 was 0.0943 ms for the
+48 KiB closed comment, 0.0932 ms for the closed string and 0.0869 ms for
+700 rules. Corresponding response sizes were 5,256/5,346/5,316 bytes,
+versus the baseline's 1,302-byte four-feature response. Ordinary CSS hover
+was absent in that baseline, so these are observed product costs, not an
+equal-feature speedup. This earlier source's full Check failed on test lint
+and stale move inventories; it is not delivery qualification. Fresh full
+source checks and the expanded eager/empty/malformed observations remain
+required for the successor.
 Existing full corpus, source checks, instruction ceilings, protected queue
 and actual signed delivery remain required. This bounded CSS slice does not
 close broad LSP fix history or product readiness issues.
 
 Upstream repositories remain read-only. The retired one-shot SSR trace and
 frozen unrelated TypeScript migration are outside this change.
+
+## Stack delivery
+
+The CSS child follows HTML documentation PR [#8316](https://github.com/ubugeeei-prod/vize/pull/8316),
+rebased onto its actual `49227acb1f86b89636010a45e2dba90201fd3b36` source.
+That genuine parent descends from `04ec4c43d9c84c46892fc33f013917d2561bfe78`;
+the earlier CSS measurement base `2f9fe178ab7ce2d66a17c9e7fe84570cc86cfbb5`
+is not the child's current ancestry. Root owns native Stack registration and
+protected admission. After a parent prefix actually merges, rebase and retarget
+any remaining child onto fresh main, then rerun its source Actions. Earlier
+parent or CSS measurements do not qualify a new combined source.

@@ -10,7 +10,7 @@ use crate::ide::{IdeContext, markup::markdown_content};
 use tower_lsp::lsp_types::{Hover, HoverContents};
 
 pub(crate) fn hover(ctx: &IdeContext<'_>, index: usize) -> Option<Hover> {
-    let (content, base) = super::region(ctx, index)?;
+    let (content, base, standard_css) = super::region(ctx, index)?;
     let offset = ctx.offset - base;
     // Retain the old Vue feature range behavior while avoiding a word allocation.
     if let Some((start, end)) = crate::ide::token_span_at_offset(content, offset, |ch| {
@@ -21,6 +21,9 @@ pub(crate) fn hover(ctx: &IdeContext<'_>, index: usize) -> Option<Hover> {
             contents: HoverContents::Markup(markdown_content(vue::markdown(feature))),
             range: None,
         });
+    }
+    if !standard_css {
+        return None;
     }
     let (selected, span) = match context::at(content, offset) {
         CssContext::Property { span, .. } => (

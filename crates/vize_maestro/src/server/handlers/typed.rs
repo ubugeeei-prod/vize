@@ -69,11 +69,10 @@ impl MaestroServer {
         let Some(content) = self.state.documents.text(uri) else {
             return Ok(None);
         };
-        let Some(ctx) = position_to_offset(&content, position.line, position.character)
-            .and_then(|offset| IdeContext::at_completion(&self.state, uri, offset))
-        else {
+        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
             return Ok(None);
         };
+        let ctx = IdeContext::completion_with_content(&self.state, uri, offset, content);
         // CSS uses only resident block context and static metadata, never Corsa.
         if ctx.is_in_style() {
             return Ok(CompletionService::complete(&ctx));

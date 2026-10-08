@@ -63,7 +63,12 @@ impl Document {
             "/../../tests/fixtures/css-documentation/App.vue"
         ));
         let position = source.find(needle).unwrap() + offset;
-        let marked = [&source[..position], "|", &source[position..]].concat();
+        let marked = [
+            source.get(..position).unwrap(),
+            "|",
+            source.get(position..).unwrap(),
+        ]
+        .concat();
         Self::marked(&marked, false)
     }
 

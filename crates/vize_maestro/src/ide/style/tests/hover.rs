@@ -95,3 +95,27 @@ fn v_bind_is_documented_in_a_plain_style_block_and_unknown_css_has_no_hover() {
         assert!(super::super::hover(&document.context(), 0).is_none());
     }
 }
+
+#[test]
+fn other_style_dialects_keep_original_vue_features_without_standard_css_candidates() {
+    for language in ["sass", "stylus", "unknown"] {
+        for feature in ["v-bind", ":deep", ":slotted", ":global"] {
+            let source = format!("<style lang=\"{language}\">{feature}|(theme)</style>");
+            let document = Document::marked(&source, false);
+            let items = document.complete();
+            assert_eq!(items.len(), 4);
+            let hover = super::super::hover(&document.context(), 0).unwrap();
+            assert_eq!(hover.range, None);
+            assert_eq!(
+                hover_documentation(&hover),
+                documentation(item(&items, feature))
+            );
+        }
+        let document = Document::marked(
+            &format!("<style lang=\"{language}\">.a {{ co|lor: red; }}</style>"),
+            false,
+        );
+        assert_eq!(document.complete().len(), 4);
+        assert!(super::super::hover(&document.context(), 0).is_none());
+    }
+}

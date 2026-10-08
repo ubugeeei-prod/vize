@@ -7,10 +7,18 @@ import { resolveVizeLaunchCommand } from "./launch.ts";
 import { LspSession } from "./session.ts";
 
 type Item = Record<string, unknown> & { label: string };
-type Scenario = { name: string; css: string; completion: number; hover: number; label: string };
+type Scenario = {
+  name: string;
+  css: string;
+  completion: number;
+  hover: number;
+  label: string;
+  fallback?: boolean;
+};
 export type CssObservation = {
   scenario: string;
   operation: string;
+  documentationMode: "lazy" | "eager";
   samplesMs: number[];
   responseBytes: number;
   result: unknown;
@@ -81,6 +89,21 @@ function scenarios(): Scenario[] {
       "color",
     ),
     scenario("large-style", `${large}\n.demo { color: red; col }`, "col", "color"),
+    scenario("empty-prefix", ".demo { color: red;  }", "; ", "color"),
+    {
+      ...scenario("unterminated-comment", `/*${"x".repeat(48_000)} col`, "col", "v-bind", "col"),
+      fallback: true,
+    },
+    {
+      ...scenario(
+        "unterminated-string",
+        `.demo { content: "${"x".repeat(48_000)} col`,
+        "col",
+        "v-bind",
+        "col",
+      ),
+      fallback: true,
+    },
   ];
 }
 
@@ -181,8 +204,9 @@ export async function observeCss(
   sourceRequired: boolean,
   assertProduct: boolean,
   samples = 20,
+  lazy = true,
 ): Promise<CssObservation[]> {
-  const client = await cssSession(binary, sourceRequired, true);
+  const client = await cssSession(binary, sourceRequired, lazy);
   const observations: CssObservation[] = [];
   let version = 0;
   try {
@@ -203,10 +227,22 @@ export async function observeCss(
       const item = items.find((item) => item.label === row.label) ?? items[0]!;
       if (assertProduct) {
         assert.equal(item.label, row.label);
-        assert.equal(item.documentation, undefined);
-        assert.ok(record(item.data).vizeCss);
+        if (lazy) {
+          assert.equal(item.documentation, undefined);
+          assert.ok(record(item.data).vizeCss);
+        } else {
+          assert.ok(documentation(item.documentation).includes("**Docs**"));
+          assert.equal(item.data, undefined);
+        }
+        if (row.fallback) assert.equal(items.length, 4);
+        if (row.name === "empty-prefix") {
+          assert.equal(items.length, 888 + 4);
+          assert.ok(items.slice(4).every((entry) => entry.kind === 10));
+        }
       }
-      const resolved = await timed(client.session, "completionItem/resolve", item, samples);
+      const resolved = lazy
+        ? await timed(client.session, "completionItem/resolve", item, samples)
+        : undefined;
       const hover = await timed(
         client.session,
         "textDocument/hover",
@@ -214,21 +250,32 @@ export async function observeCss(
         samples,
       );
       if (assertProduct) {
-        const { documentation: resolvedDoc, ...remaining } = record(resolved.result);
-        assert.deepEqual(remaining, item, "resolve preserves every insertion and identity field");
-        const text = documentation(resolvedDoc);
+        let text = lazy ? "" : documentation(item.documentation);
+        if (resolved) {
+          const { documentation: resolvedDoc, ...remaining } = record(resolved.result);
+          assert.deepEqual(remaining, item, "resolve preserves every insertion and identity field");
+          text = documentation(resolvedDoc);
+        }
         assert.ok(text.includes(`**${row.label}**`));
         assert.ok(text.includes("**Docs**"));
-        const hoverText = documentation(record(hover.result).contents);
-        assert.ok(hoverText.includes(`**${row.label}**`));
-        assert.ok(hoverText.includes("**Docs**"));
+        if (row.fallback) assert.equal(hover.result, null);
+        else {
+          const hoverText = documentation(record(hover.result).contents);
+          assert.ok(hoverText.includes(`**${row.label}**`));
+          assert.ok(hoverText.includes("**Docs**"));
+        }
       }
       for (const [operation, result] of [
         ["completion", completion],
-        ["resolve", resolved],
+        ...(resolved ? ([["resolve", resolved]] as const) : []),
         ["hover", hover],
       ] as const)
-        observations.push({ scenario: row.name, operation, ...result });
+        observations.push({
+          scenario: row.name,
+          operation,
+          documentationMode: lazy ? "lazy" : "eager",
+          ...result,
+        });
     }
     assert.ok(
       !client.session.stderrText.includes("Corsa initialization failed"),

@@ -145,16 +145,22 @@ fn css_language_server_handlers_complete_hover_and_resolve_without_starting_miss
                     assert!(documentation(&selected).contains(useful));
                 }
                 unstarted(server);
-                let resolved = server.completion_resolve(selected.clone()).await.unwrap();
+                let resolved = if lazy {
+                    let resolved = server.completion_resolve(selected.clone()).await.unwrap();
+                    let mut insertion = resolved.clone();
+                    insertion.documentation = selected.documentation.clone();
+                    assert_eq!(
+                        insertion, selected,
+                        "LSP resolve must keep every original insertion field"
+                    );
+                    resolved
+                } else {
+                    assert!(selected.data.is_none());
+                    selected
+                };
                 let docs = documentation(&resolved);
                 assert!(docs.contains(useful), "{docs}");
                 assert!(docs.contains("**Docs**"));
-                let mut insertion = resolved.clone();
-                insertion.documentation = selected.documentation.clone();
-                assert_eq!(
-                    insertion, selected,
-                    "LSP resolve must keep every original insertion field"
-                );
                 unstarted(server);
                 let hover = server
                     .hover(HoverParams {
