@@ -6,6 +6,8 @@ title: "script/no-deprecated-dollar-scopedslots-api"
 
 Vue 3 で $slots に統合された $scopedSlots を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`this.$scopedSlots`、`ctx.$scopedSlots`、裸の `$scopedSlots` 参照が、Vue 3 で削除された Vue 2 の scoped slot API を使っています。
+
 ```vue
 <script setup lang="ts">
 const header = this.$scopedSlots.header
@@ -44,6 +48,8 @@ render($scopedSlots.default)
 ```
 
 ## 良い
+
+`$scopedSlots` を `$slots` に置き換え、統合された slot API を使います。この例は削除された API 名の置換を示すもので、参照元の setup コンテキストを作る例ではありません。
 
 ```vue
 <script setup lang="ts">

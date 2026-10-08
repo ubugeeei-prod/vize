@@ -6,6 +6,8 @@ title: "script/no-internal-imports"
 
 Vue 内部モジュールからの import を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+両方の import が Vue の公開エントリーポイントではなく内部の `dist` ファイルを参照し、コンポーネントをビルド成果物のパスに依存させています。
+
 ```vue
 <script setup lang="ts">
 import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
@@ -43,6 +47,8 @@ import { bar } from 'vue/dist/vue.esm-bundler'
 ```
 
 ## 良い
+
+必要なヘルパーを `vue` からインポートし、内部の配布ファイルの配置への依存を取り除きます。
 
 ```vue
 <script setup lang="ts">

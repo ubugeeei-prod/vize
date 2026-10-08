@@ -3,8 +3,11 @@ import { resolve } from "node:path";
 import { generateCategoryPages } from "./category-render.mjs";
 import { generateProjectPages } from "./project-render.mjs";
 import { ruleExamples } from "./examples.mjs";
+import { exampleExplanations, validateExampleExplanations } from "./explanations.mjs";
 import { migrationPage } from "./migration.mjs";
 import { purposeJa } from "./purpose-ja.mjs";
+import { exampleLinks } from "./example-links.mjs";
+import { projectIndex } from "./project-index.mjs";
 
 export const configurableRules = new Set([
   "html/no-empty-palpable-content",
@@ -31,6 +34,7 @@ export function generateRulePages({
   categoryLabels,
 }) {
   const checking = process.argv.includes("--check");
+  validateExampleExplanations(rules);
   generateProjectPages(workspaceRoot, checking);
   generateCategoryPages(workspaceRoot, rules, checking);
   for (const locale of ["", "ja/"]) {
@@ -87,20 +91,21 @@ export function generateRulePages({
         `## ${label} (${group.length})`,
         "",
         ja
-          ? "| ルール | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 |"
-          : "| Rule | Severity | Presets | Fixable | Options | Implementation | Description |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
+          ? "| ルール | 例 | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 |"
+          : "| Rule | Examples | Severity | Presets | Fixable | Options | Implementation | Description |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- |",
       );
       for (const rule of group) {
         const path = `${slug(rule.name)}.md`;
         const example = ruleExamples(workspaceRoot, rule);
         if (!purposeJa[rule.name]) throw new Error(`Missing Japanese purpose for ${rule.name}`);
         lines.push(
-          `| [\`${rule.name}\`](./reference/${path}) | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? (ja ? "あり" : "Yes") : ja ? "なし" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : ja ? "なし" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} |`,
+          `| [\`${rule.name}\`](./reference/${path}) | ${exampleLinks(`./reference/${path}`, ja)} | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? (ja ? "あり" : "Yes") : ja ? "なし" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : ja ? "なし" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} |`,
         );
         output(resolve(directory, "reference", path), detail(rule, example, ja), checking);
       }
     }
+    lines.push(...projectIndex(workspaceRoot, ja));
     output(resolve(directory, "all.md"), `${lines.join("\n")}\n`, checking);
   }
 }
@@ -132,6 +137,8 @@ function detail(rule, example, ja) {
     "",
     ja ? purposeJa[rule.name] : rule.description,
     "",
+    exampleLinks("", ja),
+    "",
     `${label("Default severity", "既定の重大度")}: \`${rule.defaultSeverity}\`  `,
     `${label("Presets", "プリセット")}: ${presets(rule.presets)}  `,
     `${label("Automatic fix", "自動修正")}: ${example.availability ? label("Not implemented for SFC lint", "SFC lint では未対応") : rule.fixable ? label("Available for supported findings", "対応する検出で利用可能") : label("None; review the suggested change", "なし。修正内容を確認してください")}  `,
@@ -145,6 +152,14 @@ function detail(rule, example, ja) {
     lines.push(`${label("Bad diagnostic", "悪い例での診断")}: \`${example.badDiagnostic}\``, "");
   const note = ja ? example.noteJa : example.note;
   if (note) lines.push(note, "");
+  if (rule.name === "vue/max-template-complexity")
+    lines.push(
+      label(
+        "See [complexity scoring and component boundaries](../../guide/cross-file-complexity.md) for the contributions behind the example's two scores.",
+        "例の二つの値の計算内訳は[複雑度の計算とコンポーネントの境界](../../guide/cross-file-complexity.md)を参照してください。",
+      ),
+      "",
+    );
   if (config.typeAware)
     lines.push(
       label(
@@ -180,7 +195,7 @@ function detail(rule, example, ja) {
       language = "ts";
       source = source.replace(/^<script[^>]*>\n/, "").replace(/\n<\/script>$/, "");
     }
-    lines.push(`## ${title}`, "");
+    lines.push(`## ${title}`, "", exampleExplanations.get(rule.name)[key][ja ? "ja" : "en"], "");
     const filename = example[`${key}Filename`] ?? example.filename;
     if (filename) lines.push(`\`${filename}\``, "");
     lines.push(`\`\`\`${language}`, source, "```", "");

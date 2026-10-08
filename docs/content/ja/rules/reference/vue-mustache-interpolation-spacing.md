@@ -6,6 +6,8 @@ title: "vue/mustache-interpolation-spacing"
 
 mustache 内の空白を揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+補間の式と区切りの間で、片側または両側の空白がありません。
+
 ```vue
 <template>
   <div>{{text}}</div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+式と mustache の開始・終了の両方の区切りに空白を入れます。
 
 ```vue
 <template>

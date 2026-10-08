@@ -6,6 +6,8 @@ title: "vue/sfc-element-order"
 
 Enforce consistent order of SFC top-level elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The style block precedes the script block, contrary to the configured SFC block order.
+
 ```vue
 <style scoped>
 .panel {
@@ -47,6 +51,8 @@ const label = "Save";
 ```
 
 ## Good
+
+The blocks follow script → template → style. Projects can choose a different order through this rule's typed option.
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "vue/no-template-key"
 
 v-for 用ではない template の key 指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+繰り返しではない template に key を指定しています。
+
 ```vue
 <template>
 <template :key="section"><div>Details</div></template>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+template の v-for に key を付け、繰り返す各 fragment を識別します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/require-scoped-style"
 
 style に scoped を指定する方針を適用します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`.button` の style にスコープがなく、他のコンポーネントの一致する要素にも作用します。
+
 ```vue
 <style>
 .button {
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じセレクタと宣言に `scoped` を付け、Vue のコンポーネント スコープを適用します。
 
 ```vue
 <style scoped>

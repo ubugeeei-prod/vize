@@ -6,6 +6,8 @@ title: "vue/component-name-in-template-casing"
 
 Enforce specific casing for component names in templates
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The component is written in kebab-case and camelCase under the PascalCase convention.
+
 ```vue
 <template>
   <my-component />
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+MyComponent uses PascalCase; native slot syntax remains lowercase.
 
 ```vue
 <template>

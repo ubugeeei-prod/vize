@@ -6,6 +6,8 @@ title: "vue/require-toggle-inside-transition"
 
 Require a toggle on the element wrapped by `<transition>`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The static child inside `<Transition>` has no conditional visibility or dynamic selection to trigger an enter/leave change.
+
 ```vue
 <template>
 <transition>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+`v-if="show"` changes whether the child exists, giving the transition an enter/leave boundary.
 
 ```vue
 <template>

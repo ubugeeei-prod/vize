@@ -6,6 +6,8 @@ title: "vapor/no-vue-lifecycle-events"
 
 Vapor が対応しない要素の @vue:* lifecycle event を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+input にテンプレートの @vue:mounted を指定しています。
+
 ```vue
 <template>
   <input @vue:mounted="focusInput" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+script の onMounted からテンプレートの ref を参照し、input にフォーカスします。
 
 ```vue
 <script setup lang="ts" vapor>

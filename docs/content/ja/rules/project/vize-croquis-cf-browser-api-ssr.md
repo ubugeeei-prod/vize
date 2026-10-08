@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -48,6 +48,8 @@ createApp(Root).mount("#app");
 
 ## 悪い
 
+setup 中に `window.innerWidth` を読み、ブラウザの `window` がない SSR 環境でも実行されます。
+
 `App.vue`
 
 ```vue
@@ -58,6 +60,8 @@ const width = window.innerWidth;
 ```
 
 ## 良い
+
+server で安全な値の ref を作り、client mount 後の `onMounted` 内で `window` を読みます。
 
 `App.vue`
 
@@ -70,7 +74,7 @@ onMounted(() => { width.value = window.innerWidth; });
 <template><p>Content</p></template>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

@@ -6,6 +6,8 @@ title: "vue/warn-custom-block"
 
 Warn about custom blocks in SFC files
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The SFC contains an `<i18n>` custom block, which needs an external integration beyond ordinary template/script/style processing.
+
 ```vue
 <i18n>
 { "en": { "hello": "Hello" } }
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## Good
+
+The example uses standard template and script-setup blocks. This optional portability warning does not mean every custom block is invalid Vue.
 
 ```vue
 <template>

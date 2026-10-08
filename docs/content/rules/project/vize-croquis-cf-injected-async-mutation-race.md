@@ -29,7 +29,7 @@ vp run lint
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `main.ts`
 
@@ -67,6 +67,8 @@ const store = inject(StoreKey)!;
 ```
 
 ## Bad
+
+`CountLoader.vue` writes an awaited result directly into the injected store shared with `CountSummary.vue`, letting stale work affect both consumers.
 
 `keys/store.ts`
 
@@ -117,6 +119,8 @@ watch(query, async (value) => {
 ```
 
 ## Good
+
+The loader cancels invalidated work and emits only an active result. The provider owns the store mutation through `applyLoadedCount`.
 
 `keys/store.ts`
 
@@ -178,7 +182,7 @@ watch(query, async (value, _oldValue, onCleanup) => {
 </script>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

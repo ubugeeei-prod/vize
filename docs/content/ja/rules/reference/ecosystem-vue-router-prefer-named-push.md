@@ -6,6 +6,8 @@ title: "ecosystem/vue-router-prefer-named-push"
 
 Vue Router のプログラムによる移動に名前付きルートを使います。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+router.push に、現在の URL 表記に結び付く文字列のパスを渡しています。
+
 ```vue
 <script setup lang="ts">
 router.push("/settings");
@@ -42,6 +46,8 @@ router.push("/settings");
 ```
 
 ## 良い
+
+settings のルート名を持つオブジェクトを router.push に渡します。
 
 ```vue
 <script setup lang="ts">

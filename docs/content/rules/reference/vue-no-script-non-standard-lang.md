@@ -6,6 +6,8 @@ title: "vue/no-script-non-standard-lang"
 
 Discourage non-standard script lang values
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: Not implemented for SFC lint  
@@ -39,6 +41,8 @@ vp run lint
 
 ## Bad
 
+The script uses CoffeeScript syntax under lang=coffee. The current SFC path does not emit this catalog rule for that language.
+
 ```vue
 <script lang="coffee">
 count = 0
@@ -47,6 +51,8 @@ count = 0
 ```
 
 ## Good
+
+The script uses an ordinary TypeScript declaration with lang=ts, illustrating the intended language convention.
 
 ```vue
 <script lang="ts">

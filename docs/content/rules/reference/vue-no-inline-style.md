@@ -6,6 +6,8 @@ title: "vue/no-inline-style"
 
 Discourage use of inline style attributes
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The static style attribute embeds the color declaration in the element.
+
 ```vue
 <template>
   <div style="color: red">Text</div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Classes express the fixed color; the ratio-dependent width remains a dynamic style binding, outside the static-attribute check.
 
 ```vue
 <template>

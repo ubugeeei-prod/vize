@@ -31,7 +31,7 @@ The current producer scans template expressions such as JSON.parse(input). It do
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `main.ts`
 
@@ -49,6 +49,8 @@ createApp(Root).mount("#app");
 ```
 
 ## Bad
+
+The child's template calls `JSON.parse` on malformed input, and the reachable parent has no error-capture boundary.
 
 `App.vue`
 
@@ -70,6 +72,8 @@ const input = "{";
 
 ## Good
 
+The parent registers `onErrorCaptured` around that child. Returning `false` stops propagation; a production boundary should also present useful recovery UI.
+
 `App.vue`
 
 ```vue
@@ -90,7 +94,7 @@ const input = "{";
 <template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

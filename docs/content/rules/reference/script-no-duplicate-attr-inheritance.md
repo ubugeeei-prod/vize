@@ -6,6 +6,8 @@ title: "script/no-duplicate-attr-inheritance"
 
 Flag a component that applies its fallthrough attributes twice
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The explicit `inheritAttrs: true` values restate Vue’s default. This rule reports that redundant literal even when no root `$attrs` spread is shown.
+
 ```vue
 <script lang="ts">
 defineOptions({ inheritAttrs: true })
@@ -43,6 +47,8 @@ export default { inheritAttrs: true }
 ```
 
 ## Good
+
+`inheritAttrs: false` expresses a real opt-out, while the empty options object leaves default inheritance implicit. Neither restates the redundant `true` value.
 
 ```vue
 <script lang="ts">

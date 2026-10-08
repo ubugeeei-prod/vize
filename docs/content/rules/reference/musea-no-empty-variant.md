@@ -6,6 +6,8 @@ title: "musea/no-empty-variant"
 
 Disallow empty <variant> blocks
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The named primary variant is empty, so it provides no preview content.
+
 ```vue
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The variant renders a primary Button with its Save content.
 
 ```vue
 <art title="Button" component="./Button.vue">

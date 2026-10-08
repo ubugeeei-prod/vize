@@ -6,6 +6,8 @@ title: "type/strict-boolean-expressions"
 
 Require safe boolean expressions in script and template conditions
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -40,6 +42,8 @@ vp run lint
 
 ## Bad
 
+`if (count)` relies on the truthiness of a nullable numeric binding instead of an explicit boolean test; it also conflates zero with absence.
+
 ```vue
 <script setup lang="ts">
 const count: number | undefined = undefined;
@@ -48,6 +52,8 @@ if (count) console.log(count);
 ```
 
 ## Good
+
+`count !== undefined && count > 0` separately tests presence and positivity, producing an explicit boolean condition after narrowing the optional value.
 
 ```vue
 <script setup lang="ts">

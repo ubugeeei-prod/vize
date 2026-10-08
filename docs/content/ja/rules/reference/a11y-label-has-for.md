@@ -6,6 +6,8 @@ title: "a11y/label-has-for"
 
 label を対象のフォーム部品と関連付けます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+離れた label に for がなく、入力欄を囲んでもいないため関連付けがありません。
+
 ```vue
 <template>
   <label>Email</label>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+`for="email"` を入力欄の ID と一致させて関連付けます。
 
 ```vue
 <template>

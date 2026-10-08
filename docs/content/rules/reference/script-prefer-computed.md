@@ -6,6 +6,8 @@ title: "script/prefer-computed"
 
 Prefer computed() for derived reactive state
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -37,6 +39,8 @@ vp run lint
 
 ## Bad
 
+The watcher only copies a derivation of `count` into a second ref, `doubled`, so the derived state is maintained through manual synchronization.
+
 ```vue
 <script setup lang="ts">
 import { ref, watch } from "vue";
@@ -47,6 +51,8 @@ watch(count, (value) => { doubled.value = value * 2; });
 ```
 
 ## Good
+
+`computed(() => count.value * 2)` expresses the derivation directly and removes both the extra writable ref and its synchronization watcher.
 
 ```vue
 <script setup lang="ts">

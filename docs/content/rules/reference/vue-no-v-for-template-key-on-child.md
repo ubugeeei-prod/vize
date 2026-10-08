@@ -6,6 +6,8 @@ title: "vue/no-v-for-template-key-on-child"
 
 Disallow `key` on the child of a `<template v-for>`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The child paragraph has the key while the template iteration itself has no key.
+
 ```vue
 <template>
 <template v-for="item in items"><p :key="item.id">{{ item.name }}</p></template>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The key moves to template v-for, identifying the complete repeated fragment.
 
 ```vue
 <template>

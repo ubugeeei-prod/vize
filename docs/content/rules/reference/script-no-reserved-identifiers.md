@@ -6,6 +6,8 @@ title: "script/no-reserved-identifiers"
 
 Disallow using Vue compiler reserved identifiers
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The bindings `__props`, `__emit`, and `__sfc__` use identifiers reserved for generated Vue compiler code.
+
 ```vue
 <script setup lang="ts">
 const __props = { name: "Ada" };
@@ -44,6 +48,8 @@ const __sfc__ = {};
 ```
 
 ## Good
+
+The ordinary names `props`, `emit`, and `componentData` avoid those generated identifiers while retaining props and emits declarations.
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "script/require-default-prop"
 
 Require a default value for every optional, non-Boolean prop
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`name` and `age` are optional non-Boolean runtime props without defaults, leaving their omitted-input values unspecified.
+
 ```vue
 <script lang="ts">
 export default {
@@ -48,6 +52,8 @@ age: { type: Number },
 ```
 
 ## Good
+
+`name` receives `default: ''`. `enabled` uses Boolean’s implicit false default, and required `id` needs no fallback, illustrating both exemptions.
 
 ```vue
 <script lang="ts">

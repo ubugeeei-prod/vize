@@ -6,6 +6,8 @@ title: "script/prefer-use-template-ref"
 
 Recommend useTemplateRef over ref for template references (Vue 3.5+)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The nullable `input` ref is paired with the template’s literal `ref="input"`, identifying it as an element reference rather than ordinary nullable data.
+
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -46,6 +50,8 @@ const input = ref<HTMLInputElement | null>(null)
 ```
 
 ## Good
+
+Vue 3.5+ `useTemplateRef<HTMLInputElement>('input')` makes that template reference explicit. The unpaired `error = ref(null)` remains ordinary data and is intentionally outside this rule.
 
 ```vue
 <script setup lang="ts">

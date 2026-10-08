@@ -6,6 +6,8 @@ title: "a11y/anchor-is-valid"
 
 リンクの href に有効な移動先を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+一つ目は操作に `#` を使い、二つ目は JavaScript URL を使っています。どちらも通常の移動先を持つリンクではありません。
+
 ```vue
 <template>
   <a href="#" @click="openPanel">Open panel</a>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+`openPanel` は button で実行し、リンクには実際の移動先 `/docs/javascript-urls` を指定します。
 
 ```vue
 <template>

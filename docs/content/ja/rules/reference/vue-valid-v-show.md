@@ -6,6 +6,8 @@ title: "vue/valid-v-show"
 
 v-show に有効な条件式を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`v-show` に表示条件の式がないか、display を変更する DOM 要素のない `<template>` に付けています。
+
 ```vue
 <template>
   <div v-show></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+`<div>` のような描画される要素に表示条件を指定します。
 
 ```vue
 <template>

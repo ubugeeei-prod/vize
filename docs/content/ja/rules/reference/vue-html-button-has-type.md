@@ -6,6 +6,8 @@ title: "vue/html-button-has-type"
 
 button に有効な type を明示します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+一つは type を省略し、もう一つは対応しない foo を指定しています。
+
 ```vue
 <template>
 <button>Click</button>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+button、submit、reset を明示します。バインドする type は動的な値として扱います。
 
 ```vue
 <template>

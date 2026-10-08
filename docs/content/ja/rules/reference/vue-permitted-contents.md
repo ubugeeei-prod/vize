@@ -6,6 +6,8 @@ title: "vue/permitted-contents"
 
 HTML の要素ごとのコンテンツモデルを検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+p にブロックを入れ、tbody を省略し、操作要素を入れ子にするか、ul に div を直接入れています。
+
 ```vue
 <template>
   <p><div>block in a paragraph</div></p>
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## 良い
+
+p はインラインの内容、table は tbody、ul は li を使います。独自の MyItem は既知の標準の ul の子として検査されません。
 
 ```vue
 <template>

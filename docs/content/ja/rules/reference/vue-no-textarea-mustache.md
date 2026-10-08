@@ -6,6 +6,8 @@ title: "vue/no-textarea-mustache"
 
 textarea 内の mustache を検出し、v-model の使用を勧めます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+textarea の値をバインドせず、子の補間に message を記述しています。
+
 ```vue
 <template>
   <textarea>{{ message }}</textarea>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+v-model で、編集する textarea の値と message を関連付けます。
 
 ```vue
 <template>

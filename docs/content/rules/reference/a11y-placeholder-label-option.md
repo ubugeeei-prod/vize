@@ -6,6 +6,8 @@ title: "a11y/placeholder-label-option"
 
 Require disabled or hidden on select placeholder option
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The empty-value prompt remains selectable as if it were a country value.
+
 ```vue
 <template>
   <select v-model="country">
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## Good
+
+Adding `disabled` distinguishes the prompt from the selectable Japan option.
 
 ```vue
 <template>

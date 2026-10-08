@@ -6,6 +6,8 @@ title: "script/no-internal-imports"
 
 Disallow importing from Vue internal modules
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Both imports address internal `dist` files rather than Vue’s public package entry point, coupling the component to build-file paths.
+
 ```vue
 <script setup lang="ts">
 import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
@@ -43,6 +47,8 @@ import { bar } from 'vue/dist/vue.esm-bundler'
 ```
 
 ## Good
+
+Importing the required helpers from `vue` removes the dependency on internal distribution file locations.
 
 ```vue
 <script setup lang="ts">

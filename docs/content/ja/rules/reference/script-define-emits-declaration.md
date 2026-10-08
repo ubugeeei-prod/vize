@@ -6,6 +6,8 @@ title: "script/define-emits-declaration"
 
 defineEmits を型による宣言形式に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`defineEmits(["change"])` は実行時の配列による宣言です。このスタイルルールは型ベースの宣言を推奨します。
+
 ```vue
 <script setup lang="ts">
 const emit = defineEmits(["change"]);
@@ -43,6 +47,8 @@ emit("change", 1);
 ```
 
 ## 良い
+
+`defineEmits<{ change: [id: number] }>()` で宣言を型引数へ移し、`emit("change", 1)` が渡す数値のペイロードも明示します。
 
 ```vue
 <script setup lang="ts">

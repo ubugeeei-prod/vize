@@ -6,6 +6,8 @@ title: "vue/no-src-attribute"
 
 SFC ブロックの外部 src 指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+SFC の template、script、style を src の外部ファイルに分けています。
+
 ```vue
 <template src="./template.html"></template>
 <script src="./script.ts"></script>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+各ブロックに内容を記述し、外部の src 属性を使いません。
 
 ```vue
 <template>

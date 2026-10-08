@@ -6,6 +6,8 @@ title: "script/no-next-tick"
 
 Disallow nextTick() usage in Vapor-oriented components
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The Vapor-oriented component imports and awaits `nextTick`, introducing the DOM-flush scheduling dependency that this migration rule rejects.
+
 ```vue
 <script setup lang="ts" vapor>
 import { nextTick } from "vue";
@@ -43,6 +47,8 @@ await nextTick();
 ```
 
 ## Good
+
+The input is obtained through `useTemplateRef` and focused at `onMounted`. The explicit mount boundary replaces the example’s `nextTick` dependency.
 
 ```vue
 <script setup lang="ts" vapor>

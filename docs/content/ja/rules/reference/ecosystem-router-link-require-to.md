@@ -6,6 +6,8 @@ title: "ecosystem/router-link-require-to"
 
 RouterLink / NuxtLink に to を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
@@ -37,6 +39,8 @@ vp run lint
 
 ## 悪い
 
+nav の内側の RouterLink に to がなく、ルートの属性継承にも頼れません。
+
 ```vue
 <template>
 <nav><RouterLink>Settings</RouterLink></nav>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+内部のリンクに `to="/settings"` で移動先を明示します。
 
 ```vue
 <template>

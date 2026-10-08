@@ -6,6 +6,8 @@ title: "a11y/interactive-supports-focus"
 
 操作可能な role の要素をフォーカス可能にします。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+span に button の role と click handler を付けても、キーボードでフォーカスできる要素にはなりません。
+
 ```vue
 <template>
   <span role="button" @click="open">Open</span>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+フォーカスできる標準の button に変更し、同じ `open` を実行します。
 
 ```vue
 <template>

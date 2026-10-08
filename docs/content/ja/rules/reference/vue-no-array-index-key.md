@@ -6,6 +6,8 @@ title: "vue/no-array-index-key"
 
 v-for の配列インデックスをそのまま key に使う箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+現在の配列の位置を key に使い、並び替えで項目の識別子が変わります。
+
 ```vue
 <template>
 <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+item.id を key に使い、位置が変わっても項目の識別子を維持します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/no-preprocessor-lang"
 
 Discourage CSS preprocessor usage in favor of modern CSS
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: Not implemented for SFC lint  
@@ -39,6 +41,8 @@ vp run lint
 
 ## Bad
 
+The style block selects SCSS with lang. This describes the intended no-preprocessor convention; the current SFC path does not emit this rule.
+
 ```vue
 <template><p>Notice</p></template>
 <style lang="scss">
@@ -47,6 +51,8 @@ vp run lint
 ```
 
 ## Good
+
+The same CSS declarations omit the preprocessor lang. This is the convention repair, not an executable Bad/Good diagnostic difference today.
 
 ```vue
 <template><p>Notice</p></template>

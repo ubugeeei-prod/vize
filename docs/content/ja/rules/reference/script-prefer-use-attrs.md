@@ -6,6 +6,8 @@ title: "script/prefer-use-attrs"
 
 setup の context.attrs を useAttrs() に置き換えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`setup` がコンテキスト引数の分割代入で `attrs` を受け取っています。このルールは Composition API のヘルパーへの置換を求めます。
+
 ```vue
 <script lang="ts">
 export default { setup(_props, { attrs }) { console.log(attrs.class); } };
@@ -42,6 +46,8 @@ export default { setup(_props, { attrs }) { console.log(attrs.class); } };
 ```
 
 ## 良い
+
+setup 内で `useAttrs()` から `attrs` を取得し、第二引数に依存せず `attrs.class` の参照を保ちます。
 
 ```vue
 <script lang="ts">

@@ -6,6 +6,8 @@ title: "vue/require-component-is"
 
 Require `v-bind:is` on `<component>` elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The dynamic `<component>` has no `is` target, so Vue cannot choose a component to render.
+
 ```vue
 <template>
   <component />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`:is="currentComponent"` supplies the component selection; the binding may change at runtime.
 
 ```vue
 <template>

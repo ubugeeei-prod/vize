@@ -6,6 +6,8 @@ title: "css/prefer-logical-properties"
 
 Recommend CSS logical properties for better i18n support
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`margin-left` fixes the margin to a physical side regardless of writing direction.
+
 ```vue
 <style scoped>
 .panel {
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+`margin-inline-start` follows the start of the inline direction instead.
 
 ```vue
 <style scoped>

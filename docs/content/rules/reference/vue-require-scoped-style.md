@@ -6,6 +6,8 @@ title: "vue/require-scoped-style"
 
 Require scoped attribute on style tags
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The `.button` style is unscoped and can affect matching elements outside this component.
+
 ```vue
 <style>
 .button {
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Adding `scoped` applies Vue's component scope to the same selector and declarations.
 
 ```vue
 <style scoped>

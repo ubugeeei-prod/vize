@@ -6,6 +6,8 @@ title: "html/deprecated-element"
 
 Disallow deprecated HTML elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The `center` element uses a deprecated HTML presentation element.
+
 ```vue
 <template>
   <center>Profile</center>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+A section and a styling class replace the deprecated element while preserving the content.
 
 ```vue
 <template>

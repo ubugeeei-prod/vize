@@ -6,6 +6,8 @@ title: "nuxt/no-nuxt-config-test-key"
 
 Disallow setting `test` key in Nuxt config
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The exported Nuxt config sets the identifier key `test` to the boolean `true`, the obsolete config shape this rule rejects.
+
 `nuxt.config.ts`
 
 ```ts
@@ -42,6 +46,8 @@ export default defineNuxtConfig({ test: true });
 ```
 
 ## Good
+
+The empty config removes that boolean `test` property. This example does not forbid a test configuration object.
 
 `nuxt.config.ts`
 

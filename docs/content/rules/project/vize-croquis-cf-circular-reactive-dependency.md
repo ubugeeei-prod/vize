@@ -31,9 +31,19 @@ vp run lint
 
 The analyzer's tracked reactive-flow graph contains a cycle: provider A → consumer B → provider A. Both references are the same graph identities, rather than unrelated variables that share a name.
 
+```text
+Tracked references: A = provider source; B = consumer reference
+Tracked flows: A -> B; B -> A
+```
+
 ## Good
 
 Remove the B → A flow: let A own the source, and let B read a computed value or emit an action instead of feeding that reference back. The tracked flow graph becomes acyclic.
+
+```text
+Tracked references: A = provider source; B = consumer reference
+Tracked flows: A -> B
+```
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

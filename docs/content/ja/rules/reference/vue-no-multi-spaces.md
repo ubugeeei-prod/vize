@@ -6,6 +6,8 @@ title: "vue/no-multi-spaces"
 
 連続する不要な空白を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+属性同士や、要素名と最初の属性の間に空白が二つあります。
+
 ```vue
 <template>
   <div  class="panel"></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ属性の区切りを、一つの空白に揃えます。
 
 ```vue
 <template>

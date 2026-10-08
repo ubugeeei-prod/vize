@@ -6,6 +6,8 @@ title: "musea/require-title"
 
 art ブロックに title を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+art に Button.vue の指定はありますが、title がありません。
+
 ```vue
 <art component="./Button.vue">
   <variant name="primary" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+defineArt のオプションに Button の title を指定します。
 
 ```vue
 <script setup>

@@ -6,6 +6,8 @@ title: "script/no-deprecated-data-object-declaration"
 
 Vue 3 で関数にすべき data オプションのオブジェクト指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+Options API の `data` がオブジェクトリテラルであり、Vue 3 では受け付けない Vue 2 の形式です。
+
 ```vue
 <script lang="ts">
 export default {
@@ -47,6 +51,8 @@ count: 0
 ```
 
 ## 良い
+
+`data()` が新しい `{ count: 0 }` を返すようにし、Vue 3 が求める関数形式のデータ宣言にします。
 
 ```vue
 <script lang="ts">

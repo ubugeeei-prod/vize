@@ -6,6 +6,8 @@ title: "vue/no-dupe-v-else-if"
 
 Disallow duplicate conditions in `v-if` / `v-else-if` chains
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The else-if repeats the ready condition already tested by the first branch, making that later branch unreachable.
+
 ```vue
 <template>
   <p v-if="status === 'ready'">Ready</p>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+The second branch tests loading, a distinct state that can reach the else-if.
 
 ```vue
 <template>

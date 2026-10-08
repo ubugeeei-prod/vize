@@ -6,6 +6,8 @@ title: "vue/no-deprecated-html-element-is"
 
 通常の HTML 要素で旧形式の is を使う箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+標準の div で、接頭辞がない旧来の is 属性から Vue コンポーネントを指定しています。
+
 ```vue
 <template>
 <div is="MyComponent" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+動的な component では :is を使い、標準要素では vue: の接頭辞を明示します。
 
 ```vue
 <template>

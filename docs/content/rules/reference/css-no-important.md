@@ -6,6 +6,8 @@ title: "css/no-important"
 
 Discourage use of !important in CSS
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The color declaration overrides normal cascade priority with `!important`.
+
 ```vue
 <style scoped>
 .button {
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The color comes from a custom property without an important declaration.
 
 ```vue
 <style scoped>

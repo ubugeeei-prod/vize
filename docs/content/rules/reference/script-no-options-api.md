@@ -6,6 +6,8 @@ title: "script/no-options-api"
 
 Disallow Options API patterns in Vapor mode
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The default-export object declares Options API `data()`, a component option form prohibited by this rule.
+
 ```vue
 <script lang="ts">
 export default {
@@ -46,6 +50,8 @@ export default {
 ```
 
 ## Good
+
+The component state becomes a Composition API `ref` in Vapor `<script setup>`, removing the Options API object and its `data` option.
 
 ```vue
 <script setup lang="ts" vapor>

@@ -6,6 +6,8 @@ title: "ecosystem/vue-router-prefer-named-link"
 
 RouterLink の文字列パスを名前付きルートの指定に置き換えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+RouterLink の移動先をルート名ではなく、文字列のパスで指定しています。
+
 ```vue
 <template>
   <RouterLink to="/settings">Settings</RouterLink>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+バインドする route のオブジェクトに settings の name を指定します。
 
 ```vue
 <template>

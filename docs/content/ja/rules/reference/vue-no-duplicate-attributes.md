@@ -6,6 +6,8 @@ title: "vue/no-duplicate-attributes"
 
 同じ要素の属性重複を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+一つの button に class を二回指定しています。
+
 ```vue
 <template>
   <button class="primary" class="large">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+二つのクラスを一つの class 属性にまとめます。
 
 ```vue
 <template>

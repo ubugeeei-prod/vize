@@ -6,6 +6,8 @@ title: "script/valid-define-props"
 
 defineProps の重複や型と実行時引数の併用を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+同じ `defineProps` に型引数 `{ title: string }` と実行時引数 `{ title: String }` の両方を渡しています。コンパイラーはこの併用を許可しません。
+
 ```vue
 <script setup lang="ts">
 defineProps<{ title: string }>({ title: String });
@@ -42,6 +46,8 @@ defineProps<{ title: string }>({ title: String });
 ```
 
 ## 良い
+
+実行時オブジェクトを除き、二つの形式を併用せず `title` の型ベースの宣言だけを残します。
 
 ```vue
 <script setup lang="ts">

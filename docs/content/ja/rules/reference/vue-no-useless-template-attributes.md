@@ -6,6 +6,8 @@ title: "vue/no-useless-template-attributes"
 
 template 要素の効果がない属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+条件付きの template に class を指定していますが、この構造用の wrapper は DOM 要素を表示しません。
+
 ```vue
 <template>
 <section><template v-if="ready" class="notice"><p>Ready</p></template></section>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+実際に表示する p に class を移し、構造を指定する template の v-if は残します。
 
 ```vue
 <template>

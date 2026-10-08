@@ -6,6 +6,8 @@ title: "ecosystem/vue-test-utils-no-html-snapshot"
 
 wrapper.html() 全体の snapshot に依存するテストを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+期待する振る舞いを検査する代わりに、wrapper の HTML 全体を snapshot にしています。
+
 ```vue
 <script setup lang="ts">
 expect(wrapper.html()).toMatchSnapshot();
@@ -42,6 +46,8 @@ expect(wrapper.html()).toMatchSnapshot();
 ```
 
 ## 良い
+
+表示された文字に Saved が含まれることを直接検査します。
 
 ```vue
 <script setup lang="ts">

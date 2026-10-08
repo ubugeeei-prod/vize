@@ -6,6 +6,8 @@ title: "vue/multi-word-component-names"
 
 Require component names to be multi-word
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -37,6 +39,8 @@ vp run lint
 
 ## Bad
 
+Item.vue gives the component a single-word name.
+
 `Item.vue`
 
 ```vue
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+TodoItem.vue gives the same template a multi-word component name.
 
 `TodoItem.vue`
 

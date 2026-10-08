@@ -6,6 +6,8 @@ title: "vue/v-bind-style"
 
 v-bind の表記形式を揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`v-bind:class` が長い形式で、設定したコロン省略形の規約に合いません。
+
 ```vue
 <template>
   <div v-bind:class="panelClass"></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ式を `:class` にします。値の型ではなく directive の書き方を検査するルールです。
 
 ```vue
 <template>

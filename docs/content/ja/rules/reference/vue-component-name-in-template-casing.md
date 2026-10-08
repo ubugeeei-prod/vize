@@ -6,6 +6,8 @@ title: "vue/component-name-in-template-casing"
 
 テンプレート内のコンポーネント名を指定した形式に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+PascalCase の方針に対し、コンポーネントを kebab-case と camelCase で記述しています。
+
 ```vue
 <template>
   <my-component />
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+MyComponent を PascalCase で記述します。標準の slot は小文字のままです。
 
 ```vue
 <template>

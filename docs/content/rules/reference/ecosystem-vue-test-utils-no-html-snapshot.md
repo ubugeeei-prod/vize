@@ -6,6 +6,8 @@ title: "ecosystem/vue-test-utils-no-html-snapshot"
 
 Avoid snapshotting wrapper.html() in Vue Test Utils tests
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `ecosystem`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The assertion snapshots the complete wrapper HTML instead of checking the expected behavior.
+
 ```vue
 <script setup lang="ts">
 expect(wrapper.html()).toMatchSnapshot();
@@ -42,6 +46,8 @@ expect(wrapper.html()).toMatchSnapshot();
 ```
 
 ## Good
+
+The assertion checks that the rendered text contains Saved.
 
 ```vue
 <script setup lang="ts">

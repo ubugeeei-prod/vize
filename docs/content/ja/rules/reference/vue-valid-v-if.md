@@ -6,6 +6,8 @@ title: "vue/valid-v-if"
 
 v-if に有効な条件式を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+条件式がないか、同じノードに `v-if` と else directive を併記しています。
+
 ```vue
 <template>
   <div v-if></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+`ready` や `count > 0` の式を各 `v-if` に指定し、競合する else directive を除きます。
 
 ```vue
 <template>

@@ -29,7 +29,7 @@ vp run lint
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `main.ts`
 
@@ -48,9 +48,14 @@ createApp(Root).mount("#app");
 
 ## Bad
 
+Every `v-for` iteration renders the same literal `result-title` ID; the loop's key does not make DOM IDs unique.
+
 `ResultsList.vue`
 
 ```vue
+<script setup lang="ts">
+const results = [{ id: "first", title: "First result" }, { id: "second", title: "Second result" }];
+</script>
 <template>
   <article v-for="result in results" :key="result.id">
     <h2 id="result-title">{{ result.title }}</h2>
@@ -60,9 +65,14 @@ createApp(Root).mount("#app");
 
 ## Good
 
+The heading ID includes the result's stable ID, producing a distinct document identifier for each item.
+
 `ResultsList.vue`
 
 ```vue
+<script setup lang="ts">
+const results = [{ id: "first", title: "First result" }, { id: "second", title: "Second result" }];
+</script>
 <template>
   <article v-for="result in results" :key="result.id">
     <h2 :id="`result-${result.id}-title`">{{ result.title }}</h2>
@@ -70,7 +80,7 @@ createApp(Root).mount("#app");
 </template>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

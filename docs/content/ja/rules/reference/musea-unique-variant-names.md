@@ -6,6 +6,8 @@ title: "musea/unique-variant-names"
 
 同じ Art ファイル内の variant 名を一意にします。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+同じ art の二つの variant に primary の名前を使っています。
+
 ```vue
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+primary と secondary の別々の名前を指定します。
 
 ```vue
 <art title="Button" component="./Button.vue">

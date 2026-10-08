@@ -6,6 +6,8 @@ title: "css/require-font-display"
 
 Require font-display in @font-face rules
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The font-face declaration defines the font source but omits its font-display policy.
+
 ```vue
 <style>
 @font-face {
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## Good
+
+`font-display: swap` explicitly selects the fallback-to-font display policy.
 
 ```vue
 <style>

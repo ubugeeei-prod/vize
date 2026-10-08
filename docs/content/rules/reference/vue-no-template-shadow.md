@@ -6,6 +6,8 @@ title: "vue/no-template-shadow"
 
 Disallow variable names that shadow variables in outer scope
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -37,6 +39,8 @@ vp run lint
 
 ## Bad
 
+The inner v-for declares item again and hides the outer item binding inside the nested loop.
+
 ```vue
 <template>
 <div v-for="item in items" :key="item.id"><span v-for="item in item.children" :key="item.id">{{ item.name }}</span></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The inner loop declares child, leaving item available for the outer row and child for the nested row.
 
 ```vue
 <template>

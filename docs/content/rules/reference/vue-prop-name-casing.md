@@ -6,6 +6,8 @@ title: "vue/prop-name-casing"
 
 Enforce a casing for declared prop names
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -37,6 +39,8 @@ vp run lint
 
 ## Bad
 
+The declared prop name user_name uses underscore-separated spelling.
+
 ```vue
 <script setup lang="ts">
 defineProps<{ user_name: string }>();
@@ -45,6 +49,8 @@ defineProps<{ user_name: string }>();
 ```
 
 ## Good
+
+The declaration and its template reference use the camelCase name userName.
 
 ```vue
 <script setup lang="ts">

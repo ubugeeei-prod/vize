@@ -6,6 +6,8 @@ title: "vue/no-deprecated-router-link-tag-prop"
 
 Disallow the `tag` prop on <router-link>
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+RouterLink uses the removed tag prop to request a button element.
+
 ```vue
 <template>
 <router-link to="/home" tag="button">Home</router-link>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The slot provides navigate to an explicitly authored button.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/v-on-event-hyphenation"
 
 Enforce hyphenation of custom event names in v-on on components
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The custom component listener uses `@myEvent` instead of a hyphenated event name.
+
 ```vue
 <template>
 <MyComponent @myEvent="handler" />
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+`@my-event` uses the required custom-event spelling. Native-element listeners and dynamic event arguments shown below are outside this check.
 
 ```vue
 <template>

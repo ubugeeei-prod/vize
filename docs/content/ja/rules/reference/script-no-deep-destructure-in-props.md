@@ -6,6 +6,8 @@ title: "script/no-deep-destructure-in-props"
 
 defineProps の深い分割代入を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+代入パターンが `user` の内部まで進んで `name` を取り出し、既定で許される浅い props 分割代入の深さを超えています。
+
 ```vue
 <script setup lang="ts">
 const { user: { name } } = defineProps<{ user: { name: string } }>();
@@ -42,6 +46,8 @@ const { user: { name } } = defineProps<{ user: { name: string } }>();
 ```
 
 ## 良い
+
+props オブジェクトを保ち、computed の getter で `props.user.name` を参照します。深い代入パターンを使わず、入れ子の参照を明示します。
 
 ```vue
 <script setup lang="ts">

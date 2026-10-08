@@ -6,6 +6,8 @@ title: "ecosystem/void-link-require-href"
 
 Require `href` on Void Vue Link components
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `ecosystem`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The Link imported from @void/vue omits its href destination.
+
 ```vue
 <script setup>
 import { Link } from "@void/vue";
@@ -46,6 +50,8 @@ import { Link } from "@void/vue";
 ```
 
 ## Good
+
+The same imported Link receives the settings destination through href.
 
 ```vue
 <script setup>

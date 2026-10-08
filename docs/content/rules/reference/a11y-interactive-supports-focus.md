@@ -6,6 +6,8 @@ title: "a11y/interactive-supports-focus"
 
 Require interactive role elements to be focusable
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Giving a `span` the button role and a click handler does not make the element keyboard-focusable.
+
 ```vue
 <template>
   <span role="button" @click="open">Open</span>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The native button is focusable and retains the same `open` action.
 
 ```vue
 <template>

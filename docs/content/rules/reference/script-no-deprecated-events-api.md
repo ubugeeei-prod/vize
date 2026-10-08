@@ -6,6 +6,8 @@ title: "script/no-deprecated-events-api"
 
 Disallow the removed Vue 2 events API ($on / $off / $once)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The `$on`, `$once`, and `$off` calls use the instance event-bus methods removed in Vue 3.
+
 ```vue
 <script setup lang="ts">
 this.$on('event', handler)
@@ -45,6 +49,8 @@ emitter.$off('event')
 ```
 
 ## Good
+
+`$emit` remains valid, while event-bus subscription moves to the external emitter’s `on` method. The repair separates parent-directed emission from an external event bus.
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "vue/no-unused-setup-bindings"
 
 script setup に宣言しているのに読み取らない変数を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,12 +37,16 @@ vp run lint
 
 ## 悪い
 
+script setup の message をテンプレートで使っていません。
+
 ```vue
 <script setup>const message = "Hello";</script>
 <template><p>Welcome</p></template>
 ```
 
 ## 良い
+
+p の補間で message を参照します。
 
 ```vue
 <script setup>const message = "Hello";</script>

@@ -6,6 +6,8 @@ title: "vue/no-mutating-props"
 
 親から受け取った prop を子コンポーネントで変更する箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+props.count の加算で、親から受け取った値を直接変更しています。
+
 ```vue
 <script setup lang="ts">
 const props = defineProps<{ count: number }>();
@@ -44,6 +48,8 @@ props.count++;
 ```
 
 ## 良い
+
+次の値を update:count で通知し、prop の変更は親が行う形にします。
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "script/no-import-compiler-macros"
 
 自動的に使える Vue コンパイラーマクロの import を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`vue` から `defineProps` と `defineEmits` をインポートしていますが、これらは `<script setup>` で直接使えるコンパイラーマクロです。
+
 ```vue
 <script setup lang="ts">
 import { defineProps, defineEmits } from "vue";
@@ -44,6 +48,8 @@ const emit = defineEmits<{ save: [id: number] }>();
 ```
 
 ## 良い
+
+マクロのインポートを除き、型付きのマクロ呼び出しは保ちます。これらの宣言に実行時のインポートは不要です。
 
 ```vue
 <script setup lang="ts">

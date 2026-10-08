@@ -6,6 +6,8 @@ title: "a11y/no-distracting-elements"
 
 Disallow distracting elements like <marquee> and <blink>
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The `marquee` element introduces automatically moving text.
+
 ```vue
 <template>
   <marquee>Limited offer</marquee>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+A paragraph displays the same offer without the distracting marquee element.
 
 ```vue
 <template>

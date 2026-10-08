@@ -6,6 +6,8 @@ title: "css/no-important"
 
 通常のカスケードを上書きする !important を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+color に `!important` を付け、通常のカスケードの優先順位を上書きしています。
+
 ```vue
 <style scoped>
 .button {
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+important を使わず、カスタムプロパティから色を参照します。
 
 ```vue
 <style scoped>

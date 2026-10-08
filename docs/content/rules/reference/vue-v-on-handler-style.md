@@ -6,6 +6,8 @@ title: "vue/v-on-handler-style"
 
 Enforce writing v-on handlers as a method reference or an inline function
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The handlers put mutations and multiple statements directly in the event attribute.
+
 ```vue
 <template>
 <button @click="count++"></button>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Use a handler reference, or an arrow/function expression when inline logic is needed. The function boundary makes the handler form explicit.
 
 ```vue
 <template>

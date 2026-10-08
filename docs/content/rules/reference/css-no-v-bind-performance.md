@@ -6,6 +6,8 @@ title: "css/no-v-bind-performance"
 
 Warn about performance cost of CSS v-bind()
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The stylesheet reads the changing `offset` through the SFC CSS `v-bind()` mechanism.
+
 ```vue
 <style scoped>
 .card {
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The element receives the changing transform directly through its style binding.
 
 ```vue
 <template>

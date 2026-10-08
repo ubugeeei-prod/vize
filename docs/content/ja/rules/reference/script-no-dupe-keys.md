@@ -6,6 +6,8 @@ title: "script/no-dupe-keys"
 
 Options API の props / data / computed などのキー重複を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`foo` が props と data の両方に、`bar` が computed と methods の両方に宣言され、コンポーネントインスタンス上の同じキーを取り合っています。
+
 ```vue
 <script lang="ts">
 export default {
@@ -53,6 +57,8 @@ bar() {} // duplicate of computed `bar`
 ```
 
 ## 良い
+
+prop、data、computed に別々の名前 `foo`、`bar`、`baz` を使い、オプション間の重複を取り除きます。
 
 ```vue
 <script lang="ts">

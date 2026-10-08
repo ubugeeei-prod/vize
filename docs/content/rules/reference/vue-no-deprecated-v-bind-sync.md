@@ -6,6 +6,8 @@ title: "vue/no-deprecated-v-bind-sync"
 
 Disallow the deprecated `.sync` modifier on `v-bind`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The bindings use the removed .sync modifier, including its combination with .camel.
+
 ```vue
 <template>
 <MyComponent :title.sync="title" />
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Use an ordinary one-way title binding or v-model:title when an update channel is required.
 
 ```vue
 <template>

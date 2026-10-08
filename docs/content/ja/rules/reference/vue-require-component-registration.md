@@ -6,6 +6,8 @@ title: "vue/require-component-registration"
 
 使用するコンポーネントを import または登録します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -45,6 +47,8 @@ vp run lint
 
 ## 悪い
 
+`MissingWidget` は登録されておらず、設定したグローバル コンポーネント一覧にもありません。
+
 ```vue
 <template>
 <MissingWidget />
@@ -52,6 +56,8 @@ vp run lint
 ```
 
 ## 良い
+
+`MyButton` は例の `globals` に含まれます。既知のグローバル登録を検査対象から除く設定で、import や登録そのものは行いません。
 
 ```vue
 <template>

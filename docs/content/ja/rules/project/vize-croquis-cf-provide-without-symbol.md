@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -47,6 +47,8 @@ createApp(Root).mount("#app");
 ```
 
 ## 悪い
+
+両コンポーネントが文字列 `"theme"` を使い、無関係な機能と key が衝突し得ます。
 
 `ThemeProvider.vue`
 
@@ -75,6 +77,8 @@ const theme = inject("theme");
 ```
 
 ## 良い
+
+型付きの `ThemeKey` symbol を一つ export し、provide と inject の両方で同じ値を import します。同じ説明の symbol を別々に作っても接続できません。
 
 `ThemeProvider.vue`
 
@@ -116,7 +120,7 @@ export interface Theme {
 export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

@@ -6,6 +6,8 @@ title: "vue/attribute-hyphenation"
 
 Enforce attribute naming style on custom components
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The component attribute uses the camelCase spelling firstName.
+
 ```vue
 <template>
 <UserCard firstName="Ada" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The first-name spelling follows the configured hyphenated component-attribute convention.
 
 ```vue
 <template>

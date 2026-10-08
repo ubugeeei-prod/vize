@@ -6,6 +6,8 @@ title: "vue/valid-v-model"
 
 Enforce valid `v-model` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+A native `<div>` cannot use `v-model` as a form control, and a bare input directive has no writable target expression.
+
 ```vue
 <template>
   <div v-model="value"></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+Bind the input, select, textarea, or custom component to the shown writable variables.
 
 ```vue
 <template>

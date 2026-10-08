@@ -6,6 +6,8 @@ title: "a11y/heading-levels"
 
 見出しの階層を飛ばした指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+見出しが `h1` から `h3` に飛び、レベル 2 を省略しています。
+
 ```vue
 <template>
   <h1>Account</h1>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+請求設定の見出しを `h2` にし、階層を順に並べます。
 
 ```vue
 <template>

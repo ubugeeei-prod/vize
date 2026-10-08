@@ -6,6 +6,8 @@ title: "vue/valid-v-else"
 
 v-else の位置・引数・値を検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`v-else` に式を渡す、`v-if` と併用する、直前の条件分岐がない、といった不正な組み合わせです。
+
 ```vue
 <template>
   <div v-else="ready"></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+対応する `v-if` の直後に、値のない `v-else` を置きます。
 
 ```vue
 <template>

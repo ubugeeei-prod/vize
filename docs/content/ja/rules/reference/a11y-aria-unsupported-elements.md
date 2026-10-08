@@ -6,6 +6,8 @@ title: "a11y/aria-unsupported-elements"
 
 ARIA 属性を使用できない要素への指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+ARIA 属性を使えない `meta` に `aria-hidden` を指定しています。
+
 ```vue
 <template>
   <meta charset="utf-8" aria-hidden="true" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+ARIA 属性だけを取り除き、文字コードの宣言は維持します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "musea/valid-variant"
 
 variant ブロックに name を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+プレビューを識別する variant の name がありません。
+
 ```vue
 <art title="Button" component="./Button.vue">
   <variant />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+variant に primary の name を指定します。
 
 ```vue
 <art title="Button" component="./Button.vue">

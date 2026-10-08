@@ -6,6 +6,8 @@ title: "script/valid-define-options"
 
 defineOptions の引数と使用回数を検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+最初の呼び出しが専用マクロで宣言すべき `props` を `defineOptions` に入れています。後続の呼び出しはマクロを繰り返し、オブジェクトでない引数も渡しています。禁止された形式と呼び出し回数の制約を示す例です。
+
 ```vue
 <script setup lang="ts">
 defineOptions({ props: ['foo'] })   // use defineProps instead
@@ -45,6 +49,8 @@ defineOptions('Foo')                // not an object literal
 ```
 
 ## 良い
+
+`defineOptions` を一度だけ呼び、通常の対応オプション `name` と `inheritAttrs` を持つオブジェクトを渡します。
 
 ```vue
 <script setup lang="ts">

@@ -19,7 +19,7 @@ The boundary producer reads macros.is_async(), but source parsing currently reco
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `main.ts`
 
@@ -37,6 +37,8 @@ createApp(Root).mount("#app");
 ```
 
 ## Bad
+
+The child has top-level await but its parent supplies no `<Suspense>` boundary. Current source parsing does not supply the macro fact required to emit this code.
 
 `App.vue`
 
@@ -58,6 +60,8 @@ const greeting = await Promise.resolve("Hello");
 
 ## Good
 
+The parent wraps the same async child in `<Suspense>` with a loading fallback. This demonstrates the convention; both source alternatives remain non-emitted by the current pass.
+
 `App.vue`
 
 ```vue
@@ -76,7 +80,7 @@ const greeting = await Promise.resolve("Hello");
 <template><p>{{ greeting }}</p></template>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

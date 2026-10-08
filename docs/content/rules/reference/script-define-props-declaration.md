@@ -6,6 +6,8 @@ title: "script/define-props-declaration"
 
 Enforce type-based defineProps<{ ... }>() over the runtime/object form
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`defineProps({ title: String })` supplies a runtime object, which conflicts with this rule’s preference for type-based props.
+
 ```vue
 <script setup lang="ts">
 const props = defineProps({ title: String });
@@ -43,6 +47,8 @@ console.log(props.title);
 ```
 
 ## Good
+
+`defineProps<{ title: string }>()` declares `title` in the type argument and retains the `props.title` access without a runtime declaration argument.
 
 ```vue
 <script setup lang="ts">

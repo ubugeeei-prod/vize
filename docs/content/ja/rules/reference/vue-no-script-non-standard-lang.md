@@ -6,6 +6,8 @@ title: "vue/no-script-non-standard-lang"
 
 script の非標準 lang 指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: SFC lint では未対応  
@@ -39,6 +41,8 @@ vp run lint
 
 ## 悪い
 
+lang=coffee で CoffeeScript の構文を使っています。現在の SFC 検査はこの言語に対して、このカタログのルールを生成しません。
+
 ```vue
 <script lang="coffee">
 count = 0
@@ -47,6 +51,8 @@ count = 0
 ```
 
 ## 良い
+
+lang=ts と通常の TypeScript の宣言を使い、意図した言語の方針を示します。
 
 ```vue
 <script lang="ts">

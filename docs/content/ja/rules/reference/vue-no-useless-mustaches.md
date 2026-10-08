@@ -6,6 +6,8 @@ title: "vue/no-useless-mustaches"
 
 文字列リテラルだけの不要な mustache を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+補間の内容が固定の文字列だけで、式の評価が不要です。
+
 ```vue
 <template>
 <div>{{ 'x' }}</div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+固定の文字は直接書きます。変数、値を埋め込む template string、区切りの空白の補間は残します。
 
 ```vue
 <template>

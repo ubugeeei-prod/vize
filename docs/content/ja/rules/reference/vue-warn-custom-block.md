@@ -6,6 +6,8 @@ title: "vue/warn-custom-block"
 
 SFC のカスタムブロックを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+SFC に `<i18n>` のカスタム ブロックがあり、通常の template / script / style 処理とは別の連携が必要です。
+
 ```vue
 <i18n>
 { "en": { "hello": "Hello" } }
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## 良い
+
+標準の template と script setup を使います。この任意の移植性警告は、カスタム ブロック全般が Vue で無効という意味ではありません。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "html/no-duplicate-class"
 
 静的 class 属性内のクラス名重複を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+静的な class の中に btn が二回あります。
+
 ```vue
 <template>
 <div class="btn btn primary">click</div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+btn は一回だけ残し、別の primary と合わせて指定します。
 
 ```vue
 <template>

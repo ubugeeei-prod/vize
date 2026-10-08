@@ -6,6 +6,8 @@ title: "script/custom-event-name-casing"
 
 emit するカスタムイベント名を指定した形式に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+emit する文字列 `my-event` にハイフンが含まれ、既定の camelCase イベント命名規則に違反しています。
+
 ```vue
 <script setup lang="ts">
 const emit = defineEmits(['my-event'])
@@ -43,6 +47,8 @@ emit('my-event')         // kebab-case → report
 ```
 
 ## 良い
+
+宣言と呼び出しの両方を `myEvent` にそろえ、イベント名の一致を保ったまま既定の命名規則を満たします。kebab-case に設定した場合の期待値は異なります。
 
 ```vue
 <script setup lang="ts">

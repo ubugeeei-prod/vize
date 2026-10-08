@@ -6,6 +6,8 @@ title: "vue/require-component-registration"
 
 Require explicit import or registration for components
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -45,6 +47,8 @@ vp run lint
 
 ## Bad
 
+`MissingWidget` is neither registered nor included in the configured global-component allowlist.
+
 ```vue
 <template>
 <MissingWidget />
@@ -52,6 +56,8 @@ vp run lint
 ```
 
 ## Good
+
+`MyButton` is listed in the example's `globals` option. That option exempts a known global component; it does not register or import it.
 
 ```vue
 <template>

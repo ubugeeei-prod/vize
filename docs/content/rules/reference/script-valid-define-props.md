@@ -6,6 +6,8 @@ title: "script/valid-define-props"
 
 Enforce valid defineProps() usage (single call, not both type and runtime args, no local references)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The same `defineProps` call supplies both `{ title: string }` as a type argument and `{ title: String }` as a runtime argument, which the compiler does not permit together.
+
 ```vue
 <script setup lang="ts">
 defineProps<{ title: string }>({ title: String });
@@ -42,6 +46,8 @@ defineProps<{ title: string }>({ title: String });
 ```
 
 ## Good
+
+Removing the runtime object leaves one type-based declaration for `title` instead of combining both declaration forms.
 
 ```vue
 <script setup lang="ts">

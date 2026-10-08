@@ -6,6 +6,8 @@ title: "a11y/no-refer-to-non-existent-id"
 
 文書内に存在しない ID への参照を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+aria-labelledby が save-label を参照していますが、その ID の要素がありません。
+
 ```vue
 <template>
   <button aria-labelledby="save-label">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+一致する ID の span を追加し、ボタンの名前を参照できるようにします。
 
 ```vue
 <template>

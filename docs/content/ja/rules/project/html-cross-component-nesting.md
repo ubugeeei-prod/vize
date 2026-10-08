@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -48,6 +48,8 @@ createApp(Root).mount("#app");
 
 ## 悪い
 
+親の `<p>` 内に、ルートが `<div>` の子を合成し、paragraph と block の不正な入れ子を作ります。
+
 `App.vue`
 
 ```vue
@@ -65,6 +67,8 @@ import Child from "./Child.vue";
 
 ## 良い
 
+子の block 要素を含められる `<section>` を使い、子は変更しません。
+
 `App.vue`
 
 ```vue
@@ -80,6 +84,6 @@ import Child from "./Child.vue";
 <template><div>Block content</div></template>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [ファイル間ルール一覧](../cross-file.md)

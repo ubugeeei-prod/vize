@@ -6,6 +6,8 @@ title: "a11y/heading-has-content"
 
 Require heading elements to have accessible content
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The `h2` contributes a heading level but has no heading content.
+
 ```vue
 <template>
   <h2></h2>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`Billing settings` supplies the content of the existing level-two heading.
 
 ```vue
 <template>

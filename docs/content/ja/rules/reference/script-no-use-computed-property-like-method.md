@@ -6,6 +6,8 @@ title: "script/no-use-computed-property-like-method"
 
 Options API の computed プロパティをメソッドとして呼ぶ箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`this.total()` は computed getter の公開する値を関数として呼び出しています。この getter が返す `3` は呼び出せません。
+
 ```vue
 <script lang="ts">
 export default { computed: { total() { return 3; } }, methods: { log() { console.log(this.total()); } } };
@@ -42,6 +46,8 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 ```
 
 ## 良い
+
+呼び出しの括弧を除いて `this.total` とし、`log` から計算済みの数値を参照します。
 
 ```vue
 <script lang="ts">

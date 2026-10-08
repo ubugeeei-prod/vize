@@ -6,6 +6,8 @@ title: "vue/no-textarea-mustache"
 
 Disallow mustache interpolation in `<textarea>`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The textarea places message in child interpolation instead of binding its value.
+
 ```vue
 <template>
   <textarea>{{ message }}</textarea>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+v-model binds the editable textarea value to message.
 
 ```vue
 <template>

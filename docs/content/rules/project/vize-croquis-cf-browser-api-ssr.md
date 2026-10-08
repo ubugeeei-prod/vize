@@ -29,7 +29,7 @@ vp run lint
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `main.ts`
 
@@ -48,6 +48,8 @@ createApp(Root).mount("#app");
 
 ## Bad
 
+`window.innerWidth` runs during setup, where an SSR environment has no browser `window`.
+
 `App.vue`
 
 ```vue
@@ -58,6 +60,8 @@ const width = window.innerWidth;
 ```
 
 ## Good
+
+Initialize a ref to a server-safe value and read `window` inside `onMounted`, which runs after client mounting.
 
 `App.vue`
 
@@ -70,7 +74,7 @@ onMounted(() => { width.value = window.innerWidth; });
 <template><p>Content</p></template>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

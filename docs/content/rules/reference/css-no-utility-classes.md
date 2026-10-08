@@ -6,6 +6,8 @@ title: "css/no-utility-classes"
 
 Warn against implementing utility classes in component styles
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The authored selectors use utility-shaped names such as `.flex`, `.mt-4`, and `.text-center`.
+
 ```vue
 <style scoped>
 .flex { display: flex; }
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+A component-specific `.my-component` selector groups the component styling under one semantic name.
 
 ```vue
 <style scoped>

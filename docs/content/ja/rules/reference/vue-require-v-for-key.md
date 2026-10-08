@@ -6,6 +6,8 @@ title: "vue/require-v-for-key"
 
 v-for に安定した :key を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+繰り返す `<li>` に key がなく、一覧更新時に対応する項目を識別できません。
+
 ```vue
 <template>
   <li v-for="item in items">{{ item.name }}</li>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+`:key="item.id"` で、現在の位置ではなく項目の識別子を各ノードに付けます。
 
 ```vue
 <template>

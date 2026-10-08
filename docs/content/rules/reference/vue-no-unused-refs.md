@@ -6,6 +6,8 @@ title: "vue/no-unused-refs"
 
 Report template refs (ref="x") never referenced in <script>
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The template declares the unused ref name with no corresponding script reference binding.
+
 ```vue
 <template><input ref="unused" /></template>
 <script setup>
@@ -43,6 +47,8 @@ const x = 1
 ```
 
 ## Good
+
+The inputEl template ref has a same-named ref binding in script setup.
 
 ```vue
 <template><input ref="inputEl" /></template>

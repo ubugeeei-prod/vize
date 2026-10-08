@@ -6,6 +6,8 @@ title: "vue/no-bare-strings-in-template"
 
 Disallow raw human-readable text in the template that should be internationalized
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Visible text and naming attributes embed untranslated strings directly in the template.
+
 ```vue
 <template>
 <div>hello</div>
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## Good
+
+Translatable content calls $t; the punctuation and numeric-only examples are allowed exceptions.
 
 ```vue
 <template>

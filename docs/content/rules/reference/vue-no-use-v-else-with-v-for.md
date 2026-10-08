@@ -6,6 +6,8 @@ title: "vue/no-use-v-else-with-v-for"
 
 Disallow using `v-else-if` or `v-else` on the same element as `v-for`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The else branch and v-for iteration are attached to the same paragraph.
+
 ```vue
 <template>
 <p v-if="ready">Ready</p>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+A separate template owns v-else, and its child paragraph owns v-for.
 
 ```vue
 <template>

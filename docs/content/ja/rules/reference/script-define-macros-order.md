@@ -6,6 +6,8 @@ title: "script/define-macros-order"
 
 script setup のコンパイラーマクロを一定の順に宣言します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`defineProps` が `defineModel` より先にありますが、定められたマクロ順序では `defineModel` が先です。
+
 ```vue
 <script setup lang="ts">
 // defineProps before defineModel (out of canonical order)
@@ -44,6 +48,8 @@ const model = defineModel<string>()
 ```
 
 ## 良い
+
+宣言を `defineOptions`、`defineModel`、`defineProps`、`defineEmits`、`defineSlots` の順に並べ、無関係な実行時処理より前に置きます。
 
 ```vue
 <script setup lang="ts">

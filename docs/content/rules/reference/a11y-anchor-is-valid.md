@@ -6,6 +6,8 @@ title: "a11y/anchor-is-valid"
 
 Enforce valid href on anchor elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The first anchor uses `#` for an action; the second uses a JavaScript URL. Neither provides an ordinary navigation destination.
+
 ```vue
 <template>
   <a href="#" @click="openPanel">Open panel</a>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+A native button performs `openPanel`, while the remaining anchor has the real `/docs/javascript-urls` destination.
 
 ```vue
 <template>

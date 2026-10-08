@@ -6,6 +6,8 @@ title: "vue/no-useless-template-attributes"
 
 Disallow useless attributes on `<template>` elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The conditional template has a class, but this structural wrapper does not render a DOM element to receive it.
+
 ```vue
 <template>
 <section><template v-if="ready" class="notice"><p>Ready</p></template></section>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The class moves to the paragraph that actually renders while v-if stays on the structural template.
 
 ```vue
 <template>

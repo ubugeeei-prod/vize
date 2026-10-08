@@ -6,6 +6,8 @@ title: "css/no-display-none"
 
 Suggest using v-show instead of display: none
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The `.message` declaration hides the local paragraph through CSS rather than a template visibility condition.
+
 ```vue
 <template>
   <p class="message">Saved</p>
@@ -48,6 +52,8 @@ vp run lint
 ```
 
 ## Good
+
+`v-show="isSaved"` makes the visibility condition explicit on the local paragraph and removes `display: none`.
 
 ```vue
 <template>

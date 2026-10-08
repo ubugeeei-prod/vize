@@ -6,6 +6,8 @@ title: "ecosystem/pinia-prefer-store-to-refs"
 
 Pinia store の分割代入に storeToRefs() を使います。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+store から name を直接分割代入し、リアクティブな store の読み取りから値を切り離しています。
+
 ```vue
 <script setup lang="ts">
 const { name } = useUserStore();
@@ -42,6 +46,8 @@ const { name } = useUserStore();
 ```
 
 ## 良い
+
+store は保持し、storeToRefs で name のリアクティブな参照を取り出します。
 
 ```vue
 <script setup lang="ts">

@@ -15,7 +15,7 @@ The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pa
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `main.ts`
 
@@ -34,6 +34,8 @@ createApp(Root).mount("#app");
 
 ## Bad
 
+`ref(0)` is created at normal script module scope, outside the per-instance setup context represented by this analyzer scenario.
+
 `App.vue`
 
 ```vue
@@ -47,6 +49,8 @@ export default {};
 
 ## Good
 
+Move the binding into script setup, where each component instance owns its count and the template can read it.
+
 `App.vue`
 
 ```vue
@@ -57,7 +61,7 @@ const count = ref(0);
 <template><p>{{ count }}</p></template>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 

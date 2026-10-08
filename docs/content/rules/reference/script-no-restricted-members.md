@@ -6,6 +6,8 @@ title: "script/no-restricted-members"
 
 Disallow project-configured object.property member accesses
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -47,6 +49,8 @@ vp run lint
 
 ## Bad
 
+With `{ object: "window", property: "localStorage" }` configured in `ruleOptions`, `window.localStorage` accesses the forbidden object/member pair. This rule has no default forbidden members.
+
 ```vue
 <script setup lang="ts">
 const token = window.localStorage.getItem("token");
@@ -54,6 +58,8 @@ const token = window.localStorage.getItem("token");
 ```
 
 ## Good
+
+`authStorage.read("token")` delegates the read to the application’s storage helper and no longer accesses the configured `window.localStorage` member.
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "vue/no-useless-mustaches"
 
 Disallow a mustache interpolation whose expression is a constant string literal
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The interpolation contains only a constant string and does not need expression evaluation.
+
 ```vue
 <template>
 <div>{{ 'x' }}</div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Literal text is written directly; variable expressions, interpolated template strings, and intentional separator whitespace remain interpolation cases.
 
 ```vue
 <template>

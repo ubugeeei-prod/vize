@@ -6,6 +6,8 @@ title: "a11y/no-static-element-interactions"
 
 操作部品ではない要素へのイベント指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+操作の役割がない section に Enter キーの操作を指定しています。
+
 ```vue
 <template>
   <section @keydown.enter="select">Select</section>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ操作を標準の button に指定します。
 
 ```vue
 <template>

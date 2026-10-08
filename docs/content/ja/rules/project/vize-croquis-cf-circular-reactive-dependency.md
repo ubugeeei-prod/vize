@@ -31,9 +31,19 @@ vp run lint
 
 analyzer が追跡するリアクティブな参照の流れが提供元 A → 使用側 B → 提供元 A と循環しています。同名の無関係な変数ではなく、同一の参照として記録された構成です。
 
+```text
+Tracked references: A = provider source; B = consumer reference
+Tracked flows: A -> B; B -> A
+```
+
 ## 良い
 
 B → A の流れをなくします。元の値は A が管理し、B は computed の読み取りや action の通知を使います。同じ参照を A に戻さなければ、追跡対象の循環がなくなります。
+
+```text
+Tracked references: A = provider source; B = consumer reference
+Tracked flows: A -> B
+```
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

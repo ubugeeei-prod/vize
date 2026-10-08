@@ -6,6 +6,8 @@ title: "musea/prefer-design-tokens"
 
 登録した design token に一致する直接指定値を CSS 変数で表現します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -48,6 +50,8 @@ vp run lint
 
 ## 悪い
 
+art の例で、設定した primary のデザイントークンではなく、青の色を直接指定しています。
+
 `Button.art.vue`
 
 ```vue
@@ -62,6 +66,8 @@ vp run lint
 ```
 
 ## 良い
+
+この例で設定する --color-primary のトークンを参照します。
 
 `Button.art.vue`
 

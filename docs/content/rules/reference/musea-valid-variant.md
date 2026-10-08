@@ -6,6 +6,8 @@ title: "musea/valid-variant"
 
 Require name attribute in <variant> blocks
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The variant omits the name needed to identify the preview.
+
 ```vue
 <art title="Button" component="./Button.vue">
   <variant />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The primary name identifies that variant.
 
 ```vue
 <art title="Button" component="./Button.vue">

@@ -6,6 +6,8 @@ title: "type/no-floating-promises"
 
 Disallow floating (unhandled) Promises
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -38,6 +40,8 @@ vp run lint
 
 ## Bad
 
+The async `save` function returns a Promise, but the standalone `save()` call neither awaits nor returns it and does not explicitly mark intentional disposal.
+
 ```vue
 <script setup lang="ts">
 async function save(): Promise<void> {}
@@ -46,6 +50,8 @@ save();
 ```
 
 ## Good
+
+`void save()` explicitly marks the fire-and-forget intent accepted by this rule. This is an explicit disposal marker, not a rejection handler.
 
 ```vue
 <script setup lang="ts">

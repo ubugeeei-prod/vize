@@ -6,6 +6,8 @@ title: "vue/html-self-closing"
 
 Enforce self-closing style
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The empty component uses a closing pair, while void img and br elements omit the configured self-closing spelling.
+
 ```vue
 <template>
   <MyComponent></MyComponent>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The component and void elements use self-closing syntax; a div with content retains its closing tag.
 
 ```vue
 <template>

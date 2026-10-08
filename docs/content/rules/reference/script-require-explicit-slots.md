@@ -6,6 +6,8 @@ title: "script/require-explicit-slots"
 
 Require slots consumed via useSlots() to be explicitly typed with defineSlots<...>()
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The typed `defineProps<{ id: number }>()` establishes TypeScript syntax, but setup uses `useSlots()` without a `defineSlots` declaration. The rule therefore finds consumed slots without an explicit slot contract.
+
 ```vue
 <script setup lang="ts">
 const props = defineProps<{ id: number }>()
@@ -43,6 +47,8 @@ const slots = useSlots()
 ```
 
 ## Good
+
+`defineSlots` declares a `default` slot whose props include `msg: string`; `useSlots()` now appears alongside an explicit typed slot contract.
 
 ```vue
 <script setup lang="ts">

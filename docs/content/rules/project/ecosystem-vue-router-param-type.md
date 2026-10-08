@@ -31,7 +31,7 @@ vp run lint
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `index.html`
 
@@ -71,6 +71,8 @@ export const router = createRouter({
 
 ## Bad
 
+`postId` is a scalar path parameter, but the navigation gives it the array `["2"]`.
+
 `src/UserPost.vue`
 
 ```vue
@@ -84,6 +86,8 @@ router.push({ name: "user-post", params: { userId: "1", postId: ["2"] } });
 
 ## Good
 
+Pass the scalar `"2"` for the non-repeatable `postId` segment.
+
 `src/UserPost.vue`
 
 ```vue
@@ -95,6 +99,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Cross-file index](../cross-file.md)

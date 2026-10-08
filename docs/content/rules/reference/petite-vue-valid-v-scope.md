@@ -6,6 +6,8 @@ title: "petite-vue/valid-v-scope"
 
 Require v-scope to bind an object literal
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The four nonempty `v-scope` values are an identifier, a call, arithmetic, and a number; none parses as an object literal.
+
 ```html
 <!doctype html>
 <html><body>
@@ -47,6 +51,8 @@ vp run lint
 ```
 
 ## Good
+
+A valueless `v-scope` uses the root scope. The other values are object literals, including the parenthesized object, which the rule accepts.
 
 ```html
 <!doctype html>

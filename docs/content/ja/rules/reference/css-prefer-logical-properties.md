@@ -6,6 +6,8 @@ title: "css/prefer-logical-properties"
 
 書字方向に対応する CSS の論理プロパティを使います。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+margin-left は文字の方向に関係なく物理的な左側を指定します。
+
 ```vue
 <style scoped>
 .panel {
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+margin-inline-start を使い、インライン方向の開始側に余白を指定します。
 
 ```vue
 <style scoped>

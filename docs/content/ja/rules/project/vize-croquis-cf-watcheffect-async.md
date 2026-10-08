@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -57,6 +57,8 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 ```
 
 ## 悪い
+
+async `watchEffect` に暗黙の依存収集と await する request が混在し、無効化後の応答を防ぐ処理がありません。
 
 `SearchPage.vue`
 
@@ -90,6 +92,8 @@ watchEffect(async () => {
 ```
 
 ## 良い
+
+`watch(() => props.query, ...)` で source を明示し、request の cleanup と無効化後の応答を除く条件を付けます。
 
 `SearchPage.vue`
 
@@ -134,7 +138,7 @@ watch(
 </script>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

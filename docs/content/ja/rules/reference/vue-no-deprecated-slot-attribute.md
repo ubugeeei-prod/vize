@@ -6,6 +6,8 @@ title: "vue/no-deprecated-slot-attribute"
 
 削除済みの slot 属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+旧来の slot 属性で header の slot を選んでいます。
+
 ```vue
 <template>
 <Foo>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+現在の v-slot:header で header の slot を指定します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "a11y/form-control-has-label"
 
 Require form controls to have associated labels
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The search input has no label identifying what the user should enter.
+
 ```vue
 <template>
   <input type="search" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Wrapping the input in a label associates the visible `Search` text with the control.
 
 ```vue
 <template>

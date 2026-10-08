@@ -6,6 +6,8 @@ title: "vue/no-static-inline-styles"
 
 静的なインライン style 属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+p の style 属性に、変化しない色を直接指定しています。
+
 ```vue
 <template>
 <p style="color: red">Notice</p>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+notice のクラスと scoped の CSS に、変化しない色を移します。
 
 ```vue
 <template><p class="notice">Notice</p></template>

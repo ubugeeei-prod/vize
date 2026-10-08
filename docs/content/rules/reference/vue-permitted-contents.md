@@ -6,6 +6,8 @@ title: "vue/permitted-contents"
 
 Enforce HTML content model rules
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The examples put block content in p, omit the table body, nest interactive controls, or put a div directly inside ul.
+
 ```vue
 <template>
   <p><div>block in a paragraph</div></p>
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## Good
+
+The examples use inline paragraph content, an explicit tbody, and li children. The custom MyItem is not treated as a known native ul child.
 
 ```vue
 <template>

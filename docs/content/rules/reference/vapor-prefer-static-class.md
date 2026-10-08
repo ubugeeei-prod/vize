@@ -6,6 +6,8 @@ title: "vapor/prefer-static-class"
 
 Prefer static class over dynamic class binding for string literals
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The class binding evaluates a constant string even though the class does not change.
+
 ```vue
 <template>
   <section :class="'panel panel-primary'">Profile</section>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+A static class attribute expresses the same panel classes without a binding.
 
 ```vue
 <template>

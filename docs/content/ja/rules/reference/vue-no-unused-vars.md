@@ -6,6 +6,8 @@ title: "vue/no-unused-vars"
 
 v-for / v-slot に宣言しているのに使わない変数を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+ループで使わない index と、slot で使わない foo を宣言しています。
+
 ```vue
 <template>
   <li v-for="(item, index) in items" :key="item.id">{{ item.name }}</li>
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## 良い
+
+index を参照するか、意図して使わない _index にし、slot は data を表示します。index の key は使用の例であり、項目の安定した識別子として推奨するものではありません。
 
 ```vue
 <template>

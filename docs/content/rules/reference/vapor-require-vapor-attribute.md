@@ -6,6 +6,8 @@ title: "vapor/require-vapor-attribute"
 
 Suggest adding vapor attribute to script setup
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: Not implemented for SFC lint  
@@ -39,6 +41,8 @@ vp run lint
 
 ## Bad
 
+The script setup block lacks the Vapor compilation attribute. This is an intended convention: the current empty rule callback does not diagnose it.
+
 ```vue
 <script setup>
 const count = 0;
@@ -47,6 +51,8 @@ const count = 0;
 ```
 
 ## Good
+
+Adding vapor selects Vapor compilation. It demonstrates the intended repair and does not imply that the current linter emits this catalog rule.
 
 ```vue
 <script setup vapor>

@@ -6,6 +6,8 @@ title: "vue/require-component-is"
 
 動的 component 要素に :is を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+動的な `<component>` に `is` がなく、描画するコンポーネントを選べません。
+
 ```vue
 <template>
   <component />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+`:is="currentComponent"` で描画対象を指定します。対象は実行時に変更できます。
 
 ```vue
 <template>

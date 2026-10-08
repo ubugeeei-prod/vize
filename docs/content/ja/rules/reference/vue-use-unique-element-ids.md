@@ -6,6 +6,8 @@ title: "vue/use-unique-element-ids"
 
 静的 ID の代わりに useId() で再利用可能な ID を生成します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+固定の `email` ID がコンポーネントの各インスタンスで重複し、複数表示時に label の参照先が曖昧になります。
+
 ```vue
 <template>
   <label for="email">Email</label>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+`useId()` の `emailId` を label の `for` と input の `id` の両方に binding します。
 
 ```vue
 <script setup>

@@ -6,6 +6,8 @@ title: "vue/no-non-component-keep-alive-child"
 
 Disallow plain element wrappers directly below `<KeepAlive>`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+KeepAlive conditionally wraps a native div rather than directly caching UserCard.
+
 ```vue
 <template>
   <KeepAlive>
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## Good
+
+The first example makes UserCard the conditional child. The v-show wrapper illustrates a shape outside this conditional-child check, not a promise that the native wrapper is cached.
 
 ```vue
 <template>

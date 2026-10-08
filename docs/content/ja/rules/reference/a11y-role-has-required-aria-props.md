@@ -6,6 +6,8 @@ title: "a11y/role-has-required-aria-props"
 
 ARIA role が必要とする属性を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+checkbox の role に、選択状態を示す aria-checked がありません。
+
 ```vue
 <template>
   <span role="checkbox">Receive updates</span>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+`aria-checked="false"` を追加し、checkbox に必要な状態を指定します。
 
 ```vue
 <template>

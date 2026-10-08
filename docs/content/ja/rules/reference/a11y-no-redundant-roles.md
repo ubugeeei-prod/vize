@@ -6,6 +6,8 @@ title: "a11y/no-redundant-roles"
 
 要素本来の意味と重複する ARIA role を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+button は元から button の役割を持つため、同じ role を重複して指定しています。
+
 ```vue
 <template>
   <button role="button">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+重複する role を取り除き、HTML の標準の役割を使います。
 
 ```vue
 <template>

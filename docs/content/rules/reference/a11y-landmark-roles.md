@@ -6,6 +6,8 @@ title: "a11y/landmark-roles"
 
 Validate landmark role placement and uniqueness
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Two `main` elements declare duplicate main landmarks in the same template.
+
 ```vue
 <template>
   <main>Dashboard</main>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+The dashboard remains the main landmark; the settings area becomes a named navigation landmark.
 
 ```vue
 <template>

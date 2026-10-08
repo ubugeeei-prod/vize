@@ -6,10 +6,19 @@ import { original2 } from "./cross-original-2.mjs";
 import { extra, composed } from "./cross-extra.mjs";
 import { crossMetadata, explanation } from "./project-metadata.mjs";
 import { routerExamples } from "./router-project.mjs";
+import { projectExplanations } from "./project-explanations.mjs";
+import { exampleLinks } from "./example-links.mjs";
+import { contractExamples } from "./project-contracts.mjs";
 const examples = { ...original0, ...original1, ...original2, ...extra };
 const slug = (id) => id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
 export function generateProjectPages(root, checking) {
   const metadata = crossMetadata(root);
+  const contracts = metadata
+    .filter((rule) => rule.status === "contract")
+    .map((rule) => rule.name)
+    .sort();
+  if (JSON.stringify(contracts) !== JSON.stringify(Object.keys(contractExamples).sort()))
+    throw new Error("Contract examples must match all published producer-free contracts");
   for (const locale of ["", "ja/"]) {
     const ja = Boolean(locale);
     const directory = resolve(root, `docs/content/${locale}rules`);
@@ -46,12 +55,14 @@ export function generateProjectPages(root, checking) {
       "",
       `## ${label("Project-specific lint IDs", "プロジェクト固有の lint ID")}`,
       "",
-      `| ${label("Rule", "ルール")} | ${label("Severity", "重大度")} |`,
-      "| --- | --- |",
+      `| ${label("Rule", "ルール")} | ${label("Examples", "例")} | ${label("Severity", "重大度")} |`,
+      "| --- | --- | --- |",
     ];
     for (const [id, example] of [...Object.entries(routerExamples), ...Object.entries(composed)]) {
       const severity = example.severity ?? "warning";
-      lines.push(`| [\`${id}\`](./project/${slug(id)}.md) | ${severity} |`);
+      lines.push(
+        `| [\`${id}\`](./project/${slug(id)}.md) | ${exampleLinks(`./project/${slug(id)}.md`, ja)} | ${severity} |`,
+      );
       output(
         resolve(directory, `project/${slug(id)}.md`),
         projectDetail(id, example, ja, severity),
@@ -62,8 +73,8 @@ export function generateProjectPages(root, checking) {
       "",
       `## ${label("Published analyzer codes", "公開 analyzer コード")}`,
       "",
-      `| ${label("Code", "コード")} | ${label("Status", "対応状況")} |`,
-      "| --- | --- |",
+      `| ${label("Code", "コード")} | ${label("Examples", "例")} | ${label("Status", "対応状況")} |`,
+      "| --- | --- | --- |",
     );
     for (const rule of metadata) {
       const status =
@@ -75,7 +86,9 @@ export function generateProjectPages(root, checking) {
                 "Rust analyzer。CLI は別の表示または未有効",
               )
             : label("Contract only; no current producer", "契約のみ。現在の生成元なし");
-      lines.push(`| [\`${rule.code}\`](./project/${slug(rule.code)}.md) | ${status} |`);
+      lines.push(
+        `| [\`${rule.code}\`](./project/${slug(rule.code)}.md) | ${exampleLinks(`./project/${slug(rule.code)}.md`, ja)} | ${status} |`,
+      );
       output(
         resolve(directory, `project/${slug(rule.code)}.md`),
         crossDetail(root, rule, ja),
@@ -167,8 +180,10 @@ function crossDetail(root, rule, ja) {
       ),
       "",
     );
-  const example = examples[name];
-  if (example) lines.push(...fixture(example, ja));
+  const example = examples[name] ?? contractExamples[name];
+  const contractNote = contractExamples[name]?.note?.[ja ? "ja" : "en"];
+  if (contractNote) lines.push(contractNote, "");
+  if (example) lines.push(...fixture({ ...example, ...projectExplanations.get(name) }, ja));
   else {
     if (status !== "contract" && name !== "circular-reactive-dependency")
       throw new Error(`Missing complete project scenario: ${code}`);
@@ -182,6 +197,15 @@ function crossDetail(root, rule, ja) {
           )
         : info.purpose,
       "",
+      ...(name === "circular-reactive-dependency"
+        ? [
+            "```text",
+            "Tracked references: A = provider source; B = consumer reference",
+            "Tracked flows: A -> B; B -> A",
+            "```",
+            "",
+          ]
+        : []),
       `## ${label("Good", "良い")}`,
       "",
       name === "circular-reactive-dependency"
@@ -191,6 +215,15 @@ function crossDetail(root, rule, ja) {
           )
         : info.help,
       "",
+      ...(name === "circular-reactive-dependency"
+        ? [
+            "```text",
+            "Tracked references: A = provider source; B = consumer reference",
+            "Tracked flows: A -> B",
+            "```",
+            "",
+          ]
+        : []),
     );
   }
   lines.push(
@@ -245,7 +278,7 @@ function projectDetail(id, example, ja, severity) {
       : []),
     ...config(id, ja),
     "",
-    ...fixture(example, ja),
+    ...fixture({ ...example, ...projectExplanations.get(id) }, ja),
     `[${label("Cross-file index", "ファイル間ルール一覧")}](../cross-file.md)`,
     "",
   ].join("\n");
@@ -256,8 +289,8 @@ function fixture(example, ja) {
     `## ${label("Shared project files", "共通のプロジェクト ファイル")}`,
     "",
     label(
-      "Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.",
-      "以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。",
+      "Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.",
+      "以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。",
     ),
     "",
   ];
@@ -278,12 +311,15 @@ function fixture(example, ja) {
     ["good", label("Good", "良い")],
   ]) {
     lines.push(`## ${title}`, "");
+    const rationale = example[`${key}Explanation`]?.[ja ? "ja" : "en"];
+    if (!rationale) throw new Error(`Missing project example explanation: ${title}`);
+    lines.push(rationale, "");
     files(example[key]);
   }
   lines.push(
     label(
-      "Good avoids this finding; other diagnostics can still apply to the complete project.",
-      "良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。",
+      "The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.",
+      "良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。",
     ),
     "",
   );

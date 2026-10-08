@@ -6,6 +6,8 @@ title: "script/prefer-define-options"
 
 name / inheritAttrs だけの通常 script を defineOptions() にまとめます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+通常の script の処理が `name` と `inheritAttrs` だけを持つオブジェクトの export に限られ、`defineOptions` で表せるオプションだけを宣言しています。
+
 ```vue
 <script lang="ts">
 export default { name: 'MyComponent', inheritAttrs: false }
@@ -42,6 +46,8 @@ export default { name: 'MyComponent', inheritAttrs: false }
 ```
 
 ## 良い
+
+例の `data()` が実際の Options API の処理を持つため、オプションだけの script を対象とする慎重な提案の範囲外になります。この Good は許可される例外を示します。直接移行する場合は `<script setup>` 内で `defineOptions({ name: 'MyComponent', inheritAttrs: false })` を使います。
 
 ```vue
 <script lang="ts">

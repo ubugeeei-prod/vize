@@ -6,6 +6,8 @@ title: "vue/component-definition-name-casing"
 
 Enforce PascalCase or kebab-case for component definition names
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -37,6 +39,8 @@ vp run lint
 
 ## Bad
 
+The filename myComponent.vue mixes a lowercase initial with an internal uppercase letter instead of using PascalCase or kebab-case.
+
 `myComponent.vue`
 
 ```vue
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Renaming the file to MyComponent.vue uses PascalCase; its template content is unchanged.
 
 `MyComponent.vue`
 

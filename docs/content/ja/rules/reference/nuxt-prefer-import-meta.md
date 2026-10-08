@@ -6,6 +6,8 @@ title: "nuxt/prefer-import-meta"
 
 Nuxt の環境フラグを process.* から import.meta.* に置き換えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `nuxt`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`process.client` は旧形式の Nuxt 環境フラグであり、このルールは `import.meta` への移行を求めます。
+
 ```vue
 <script setup lang="ts">
 if (process.client) console.log("browser");
@@ -42,6 +46,8 @@ if (process.client) console.log("browser");
 ```
 
 ## 良い
+
+`import.meta.client` に置き換え、ブラウザー側だけで実行する分岐を新しい環境フラグで表します。
 
 ```vue
 <script setup lang="ts">

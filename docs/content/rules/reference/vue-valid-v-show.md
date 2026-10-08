@@ -6,6 +6,8 @@ title: "vue/valid-v-show"
 
 Enforce valid `v-show` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`v-show` lacks its visibility expression or is placed on a `<template>` that has no DOM element whose display can be changed.
+
 ```vue
 <template>
   <div v-show></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+Apply the visibility expression to a rendered element such as `<div>`.
 
 ```vue
 <template>

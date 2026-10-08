@@ -6,6 +6,8 @@ title: "vue/no-empty-component-block"
 
 空の SFC ブロックを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+template、script、style のブロックが空か、空白だけです。
+
 ```vue
 <template></template>
 
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## 良い
+
+残すブロックには、マークアップ、script の宣言、style の宣言を入れます。
 
 ```vue
 <template>

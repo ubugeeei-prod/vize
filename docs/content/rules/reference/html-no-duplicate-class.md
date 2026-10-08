@@ -6,6 +6,8 @@ title: "html/no-duplicate-class"
 
 Disallow duplicate class names in a static class attribute
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The static class list repeats the `btn` token.
+
 ```vue
 <template>
 <div class="btn btn primary">click</div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The class list keeps one `btn` token and the distinct `primary` token.
 
 ```vue
 <template>

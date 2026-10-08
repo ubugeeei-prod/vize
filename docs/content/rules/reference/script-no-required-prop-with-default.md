@@ -6,6 +6,8 @@ title: "script/no-required-prop-with-default"
 
 Disallow a prop that is both required: true and has a default
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`title` is both required and given the fallback `"Untitled"`, combining a required-input contract with a default intended for missing input.
+
 ```vue
 <script lang="ts">
 export default { props: { title: { type: String, required: true, default: "Untitled" } } };
@@ -42,6 +46,8 @@ export default { props: { title: { type: String, required: true, default: "Untit
 ```
 
 ## Good
+
+Removing `required: true` makes `title` optional and leaves `"Untitled"` as its coherent fallback.
 
 ```vue
 <script lang="ts">

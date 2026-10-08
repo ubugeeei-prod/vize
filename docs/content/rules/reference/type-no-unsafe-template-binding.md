@@ -6,6 +6,8 @@ title: "type/no-unsafe-template-binding"
 
 Disallow template bindings that resolve to unsafe types
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -38,6 +40,8 @@ vp run lint
 
 ## Bad
 
+The interpolated `value` is explicitly typed as `any`, so the checker cannot give the template binding a safe concrete type.
+
 ```vue
 <script setup lang="ts">
 const value: any = "Hello";
@@ -46,6 +50,8 @@ const value: any = "Hello";
 ```
 
 ## Good
+
+Changing the annotation to `string` gives the same interpolation a concrete, checkable type without changing the rendered value.
 
 ```vue
 <script setup lang="ts">

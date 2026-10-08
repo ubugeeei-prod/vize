@@ -6,6 +6,8 @@ title: "a11y/aria-props"
 
 存在しない ARIA 属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`aria-lable` は綴りが誤っており、対応する ARIA 属性ではありません。
+
 ```vue
 <template>
   <button aria-lable="Save changes">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+正しい `aria-label` に変更してボタンの名前を指定します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "script/component-options-name-casing"
 
 コンポーネントの name オプションを PascalCase に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+コンポーネントの `name: 'my-component'` が kebab-case です。このルールは文字列リテラルのコンポーネント名に PascalCase を求めます。
+
 ```vue
 <script lang="ts">
 export default {
@@ -44,6 +48,8 @@ name: 'my-component' // kebab-case
 ```
 
 ## 良い
+
+`MyComponent` は大文字で始まり、英数字だけで構成されるため、名前の検査条件を満たします。
 
 ```vue
 <script lang="ts">

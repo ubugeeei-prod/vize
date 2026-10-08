@@ -6,6 +6,8 @@ title: "vue/use-v-on-exact"
 
 Enforce `.exact` modifier on `v-on` when there are modifier-based handlers
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `essential`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The plain click handler can also run on Ctrl-click, overlapping the separate `.ctrl` handler.
+
 ```vue
 <template>
   <button type="button" @click="handleClick" @click.ctrl="handleCtrlClick">
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+`.exact` limits the ordinary click handler to clicks without modifier keys; the Ctrl-specific handler remains separate.
 
 ```vue
 <template>

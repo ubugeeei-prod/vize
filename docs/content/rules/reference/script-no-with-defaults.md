@@ -6,6 +6,8 @@ title: "script/no-with-defaults"
 
 Discourage withDefaults in favor of destructuring defaults (Vue 3.5+)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`withDefaults` wraps the typed props declaration solely to supply `count` and `name` defaults, instead of the Vue 3.5+ destructuring-default style preferred here.
+
 ```vue
 <script setup lang="ts">
 const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });
@@ -42,6 +46,8 @@ const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { c
 ```
 
 ## Good
+
+The destructuring pattern puts `count = 0` and `name = "Ada"` beside their bindings and removes the `withDefaults` wrapper.
 
 ```vue
 <script setup lang="ts">

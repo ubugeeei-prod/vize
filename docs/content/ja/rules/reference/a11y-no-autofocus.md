@@ -6,6 +6,8 @@ title: "a11y/no-autofocus"
 
 意図せずフォーカスを移動させる autofocus を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+入力欄が表示時に自動でフォーカスを要求しています。
+
 ```vue
 <template>
   <input autofocus name="query" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+autofocus を取り除き、検索欄はそのまま残します。
 
 ```vue
 <template>

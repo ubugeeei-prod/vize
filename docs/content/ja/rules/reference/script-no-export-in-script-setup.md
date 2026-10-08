@@ -6,6 +6,8 @@ title: "script/no-export-in-script-setup"
 
 script setup 内の export 文を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`export const count` が `<script setup>` からモジュールの値をエクスポートしようとしています。このブロックでは実行時の export は禁止されています。
+
 ```vue
 <script setup lang="ts">
 export const count = 1;
@@ -42,6 +46,8 @@ export const count = 1;
 ```
 
 ## 良い
+
+`export` を取り除き、`count` をモジュールの export ではなく setup の変数にします。
 
 ```vue
 <script setup lang="ts">

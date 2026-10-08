@@ -6,6 +6,8 @@ title: "vue/valid-v-on"
 
 Enforce valid `v-on` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The listener forms omit an event argument or their required handler/object expression.
+
 ```vue
 <template>
   <div v-on></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Use an event with its handler, or pass a listener object to argument-free `v-on`.
 
 ```vue
 <template>

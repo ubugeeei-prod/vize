@@ -6,6 +6,8 @@ title: "vue/no-deprecated-functional-template"
 
 Disallow the `functional` attribute on the SFC `<template>`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The SFC template has the removed functional attribute and reads the old props context.
+
 ```vue
 <template functional>
 <div>{{ props.msg }}</div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The ordinary template omits functional and reads the component binding msg directly.
 
 ```vue
 <template>

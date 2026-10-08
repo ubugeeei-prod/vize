@@ -6,6 +6,8 @@ title: "script/no-get-current-instance"
 
 Disallow getCurrentInstance() in Vapor mode (returns null)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The Vapor-marked setup imports and calls `getCurrentInstance`, relying on an instance API this rule disallows for Vapor-oriented components.
+
 ```vue
 <script setup lang="ts" vapor>
 import { getCurrentInstance } from "vue";
@@ -43,6 +47,8 @@ const instance = getCurrentInstance();
 ```
 
 ## Good
+
+`inject("app-config")` obtains the explicitly provided configuration without importing or calling `getCurrentInstance`.
 
 ```vue
 <script setup lang="ts" vapor>

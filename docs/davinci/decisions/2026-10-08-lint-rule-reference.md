@@ -62,3 +62,40 @@ example inputs and whole expected findings remain intact; fresh exact-head Actio
 all pairs and the six required Corsa cases. A production Docs build must qualify eight English
 and Japanese rule routes on both desktop and mobile before queue admission. The navigation companion owns the site-wide
 menu and Vite+ onboarding; this change owns rule generation, content, and rule-specific coverage.
+
+The next #6101 slice addresses example usefulness and discovery. Every one of the 251 source
+catalog IDs has authored English and Japanese explanations immediately before its Bad and Good
+code. Each explanation identifies the literal defect and the specific repair, including filename,
+configuration, Vue-version, parser-owned, native-runtime, and non-emitted boundaries. Missing or
+unregistered explanation records fail deterministic generation; no generic fallback substitutes
+for an authored rationale. The four unsupported SFC callbacks and six required-Corsa cases retain
+their existing explicit contracts. The negated-condition Good example now swaps its A/B bodies
+when inverting the condition, preserving the Bad branch behavior; other single-file source inputs
+remain intact. The repeated-ID project pair also defines its previously missing `results` input
+with two items in both alternatives, making the copied project complete without changing either
+ID example or expected finding. Other previously authored source project contexts remain intact.
+
+All-rule, category, and cross-file tables link directly to both example sections. The all-rule
+index additionally includes the 66 project entries, with CLI/library/contract status shown in
+each row. petite-vue gains its missing category, and petite-vue plus Ecosystem/Nuxt become visible
+in the English/Japanese rule navigation. Source declarations remain the authority for counts:
+251 single-file entries and 60 cross-file codes plus six project-specific IDs, or 317 reference
+pages per locale. The preset reader accepts the example column without changing preset metadata.
+
+The 25 producer-free contracts receive concrete illustrative project sources and explanations.
+They remain marked as unavailable diagnostics and gain no CLI invocation or fabricated producer.
+The reactive-cycle entry uses the same explicit tracked reference identities in its Bad/Good
+graphs; a source snippet cannot establish that internal identity graph by variable spelling alone.
+The historical array-index contract is qualified against Vue 3 proxy behavior. Reserved contracts,
+the missing async macro fact, and unimplemented ESLint mappings remain implementation TODOs rather
+than completed linter behavior.
+
+The existing tooling coverage test checks direct example links and concrete project scenarios.
+The existing Docs render verifier compares every generated reference's complete code packets
+and actual Bad/Good anchor IDs against authored source, and captures eight representative rule
+routes in English/Japanese on desktop/mobile in both light and dark themes through the real
+theme toggle. These include category navigation, configured props
+destructuring, accessibility, a reserved contract, and the identity graph. Fresh Actions must replay
+the original 245 ordinary pairs, six required-Corsa pairs, and 25 complete CLI project cases;
+earlier qualification is historical evidence, not credit for this change. No production linter,
+highlight styles, complexity algorithm, dependencies, or diagnostic oracle changes are involved.

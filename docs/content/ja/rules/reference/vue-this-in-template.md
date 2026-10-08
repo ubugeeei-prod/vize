@@ -6,6 +6,8 @@ title: "vue/this-in-template"
 
 テンプレートで不要な this. 参照を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+テンプレートで直接使える binding を `this.message`、`this.className`、`this.handleClick` と明示的に参照しています。
+
 ```vue
 <template>
 <div>{{ this.message }}</div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+`message`、`className`、`handleClick` を直接使います。文字列 `'this.is.a.string'` はメンバー参照ではないため残します。
 
 ```vue
 <template>

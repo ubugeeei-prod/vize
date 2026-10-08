@@ -6,6 +6,8 @@ title: "a11y/mouse-events-have-key-events"
 
 Require focus/blur events with mouse events
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Preview visibility changes only through mouse enter and leave handlers.
+
 ```vue
 <template>
   <div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The same preview actions run on focus and blur, and the button can receive keyboard focus.
 
 ```vue
 <template>

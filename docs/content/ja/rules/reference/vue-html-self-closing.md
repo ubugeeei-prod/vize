@@ -6,6 +6,8 @@ title: "vue/html-self-closing"
 
 要素の種類ごとに自己終了タグの形式を揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+空のコンポーネントを閉じタグの組で書き、img と br に既定の自己終了の表記を使っていません。
+
 ```vue
 <template>
   <MyComponent></MyComponent>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+コンポーネントと void 要素を自己終了にします。内容がある div は閉じタグを残します。
 
 ```vue
 <template>

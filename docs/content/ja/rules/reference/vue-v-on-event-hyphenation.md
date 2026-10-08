@@ -6,6 +6,8 @@ title: "vue/v-on-event-hyphenation"
 
 コンポーネントのカスタムイベント名を設定した形式に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+カスタム コンポーネントの listener がハイフン区切りではなく `@myEvent` です。
+
 ```vue
 <template>
 <MyComponent @myEvent="handler" />
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+`@my-event` に変更します。例のネイティブ要素の listener と動的なイベント引数はこの検査の対象外です。
 
 ```vue
 <template>

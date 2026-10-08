@@ -6,6 +6,8 @@ title: "vue/no-template-lang"
 
 template の lang 指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: SFC lint では未対応  
@@ -39,6 +41,8 @@ vp run lint
 
 ## 悪い
 
+template の lang に Pug を指定しています。HTML のみを使う規約の例で、現在の SFC 検査はこの ID を検出しません。
+
 ```vue
 <template lang="pug">
 p Notice
@@ -46,6 +50,8 @@ p Notice
 ```
 
 ## 良い
+
+lang を取り除き、通常の HTML の p を直接記述します。規約の例で、現在の SFC の診断を約束するものではありません。
 
 ```vue
 <template>

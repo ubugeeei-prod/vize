@@ -6,6 +6,8 @@ title: "vue/no-deprecated-v-on-number-modifiers"
 
 Disallow deprecated numeric `keyCode` modifiers on `v-on`
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The keyboard handlers identify keys by the removed numeric codes 13 and 27.
+
 ```vue
 <template>
 <input @keyup.13="submit" />
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The handlers use the named enter and esc key modifiers.
 
 ```vue
 <template>

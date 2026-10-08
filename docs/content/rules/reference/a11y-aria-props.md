@@ -6,6 +6,8 @@ title: "a11y/aria-props"
 
 Disallow invalid ARIA attributes
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`aria-lable` is misspelled and is not a supported ARIA attribute.
+
 ```vue
 <template>
   <button aria-lable="Save changes">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The supported `aria-label` attribute supplies the button name.
 
 ```vue
 <template>

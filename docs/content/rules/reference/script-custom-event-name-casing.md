@@ -6,6 +6,8 @@ title: "script/custom-event-name-casing"
 
 Enforce camelCase for emitted custom event names
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The emitted string `my-event` contains a hyphen and violates the default camelCase event naming policy.
+
 ```vue
 <script setup lang="ts">
 const emit = defineEmits(['my-event'])
@@ -43,6 +47,8 @@ emit('my-event')         // kebab-case → report
 ```
 
 ## Good
+
+Both the declaration and call use `myEvent`, preserving agreement between the event name and its emission while satisfying the default casing policy. A configured kebab-case policy has a different expectation.
 
 ```vue
 <script setup lang="ts">

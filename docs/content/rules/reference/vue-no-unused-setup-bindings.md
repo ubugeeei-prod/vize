@@ -6,6 +6,8 @@ title: "vue/no-unused-setup-bindings"
 
 Disallow unread script setup bindings
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,12 +37,16 @@ vp run lint
 
 ## Bad
 
+The script setup message binding is never read by the template.
+
 ```vue
 <script setup>const message = "Hello";</script>
 <template><p>Welcome</p></template>
 ```
 
 ## Good
+
+The paragraph interpolates message, using the declared binding.
 
 ```vue
 <script setup>const message = "Hello";</script>

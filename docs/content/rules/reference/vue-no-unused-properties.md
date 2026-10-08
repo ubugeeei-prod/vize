@@ -6,6 +6,8 @@ title: "vue/no-unused-properties"
 
 Disallow unused properties defined in defineProps
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The component declares description as a prop but renders only title.
+
 ```vue
 <script setup lang="ts">
 defineProps<{ title: string; description: string }>();
@@ -46,6 +50,8 @@ defineProps<{ title: string; description: string }>();
 ```
 
 ## Good
+
+Both declared props are referenced by the template.
 
 ```vue
 <script setup lang="ts">

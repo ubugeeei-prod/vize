@@ -6,6 +6,8 @@ title: "vue/no-multiple-objects-in-class"
 
 :class 配列内の複数のオブジェクト指定をまとめます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+class の配列に、まとめられる object literal を二つ直接指定しています。
+
 ```vue
 <template>
 <div :class="[{ a }, { b }]"></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+条件を一つの object にまとめます。object 一つと文字列の組、literal ではない要素の配列は許可されます。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "ecosystem/nuxt-prefer-nuxt-link"
 
 Prefer NuxtLink for internal application links
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The internal settings destination uses a plain anchor in a Nuxt application.
+
 ```vue
 <template>
   <a href="/settings">Settings</a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+NuxtLink handles the same internal destination through the Nuxt router.
 
 ```vue
 <template>

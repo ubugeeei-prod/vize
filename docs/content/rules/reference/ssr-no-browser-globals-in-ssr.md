@@ -6,6 +6,8 @@ title: "ssr/no-browser-globals-in-ssr"
 
 Disallow browser-only globals in SSR context
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Setup reads `window.innerWidth` immediately, although `window` does not exist when the component runs on the server.
+
 ```vue
 <script setup lang="ts">
 const width = window.innerWidth;
@@ -42,6 +46,8 @@ const width = window.innerWidth;
 ```
 
 ## Good
+
+The initial width is a server-safe ref value, and the browser access moves into `onMounted`, which runs on the client rather than during SSR setup.
 
 ```vue
 <script setup lang="ts">
