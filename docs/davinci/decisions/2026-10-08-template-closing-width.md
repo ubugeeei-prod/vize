@@ -23,8 +23,10 @@ that inserts rendered leading whitespace is rejected, rather than adopted.
 
 For an unlocked continued closing chunk, measure the actual emitted prefix
 and normalized full closing tag, including SFC base indent, tabs and Unicode.
-An overflow inserts only a newline inside closing grammar before `>` at
-the existing parent depth. Preserve source-owned text/comment adjacency and
+Insert a newline inside closing grammar before `>` at the existing parent
+depth only when removing that final character makes the emitted line fit.
+An already-unbreakable wide prefix keeps its historical layout. Preserve
+source-owned text/comment adjacency and
 raw/suppression policies. Cache the pure whitespace-significance predicate
 once per non-self-closing tag, preserving zero self-closing calls and all
 existing branch decisions; no timing or headroom result is inferred.
@@ -71,6 +73,21 @@ custody; provider migration cannot rewrite the sealed originals. Node22.18
 and Node24 private TS runtimes do not change the public Node22 CLI contract.
 Fresh hosted source/native/full/all104 results remain required for this
 child, with no transferred parent green or local performance claim.
+
+Parent #8267 actually merged on2026-10-08 at11:02:12Z as signed
+`0485c626d19e668b8935841912c39a829afb9e41`. GitHub genuinely cascaded
+the three child commits onto that main, producing `2d2fbb3b07d39b23e29c62a9d9dc41e85a97e331`;
+all owned product and corpus bytes match the preserved old439 head.
+The broad old439 predicate passed the sealed13 cases but needlessly moved
+`>` on five already-unbreakable historical lines: continuation/exact-40,
+prepared/template-wrapped-mixed, the v-for less-than capture, Musea art
+indentation and the single-long-attribute capture. Its whole source/PR reds
+remain retained, alongside its distinct green all104 run37763280665.
+The narrower predicate preserves those expectations without new successor
+goldens or witness changes. Actual local Rust1.99 tests pass193 unit laws,
+the13 closing/11 continuation/16 sole-child three-pass vectors and seven
+runtime laws. Fresh successor Actions/native/all104 are required; neither
+the old439 nor cascaded2d results qualify the repaired head.
 
 The original public replay helpers retain complete bytes. A new external
 owner precondition SHA535a86b167dbe9033ee51069e3d60ef4660349a2ebd0821b510b32fdeb2277f7

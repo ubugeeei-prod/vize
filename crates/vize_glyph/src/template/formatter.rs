@@ -137,7 +137,7 @@ impl<'a> TemplateFormatter<'a> {
                     output.extend_from_slice(tag_name.as_bytes());
                     if join.is_continuation()
                         && !joiner.locks_current_line()
-                        && self.closing_line_overflows(&output)
+                        && self.closing_bracket_overflows(&output)
                     {
                         output.extend_from_slice(self.newline);
                         self.write_indent(&mut output, depth);
