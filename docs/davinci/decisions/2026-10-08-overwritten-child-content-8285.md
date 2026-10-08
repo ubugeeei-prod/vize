@@ -46,7 +46,8 @@ absolute authored `filePath` is converted to the same owned relative filename.
 Messages, foreign findings, severities, suggestions, fix ranges, suppressions,
 fatal counts, deprecated-rule metadata and original source stay whole.
 All 72 raw observations, including any provider errors, are retained before
-assertions in `target/tooling/overwritten-child-content-8285/whole-provider.json`.
+assertions in `target/differential/overwritten-child-content-8285/whole-provider.json`,
+inside the existing hosted differential-corpus artifact collection.
 
 The 36 whole native API packets and 36 public JSON report packets use the
 same full51 projection. They remain separate from the independent provider's
@@ -78,7 +79,8 @@ and update the corresponding error counts; every other field remains equal.
 
 After the one-branch correction, the private source build passes all three
 Rust API tests, all seven existing rule tests and both independent replay/delta
-tests, with zero skips. The official consumer-migration inventory check passes
+tests, with zero skips. Scoped source Clippy passes with warnings denied.
+The official consumer-migration inventory check passes
 after adding only its three new test-source rows.
 The dirty-owned-tree [after receipt](../../../tests/_fixtures/differential/lint/overwritten-child-content-8285/native/producer.json)
 records observer SHA-256 `9182ce60a04ac4e91b8d6b59228027821bc53484916aa69bc8c8e4f7f6f341cd`;

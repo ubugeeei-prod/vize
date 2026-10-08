@@ -1261,7 +1261,7 @@ linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/support
 linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/support.rs	2	l1	L1	stage	vize_l1	preferred	2
 linter	Linter	test/dev	crates/vize_patina/tests/native_textarea_mustache/verification.rs	2	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/next_tick_history.rs	11	l0	L0	stage	vize_l0	preferred	2
-linter	Linter	test/dev	crates/vize_patina/tests/overwritten_child_content.rs	5	l0	L0	stage	vize_l0	preferred	3
+linter	Linter	test/dev	crates/vize_patina/tests/overwritten_child_content.rs	5	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/overwritten_child_content.rs	5	old_ast	old AST/parser	old	vize_relief	legacy	2
 linter	Linter	test/dev	crates/vize_patina/tests/overwritten_child_content.rs	5	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	test/dev	crates/vize_patina/tests/props_destructuring.rs	9	l0	L0	stage	vize_l0	preferred	1

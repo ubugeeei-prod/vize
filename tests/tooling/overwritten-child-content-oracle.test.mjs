@@ -97,7 +97,7 @@ test("all36 whole official Vue-base packets reproduce twice with all51 explicit 
     packets.push({ id, observations });
   }
   const artifact = fileURLToPath(
-    new URL("../../target/tooling/overwritten-child-content-8285/", import.meta.url),
+    new URL("../../target/differential/overwritten-child-content-8285/", import.meta.url),
   );
   mkdirSync(artifact, { recursive: true });
   writeFileSync(
