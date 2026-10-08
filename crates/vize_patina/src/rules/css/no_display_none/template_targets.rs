@@ -141,7 +141,7 @@ impl TemplateTargets {
     fn foreign_compound(&self, arguments: &[TokenOrValue<'_>]) -> Option<bool> {
         let first = arguments.iter().position(|token| !token.is_whitespace())?;
         let last = arguments.iter().rposition(|token| !token.is_whitespace())?;
-        let mut tokens = arguments[first..=last].iter().peekable();
+        let mut tokens = arguments.get(first..=last)?.iter().peekable();
         if let Some(TokenOrValue::Token(Token::Ident(name))) = tokens.peek() {
             if first == last {
                 return Some(

@@ -157,3 +157,10 @@ reference tests, assertion lint and generated consumer inventory pass; compiled
 source/native Actions, unchanged protected 104 ceilings and actual signed
 delivery remain pending. The broader global and no-retained-root policy and
 installed public qualification keep #7976 open.
+
+Initial compound source Check 37709829672 rejects the direct slice at helper
+line 144 under denied `clippy::indexing_slicing`, before owning Rust execution.
+Use checked `get` on the same derived inclusive edge-trim range, preserving
+all token interpretation, complete sources/expectations and 182/858 obligations.
+Retain the real failed log; require fresh successor source/native/protected
+qualification without a lint waiver or failed-head runtime transfer.
