@@ -159,6 +159,8 @@ if (process.argv[2] === "prepare") {
     "crates/vize_canon/tests/original_program_check/process_admission.rs",
     "crates/vize_canon/tests/support/original_diagnosing_process.rs",
     // Reviewed event navigation/rename ownership; original400 remains unchanged.
+    "crates/vize/tests/lsp_component_attribute_authority_cli.rs",
+    "crates/vize/tests/lsp_component_attribute_authority_cli/native_probe.rs",
     "crates/vize/tests/lsp_library_rename_refusal_cli/cold_collision.rs",
     "crates/vize/tests/lsp_library_rename_refusal_cli/diagnostic_witness.rs",
     "crates/vize/tests/lsp_library_rename_refusal_cli/original.rs",

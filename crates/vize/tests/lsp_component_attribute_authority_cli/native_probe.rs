@@ -1,6 +1,6 @@
 //! Every fresh rename fixture must prove the actual native checker is active.
 
-use serde_json::json;
+use serde_json::{Value, json};
 
 use super::Fixture;
 
@@ -19,4 +19,55 @@ pub(super) fn prove(fixture: &mut Fixture) {
         }]),
     );
     fixture.change("src/NativeGuard.vue", repaired, 2, json!([]));
+}
+
+impl Fixture {
+    pub(crate) fn recv_checked_with(
+        &mut self,
+        mut matches: impl FnMut(&Value, &mut std::collections::HashMap<(String, i64), Value>) -> bool,
+    ) -> Value {
+        let expected = &mut self.publications;
+        let mismatches = &mut self.mismatches;
+        self.lsp.recv_matching(|message| {
+            if message["method"] == "textDocument/publishDiagnostics" {
+                println!("whole publication: {message}");
+                let _: lsp_types::PublishDiagnosticsParams =
+                    serde_json::from_value(message["params"].clone())
+                        .expect("typed whole publication");
+                let key = (
+                    message["params"]["uri"].as_str().unwrap().to_owned(),
+                    message["params"]["version"].as_i64().unwrap(),
+                );
+                if expected.get(&key) != Some(message) {
+                    mismatches.push(json!({"actual":message,"expected":expected.get(&key)}));
+                }
+            }
+            matches(message, expected)
+        })
+    }
+
+    pub(crate) fn recv_publication_sequence(
+        &mut self,
+        uri: &str,
+        version: i64,
+        expected_packets: &[Value],
+    ) -> Vec<Value> {
+        let mut packets = Vec::new();
+        // One receive loop retains the original transaction deadline.
+        self.recv_checked_with(|message, ledger| {
+            if message["method"] == "textDocument/publishDiagnostics"
+                && message["params"]["uri"] == uri
+                && message["params"]["version"] == version
+            {
+                packets.push(message.clone());
+                if let Some(next) = expected_packets.get(packets.len()) {
+                    ledger.insert((uri.to_owned(), version), next.clone());
+                } else {
+                    return true;
+                }
+            }
+            false
+        });
+        packets
+    }
 }

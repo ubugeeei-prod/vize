@@ -203,3 +203,28 @@ introduced. Fresh hosted diagnostic execution and genuine current-main
 composition remain required; the 104 external assertions stay unchanged.
 
 Paired closed-source eligibility decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6050392845) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6050393094).
+
+Authentic source `d3830cb075` executes the exact LF/CRLF editor witness through
+all eight native passes: partial Toggle diagnostics are TS2345 in the raw native
+answer, assembled result and final editor array; independent version-3 repairs
+are clean. The separate stdio fixture consumes the versioned parser/lint prompt
+`[]` and sends newer versions before native completion. Existing responsive-lint
+controls require this prompt followed by a separate complete native publication.
+Keep production diagnostics unchanged and preauthor both whole packets in the
+original lint-enabled fixture, receiving the complete ordered prompt/native
+vector within one existing receive deadline before another edit. Retain every
+packet and mismatch, without response-content polling, filtering, deduplication
+or deadline increases. All original inputs, complete references/three edits,
+TS2345 goldens, native asset refusals and independent version-3 arrays remain exact.
+Register only the actual fixture receiver/custody sources in the existing closed
+paired-workload registry; preserve all old entries and unknown-path refusal.
+Keep the shared test-only receiver methods in the already-loaded native-probe module,
+with explicit crate visibility and a thin common-fixture wrapper, so genuine
+composition with copied-runtime controls stays within both source-length caps.
+This is a faithful method move; typed publication validation remains unchanged.
+The original400 is a 400-file workload with 79 complete protocol rows per side,
+including 20 warm requests; its wall/CPU observations have no numeric ceiling or
+event-latency claim. Fresh exact-source execution remains required; previous
+source results do not qualify this corrected receiver.
+
+Paired publication-contract decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6050924773) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6050925035).

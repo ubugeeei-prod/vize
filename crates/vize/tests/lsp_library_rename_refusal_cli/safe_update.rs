@@ -57,7 +57,23 @@ pub(super) fn publish(
     expected_diagnostics: Value,
 ) -> Value {
     let uri = fixture.uri(file);
-    fixture.expect_publication(&uri, version, expected_diagnostics);
+    // The unchanged lint+typecheck contract publishes prompt sync feedback,
+    // then the complete native answer. Author both packets before didChange.
+    let complete = json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
+        "params":{"uri":uri,"version":version,"diagnostics":expected_diagnostics}});
+    let expected_packets = if opening {
+        vec![complete]
+    } else {
+        vec![
+            json!({"jsonrpc":"2.0","method":"textDocument/publishDiagnostics",
+            "params":{"uri":uri,"version":version,"diagnostics":[]}}),
+            complete,
+        ]
+    };
+    let Some(first) = expected_packets.first() else {
+        panic!("the authored publication sequence must be nonempty")
+    };
+    fixture.expect_publication(&uri, version, first["params"]["diagnostics"].clone());
     let notification = if opening {
         json!({"jsonrpc":"2.0","method":"textDocument/didOpen","params":{
             "textDocument":{"uri":uri,"languageId":"vue","version":version,"text":text}
@@ -68,12 +84,19 @@ pub(super) fn publish(
         }})
     };
     fixture.lsp.send(notification);
-    fixture.recv_checked(|message| {
-        message["method"] == "textDocument/publishDiagnostics"
-            && message["params"]["uri"] == uri
-            && message["params"]["version"] == version
-    })["params"]["diagnostics"]
-        .clone()
+    let actual_packets = fixture.recv_publication_sequence(&uri, version, &expected_packets);
+    fixture
+        .publication_sequences
+        .push(json!({"file":file,"version":version,"opening":opening,
+        "expected":expected_packets,"actual":actual_packets}));
+    assert_eq!(
+        actual_packets, expected_packets,
+        "whole prompt/native publication sequence"
+    );
+    let Some(complete) = actual_packets.last() else {
+        panic!("the complete native publication must be retained")
+    };
+    complete["params"]["diagnostics"].clone()
 }
 
 pub(super) fn apply(source: &str, entries: &Value) -> String {
@@ -256,7 +279,7 @@ pub(super) fn capture_with_witness(
         let root = root.join("event-library-authority-transactions");
         std::fs::create_dir_all(&root).unwrap();
         let packet = json!({"context":context,"sourceSha":std::env::var("SOURCE_SHA").ok(),"inputs":inputs,"expected":expected,"actual":actual,
-            "diagnosticWitness":diagnostic_witness,
+            "diagnosticWitness":diagnostic_witness,"publicationSequences":fixture.publication_sequences,
             "cliBinary":env!("CARGO_BIN_EXE_vize"),"requireTsgo":std::env::var("VIZE_TEST_REQUIRE_TSGO").ok(),"disableTsgo":std::env::var("VIZE_TEST_DISABLE_TSGO").ok(),
             "runtime":fixture.runtime,"tsconfig":std::fs::read_to_string(fixture.project.path().join("tsconfig.json")).unwrap(),
             "vizeConfig":std::fs::read_to_string(fixture.project.path().join("vize.config.json")).unwrap()});
