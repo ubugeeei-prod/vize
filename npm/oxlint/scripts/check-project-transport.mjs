@@ -97,7 +97,12 @@ for (const [version, types] of [
     fs.writeFileSync(configuration, JSON.stringify(custody, null, 2) + "\n");
     run(
       process.execPath,
-      ["--test", "src/project-transport.test.ts", "src/script-safe-transport.test.ts"],
+      [
+        "--test",
+        "src/project-transport.test.ts",
+        "src/script-safe-transport.test.ts",
+        "src/original-ignore.test.ts",
+      ],
       {
         cwd: packageDir,
         env: {
@@ -109,6 +114,7 @@ for (const [version, types] of [
           VIZE_REQUIRE_REAL_OXLINT_TYPE_AWARE: "1",
           VIZE_OXLINT_PROJECT_CAPTURE: path.join(output, "original-project.json"),
           VIZE_OXLINT_SCRIPT_SAFE_CAPTURE: path.join(output, "script-safe.json"),
+          VIZE_OXLINT_ORIGINAL_IGNORE_CAPTURE: path.join(output, "original-ignore.json"),
         },
       },
     );

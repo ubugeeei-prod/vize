@@ -1,0 +1,35 @@
+{
+  "schema": "vize.oxlint.original-ignore-7903",
+  "version": 1,
+  "issue": 7903,
+  "reporter": "ubugeeei",
+  "reportedHost": "1.86.0",
+  "authority": "Complete original issue body, literal printf source, heredoc config and VCS ignore bytes. The complete wrapper packet reuses the independently authored original 7904 no-v-html message and identical source range, changing only the original 7903 path. Stock foreign packets must compare whole; complete operational packets and timing retained separately. No product output capture supplies an oracle.",
+  "files": [
+    {
+      "file": ".gitignore",
+      "bytes": 20,
+      "sha256": "790e3169bc19b046fe55ba1da6d13b976c28363c8c00462a2195fe5faf260910"
+    },
+    {
+      "file": ".oxlintrc.json",
+      "bytes": 122,
+      "sha256": "44cbe4e086ba283442659a8b6a94549c7d3b8509b27e9d554ba5f4652a00f0b2"
+    },
+    {
+      "file": "AppPanel.vue.txt",
+      "bytes": 108,
+      "sha256": "f5db0a2e942f06a6e8a9e32652fd8f35860792459ac0d40effb3e7c373beafe8"
+    },
+    {
+      "file": "expected-wrapper.json",
+      "bytes": 957,
+      "sha256": "b6eb50c844abc68a7a5e8f3b76a1bb2c35ac6f4778ef39bc39843237738d0569"
+    },
+    {
+      "file": "original-issue.md",
+      "bytes": 2601,
+      "sha256": "fb30432bcef02adfec8e3664226dc86ee10dfcdb405a24d9621f9e1b3de68e48"
+    }
+  ]
+}

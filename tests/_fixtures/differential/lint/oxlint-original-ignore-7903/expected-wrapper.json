@@ -1,0 +1,18 @@
+[
+  {
+    "message": "v-html can lead to XSS attacks.\n    Details:\n      Avoid using it with user-provided content\n    Help:\n      Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\n      \n      Alternatives:\n      \n      1. Use text interpolation (auto-escaped):\n      \n      <p>{{ userContent }}</p>\n      \n      2. Use a sanitization library:\n      \n      import DOMPurify from 'dompurify'\n      const safeHtml = DOMPurify.sanitize(userInput)\n      \n      3. Use a markdown renderer with XSS protection\n      \n      If you must use v-html:\n      - Never use with user-provided content\n      - Only use with trusted, static content",
+    "code": "vize(vue/no-v-html)",
+    "severity": "warning",
+    "filename": "src/AppPanel.vue",
+    "labels": [
+      {
+        "span": {
+          "offset": 79,
+          "length": 13,
+          "line": 6,
+          "column": 8
+        }
+      }
+    ]
+  }
+]
