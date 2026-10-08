@@ -59,6 +59,10 @@ namespace, explicitly sacrificing cross-CLI materialization reuse for selected
 installed roots. A separate same-owner native control uses the original seven
 roots and full diagnostic vectors through clean/broken/repair: six actual API
 calls, one session start/five reuses, raw package conservation and owner cleanup.
+Explicit diagnostic paths plus two independently authored selected-root
+negative/restored controls require its actual TS2322 and byte restoration
+(eight total calls/one start/seven reuses); metrics qualify executor reuse
+without claiming a particular native transport.
 It measures scan, cold/warm API and unchanged original command durations without
 claiming a speed improvement. Later expansion of an already scanned ordinary
 owner and durable cross-CLI completed-plan custody remain documented follow-ups.

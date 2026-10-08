@@ -163,18 +163,32 @@ fn logical_installed_symlink_roots_still_select_private_storage() {
 #[test]
 fn private_scoping_preserves_preloaded_authored_package_bindings() {
     let root = tempfile::tempdir().unwrap();
-    let selected = source(root.path(), "node_modules/selected/index.ts");
+    let selected = source(root.path(), "node_modules/resolved-control/index.ts");
+    let package = selected.parent().unwrap().to_path_buf();
+    let manifest = package.join("package.json");
+    std::fs::write(
+        &manifest,
+        r#"{"name":"resolved-control","types":"index.ts"}"#,
+    )
+    .unwrap();
     let mut owner = checker(root.path());
     owner.set_package_routes([crate::PackageRouteBinding {
         importer_path: selected.clone(),
-        specifier: "unresolved-control".into(),
+        specifier: "resolved-control".into(),
         occurrence_mode: crate::PackageResolutionMode::Import,
         context: crate::PackageResolutionContext::default(),
-        route: None,
-        invalidation_paths: vec![
-            root.path()
-                .join("node_modules/unresolved-control/package.json"),
-        ],
+        route: Some(crate::PackageRoute {
+            source_paths: vec![selected.clone()],
+            dependency_paths: vec![],
+            source_targets: vec![],
+            package_root: package.clone(),
+            package_link_root: package,
+            manifest_path: manifest.clone(),
+            package_name: Some("resolved-control".into()),
+            workspace_source: false,
+            nested_routes: vec![],
+        }),
+        invalidation_paths: vec![manifest],
     }]);
     let before = owner.project.package_routes_snapshot();
     assert_eq!(before.len(), 1);
@@ -204,7 +218,7 @@ fn canonical_installed_target_selects_private_storage() {
     let logical = root.path().join("src/installed.ts");
     std::os::unix::fs::symlink(&installed, &logical).unwrap();
     let mut owner = checker(root.path());
-    owner.scan_paths(&[logical.clone()]).unwrap();
+    owner.scan_paths(std::slice::from_ref(&logical)).unwrap();
     let storage = owner.owned_storage.as_ref().unwrap().path().to_path_buf();
     drop(owner);
     assert!(!storage.exists());

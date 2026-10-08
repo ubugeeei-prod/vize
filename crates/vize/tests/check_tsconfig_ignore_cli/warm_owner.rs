@@ -81,6 +81,7 @@ fn original_literal_roots_reuse_one_native_owner_and_clean_its_storage() {
     )
     .unwrap();
     checker.scan_paths(&paths).unwrap();
+    checker.set_diagnostic_paths(paths.iter().map(PathBuf::as_path));
     let scan_ns = scan_started.elapsed().as_nanos();
     let namespace = checker
         .virtual_files()
@@ -149,6 +150,71 @@ fn original_literal_roots_reuse_one_native_owner_and_clean_its_storage() {
             ));
         }
     }
+    // Separate additive installed-source diagnostic control. The original
+    // six clean/broken/repair observations above keep every frozen input.
+    let selected = root.join("node_modules/selected/index.ts");
+    let original_selected = std::fs::read(&selected).unwrap();
+    let mut installed_assertions = Vec::new();
+    for broken in [true, false] {
+        std::fs::write(
+            &selected,
+            if broken {
+                b"export const selected: number = 'wrong';\n".as_slice()
+            } else {
+                original_selected.as_slice()
+            },
+        )
+        .unwrap();
+        let mode = if broken { "negative" } else { "restored" };
+        let stock = literal_package::guarded_packet(
+            "warm-owner-installed",
+            mode,
+            "stock",
+            &root,
+            Command::new(&native).current_dir(&root).args([
+                "--project",
+                "tsconfig.json",
+                "--pretty",
+                "false",
+            ]),
+        );
+        let package_before = literal_package::receipt(&root.join("node_modules"));
+        let started = std::time::Instant::now();
+        let result = checker.check_incremental(std::slice::from_ref(&selected));
+        let elapsed_ns = started.elapsed().as_nanos();
+        let metrics = checker.incremental_metrics();
+        let whole = result_view(&checker, &root, &result);
+        let package_after = literal_package::receipt(&root.join("node_modules"));
+        let expected_stock = if broken {
+            json!({"exitCode":1,"stdout":"node_modules/selected/index.ts(1,14): error TS2322: Type 'string' is not assignable to type 'number'.\n","stderr":""})
+        } else {
+            json!({"exitCode":0,"stdout":"","stderr":""})
+        };
+        let expected_native = if broken {
+            json!({"success":false,"exitCode":1,"files":case["reportedFiles"],
+            "diagnostics":[{"file":"node_modules/selected/index.ts","rendered":"error:1:14 [TS2322] Type 'string' is not assignable to type 'number'."}]})
+        } else {
+            expected_result(case, false)
+        };
+        if let Some(capture) = std::env::var_os("VIZE_TSCONFIG_TYPES_CAPTURE") {
+            let dir = PathBuf::from(capture).join("ignore-literal/warm-owner");
+            std::fs::write(dir.join(cstr!("installed-{mode}.json").as_str()),serde_json::to_vec_pretty(&json!({
+                "wholeInput":corpus,"sourceSha":std::env::var("SOURCE_SHA").ok(),"originalSelectedBytes":original_selected,
+                "selectedControlBytes":std::fs::read(&selected).unwrap(),"nativeBinary":native,"stock":stock,
+                "wholeResult":whole,"allResult":cstr!("{result:?}").as_str(),"allMetrics":cstr!("{metrics:?}").as_str(),
+                "elapsedNs":elapsed_ns,"packageBefore":package_before,"packageAfter":package_after})).unwrap()).unwrap();
+        }
+        installed_assertions.push((
+            stock,
+            expected_stock,
+            whole,
+            expected_native,
+            metrics,
+            package_before,
+            package_after,
+        ));
+    }
+    assert_eq!(std::fs::read(&selected).unwrap(), original_selected);
     let final_metrics = checker.incremental_metrics();
     let existed_before_drop = storage.is_dir();
     drop(checker);
@@ -177,10 +243,20 @@ fn original_literal_roots_reuse_one_native_owner_and_clean_its_storage() {
             assert!(!metrics.last_full_rebuild);
         }
     }
-    assert_eq!(final_metrics.checks, 6);
-    assert_eq!(final_metrics.session_reuses, 5);
+    for (stock, expected_stock, whole, expected_native, metrics, package_before, package_after) in
+        installed_assertions
+    {
+        assert_eq!(stock, expected_stock);
+        assert_eq!(whole, expected_native);
+        assert_eq!(package_after, package_before);
+        assert_eq!(metrics.session_starts, 1);
+        assert!(metrics.last_session_reused);
+        assert_eq!(metrics.session_to_cli_fallbacks, 0);
+    }
+    assert_eq!(final_metrics.checks, 8);
+    assert_eq!(final_metrics.session_reuses, 7);
     println!(
-        "complete configured ignore warm-owner: 6 actual native API calls, one start/five reuses, exact original roots/diagnostics and cleanup"
+        "complete configured ignore warm-owner: 6 original + 2 installed control native session calls, one start/seven reuses, exact roots/diagnostics and cleanup"
     );
     std::fs::remove_dir_all(root).unwrap();
 }

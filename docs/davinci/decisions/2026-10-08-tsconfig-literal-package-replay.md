@@ -43,8 +43,10 @@ their complete expected reports and gain the same additive conservation check.
 On the required Linux native runner, five CLI laws execute 27 Vize commands,
 18 official native project checks, five separate version probes and twelve
 whole showConfig probes. A sixth law uses the unchanged original seven-root
-project for six in-owner native API calls, three further stock project and
-showConfig probes, and one version probe. The original whole CLI vectors
+project for six original in-owner native session calls, three further stock
+project and showConfig probes, and one version probe. Two additive installed
+source negative/restored calls and two stock checks prove that the originally
+clean, unimported selected root is actually diagnosed. The original whole CLI vectors
 remain unchanged. Ordinary disabled-native returns grant no execution
 credit. Fresh exact-head Actions must retain whole failed packets before a
 producer change is justified; ready parent prefixes can enter the queue
@@ -94,8 +96,14 @@ Nine bounded unit laws cover component/case policy, ordinary storage, successful
 materialization and repeated owner paths, actual invalid-UTF-8 registration
 error, unwind, logical and canonical installed symlinks, preloaded route
 preservation, and the later-scan boundary. The native original control requires
-one session start and five reuses, unchanged complete authored root/diagnostic
-vectors, no CLI fallback, zero warm tree scans and cleanup after owner drop.
+one session start and five reuses across the original six calls, unchanged
+complete registered-root/native-diagnostic vectors, no executor CLI fallback,
+zero warm tree scans and cleanup after owner drop. Explicit diagnostic paths
+include the selected installed TS root. Two additional independently authored
+negative/restored controls require its exact TS2322 and restoration, preserving
+the original corpus bytes and reaching eight calls/one start/seven reuses.
+These counters prove executor reuse, not a particular underlying native
+transport.
 Whole command and API receipts include raw trees and elapsed nanoseconds before
 assertions; timing values are observations, never expected diagnostics or
 performance-improvement evidence. Fresh Actions and protected delivery remain
