@@ -4,6 +4,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { FrameDecoder } from "./frames.ts";
+import { settlePublication, settleReply } from "./dispatch.ts";
 import {
   InstalledAliasError,
   validateInstalledLaunch,
@@ -197,42 +198,10 @@ export class InstalledAliasSession {
     if (typeof packet.method === "string" && packet.id === undefined) {
       this.notifications.push(packet);
       if (packet.method !== "textDocument/publishDiagnostics") return;
-      const params = packet.params as Packet | undefined;
-      // Matching waits are removed below, so retain the complete original snapshot.
-      for (const wait of this.publications.slice()) {
-        if (
-          this.notifications.length <= wait.after ||
-          params?.uri !== wait.uri ||
-          params?.version !== wait.version
-        )
-          continue;
-        clearTimeout(wait.timer);
-        this.publications.splice(this.publications.indexOf(wait), 1);
-        if (Array.isArray(params.diagnostics)) wait.resolve(packet);
-        else {
-          this.failures.push("malformed diagnostic publication");
-          wait.reject(new InstalledAliasError("malformed diagnostic publication", packet));
-        }
-      }
+      settlePublication(packet, this.notifications.length, this.publications, this.failures);
       return;
     }
-    if (typeof packet.id !== "number" || packet.method !== undefined) return;
-    const pending = this.pending.get(packet.id);
-    if (!pending) return;
-    clearTimeout(pending.timer);
-    this.pending.delete(packet.id);
-    pending.outcome.response = packet;
-    pending.outcome.status = "error" in packet ? "rpc-error" : "response";
-    if ("error" in packet) {
-      pending.outcome.error = `JSON-RPC error for ${pending.outcome.method}: ${JSON.stringify(packet.error)}`;
-      this.failures.push(pending.outcome.error);
-      pending.reject(new InstalledAliasError(pending.outcome.error, packet));
-    } else if (!("result" in packet)) {
-      pending.outcome.status = "malformed-response";
-      pending.outcome.error = "response has neither result nor error";
-      this.failures.push(pending.outcome.error);
-      pending.reject(new InstalledAliasError(pending.outcome.error, packet));
-    } else pending.resolve(packet);
+    settleReply(packet, this.pending, this.failures);
   }
 
   private rejectPending(error: Error): void {
