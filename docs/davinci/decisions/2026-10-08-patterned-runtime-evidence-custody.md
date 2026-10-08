@@ -26,18 +26,18 @@ was `cargo test --tests --manifest-path /home/runner/_work/vize/vize/Cargo.toml
 The failing binary retained all 24 tests: 23 passed, 1 failed, 0 ignored and
 0 filtered. Its Cargo exit was 101.
 
-| Evidence | What the original receipt establishes |
-| --- | --- |
-| Source | `256cb6c0e35804bf714ab8c3d1e299b58bb08a0c` |
-| Test | `match_preserves_hosts_inside_authored_loop_scopes` |
-| Backend | VDOM, the first backend in the original loop |
-| Child result | `wait_with_output` completed and `status.success()` was false |
-| Stderr | The panic prints empty stderr before `code:` |
-| Child exit code / signal | Neither was printed or uploaded |
-| Child stdout | Not printed or uploaded; it must not be reconstructed as empty |
-| Node setup | The log records Node 24.14.0; the child's resolved executable path was not logged |
-| Child working directory | Inherited, with no explicit override or recorded child cwd |
-| Runner | `blacksmith-32vcpu-ubuntu-2404-Runner-c03cc1b25c` |
+| Evidence                 | What the original receipt establishes                                             |
+| ------------------------ | --------------------------------------------------------------------------------- |
+| Source                   | `256cb6c0e35804bf714ab8c3d1e299b58bb08a0c`                                        |
+| Test                     | `match_preserves_hosts_inside_authored_loop_scopes`                               |
+| Backend                  | VDOM, the first backend in the original loop                                      |
+| Child result             | `wait_with_output` completed and `status.success()` was false                     |
+| Stderr                   | The panic prints empty stderr before `code:`                                      |
+| Child exit code / signal | Neither was printed or uploaded                                                   |
+| Child stdout             | Not printed or uploaded; it must not be reconstructed as empty                    |
+| Node setup               | The log records Node 24.14.0; the child's resolved executable path was not logged |
+| Child working directory  | Inherited, with no explicit override or recorded child cwd                        |
+| Runner                   | `blacksmith-32vcpu-ubuntu-2404-Runner-c03cc1b25c`                                 |
 
 The source-defined command is `node` with one argument:
 `/home/runner/_work/vize/vize/crates/vize_atelier_vapor/../../tests/tooling/support/patterned-template-runtime.mjs`.
@@ -54,9 +54,9 @@ receipt. Those missing fields cannot be recovered from a later successful run.
 
 ## Original values, preserved without a replay substitution
 
-The authored source is unchanged:
+The exact authored source packet is unchanged (displayed as text to preserve bytes):
 
-```vue
+```text
 <section v-for="item in items" :key="item.id" :data-id="item.id" v-match="item.state"><p v-when="'ready'">Ready</p><p v-when="_">Other</p></section>
 ```
 
@@ -104,9 +104,7 @@ preserved by this JSON, including the authored `section` hosts and `p` children:
           "children": [
             {
               "attributes": {},
-              "children": [
-                "Ready"
-              ],
+              "children": ["Ready"],
               "tag": "p"
             }
           ],
@@ -119,9 +117,7 @@ preserved by this JSON, including the authored `section` hosts and `p` children:
           "children": [
             {
               "attributes": {},
-              "children": [
-                "Other"
-              ],
+              "children": ["Other"],
               "tag": "p"
             }
           ],
@@ -136,9 +132,7 @@ preserved by this JSON, including the authored `section` hosts and `p` children:
           "children": [
             {
               "attributes": {},
-              "children": [
-                "Ready"
-              ],
+              "children": ["Ready"],
               "tag": "p"
             }
           ],
@@ -151,9 +145,7 @@ preserved by this JSON, including the authored `section` hosts and `p` children:
           "children": [
             {
               "attributes": {},
-              "children": [
-                "Other"
-              ],
+              "children": ["Other"],
               "tag": "p"
             }
           ],
@@ -165,9 +157,9 @@ preserved by this JSON, including the authored `section` hosts and `p` children:
 ]
 ```
 
-The panic preserves this entire generated VDOM code display:
+The panic preserves this entire generated VDOM code display, without reformatting:
 
-```js
+```text
 const { openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createCommentVNode: _createCommentVNode, renderList: _renderList } = Vue
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
@@ -188,12 +180,12 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
 Reconstructed UTF-8 files without an added terminal newline have these hashes:
 
-| Value | Bytes | SHA-256 |
-| --- | ---: | --- |
-| Authored source | 148 | `a3528c82bd2760a7f453f5a9f741895da46da0c21440d9b7c94c9613cc93f33f` |
-| Cases, compact sorted-key JSON | 611 | `23458a0d015079f7cec22d40319b6f4c8b88b668dedf325decc338dd41c01e40` |
-| Generated code display | 935 | `6a9162009f350614ccce894f6129b8233f78bcb4ffd4e71cd3723044b918bc84` |
-| Reconstructed stdin values | 1,614 | `2f401a9f19ad2f6b521140226dcfe70befbf2993795e1258fdf3df983b8eaae4` |
+| Value                          | Bytes | SHA-256                                                            |
+| ------------------------------ | ----: | ------------------------------------------------------------------ |
+| Authored source                |   148 | `a3528c82bd2760a7f453f5a9f741895da46da0c21440d9b7c94c9613cc93f33f` |
+| Cases, compact sorted-key JSON |   611 | `23458a0d015079f7cec22d40319b6f4c8b88b668dedf325decc338dd41c01e40` |
+| Generated code display         |   935 | `6a9162009f350614ccce894f6129b8233f78bcb4ffd4e71cd3723044b918bc84` |
+| Reconstructed stdin values     | 1,614 | `2f401a9f19ad2f6b521140226dcfe70befbf2993795e1258fdf3df983b8eaae4` |
 
 These are source/log reconstructions, not an original captured stdin stream.
 The original write bytes and the generated string's final line ending were not
