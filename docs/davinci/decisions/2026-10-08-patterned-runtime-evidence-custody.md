@@ -214,6 +214,19 @@ passes after it. This is local diagnostic evidence, not exact-head hosted
 qualification or historical cause resolution. The repository's Rust 1.99.0
 Actions and protected queue checks must pass at the actual PR head.
 
+The first hosted check-js executions at `8a415e6495e4f6cb1b4dc594f6ec5f71424d4d9c`
+rejected formatting of this new companion. Apply the configured formatter while
+preserving the complete source and generated-code packets in text fences; their
+hashes and entire case JSON remain unchanged. The subsequent PR tooling shard 2
+at `e57db69db6c8674085706e5f944d80967a615057` rejected the existing Rust test file
+crossing its 350-line limit, from 343 to 373 lines. Move only the new law,
+with its body unchanged, into the existing `patterned_template_runtime/`
+submodule in a move-only commit. The producer file is now 347 lines and
+`failure_evidence.rs` is 30 lines. The actual source-length checker passes
+against the genuine base without a limit or allowlist change, and all four
+focused diagnostic laws still pass. Preserve both earlier hosted failures;
+fresh final-head Actions remain required after these corrections.
+
 ## Remaining acceptance
 
 Keep #7951 open while the original failure cause is unknown. The fresh manual
