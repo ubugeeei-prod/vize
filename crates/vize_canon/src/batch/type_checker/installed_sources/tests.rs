@@ -72,9 +72,15 @@ fn installed_owner_reuses_private_paths_and_cleans_successful_materialization() 
     owner.scan_paths(std::slice::from_ref(&selected)).unwrap();
     let storage = owner.owned_storage.as_ref().unwrap().path().to_path_buf();
     let namespace = owner.project.virtual_root().to_path_buf();
-    assert!(namespace.starts_with(&storage));
+    assert_eq!(
+        namespace
+            .ancestors()
+            .find(|path| *path == storage.as_path())
+            .map(Path::to_path_buf),
+        Some(storage.clone())
+    );
     assert_ne!(namespace, crate::batch::project_virtual_root(root.path()));
-    assert!(!namespace.starts_with(root.path()));
+    assert_eq!(namespace.strip_prefix(root.path()).ok(), None);
     assert!(!contains_node_modules(&namespace));
     #[cfg(unix)]
     {

@@ -98,7 +98,7 @@ fn original_literal_roots_reuse_one_native_owner_and_clean_its_storage() {
     cleanup_receipt.storage = Some(storage.clone());
     cleanup_receipt.namespace = Some(namespace.clone());
     assert_ne!(namespace, vize_canon::batch::project_virtual_root(&root));
-    assert!(!namespace.starts_with(&root));
+    assert_eq!(namespace.strip_prefix(&root).ok(), None);
     let virtual_paths = checker
         .virtual_files()
         .into_iter()
