@@ -90,11 +90,17 @@ pub(crate) fn resolve_dependency_with_inputs(
     let mut best: Option<(usize, PathBuf)> = None;
     let mut inputs = Vec::new();
     for (pattern, target) in aliases {
-        let substituted = if let Some(prefix) = pattern.strip_suffix('*') {
-            match (specifier.strip_prefix(prefix), target.strip_suffix('*')) {
-                (Some(rest), Some(target_prefix)) => {
+        let substituted = if let Some((prefix, suffix)) = pattern.split_once('*') {
+            let capture = specifier
+                .strip_prefix(prefix)
+                .and_then(|rest| rest.strip_suffix(suffix));
+            match (capture, target.split_once('*')) {
+                (Some(capture), Some((target_prefix, target_suffix)))
+                    if !suffix.contains('*') && !target_suffix.contains('*') =>
+                {
                     let mut joined = target_prefix.to_owned();
-                    joined.push_str(rest);
+                    joined.push_str(capture);
+                    joined.push_str(target_suffix);
                     Some(joined)
                 }
                 _ => None,
@@ -112,12 +118,16 @@ pub(crate) fn resolve_dependency_with_inputs(
         } else {
             project_root.join(&substituted)
         };
-        // Length first: a pattern that cannot win must not cost a probe.
-        if best.as_ref().is_none_or(|(len, _)| pattern.len() > *len) {
+        // A suffix must not outweigh a longer wildcard prefix. Preserve the
+        // previous scores of every literal and trailing-wildcard key.
+        let rank = pattern
+            .split_once('*')
+            .map_or(pattern.len(), |(prefix, _)| prefix.len() + 1);
+        if best.as_ref().is_none_or(|(len, _)| rank > *len) {
             let (resolved, consulted) = probe_candidates_with_inputs(&absolute);
             inputs.extend(consulted);
             if let Some(resolved) = resolved {
-                best = Some((pattern.len(), resolved));
+                best = Some((rank, resolved));
             }
         }
     }
@@ -181,3 +191,7 @@ fn probe_candidates_with_inputs(base: &Path) -> (Option<PathBuf>, Vec<PathBuf>) 
     }
     (None, inputs)
 }
+
+#[cfg(test)]
+#[path = "alias_tests.rs"]
+mod alias_tests;

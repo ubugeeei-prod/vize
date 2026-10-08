@@ -151,6 +151,7 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/vue27_render_h.rs	8	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/vue27_render_h.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/wide_props_type_complexity.rs	17	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/scan/suffix_path_aliases.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/tsgo.rs	38	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project.rs	21	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project.rs	284	carton	Carton host/compatibility	old	vize_carton	legacy	2

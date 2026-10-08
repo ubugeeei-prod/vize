@@ -3,6 +3,9 @@ use super::{BatchTypeChecker, unique_case_dir};
 #[path = "incremental.rs"]
 mod incremental;
 
+#[path = "scan/suffix_path_aliases.rs"]
+mod suffix_path_aliases;
+
 #[test]
 fn test_batch_type_checker_scan() {
     let project_root = unique_case_dir("scan");
