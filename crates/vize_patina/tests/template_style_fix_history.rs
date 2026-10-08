@@ -56,11 +56,15 @@ fn linter(rule: &str, policy: &str) -> Linter {
         };
         linter.with_html_self_closing_options(options)
     } else {
-        linter.with_component_name_in_template_casing(if policy == "kebab" {
-            ComponentCasing::KebabCase
-        } else {
-            ComponentCasing::PascalCase
-        })
+        linter.with_component_name_in_template_casing_policy(
+            if policy == "kebab" {
+                ComponentCasing::KebabCase
+            } else {
+                ComponentCasing::PascalCase
+            },
+            false,
+            Vec::new(),
+        )
     }
 }
 

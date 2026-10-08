@@ -14,6 +14,7 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
     "vue/no-unused-setup-bindings",
     "vue/no-unused-components",
     "vue/require-component-registration",
+    "vue/component-name-in-template-casing",
     "vue/no-undefined-refs",
     "vue/no-mutating-props",
     "vue/no-unused-properties",

@@ -23,6 +23,7 @@ mod macros;
 mod module_exports;
 mod options_api;
 mod statements;
+mod template_components;
 mod vue_runtime_api;
 
 pub(in crate::script_parser) use builtin_types::process_statement_with_builtin;

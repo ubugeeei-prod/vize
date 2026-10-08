@@ -40,6 +40,9 @@ vp run lint
 The component is written in kebab-case and camelCase under the PascalCase convention.
 
 ```vue
+<script setup>
+import MyComponent from "./MyComponent.vue";
+</script>
 <template>
   <my-component />
   <myComponent />
@@ -51,6 +54,9 @@ The component is written in kebab-case and camelCase under the PascalCase conven
 MyComponent uses PascalCase; native slot syntax remains lowercase.
 
 ```vue
+<script setup>
+import MyComponent from "./MyComponent.vue";
+</script>
 <template>
   <MyComponent />
   <RouterView />

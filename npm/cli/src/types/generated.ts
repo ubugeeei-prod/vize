@@ -267,6 +267,8 @@ export interface LintRuleOptions {
   "script/no-restricted-members"?: NoRestrictedMembersOptions;
   "vue/component-name-in-template-casing"?: {
     casing?: "PascalCase" | "kebab-case";
+    registeredComponentsOnly?: boolean;
+    globals?: string[];
   };
   "script/custom-event-name-casing"?: {
     casing?: "camelCase" | "kebab-case";

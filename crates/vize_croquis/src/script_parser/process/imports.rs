@@ -120,6 +120,7 @@ pub(super) fn process_import(result: &mut ScriptParseResult, import: &ImportDecl
 
             if !is_type_only && !is_type_spec {
                 if !instance_member {
+                    super::template_components::name(result, name);
                     result.bindings.add(name, binding_type);
                 }
                 result

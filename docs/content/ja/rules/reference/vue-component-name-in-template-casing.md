@@ -40,6 +40,9 @@ vp run lint
 PascalCase の方針に対し、コンポーネントを kebab-case と camelCase で記述しています。
 
 ```vue
+<script setup>
+import MyComponent from "./MyComponent.vue";
+</script>
 <template>
   <my-component />
   <myComponent />
@@ -51,6 +54,9 @@ PascalCase の方針に対し、コンポーネントを kebab-case と camelCas
 MyComponent を PascalCase で記述します。標準の slot は小文字のままです。
 
 ```vue
+<script setup>
+import MyComponent from "./MyComponent.vue";
+</script>
 <template>
   <MyComponent />
   <RouterView />

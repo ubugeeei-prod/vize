@@ -36,6 +36,8 @@ impl Croquis {
         self.re_export_forwards.extend(plain.re_export_forwards);
         self.component_registrations
             .extend(plain.component_registrations);
+        self.template_component_registrations
+            .extend(plain.template_component_registrations);
 
         for (name, span) in plain.binding_spans {
             self.binding_spans.entry(name).or_insert(span);

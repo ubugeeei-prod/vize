@@ -1,0 +1,656 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Read-only authored registration-facts audit for issue 8142; oracle only, no Vize runtime qualification",
+  "createdAt": "2026-10-08T05:15:03.255Z",
+  "node": "v24.14.0",
+  "cwd": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008",
+  "providers": {
+    "eslint": {
+      "version": "10.4.1",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2/node_modules/eslint/lib/api.js",
+      "sha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2"
+    },
+    "eslint-plugin-vue": {
+      "version": "10.9.2",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/dist/index.js",
+      "sha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+      "ruleCreateSha256": "87d3cc1d363cd0f645b2da3b6b19b1e7d7badcc57cd0fbbe03923c25c683e507"
+    },
+    "vue-eslint-parser": {
+      "version": "10.4.1",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/vue-eslint-parser@10.4.1_eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2__supports-color@10.2.2/node_modules/vue-eslint-parser/dist/index.cjs",
+      "sha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087"
+    },
+    "@typescript-eslint/parser": {
+      "version": "8.65.0",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/@typescript-eslint+parser@8.65.0_eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2__supports-color@10.2.2_typescript@6.0.3/node_modules/@typescript-eslint/parser/dist/index.js",
+      "sha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966"
+    }
+  },
+  "config": [
+    {
+      "files": [
+        "**/*.vue"
+      ],
+      "languageOptions": {
+        "parser": "vue-eslint-parser",
+        "parserOptions": {
+          "parser": "@typescript-eslint/parser",
+          "ecmaVersion": "latest",
+          "sourceType": "module"
+        }
+      },
+      "plugins": {
+        "vue": "eslint-plugin-vue"
+      },
+      "rules": {
+        "vue/component-name-in-template-casing": [
+          "error",
+          "PascalCase"
+        ]
+      }
+    }
+  ],
+  "cases": [
+    {
+      "name": "import default",
+      "filename": "Probe.vue",
+      "input": "<script setup>import MyWidget from \"./MyWidget.vue\";</script><template><my-widget /></template>",
+      "inputSha256": "cb5466e0fa9738a88a128f50ab901d437fc8371709bd9ec52b8d6fb9c385e49d",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 72,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 82,
+            "fix": {
+              "range": [
+                71,
+                81
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 72,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 82,
+            "fix": {
+              "range": [
+                71,
+                81
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "import named type",
+      "filename": "Probe.vue",
+      "input": "<script setup lang=\"ts\">import { type MyWidget } from \"./MyWidget.vue\";</script><template><my-widget /></template>",
+      "inputSha256": "15ee99f8357083f96d5872a66fa6daa3a3d6522e2c03a24890a4501929599055",
+      "observations": [
+        [],
+        []
+      ],
+      "errorCount": 0,
+      "warningCount": 0
+    },
+    {
+      "name": "import whole type",
+      "filename": "Probe.vue",
+      "input": "<script setup lang=\"ts\">import type MyWidget from \"./MyWidget.vue\";</script><template><my-widget /></template>",
+      "inputSha256": "dd389f2621bb88d9401e919e30839b0dafa277bec0fd6ca8ef56c255ff3a4944",
+      "observations": [
+        [],
+        []
+      ],
+      "errorCount": 0,
+      "warningCount": 0
+    },
+    {
+      "name": "local const",
+      "filename": "Probe.vue",
+      "input": "<script setup>const MyWidget = 1;</script><template><my-widget /></template>",
+      "inputSha256": "4e18917a6bb1168325da6bea954a6ed2427ceabfb6d8b2631bebfcb329f19420",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 53,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 63,
+            "fix": {
+              "range": [
+                52,
+                62
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 53,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 63,
+            "fix": {
+              "range": [
+                52,
+                62
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "local ref",
+      "filename": "Probe.vue",
+      "input": "<script setup>import { ref } from \"vue\"; const MyWidget = ref(1);</script><template><my-widget /></template>",
+      "inputSha256": "8bd9d6dfaaf37cf685e7737c2987f091460501f94793e02aa364443c77732ecb",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 85,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 95,
+            "fix": {
+              "range": [
+                84,
+                94
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 85,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 95,
+            "fix": {
+              "range": [
+                84,
+                94
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "local function",
+      "filename": "Probe.vue",
+      "input": "<script setup>function MyWidget() {}</script><template><my-widget /></template>",
+      "inputSha256": "6605ea289d61d6fb3ab0199934080c8cdf4444baef64bc1dbc7964ba16532f6b",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 56,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 66,
+            "fix": {
+              "range": [
+                55,
+                65
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 56,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 66,
+            "fix": {
+              "range": [
+                55,
+                65
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "local class",
+      "filename": "Probe.vue",
+      "input": "<script setup>class MyWidget {}</script><template><my-widget /></template>",
+      "inputSha256": "1d92802986648461dabb49127699ee7717c928ab1bdc88df1dee9a2021e2be53",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 51,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 61,
+            "fix": {
+              "range": [
+                50,
+                60
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 51,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 61,
+            "fix": {
+              "range": [
+                50,
+                60
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "local interface",
+      "filename": "Probe.vue",
+      "input": "<script setup lang=\"ts\">interface MyWidget { value: string }</script><template><my-widget /></template>",
+      "inputSha256": "208be2de62e1648e3bf8fcd0977cd84fcf1a01d2b6a3e6b82a90350ab03d776b",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 80,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 90,
+            "fix": {
+              "range": [
+                79,
+                89
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 80,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 90,
+            "fix": {
+              "range": [
+                79,
+                89
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "local type alias",
+      "filename": "Probe.vue",
+      "input": "<script setup lang=\"ts\">type MyWidget = string;</script><template><my-widget /></template>",
+      "inputSha256": "640ad14765ac6dcc4feced4a370d75684828a3b479f6c191a009cd6178dfeefd",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 67,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 77,
+            "fix": {
+              "range": [
+                66,
+                76
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 67,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 77,
+            "fix": {
+              "range": [
+                66,
+                76
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "combined plain local const",
+      "filename": "Probe.vue",
+      "input": "<script>const MyWidget = 1;</script><script setup>const foo = 1;</script><template><my-widget /></template>",
+      "inputSha256": "777b3fda4c24ef991b80a5e82bb00eac79a27a2fe764446c37bf548b82a43754",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 84,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 94,
+            "fix": {
+              "range": [
+                83,
+                93
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 84,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 94,
+            "fix": {
+              "range": [
+                83,
+                93
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "plain import alone",
+      "filename": "Probe.vue",
+      "input": "<script>import MyWidget from \"./MyWidget.vue\";</script><template><my-widget /></template>",
+      "inputSha256": "f466eaccce0817cb78e0f59f5f8a60fd7d94251179f5165c2acff5ebd65fa717",
+      "observations": [
+        [],
+        []
+      ],
+      "errorCount": 0,
+      "warningCount": 0
+    },
+    {
+      "name": "components inline object",
+      "filename": "Probe.vue",
+      "input": "<script>export default { components: { MyWidget: { template: \"hi\" } } };</script><template><my-widget /></template>",
+      "inputSha256": "2a1e7312e7046ca6f0485f286030547a352aa63973418865519c02b43972a565",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 92,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 102,
+            "fix": {
+              "range": [
+                91,
+                101
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 92,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 102,
+            "fix": {
+              "range": [
+                91,
+                101
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "components async call",
+      "filename": "Probe.vue",
+      "input": "<script>export default { components: { MyWidget: defineAsyncComponent(() => import(\"./MyWidget.vue\")) } };</script><template><my-widget /></template>",
+      "inputSha256": "550742e64c352aabdd02a574f1c876e86ddaa5c9d927831d86a860aef83c25a5",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 126,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 136,
+            "fix": {
+              "range": [
+                125,
+                135
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 126,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 136,
+            "fix": {
+              "range": [
+                125,
+                135
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "components alias object",
+      "filename": "Probe.vue",
+      "input": "<script>const comps = { MyWidget }; export default { components: comps };</script><template><my-widget /></template>",
+      "inputSha256": "99794212365e4d5a81c2932be760517da02b792c7a3525dd5a6d576904b0474e",
+      "observations": [
+        [],
+        []
+      ],
+      "errorCount": 0,
+      "warningCount": 0
+    },
+    {
+      "name": "components spread",
+      "filename": "Probe.vue",
+      "input": "<script>const comps = { MyWidget }; export default { components: { ...comps } };</script><template><my-widget /></template>",
+      "inputSha256": "18e4c5ec6eeb0faf391881e9ce026a1af9782e84fb13b549e078f482f1bb98e6",
+      "observations": [
+        [],
+        []
+      ],
+      "errorCount": 0,
+      "warningCount": 0
+    },
+    {
+      "name": "components static computed key",
+      "filename": "Probe.vue",
+      "input": "<script>export default { components: { [\"MyWidget\"]: MyWidget } };</script><template><my-widget /></template>",
+      "inputSha256": "1b87ffc75fbb0e98260cebe7dec5ff8d252d5745ea2589ff870b0af647a915cd",
+      "observations": [
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 86,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 96,
+            "fix": {
+              "range": [
+                85,
+                95
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 1,
+            "column": 86,
+            "messageId": "incorrectCase",
+            "endLine": 1,
+            "endColumn": 96,
+            "fix": {
+              "range": [
+                85,
+                95
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ]
+      ],
+      "errorCount": 1,
+      "warningCount": 0
+    },
+    {
+      "name": "components kebab key",
+      "filename": "Probe.vue",
+      "input": "<script>export default { components: { \"my-widget\": MyWidget } };</script><template><my-widget /></template>",
+      "inputSha256": "1eff00cf0c8c664efbdacae1f198d5af507331406a15ca3f529f6bc0dd5ea346",
+      "observations": [
+        [],
+        []
+      ],
+      "errorCount": 0,
+      "warningCount": 0
+    }
+  ]
+}

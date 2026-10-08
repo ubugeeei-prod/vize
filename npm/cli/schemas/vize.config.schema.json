@@ -525,6 +525,17 @@
               "default": "PascalCase",
               "type": "string",
               "enum": ["PascalCase", "kebab-case"]
+            },
+            "registeredComponentsOnly": {
+              "default": true,
+              "type": "boolean"
+            },
+            "globals": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           "additionalProperties": false

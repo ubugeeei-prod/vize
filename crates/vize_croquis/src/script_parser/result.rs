@@ -130,6 +130,7 @@ pub struct ScriptParseResult {
     pub re_export_forwards: Vec<crate::croquis::ReExportForward>,
     /// Components registered through Options API `components`.
     pub component_registrations: Vec<ComponentRegistration>,
+    pub(crate) template_component_registrations: crate::croquis::TemplateComponentRegistrations,
     /// API shape of the component's default export (e.g. class component).
     pub component_shape: ComponentShape,
     /// Definition spans for bindings (name -> (start, end) offset in script)
@@ -295,6 +296,7 @@ impl ScriptParseResult {
         summary.re_exports = self.re_exports;
         summary.re_export_forwards = self.re_export_forwards;
         summary.component_registrations = self.component_registrations;
+        summary.template_component_registrations = self.template_component_registrations;
         summary.component_shape = self.component_shape;
         summary.binding_spans = self.binding_spans;
         summary.options_descriptor = self.options_descriptor;

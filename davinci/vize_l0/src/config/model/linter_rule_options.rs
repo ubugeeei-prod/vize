@@ -241,6 +241,13 @@ impl ConfigLintRuleOptions {
             .map(|options| options.casing)
     }
 
+    /// Authored registration scope for component tag casing.
+    pub fn component_name_in_template_casing_options(
+        &self,
+    ) -> Option<&ComponentNameInTemplateCasingOptions> {
+        self.component_name_in_template_casing.as_ref()
+    }
+
     /// Configured casing for `script/custom-event-name-casing`.
     #[inline]
     pub fn custom_event_name_casing(&self) -> Option<CustomEventNameCasing> {
@@ -308,7 +315,7 @@ impl ConfigLintRuleOptions {
             self.strict_boolean_expressions = Some(options);
         }
         if let Some(options) = &overlay.component_name_in_template_casing {
-            self.component_name_in_template_casing = Some(*options);
+            self.component_name_in_template_casing = Some(options.clone());
         }
         if let Some(options) = &overlay.custom_event_name_casing {
             self.custom_event_name_casing = Some(*options);

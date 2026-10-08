@@ -214,6 +214,15 @@ componentNameInTemplateCasingOptionsDef: JsonSchema = new JsonSchema {
       enum = new Listing { "PascalCase"; "kebab-case" }
       default = "PascalCase"
     }
+    ["registeredComponentsOnly"] = new JsonSchema {
+      type = "boolean"
+      default = true
+    }
+    ["globals"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+      default = new Listing {}
+    }
   }
   additionalProperties = false
 }

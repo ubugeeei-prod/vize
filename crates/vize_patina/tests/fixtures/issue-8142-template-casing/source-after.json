@@ -1,0 +1,788 @@
+[
+  {
+    "id": "scripted-registered-dashed",
+    "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n<template><my-widget /></template>\n",
+    "registrationRule": true,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 97,
+          "fix": {
+            "edits": [
+              {
+                "end": 94,
+                "new_text": "MyWidget",
+                "start": 85
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 84
+        }
+      ],
+      "error_count": 0,
+      "filename": "Oracle.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n<template><MyWidget /></template>\n"
+  },
+  {
+    "id": "scripted-unregistered-dashed",
+    "source": "<script setup lang=\"ts\">\nconst label = \"ready\";\n</script>\n<template><my-widget /></template>\n",
+    "registrationRule": true,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 78,
+          "fix": null,
+          "help": "Import the component in <script setup> or register it in components option",
+          "labels": [],
+          "message": "Component is used but not explicitly imported",
+          "rule_name": "vue/require-component-registration",
+          "severity": "warning",
+          "start": 69
+        }
+      ],
+      "error_count": 0,
+      "filename": "Oracle.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup lang=\"ts\">\nconst label = \"ready\";\n</script>\n<template><my-widget /></template>\n"
+  },
+  {
+    "id": "scriptless-unregistered-dashed",
+    "source": "<template><my-widget /></template>\n",
+    "registrationRule": true,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 20,
+          "fix": null,
+          "help": "Import the component in <script setup> or register it in components option",
+          "labels": [],
+          "message": "Component is used but not explicitly imported",
+          "rule_name": "vue/require-component-registration",
+          "severity": "warning",
+          "start": 11
+        }
+      ],
+      "error_count": 0,
+      "filename": "Oracle.vue",
+      "warning_count": 1
+    },
+    "fixed": "<template><my-widget /></template>\n"
+  },
+  {
+    "id": "scripted-registered-pascal",
+    "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n<template><MyWidget /></template>\n",
+    "registrationRule": true,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Oracle.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n<template><MyWidget /></template>\n"
+  },
+  {
+    "id": "import default",
+    "source": "<script setup>import MyWidget from \"./MyWidget.vue\";</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 84,
+          "fix": {
+            "edits": [
+              {
+                "end": 81,
+                "new_text": "MyWidget",
+                "start": 72
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 71
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup>import MyWidget from \"./MyWidget.vue\";</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "import named type",
+    "source": "<script setup lang=\"ts\">import { type MyWidget } from \"./MyWidget.vue\";</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script setup lang=\"ts\">import { type MyWidget } from \"./MyWidget.vue\";</script><template><my-widget /></template>"
+  },
+  {
+    "id": "import whole type",
+    "source": "<script setup lang=\"ts\">import type MyWidget from \"./MyWidget.vue\";</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script setup lang=\"ts\">import type MyWidget from \"./MyWidget.vue\";</script><template><my-widget /></template>"
+  },
+  {
+    "id": "local const",
+    "source": "<script setup>const MyWidget = 1;</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 65,
+          "fix": {
+            "edits": [
+              {
+                "end": 62,
+                "new_text": "MyWidget",
+                "start": 53
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 52
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup>const MyWidget = 1;</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "local ref",
+    "source": "<script setup>import { ref } from \"vue\"; const MyWidget = ref(1);</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 97,
+          "fix": {
+            "edits": [
+              {
+                "end": 94,
+                "new_text": "MyWidget",
+                "start": 85
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 84
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup>import { ref } from \"vue\"; const MyWidget = ref(1);</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "local function",
+    "source": "<script setup>function MyWidget() {}</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 68,
+          "fix": {
+            "edits": [
+              {
+                "end": 65,
+                "new_text": "MyWidget",
+                "start": 56
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 55
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup>function MyWidget() {}</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "local class",
+    "source": "<script setup>class MyWidget {}</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 63,
+          "fix": {
+            "edits": [
+              {
+                "end": 60,
+                "new_text": "MyWidget",
+                "start": 51
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 50
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup>class MyWidget {}</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "local interface",
+    "source": "<script setup lang=\"ts\">interface MyWidget { value: string }</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 92,
+          "fix": {
+            "edits": [
+              {
+                "end": 89,
+                "new_text": "MyWidget",
+                "start": 80
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 79
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup lang=\"ts\">interface MyWidget { value: string }</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "local type alias",
+    "source": "<script setup lang=\"ts\">type MyWidget = string;</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 79,
+          "fix": {
+            "edits": [
+              {
+                "end": 76,
+                "new_text": "MyWidget",
+                "start": 67
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 66
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup lang=\"ts\">type MyWidget = string;</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "combined plain local const",
+    "source": "<script>const MyWidget = 1;</script><script setup>const foo = 1;</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 96,
+          "fix": {
+            "edits": [
+              {
+                "end": 93,
+                "new_text": "MyWidget",
+                "start": 84
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 83
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script>const MyWidget = 1;</script><script setup>const foo = 1;</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "plain import alone",
+    "source": "<script>import MyWidget from \"./MyWidget.vue\";</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script>import MyWidget from \"./MyWidget.vue\";</script><template><my-widget /></template>"
+  },
+  {
+    "id": "components inline object",
+    "source": "<script>export default { components: { MyWidget: { template: \"hi\" } } };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 104,
+          "fix": {
+            "edits": [
+              {
+                "end": 101,
+                "new_text": "MyWidget",
+                "start": 92
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 91
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script>export default { components: { MyWidget: { template: \"hi\" } } };</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "components async call",
+    "source": "<script>export default { components: { MyWidget: defineAsyncComponent(() => import(\"./MyWidget.vue\")) } };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 138,
+          "fix": {
+            "edits": [
+              {
+                "end": 135,
+                "new_text": "MyWidget",
+                "start": 126
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 125
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script>export default { components: { MyWidget: defineAsyncComponent(() => import(\"./MyWidget.vue\")) } };</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "components alias object",
+    "source": "<script>const comps = { MyWidget }; export default { components: comps };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script>const comps = { MyWidget }; export default { components: comps };</script><template><my-widget /></template>"
+  },
+  {
+    "id": "components spread",
+    "source": "<script>const comps = { MyWidget }; export default { components: { ...comps } };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script>const comps = { MyWidget }; export default { components: { ...comps } };</script><template><my-widget /></template>"
+  },
+  {
+    "id": "components static computed key",
+    "source": "<script>export default { components: { [\"MyWidget\"]: MyWidget } };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 98,
+          "fix": {
+            "edits": [
+              {
+                "end": 95,
+                "new_text": "MyWidget",
+                "start": 86
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 85
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script>export default { components: { [\"MyWidget\"]: MyWidget } };</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "components kebab key",
+    "source": "<script>export default { components: { \"my-widget\": MyWidget } };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script>export default { components: { \"my-widget\": MyWidget } };</script><template><my-widget /></template>"
+  },
+  {
+    "id": "props generated only",
+    "source": "<script setup lang=\"ts\">defineProps<{ MyWidget: string }>();</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script setup lang=\"ts\">defineProps<{ MyWidget: string }>();</script><template><my-widget /></template>"
+  },
+  {
+    "id": "props destructured local",
+    "source": "<script setup lang=\"ts\">const {MyWidget}=defineProps<{ MyWidget: string }>();</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 109,
+          "fix": {
+            "edits": [
+              {
+                "end": 106,
+                "new_text": "MyWidget",
+                "start": 97
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 96
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup lang=\"ts\">const {MyWidget}=defineProps<{ MyWidget: string }>();</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "plain interface plus setup",
+    "source": "<script lang=\"ts\">interface MyWidget {value:string}</script><script setup>const foo=1;</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 118,
+          "fix": {
+            "edits": [
+              {
+                "end": 115,
+                "new_text": "MyWidget",
+                "start": 106
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 105
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script lang=\"ts\">interface MyWidget {value:string}</script><script setup>const foo=1;</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "ambient enum",
+    "source": "<script setup lang=\"ts\">declare enum MyWidget { A }</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 83,
+          "fix": {
+            "edits": [
+              {
+                "end": 80,
+                "new_text": "MyWidget",
+                "start": 71
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 70
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup lang=\"ts\">declare enum MyWidget { A }</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "exported local type",
+    "source": "<script setup lang=\"ts\">export type MyWidget=string;</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 84,
+          "fix": {
+            "edits": [
+              {
+                "end": 81,
+                "new_text": "MyWidget",
+                "start": 72
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 71
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script setup lang=\"ts\">export type MyWidget=string;</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "local type generic parameter only",
+    "source": "<script setup lang=\"ts\" generic=\"MyWidget\">const foo=1;</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script setup lang=\"ts\" generic=\"MyWidget\">const foo=1;</script><template><my-widget /></template>"
+  },
+  {
+    "id": "components static computed template literal",
+    "source": "<script>export default { components: { [`MyWidget`]: MyWidget } };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 98,
+          "fix": {
+            "edits": [
+              {
+                "end": 95,
+                "new_text": "MyWidget",
+                "start": 86
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 85
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script>export default { components: { [`MyWidget`]: MyWidget } };</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "components constant computed concatenation",
+    "source": "<script>export default { components: { [\"My\"+\"Widget\"]: MyWidget } };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script>export default { components: { [\"My\"+\"Widget\"]: MyWidget } };</script><template><my-widget /></template>"
+  },
+  {
+    "id": "components computed components string",
+    "source": "<script>export default { [\"components\"]: { MyWidget } };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 88,
+          "fix": {
+            "edits": [
+              {
+                "end": 85,
+                "new_text": "MyWidget",
+                "start": 76
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 75
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script>export default { [\"components\"]: { MyWidget } };</script><template><MyWidget /></template>"
+  },
+  {
+    "id": "components literal duplicate keys first wins",
+    "source": "<script>export default { components: {OtherWidget}, components: {MyWidget} };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 0
+    },
+    "fixed": "<script>export default { components: {OtherWidget}, components: {MyWidget} };</script><template><my-widget /></template>"
+  },
+  {
+    "id": "components alias before literal",
+    "source": "<script>const comps={OtherWidget}; export default { components: comps, components: {MyWidget} };</script><template><my-widget /></template>",
+    "registrationRule": false,
+    "result": {
+      "diagnostics": [
+        {
+          "end": 128,
+          "fix": {
+            "edits": [
+              {
+                "end": 125,
+                "new_text": "MyWidget",
+                "start": 116
+              }
+            ],
+            "message": "Use PascalCase for component names"
+          },
+          "help": "Use PascalCase for component names",
+          "labels": [],
+          "message": "Component should use PascalCase",
+          "rule_name": "vue/component-name-in-template-casing",
+          "severity": "warning",
+          "start": 115
+        }
+      ],
+      "error_count": 0,
+      "filename": "Probe.vue",
+      "warning_count": 1
+    },
+    "fixed": "<script>const comps={OtherWidget}; export default { components: comps, components: {MyWidget} };</script><template><MyWidget /></template>"
+  }
+]

@@ -1,0 +1,138 @@
+{
+  "schema": "vize.template-casing.independent-eslint-oracle",
+  "version": 1,
+  "node": "v24.14.0",
+  "sourceRequirements": "n8n latest CLI functional setting only; authored carriers; no branch source",
+  "casing": [
+    "error",
+    "PascalCase"
+  ],
+  "registration": "error",
+  "plugins": {
+    "eslint": {
+      "version": "10.4.1",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2/node_modules/eslint/lib/api.js",
+      "sha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2"
+    },
+    "eslint-plugin-vue": {
+      "version": "10.9.2",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/dist/index.js",
+      "sha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017"
+    },
+    "vue-eslint-parser": {
+      "version": "10.4.1",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/vue-eslint-parser@10.4.1_eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2__supports-color@10.2.2/node_modules/vue-eslint-parser/dist/index.cjs",
+      "sha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087"
+    },
+    "@typescript-eslint/parser": {
+      "version": "8.65.0",
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/@typescript-eslint+parser@8.65.0_eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2__supports-color@10.2.2_typescript@6.0.3/node_modules/@typescript-eslint/parser/dist/index.js",
+      "sha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966"
+    }
+  },
+  "cases": [
+    {
+      "id": "scripted-registered-dashed",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n<template><my-widget /></template>\n",
+      "result": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/oracle/scripted-registered-dashed.vue",
+        "messages": [
+          {
+            "ruleId": "vue/component-name-in-template-casing",
+            "severity": 2,
+            "message": "Component name \"my-widget\" is not PascalCase.",
+            "line": 4,
+            "column": 11,
+            "messageId": "incorrectCase",
+            "endLine": 4,
+            "endColumn": 21,
+            "fix": {
+              "range": [
+                84,
+                94
+              ],
+              "text": "<MyWidget"
+            }
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 1,
+        "fixableWarningCount": 0,
+        "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n<template><my-widget /></template>\n",
+        "usedDeprecatedRules": []
+      }
+    },
+    {
+      "id": "scripted-unregistered-dashed",
+      "source": "<script setup lang=\"ts\">\nconst label = \"ready\";\n</script>\n<template><my-widget /></template>\n",
+      "result": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/oracle/scripted-unregistered-dashed.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-undef-components",
+            "severity": 2,
+            "message": "The '<my-widget>' component has been used, but not defined.",
+            "line": 4,
+            "column": 11,
+            "messageId": "undef",
+            "endLine": 4,
+            "endColumn": 24
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<script setup lang=\"ts\">\nconst label = \"ready\";\n</script>\n<template><my-widget /></template>\n",
+        "usedDeprecatedRules": []
+      }
+    },
+    {
+      "id": "scriptless-unregistered-dashed",
+      "source": "<template><my-widget /></template>\n",
+      "result": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/oracle/scriptless-unregistered-dashed.vue",
+        "messages": [
+          {
+            "ruleId": "vue/no-undef-components",
+            "severity": 2,
+            "message": "The '<my-widget>' component has been used, but not defined.",
+            "line": 1,
+            "column": 11,
+            "messageId": "undef",
+            "endLine": 1,
+            "endColumn": 24
+          }
+        ],
+        "suppressedMessages": [],
+        "errorCount": 1,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "source": "<template><my-widget /></template>\n",
+        "usedDeprecatedRules": []
+      }
+    },
+    {
+      "id": "scripted-registered-pascal",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from \"./MyWidget.vue\";\n</script>\n<template><MyWidget /></template>\n",
+      "result": {
+        "filePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/oracle/scripted-registered-pascal.vue",
+        "messages": [],
+        "suppressedMessages": [],
+        "errorCount": 0,
+        "fatalErrorCount": 0,
+        "warningCount": 0,
+        "fixableErrorCount": 0,
+        "fixableWarningCount": 0,
+        "usedDeprecatedRules": []
+      }
+    }
+  ]
+}

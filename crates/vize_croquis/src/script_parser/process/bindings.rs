@@ -37,7 +37,10 @@ pub(in crate::script_parser) fn push_binding_pattern_names(
     for_each_binding_pattern_name(pattern, &mut |name| target.push(CompactString::new(name)));
 }
 
-fn for_each_binding_pattern_name(pattern: &BindingPattern<'_>, visit: &mut impl FnMut(&str)) {
+pub(in crate::script_parser) fn for_each_binding_pattern_name(
+    pattern: &BindingPattern<'_>,
+    visit: &mut impl FnMut(&str),
+) {
     match pattern {
         BindingPattern::BindingIdentifier(id) => visit(id.name.as_str()),
         BindingPattern::ObjectPattern(object) => {

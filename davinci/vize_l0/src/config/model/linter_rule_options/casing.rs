@@ -1,10 +1,22 @@
 use serde::{Deserialize, Serialize};
 
 /// Options for `vue/component-name-in-template-casing`.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct ComponentNameInTemplateCasingOptions {
     pub casing: TemplateComponentNameCasing,
+    pub registered_components_only: bool,
+    pub globals: Vec<crate::String>,
+}
+
+impl Default for ComponentNameInTemplateCasingOptions {
+    fn default() -> Self {
+        Self {
+            casing: TemplateComponentNameCasing::default(),
+            registered_components_only: true,
+            globals: Vec::new(),
+        }
+    }
 }
 
 /// Component tag casing accepted by `vue/component-name-in-template-casing`.

@@ -44,6 +44,7 @@ mod summary_core_tests;
 #[cfg(test)]
 mod summary_template_tests;
 mod template;
+mod template_components;
 mod vir;
 
 // Re-export all public croquis data types from their focused modules.
@@ -66,6 +67,7 @@ pub use template::{
     ComponentRegistration, ComponentUsage, ElementIdInfo, ElementIdKind, EventListener, PassedProp,
     SlotUsage, SpreadProp, TemplateExpression, TemplateExpressionKind, TemplateInfo,
 };
+pub use template_components::TemplateComponentRegistrations;
 
 use crate::hoist::HoistTracker;
 use crate::macros::MacroTracker;
@@ -127,6 +129,10 @@ pub struct Croquis {
 
     /// Components registered through Options API `components`.
     pub component_registrations: Vec<ComponentRegistration>,
+
+    /// Authored registration names for template casing, without resolving
+    /// component values, spreads, or aliases. Collected in the script walk.
+    pub template_component_registrations: TemplateComponentRegistrations,
 
     /// Detailed component usage information (props, events, slots)
     pub component_usages: Vec<ComponentUsage>,

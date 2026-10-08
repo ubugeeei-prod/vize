@@ -103,9 +103,12 @@ impl ResolvedLinterRuleGroups {
                 if let Some(mode) = rule_options.define_props_destructuring() {
                     linter = linter.with_define_props_destructuring(mode);
                 }
-                if let Some(casing) = rule_options.component_name_in_template_casing() {
-                    linter =
-                        linter.with_component_name_in_template_casing(component_casing(casing));
+                if let Some(options) = rule_options.component_name_in_template_casing_options() {
+                    linter = linter.with_component_name_in_template_casing_policy(
+                        component_casing(options.casing),
+                        options.registered_components_only,
+                        options.globals.clone(),
+                    );
                 }
                 if let Some(casing) = rule_options.custom_event_name_casing() {
                     linter = linter.with_custom_event_name_casing(event_name_casing(casing));

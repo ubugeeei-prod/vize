@@ -63,7 +63,7 @@ export default defineConfig({
 | `html/no-empty-palpable-content` | `{ contentDirectives?: string[] }` | Defaults to an empty list. Exact bare names identify directives that supply visible content. Rule enablement remains separate. |
 | `script/no-restricted-globals` | `{ globals?: Array<{ name: string; message?: string }> }` | Without options, the built-in deny list is `process`, `localStorage`, and `sessionStorage`. A non-empty `globals` list replaces that built-in list. |
 | `script/no-restricted-members` | `{ members?: Array<{ object: string; property: string; message?: string }> }` | Off unless `members` is configured and the rule is enabled. A missing `message` uses the generic diagnostic help. |
-| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case" }` | Defaults to `PascalCase`. |
+| `vue/component-name-in-template-casing` | `{ casing?: "PascalCase" \| "kebab-case", registeredComponentsOnly?: boolean, globals?: string[] }` | Defaults to `PascalCase`, registered components only, and no literal globals. |
 | `script/custom-event-name-casing` | `{ casing?: "camelCase" \| "kebab-case" }` | Defaults to `camelCase`. |
 | `script/define-props-destructuring` | `{ mode?: "only-when-assigned" \| "always" \| "never" }` | Defaults to `only-when-assigned`. `always` also checks bare calls; `never` requires props-object access. Vue 3.5 destructuring preserves reactivity. |
 | `vue/no-mutating-props` | `{ shallowOnly?: boolean }` | Defaults to `false`; `true` allows nested mutation while still disallowing direct prop reassignment. |

@@ -11,7 +11,12 @@ unknown-field behavior, and scoped replacement semantics.
 ## `vue/component-name-in-template-casing`
 
 Use this option when a project wants component tags in templates to be consistently PascalCase or
-kebab-case. Native HTML/SVG elements and Vue built-ins are skipped.
+kebab-case. By default, it checks registered component names from `<script setup>` declarations
+and direct `components` registrations. Unregistered tags and scriptless templates stay clear.
+Use `registeredComponentsOnly: false` to check all custom tags, or `globals: ["PrimaryButton"]`
+for explicitly registered global components. Global names are literal strings; regex patterns and
+the ESLint `ignores` option remain unsupported. Native HTML, SVG, MathML, `slot` and dynamic
+`component` tags are skipped.
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -35,6 +40,9 @@ export default defineConfig({
 Bad with the config above:
 
 ```vue
+<script setup>
+import PrimaryButton from "./PrimaryButton.vue";
+</script>
 <template>
   <PrimaryButton />
 </template>
@@ -43,6 +51,9 @@ Bad with the config above:
 Good:
 
 ```vue
+<script setup>
+import PrimaryButton from "./PrimaryButton.vue";
+</script>
 <template>
   <primary-button />
 </template>

@@ -47,6 +47,8 @@ class NoRestrictedMembersOptions {
 /// Options for `vue/component-name-in-template-casing`.
 class ComponentNameInTemplateCasingOptions {
   casing: TemplateComponentNameCasing = "PascalCase"
+  registeredComponentsOnly: Boolean = true
+  globals: Listing<String> = new Listing {}
 }
 
 /// Options for `script/custom-event-name-casing`.
