@@ -42,6 +42,7 @@ type Job = {
     name?: string;
     if?: string;
     run?: string;
+    env?: Record<string, string>;
     uses?: string;
     with?: Record<string, string>;
   }>;
@@ -243,17 +244,29 @@ test("full JS qualification retains independent native builds and strictly gates
   );
   const fullJobs = ["test-js-packages", "build-js-packages", "test-scripts", "check-js"];
   assert.deepEqual(full.needs, fullJobs);
-  const gate = full.steps?.at(-1);
+  const caller = full.steps?.at(-1);
+  assert.equal(caller?.uses, "./.github/actions/report-full-js-qualification");
+  assert.deepEqual(caller?.with, { "needs-json": "${{ toJSON(needs) }}" });
+  const report = parse(
+    readRepoFile(".github", "actions", "report-full-js-qualification", "action.yml"),
+  ) as {
+    inputs: Record<string, { required?: boolean }>;
+    runs: { using: string; steps: NonNullable<Job["steps"]> };
+  };
+  assert.equal(report.inputs["needs-json"].required, true);
+  assert.equal(report.runs.using, "composite");
+  const gate = report.runs.steps.at(-1);
   assert.ok(gate?.run);
+  assert.deepEqual(gate.env, { NEEDS_JSON: "${{ inputs.needs-json }}" });
   assert.equal(gate?.run, "node tools/support/compat/github/require-needs-success.ts");
-  const setup = full.steps?.find((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
+  const setup = report.runs.steps.find((step) => step.uses?.startsWith("voidzero-dev/setup-vp@"));
   assert.ok(setup);
   assert.deepEqual(setup.with, {
     "node-version-file": "package.json",
     cache: false,
     "run-install": false,
   });
-  assert.ok(full.steps && full.steps.indexOf(setup) < full.steps.indexOf(gate));
+  assert.ok(report.runs.steps.indexOf(setup) < report.runs.steps.indexOf(gate));
   const testJob = workflow.jobs?.["test-js-packages"];
   const history = testJob?.steps?.find((step) => step.name === "Test JS packages");
   assert.equal(history?.if, "${{ always() }}");

@@ -382,22 +382,7 @@ jobs:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: "package.json"
-          cache: true
-          run-install: false
-      - uses: ./.github/actions/setup-moonbit
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
-        with:
-          wild-version: "0.9.0"
-      - uses: ./.github/actions/setup-rust-sticky-cache
-        with:
-          key: test-js-packages
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-      - name: Install JS dependencies
-        run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/setup-js-package-tests
       - name: Test JS packages
         if: ${{ always() }}
         uses: ./.github/actions/test-js-packages-with-history
@@ -413,11 +398,8 @@ jobs:
       - check-js
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with: { node-version-file: "package.json", cache: false, run-install: false }
-      - name: Require every full JS qualification job to succeed
-        env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: node tools/support/compat/github/require-needs-success.ts
+      - uses: ./.github/actions/report-full-js-qualification
+        with: { needs-json: "${{ toJSON(needs) }}" }
   clippy-and-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
