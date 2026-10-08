@@ -97,6 +97,8 @@ sha2.workspace = true
 [dev-dependencies]
 insta.workspace = true
 tempfile.workspace = true
+ignore.workspace = true
+sha2.workspace = true
 # The lint/fix path is covered without the `napi` feature (see `lib.rs`), so the
 # atomic writer it shares with the CLI has to be linkable in test builds too.
 vize = { path = "../vize" }

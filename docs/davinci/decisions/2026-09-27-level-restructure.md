@@ -232,7 +232,7 @@ historical binary evidence; later heads still require their own Actions proof. T
 
 ## Multi-framework
 
-Tracked in [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) and [#6855](https://github.com/ubugeeei-prod/vize/issues/6855)–[#6860](https://github.com/ubugeeei-prod/vize/issues/6860).
+Tracked in [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) and [#6855](https://github.com/ubugeeei-prod/vize/issues/6855)–[#6860](https://github.com/ubugeeei-prod/vize/issues/6860). The [original Oxlint HTML profile producer](./2026-10-08-oxlint-html-profile-producer.md), paired with #7903, owns one exact ignore0.4.33 native selection traversal with authored ancestor/root and regular-file refusal controls, immutable original inputs and complete selected-set provenance. It adds no Git subprocess, selection-only query, public struct field or product pipeline stage; the default collector stays byte-exact, while wrapper, installed and same-call orchestration qualification remain separate required work.
 
 - This supersedes charter row #1. Other frameworks are in-tree and include the compiler, with parity against each reference compiler.
 - The order is **TSRX → Solid → others** (Svelte, Angular/Analog).
