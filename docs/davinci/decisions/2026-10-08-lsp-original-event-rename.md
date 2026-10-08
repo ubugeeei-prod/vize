@@ -188,3 +188,18 @@ adds no production logging, query stage or diagnostic correction; authentic fres
 hosted execution must establish the failing stage before a source repair.
 
 Paired editor-assembly witness decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6050218891) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6050219165).
+
+The paired original-400 job for source `aeea4f72aa` fails source eligibility
+before executing any benchmark: its closed registry rejects the new
+`cold_collision.rs` control. Register exactly the 16 reviewed event producer,
+selector, test and diagnostic-witness files in the existing Set, and describe
+that bounded source scope in the methodology record. Preserve every old entry,
+unknown-path refusal, actual common-ancestor baseline, original inputs and
+dependency locks, all 400 complete provider packets, identical build recipes
+and current performance ceilings. Eligibility permits measurement on that
+original workload; it supplies no performance success, event-latency claim or
+event-ownership authority. No synthetic future source or result snapshot is
+introduced. Fresh hosted diagnostic execution and genuine current-main
+composition remain required; the 104 external assertions stay unchanged.
+
+Paired closed-source eligibility decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6050392845) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6050393094).

@@ -158,6 +158,23 @@ if (process.argv[2] === "prepare") {
     "crates/vize_canon/tests/original_program_check/process_reuse.rs",
     "crates/vize_canon/tests/original_program_check/process_admission.rs",
     "crates/vize_canon/tests/support/original_diagnosing_process.rs",
+    // Reviewed event navigation/rename ownership; original400 remains unchanged.
+    "crates/vize/tests/lsp_library_rename_refusal_cli/cold_collision.rs",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/diagnostic_witness.rs",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/original.rs",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/safe_update.rs",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/safety_controls.rs",
+    "crates/vize/tests/lsp_original_event_rename_cli.rs",
+    "crates/vize_canon/src/virtual_ts.rs",
+    "crates/vize_canon/src/virtual_ts/generator.rs",
+    "crates/vize_canon/src/virtual_ts/generator/anchors.rs",
+    "crates/vize_canon/src/virtual_ts/generator/setup_helpers.rs",
+    "crates/vize_canon/src/virtual_ts/generator/setup_helpers/declarations.rs",
+    "crates/vize_canon/src/virtual_ts/generator/setup_helpers/emit_navigation.rs",
+    "crates/vize_canon/src/virtual_ts/generator/setup_helpers/emit_navigation/tests.rs",
+    "crates/vize_maestro/src/ide/corsa_support/canonical/component_project.rs",
+    "crates/vize_maestro/src/ide/diagnostics/editor_event_partial_diagnostics_tests.rs",
+    "crates/vize_maestro/src/ide/diagnostics/editor_event_partial_diagnostics_tests/fixture.rs",
   ]);
   const harnessOnly = !cut && production.length === 0;
   if (harnessOnly) {
@@ -277,7 +294,7 @@ if (process.argv[2] === "prepare") {
           ? "Literal published v0.433 and root-frozen release cut; complete changed Git-entry manifest, independent driver, identical fresh ci builds, original400 and one recorded runtime"
           : harnessOnly
             ? "Same production source; closed reviewed harness-only delta and unchanged original inputs/locks. Qualification only, no performance or source-effect gain."
-            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options or owned document-batch transfer delta; one worker, identical release recipe, original400 inputs and current locked runtime",
+            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options, document-batch transfer or event navigation/rename ownership delta; one worker, identical release recipe, original400 inputs and current locked runtime",
       },
       null,
       2,
