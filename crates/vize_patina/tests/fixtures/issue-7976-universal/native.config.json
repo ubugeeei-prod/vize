@@ -1,0 +1,12 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "css/no-display-none": "warn",
+      "type/require-typed-props": "warn"
+    }
+  },
+  "typeChecker": {
+    "corsaPath": "./vize-unavailable-corsa-for-global-universal"
+  }
+}

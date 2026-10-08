@@ -6,22 +6,25 @@ import path from "node:path";
 import { test } from "node:test";
 import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
 import { compoundCorpus, root, sha256 } from "./css-global-compound-reference.mjs";
+import { fixture as universalFixture, universalCorpus } from "./css-global-universal-reference.mjs";
 
 await test("source CLI preserves whole compound global ownership and refusal reports", () => {
   const { source, cases } = compoundCorpus();
+  const universal = universalCorpus();
   const build = expectedBuildIdentity(root);
   const binary = path.join(root, build.binaryPath);
   const receipt = JSON.parse(fs.readFileSync(binary + ".differential-build.json", "utf8"));
   validateBuildReceipt(receipt, build);
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-css-global-compound-"));
   const artifact = path.join(root, "target/differential/css-global-compound-ownership.json");
-  const evidence = { source, build, receipt, observations: [] };
+  const evidence = { source, universalSource: universal.source, build, receipt, observations: [] };
   fs.mkdirSync(path.dirname(artifact), { recursive: true });
   const persist = () => fs.writeFileSync(artifact, JSON.stringify(evidence, null, 2) + "\n");
-  const config = fs.readFileSync(
+  const baseConfig = fs.readFileSync(
     path.join(root, "crates/vize_patina/tests/fixtures/issue-7976/7976/vize.config.json.fixture"),
     "utf8",
   );
+  const nativeConfig = fs.readFileSync(path.join(universalFixture, "native.config.json"), "utf8");
   const run = (row, id, args, configText, expected) => {
     const input = fs.readFileSync(path.join(directory, row.filename));
     const before = { source: input.toString(), sourceSha256: sha256(input), config: configText };
@@ -40,11 +43,14 @@ await test("source CLI preserves whole compound global ownership and refusal rep
       stdout: actual.stdout ?? "",
       stderr: actual.stderr ?? "",
     };
+    const observation = { id, before, expected, raw };
+    evidence.observations.push(observation);
+    persist();
     const after = {
       source: fs.readFileSync(path.join(directory, row.filename), "utf8"),
       config: fs.readFileSync(path.join(directory, "vize.config.json"), "utf8"),
     };
-    evidence.observations.push({ id, before, after, expected, raw });
+    observation.after = after;
     persist();
     assert.equal(raw.error, null, id);
     assert.equal(raw.signal, null, id);
@@ -56,41 +62,48 @@ await test("source CLI preserves whole compound global ownership and refusal rep
   };
   try {
     fs.writeFileSync(path.join(directory, ".git"), "authored fixture workspace boundary\n");
-    for (const row of cases) {
-      fs.writeFileSync(path.join(directory, row.filename), row.source);
-      fs.writeFileSync(path.join(directory, "vize.config.json"), config);
-      const args = ["lint", "-f", "json", "--locale", "en", "--help-level", "full", row.filename];
-      for (let pass = 0; pass < 3; pass++) {
-        const raw = run(row, `${row.id}-json-${pass}`, args, config, row.expectedCli);
-        assert.deepEqual(JSON.parse(raw.stdout), row.expectedCli, row.id);
+    for (const [rows, config, prefix] of [
+      [cases, baseConfig, ""],
+      [universal.cases, nativeConfig, "universal-"],
+    ]) {
+      for (const row of rows) {
+        const id = prefix + row.id;
+        fs.writeFileSync(path.join(directory, row.filename), row.source);
+        fs.writeFileSync(path.join(directory, "vize.config.json"), config);
+        const args = ["lint", "-f", "json", "--locale", "en", "--help-level", "full", row.filename];
+        for (let pass = 0; pass < 3; pass++) {
+          const raw = run(row, `${id}-json-${pass}`, args, config, row.expectedCli);
+          assert.deepEqual(JSON.parse(raw.stdout), row.expectedCli, row.id);
+        }
+        const plainArgs = [
+          "lint",
+          "-f",
+          "plain",
+          "--locale",
+          "en",
+          "--help-level",
+          "full",
+          row.filename,
+        ];
+        assert.equal(
+          run(row, id + "-plain", plainArgs, config, row.expectedPlain).stdout,
+          row.expectedPlain,
+          row.id,
+        );
+        const offConfig = JSON.parse(config);
+        offConfig.linter.rules["css/no-display-none"] = "off";
+        const off = JSON.stringify(offConfig);
+        fs.writeFileSync(path.join(directory, "vize.config.json"), off);
+        const expected = [{ file: row.filename, messages: [], errorCount: 0, warningCount: 0 }];
+        assert.deepEqual(
+          JSON.parse(run(row, id + "-off", args, off, expected).stdout),
+          expected,
+          row.id,
+        );
       }
-      const plainArgs = [
-        "lint",
-        "-f",
-        "plain",
-        "--locale",
-        "en",
-        "--help-level",
-        "full",
-        row.filename,
-      ];
-      assert.equal(
-        run(row, row.id + "-plain", plainArgs, config, row.expectedPlain).stdout,
-        row.expectedPlain,
-        row.id,
-      );
-      const off = JSON.stringify({
-        linter: { preset: "incremental", rules: { "css/no-display-none": "off" } },
-      });
-      fs.writeFileSync(path.join(directory, "vize.config.json"), off);
-      const expected = [{ file: row.filename, messages: [], errorCount: 0, warningCount: 0 }];
-      assert.deepEqual(
-        JSON.parse(run(row, row.id + "-off", args, off, expected).stdout),
-        expected,
-        row.id,
-      );
     }
-    assert.equal(evidence.observations.length, 310);
+    assert.equal(evidence.observations.length, 310 + universal.source.cliObservationCount);
+    assert.equal(new Set(evidence.observations.map((row) => row.id)).size, 525);
   } finally {
     try {
       persist();

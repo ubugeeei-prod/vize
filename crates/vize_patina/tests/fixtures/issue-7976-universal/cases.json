@@ -1,0 +1,1315 @@
+{
+  "schema": "vize.css.global-universal.corpus",
+  "authority": "Independent whole source/API/report obligations from mandatory class/ID ownership and existing public report contracts; no captured product output. Universals add no constraint; standalone CSS has no template input.",
+  "cases": [
+    {
+      "id": "inner-foreign-class",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 163,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        146
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "inner-foreign-compound",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 169,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        152
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "inner-foreign-id",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*#foreign) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 163,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        146
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "inner-owned-id-foreign-class",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*#owned.foreign) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 169,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        152
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "outer-universal-foreign",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n*:global(.foreign.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 169,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        152
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "both-universals",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n*:global(*.foreign.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 170,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        153
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "decoded-class-escape",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.fo\\72 eign.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 172,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        155
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "edge-whitespace",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global( *.foreign.local ) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 171,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        154
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "all-foreign-list",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign.local), *:global(#foreign.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 195,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        178
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "deep-and-foreign-list",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:deep(.remote), :global(*.foreign.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 185,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        168
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "foreign-global-parent-local-child",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign.local) { display: none; & .local { display: none; } }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 197,
+      "expectedStarts": [
+        178
+      ],
+      "expectedCssStarts": [
+        152,
+        178
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 54,
+              "endLine": 3,
+              "endColumn": 61,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:54 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "local-class",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 161,
+      "expectedStarts": [
+        144
+      ],
+      "expectedCssStarts": [
+        144
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 20,
+              "endLine": 3,
+              "endColumn": 27,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:20 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "local-id",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*#owned) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 161,
+      "expectedStarts": [
+        144
+      ],
+      "expectedCssStarts": [
+        144
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 20,
+              "endLine": 3,
+              "endColumn": 27,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:20 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "bare-universal",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 155,
+      "expectedStarts": [
+        138
+      ],
+      "expectedCssStarts": [
+        138
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 14,
+              "endLine": 3,
+              "endColumn": 21,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:14 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "outer-absent-inner-local",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n*.foreign:global(.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 169,
+      "expectedStarts": [
+        152
+      ],
+      "expectedCssStarts": [
+        152
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 28,
+              "endLine": 3,
+              "endColumn": 35,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:28 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "outer-owned-inner-local",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n*.local:global(*.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 168,
+      "expectedStarts": [
+        151
+      ],
+      "expectedCssStarts": [
+        151
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 27,
+              "endLine": 3,
+              "endColumn": 34,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:27 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "inner-descendant",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign .local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 170,
+      "expectedStarts": [
+        153
+      ],
+      "expectedCssStarts": [
+        153
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 29,
+              "endLine": 3,
+              "endColumn": 36,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:29 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "inner-child",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign > .local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 172,
+      "expectedStarts": [
+        155
+      ],
+      "expectedCssStarts": [
+        155
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 31,
+              "endLine": 3,
+              "endColumn": 38,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:31 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "inner-sibling",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign + .local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 172,
+      "expectedStarts": [
+        155
+      ],
+      "expectedCssStarts": [
+        155
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 31,
+              "endLine": 3,
+              "endColumn": 38,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:31 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "inner-attribute",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign[data-state]) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 175,
+      "expectedStarts": [
+        158
+      ],
+      "expectedCssStarts": [
+        158
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 34,
+              "endLine": 3,
+              "endColumn": 41,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:34 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "inner-pseudo",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign:hover) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 169,
+      "expectedStarts": [
+        152
+      ],
+      "expectedCssStarts": [
+        152
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 28,
+              "endLine": 3,
+              "endColumn": 35,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:28 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "outer-attribute",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n*[data-state]:global(.foreign) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 175,
+      "expectedStarts": [
+        158
+      ],
+      "expectedCssStarts": [
+        158
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 34,
+              "endLine": 3,
+              "endColumn": 41,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:34 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "outer-filter",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n*:global(.foreign):not(.missing) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 177,
+      "expectedStarts": [
+        160
+      ],
+      "expectedCssStarts": [
+        160
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 43,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:36 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "inner-any-namespace",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*|*.foreign) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 165,
+      "expectedStarts": [
+        148
+      ],
+      "expectedCssStarts": [
+        148
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 24,
+              "endLine": 3,
+              "endColumn": 31,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:24 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "inner-empty-namespace",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(|*.foreign) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 164,
+      "expectedStarts": [
+        147
+      ],
+      "expectedCssStarts": [
+        147
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 23,
+              "endLine": 3,
+              "endColumn": 30,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:23 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "outer-any-namespace",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n*|*:global(.foreign) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 165,
+      "expectedStarts": [
+        148
+      ],
+      "expectedCssStarts": [
+        148
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 24,
+              "endLine": 3,
+              "endColumn": 31,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:24 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "outer-empty-namespace",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n|*:global(.foreign) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 164,
+      "expectedStarts": [
+        147
+      ],
+      "expectedCssStarts": [
+        147
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 23,
+              "endLine": 3,
+              "endColumn": 30,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:23 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "inner-comment",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign/**/.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 173,
+      "expectedStarts": [
+        156
+      ],
+      "expectedCssStarts": [
+        156
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 32,
+              "endLine": 3,
+              "endColumn": 39,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:32 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "inner-whitespace",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(* .foreign) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 164,
+      "expectedStarts": [
+        147
+      ],
+      "expectedCssStarts": [
+        147
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 23,
+              "endLine": 3,
+              "endColumn": 30,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:23 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "multiple-globals",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n*:global(.foreign):global(.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 178,
+      "expectedStarts": [
+        161
+      ],
+      "expectedCssStarts": [
+        161
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 37,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:37 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "repeated-star",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(**.foreign) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 164,
+      "expectedStarts": [
+        147
+      ],
+      "expectedCssStarts": [
+        147
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 23,
+              "endLine": 3,
+              "endColumn": 30,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:23 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "nonleading-star",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(.foreign*.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 169,
+      "expectedStarts": [
+        152
+      ],
+      "expectedCssStarts": [
+        152
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 28,
+              "endLine": 3,
+              "endColumn": 35,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:28 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "comma-in-global",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign,.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 170,
+      "expectedStarts": [
+        153
+      ],
+      "expectedCssStarts": [
+        153
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 29,
+              "endLine": 3,
+              "endColumn": 36,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:29 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "mixed-selector-list",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign), :global(.local) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 180,
+      "expectedStarts": [
+        163
+      ],
+      "expectedCssStarts": [
+        163
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 39,
+              "endLine": 3,
+              "endColumn": 46,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:39 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "foreign-filter-local-subject",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n.local:has(:global(*.foreign)) { display: none; }\n</style>\n",
+      "styleStart": 125,
+      "styleEnd": 175,
+      "expectedStarts": [
+        158
+      ],
+      "expectedCssStarts": [
+        158
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 34,
+              "endLine": 3,
+              "endColumn": 41,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:34 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "single-root-fallthrough",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div class=\"local\">content</div></template>\n<style scoped>\n:global(*.foreign) { display: none; }\n</style>\n",
+      "styleStart": 69,
+      "styleEnd": 107,
+      "expectedStarts": [
+        90
+      ],
+      "expectedCssStarts": [
+        90
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 22,
+              "endLine": 3,
+              "endColumn": 29,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:22 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "dynamic-class-unknown",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><div :class=\"classes\">content</div><aside>other</aside></template>\n<style scoped>\n:global(*.foreign) { display: none; }\n</style>\n",
+      "styleStart": 92,
+      "styleEnd": 130,
+      "expectedStarts": [
+        113
+      ],
+      "expectedCssStarts": [
+        113
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 22,
+              "endLine": 3,
+              "endColumn": 29,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:22 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "component-root-unknown",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><Child/><aside>other</aside></template>\n<style scoped>\n:global(*.foreign) { display: none; }\n</style>\n",
+      "styleStart": 65,
+      "styleEnd": 103,
+      "expectedStarts": [
+        86
+      ],
+      "expectedCssStarts": [
+        86
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 22,
+              "endLine": 3,
+              "endColumn": 29,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:22 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "foreign-namespace-template",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template><svg><circle/></svg><aside>other</aside></template>\n<style scoped>\n:global(*.foreign) { display: none; }\n</style>\n",
+      "styleStart": 77,
+      "styleEnd": 115,
+      "expectedStarts": [
+        98
+      ],
+      "expectedCssStarts": [
+        98
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 22,
+              "endLine": 3,
+              "endColumn": 29,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:22 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "external-template-unknown",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template src=\"./External.html\"></template>\n<style scoped>\n:global(*.foreign) { display: none; }\n</style>\n",
+      "styleStart": 59,
+      "styleEnd": 97,
+      "expectedStarts": [
+        80
+      ],
+      "expectedCssStarts": [
+        80
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 22,
+              "endLine": 3,
+              "endColumn": 29,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:22 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "non-html-template-unknown",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<template lang=\"md\">plain text</template>\n<style scoped>\n:global(*.foreign) { display: none; }\n</style>\n",
+      "styleStart": 57,
+      "styleEnd": 95,
+      "expectedStarts": [
+        78
+      ],
+      "expectedCssStarts": [
+        78
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 3,
+              "column": 22,
+              "endLine": 3,
+              "endColumn": 29,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:3:22 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    },
+    {
+      "id": "scripted-no-query-foreign",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<script setup lang=\"ts\">\nconst ready = true;\n</script>\n<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.foreign.local) { display: none; }\n</style>\n",
+      "styleStart": 180,
+      "styleEnd": 224,
+      "expectedStarts": [],
+      "expectedCssStarts": [
+        207
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedPlain": "Patina lint report: No problems found in 1 file(s)\n"
+    },
+    {
+      "id": "scripted-no-query-local",
+      "filename": "UniversalGlobalOwnership.vue",
+      "source": "<script setup lang=\"ts\">\nconst ready = true;\n</script>\n<template><div class=\"local\" id=\"owned\">content</div><aside class=\"other\" id=\"aside\">other</aside></template>\n<style scoped>\n:global(*.local) { display: none; }\n</style>\n",
+      "styleStart": 180,
+      "styleEnd": 216,
+      "expectedStarts": [
+        199
+      ],
+      "expectedCssStarts": [
+        199
+      ],
+      "expectedCli": [
+        {
+          "file": "UniversalGlobalOwnership.vue",
+          "messages": [
+            {
+              "ruleId": "css/no-display-none",
+              "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+              "severity": 1,
+              "message": "[vize:css/no-display-none] Consider using v-show directive instead of display: none",
+              "line": 6,
+              "column": 20,
+              "endLine": 6,
+              "endColumn": 27,
+              "help": "v-show toggles visibility without removing from DOM, improving performance for frequent toggles"
+            }
+          ],
+          "errorCount": 0,
+          "warningCount": 1
+        }
+      ],
+      "expectedPlain": "Patina lint report: 1 warning in 1 file\n\nUniversalGlobalOwnership.vue\n  UniversalGlobalOwnership.vue:6:20 warning css/no-display-none Consider using v-show directive instead of display: none\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      v-show toggles visibility without removing from DOM, improving performance for frequent toggles\n"
+    }
+  ]
+}

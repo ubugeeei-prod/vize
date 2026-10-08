@@ -6,8 +6,8 @@ import { globalCorpus } from "./css-global-ownership-reference.mjs";
 await test("compound ownership freezes all originals and changes only two whole semantic packets", () => {
   const { source, cases } = compoundCorpus();
   assert.equal(source.history.length, 13);
-  assert.equal(cases.filter((row) => row.expectedStarts.length === 0).length, 21);
-  assert.equal(cases.filter((row) => row.expectedStarts.length > 0).length, 41);
+  assert.equal(cases.filter((row) => row.expectedStarts.length === 0).length, 23);
+  assert.equal(cases.filter((row) => row.expectedStarts.length > 0).length, 39);
   const old = new Map(globalCorpus().cases.map((row) => [row.id, row]));
   for (const id of ["global-compound-unknown", "outer-compound-unknown"]) {
     assert.deepEqual(old.get(id).expectedStarts, [], id);

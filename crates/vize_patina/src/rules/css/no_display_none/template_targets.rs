@@ -128,10 +128,10 @@ impl TemplateTargets {
                         return false;
                     }
                 }
-                Component::Class(_) | Component::ID(_) => {}
+                Component::Class(_) | Component::ID(_) | Component::ExplicitUniversalType => {}
                 Component::LocalName(name) if is_html_tag(name.lower_name.as_ref()) => {}
                 // Includes multiple globals, every namespace, combinator,
-                // universal, nesting, attribute and pseudo/filter component.
+                // nesting, attribute and pseudo/filter component.
                 _ => return false,
             }
         }
@@ -151,6 +151,10 @@ impl TemplateTargets {
             if !is_html_tag(name.to_ascii_lowercase().as_str()) {
                 return None;
             }
+            tokens.next();
+        } else if matches!(tokens.peek(), Some(TokenOrValue::Token(Token::Delim('*')))) {
+            // A universal prefix adds no restriction. The full nonempty
+            // class/ID suffix must still establish a necessary absent fact.
             tokens.next();
         }
         let mut foreign = false;

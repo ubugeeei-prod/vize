@@ -1,20 +1,18 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { globalCorpus, root, sha256 } from "./css-global-ownership-reference.mjs";
-import { universalTransition } from "./css-global-universal-transition.mjs";
+import { root, sha256 } from "./css-external-target-reference.mjs";
 
-export { root, sha256 };
-export const fixture = path.join(root, "crates/vize_patina/tests/fixtures/issue-7976-compound");
+export const fixture = path.join(root, "crates/vize_patina/tests/fixtures/issue-7976-universal");
 
-export function compoundCorpus() {
-  const historical = globalCorpus();
+export function universalCorpus() {
   const source = JSON.parse(fs.readFileSync(path.join(fixture, "source.json"), "utf8"));
   assert.equal(source.issue, 7976);
-  assert.deepEqual(source.author, historical.source.author);
-  assert.equal(source.historicalCaseCount, 120);
-  assert.equal(source.historicalCliObservationCount, 548);
-  assert.equal(source.globalBaselineCaseCount, historical.cases.length);
+  assert.equal(source.actualParent, "807970136d3c0b45d173a525b0bdc8c86b7df291");
+  assert.equal(source.historicalCaseCount, 182);
+  assert.equal(source.parentNativeCaseCount, 16);
+  assert.equal(source.historicalCliObservationCount, 858);
+  assert.equal(source.compoundBaselineCaseCount, 62);
   assert.equal(source.semanticTransitionCount, 2);
   for (const row of source.history) {
     const bytes = fs.readFileSync(path.join(root, row.path));
@@ -28,8 +26,8 @@ export function compoundCorpus() {
   }
   const { cases } = JSON.parse(fs.readFileSync(path.join(fixture, "cases.json"), "utf8"));
   assert.equal(cases.length, source.caseCount);
-  assert.equal(source.caseCount, 62);
-  assert.equal(source.cliObservationCount, 310);
+  assert.equal(source.caseCount, 43);
+  assert.equal(source.cliObservationCount, 215);
   assert.equal(new Set(cases.map((row) => row.id)).size, cases.length);
   for (const row of cases) {
     const bytes = Buffer.from(row.source);
@@ -41,5 +39,5 @@ export function compoundCorpus() {
     assert.equal(row.expectedCli[0].messages.length, row.expectedStarts.length);
     assert(row.expectedCssStarts.length >= row.expectedStarts.length, row.id);
   }
-  return { source, cases: universalTransition(cases) };
+  return { source, cases };
 }
