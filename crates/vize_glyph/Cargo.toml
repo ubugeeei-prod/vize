@@ -31,12 +31,14 @@ serde = { workspace = true }
 # Utilities
 thiserror.workspace = true
 memchr.workspace = true
+unicode-width.workspace = true
 
 [dev-dependencies]
 criterion.workspace = true
 davinci_harness.workspace = true
 insta.workspace = true
 serde_json.workspace = true
+sha2.workspace = true
 
 [[bench]]
 name = "formatter"
@@ -44,6 +46,10 @@ harness = false
 
 [[bench]]
 name = "formatter_instructions"
+harness = false
+
+[[test]]
+name = "native_vue2_sfc_diagnostics_drop"
 harness = false
 
 [lints]

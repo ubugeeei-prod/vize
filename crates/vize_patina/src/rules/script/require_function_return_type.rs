@@ -35,13 +35,16 @@
 //! - Callback functions passed as arguments (inferred from context)
 //! - Arrow functions without block body (e.g., `x => x + 1`)
 
-use memchr::memmem;
+use oxc_ast::ast::{ArrowFunctionExpression, Function, Program};
+use oxc_ast_visit::{
+    Visit,
+    walk::{walk_arrow_function_expression, walk_function},
+};
+use oxc_syntax::scope::ScopeFlags;
 use vize_l0::cstr;
 
-use crate::diagnostic::{LintDiagnostic, Severity};
-
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
-use vize_l0::ToCompactString;
+use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: ScriptRuleMeta = ScriptRuleMeta {
     name: "script/require-function-return-type",
@@ -49,153 +52,100 @@ static META: ScriptRuleMeta = ScriptRuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// Require function return type annotations
+/// Require function return type annotations.
 pub struct RequireFunctionReturnType;
-
-impl RequireFunctionReturnType {
-    /// Check if the function signature has a return type
-    fn has_return_type(signature_end: &str) -> bool {
-        let trimmed = signature_end.trim_start();
-        // After closing paren, should have : for return type
-        trimmed.starts_with(':')
-    }
-}
 
 impl ScriptRule for RequireFunctionReturnType {
     fn meta(&self) -> &'static ScriptRuleMeta {
         &META
     }
 
-    fn check(&self, source: &str, offset: usize, result: &mut ScriptLintResult) {
-        let bytes = source.as_bytes();
+    fn uses_ast(&self) -> bool {
+        true
+    }
 
-        // Fast bailout: check if there are any function definitions
-        if memmem::find(bytes, b"function").is_none() && memmem::find(bytes, b"=>").is_none() {
-            return;
+    fn check_program<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        result: &mut ScriptLintResult,
+    ) {
+        ReturnTypeVisitor {
+            source,
+            offset,
+            result,
         }
+        .visit_program(program);
+    }
+}
 
-        // Find function declarations: function name(...)
-        let func_finder = memmem::Finder::new(b"function ");
-        let mut search_start = 0;
+struct ReturnTypeVisitor<'source, 'result> {
+    source: &'source str,
+    offset: usize,
+    result: &'result mut ScriptLintResult,
+}
 
-        while let Some(pos) = bytes
-            .get(search_start..)
-            .and_then(|rest| func_finder.find(rest))
-        {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + 9;
-
-            // Find the closing parenthesis of parameters
-            let rest = source.get(abs_pos..).unwrap_or_default();
-            if let Some(paren_start) = rest.find('(') {
-                // Find matching close paren
-                let mut depth = 0;
-                let mut close_pos = None;
-                for (i, c) in rest.get(paren_start..).unwrap_or_default().char_indices() {
-                    match c {
-                        '(' => depth += 1,
-                        ')' => {
-                            depth -= 1;
-                            if depth == 0 {
-                                close_pos = Some(paren_start + i);
-                                break;
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-
-                if let Some(cp) = close_pos {
-                    let after_paren = rest.get(cp + 1..).unwrap_or_default();
-                    if !Self::has_return_type(after_paren) {
-                        // Extract function name for better error message
-                        // (after "function " until "(")
-                        let name_part = rest.get(9..paren_start).unwrap_or_default();
-                        let func_name = name_part.trim();
-                        let message = if func_name.is_empty() {
-                            "Function is missing a return type annotation".to_compact_string()
-                        } else {
-                            cstr!(
-                                "Function '{}' is missing a return type annotation",
-                                func_name
-                            )
-                        };
-                        result.add_diagnostic(
-                            LintDiagnostic::warn(
-                                META.name,
-                                message,
-                                (offset + abs_pos) as u32,
-                                (offset + abs_pos + cp + 1) as u32,
-                            )
-                            .with_help("Add a return type annotation: `function fn(...): ReturnType { ... }`"),
-                        );
-                    }
-                }
+impl<'a> Visit<'a> for ReturnTypeVisitor<'_, '_> {
+    fn visit_function(&mut self, function: &Function<'a>, flags: ScopeFlags) {
+        if function.body.is_some() && function.return_type.is_none() {
+            // Keep the established function-keyword span and message. Method
+            // signatures and ambient declarations are not runtime functions.
+            let header = self
+                .source
+                .get(function.span.start as usize..function.params.span.start as usize)
+                .unwrap_or_default();
+            if let Some(keyword) = header.find("function ") {
+                let name = header.get(keyword + 9..).unwrap_or_default().trim();
+                let message = if name.is_empty() {
+                    "Function is missing a return type annotation".into()
+                } else {
+                    cstr!("Function '{}' is missing a return type annotation", name)
+                };
+                self.result.add_diagnostic(
+                    LintDiagnostic::warn(
+                        META.name,
+                        message,
+                        self.offset as u32 + function.span.start + keyword as u32,
+                        self.offset as u32 + function.params.span.end,
+                    )
+                    .with_help(
+                        "Add a return type annotation: `function fn(...): ReturnType { ... }`",
+                    ),
+                );
             }
         }
+        walk_function(self, function, flags);
+    }
 
-        // Find arrow functions: const name = (...) =>
-        let arrow_finder = memmem::Finder::new(b") =>");
-        search_start = 0;
-
-        while let Some(pos) = bytes
-            .get(search_start..)
-            .and_then(|rest| arrow_finder.find(rest))
-        {
-            let abs_pos = search_start + pos;
-            search_start = abs_pos + 4;
-
-            // Check if there's a return type before ) =>
-            // Look for ): pattern before the closing paren
-            let before = source.get(..abs_pos).unwrap_or_default();
-
-            // Find the matching opening paren
-            let mut depth = 0;
-            let mut open_pos = None;
-            for (i, c) in before.char_indices().rev() {
-                match c {
-                    ')' => depth += 1,
-                    '(' => {
-                        if depth == 0 {
-                            open_pos = Some(i);
-                            break;
-                        }
-                        depth -= 1;
-                    }
-                    _ => {}
-                }
-            }
-
-            if let Some(op) = open_pos {
-                // Check what's between open paren and closing ) =>
-                let params_section = source.get(op..abs_pos + 1).unwrap_or_default();
-
-                // A return type would look like ): Type, so after the last )
-                // we should see : before =>
-                if !params_section.contains("):") {
-                    // Skip if this looks like a callback (inside another function call)
-                    let before_paren = source.get(..op).unwrap_or_default();
-                    let is_callback = before_paren
-                        .trim_end()
-                        .chars()
-                        .last()
-                        .map(|c| c == ',' || c == '(')
-                        .unwrap_or(false);
-
-                    if !is_callback {
-                        result.add_diagnostic(
-                            LintDiagnostic::warn(
-                                META.name,
-                                "Arrow function is missing a return type annotation",
-                                (offset + op) as u32,
-                                (offset + abs_pos + 4) as u32,
-                            )
-                            .with_help("Add a return type annotation: `const fn = (...): ReturnType => { ... }`"),
-                        );
-                    }
-                }
+    fn visit_arrow_function_expression(&mut self, arrow: &ArrowFunctionExpression<'a>) {
+        let start = arrow.params.span.start as usize;
+        let end = arrow.params.span.end as usize;
+        let params = self.source.get(start..end).unwrap_or_default();
+        let before = self.source.get(..start).unwrap_or_default();
+        // Retain the current parenthesized-arrow and callback policy while
+        // selecting real ArrowFunctionExpression nodes, never TSFunctionType.
+        let callback = matches!(before.trim_end().chars().last(), Some(',' | '('));
+        if arrow.return_type.is_none() && params.starts_with('(') && !callback {
+            let tail = self
+                .source
+                .get(end..arrow.body.span.start as usize)
+                .unwrap_or_default();
+            if let Some(operator) = tail.find("=>") {
+                self.result.add_diagnostic(
+                    LintDiagnostic::warn(
+                        META.name,
+                        "Arrow function is missing a return type annotation",
+                        (self.offset + start) as u32,
+                        (self.offset + end + operator + 2) as u32,
+                    )
+                    .with_help(
+                        "Add a return type annotation: `const fn = (...): ReturnType => { ... }`",
+                    ),
+                );
             }
         }
+        walk_arrow_function_expression(self, arrow);
     }
 }
 

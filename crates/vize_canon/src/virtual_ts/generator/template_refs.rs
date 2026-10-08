@@ -36,6 +36,7 @@ pub(super) struct TemplateRefUnwraps {
     legacy_helpers: bool,
     dialect: VueVersion,
     hoist_shared_preamble: bool,
+    props_shadow_anchor: Option<Range<usize>>,
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
@@ -52,7 +53,7 @@ pub(super) fn collect_and_emit_scope_preamble(
     capture_template: bool,
     semantic_links: &mut Vec<VizeSemanticLink>,
 ) -> TemplateRefUnwraps {
-    let unwraps = TemplateRefUnwraps::collect(
+    let mut unwraps = TemplateRefUnwraps::collect(
         summary,
         options_api,
         Some(template_referenced_names),
@@ -62,7 +63,7 @@ pub(super) fn collect_and_emit_scope_preamble(
         generation_options,
     );
     let captures = unwraps.emit_type_captures(ts);
-    emit_props_shadow_anchor(ts, summary, template_referenced_names);
+    unwraps.props_shadow_anchor = emit_props_shadow_anchor(ts, summary, template_referenced_names);
     // Semicolon prevents ASI issues when user script doesn't end with `;`
     // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
     ts.push_str(if capture_template {
@@ -164,7 +165,12 @@ impl TemplateRefUnwraps {
             legacy_helpers,
             dialect: generation_options.dialect,
             hoist_shared_preamble: generation_options.hoist_shared_preamble,
+            props_shadow_anchor: None,
         }
+    }
+
+    pub(super) fn props_shadow_anchor(&self) -> Option<&Range<usize>> {
+        self.props_shadow_anchor.as_ref()
     }
 
     pub(super) fn setup_spread_bindings(&self) -> &[String] {

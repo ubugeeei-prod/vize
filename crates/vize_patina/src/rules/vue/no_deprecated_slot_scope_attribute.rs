@@ -6,7 +6,7 @@
 //! entirely.
 //!
 //! This mirrors eslint-plugin-vue's `vue/no-deprecated-slot-scope-attribute`. It
-//! is an opt-in migration rule and only fires for the default Vue 3 dialect.
+//! only fires for the default Vue 3 dialect.
 //!
 //! ## Examples
 //!

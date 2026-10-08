@@ -284,7 +284,7 @@ fn collect_segment_params(
             Some(name) => (true, name),
             None => (false, name),
         };
-
+        let name = name.split_once('=').map_or(name, |(name, _)| name);
         if !name.is_empty() {
             let name = String::from(name);
             if seen.insert(name.clone()) {

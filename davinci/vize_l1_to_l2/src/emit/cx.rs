@@ -95,9 +95,13 @@ impl EmitCx<'_> {
     /// / `is_ts` is on, and every emit site that consults this mirrors it.
     /// Fold a prefixed result's `_unref` use into the emit and hand back
     /// its text.
-    fn record_unref(&self, prefixed: prefix::Prefixed) -> String {
+    pub(super) fn record_unref(&self, prefixed: prefix::Prefixed) -> String {
         if prefixed.used_unref && self.used_unref.get() == u32::MAX {
             self.used_unref.set(self.walk.visits());
+        }
+        if prefixed.used_is_ref && self.used_is_ref.get().0 == u32::MAX {
+            self.used_is_ref
+                .set((self.walk.visits(), self.used_unref.get() != u32::MAX));
         }
         prefixed.text
     }
@@ -323,11 +327,6 @@ impl EmitCx<'_> {
         prefix::prefix_handler(&mut self.scope, &content, None, false)
             .map(|prefixed| self.record_unref(prefixed))
             .map_err(|_| EmitError::unsupported(Reason::PrefixExpressionRejected))
-    }
-
-    /// `emit_dynamic_directive_arg` under `prefix_identifiers`.
-    pub(super) fn prefixed_dynamic_arg(&self, js: &JsExpr<'_>) -> String {
-        prefix::prefix_dynamic_arg(&self.scope, js)
     }
 
     pub(super) fn push_prefixed_expr(

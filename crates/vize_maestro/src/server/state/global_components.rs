@@ -1,5 +1,7 @@
 //! Discovery and caching of workspace declarations used by Vue globals.
 
+mod editor_options;
+
 use std::ffi::OsStr;
 use std::path::{Component, Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -208,7 +210,7 @@ fn collect_workspace_declarations(root: &Path) -> Vec<PathBuf> {
 }
 
 fn should_visit(entry: &DirEntry) -> bool {
-    if vize_l0::path::is_git_metadata_path(entry.path()) {
+    if vize_carton::path::is_git_metadata_path(entry.path()) {
         return false;
     }
     if entry.depth() == 0 || !entry.file_type().is_some_and(|kind| kind.is_dir()) {

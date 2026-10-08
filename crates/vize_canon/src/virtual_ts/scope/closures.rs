@@ -31,6 +31,7 @@ pub(crate) fn generate_scope_closures(
     let virtual_ts_options = options.virtual_ts_options;
     let check_tables = TemplateValueCheckTables::collect(summary, &options);
     let checks = check_tables.as_checks(options.template_ast.map(|root| root.source));
+    check_tables.emit_valueless_directives(ts, mappings, template_offset);
 
     if check_options.check_props
         && check_options.check_unknown_props
@@ -168,6 +169,7 @@ pub(crate) fn generate_scope_closures(
     };
     let props_ctx = ComponentPropsContext {
         summary,
+        model_modifiers: checks.model_modifiers,
         template_ast: options.template_ast,
         template_source: options.template_ast.map(|root| root.source),
         children_map: &children_map,
@@ -182,6 +184,8 @@ pub(crate) fn generate_scope_closures(
         component_binding_check: options.component_binding_check,
         legacy_vue2: options.legacy_vue2,
         check_unknown_props: check_options.check_unknown_props,
+        check_unknown_fallthrough_props: check_options.check_unknown_fallthrough_props,
+        strict_component_attrs: check_options.strict_component_attrs(),
         experimental_strict_slot_children: options.experimental_strict_slot_children,
         relaxed_required_usage_starts: &relaxed_required_usage_starts,
         explicit_generics: &explicit_generics,

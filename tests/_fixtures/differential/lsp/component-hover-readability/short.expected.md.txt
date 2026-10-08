@@ -1,0 +1,11 @@
+```typescript
+const ShortComponent: VueComponent &
+{
+  props: { label: string; count?: number };
+  emits: { save: [value: string] };
+  slots: { default(props: { value: string }): unknown };
+  model: { "modelValue": boolean };
+}
+```
+
+Vue component: ShortComponent.vue

@@ -6,6 +6,8 @@ use vize_l0::{FxHashMap, FxHashSet, String};
 use super::{CanonicalVirtualDocument, location_matches_uri};
 use crate::ide::diagnostics::VirtualTsResult;
 
+mod binding_roles;
+mod component_arguments;
 mod component_props;
 
 pub(crate) use component_props::{
@@ -20,6 +22,7 @@ pub(crate) struct CanonicalSemanticPosition {
     pub(crate) character: u32,
 }
 
+#[derive(Default)]
 pub(crate) struct ComponentPropNavigationMatches {
     pub(crate) positions: Vec<CanonicalSemanticPosition>,
     pub(crate) names: FxHashSet<String>,
@@ -114,8 +117,8 @@ fn same_authored_uri(left: &tower_lsp::lsp_types::Url, right: &tower_lsp::lsp_ty
     }
     match (left.to_file_path(), right.to_file_path()) {
         (Ok(left), Ok(right)) => {
-            vize_l0::path::canonicalize_non_verbatim(&left)
-                == vize_l0::path::canonicalize_non_verbatim(&right)
+            vize_carton::path::canonicalize_non_verbatim(&left)
+                == vize_carton::path::canonicalize_non_verbatim(&right)
         }
         _ => false,
     }
@@ -156,6 +159,7 @@ fn linked_offset(
         if !matches!(
             link.kind,
             VizeSemanticLinkKind::VueSetupTemplateRefUnwrap
+                | VizeSemanticLinkKind::VueTemplatePropBinding
                 | VizeSemanticLinkKind::VuePlainScriptExport
                 | VizeSemanticLinkKind::VueOptionsApiBinding
                 | VizeSemanticLinkKind::VueSetupImportSpecialization
@@ -172,7 +176,7 @@ fn linked_offset(
     })
 }
 
-fn virtual_result<'a>(
+pub(super) fn virtual_result<'a>(
     document: &'a CanonicalVirtualDocument,
     uri: &str,
 ) -> Option<(&'a String, &'a VirtualTsResult)> {

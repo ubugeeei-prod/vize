@@ -10,17 +10,26 @@ import { writeFakeCommand } from "./support/fake-command.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 
-test("docs build uses the lazy browser bootstrap helper", () => {
+test("docs build prepares its browser before previews and checks the rendered site", () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(repoRoot, "docs", "package.json"), "utf8"),
   ) as {
     scripts: Record<string, string>;
   };
 
+  assert.deepEqual(packageJson.scripts.build.split(" && "), [
+    "node ./scripts/ensure-browser.mjs",
+    "pnpm generate:ui-previews",
+    "pnpm generate:reference",
+    "vp build",
+    "pnpm check:ui-docs",
+  ]);
+  assert.equal(packageJson.scripts["generate:ui-previews"], "node ./scripts/build-ui-previews.mjs");
   assert.equal(
-    packageJson.scripts.build,
-    "node ./scripts/ensure-browser.mjs && pnpm generate:reference && vp build",
+    packageJson.scripts["generate:reference"],
+    "node ../npm/ui/scripts/generate-reference-docs.ts",
   );
+  assert.equal(packageJson.scripts["check:ui-docs"], "node ./previews/ui/check-site.mjs");
 });
 
 test("docs browser helper reuses an existing browser path without invoking Playwright install", () => {

@@ -30,6 +30,8 @@ impl VirtualProject {
     pub(in super::super) fn refresh_vue_compiler_options(&mut self) {
         let path = self.resolved_tsconfig_path();
         let options = self.load_vue_compiler_options(path.as_deref()).ok();
+        self.typed_router.root =
+            super::super::typed_router::configured_root(self, options.as_ref(), path.as_deref());
         self.virtual_ts_check_options.check_unknown_props = if path.is_none() {
             true
         } else {
@@ -38,6 +40,10 @@ impl VirtualProject {
                 .map(check_unknown_props_enabled)
                 .unwrap_or(true)
         };
+        self.virtual_ts_check_options
+            .check_unknown_fallthrough_props = options.as_ref().is_some_and(|options| {
+            options.get("checkUnknownProps").and_then(Value::as_bool) == Some(true)
+        });
         self.virtual_ts_check_options.strict_css_modules = options
             .as_ref()
             .and_then(|options| options.get("strictCssModules").and_then(Value::as_bool))
@@ -104,6 +110,7 @@ impl VirtualProject {
                 .and_then(|options| options.get(name).and_then(Value::as_bool))
                 .unwrap_or(false)
         };
+        self.virtual_ts_check_options.strict_component_attrs = flag("strictComponentAttrs");
         self.virtual_ts_check_options.infer_component_dollar_refs =
             flag("inferComponentDollarRefs");
         self.virtual_ts_check_options.infer_template_dollar_refs = flag("inferTemplateDollarRefs");

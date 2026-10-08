@@ -58,8 +58,17 @@ pub(in crate::markup) fn siblings_at<'a>(
     tree: &'a SurfaceTree<'a>,
     start: u32,
 ) -> Option<&'a [SurfaceChild<'a>]> {
+    siblings_with_pre(tree, start).map(|(children, _)| children)
+}
+
+/// The authored sibling list and its inherited `<pre>` whitespace policy.
+pub(super) fn siblings_with_pre<'a>(
+    tree: &'a SurfaceTree<'a>,
+    start: u32,
+) -> Option<(&'a [SurfaceChild<'a>], bool)> {
     let source = tree.source;
     let mut children: &'a [SurfaceChild<'a>] = &tree.children;
+    let mut in_pre = false;
     loop {
         let index = children
             .partition_point(|child| child_start(source, child) <= start)
@@ -68,8 +77,9 @@ pub(in crate::markup) fn siblings_at<'a>(
             return None;
         };
         if offset_in(source, element.open.lt_name.text) == start {
-            return Some(children);
+            return Some((children, in_pre));
         }
+        in_pre |= element.tag() == "pre";
         children = &element.children;
     }
 }

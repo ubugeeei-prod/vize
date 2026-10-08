@@ -25,7 +25,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `ScriptParseResult`                       |     1 |     5 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcDescriptor`                           |     3 |     5 |
-| `SfcParseOptions`                         |    12 |    15 |
+| `SfcError`                                |     1 |     1 |
+| `SfcParseOptions`                         |    13 |    16 |
 | `SfcScriptBlock`                          |     1 |     1 |
 | `component_usage_list`                    |     1 |     1 |
 | `parse_program_for_analysis`              |     1 |     1 |

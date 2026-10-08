@@ -39,6 +39,7 @@ impl CorsaServer {
             if let Some(project_root) = project.session_project_root.as_deref() {
                 client.synchronize_materialized_project(
                     project_root,
+                    project.session_config_path.as_deref(),
                     &project.materialized_changes,
                 )?;
             }
@@ -225,6 +226,7 @@ mod tests {
             },
             documents: Vec::new(),
             session_project_root: None,
+            session_config_path: None,
             materialized_changes: Default::default(),
         }
     }

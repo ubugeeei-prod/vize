@@ -1,0 +1,8 @@
+<!-- src/Parent.vue -->
+<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+
+<template>
+  <Child text="Save" />
+</template>

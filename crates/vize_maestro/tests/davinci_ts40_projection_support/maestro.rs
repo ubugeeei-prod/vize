@@ -25,7 +25,12 @@ pub(super) fn capture_maestro(fixture: &Fixture, source: &str) -> LaneRecord {
     let mut mappings = SmallVec::<[String; 8]>::new();
     let mut authored_hits = SmallVec::<[String; 8]>::new();
     let mut authored_anchor_hits = SmallVec::<[bool; 8]>::from_elem(false, fixture.anchors.len());
-    for document in documents.all() {
+    for (index, document) in documents.all().into_iter().enumerate() {
+        super::capture::retain(
+            fixture,
+            &cstr!("maestro-document-{index}"),
+            &[("text.ts", &document.content)],
+        );
         text_bytes += document.content.len();
         text.push(cstr!(
             "{}|{:?}|{}|{}",
@@ -85,6 +90,15 @@ pub(super) fn capture_maestro(fixture: &Fixture, source: &str) -> LaneRecord {
     let text = ordered_lines(text);
     let mappings = ordered_lines(mappings);
     let authored_hits = ordered_lines(authored_hits);
+    super::capture::retain(
+        fixture,
+        "maestro",
+        &[
+            ("text.txt", &text),
+            ("mappings.txt", &mappings),
+            ("authored-hits.txt", &authored_hits),
+        ],
+    );
     let authored_hit_anchors = fixture
         .anchors
         .iter()

@@ -1,0 +1,2 @@
+<template><div /></template>
+<style>/* #ghost {} */ [data-id="#ghost"]#real, .class\#not-id { content: "#ghost"; color: #fff; background: url("#ghost"); }</style>

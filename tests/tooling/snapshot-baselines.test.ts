@@ -47,18 +47,26 @@ const assertionOnlyCheckTests = {
     'module-augmentation oracle asserts exact vue-tsc agreement on generated, project, and package `declare module "vue"` globals',
   "pinia-generic-store-oracle":
     "library patch oracle asserts generic store inference and dependency refresh behavior",
+  "pnpm-workspace-route-oracle":
+    "real workspace links assert complete ordered CLI vectors, typed events, source identities and repaired virtual TS",
   "template-ref-unwrap-oracle":
     "ref-unwrap oracle builds throwaway workspaces and asserts exact vue-tsc parity plus identical diagnostics for imported and auto-imported composables",
   "typescript-go-module-resolution-determinism":
     "module-resolution determinism gate asserts the pinned tsgo build and byte-identical output across fresh processes",
   "typescript-project-references-oracle":
     "solution tsconfig oracle asserts referenced-project CLI and LSP diagnostic parity",
+  "vite-plus-relative-tsconfig-oracle":
+    "source-bound task/direct oracle asserts full ordered JSON and generated TypeScript with original and inverse operational controls",
+  "vite-plus-relative-tsconfig-allowjs-oracle":
+    "source-bound task/direct oracle asserts whole referenced JavaScript options, intentional exclusions and strict empty-project refusal",
   "vue-benchmarks-correctness-plants":
     "upstream benchmark plants assert exact clean, broken, repaired, and vue-tsc parity",
   "vue-benchmarks-lsp-ref-unwrap-oracle":
     "LSP probe asserts exact backend-liveness diagnostics and rejects heuristic hover answers",
   "vue-benchmarks-scaled-corpus-plants":
     "scaled corpus plants assert every planted diagnostic survives full-corpus re-validation",
+  "vue-router-page-route-oracle":
+    "source-bound Router oracle asserts complete ordered CLI/editor diagnostics and authored ranges against the original generated map",
   "vue-router-patch-oracle":
     "library patch oracle asserts exact package-resolution behavior across document versions",
   "vue-router-dmts-oracle":

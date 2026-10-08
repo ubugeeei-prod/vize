@@ -8,7 +8,7 @@ use vize_atelier_core::{ElementType, TemplateChildNode};
 use super::rendered_child_count;
 
 #[inline(always)]
-pub(super) fn needs_fragment(children: &[TemplateChildNode<'_>]) -> bool {
+pub(crate) fn needs_fragment(children: &[TemplateChildNode<'_>]) -> bool {
     match children {
         [TemplateChildNode::Text(_) | TemplateChildNode::Interpolation(_)] => true,
         [TemplateChildNode::Element(element)] if element.tag_type == ElementType::Template => {

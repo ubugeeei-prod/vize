@@ -82,8 +82,12 @@ test("editor adapters consistently route Vue documents to the Vize LSP", () => {
   assert.match(zedSource, /const SERVER_BINARY: &'static str = "vize"/);
   assert.match(zedSource, /unwrap_or_else\(\|\| vec!\["lsp"\.to_string\(\)\]\)/);
   assert.match(zedSource, /recommended_initialization_options/);
-  assert.match(zedSource, /"editor": true/);
-  assert.match(zedSource, /"ecosystem": true/);
-  assert.match(zedSource, /"lint": true/);
-  assert.match(zedSource, /"typecheck": true/);
+  const zedProfile = fs.readFileSync(
+    path.join(root, "editors/zed/src/initialization_options.rs"),
+    "utf-8",
+  );
+  assert.match(zedProfile, /"editor": true/);
+  assert.match(zedProfile, /"ecosystem": true/);
+  assert.match(zedProfile, /"lint": true/);
+  assert.match(zedProfile, /"typecheck": true/);
 });

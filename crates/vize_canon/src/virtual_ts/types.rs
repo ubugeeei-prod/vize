@@ -27,10 +27,13 @@ pub struct TemplateGlobal {
 /// per-SFC CSS-module metadata does not expand the public `VirtualTsOptions`
 /// struct (which downstream users construct directly).
 pub(crate) const CSS_MODULE_GLOBAL_MARKER: &str = "__vize_css_module_global";
+pub(crate) const TYPED_ROUTE_GLOBAL_MARKER: &str = "__vize_typed_route_global";
 
 impl TemplateGlobal {
     pub(crate) fn context_type_annotation(&self) -> String {
-        if self.default_value == CSS_MODULE_GLOBAL_MARKER {
+        if self.default_value == CSS_MODULE_GLOBAL_MARKER
+            || self.default_value == TYPED_ROUTE_GLOBAL_MARKER
+        {
             self.type_annotation.clone()
         } else {
             cstr!("__Global<'{}', {}>", self.name, self.type_annotation)

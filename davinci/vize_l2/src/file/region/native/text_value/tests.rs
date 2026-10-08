@@ -14,6 +14,7 @@ use vize_l1::{
 };
 mod interruption;
 mod ownership;
+mod precedence;
 mod refusal;
 mod source;
 type Test = Result<(), &'static str>;

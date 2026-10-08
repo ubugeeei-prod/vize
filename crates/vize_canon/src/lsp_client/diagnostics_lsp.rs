@@ -13,6 +13,8 @@ use serde_json::Value;
 use std::{path::Path, str::FromStr};
 use vize_l0::{String, cstr};
 
+mod readiness_workers;
+
 pub(super) fn initialize_lsp_client(client: &LspClient, project_root: &Path) -> Result<(), String> {
     struct InitializeRequest;
 
@@ -106,7 +108,8 @@ fn initialize_lsp_params(
         // packages and make diagnostics depend on background downloads.
         initialization_options: Some(serde_json::json!({
             "userPreferences": {
-                "tsserver": { "automaticTypeAcquisition": { "enabled": false } }
+                "tsserver": { "automaticTypeAcquisition": { "enabled": false } },
+                "inlayHints": { "variableTypes": { "enabled": true } }
             }
         })),
         work_done_progress_params: WorkDoneProgressParams::default(),
@@ -146,50 +149,43 @@ pub(super) fn request_lsp_document_diagnostics(
     .map_err(|error| cstr!("{error}"))
 }
 
-/// Wait for a document diagnostic response without interpreting its payload.
+/// Acknowledge installed documents without requesting semantic diagnostics.
 ///
-/// Editor readiness only needs the response-backed transport ordering. The
-/// native server's diagnostic payload can contain protocol extensions that are
-/// irrelevant to that ordering and must not make a semantic query fail.
-pub(super) fn request_lsp_document_diagnostic_ack(
+/// The pinned native server flushes pending changes and acquires the requested
+/// project snapshot before dispatching document symbols, just as it does for
+/// diagnostics. Symbol collection then visits the AST without acquiring the
+/// checker. A successful complete response establishes ordering; its payload
+/// is not a diagnostic result and is deliberately left uninterpreted.
+pub(super) fn request_lsp_document_readiness_ack(
     client: &LspClient,
     uri: &Uri,
 ) -> Result<(), String> {
-    block_on(request_lsp_document_diagnostic_ack_async(client, uri))
+    block_on(request_lsp_document_readiness_ack_async(client, uri))
 }
 
-pub(super) fn request_lsp_document_diagnostic_acks(
+pub(super) fn request_lsp_document_readiness_acks(
     client: &LspClient,
     uris: &[Uri],
 ) -> Result<(), String> {
-    use futures::{StreamExt, TryStreamExt};
-    // Bound in-flight requests below the transport queue capacity. Every
-    // changed document still needs an acknowledgement before native queries.
-    block_on(
-        futures::stream::iter(
-            uris.iter()
-                .map(|uri| request_lsp_document_diagnostic_ack_async(client, uri)),
-        )
-        .buffer_unordered(16)
-        .try_collect::<Vec<_>>(),
-    )
-    .map(|_| ())
+    // Corsa's request future blocks while awaiting its response. Scoped workers
+    // overlap those waits while retaining every per-document acknowledgement.
+    readiness_workers::run(uris, |uri| request_lsp_document_readiness_ack(client, uri))
 }
 
-async fn request_lsp_document_diagnostic_ack_async(
+async fn request_lsp_document_readiness_ack_async(
     client: &LspClient,
     uri: &Uri,
 ) -> Result<(), String> {
-    struct RawDocumentDiagnosticAckRequest;
+    struct RawDocumentReadinessAckRequest;
 
-    impl lsp_types::request::Request for RawDocumentDiagnosticAckRequest {
+    impl lsp_types::request::Request for RawDocumentReadinessAckRequest {
         type Params = serde_json::Value;
         type Result = Value;
-        const METHOD: &'static str = "textDocument/diagnostic";
+        const METHOD: &'static str = "textDocument/documentSymbol";
     }
 
     client
-        .request::<RawDocumentDiagnosticAckRequest>(serde_json::json!({
+        .request::<RawDocumentReadinessAckRequest>(serde_json::json!({
             "textDocument": {
                 "uri": uri,
             }
@@ -244,6 +240,13 @@ mod tests {
                 "relatedInformation": true,
             })
         );
+        assert_eq!(
+            params["initializationOptions"],
+            json!({"userPreferences": {
+                "tsserver": {"automaticTypeAcquisition": {"enabled": false}},
+                "inlayHints": {"variableTypes": {"enabled": true}}
+            }})
+        );
     }
 
     #[test]
@@ -261,7 +264,7 @@ mod tests {
             let mut reader = BufReader::new(server_reader);
             let request_payload = read_frame(&mut reader).unwrap();
             let request: serde_json::Value = serde_json::from_slice(&request_payload).unwrap();
-            assert_eq!(request["method"], json!("textDocument/diagnostic"));
+            assert_eq!(request["method"], json!("textDocument/documentSymbol"));
             assert_eq!(
                 request["params"]["textDocument"]["uri"],
                 json!("file:///workspace/App.vue.ts")
@@ -280,7 +283,7 @@ mod tests {
         });
 
         let error = block_on(client.request_value(
-            "textDocument/diagnostic",
+            "textDocument/documentSymbol",
             json!({
                 "textDocument": {
                     "uri": "file:///workspace/App.vue.ts",

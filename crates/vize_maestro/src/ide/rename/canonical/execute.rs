@@ -10,6 +10,8 @@ use crate::ide::{IdeContext, corsa_support};
 
 mod component_props;
 mod patterns;
+mod same_name_bindings;
+mod shorthand_roles;
 
 use component_props::retain_component_prop_edits;
 
@@ -41,28 +43,14 @@ pub(in crate::ide::rename) enum CanonicalRenameStage {
     Complete,
 }
 
-pub(in crate::ide::rename) async fn rename(
-    ctx: &IdeContext<'_>,
-    new_name: &str,
-    bridge: Option<&CorsaBridge>,
-) -> Answer<WorkspaceEdit> {
-    match rename_strict(ctx, new_name, bridge).await {
-        Ok(Answer::Unavailable) | Err(_)
-            if crate::ide::template_scope::needs_patterned_navigation(ctx) =>
-        {
-            Answer::Available(None)
-        }
-        Ok(answer) => answer,
-        Err(error) => error.into_lenient_answer(),
-    }
-}
-
+#[cfg(test)]
 pub(in crate::ide::rename) async fn rename_strict(
     ctx: &IdeContext<'_>,
     new_name: &str,
     bridge: Option<&CorsaBridge>,
 ) -> Result<Answer<WorkspaceEdit>, CanonicalFailure> {
-    rename_strict_inner(ctx, new_name, bridge, None).await
+    let mut scope = corsa_support::RenameScope::native(ctx);
+    rename_strict_inner(ctx, new_name, bridge, None, &mut scope).await
 }
 
 #[cfg(test)]
@@ -75,15 +63,17 @@ pub(in crate::ide::rename) async fn rename_strict_traced(
     Vec<CanonicalRenameStage>,
 ) {
     let mut trace = Vec::new();
-    let answer = rename_strict_inner(ctx, new_name, bridge, Some(&mut trace)).await;
+    let mut scope = corsa_support::RenameScope::native(ctx);
+    let answer = rename_strict_inner(ctx, new_name, bridge, Some(&mut trace), &mut scope).await;
     (answer, trace)
 }
 
-async fn rename_strict_inner(
+pub(super) async fn rename_strict_inner(
     ctx: &IdeContext<'_>,
     new_name: &str,
     bridge: Option<&CorsaBridge>,
     mut trace: Option<&mut Vec<CanonicalRenameStage>>,
+    scope: &mut corsa_support::RenameScope<'_>,
 ) -> Result<Answer<WorkspaceEdit>, CanonicalFailure> {
     let rename_kind = event_rename::query_kind(ctx);
     let Some(semantic_name) = event_rename::semantic_name(rename_kind, new_name) else {
@@ -92,16 +82,24 @@ async fn rename_strict_inner(
     let Some(bridge) = initialized_bridge(bridge) else {
         return Ok(Answer::Unavailable);
     };
-    let Some(document) = corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
-        .await
-        .map_err(CanonicalFailure::from_project_open)?
+    let Some(document) =
+        corsa_support::open_canonical_virtual_navigation_project_document_strict(ctx, bridge)
+            .await
+            .map_err(CanonicalFailure::from_project_open)?
     else {
         return Ok(Answer::Unavailable);
     };
-    let Some((line, character)) = event_rename::semantic_position(ctx, &document)
-        .or_else(|| corsa_support::canonical_source_offset_to_position(&document, ctx.offset))
-    else {
-        return Ok(Answer::Unavailable);
+    let attribute = corsa_support::component_attribute_position(ctx, &document);
+    let Some((line, character)) = event_rename::semantic_position(ctx, &document).or_else(|| {
+        attribute.unwrap_or_else(|| {
+            corsa_support::canonical_source_offset_to_position(&document, ctx.offset)
+        })
+    }) else {
+        return Ok(if attribute.is_some() {
+            Answer::Available(None)
+        } else {
+            Answer::Unavailable
+        });
     };
     let mut component_props = corsa_support::matching_component_prop_navigation_positions(
         ctx,
@@ -112,9 +110,26 @@ async fn rename_strict_inner(
         character,
     )
     .await;
+    // A native declaration name alone does not prove a public prop identity.
+    // Event/model queries retain their existing semantic projections.
+    let definition_positions = if component_props.positions.is_empty() {
+        Vec::new()
+    } else {
+        component_props.authored_definition_positions(ctx, &document, rename_kind.is_none())
+    };
+    let property_arguments = if component_props.positions.is_empty()
+        || same_name_bindings::is_binding_declaration(ctx)
+    {
+        Vec::new()
+    } else {
+        component_props.authored_arguments(ctx, &document).ok_or(
+            CanonicalFailure::UnmappedResponse("component prop argument"),
+        )?
+    };
     let component_prop_positions = component_props
         .positions
         .iter()
+        .chain(&definition_positions)
         .cloned()
         .collect::<FxHashSet<_>>();
     record(&mut trace, || CanonicalRenameStage::PrimaryQuery {
@@ -139,14 +154,28 @@ async fn rename_strict_inner(
             })
         })
         .transpose()?;
+    if response
+        .as_ref()
+        .is_some_and(|edit| !scope.admits_native(&document, edit))
+    {
+        return Ok(Answer::Available(None));
+    }
     let had_primary_response = response.is_some();
+    let mut shorthand_roles = shorthand_roles::ShorthandRoles::new(property_arguments);
+    shorthand_roles.capture(ctx, &document, response.as_ref())?;
     let mut linked = response
         .as_ref()
         .map(|response| linked_positions(&document, response))
         .unwrap_or_default();
-    linked.extend(corsa_support::materialized_semantic_positions(
-        &document, ctx.uri, ctx.offset,
-    ));
+    // An attribute's producer key already selects its native identity. Its
+    // shorthand value shares the authored token but is a separate symbol.
+    // Public-key endpoints below cover matching materialized identities.
+    if attribute.is_none() {
+        linked.extend(corsa_support::materialized_semantic_positions(
+            &document, ctx.uri, ctx.offset,
+        ));
+    }
+    linked.extend(definition_positions);
     linked.extend(component_props.positions);
     if matches!(rename_kind, Some(event_rename::RenameKind::Model))
         && let Some(response) = response.as_ref()
@@ -202,6 +231,9 @@ async fn rename_strict_inner(
                 operation: "linked rename",
                 message: cstr!("{error}"),
             })?;
+        if !scope.admits_native(&document, &extra) {
+            return Ok(Answer::Available(None));
+        }
         let component_prop_query = component_prop_positions.contains(&position);
         if component_prop_query {
             retain_component_prop_edits(
@@ -214,6 +246,7 @@ async fn rename_strict_inner(
                 &mut component_props.source_cache,
             );
         }
+        shorthand_roles.capture(ctx, &document, Some(&extra))?;
         let Some(extra) = corsa_support::map_canonical_corsa_workspace_edit(ctx, &document, extra)
         else {
             if component_prop_query {
@@ -240,9 +273,12 @@ async fn rename_strict_inner(
     record(&mut trace, || CanonicalRenameStage::Complete);
     Ok(Answer::Available(
         corsa_support::merge_canonical_workspace_edits(mapped).and_then(|mut edit| {
-            (!ctx.state.patterned_template_enabled()
-                || patterns::rewrite_shorthand_bindings(ctx, &document, &mut edit, new_name))
+            (shorthand_roles.rewrite(ctx, &document, &mut edit, new_name)
+                && (!ctx.state.patterned_template_enabled()
+                    || patterns::rewrite_shorthand_bindings(ctx, &document, &mut edit, new_name))
+                && same_name_bindings::coherent(&edit))
             .then_some(edit)
+            .filter(|edit| scope.admits_authored(edit))
         }),
     ))
 }

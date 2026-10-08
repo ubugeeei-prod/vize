@@ -7,7 +7,6 @@
 //! lazily spawned session that mirrors the virtual documents in. Standard tsgo
 //! diagnostics use the same session so semantic requests share one project
 //! identity and one overlay generation.
-//!
 //! The session is lazy on purpose: typecheck-only runs never pay for the extra
 //! process, and a session that has answered one hover is reused later.
 
@@ -28,14 +27,18 @@ use std::{
     },
 };
 use vize_l0::{FxHashMap, FxHashSet, String, cstr};
-
+#[cfg(test)]
+mod batch_test_receipt;
 mod call_hierarchy;
 mod client;
 mod code_actions;
 mod completion_resolve;
+mod component_types;
+mod configured_project;
 mod declaration;
 mod file_rename;
 mod implementation;
+mod inlay_hint;
 mod materialized;
 mod native_vue;
 mod original_program;
@@ -45,18 +48,18 @@ mod readiness;
 mod requests;
 mod responder;
 mod retry;
+pub mod snapshot_source;
 mod synchronize;
 #[cfg(test)]
 mod tests;
 mod type_definition;
-
+pub(super) use original_program::OriginalDiagnosingSession;
 use requests::{
     RawCompletionRequest, RawDefinitionRequest, RawHoverRequest, RawPrepareRenameRequest,
     RawReferencesRequest, RawRenameRequest, RawSignatureHelpRequest, RawWillRenameFilesRequest,
     signature_help_request_params, will_rename_files_request_params,
 };
 use responder::spawn_responder;
-
 /// A reusable `--lsp --stdio` session for standard diagnostics and editor
 /// requests.
 pub(super) struct EditorLspSession {
@@ -64,6 +67,7 @@ pub(super) struct EditorLspSession {
     overlay: LspOverlay,
     stop: Arc<AtomicBool>,
     responder: Option<std::thread::JoinHandle<()>>,
+    configured_api: Option<project_configuration::DiagnosingApi>,
     closed: bool,
     /// Last text mirrored into the server, keyed by session document URI.
     documents: FxHashMap<String, String>,
@@ -104,6 +108,7 @@ impl EditorLspSession {
             client,
             stop,
             responder: Some(responder),
+            configured_api: None,
             closed: false,
             documents: Default::default(),
             document_generation: 0,
@@ -314,6 +319,14 @@ impl EditorLspSession {
     }
 
     fn finish_close(&mut self, mut first_error: Option<String>) -> Result<(), String> {
+        // The owning process is already reaped: its socket peer must close
+        // before the SDK joins the attached full-duplex reader.
+        if let Some(api) = self.configured_api.take()
+            && let Err(error) = api.close_attachment()
+            && first_error.is_none()
+        {
+            first_error = Some(configured_project::configuration_error(error));
+        }
         self.stop.store(true, Ordering::Relaxed);
         if let Some(responder) = self.responder.take()
             && responder.join().is_err()

@@ -19,6 +19,22 @@ use vize_l4::targets::ts::ProjectionError;
 
 #[path = "original_program_check/array_annotations.rs"]
 mod array_annotations;
+#[path = "original_program_check/optional_parameters.rs"]
+mod optional_parameters;
+#[path = "original_program_check/primitive_returns.rs"]
+mod primitive_returns;
+#[path = "original_program_check/process_admission.rs"]
+mod process_admission;
+#[cfg(test)]
+#[cfg(target_os = "linux")]
+#[path = "original_program_check/process_reuse.rs"]
+mod process_reuse;
+#[path = "original_program_check/required_named_exports.rs"]
+mod required_named_exports;
+#[path = "original_program_check/required_named_exports_neutral.rs"]
+mod required_named_exports_neutral;
+#[path = "original_program_check/typed_parameters.rs"]
+mod typed_parameters;
 #[path = "original_program_check/unused_history.rs"]
 mod unused_history;
 

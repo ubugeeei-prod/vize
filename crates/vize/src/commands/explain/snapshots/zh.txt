@@ -1927,7 +1927,7 @@ script/define-props-declaration · lint 规则
   const props = defineProps<Props>()
 === script/define-props-destructuring
 script/define-props-destructuring · lint 规则
-禁止在 <script setup> 中解构 defineProps 的返回值
+强制 <script setup> 中 defineProps 解构风格保持一致
 
 精度层级: exact
 适用范围: Vue compiler macro calls in <script setup> (defineProps, defineEmits, defineOptions, defineSlots)
@@ -1937,12 +1937,10 @@ script/define-props-destructuring · lint 规则
 文档: docs/content/rules/type-and-script.md
 
 错误示例:
-  const { foo, bar } = defineProps<{ foo: string; bar?: number }>()
-  const [first] = defineProps<[string]>()
+  const props = defineProps<{ foo: string }>()
 
 正确示例:
-  const props = defineProps<{ foo: string }>()
-  // ...later: props.foo
+  const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 === script/no-arrow-functions-in-watch
 script/no-arrow-functions-in-watch · lint 规则
 禁止将箭头函数用作选项式 API 的 watch 处理函数
@@ -3605,7 +3603,7 @@ vapor/require-vapor-attribute · lint 规则
 适用范围: the SFC's top-level blocks, their order and their attributes
 严重级别: 警告
 类别: vapor
-自动修复: 支持
+自动修复: 不支持
 文档: docs/content/rules/vapor.md
 === vue/a11y-img-alt
 vue/a11y-img-alt · lint 规则

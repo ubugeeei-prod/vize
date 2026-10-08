@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ isOpened: boolean; heading?: string }>();
+</script>
+
+<template>
+  <section v-if="isOpened">{{ heading }}</section>
+</template>

@@ -51,11 +51,15 @@ const formatterSensitiveContentIgnorePatterns = [
   "tests/fixtures/typechecker/options-api-computed-setters/**",
   "tests/fixtures/typechecker/options-api-writable-computed/**",
   "tests/fixtures/typechecker/slot-outlet-union/**",
+  "tests/fixtures/typechecker/pnpm-workspace-routes/**",
+  "tests/fixtures/typechecker/unknown-dynamic-component/**",
   // Formatter input/output witnesses must retain their authored bytes.
   "crates/vize_glyph/tests/style_spec/**",
   "docs/content/**/*.md",
   "examples/vite-musea/playwright-report/**",
   "tools/benchmarks/crates/davinci_harness/fixtures/**",
+  // Original #7999 source/hash custody must survive repository formatting.
+  "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**",
 ];
 
 /**

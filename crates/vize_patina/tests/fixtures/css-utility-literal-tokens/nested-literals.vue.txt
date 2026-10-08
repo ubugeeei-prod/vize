@@ -1,0 +1,13 @@
+<template>
+  <p class="my-note">note</p>
+</template>
+
+<style scoped>
+/* .grid is removed */
+@media (min-width: 1px) {
+  @supports (display: grid) {
+    .my-note { content: var(--note, " .flex "); }
+    .flex, .pl-3 { display: flex; }
+  }
+}
+</style>

@@ -130,10 +130,10 @@ fn test_art_block_tokens() {
     let line_index = LineIndex::new(content);
     SemanticTokensService::collect_art_block_tokens(content, &mut tokens, &line_index);
 
-    // Should find <art and </art>
+    // Tags address their names without HTML delimiters.
     assert_eq!(tokens.len(), 2);
-    assert_eq!(tokens[0].length, 4); // "<art"
-    assert_eq!(tokens[1].length, 6); // "</art>"
+    assert_eq!((tokens[0].start, tokens[0].length), (1, 3)); // "art"
+    assert_eq!((tokens[1].start, tokens[1].length), (2, 3)); // "art"
 }
 
 #[test]
@@ -143,10 +143,10 @@ fn test_variant_block_tokens() {
     let line_index = LineIndex::new(content);
     SemanticTokensService::collect_variant_block_tokens(content, &mut tokens, &line_index);
 
-    // Should find <variant and </variant>
+    // Tags address their names without HTML delimiters.
     assert_eq!(tokens.len(), 2);
-    assert_eq!(tokens[0].length, 8); // "<variant"
-    assert_eq!(tokens[1].length, 10); // "</variant>"
+    assert_eq!((tokens[0].start, tokens[0].length), (1, 7)); // "variant"
+    assert_eq!((tokens[1].start, tokens[1].length), (2, 7)); // "variant"
 }
 
 #[test]

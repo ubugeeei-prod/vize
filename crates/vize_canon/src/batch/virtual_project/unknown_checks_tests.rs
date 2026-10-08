@@ -95,3 +95,6 @@ fn unknown_checks_follow_vue_compiler_options() {
         true,
     );
 }
+
+#[path = "unknown_original_options_tests.rs"]
+mod originals;

@@ -88,7 +88,7 @@ counts or fixture availability changes.
   [evidence index](./phase-2-records.md#current-completion-evidence-2026-09-12);
   review-only evidence is labeled there rather than presented as executable.
   P2-11 keeps the hydrated full-corpus differential contract pinned as
-  144 DOM-output comparisons. P2-16 keeps the JSX L2-vs-Relief differential
+  145 DOM-output comparisons. P2-16 keeps the JSX L2-vs-Relief differential
   lane in the required check job; its retirement is re-dated at P2-20.
   P2-12b keeps the DOM build-path traversal target as an ordinary Rust
   integration gate over the ladder. P2-20 records the exit verdict and the
@@ -96,14 +96,14 @@ counts or fixture availability changes.
 - **Active and blocked: 0 of 22 — none.**
 - **Ready: 0 of 22 — none.**
 - **Open and dependency-blocked: 0 of 22 — none.**
-- **Executable corpus inventory:** 146 gitlinks, including 142 ecosystem
+- **Executable corpus inventory:** 148 gitlinks, including 143 ecosystem
   projects, as asserted by
   [`fixture-compatibility-ledger.test.ts`](../../../tests/tooling/fixture-compatibility-ledger.test.ts).
   A worktree's initialized or uninitialized submodule count is transient and
   must not replace this inventory.
 - **P2 exit verdict:** the gate below is fully evaluated. Real Project Matrix
   run `34682248135` supplies the hydrated DOM-corpus proof over 146 gitlinks /
-  142 ecosystem projects; P2-11 deleted the DOM production selector, and P2-20
+  143 ecosystem projects; P2-11 deleted the DOM production selector, and P2-20
   deletes the transform-lane disarm flag so no in-phase production or test
   escape hatch remains. The L2 contract, traversal target, portability lane,
   differential lane, waiver ledger and corpus-expansion audit all have current

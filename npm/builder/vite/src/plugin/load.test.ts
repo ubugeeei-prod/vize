@@ -264,13 +264,13 @@ const msg = "ready"
 </script>
 <template><div>{{ msg }}</div></template>`,
 );
-
+hmrState.mergedOptions.nuxtPageMeta = true;
 const definePageMetaLoad = loadHook(
   { ...hmrState, cache: new Map(), ssrCache: new Map(), root: definePageMetaDir },
   `\0${definePageMetaPath}?macro=true`,
   { ssr: false },
 );
-
+delete hmrState.mergedOptions.nuxtPageMeta;
 assert.ok(
   definePageMetaLoad && typeof definePageMetaLoad === "object",
   "Nuxt definePageMeta macro queries should load as code objects",

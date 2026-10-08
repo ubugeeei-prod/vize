@@ -7,12 +7,14 @@ import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { prepareNuxtSourceBinding } from "./source-binding.mjs";
 
 const root = fileURLToPath(new URL("../../../../", import.meta.url));
 const fixture = path.join(root, "tools/support/compat/nuxt/fixtures/nuxt3-module-build");
 const artifacts = path.resolve(process.argv[2] ?? path.join(os.tmpdir(), "vize-nuxt3-build"));
 const requireTests = createRequire(path.join(root, "tests/package.json"));
 fs.mkdirSync(artifacts, { recursive: true });
+const sourceBinding = prepareNuxtSourceBinding(root, artifacts);
 
 for (const [name, version] of [
   ["nuxt", "3.19.3"],
@@ -46,13 +48,34 @@ let server;
 try {
   for (const name of [".nuxt", ".output"])
     fs.rmSync(path.join(fixture, name), { recursive: true, force: true });
+  // Nuxt replaces module-import exceptions with a generic installation error.
+  // Keep the original exception under the exact same source-binding environment.
+  const importLog = path.join(artifacts, "module-import.log");
+  const importFd = fs.openSync(importLog, "w");
+  let imported;
+  try {
+    imported = spawnSync(
+      process.execPath,
+      ["--input-type=module", "--eval", 'await import("@vizejs/nuxt")'],
+      {
+        cwd: fixture,
+        env: { ...sourceBinding.environment, NO_COLOR: "1" },
+        stdio: ["ignore", importFd, importFd],
+        timeout: 30_000,
+      },
+    );
+  } finally {
+    fs.closeSync(importFd);
+  }
+  assert.equal(imported.error, undefined);
+  assert.equal(imported.status, 0, `Source-bound Nuxt module import failed; see ${importLog}`);
   const buildLog = path.join(artifacts, "build.log");
   const buildFd = fs.openSync(buildLog, "w");
   let build;
   try {
     build = spawnSync(process.execPath, ["node_modules/nuxt/bin/nuxt.mjs", "build"], {
       cwd: fixture,
-      env: { ...process.env, NO_COLOR: "1" },
+      env: { ...sourceBinding.environment, NO_COLOR: "1" },
       stdio: ["ignore", buildFd, buildFd],
       timeout: 300_000,
     });
@@ -123,6 +146,27 @@ try {
         );
       }
     }
+    for (const [route, marker] of [
+      ["/page-meta", "page-meta-explicit"],
+      ["/page-meta-global", "page-meta-global"],
+    ]) {
+      const response = await fetch(`http://127.0.0.1:${port}${route}`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      assert.equal(response.status, 200);
+      const html = await response.text();
+      fs.writeFileSync(path.join(artifacts, `${marker}.html`), html);
+      assert.match(
+        html,
+        new RegExp(
+          `<main[^>]*id="bare-layout"[^>]*><!--\\[--><p[^>]*id="${marker}"[^>]*>page</p><!--\\]--></main>`,
+        ),
+      );
+      assert.ok(
+        !html.includes("DEFAULT LAYOUT"),
+        "extracted page metadata must select its original layout",
+      );
+    }
     const { chromium } = requireTests("@playwright/test");
     browser = await chromium.launch();
     const page = await browser.newPage();
@@ -133,6 +177,16 @@ try {
     await page.getByRole("button", { name: "Clicks: 0" }).click();
     await page.getByRole("button", { name: "Clicks: 1" }).waitFor();
     await page.getByRole("link", { name: "About" }).click();
+    await page.getByRole("heading", { name: "Nuxt 3 route" }).waitFor();
+    for (const marker of ["page-meta-explicit", "page-meta-global"]) {
+      await page.goto(
+        `http://127.0.0.1:${port}/${marker === "page-meta-explicit" ? "page-meta" : "page-meta-global"}`,
+        { waitUntil: "networkidle" },
+      );
+      await page.locator(`#bare-layout #${marker}`).waitFor();
+      assert.equal(await page.locator("#default-header").count(), 0);
+    }
+    await page.goto(`http://127.0.0.1:${port}/about`, { waitUntil: "domcontentloaded" });
     await page.getByRole("heading", { name: "Nuxt 3 route" }).waitFor();
     assert.deepEqual(pageErrors, [], "hydration and client navigation must not throw");
     fs.writeFileSync(
@@ -153,8 +207,9 @@ try {
         node: process.version,
         nuxt: "3.19.3",
         buildExit: build.status,
-        routes: ["/", "/about"],
+        routes: ["/", "/about", "/page-meta", "/page-meta-global"],
         hydratedInteraction: true,
+        sourceBinding: sourceBinding.verify(),
       },
       null,
       2,

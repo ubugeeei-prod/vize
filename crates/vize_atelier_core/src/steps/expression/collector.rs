@@ -13,6 +13,9 @@ use vize_l0::FxHashSet;
 use vize_l0::String;
 use vize_relief::ExpressionScope;
 
+mod scope;
+mod setup_write;
+
 use super::is_template_global;
 
 use crate::lane::TransformContext;
@@ -40,6 +43,8 @@ pub(crate) struct IdentifierCollector<'a, 'ctx> {
     pub(crate) assignment_targets: FxHashSet<usize>,
     /// Whether _unref helper was used
     pub(crate) used_unref: bool,
+    pub(crate) used_is_ref: bool,
+    pub(crate) has_identifiers: bool,
 }
 
 impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
@@ -53,6 +58,8 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
             suffix_rewrites: Vec::new(),
             assignment_targets: FxHashSet::default(),
             used_unref: false,
+            used_is_ref: false,
+            has_identifiers: false,
         }
     }
 
@@ -127,6 +134,7 @@ impl<'a, 'ctx> IdentifierCollector<'a, 'ctx> {
 
 impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
     fn visit_identifier_reference(&mut self, ident: &oxc_ast_types::IdentifierReference<'_>) {
+        self.has_identifiers = true;
         let name = ident.name.as_str();
         // Skip if in local scope
         if self.is_local(name) {
@@ -197,6 +205,10 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         }
     }
 
+    fn visit_binding_identifier(&mut self, _ident: &oxc_ast_types::BindingIdentifier<'_>) {
+        self.has_identifiers = true;
+    }
+
     fn visit_member_expression(&mut self, expr: &oxc_ast_types::MemberExpression<'_>) {
         // Visit the object part. Vue's inline template compiler unwraps the
         // top-level binding even when the template explicitly accesses
@@ -208,12 +220,13 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
                 self.visit_expression(&computed.expression);
             }
             oxc_ast_types::MemberExpression::StaticMemberExpression(static_expr) => {
+                self.has_identifiers = true;
                 self.visit_expression(&static_expr.object);
                 // Don't visit the property - it's a static name, not a reference
             }
             oxc_ast_types::MemberExpression::PrivateFieldExpression(private) => {
                 self.visit_expression(&private.object);
-                // Private field name shouldn't be prefixed
+                self.has_identifiers = true;
             }
         }
     }
@@ -272,17 +285,20 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
     fn visit_assignment_expression(&mut self, expr: &oxc_ast_types::AssignmentExpression<'_>) {
         self.collect_assignment_targets(&expr.left);
         walk_assignment_expression(self, expr);
+        self.guard_setup_assignment(expr);
     }
 
     fn visit_update_expression(&mut self, expr: &oxc_ast_types::UpdateExpression<'_>) {
         self.collect_simple_assignment_targets(&expr.argument);
         walk_update_expression(self, expr);
+        self.guard_setup_update(expr);
     }
 
     fn visit_object_property(&mut self, prop: &oxc_ast_types::ObjectProperty<'_>) {
         if prop.shorthand
             && let oxc_ast_types::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
+            self.has_identifiers = true;
             let name = ident.name.as_str();
             if self.is_local(name) || is_template_global(name) {
                 return;
@@ -330,21 +346,5 @@ impl<'a, 'ctx> Visit<'_> for IdentifierCollector<'a, 'ctx> {
         }
 
         walk_object_property(self, prop);
-    }
-}
-
-impl<'ast> ExpressionScope<'ast> for IdentifierCollector<'_, '_> {
-    fn push_scope(&mut self) {
-        self.local_scopes.push(FxHashSet::default());
-    }
-    fn pop_scope(&mut self) {
-        self.local_scopes.pop();
-    }
-    fn add_local(&mut self, name: &str) {
-        // The walker pushes a scope before any binding; without one there is
-        // nowhere to record the name.
-        if let Some(scope) = self.local_scopes.last_mut() {
-            scope.insert(String::new(name));
-        }
     }
 }

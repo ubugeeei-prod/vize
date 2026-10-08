@@ -10,9 +10,13 @@ pub(super) fn process_enum_declaration(
     result: &mut ScriptParseResult,
     enumeration: &TSEnumDeclaration<'_>,
 ) {
-    if enumeration.r#const || enumeration.declare {
+    // Const enums still have runtime values in the isolated TypeScript
+    // transform used for SFCs. Only ambient declarations have no value.
+    if enumeration.declare {
         return;
     }
+    // This existing processor records a declaration but never visits initializers.
+    result.refuse_occurrences();
 
     let name = enumeration.id.name.as_str();
     result.bindings.add(name, BindingType::SetupConst);

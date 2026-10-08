@@ -26,6 +26,7 @@ mod html_tag;
 mod location_merge;
 mod rename_merge;
 mod rename_missing;
+mod rename_scope;
 mod svg_attribute;
 mod virtual_document;
 mod workspace_edit;
@@ -35,16 +36,18 @@ pub(crate) use canonical::canonical_request_path;
 pub(crate) use canonical::{
     CanonicalProjectOpenError, CanonicalSemanticPosition, CanonicalVirtualDocument,
     ComponentPropNavigationIdentities, ComponentPropSourceCache, canonical_component_prop_position,
-    canonical_source_offset_to_position, component_prop_location_matches,
-    component_prop_navigation_identity_matches, linked_semantic_position,
+    canonical_source_offset_to_position, component_attribute_position,
+    component_prop_location_matches, component_prop_navigation_identity_matches,
+    is_component_attribute_query, linked_semantic_position, local_binding_reference_position,
     map_canonical_corsa_location, map_canonical_corsa_locations,
     map_canonical_corsa_workspace_edit, map_canonical_exact_edit_range, map_canonical_lsp_range,
     map_canonical_materialized_module_location, map_canonical_prepare_rename,
     matching_component_prop_navigation_positions, materialized_semantic_positions,
     merge_canonical_workspace_edits, open_canonical_script_document,
     open_canonical_virtual_document, open_canonical_virtual_document_strict,
-    open_canonical_virtual_project_document, open_canonical_virtual_project_document_strict,
-    open_canonical_virtual_workspace_document, tower_range,
+    open_canonical_virtual_navigation_project_document_strict,
+    open_canonical_virtual_project_document, open_canonical_virtual_workspace_document,
+    tower_range,
 };
 pub(crate) use html_attribute::{
     html_attribute_request_path, html_attribute_virtual_document, native_dom_attribute_info,
@@ -53,6 +56,7 @@ pub(crate) use html_tag::{html_tag_request_path, html_tag_virtual_document, nati
 pub(crate) use location_merge::merge_canonical_locations;
 pub(crate) use rename_merge::merge_authored_rename;
 pub(crate) use rename_missing::merge_missing_authored_rename;
+pub(crate) use rename_scope::RenameScope;
 use virtual_document::{
     MatchedVirtualDocument, is_virtual_document_uri, match_virtual_document, virtual_document_path,
 };

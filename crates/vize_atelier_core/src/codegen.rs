@@ -39,6 +39,7 @@ mod span_tests;
 use crate::options::CodegenOptions;
 
 pub use context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};
+pub use expression::convert_line_comments_to_block;
 // `pub` (P2-9 series 6): the Davinci differential comparator drives the
 // shipped constant classifier from test space to detect where the L2
 // lane's deliberately weaker const rule diverges (`consts_templates`),

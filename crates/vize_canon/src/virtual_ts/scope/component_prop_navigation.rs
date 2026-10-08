@@ -9,6 +9,7 @@ use crate::virtual_ts::semantic_links::{VizeSemanticLink, VizeSemanticLinkKind};
 use crate::virtual_ts::types::{VizeMapping, VizeSubSpan};
 
 use super::component_navigation::{is_ts_identifier, push_ts_single_quoted_literal};
+use super::component_props::named_dynamic_reference;
 use super::context::ComponentPropsContext;
 
 pub(super) fn emit_references(
@@ -20,15 +21,22 @@ pub(super) fn emit_references(
 ) {
     ts.push_str("\n  // Component template navigation references\n");
     for &(idx, usage) in checkable_usages {
-        let component_ref = component_binding_reference(
-            ctx.summary,
-            ctx.options,
-            ctx.syntactic_type_only_imported_names,
-            usage.name.as_str(),
-        );
+        let named_dynamic_ref = named_dynamic_reference(ctx, usage);
+        let inference_only = named_dynamic_ref.is_some();
+        let component_ref = named_dynamic_ref.unwrap_or_else(|| {
+            component_binding_reference(
+                ctx.summary,
+                ctx.options,
+                ctx.syntactic_type_only_imported_names,
+                usage.name.as_str(),
+            )
+        });
         let tag_src_start = (ctx.template_offset + usage.start + 1) as usize;
         let tag_src_end = tag_src_start + usage.name.len();
 
+        if inference_only {
+            ts.push_str("  // @ts-ignore Navigation-only reference; the authored v-bind statement owns diagnostics.\n");
+        }
         ts.push_str("  void ");
         let tag_gen_start = ts.len();
         ts.push_str(&component_ref);
@@ -183,9 +191,19 @@ fn emit_slot_references(
             emitted_slots_ref = true;
         }
 
-        ts.push_str("  const { ");
+        let identifier = is_ts_identifier(slot.name.as_str());
+        if identifier {
+            ts.push_str("  const { ");
+        } else {
+            // Native quoted binding keys use string-literal search rather than
+            // the owner's property identity. Indexed typeof also rejects missing keys.
+            append!(
+                *ts,
+                "  const __vize_slot_nav_{idx}_{slot_index} = undefined as unknown as typeof {slots_ref}["
+            );
+        }
         let access_start = ts.len();
-        let slot_gen_range = if is_ts_identifier(slot.name.as_str()) {
+        let slot_gen_range = if identifier {
             let slot_gen_start = ts.len();
             ts.push_str(slot.name.as_str());
             slot_gen_start..ts.len()
@@ -193,10 +211,14 @@ fn emit_slot_references(
             push_ts_single_quoted_literal(ts, slot.name.as_str())
         };
         let access_end = ts.len();
-        append!(
-            *ts,
-            ": __vize_slot_nav_{idx}_{slot_index} }} = {slots_ref};\n  void __vize_slot_nav_{idx}_{slot_index};\n"
-        );
+        if identifier {
+            append!(
+                *ts,
+                ": __vize_slot_nav_{idx}_{slot_index} }} = {slots_ref};\n  void __vize_slot_nav_{idx}_{slot_index};\n"
+            );
+        } else {
+            append!(*ts, "];\n  void __vize_slot_nav_{idx}_{slot_index};\n");
+        }
         let src_range = (ctx.template_offset as usize + source_range.start)
             ..(ctx.template_offset as usize + source_range.end);
         mappings.push(VizeMapping {

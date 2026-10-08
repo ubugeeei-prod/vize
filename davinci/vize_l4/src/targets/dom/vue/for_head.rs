@@ -31,7 +31,7 @@ pub(super) fn write<L: LinkSink>(
     let read = row
         .collection_read()
         .ok_or_else(|| reject(DomErrorKind::RuntimeAccessUnavailable))?;
-    if read.kind() != VueReadKind::SetupLet
+    if !matches!(read.kind(), VueReadKind::SetupConst | VueReadKind::SetupLet)
         || !core::ptr::eq(read.occurrence(), row.resolution().collection_occurrence())
         || !core::ptr::eq(read.binding().file(), analysis.file())
         || analysis.setup().binding(read.binding()).is_err()

@@ -16,6 +16,23 @@ pub(crate) fn tokenize_expression(
     base_line: u32,
     tokens: &mut Vec<AbsoluteToken>,
 ) {
+    super::expression_lines::tokenize_regions(
+        expr,
+        template,
+        expr_offset,
+        base_line,
+        tokens,
+        false,
+    );
+}
+
+pub(super) fn tokenize_code(
+    expr: &str,
+    template: &str,
+    expr_offset: usize,
+    base_line: u32,
+    tokens: &mut Vec<AbsoluteToken>,
+) {
     let bytes = expr.as_bytes();
     let mut i = 0;
 

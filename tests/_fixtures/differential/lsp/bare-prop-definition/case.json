@@ -1,0 +1,30 @@
+{
+  "issue": 7917,
+  "originalSha256": {
+    "status-box.types.ts.txt": "0dc95527ca6243821afbf83d022e2b6ec6c190b8420027dfde5bf165e34ed0ee",
+    "StatusBox.vue.txt": "0cf6608c8e7d3f31024e04475d148abc442be1c72a5b821a2017701cfb12f328",
+    "StatusBoxLocal.vue.txt": "bca8011de338d94245858a9705b29b3fb5d71aebd7c6d6a6be120b5272dcef6f"
+  },
+  "oracle": "crates/vize/tests/lsp_bare_prop_definition_cli.rs",
+  "contract": "Bare prop and props.status resolve to the same authored interface member, never the withDefaults key or an unrelated same-name member.",
+  "originalImportedTarget": {
+    "start": {
+      "line": 1,
+      "character": 2
+    },
+    "end": {
+      "line": 1,
+      "character": 8
+    }
+  },
+  "originalLocalTarget": {
+    "start": {
+      "line": 2,
+      "character": 2
+    },
+    "end": {
+      "line": 2,
+      "character": 8
+    }
+  }
+}

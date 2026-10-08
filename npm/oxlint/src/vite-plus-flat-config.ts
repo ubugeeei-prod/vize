@@ -1,4 +1,5 @@
 import type { PatinaPreset, PatinaSettings } from "./model.js";
+import { selectVizeRuleConfig } from "./rule-selection.js";
 import {
   buildVizeLintConfig,
   type VitePlusLintPlugin,
@@ -91,6 +92,12 @@ export function defineVizeLintConfig(
     }
   }
 
+  if (
+    config.settings.vize.rules !== undefined ||
+    Object.keys(config.rules).some((id) => id.startsWith("vize/"))
+  ) {
+    config.settings.vize.rules = selectVizeRuleConfig(config.rules);
+  }
   return config;
 }
 

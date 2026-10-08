@@ -4,6 +4,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+  allocatorReplayText,
   contracts,
   hostModule,
   hostModuleText,
@@ -28,10 +29,44 @@ test("host allocator selection checks and repeats without writing", () => {
   assert.equal(prepareAllocatorSelection(reader(current)).size, 0);
 });
 
-test("original allocator selection replays to exact current bytes", () => {
+test("later IO/path/timing facade keeps the exact allocator replay and rejects changed host declarations", () => {
+  const file = "crates/vize_carton/src/lib.rs";
+  const source = current.get(file)!;
+  const historical = allocatorReplayText(file, source)!;
+  assert.equal(
+    historical,
+    source
+      .replace("\npub mod timing_observer;\n", "")
+      .replace("\npub mod path;\n", "")
+      .replace("\npub mod source_io;\n", ""),
+  );
+  assert.notEqual(historical, source);
+  assert.equal(prepareAllocatorSelection(reader(current)).size, 0);
+  assert.equal(current.get(file), source);
+  for (const changed of [
+    source.replace("pub mod source_io;", "pub mod unknown_source_io;"),
+    source.replace("pub mod source_io;", "pub mod source_io;\npub mod source_io;"),
+    source.replace("pub mod path;", "pub mod unknown_path;"),
+    source.replace("pub mod path;", "pub mod path;\npub mod path;"),
+    source.replace("pub mod timing_observer;", "pub mod unknown_timing_observer;"),
+    source.replace(
+      "pub mod timing_observer;",
+      "pub mod timing_observer;\npub mod timing_observer;",
+    ),
+    source.replace("pub mod profile_allocator;", ""),
+    source + "\n// unreviewed host facade\n",
+  ]) {
+    const altered = new Map(current);
+    altered.set(file, changed);
+    rejectsBeforeWrites(altered);
+  }
+});
+
+test("original allocator selection replays to exact historical allocator bytes", () => {
   const planned = prepareAllocatorSelection(reader(original));
   assert.equal(planned.size, 7);
-  for (const [file, text] of planned) assert.equal(text, current.get(file));
+  for (const [file, text] of planned)
+    assert.equal(text, allocatorReplayText(file, current.get(file)));
   const replayed = new Map([...original, ...planned]);
   assert.equal(prepareAllocatorSelection(reader(replayed)).size, 0);
 });
@@ -131,5 +166,27 @@ test("allocator replay preflights the existing exporter exact-gate contract", ()
         ),
     );
     rejectsBeforeWrites(changed);
+  }
+});
+
+void test("allocator checks preserve later exact exporters while old replay retains its own bytes", () => {
+  const source = current.get(profileExportContract)!;
+  const historical = allocatorReplayText(profileExportContract, source)!;
+  assert.notEqual(historical, source);
+  assert.equal(prepareAllocatorSelection(reader(current)).size, 0);
+  const retained = new Map(current);
+  retained.set(profileExportContract, historical);
+  assert.equal(prepareAllocatorSelection(reader(retained)).size, 0);
+  assert.equal(current.get(profileExportContract), source);
+  for (const changed of [
+    source + "\n// partial snapshot contract\n",
+    source.replace(
+      "3d1747c3dcfcf4ec8bc80ec722a6bd58d488cfdef2c7de84374a526417ebc9f9",
+      "unknown_owned_exporter",
+    ),
+  ]) {
+    const altered = new Map(current);
+    altered.set(profileExportContract, changed);
+    rejectsBeforeWrites(altered);
   }
 });

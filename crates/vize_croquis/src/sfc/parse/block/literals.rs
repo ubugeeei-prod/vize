@@ -2,7 +2,7 @@
 //! `<script>` content for its closing tag.
 
 use super::compat::can_start_string_literal;
-use super::{advance_line, skip_regex_literal};
+use super::{BlockAttrs, advance_line, find_closing_tag_end, skip_regex_literal};
 use memchr::{memchr, memmem};
 
 pub(in crate::sfc::parse) fn can_start_regex_literal(prev_significant_char: u8) -> bool {
@@ -27,6 +27,30 @@ pub(in crate::sfc::parse) fn can_start_regex_literal(prev_significant_char: u8) 
             | b'%'
             | b'^'
     )
+}
+
+/// Do not let an explicit JSX closing element turn the real SFC closing tag
+/// into the speculative regex terminator plus invalid `script` flags. Ordinary
+/// scripts and genuine regex terminators keep the original scanner result.
+pub(super) fn script_regex_end(
+    bytes: &[u8],
+    pos: usize,
+    len: usize,
+    line: &mut usize,
+    last_newline: &mut usize,
+    attrs: &BlockAttrs<'_>,
+) -> Option<usize> {
+    let before = (*line, *last_newline);
+    let end = skip_regex_literal(bytes, pos, len, line, last_newline)?;
+    if find_closing_tag_end(bytes, end.saturating_sub(b"</script".len()), len, b"script").is_some()
+        && attrs
+            .get("lang")
+            .is_some_and(|lang| matches!(lang.as_ref(), "jsx" | "tsx"))
+    {
+        (*line, *last_newline) = before;
+        return None;
+    }
+    Some(end)
 }
 
 pub(in crate::sfc::parse) fn skip_script_string_literal(
@@ -174,4 +198,51 @@ fn skip_template_expression(
     }
 
     pos
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{BlockAttrs, script_regex_end, skip_regex_literal};
+    use std::borrow::Cow;
+
+    #[test]
+    fn jsx_boundary_recovery_does_not_change_other_language_or_regex_results() {
+        for language in [None, Some("js"), Some("ts"), Some("coffee")] {
+            let mut attrs = BlockAttrs::default();
+            if let Some(language) = language {
+                attrs.insert(Cow::Borrowed("lang"), Cow::Borrowed(language));
+            }
+            let bytes = b"/p>;</script><template />";
+            let (mut old_line, mut old_last) = (4, 17);
+            let expected = skip_regex_literal(bytes, 0, bytes.len(), &mut old_line, &mut old_last);
+            let (mut line, mut last) = (4, 17);
+            assert_eq!(
+                script_regex_end(bytes, 0, bytes.len(), &mut line, &mut last, &attrs),
+                expected
+            );
+            assert_eq!((line, last), (old_line, old_last));
+        }
+        for language in ["jsx", "tsx"] {
+            let mut attrs = BlockAttrs::default();
+            attrs.insert(Cow::Borrowed("lang"), Cow::Borrowed(language));
+            let bytes = b"/p>;</script><template />";
+            let (mut line, mut last) = (4, 17);
+            assert_eq!(
+                script_regex_end(bytes, 0, bytes.len(), &mut line, &mut last, &attrs),
+                None
+            );
+            assert_eq!((line, last), (4, 17));
+            for bytes in [br"/p>[</script>]/g".as_slice(), br"/[</script>\/]/giu"] {
+                let (mut old_line, mut old_last) = (4, 17);
+                let expected =
+                    skip_regex_literal(bytes, 0, bytes.len(), &mut old_line, &mut old_last);
+                let (mut line, mut last) = (4, 17);
+                assert_eq!(
+                    script_regex_end(bytes, 0, bytes.len(), &mut line, &mut last, &attrs),
+                    expected
+                );
+                assert_eq!((line, last), (old_line, old_last));
+            }
+        }
+    }
 }

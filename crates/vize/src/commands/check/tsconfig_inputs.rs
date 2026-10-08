@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
 use vize_l0::FxHashSet;
 
 mod ambient;
+mod chain;
 mod collect;
 mod glob;
 mod implicit_exclude;
@@ -26,6 +27,8 @@ mod type_references;
 
 #[cfg(test)]
 mod default_exclude_tests;
+#[cfg(test)]
+mod diamond_tests;
 #[cfg(test)]
 mod hidden_include_tests;
 #[cfg(test)]
@@ -155,7 +158,7 @@ fn collect_default_check_files_for_tsconfig(
 
     for file in &spec.files {
         let resolved = normalize_input_path(&file.resolve());
-        if vize_l0::path::is_git_metadata_path(&resolved) {
+        if vize_carton::path::is_git_metadata_path(&resolved) {
             continue;
         }
         if resolved.is_file()

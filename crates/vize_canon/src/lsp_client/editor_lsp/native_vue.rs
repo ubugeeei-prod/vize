@@ -35,6 +35,8 @@ impl CorsaProjectClient {
         NativeVueError,
     > {
         let backend = |error| NativeVueError::Backend(CorsaBridgeError::CommunicationError(error));
+        // Keep the existing simultaneous-process bound when changing modes.
+        self.retire_original_diagnosing_session().map_err(backend)?;
         if self.materialized_project_session || self.document_texts.contains_key(uri) {
             return Err(backend(cstr!(
                 "native SFC requires an unmaterialized, unopened projection"

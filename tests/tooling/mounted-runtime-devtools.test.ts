@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import test from "node:test";
 import {
   mountedRuntimeDevtools,
@@ -6,6 +7,125 @@ import {
 } from "./support/mounted-runtime-devtools.ts";
 
 const key = "__VUE_DEVTOOLS_GLOBAL_HOOK__";
+
+test("an unsettled runtime child retains its last phase without claiming a cause", () => {
+  const support = new URL("./support/mounted-runtime-devtools.ts", import.meta.url).href;
+  const child = spawnSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "--eval",
+      `import { runtimeProcessEvidence } from ${JSON.stringify(support)};
+const evidence = runtimeProcessEvidence();
+evidence.phase("close mounted DOM", { backend: "vdom", fixtureIndex: 0 });
+await new Promise(() => {});`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(child.error, undefined);
+  assert.equal(child.status, 13);
+  assert.equal(child.signal, null);
+  assert.equal(child.stdout, "");
+  const lines = child.stderr.split("\n").filter((line) => line.startsWith('{"event":'));
+  assert.deepEqual(
+    lines.map((line) => JSON.parse(line)),
+    [
+      {
+        event: "runtime-incomplete",
+        exitCode: 13,
+        phase: "close mounted DOM",
+        backend: "vdom",
+        fixtureIndex: 0,
+      },
+    ],
+  );
+});
+
+test("completed runtime children retain the exact success protocol and emit no exit evidence", () => {
+  const support = new URL("./support/mounted-runtime-devtools.ts", import.meta.url).href;
+  const child = spawnSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "--eval",
+      `import { runtimeProcessEvidence } from ${JSON.stringify(support)};
+const evidence = runtimeProcessEvidence();
+evidence.phase("assert fixture observations");
+process.stdout.write('{"passed":1}');
+evidence.complete();`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(child.error, undefined);
+  assert.equal(child.status, 0);
+  assert.equal(child.signal, null);
+  assert.equal(child.stdout, '{"passed":1}');
+  assert.equal(child.stderr, "");
+});
+
+test("a pending cleanup retains the original trace rejection in real child exit evidence", () => {
+  const support = new URL("./support/mounted-runtime-devtools.ts", import.meta.url).href;
+  const child = spawnSync(
+    process.execPath,
+    [
+      "--input-type=module",
+      "--eval",
+      `import { runtimeProcessEvidence, withMountedRuntimeDevtools } from ${JSON.stringify(support)};
+const evidence = runtimeProcessEvidence();
+evidence.phase("trace", { backend: "vdom", fixtureIndex: 0 });
+await withMountedRuntimeDevtools(false,
+  () => { evidence.phase("close mounted DOM"); return new Promise(() => {}); },
+  async () => { throw new Error("original trace rejection witness"); },
+  { enabled: false, onFailure: evidence.failure });`,
+    ],
+    { encoding: "utf8" },
+  );
+  assert.equal(child.error, undefined);
+  assert.equal(child.status, 13);
+  assert.equal(child.signal, null);
+  assert.equal(child.stdout, "");
+  const lines = child.stderr.split("\n").filter((line) => line.startsWith('{"event":'));
+  assert.equal(lines.length, 1);
+  const { primaryError, ...result } = JSON.parse(lines[0]);
+  assert.deepEqual(result, {
+    event: "runtime-incomplete",
+    exitCode: 13,
+    phase: "close mounted DOM",
+    backend: "vdom",
+    fixtureIndex: 0,
+  });
+  assert.equal(primaryError.name, "Error");
+  assert.equal(primaryError.message, "original trace rejection witness");
+  assert.match(primaryError.stack, /^Error: original trace rejection witness\n/u);
+});
+
+test("a failed diagnostic callback cannot replace the trace rejection or skip cleanup", async () => {
+  const failure = new Error("original trace rejection");
+  const target = {};
+  let closed = 0;
+  await assert.rejects(
+    withMountedRuntimeDevtools(
+      false,
+      async () => {
+        closed++;
+      },
+      async () => {
+        throw failure;
+      },
+      {
+        target,
+        enabled: true,
+        onFailure(error) {
+          assert.equal(error, failure);
+          throw new Error("reporter failure");
+        },
+      },
+    ),
+    (error) => error === failure,
+  );
+  assert.equal(closed, 1);
+  assert.equal(Object.hasOwn(target, key), false);
+});
 
 test("successful completed traces close once before releasing the observer", async () => {
   const target = {};

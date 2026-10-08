@@ -42,7 +42,11 @@ import { aliasSortKey, resolveHookSsr, shouldExtractCssForBuild } from "./index-
 
 export type { VizePluginState } from "./state.ts";
 
-export function vize(options: VizeOptions = {}): Plugin[] {
+/** Framework-derived defaults yield to project, entry, and explicit plugin options. */
+export function vize(
+  options: VizeOptions = {},
+  compilerDefaults: Pick<VizeOptions, "whitespace"> = {},
+): Plugin[] {
   if (isLegacyVueCompatibilityMode(options)) {
     return [createLegacyVueCompatibilityPlugin(options)];
   }
@@ -67,7 +71,10 @@ export function vize(options: VizeOptions = {}): Plugin[] {
     scanPatterns: null,
     precompileBatchSize: DEFAULT_PRECOMPILE_BATCH_SIZE,
     ignorePatterns: [],
-    mergedOptions: options,
+    mergedOptions:
+      compilerDefaults.whitespace === undefined
+        ? options
+        : { ...options, whitespace: options.whitespace ?? compilerDefaults.whitespace },
     initialized: false,
     dynamicImportAliasRules: [],
     cssAliasRules: [],
@@ -153,8 +160,13 @@ export function vize(options: VizeOptions = {}): Plugin[] {
         sharedConfigPromise,
       );
 
-      state.mergedOptions = mergeCompilerOptions(options, sharedConfig);
-      state.fileCompilerOptions = createFileCompilerOptions(sharedConfig, state.root, options);
+      state.mergedOptions = mergeCompilerOptions(options, sharedConfig, compilerDefaults);
+      state.fileCompilerOptions = createFileCompilerOptions(
+        sharedConfig,
+        state.root,
+        options,
+        compilerDefaults,
+      );
       state.compilerScopeIdentity = sharedConfig?.entries;
 
       state.dynamicImportAliasRules = [];

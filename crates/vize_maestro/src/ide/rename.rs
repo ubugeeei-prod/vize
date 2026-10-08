@@ -24,6 +24,8 @@ mod corsa_event_variants_tests;
 mod corsa_model_tests;
 #[cfg(all(test, feature = "native", unix))]
 pub(in crate::ide) mod corsa_session_tests;
+#[cfg(feature = "native")]
+mod native;
 // Plain `cfg(test)` lets clippy's test exemptions apply inside the module.
 #[cfg(test)]
 #[cfg(feature = "native")]
@@ -42,6 +44,12 @@ use super::IdeContext;
 use crate::ide::corsa_support as corsa;
 #[cfg(feature = "native")]
 use crate::virtual_code::{ArtCursorPosition, BlockType};
+
+#[cfg(feature = "native")]
+enum NativeRename {
+    Refused,
+    Edit(WorkspaceEdit),
+}
 
 /// Rename service for identifier renaming across SFC.
 pub struct RenameService;
@@ -87,6 +95,9 @@ impl RenameService {
     ) -> Option<PrepareRenameResponse> {
         match canonical::prepare(ctx, corsa_bridge.as_deref()).await {
             canonical::Answer::Available(response) => return response,
+            canonical::Answer::Unavailable if corsa::is_component_attribute_query(ctx) => {
+                return None;
+            }
             canonical::Answer::Unavailable => {}
         }
         let corsa_result = match ctx.block_type? {
@@ -109,43 +120,6 @@ impl RenameService {
         };
 
         corsa_result.or_else(|| Self::prepare_rename(ctx))
-    }
-
-    /// Perform rename using Corsa when possible, with synchronous fallback.
-    #[cfg(feature = "native")]
-    pub async fn rename_with_corsa(
-        ctx: &IdeContext<'_>,
-        new_name: &str,
-        corsa_bridge: Option<Arc<CorsaBridge>>,
-    ) -> Option<WorkspaceEdit> {
-        if let canonical::Answer::Available(edit) =
-            canonical::rename(ctx, new_name, corsa_bridge.as_deref()).await
-        {
-            return corsa::merge_missing_authored_rename(ctx, edit, Self::rename(ctx, new_name));
-        }
-        let corsa_result = match ctx.block_type? {
-            BlockType::Template => {
-                Self::rename_template_with_corsa(ctx, new_name, corsa_bridge.as_deref()).await
-            }
-            BlockType::Script | BlockType::ScriptSetup => {
-                Self::rename_script_with_corsa(
-                    ctx,
-                    new_name,
-                    matches!(ctx.block_type, Some(BlockType::ScriptSetup)),
-                    corsa_bridge.as_deref(),
-                )
-                .await
-            }
-            BlockType::Art(ArtCursorPosition::VariantTemplate(ref info)) => {
-                Self::rename_art_variant_with_corsa(ctx, info, new_name, corsa_bridge.as_deref())
-                    .await
-            }
-            BlockType::Style(_) | BlockType::Art(_) => None,
-        };
-
-        // Corsa only renames the virtual document the request opened, so the
-        // authored edits carry the other blocks of this SFC.
-        corsa::merge_authored_rename(ctx, corsa_result, Self::rename(ctx, new_name))
     }
 
     #[cfg(feature = "native")]
@@ -221,7 +195,7 @@ impl RenameService {
         ctx: &IdeContext<'_>,
         new_name: &str,
         bridge: Option<&CorsaBridge>,
-    ) -> Option<WorkspaceEdit> {
+    ) -> Option<NativeRename> {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let template = virtual_docs.template.as_ref()?;
@@ -238,7 +212,10 @@ impl RenameService {
             .await
             .ok()??;
         let edit = serde_json::from_value(edit).ok()?;
-        corsa::map_corsa_workspace_edit(ctx, edit)
+        if !corsa::RenameScope::native(ctx).admits_virtual_native(ctx.uri, &uri, &edit) {
+            return Some(NativeRename::Refused);
+        }
+        corsa::map_corsa_workspace_edit(ctx, edit).map(NativeRename::Edit)
     }
 
     #[cfg(feature = "native")]
@@ -247,7 +224,7 @@ impl RenameService {
         info: &crate::virtual_code::ArtVariantInfo,
         new_name: &str,
         bridge: Option<&CorsaBridge>,
-    ) -> Option<WorkspaceEdit> {
+    ) -> Option<NativeRename> {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let template = virtual_docs.art_template(info.variant_index)?;
@@ -263,7 +240,10 @@ impl RenameService {
             .await
             .ok()??;
         let edit = serde_json::from_value(edit).ok()?;
-        corsa::map_corsa_workspace_edit(ctx, edit)
+        if !corsa::RenameScope::native(ctx).admits_virtual_native(ctx.uri, &uri, &edit) {
+            return Some(NativeRename::Refused);
+        }
+        corsa::map_corsa_workspace_edit(ctx, edit).map(NativeRename::Edit)
     }
 
     #[cfg(feature = "native")]
@@ -272,7 +252,7 @@ impl RenameService {
         new_name: &str,
         is_setup: bool,
         bridge: Option<&CorsaBridge>,
-    ) -> Option<WorkspaceEdit> {
+    ) -> Option<NativeRename> {
         let bridge = bridge?;
         let virtual_docs = ctx.virtual_docs.as_ref()?;
         let script_doc = if is_setup {
@@ -293,7 +273,10 @@ impl RenameService {
             .await
             .ok()??;
         let edit = serde_json::from_value(edit).ok()?;
-        corsa::map_corsa_workspace_edit(ctx, edit)
+        if !corsa::RenameScope::native(ctx).admits_virtual_native(ctx.uri, &uri, &edit) {
+            return Some(NativeRename::Refused);
+        }
+        corsa::map_corsa_workspace_edit(ctx, edit).map(NativeRename::Edit)
     }
 
     /// Check JavaScript identifier syntax, including Unicode identifiers.

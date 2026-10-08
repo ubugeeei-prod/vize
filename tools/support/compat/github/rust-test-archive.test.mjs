@@ -16,7 +16,7 @@ void test("archive receipt accepts the same pinned nextest release across GNU an
   writeFileSync(archive, "archive bytes");
   const common = {
     cwd: workspaceRoot,
-    rustcVersion: "rustc 1.98.0 (pinned)",
+    rustcVersion: "rustc 1.99.0 (pinned)",
     env: { VIZE_TEST_DISABLE_TSGO: "1", VIZE_NUXT_CONFIG_ITERATIONS: "100" },
   };
   const stamped = await createArchiveReceipt(archive, {

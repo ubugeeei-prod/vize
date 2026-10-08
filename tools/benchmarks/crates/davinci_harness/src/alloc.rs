@@ -21,6 +21,8 @@
 use core::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::alloc::{GlobalAlloc, Layout, System};
 
+pub mod diagnostics;
+
 /// Allocation-like calls (`alloc` + `alloc_zeroed` + successful `realloc`).
 static ALLOC_CALLS: AtomicU64 = AtomicU64::new(0);
 /// Heap bytes currently live through the counting allocator.
@@ -64,10 +66,14 @@ impl<A> CountingAllocator<A> {
 }
 
 #[inline]
-fn on_alloc(size: usize) {
-    ALLOC_CALLS.fetch_add(1, Ordering::Relaxed);
+fn on_alloc(size: usize, operation: u8) {
+    let ordinal = ALLOC_CALLS.fetch_add(1, Ordering::Relaxed);
     let live = LIVE_BYTES.fetch_add(size as u64, Ordering::Relaxed) + size as u64;
     PEAK_BYTES.fetch_max(live, Ordering::Relaxed);
+    #[cfg(feature = "allocation-window-diagnostics")]
+    diagnostics::record(ordinal.wrapping_add(1), size, operation);
+    #[cfg(not(feature = "allocation-window-diagnostics"))]
+    let _ = (ordinal, operation);
 }
 
 #[inline]
@@ -84,7 +90,7 @@ unsafe impl<A: GlobalAlloc> GlobalAlloc for CountingAllocator<A> {
         // SAFETY: forwards the caller-provided layout unchanged.
         let ptr = unsafe { self.inner.alloc(layout) };
         if !ptr.is_null() {
-            on_alloc(layout.size());
+            on_alloc(layout.size(), 1);
         }
         ptr
     }
@@ -93,7 +99,7 @@ unsafe impl<A: GlobalAlloc> GlobalAlloc for CountingAllocator<A> {
         // SAFETY: forwards the caller-provided layout unchanged.
         let ptr = unsafe { self.inner.alloc_zeroed(layout) };
         if !ptr.is_null() {
-            on_alloc(layout.size());
+            on_alloc(layout.size(), 2);
         }
         ptr
     }
@@ -109,7 +115,7 @@ unsafe impl<A: GlobalAlloc> GlobalAlloc for CountingAllocator<A> {
         let new_ptr = unsafe { self.inner.realloc(ptr, layout, new_size) };
         if !new_ptr.is_null() {
             on_dealloc(layout.size());
-            on_alloc(new_size);
+            on_alloc(new_size, 3);
         }
         new_ptr
     }
@@ -185,14 +191,15 @@ pub fn measure_returning<T>(routine: impl FnOnce() -> T) -> (T, Option<AllocMetr
     PEAK_BYTES.store(live_start, Ordering::Relaxed);
     let calls_start = ALLOC_CALLS.load(Ordering::Relaxed);
     let value = routine();
+    let calls_end = ALLOC_CALLS.load(Ordering::Relaxed);
     let metrics = AllocMetrics {
-        calls: ALLOC_CALLS
-            .load(Ordering::Relaxed)
-            .saturating_sub(calls_start),
+        calls: calls_end.saturating_sub(calls_start),
         peak_bytes_over_start: PEAK_BYTES
             .load(Ordering::Relaxed)
             .saturating_sub(live_start),
     };
+    #[cfg(feature = "allocation-window-diagnostics")]
+    diagnostics::window(calls_start, calls_end);
     (value, Some(metrics))
 }
 
@@ -210,6 +217,8 @@ mod tests {
     #[test]
     fn scripted_sequence_has_exact_counter_deltas() {
         mark_installed();
+        diagnostics::begin_session();
+        diagnostics::set_context(14);
         let allocator = CountingAllocator::system();
         let layout_256 = Layout::from_size_align(256, 8).expect("static layout");
         let layout_512 = Layout::from_size_align(512, 8).expect("static layout");
@@ -234,5 +243,32 @@ mod tests {
         assert_eq!(metrics.calls, 3);
         // Live-byte trace relative to window start: 256, 512, 256, 512, 0.
         assert_eq!(metrics.peak_bytes_over_start, 512);
+
+        #[cfg(feature = "allocation-window-diagnostics")]
+        {
+            diagnostics::set_context(15);
+            let spawned = measure(|| {
+                let layout = Layout::from_size_align(64, 8).expect("static layout");
+                // SAFETY: both pointers use the same allocator and layout.
+                unsafe {
+                    let own = allocator.alloc(layout);
+                    assert!(!own.is_null());
+                    allocator.dealloc(own, layout);
+                }
+                std::thread::scope(|scope| {
+                    scope.spawn(|| {
+                        // SAFETY: the worker uses the same allocator and layout.
+                        unsafe {
+                            let other = allocator.alloc(layout);
+                            assert!(!other.is_null());
+                            allocator.dealloc(other, layout);
+                        }
+                    });
+                });
+            })
+            .expect("installed allocator");
+            assert_eq!(spawned.calls, 2, "both measuring and spawned worker count");
+        }
+        diagnostics::finish_session();
     }
 }

@@ -1,0 +1,10 @@
+<script setup>
+const a = "A"
+</script>
+
+<template>
+  <pre>
+line {{ a }}</pre>
+  <textarea>
+value</textarea>
+</template>

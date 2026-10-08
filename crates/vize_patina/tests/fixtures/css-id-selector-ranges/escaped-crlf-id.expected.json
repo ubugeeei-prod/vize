@@ -1,0 +1,43 @@
+{
+  "api": {
+    "filename": "EscapedCrlfId.vue",
+    "diagnostics": [
+      {
+        "rule": "css/no-id-selectors",
+        "severity": "warning",
+        "message": "Avoid ID selectors - use class selectors for better reusability",
+        "start": 38,
+        "end": 49,
+        "help": "Replace with a class selector for lower specificity",
+        "labels": [],
+        "fix": null
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  "json": [
+    {
+      "file": "EscapedCrlfId.vue",
+      "messages": [
+        {
+          "ruleId": "css/no-id-selectors",
+          "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+          "severity": 1,
+          "message": "[vize:css/no-id-selectors] Avoid ID selectors - use class selectors for better reusability",
+          "line": 3,
+          "column": 1,
+          "endLine": 4,
+          "endColumn": 6,
+          "help": "Replace with a class selector for lower specificity"
+        }
+      ],
+      "errorCount": 0,
+      "warningCount": 1
+    }
+  ],
+  "plain": "Patina lint report: 1 warning in 1 file\n\nEscapedCrlfId.vue\n  EscapedCrlfId.vue:3:1 warning css/no-id-selectors Avoid ID selectors - use class selectors for better reusability\n    Reference: docs/content/rules/musea-and-css.md\n    Help:\n      Replace with a class selector for lower specificity\n",
+  "authoredSlices": [
+    "#\\62\r\nanner"
+  ]
+}

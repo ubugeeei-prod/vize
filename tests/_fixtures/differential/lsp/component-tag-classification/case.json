@@ -1,0 +1,34 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8001",
+  "reporter": {
+    "login": "ubugeeei",
+    "numericId": 71201308
+  },
+  "referencedConfigIssue": "https://github.com/ubugeeei-prod/vize/issues/7194",
+  "baseline": "143c1d4a9fbe6530cdd06f1f001b816f39c1d00a",
+  "originalReportedVersion": "0.432.0",
+  "vue": "3.5.41",
+  "sourceCaret": {
+    "line": 14,
+    "character": 3
+  },
+  "historicalEvidence": "Labels/counts only; full historical RPC response was not supplied.",
+  "oracleAuthority": "New whole completion vectors authored from the frozen DOM tag inventory, builtins, exact original source and unchanged item serialization; not an observed capture.",
+  "prefixes": ["<", "<Di", "<di", "<SO", "<co"],
+  "originalSha256": {
+    "original-issue-body.md": "befb4291fbb4fa57ba046d58cd665765275499b3a6a3e278221a16784eacd796",
+    "tsconfig.json.txt": "589343265f54fbf524b3a4e0a9354ce2114cf164bca9c8749472578915d72e50",
+    "App.vue.txt": "2335b91593f73a983c0b9a5df44c80ef56e6dc2af56b5565557b7a8719fe6b1a",
+    "MyButton.vue.txt": "a1a2bb87b93aa9ce0953cedb8bec4c7a1b053b0ae18cc7302fa11baa0d93c919",
+    "vize.config.json.txt": "e7a6fe6547d1d5315b5eae90c91e08d15f00ca2150048c586ca6d6f15f5865e4"
+  },
+  "authoredSha256": {
+    "responses.authored.json": "0d0b97297afb46c065e795983f68a831ccd940826adedbcf21e0680a32ab2c04",
+    "Controls.vue.txt": "2a2af3abca25fe15d84319e4d6c579359cb2b6f28ff71d364a6240e440cfe72f"
+  },
+  "limits": [
+    "Full historical RPC vectors were not provided; the full vectors here are newly authored.",
+    "Ordinary function intent is not determined: Vue Component includes FunctionalComponent with any return type.",
+    "Classification requires current configured native API evidence and an actual Vue module import; unavailable evidence retains the old guessing behavior."
+  ]
+}

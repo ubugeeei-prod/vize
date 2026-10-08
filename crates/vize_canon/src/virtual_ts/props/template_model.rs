@@ -66,12 +66,15 @@ impl TemplatePropsModel {
             props_type_ref(generic_param, setup_scoped.then_some("__VizeSetupProps"));
 
         let mut defaulted_prop_names = collect_with_defaults_default_names(summary);
-        // A runtime `default:` is Vue's own substitution, so the prop is never
-        // `undefined` inside its own template. The virtual project pass also
-        // marks type-based `withDefaults` entries when their defaults resolve
-        // through imported values.
+        // Imported runtime props and type-based defaults retain their resolved
+        // names separately from authored values, so a raw `undefined` expression
+        // cannot acquire the imported resolver's default-presence facts.
         for prop in props {
-            if prop.default_value.is_some() {
+            if prop
+                .default_value
+                .as_deref()
+                .is_some_and(|value| value.trim() != "undefined")
+            {
                 defaulted_prop_names.insert(prop.name.as_str().into());
             }
         }
@@ -134,7 +137,11 @@ fn sfc_generic_param(summary: &Croquis) -> Option<&str> {
 }
 
 fn collect_with_defaults_default_names(summary: &Croquis) -> FxHashSet<String> {
-    let mut names = FxHashSet::default();
+    let mut names = summary
+        .macros
+        .resolved_prop_defaults()
+        .map(String::from)
+        .collect();
     for call in summary.macros.all_calls() {
         if call.kind != MacroKind::WithDefaults {
             continue;
@@ -152,6 +159,7 @@ pub(crate) fn generate_props_variables(
     binding_mappings: &mut PropBindingMappings<'_>,
     summary: &Croquis,
     check_props: bool,
+    props_shadow_anchor: Option<&std::ops::Range<usize>>,
 ) {
     let model = TemplatePropsModel::new(summary);
     if !model.declares_props {
@@ -172,10 +180,15 @@ pub(crate) fn generate_props_variables(
 
     ts.push_str("  // Props are available in template as variables\n");
     ts.push_str("  // Access via `propName` or `props.propName`\n");
+    let props_start = ts.len() + "  const ".len();
     append!(
         *ts,
         "  const props: {template_props_type_ref} = {{}} as {template_props_type_ref};\n"
     );
+    if let Some(anchor) = props_shadow_anchor {
+        binding_mappings
+            .link_setup_shadow(anchor.clone(), props_start..props_start + "props".len());
+    }
     ts.push_str("  void props; // Mark as used to avoid TS6133\n");
 
     let mut emitted_names = FxHashSet::default();
@@ -214,6 +227,7 @@ pub(crate) fn generate_props_variables(
                 if check_props {
                     emit_keyed_template_prop_binding(
                         ts,
+                        binding_mappings,
                         template_props_type_ref,
                         props_type_ref,
                         name.as_str(),
@@ -255,12 +269,14 @@ pub(crate) fn generate_props_variables(
 
 fn emit_keyed_template_prop_binding(
     ts: &mut String,
+    binding_mappings: &mut PropBindingMappings<'_>,
     props_type_ref: &str,
     key_type_ref: &str,
     prop_name: &str,
     has_default: bool,
 ) {
     let binding_name = to_safe_identifier(prop_name);
+    let start = ts.len() + "  const ".len();
     if has_default {
         append!(
             *ts,
@@ -273,6 +289,11 @@ fn emit_keyed_template_prop_binding(
         );
     }
     append!(*ts, "  void {binding_name};\n");
+    let property_start = start + binding_name.len() + " = props[(\"".len();
+    binding_mappings.link(
+        start..start + binding_name.len(),
+        property_start..property_start + prop_name.len(),
+    );
 }
 
 fn emit_unchecked_template_prop_binding(ts: &mut String, prop_name: &str) {

@@ -31,10 +31,10 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
+use vize_carton::source_io as fs;
 use vize_curator::profile::{
     ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
 };
-use vize_l0::source_io as fs;
 use vize_l0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_patina::{HelpLevel, LintPreset, OutputFormat};
 
@@ -43,9 +43,9 @@ pub fn run(mut args: LintArgs) {
     let (format, rich) = rich::parse_format(args.format.as_str());
     let locale = rich::parse_locale(args.locale.as_str());
     let render_details = aggregate::should_render_details(format, args.quiet);
-    crate::config::write_schema(None);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
     let (loaded_config, linter_plan, linter_features) = config_load::load(&mut args);
+    crate::config::write_schema_for_config(loaded_config.source_path.as_deref());
     let linter_enabled = linter_plan.plan.base.enabled;
     let config_dir = loaded_config
         .source_path
@@ -179,7 +179,7 @@ pub fn run(mut args: LintArgs) {
     if cross_file_enabled {
         cross_file_report = profile!(
             "cli.lint.cross_file.build",
-            apply_cross_file_lint(&mut results, help_level, &args)
+            apply_cross_file_lint(&mut results, help_level, (&args, &files, &resolved_rules))
         );
     }
     let cross_file_time = cross_file_start
@@ -226,15 +226,14 @@ pub fn run(mut args: LintArgs) {
     };
 
     let elapsed = start.elapsed();
-    if format == OutputFormat::Text {
-        stdout::write_text_summary(
-            total_errors,
-            total_warnings,
-            files.len(),
-            elapsed,
-            cross_file_report.as_deref(),
-        );
-    }
+    stdout::write_summary(
+        format,
+        total_errors,
+        total_warnings,
+        files.len(),
+        elapsed,
+        cross_file_report.as_deref(),
+    );
 
     if args.profile {
         let mut file_rows = profile_rows

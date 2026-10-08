@@ -49,6 +49,7 @@ pub struct Drawer {
     /// `Vec` is read by reference (disjoint field borrow), so cache hits avoid
     /// both the parse and any clone.
     pub(crate) ident_cache: FxHashMap<CompactString, Vec<CompactString>>,
+    pub(super) occurrence_capture: Option<Box<super::occurrences::OccurrenceCapture>>,
 }
 
 impl Drawer {
@@ -79,6 +80,7 @@ impl Drawer {
             parent_component_stack: Vec::new(),
             template_source: CompactString::default(),
             ident_cache: FxHashMap::default(),
+            occurrence_capture: None,
         }
     }
 
@@ -87,8 +89,9 @@ impl Drawer {
     /// This is useful for infrastructure that needs to normalize script offsets
     /// before adding template facts to the same Croquis.
     #[inline]
-    pub fn with_croquis(options: DrawerOptions, croquis: Croquis, script_drawn: bool) -> Self {
-        Self {
+    pub fn with_croquis(options: DrawerOptions, mut croquis: Croquis, script_drawn: bool) -> Self {
+        let packet = croquis.setup_context.take_ssr_occurrences();
+        let drawer = Self {
             options,
             track_unused_bindings: false,
             options_api: false,
@@ -102,6 +105,11 @@ impl Drawer {
             parent_component_stack: Vec::new(),
             template_source: CompactString::default(),
             ident_cache: FxHashMap::default(),
+            occurrence_capture: None,
+        };
+        match packet {
+            Some(packet) => drawer.with_binding_occurrence_packet(packet),
+            None => drawer,
         }
     }
 
@@ -167,7 +175,16 @@ impl Drawer {
     /// Consumes the drawer.
     #[inline]
     pub fn finish(self) -> Croquis {
-        profile!("croquis.drawer.finish", self.croquis)
+        let demanded = self.occurrence_capture.is_some();
+        profile!("croquis.drawer.finish", {
+            let (mut croquis, packet) = self.finish_occurrence_packet(false, false);
+            // Keep complete ownership through split-script and template joins,
+            // including an import-only block needed by its sibling.
+            if demanded {
+                croquis.setup_context.set_ssr_occurrences(packet);
+            }
+            croquis
+        })
     }
 
     /// Get a reference to the current croquis (without consuming).

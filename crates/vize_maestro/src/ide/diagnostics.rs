@@ -13,8 +13,13 @@
 
 #[cfg(all(test, feature = "native"))]
 mod art_dependency_typecheck_tests;
+mod art_lint;
+#[cfg(test)]
+mod art_lint_tests;
 #[cfg(all(test, feature = "native"))]
 mod art_variant_typecheck_tests;
+#[cfg(all(test, feature = "native"))]
+mod assembly_parity_custody;
 #[cfg(all(test, feature = "native"))]
 mod assembly_parity_tests;
 mod builder;
@@ -24,17 +29,32 @@ mod component_props;
 #[cfg(test)]
 mod component_props_tests;
 #[cfg(test)]
+mod configured_global_components_tests;
+#[cfg(test)]
 mod configured_lint_tests;
 #[cfg(feature = "native")]
 pub(in crate::ide) mod corsa;
+#[cfg(test)]
+mod default_lint_correctness_tests;
+#[cfg(all(test, feature = "native"))]
+mod editor_reference_options_tests;
+#[cfg(all(test, feature = "native"))]
+mod editor_typecheck_defaults_tests;
+#[cfg(all(test, feature = "native"))]
+mod editor_typecheck_emit_tests;
 #[cfg(all(test, feature = "native"))]
 mod editor_typecheck_fixture;
 #[cfg(all(test, feature = "native"))]
 mod editor_typecheck_tests;
+#[cfg(all(test, feature = "native"))]
+mod editor_typecheck_unknown_options_tests;
+#[cfg(all(test, feature = "native"))]
+mod editor_typecheck_vue_helper_tests;
 mod line_index;
 mod linter_options;
 #[cfg(feature = "native")]
 mod native;
+pub(in crate::ide) mod patina;
 mod service;
 mod severity;
 #[expect(

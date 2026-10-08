@@ -13,7 +13,7 @@ use vize_l0::{String, ToCompactString};
 use super::super::context::CodegenContext;
 use super::super::expression::generate_expression;
 use super::detect::{child_is_slot_template, slot_children_have_meaningful_content, slots_spread};
-use super::generate::{generate_slot_child_node, generate_slot_children};
+use super::generate::{generate_slot_children, generate_slot_children_where};
 use super::name::generate_slot_entry_name;
 use super::params::{extract_slot_params, get_slot_props, prefix_slot_defaults};
 
@@ -38,7 +38,7 @@ pub(super) fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'
                 ctx.newline();
                 generate_conditional_slot(ctx, if_node);
             }
-            TemplateChildNode::For(for_node) => {
+            TemplateChildNode::For(for_node) if child_is_slot_template(child) => {
                 // v-for on slot template: generate looped slot entries
                 if !first {
                     ctx.push(",");
@@ -72,7 +72,9 @@ fn generate_create_slots_base(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     let default_children: Vec<_> = el
         .children
         .iter()
-        .filter(|child| !child_is_slot_template(child))
+        .filter(|child| {
+            !child_is_slot_template(child) && !matches!(child, TemplateChildNode::Comment(_))
+        })
         .collect();
     let has_default_children = slot_children_have_meaningful_content(&default_children);
     // A `v-slots` spread combined with `v-if`/`v-for` slot templates keeps the
@@ -100,13 +102,9 @@ fn generate_create_slots_base(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.push(ctx.helper(RuntimeHelper::WithCtx));
         ctx.push("(() => [");
         ctx.indent();
-        for (i, child) in default_children.iter().enumerate() {
-            if i > 0 {
-                ctx.push(",");
-            }
-            ctx.newline();
-            generate_slot_child_node(ctx, child);
-        }
+        generate_slot_children_where(ctx, &el.children, |child| {
+            !child_is_slot_template(child) && !matches!(child, TemplateChildNode::Comment(_))
+        });
         ctx.deindent();
         ctx.newline();
         ctx.push("]),");

@@ -5,7 +5,12 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
-import { writeBuildReceipt } from "../differential/build-receipt.mjs";
+import {
+  BUILD_RECIPE,
+  LEGACY_BUILD_RECIPE,
+  SHIPPING_BUILD_RECIPE,
+  writeBuildReceipt,
+} from "../differential/build-receipt.mjs";
 import { resolveVizeLaunchCommand } from "./support/lsp/launch.ts";
 
 function fixture() {
@@ -32,14 +37,14 @@ function fixture() {
   const binary = path.join(root, "target/ci/vize");
   const receipt = writeBuildReceipt(root);
   const probed: string[] = [];
-  const resolve = (bound = binary) =>
+  const resolve = (bound = binary, buildRecipe = BUILD_RECIPE) =>
     resolveVizeLaunchCommand(
       (candidate) => {
         probed.push(candidate);
         return spawnSync(candidate, ["--version"]).status === 0;
       },
       bound,
-      { required: true, repoRoot: root },
+      { required: true, repoRoot: root, buildRecipe },
     );
   return { root, binary, receipt, probed, resolve };
 }
@@ -55,6 +60,52 @@ test("required LSP source binding executes the receipted CI binary despite a run
     assert.equal(execFileSync(binary, args, { encoding: "utf8" }).trim(), "fresh-source");
     assert.deepEqual(f.probed, [f.binary]);
     assert.throws(() => f.resolve(path.join(f.root, "target/debug/vize")));
+    assert.deepEqual(f.probed, [f.binary]);
+  } finally {
+    fs.rmSync(f.root, { recursive: true, force: true });
+  }
+});
+
+test("legacy LSP source binding requires its closed recipe and keeps the default contract strict", () => {
+  const f = fixture();
+  try {
+    assert.throws(() => f.resolve(f.binary, LEGACY_BUILD_RECIPE));
+    writeBuildReceipt(f.root, LEGACY_BUILD_RECIPE);
+    assert.throws(() => f.resolve());
+    assert.throws(
+      () => f.resolve(f.binary, "cargo build --release"),
+      /unknown source-build recipe/,
+    );
+    assert.throws(
+      () => writeBuildReceipt(f.root, "cargo build --release"),
+      /unknown source-build recipe/,
+    );
+    assert.deepEqual(f.probed, []);
+    const [binary, ...args] = f.resolve(f.binary, LEGACY_BUILD_RECIPE);
+    assert.equal(execFileSync(binary, args, { encoding: "utf8" }).trim(), "fresh-source");
+    assert.deepEqual(f.probed, [f.binary]);
+    const receipt = JSON.parse(fs.readFileSync(f.receipt, "utf8"));
+    receipt.recipe = BUILD_RECIPE;
+    fs.writeFileSync(f.receipt, JSON.stringify(receipt));
+    assert.throws(() => f.resolve(f.binary, LEGACY_BUILD_RECIPE));
+    assert.deepEqual(f.probed, [f.binary]);
+  } finally {
+    fs.rmSync(f.root, { recursive: true, force: true });
+  }
+});
+
+test("shipping recipe binding rejects a CI receipt and still refuses stale staged bytes", () => {
+  const f = fixture();
+  try {
+    assert.throws(() => f.resolve(f.binary, SHIPPING_BUILD_RECIPE));
+    assert.deepEqual(f.probed, []);
+    writeBuildReceipt(f.root, SHIPPING_BUILD_RECIPE);
+    assert.throws(() => f.resolve());
+    const [binary, ...args] = f.resolve(f.binary, SHIPPING_BUILD_RECIPE);
+    assert.equal(execFileSync(binary, args, { encoding: "utf8" }).trim(), "fresh-source");
+    assert.deepEqual(f.probed, [f.binary]);
+    fs.appendFileSync(f.binary, "# changed staged bytes\n");
+    assert.throws(() => f.resolve(f.binary, SHIPPING_BUILD_RECIPE), /binarySha256/);
     assert.deepEqual(f.probed, [f.binary]);
   } finally {
     fs.rmSync(f.root, { recursive: true, force: true });

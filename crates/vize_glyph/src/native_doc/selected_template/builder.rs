@@ -46,15 +46,7 @@ impl<'p, 'a, I: Input<'p, 'a>> Builder<'p, 'a, I> {
                         })?;
                     if self.values.formats_conditionals() && super::conditional::eligible(&element)
                     {
-                        super::conditional::open_element(
-                            self.selected,
-                            &element,
-                            &mut self.input,
-                            parts,
-                            &mut self.cursor,
-                            self.allocator,
-                            depth,
-                        )?;
+                        super::conditional::open_element(self, &element, parts, depth)?;
                     } else {
                         // Preserve the old strict/opaque visit order for recovered
                         // or verbatim headers; this is only negative routing.

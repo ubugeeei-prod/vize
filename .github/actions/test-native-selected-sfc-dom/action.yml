@@ -47,6 +47,30 @@ runs:
         vp node --test tests/tooling/native-original-for-value-sfc-dom-reference.test.ts
         test -s "$VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_CAPTURE"
         test -s "$VIZE_NATIVE_ORIGINAL_FOR_VALUE_SFC_DOM_RUNTIME_CAPTURE"
+    - name: Capture and qualify original constant For components in both runtime modes
+      shell: bash
+      env:
+        VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_CAPTURE: ${{ runner.temp }}/native-original-for-constant-sfc-dom-capture.json
+        VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_REQUIRE_CAPTURE: "1"
+        VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_RAW_CAPTURE: ${{ runner.temp }}/native-original-for-constant-sfc-dom-unqualified-attempts.json
+      run: |
+        rust_status=0
+        cargo test --locked --profile ci -p vize_atelier_sfc native_selected_setup::tests::original_for_constant::eleven_whole_original_constant_for_components_and_raw_maps_are_captured -- --exact || rust_status=$?
+        node_status=0
+        vp node tests/tooling/support/native-original-for-constant-sfc-dom-processes.ts || node_status=$?
+        RUST_STATUS="$rust_status" NODE_STATUS="$node_status" vp node --input-type=module -e '
+          import fs from "node:fs";
+          fs.writeFileSync(process.env.VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_RAW_CAPTURE + ".statuses.json", JSON.stringify({
+            schema: "vize.native-sfc.original-for-constant-process-statuses",
+            sourceRevision: process.env.GITHUB_SHA, run: process.env.GITHUB_RUN_ID,
+            rustStatus: Number(process.env.RUST_STATUS), nodeStatus: Number(process.env.NODE_STATUS)
+          }, null, 2) + "\n");
+        '
+        test "$rust_status" -eq 0
+        test "$node_status" -eq 0
+        test -s "$VIZE_NATIVE_ORIGINAL_FOR_CONSTANT_SFC_DOM_CAPTURE"
+        test -s "${{ runner.temp }}/native-original-for-constant-sfc-dom-development-runtime.json"
+        test -s "${{ runner.temp }}/native-original-for-constant-sfc-dom-production-runtime.json"
     - name: Upload complete selected SFC component and runtime captures
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -61,5 +85,14 @@ runs:
           ${{ runner.temp }}/native-original-for-sfc-dom-runtime.json
           ${{ runner.temp }}/native-original-for-value-sfc-dom-capture.json
           ${{ runner.temp }}/native-original-for-value-sfc-dom-runtime.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-capture.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-unqualified-attempts.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-unqualified-attempts.json.statuses.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-*-unqualified-runtime.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-development-runtime.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-production-runtime.json
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-*.stdout
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-*.stderr
+          ${{ runner.temp }}/native-original-for-constant-sfc-dom-*.process.json
         if-no-files-found: error
         retention-days: 7

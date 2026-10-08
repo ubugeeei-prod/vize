@@ -1,0 +1,58 @@
+{
+  "schema": "vize.lint.aria-hidden-originals",
+  "version": 1,
+  "issue": 7977,
+  "url": "https://github.com/ubugeeei-prod/vize/issues/7977",
+  "author": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "coAuthor": "ubugeeei <71201308+ubugeeei@users.noreply.github.com>"
+  },
+  "scope": "Static inert/self and physical ancestors, disabled native form controls and hidden inputs; existing programmatic tabindex=-1 contract retained; all bound values remain conservative.",
+  "originalTargets": [
+    "<input class=\"sizer\" readonly tabindex=\"-1\" aria-hidden=\"true\" />",
+    "<button type=\"button\" aria-hidden=\"true\">y</button>"
+  ],
+  "controlTargets": [
+    "<button :disabled=\"false\" aria-hidden=\"true\">false binding</button>",
+    "<button :disabled=\"pending\" aria-hidden=\"true\">unknown binding</button>",
+    "<button disabled :disabled=\"false\" aria-hidden=\"true\">override</button>",
+    "<button inert :inert=\"false\" aria-hidden=\"true\">inert override</button>",
+    "<button inert v-bind=\"attrs\" aria-hidden=\"true\">object override</button>",
+    "<input type=\"hidden\" :type=\"kind\" aria-hidden=\"true\" />",
+    "<button :[name]=\"value\" disabled aria-hidden=\"true\">dynamic argument</button>",
+    "<a disabled href=\"/\" aria-hidden=\"true\">disabled anchor stays focusable</a>",
+    "<div disabled tabindex=\"0\" aria-hidden=\"true\">disabled div</div>",
+    "<button aria-hidden=\"true\">dynamic ancestor</button>",
+    "<button aria-hidden=\"true\">teleport barrier</button>",
+    "<button aria-hidden=\"true\">component barrier</button>",
+    "<button aria-hidden=\"true\">possible modal</button>",
+    "<button aria-hidden=\"true\">nonphysical inert</button>",
+    "<button aria-hidden=\"true\">restored sibling</button>",
+    "<input readonly tabindex=\"-1\" aria-hidden=\"true\" />",
+    "<div contenteditable=\"true\" aria-hidden=\"true\">editable</div>"
+  ],
+  "controls": 30,
+  "files": {
+    "Controls.vue.txt": {
+      "bytes": 2232,
+      "sha256": "c77992185cb8bbcb734bf68babe58ffe4e76ceb005c8dee39f17f8830425948a"
+    },
+    "MySelect.vue.txt": {
+      "bytes": 758,
+      "sha256": "bba56b373bfaedc1c8a13fd3e5e6b0c1512a2ad957c8d1f5e19b448c5352a36d"
+    },
+    "MySelectCRLF.vue.txt": {
+      "bytes": 776,
+      "sha256": "af18f7bc2509b44b43f35fe0892ce6b689442f245228b83b041226a410d45358"
+    },
+    "original-issue.md": {
+      "bytes": 5033,
+      "sha256": "bab0365b484fda7f0211966fab366a510cb0cc73af37842eb2341e5d85565384"
+    },
+    "vize.config.json": {
+      "bytes": 100,
+      "sha256": "793ca43366770be6236a7408daee7af0f20d8689117e1b5a1f7b2d6305ead022"
+    }
+  }
+}

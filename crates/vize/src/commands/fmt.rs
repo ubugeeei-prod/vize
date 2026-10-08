@@ -6,8 +6,8 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
+use vize_carton::source_io as fs;
 use vize_glyph::{Allocator, FormatOptions, FormatResult, VueVersion};
-use vize_l0::source_io as fs;
 use vize_l0::{cstr, profile, profiler::global_profiler};
 
 use super::atomic_write::atomic_write;
@@ -18,22 +18,21 @@ use vize_curator::profile::{
 
 mod data;
 mod entries;
+mod file_support;
 mod files;
 mod format_source;
 mod ignores;
 mod options;
 use format_source::format_file_source;
 mod patterns;
-use options::build_format_options;
-
 pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
+use options::build_format_options;
 use patterns::{FORMAT_EXTENSIONS_DISPLAY, default_fmt_patterns};
-
 #[derive(Args)]
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct FmtArgs {
-    /// Glob pattern(s) to match files supported by vize fmt
+    /// Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented.
     #[arg(default_values_t = default_fmt_patterns())]
     pub patterns: Vec<String>,
 
@@ -109,6 +108,7 @@ pub fn run(args: FmtArgs) {
         })
     };
     let (options, vue_version, sort_imports) = build_format_options(&args, &snapshot);
+    let preserve_text = snapshot.compiler_whitespace == Some("preserve");
     let (ignore_set, patterns) = (
         load_fmt_ignore_set(&snapshot),
         entries::resolve_patterns(&args, &snapshot),
@@ -151,7 +151,7 @@ pub fn run(args: FmtArgs) {
             match process_file(
                 path,
                 &options,
-                (vue_version, sort_imports.as_ref()),
+                (vue_version, sort_imports.as_ref(), preserve_text),
                 allocator,
                 args.check,
                 args.write,
@@ -340,13 +340,13 @@ pub fn run(args: FmtArgs) {
 fn process_file(
     path: &PathBuf,
     options: &FormatOptions,
-    formatting: (VueVersion, Option<&vize_glyph::ImportSortOptions>),
+    formatting: (VueVersion, Option<&vize_glyph::ImportSortOptions>, bool),
     allocator: &Allocator,
     check: bool,
     write: bool,
     profile: bool,
 ) -> Result<FormatFileResult, String> {
-    let (vue_version, sort_imports) = formatting;
+    file_support::validate(path).map_err(str::to_owned)?;
     let file_start = profile.then(Instant::now);
     let read_start = profile.then(Instant::now);
     let source = match profile!("cli.fmt.file.read", fs::read_to_string(path)) {
@@ -364,7 +364,7 @@ fn process_file(
         .unwrap_or(Duration::ZERO);
 
     let format_start = profile.then(Instant::now);
-    let result = format_file_source(path, &source, options, allocator, vue_version, sort_imports)
+    let result = format_file_source(path, &source, options, allocator, formatting)
         .map_err(|e| vize_l0::cstr!("Format error: {}", e))?;
     let format_time = format_start
         .map(|start| start.elapsed())
@@ -450,8 +450,7 @@ mod tests {
             "const Component=({label}:{label:string})=><button>{label}</button>",
             &options,
             &allocator,
-            super::VueVersion::V3,
-            None,
+            (super::VueVersion::V3, None, false),
         )
         .unwrap();
 

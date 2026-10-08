@@ -10,14 +10,18 @@ pub(in crate::batch::virtual_project) struct GeneratedVueFile {
     pub(in crate::batch::virtual_project) mappings: Vec<crate::virtual_ts::VizeMapping>,
     pub(in crate::batch::virtual_project) semantic_links: Vec<crate::virtual_ts::VizeSemanticLink>,
     pub(in crate::batch::virtual_project) diagnostics: Vec<Diagnostic>,
+    pub(in crate::batch::virtual_project) typed_router_import: bool,
 }
 
 #[derive(Clone, Copy)]
 pub(in crate::batch::virtual_project) struct VueCodegenOptions<'a> {
     pub(in crate::batch::virtual_project) check_options: VirtualTsCheckOptions,
+    pub(in crate::batch::virtual_project) typed_router_root: Option<&'a std::path::Path>,
     pub(in crate::batch::virtual_project) preserve_unused_diagnostics: bool,
     pub(in crate::batch::virtual_project) options_api: bool,
     pub(in crate::batch::virtual_project) preserve_authored_component: bool,
+    /// Editor requests retain script mappings while an unusable template is omitted.
+    pub(in crate::batch::virtual_project) preserve_script_on_template_error: bool,
     pub(in crate::batch::virtual_project) component_name: Option<&'a str>,
     pub(in crate::batch::virtual_project) preserve_event_navigation: bool,
     pub(in crate::batch::virtual_project) legacy_vue2: bool,

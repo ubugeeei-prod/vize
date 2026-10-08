@@ -17,6 +17,10 @@ pub(crate) struct VirtualTsCheckOptions {
     pub(crate) check_template_bindings: bool,
     pub(crate) check_emits: bool,
     pub(crate) check_unknown_props: bool,
+    /// Explicit strict Vue options close the otherwise compatible fallthrough tail.
+    pub(crate) check_unknown_fallthrough_props: bool,
+    /// Opt in to declared/public attrs and explicitly inferred fallthrough only.
+    pub(crate) strict_component_attrs: bool,
     pub(crate) check_unknown_components: bool,
     pub(crate) check_unknown_events: bool,
     /// `checkUnknownDirectives`: an unregistered custom directive is `TS2339`.
@@ -50,6 +54,10 @@ pub(crate) struct VirtualTsCheckOptions {
 }
 
 impl VirtualTsCheckOptions {
+    pub(crate) fn strict_component_attrs(self) -> bool {
+        self.strict_component_attrs && self.check_unknown_props
+    }
+
     pub(crate) fn any_enabled(self) -> bool {
         self.check_props || self.check_template_bindings || self.check_emits
     }
@@ -66,6 +74,8 @@ impl Default for VirtualTsCheckOptions {
             check_template_bindings: true,
             check_emits: true,
             check_unknown_props: true,
+            check_unknown_fallthrough_props: false,
+            strict_component_attrs: false,
             check_unknown_components: false,
             check_unknown_events: false,
             check_unknown_directives: false,

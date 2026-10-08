@@ -14,6 +14,34 @@ use crate::virtual_ts::props::{
 
 pub(super) use crate::virtual_ts::props::prop_source;
 
+/// Emit the existing template context before its per-prop bindings.
+pub(super) fn emit_template_context(
+    ts: &mut String,
+    options: &crate::virtual_ts::VirtualTsOptions,
+    dialect: vize_carton::config::VueVersion,
+    legacy_vue2: bool,
+    imports: &super::setup_imports::SetupImportPlan,
+    record: &super::template_record::TemplateRecord,
+    emit_initializer: Option<&str>,
+) {
+    let context = profile!(
+        "canon.virtual_ts.generate_template_context",
+        crate::virtual_ts::helpers::generate_template_context(
+            options,
+            dialect,
+            legacy_vue2,
+            imports.has_own_slots(),
+            (
+                imports.attrs_type(),
+                record.template_refs_type(),
+                emit_initializer
+            ),
+        )
+    );
+    ts.push_str(&context);
+    ts.push('\n');
+}
+
 /// Build the setup props plan and emit the module-level props type in one step.
 /// Keeps `generator.rs` from re-threading `options_api_props` through a second
 /// call site (and from growing past the source-length gate).
@@ -143,11 +171,24 @@ impl SetupPropsPlan {
         ts: &mut String,
         source: PropsSource<'_>,
         check_props: bool,
+        semantic_links: &mut Vec<crate::virtual_ts::VizeSemanticLink>,
+        props_shadow_anchor: Option<&std::ops::Range<usize>>,
     ) {
         let summary = source.summary;
-        let mut binding_mappings =
-            PropBindingMappings::new(source.mappings, summary, source.script, source.offset);
-        generate_props_variables(ts, &mut binding_mappings, summary, check_props);
+        let mut binding_mappings = PropBindingMappings::new(
+            source.mappings,
+            semantic_links,
+            summary,
+            source.script,
+            source.offset,
+        );
+        generate_props_variables(
+            ts,
+            &mut binding_mappings,
+            summary,
+            check_props,
+            props_shadow_anchor,
+        );
     }
 
     pub(super) fn component_props_type_ref(&self) -> &'static str {

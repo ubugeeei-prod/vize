@@ -16,6 +16,14 @@
 mod common;
 #[path = "../../../support/release/preflight_matrix_evidence.rs"]
 mod matrix_evidence;
+#[path = "../../../support/release/preflight_matrix_selection.rs"]
+mod matrix_selection;
+#[cfg(test)]
+#[path = "../../../support/release/preflight_matrix_selection_tests.rs"]
+mod matrix_selection_tests;
+#[cfg(test)]
+#[path = "../../../support/release/preflight_pinned_evidence_tests.rs"]
+mod pinned_evidence_tests;
 #[path = "../../../support/release/preflight_target.rs"]
 mod target;
 use target::*;
@@ -143,8 +151,9 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
         return Err("GITHUB_REPOSITORY and GITHUB_TOKEN are required".to_string());
     }
 
-    let evidence_shas = release_evidence_shas(&target);
-    if target.version_only {
+    let pinned = env::var("RELEASE_PINNED").is_ok_and(|value| value == "true");
+    let evidence_shas = release_evidence_shas(&target, pinned);
+    if target.version_only && !pinned {
         println!(
             "Release {} changed version metadata only; accepting {} evidence for {}.",
             target.tag,
@@ -182,6 +191,7 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
     };
 
     let issues = github_api_pages(&api_url, &repository, &token, "issues", Some("state=open"))?;
+    let mut current_matrix_jobs = None;
     for (workflow_name, run) in selected
         .iter()
         .filter(|(workflow_name, _)| workflow_requires_job_evidence(workflow_name))
@@ -198,6 +208,9 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
             None,
         )?;
         assert_required_workflow_jobs(workflow_name, &jobs)?;
+        if *workflow_name == matrix_evidence::REAL_PROJECT_MATRIX_WORKFLOW_NAME {
+            current_matrix_jobs = Some(jobs);
+        }
     }
     if let Some(run) = selected.get(matrix_evidence::REAL_PROJECT_MATRIX_WORKFLOW_NAME) {
         let run_id = run
@@ -211,10 +224,30 @@ fn verify_release_preflight(bootstrap: bool) -> Result<(), String> {
             &format!("actions/runs/{run_id}/artifacts"),
             None,
         )?;
+        let selection = matrix_selection::select_current_matrix_artifacts(
+            run,
+            &artifacts,
+            current_matrix_jobs
+                .as_deref()
+                .ok_or("Matrix current job evidence is missing")?,
+            |attempt| {
+                github_api_pages(
+                    &api_url,
+                    &repository,
+                    &token,
+                    &format!("actions/runs/{run_id}/attempts/{attempt}/jobs"),
+                    None,
+                )
+            },
+        )?;
+        println!(
+            "Real Project Matrix artifact selection: {}",
+            json!(selection.provenance)
+        );
         matrix_evidence::assert_real_project_matrix_release_artifacts_with_typecheck_policy(
             &repo_root()?,
             run,
-            &artifacts,
+            &selection.artifacts,
             matrix_evidence::ReleaseTypecheckEvidencePolicy::Optional,
             |artifact| matrix_evidence::download_artifact_entries(&token, artifact),
         )?;
@@ -293,8 +326,11 @@ fn release_changes_version_metadata_only(base_sha: &str, sha: &str) -> bool {
     is_version_metadata_only_release(&changed)
 }
 
-fn release_evidence_shas(target: &ReleaseTarget) -> BTreeMap<&'static str, Vec<String>> {
-    if !target.version_only {
+fn release_evidence_shas(
+    target: &ReleaseTarget,
+    pinned: bool,
+) -> BTreeMap<&'static str, Vec<String>> {
+    if pinned || !target.version_only {
         return BTreeMap::new();
     }
     PARENT_EVIDENCE_REUSABLE_WORKFLOWS

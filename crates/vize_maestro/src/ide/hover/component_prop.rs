@@ -4,6 +4,8 @@ use super::HoverBuilder;
 use crate::ide::IdeContext;
 use crate::ide::completion::template::component_metadata;
 
+mod native_signature;
+
 pub(super) fn hover_attribute(ctx: &IdeContext<'_>) -> Option<Hover> {
     hover_attribute_documented(ctx, None)
 }
@@ -30,7 +32,7 @@ pub(super) fn hover_attribute_documented(
             "Optional"
         };
         let builder = HoverBuilder::new().title(&prop.name).meta("Component prop");
-        let mut builder = documented_signature(builder, &signature, native)
+        let mut builder = native_signature::documented_prop_signature(builder, &signature, native)
             .section("Requirement", requirement)
             .example(
                 "vue",

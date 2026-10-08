@@ -98,7 +98,53 @@ test("Element Plus badge slot contracts stay exact across editor revisions", asy
           ),
         });
         const labels = completionLabels(completion);
-        assert.deepEqual(labels, ["value", "Message"]);
+        // #8015: this caret is inside an interpolation expression. Preserve
+        // both original scoped answers, then pin every allowed global in order.
+        assert.deepEqual(labels, [
+          "value",
+          "Message",
+          "$attrs",
+          "$slots",
+          "$refs",
+          "$el",
+          "$props",
+          "$data",
+          "$options",
+          "$parent",
+          "$root",
+          "$host",
+          "$emit",
+          "$forceUpdate",
+          "$nextTick",
+          "$watch",
+          "Infinity",
+          "undefined",
+          "NaN",
+          "isFinite",
+          "isNaN",
+          "parseFloat",
+          "parseInt",
+          "decodeURI",
+          "decodeURIComponent",
+          "encodeURI",
+          "encodeURIComponent",
+          "Number",
+          "Date",
+          "Array",
+          "Object",
+          "Boolean",
+          "String",
+          "RegExp",
+          "Map",
+          "Set",
+          "BigInt",
+          "Error",
+          "Symbol",
+          "Math",
+          "JSON",
+          "Intl",
+          "console",
+        ]);
 
         const hover = (await session.request("textDocument/hover", {
           textDocument: { uri: appUri },
@@ -108,11 +154,11 @@ test("Element Plus badge slot contracts stay exact across editor revisions", asy
           ),
         })) as { contents?: unknown } | null;
         const hoverText = hoverToText(hover);
-        // Answered by the backend since #3321. The slot scope parameter still
-        // widens to `any` in the generated virtual TS — a separate gap, but the
-        // provenance is now the type backend rather than a generic fallback.
+        // The authored ElBadge content declaration carries { value: string }.
+        // GlobalComponents selects that constructor; the slot factory unwraps
+        // its optional callback and retains the declared destructured payload.
         // Backend-answered: the body opens with the signature fence (#3894).
-        assert.equal(hoverText, "```typescript\n(parameter) value: any\n```");
+        assert.equal(hoverText, "```typescript\n(parameter) value: string\n```");
 
         const brokenSource = fixture.applyExactPatch(appPath, cleanExpression, brokenExpression);
         session.notify("textDocument/didChange", {

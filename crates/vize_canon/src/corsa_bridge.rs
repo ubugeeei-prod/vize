@@ -10,6 +10,9 @@ mod diagnosing_configuration;
 mod editor_session;
 mod native_vue;
 mod original_program;
+#[cfg(test)]
+mod outside_import_editor_tests;
+pub(crate) mod preparation_trace;
 mod script_document;
 #[cfg(test)]
 mod script_document_tests;
@@ -54,7 +57,8 @@ mod vue_document_tests;
 mod vue_document_tsx_tests;
 #[cfg(test)]
 mod vue_project_mapping_tests;
-mod worker;
+pub(crate) mod worker;
+pub(crate) use worker::retirement as native_operation;
 
 pub use batch_checker::BatchTypeChecker;
 pub use bridge::CorsaBridge;

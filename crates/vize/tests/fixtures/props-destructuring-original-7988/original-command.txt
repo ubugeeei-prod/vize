@@ -1,0 +1,1 @@
+vize lint -f plain --help-level short MyBadgeA.vue MyBadgeB.vue

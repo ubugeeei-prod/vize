@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const value = 'ready';
+</script>
+
+<template><p>{{ value }}</p></template>

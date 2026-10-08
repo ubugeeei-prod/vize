@@ -63,7 +63,7 @@ SfcTypeCheckResult {
             ],
         },
         VizeMapping {
-            gen_range: 16427..16429,
+            gen_range: 16431..16433,
             src_range: 201..203,
             sub_spans: [],
         },

@@ -216,7 +216,7 @@ pub(crate) fn element_core<'a>(
     let open_end = cx.token_span(&element.open.gt).end;
     let open_slice = cx
         .source
-        .get(cx.offset(element.open.lt_name.text) as usize..open_end as usize)
+        .get(span.start as usize..open_end as usize)
         .unwrap_or(tag);
     if component {
         cx.observe(OpFamily::SlotCarrier);
@@ -306,6 +306,7 @@ pub(crate) fn element_core<'a>(
     if suppress_v_pre {
         cx.push_v_pre_suppression();
     }
+    let previous_text_parent = cx.enter_text_parent(element, tag, own_ns == Namespace::Html);
     let children = Region {
         ops: if component || own_ns != Namespace::Html {
             lower_children(cx, &element.children, child_ns)
@@ -313,6 +314,7 @@ pub(crate) fn element_core<'a>(
             super::table::lower_element_children(cx, tag, &element.children, child_ns)
         },
     };
+    (cx.text_whitespace, cx.ignore_newline_at) = previous_text_parent;
     if suppress_v_pre {
         cx.pop_v_pre_suppression();
     }

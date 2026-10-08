@@ -71,8 +71,29 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         attached: &Attached<'_, '_>,
         tag: &str,
         inherit: bool,
+        css_vars: bool,
     ) -> Result<Option<Merged>> {
-        let mut args = self.merged_props_args(attached, tag, inherit)?;
+        self.merged_attrs_for::<false>(attached, tag, inherit, css_vars)
+    }
+
+    pub(super) fn group_attrs(
+        &mut self,
+        attached: &Attached<'_, '_>,
+        tag: &str,
+        inherit: bool,
+        css_vars: bool,
+    ) -> Result<Option<Merged>> {
+        self.merged_attrs_for::<true>(attached, tag, inherit, css_vars)
+    }
+
+    fn merged_attrs_for<const GROUP: bool>(
+        &mut self,
+        attached: &Attached<'_, '_>,
+        tag: &str,
+        inherit: bool,
+        css_vars: bool,
+    ) -> Result<Option<Merged>> {
+        let mut args = self.merged_props_args(attached, tag, inherit, css_vars)?;
         let mut directives = 0usize;
         for segment in attached {
             if let Source::Binding(l2::BindingOp::VueDirective(directive)) = segment.source {
@@ -135,7 +156,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             ));
         }
         self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderAttrs);
-        let tag_arg = if tag == "textarea" || tag.contains('-') {
+        let tag_arg = if !GROUP && (tag == "textarea" || tag.contains('-')) {
             cstr!(", \"{tag}\"")
         } else {
             String::default()
@@ -152,6 +173,7 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         attached: &Attached<'_, '_>,
         tag: &str,
         inherit: bool,
+        css_vars: bool,
     ) -> Result<std::vec::Vec<EmitDocument>> {
         let spans = self.ctx.spans_enabled();
         let mut args = std::vec::Vec::new();
@@ -239,6 +261,8 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         self.flush(&mut entries, &mut args);
         if inherit {
             args.push(EmitDocument::plain("_attrs"));
+        } else if css_vars {
+            args.push(EmitDocument::plain("_cssVars"));
         }
         if let Some(exp) = show {
             let style = cstr!("(({exp}) ? null : {{ display: \"none\" }})");

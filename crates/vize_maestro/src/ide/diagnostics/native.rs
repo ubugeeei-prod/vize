@@ -10,13 +10,23 @@ use crate::{
 };
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, Url};
 
+mod timeout;
+use timeout::with_native_diagnostic_timeout;
+
 impl DiagnosticService {
     /// Collect diagnostics asynchronously (includes Corsa diagnostics when available).
     pub async fn collect_async(state: &ServerState, uri: &Url) -> Vec<Diagnostic> {
-        tracing::info!("collect_async: {}", uri);
+        Self::collect_async_from_sync(state, uri, Self::collect(state, uri)).await
+    }
 
-        // Start with sync diagnostics (patina, etc.)
-        let mut diagnostics = Self::collect(state, uri);
+    /// Merge native diagnostics into an already collected, current sync set.
+    /// The server validates its source stamp before handing this set over.
+    pub(crate) async fn collect_async_from_sync(
+        state: &ServerState,
+        uri: &Url,
+        mut diagnostics: Vec<Diagnostic>,
+    ) -> Vec<Diagnostic> {
+        tracing::info!("collect_async: {}", uri);
         tracing::info!("sync diagnostics count: {}", diagnostics.len());
         let native_script_syntax = state.is_lsp_typecheck_enabled()
             && diagnostics
@@ -45,13 +55,15 @@ impl DiagnosticService {
             {
                 let corsa_bridge = state.get_corsa_bridge().await;
                 let jsx_future = crate::ide::JsxService::diagnostics(&ctx, corsa_bridge);
-                match crate::runtime::timeout(std::time::Duration::from_secs(10), jsx_future).await
-                {
+                match with_native_diagnostic_timeout(jsx_future).await {
                     Ok(jsx_type_diags) => {
                         tracing::info!("jsx type diagnostics count: {}", jsx_type_diags.len());
                         diagnostics.extend(jsx_type_diags);
                     }
-                    Err(_) => tracing::warn!("jsx type diagnostics timed out for {}", uri),
+                    Err(hints) => {
+                        tracing::warn!("jsx type diagnostics timed out for {}", uri);
+                        diagnostics.extend(hints);
+                    }
                 }
             } else {
                 tracing::info!("collect_async: jsx type diagnostics skipped (disabled by config)");
@@ -60,11 +72,15 @@ impl DiagnosticService {
         }
 
         if state.is_lsp_typecheck_enabled() {
-            // Try to get Corsa diagnostics (with timeout, skip on failure).
-            // Use 10s timeout - polling for diagnostics internally uses 5s
+            // Preserve the 10s collection bound and disclose missing native
+            // diagnostics when it expires, even if the bridge is initialized.
             let corsa_future = Self::collect_corsa_diagnostics(state, uri);
-            match crate::runtime::timeout(std::time::Duration::from_secs(10), corsa_future).await {
+            match with_native_diagnostic_timeout(corsa_future).await {
                 Ok(CorsaDiagnostics::Complete(corsa_diags)) => {
+                    #[cfg(test)]
+                    super::assembly_parity_custody::record(state, uri, "native_complete", || {
+                        serde_json::json!(corsa_diags)
+                    });
                     if native_script_syntax {
                         diagnostics.retain(|diagnostic| {
                             diagnostic.source.as_deref() != Some(sources::SCRIPT_PARSER)
@@ -73,9 +89,26 @@ impl DiagnosticService {
                     tracing::info!("corsa diagnostics count: {}", corsa_diags.len());
                     diagnostics.extend(without_duplicate_required_props(corsa_diags, &diagnostics));
                 }
-                Ok(CorsaDiagnostics::Unavailable(hints)) => diagnostics.extend(hints),
-                Err(_) => {
+                Ok(CorsaDiagnostics::Unavailable(hints)) => {
+                    #[cfg(test)]
+                    super::assembly_parity_custody::record(
+                        state,
+                        uri,
+                        "native_unavailable",
+                        || serde_json::json!(hints),
+                    );
+                    diagnostics.extend(hints);
+                }
+                Err(hints) => {
+                    #[cfg(test)]
+                    super::assembly_parity_custody::record(
+                        state,
+                        uri,
+                        "outer_timeout",
+                        || serde_json::json!({"bound_seconds":10}),
+                    );
                     tracing::warn!("corsa diagnostics timed out for {}", uri);
+                    diagnostics.extend(hints);
                 }
             }
 

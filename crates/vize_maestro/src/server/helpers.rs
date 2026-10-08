@@ -29,11 +29,6 @@ impl MaestroServer {
         changes: Vec<TextDocumentContentChangeEvent>,
         version: i32,
     ) {
-        #[cfg(feature = "native")]
-        let diagnostic_lock = self.state.diagnostic_lock(uri);
-        #[cfg(feature = "native")]
-        let diagnostic_guard = diagnostic_lock.lock().await;
-
         if !self.state.documents.apply_changes(uri, changes, version) {
             return;
         }
@@ -45,16 +40,35 @@ impl MaestroServer {
         };
         self.state.update_virtual_docs(uri, &content);
         #[cfg(feature = "native")]
+        let retained = super::initial_diagnostics::RetainedDiagnostics::new(self, uri);
+        #[cfg(feature = "native")]
         super::workspace_files::invalidate_changed_document_disk_project_state(self, uri).await;
-        let diagnostics = self.collect_diagnostics_unlocked(uri).await;
+        #[cfg(feature = "native")]
+        let sync = self.publish_changed_sync_diagnostics(uri, version).await;
+        // Apply editor text before waiting for type diagnostics. Their lock
+        // cannot delay didChange or hide the new revision from pending replies.
+        #[cfg(feature = "native")]
+        let diagnostic_lock = self.state.diagnostic_lock(uri);
+        #[cfg(feature = "native")]
+        let diagnostic_guard = diagnostic_lock.lock().await;
+
+        let diagnostics = self
+            .collect_diagnostics_with_sync_unlocked(
+                uri,
+                Some(version),
+                #[cfg(feature = "native")]
+                sync,
+            )
+            .await;
 
         #[cfg(feature = "native")]
         drop(diagnostic_guard);
 
-        if let Some((diagnostic_version, diagnostics)) = diagnostics {
-            self.publish_collected_diagnostics(uri, diagnostic_version, diagnostics)
-                .await;
+        if let Some(diagnostics) = diagnostics {
+            self.publish_collected_diagnostics(uri, diagnostics).await;
         }
+        #[cfg(feature = "native")]
+        retained.finish();
 
         if !self.state.is_lsp_typecheck_enabled() {
             return;
@@ -125,6 +139,18 @@ impl MaestroServer {
 
     /// Publish diagnostics for a document.
     pub(crate) async fn publish_diagnostics(&self, uri: &Url) {
+        self.publish_diagnostics_with_cause(uri, false).await;
+    }
+
+    /// Each explicit save retains its legacy complete notification even when
+    /// neither the root version nor the source/environment changed.
+    pub(crate) async fn publish_saved_diagnostics(&self, uri: &Url) {
+        self.publish_diagnostics_with_cause(uri, true).await;
+    }
+
+    async fn publish_diagnostics_with_cause(&self, uri: &Url, explicit_save: bool) {
+        #[cfg(feature = "native")]
+        let retained = super::initial_diagnostics::RetainedDiagnostics::new(self, uri);
         // tower-lsp polls notifications concurrently. A watched declaration
         // change can therefore overlap consecutive didChange passes for the
         // same Vue file; serialize those passes so their shared Corsa virtual
@@ -134,38 +160,39 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         let diagnostic_guard = diagnostic_lock.lock().await;
 
-        let diagnostics = self.collect_diagnostics_unlocked(uri).await;
+        let diagnostics = self.collect_diagnostics_unlocked(uri, None).await;
 
         #[cfg(feature = "native")]
         drop(diagnostic_guard);
 
-        if let Some((version, diagnostics)) = diagnostics {
-            self.publish_collected_diagnostics(uri, version, diagnostics)
+        if let Some(diagnostics) = diagnostics {
+            self.publish_collected_diagnostics_with_cause(uri, diagnostics, explicit_save)
                 .await;
         }
+        #[cfg(feature = "native")]
+        retained.finish();
     }
 
     /// Publish only if the document still has the version that scheduled the
     /// refresh. Watcher revalidation yields to a newer didChange publish.
     pub(crate) async fn publish_diagnostics_if_version(&self, uri: &Url, expected: i32) {
         #[cfg(feature = "native")]
+        let retained = super::initial_diagnostics::RetainedDiagnostics::new(self, uri);
+        #[cfg(feature = "native")]
         let diagnostic_lock = self.state.diagnostic_lock(uri);
         #[cfg(feature = "native")]
         let diagnostic_guard = diagnostic_lock.lock().await;
 
-        let diagnostics = if self.state.documents.version(uri) == Some(expected) {
-            self.collect_diagnostics_unlocked(uri).await
-        } else {
-            None
-        };
+        let diagnostics = self.collect_diagnostics_unlocked(uri, Some(expected)).await;
 
         #[cfg(feature = "native")]
         drop(diagnostic_guard);
 
-        if let Some((version, diagnostics)) = diagnostics {
-            self.publish_collected_diagnostics(uri, version, diagnostics)
-                .await;
+        if let Some(diagnostics) = diagnostics {
+            self.publish_collected_diagnostics(uri, diagnostics).await;
         }
+        #[cfg(feature = "native")]
+        retained.finish();
     }
 
     /// Get block snippet completions (when outside all blocks).

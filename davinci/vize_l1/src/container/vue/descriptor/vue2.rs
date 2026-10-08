@@ -8,6 +8,8 @@ use vize_l0::{SourceRoot, Vec};
 mod observe;
 mod view;
 pub use view::Vue2TemplateView;
+mod retained;
+pub use retained::{Vue2DescriptorExpressionPool, Vue2RetainedTemplateView};
 #[cfg(test)]
 pub(crate) mod hooks;
 #[cfg(test)]
@@ -70,6 +72,8 @@ mod tests;
 /// ```
 #[derive(Debug)]
 pub struct Vue2DescriptorObservation<'a> {
+    #[cfg(test)]
+    _drop_probe: hooks::OwnerDrop,
     container: Container<'a>,
     root: Option<SourceRoot<'a>>,
     options: DescriptorOptions,

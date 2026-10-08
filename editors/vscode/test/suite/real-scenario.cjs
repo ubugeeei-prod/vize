@@ -140,13 +140,17 @@ async function stepTypedRefHoverSurfaces() {
 
 /** Step 1c: imported component hover text stays marker-free in the packaged host. */
 async function stepComponentContractHoverSurfaces() {
-  fs.writeFileSync(
-    path.join(getWorkspaceFolderPath(), "src", "ContractChild.vue"),
+  assert.equal(
+    fs.readFileSync(path.join(getWorkspaceFolderPath(), "src", "ContractChild.vue"), "utf8"),
     expected.componentContractChildSource,
-    "utf8",
+    "component contract child fixture prepared before client startup",
   );
   const diskPath = path.join(getWorkspaceFolderPath(), "src", "ContractHost.vue");
-  fs.writeFileSync(diskPath, expected.componentContractHostSource, "utf8");
+  assert.equal(
+    fs.readFileSync(diskPath, "utf8"),
+    expected.componentContractHostSource,
+    "component contract host fixture prepared before client startup",
+  );
   const uri = vscode.Uri.file(diskPath);
   const document = await vscode.workspace.openTextDocument(uri);
   await vscode.window.showTextDocument(document);

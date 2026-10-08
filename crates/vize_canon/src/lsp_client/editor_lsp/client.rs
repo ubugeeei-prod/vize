@@ -21,7 +21,13 @@ impl CorsaProjectClient {
         if !self.document_texts.contains_key(uri) {
             return Ok(None);
         }
-        self.request_with_editor_lsp_recovery(|session| session.hover(uri, line, character))
+        let phase = crate::corsa_bridge::preparation_trace::Phase::start("editor_hover", 1);
+        let result =
+            self.request_with_editor_lsp_recovery(|session| session.hover(uri, line, character));
+        if result.is_ok() {
+            phase.finish();
+        }
+        result
     }
 
     pub(in crate::lsp_client) fn completion_via_editor_lsp(
@@ -205,6 +211,7 @@ impl CorsaProjectClient {
         &mut self,
         mut request: impl FnMut(&mut EditorLspSession) -> Result<T, String>,
     ) -> Result<T, String> {
+        crate::corsa_bridge::native_operation::checkpoint()?;
         let first = self.editor_lsp_session().and_then(&mut request);
         retry_transient_editor_request(
             self,
@@ -219,6 +226,7 @@ impl CorsaProjectClient {
         documents: &FxHashMap<String, String>,
         mut request: impl FnMut(&mut EditorLspSession) -> Result<T, String>,
     ) -> Result<T, String> {
+        crate::corsa_bridge::native_operation::checkpoint()?;
         let first = self
             .editor_lsp_session_for_documents(documents)
             .and_then(&mut request);
@@ -237,10 +245,11 @@ impl CorsaProjectClient {
     pub(super) fn editor_lsp_session(&mut self) -> Result<&mut EditorLspSession, String> {
         let project_root = self.editor_lsp_project_root();
         if self.editor_lsp.is_none() {
-            self.editor_lsp = Some(EditorLspSession::spawn(
+            self.editor_lsp = Some(EditorLspSession::spawn_with_config(
                 self.executable.as_str(),
                 &self.cwd,
                 &project_root,
+                self.explicit_project_config.as_deref(),
             )?);
             self.editor_lsp_documents_dirty = true;
         }
@@ -262,10 +271,11 @@ impl CorsaProjectClient {
         let project_root = self.editor_lsp_project_root();
         let keep_dirty_after_sync = !document_maps_equal(documents, &self.document_texts);
         if self.editor_lsp.is_none() {
-            self.editor_lsp = Some(EditorLspSession::spawn(
+            self.editor_lsp = Some(EditorLspSession::spawn_with_config(
                 self.executable.as_str(),
                 &self.cwd,
                 &project_root,
+                self.explicit_project_config.as_deref(),
             )?);
             self.editor_lsp_documents_dirty = true;
         }

@@ -16,7 +16,7 @@ use crate::batch::runtime_deps::materialize_runtime_dependencies;
 use super::package_node_modules::materialize_package_node_modules;
 use super::{
     AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUBS_FILE, PACKAGE_BOUNDARY_FILE,
-    SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
+    VUE_MODULE_STUBS_FILE, VirtualProject,
 };
 
 impl VirtualProject {
@@ -56,8 +56,28 @@ impl VirtualProject {
     ) -> CorsaResult<vize_carton::FxHashMap<PathBuf, PathBuf>> {
         let mut expected_files = self.expected_materialized_files();
         expected_files.extend(preserved_files.iter().cloned());
-        let mut desired_package_links = self.desired_package_links_for_files(&expected_files);
+        let owned_files = self.workspace_cold_owned_files(&expected_files);
+        self.validate_workspace_alias_targets(&owned_files)?;
+        let mut link_claims = expected_files.clone();
+        link_claims.extend(
+            self.preserved_workspace_alias_claims(preserved_package_links, &expected_files)?,
+        );
+        let mut desired_package_links = self.desired_package_links_for_files(&link_claims);
         for (path, target) in preserved_package_links {
+            if self.preserved_package_link_overlaps_files(path, target, &expected_files) {
+                continue;
+            }
+            if desired_package_links.get(path).is_some_and(|current| {
+                current != target
+                    && (current.starts_with(&self.virtual_root)
+                        || target.starts_with(&self.virtual_root))
+            }) {
+                return Err(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "Conflicting workspace package alias targets in editor union",
+                )
+                .into());
+            }
             desired_package_links
                 .entry(path.clone())
                 .and_modify(|current| {
@@ -67,6 +87,8 @@ impl VirtualProject {
                 })
                 .or_insert_with(|| target.clone());
         }
+        let retire = self.validate_workspace_alias_links(&desired_package_links, &owned_files)?;
+        self.retire_workspace_cache_links(retire)?;
         let package_links = desired_package_links
             .iter()
             .map(
@@ -98,7 +120,7 @@ impl VirtualProject {
                 &self.root_package_shadow_scope_entries(),
             )
         )?;
-
+        self.ensure_workspace_alias_targets()?;
         profile!(
             "canon.project.package_deps",
             materialize_package_node_modules(&package_links)
@@ -201,7 +223,7 @@ impl VirtualProject {
         }
 
         profile!("canon.project.write_tsconfig", {
-            let path = self.virtual_root.join("tsconfig.json");
+            let path = self.generated_tsconfig_path();
             if let Some(query_paths) = query_paths {
                 let includes = query_paths.iter().map(PathBuf::as_path).collect::<Vec<_>>();
                 self.write_tsconfig_file_with_includes(
@@ -229,7 +251,9 @@ impl VirtualProject {
         out_dir: &Path,
         declaration_map: bool,
     ) -> CorsaResult<PathBuf> {
-        let config_path = self.virtual_root.join("tsconfig.declaration.json");
+        let config_path = self
+            .generated_tsconfig_path()
+            .with_file_name("tsconfig.declaration.json");
         self.rewrite_tsx_vue_declaration_inputs()?;
         let include_paths = self.declaration_emit_include_paths();
         profile!(
@@ -259,10 +283,10 @@ impl VirtualProject {
         }
         files.insert(self.virtual_root.join(VUE_MODULE_STUBS_FILE));
         if self.uses_shared_helpers() {
-            files.insert(self.virtual_root.join(SHARED_HELPERS_FILE));
+            files.insert(self.shared_helpers_path());
         }
         files.insert(self.virtual_root.join(PACKAGE_BOUNDARY_FILE));
-        files.insert(self.virtual_root.join("tsconfig.json"));
+        files.insert(self.generated_tsconfig_path());
         files
     }
 

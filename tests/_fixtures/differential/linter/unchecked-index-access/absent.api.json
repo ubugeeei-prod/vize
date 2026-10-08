@@ -1,0 +1,27 @@
+{
+  "filename": "src/MyTouch.vue",
+  "diagnostics": [
+    {
+      "ruleName": "type/strict-boolean-expressions",
+      "severity": "error",
+      "message": "Unexpected object value in conditional. An object is always truthy.",
+      "start": 195,
+      "end": 200,
+      "help": null,
+      "labels": [],
+      "fix": null
+    },
+    {
+      "ruleName": "type/strict-boolean-expressions",
+      "severity": "error",
+      "message": "Unexpected object value in conditional. An object is always truthy.",
+      "start": 314,
+      "end": 319,
+      "help": null,
+      "labels": [],
+      "fix": null
+    }
+  ],
+  "errorCount": 2,
+  "warningCount": 0
+}

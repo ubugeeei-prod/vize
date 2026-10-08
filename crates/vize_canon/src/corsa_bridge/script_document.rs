@@ -26,6 +26,7 @@ struct BuiltScriptVirtualProject {
     host: CorsaScriptVirtualDocument,
     documents: Vec<(String, String)>,
     session_project_root: Option<PathBuf>,
+    session_config_path: Option<PathBuf>,
     materialized_changes: crate::batch::virtual_project::MaterializedFileDelta,
     materialized_sources: Vec<super::CorsaMaterializedSource>,
     source_catalog: super::CorsaSourceCatalog,
@@ -78,8 +79,9 @@ impl CorsaBridge {
             },
         )?;
         self.open_canon_project_documents(
-            &project.documents,
+            project.documents,
             project.session_project_root.clone(),
+            project.session_config_path,
             project.materialized_changes,
         )
         .await?;
@@ -199,6 +201,7 @@ fn build_script_virtual_project_with_package_routes(
         },
         documents,
         session_project_root,
+        session_config_path: alias_context.mirror_project_config_path(),
         materialized_changes: alias_context.materialized_changes.clone(),
         materialized_sources,
         source_catalog: alias_context.source_catalog.clone(),

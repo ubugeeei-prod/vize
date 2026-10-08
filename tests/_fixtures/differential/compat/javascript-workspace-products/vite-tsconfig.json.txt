@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": []
+  },
+  "include": [
+    "src/**/*.vue",
+    "src/**/*.js",
+    "src/**/*.mjs",
+    "../../packages/**/*.vue",
+    "../../packages/**/*.js",
+    "../../packages/**/*.mjs"
+  ]
+}

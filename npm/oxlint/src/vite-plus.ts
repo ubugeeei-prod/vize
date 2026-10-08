@@ -5,6 +5,7 @@ import {
   type VizeRuleConfigPreset,
 } from "./configs.js";
 import type { PatinaPreset, PatinaRuleMeta, PatinaSettings } from "./model.js";
+import { selectVizeRuleConfig } from "./rule-selection.js";
 
 /**
  * Bare specifier Oxlint uses to load this bridge as a JS plugin.
@@ -80,11 +81,11 @@ export interface VizeLintConfigOptions {
    */
   rules?: OxlintRuleConfig;
   /**
-   * Patina runtime settings forwarded through `settings.vize`. `preset` is
-   * intentionally absent: it is derived from `options.preset`/`options.presets`
+   * Patina runtime settings forwarded through `settings.vize`. `preset` and
+   * `rules` are derived from the selected presets and final rule map,
    * so the rule map and the bridge's runtime gate can never disagree.
    */
-  settings?: Omit<PatinaSettings, "preset">;
+  settings?: Omit<PatinaSettings, "preset" | "rules">;
 }
 
 export interface VizeLintConfigSettings extends Record<string, unknown> {
@@ -146,18 +147,20 @@ export function buildVizeLintConfig(
     : toRuntimePreset(presets);
   const extraRules = options.rules ?? {};
   assertUsableVizeRules(extraRules, presets, runtimePreset);
+  const rules = {
+    ...createPresetRules(presets, options.includeTypeAware),
+    ...extraRules,
+  };
 
   return {
     jsPlugins: [VIZE_JS_PLUGIN_SPECIFIER],
     plugins: [...new Set(["vue", ...(options.plugins ?? [])])],
-    rules: {
-      ...createPresetRules(presets, options.includeTypeAware),
-      ...extraRules,
-    },
+    rules,
     settings: {
       vize: {
         ...options.settings,
         preset: runtimePreset,
+        rules: selectVizeRuleConfig(rules),
       },
     },
   };

@@ -78,6 +78,11 @@ pub(super) enum Site {
     SlotText,
 }
 
+/// Whether an existing key AST can reach the retained rewrite without a parse.
+pub(super) fn retained_expression_is_js(js: &JsExpr<'_>) -> bool {
+    compat::js_module_compatible(js.ast, js.source)
+}
+
 /// The shipped node's content for one expression position: the raw
 /// quoted attribute value (entity-decoded) for attribute positions, the
 /// trimmed source otherwise, plus where the retained source sits in it.
@@ -163,6 +168,8 @@ pub(super) struct Refused;
 pub(super) struct Prefixed {
     pub(super) text: String,
     pub(super) used_unref: bool,
+    pub(super) used_is_ref: bool,
+    pub(super) has_identifier_references: bool,
 }
 
 /// `process_expression` then the codegen consumption for `site`.
@@ -180,6 +187,8 @@ pub(super) fn prefix_expression(
         return Ok(Prefixed {
             text: consume(scope, stripped, site),
             used_unref: false,
+            used_is_ref: false,
+            has_identifier_references: false,
         });
     }
     let retained = content.retained(js);
@@ -190,6 +199,8 @@ pub(super) fn prefix_expression(
     Ok(Prefixed {
         text: consume(scope, rewritten.code, site),
         used_unref: rewritten.used_unref,
+        used_is_ref: rewritten.used_is_ref,
+        has_identifier_references: rewritten.has_identifier_references,
     })
 }
 
@@ -228,6 +239,8 @@ pub(super) fn prefix_handler(
     Ok(Prefixed {
         text: handler::finish_event_handler(processed.code, scope, for_caching),
         used_unref: processed.used_unref,
+        used_is_ref: processed.used_is_ref,
+        has_identifier_references: processed.has_identifier_references,
     })
 }
 
@@ -246,6 +259,8 @@ pub(super) fn prefix_inline_handler(
     Ok(Prefixed {
         text: processed.code,
         used_unref: processed.used_unref,
+        used_is_ref: processed.used_is_ref,
+        has_identifier_references: processed.has_identifier_references,
     })
 }
 

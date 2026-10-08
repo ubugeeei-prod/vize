@@ -1,0 +1,6 @@
+<script setup>
+const wrapper = "ol";
+const items = [1, 2];
+const shown = false;
+</script>
+<template><TransitionGroup :tag="wrapper" id="list"><li v-for="item in items" :key="item">{{ item }}</li><li v-if="shown">hidden</li><!-- filtered --></TransitionGroup></template>

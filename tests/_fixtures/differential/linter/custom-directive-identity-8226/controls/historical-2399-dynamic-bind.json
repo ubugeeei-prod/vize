@@ -1,0 +1,12 @@
+{
+  "id": "historical-2399-dynamic-bind",
+  "source": "<MyComponent :[myProp]=\"value\" :myProp=\"value\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "historical-2399-dynamic-bind.vue",
+    "errorCount": 0,
+    "warningCount": 0,
+    "diagnostics": []
+  }
+}

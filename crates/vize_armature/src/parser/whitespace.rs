@@ -7,7 +7,7 @@
 //! `is_vue_whitespace` rather than the full-Unicode `char::is_whitespace`.
 
 use vize_l0::{Allocator, StringBuilder, Vec, ensure_sufficient_stack};
-use vize_relief::TemplateChildNode;
+use vize_relief::{ElementNode, Namespace, TemplateChildNode};
 
 /// Per Vue: only `[ \t\n\f\r]` is whitespace for the condense strategy.
 #[inline]
@@ -185,8 +185,11 @@ fn condense_whitespace_in<'a>(
 
         // Recurse into elements
         if let Some(TemplateChildNode::Element(el)) = children.get_mut(i) {
+            ignore_first_newline(el);
             if is_pre_tag(el.tag) {
                 ensure_sufficient_stack(|| normalize_pre_newlines(allocator, &mut el.children));
+            } else if el.ns == Namespace::Html && el.tag == "textarea" {
+                // RCDATA keeps the remaining text, including a second newline.
             } else {
                 ensure_sufficient_stack(|| {
                     condense_whitespace_in(
@@ -224,11 +227,12 @@ pub(super) fn preserve_whitespace<'a>(
                 text.content = " ";
             }
             TemplateChildNode::Element(element) => {
+                ignore_first_newline(element);
                 if is_pre_tag(element.tag) {
                     ensure_sufficient_stack(|| {
                         normalize_pre_newlines(allocator, &mut element.children)
                     });
-                } else {
+                } else if element.ns != Namespace::Html || element.tag != "textarea" {
                     ensure_sufficient_stack(|| {
                         preserve_whitespace(allocator, &mut element.children, is_pre_tag)
                     });
@@ -251,18 +255,42 @@ fn normalize_pre_newlines<'a>(
                 text.content = allocator.alloc_str(&text.content.replace("\r\n", "\n"));
             }
             TemplateChildNode::Element(element) => {
-                ensure_sufficient_stack(|| {
-                    normalize_pre_newlines(allocator, &mut element.children)
-                });
+                ignore_first_newline(element);
+                if element.ns != Namespace::Html || element.tag != "textarea" {
+                    ensure_sufficient_stack(|| {
+                        normalize_pre_newlines(allocator, &mut element.children)
+                    });
+                }
             }
             _ => {}
         }
     }
 }
 
+/// HTML's leading-newline rule applies to the first decoded text child only.
+/// Keep its authored location: entities and CRLF can have different byte widths.
+fn ignore_first_newline(element: &mut ElementNode<'_>) {
+    if element.ns == Namespace::Html
+        && matches!(element.tag, "pre" | "textarea")
+        && let Some(TemplateChildNode::Text(text)) = element.children.first_mut()
+    {
+        text.content = text
+            .content
+            .strip_prefix("\r\n")
+            .or_else(|| text.content.strip_prefix('\n'))
+            .unwrap_or(text.content);
+    }
+}
+
 #[inline]
 fn is_whitespace_text(child: &TemplateChildNode<'_>) -> bool {
-    matches!(child, TemplateChildNode::Text(text) if text.content.chars().all(is_vue_whitespace))
+    // Every Vue whitespace character is ASCII; a non-ASCII UTF-8 byte cannot match.
+    matches!(
+        child,
+        TemplateChildNode::Text(text) if text.content.bytes().all(|byte| {
+            matches!(byte, b' ' | b'\t' | b'\n' | b'\x0C' | b'\r')
+        })
+    )
 }
 
 #[inline]
@@ -299,3 +327,6 @@ enum WhitespaceAction {
     /// Condense a run to a single space, or a migration line break.
     Condense(usize, bool),
 }
+
+#[cfg(test)]
+mod tests;

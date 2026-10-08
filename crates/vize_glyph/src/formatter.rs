@@ -6,6 +6,7 @@ mod block_indent;
 mod custom_block;
 mod opening_tag;
 mod raw_mask;
+mod root_content;
 mod script_block;
 mod style_block;
 mod template_block;
@@ -36,6 +37,7 @@ pub struct GlyphFormatter<'a> {
     allocator: &'a Allocator,
     vue_version: VueVersion,
     sort_imports: Option<&'a crate::ImportSortOptions>,
+    preserve_template_whitespace: bool,
 }
 
 enum Block<'b> {
@@ -74,6 +76,7 @@ impl<'a> GlyphFormatter<'a> {
             allocator,
             vue_version,
             sort_imports: None,
+            preserve_template_whitespace: false,
         }
     }
 
@@ -83,8 +86,23 @@ impl<'a> GlyphFormatter<'a> {
         self
     }
 
+    /// Preserve the complete authored HTML template body when its compiler keeps
+    /// whitespace. Template layout cannot then change rendered text boundaries.
+    pub fn with_template_whitespace_preserved(mut self, preserve: bool) -> Self {
+        self.preserve_template_whitespace = preserve;
+        self
+    }
+
     /// Format a Vue SFC source string
     pub fn format(&self, source: &str) -> Result<FormatResult, FormatError> {
+        if source.starts_with('\u{feff}') {
+            return self.format_bom(source);
+        }
+        self.format_document(source)
+    }
+
+    #[inline]
+    fn format_document(&self, source: &str) -> Result<FormatResult, FormatError> {
         if self.options.end_of_line == crate::EndOfLine::Auto {
             return self
                 .options
@@ -94,8 +112,9 @@ impl<'a> GlyphFormatter<'a> {
                         allocator: self.allocator,
                         vue_version: self.vue_version,
                         sort_imports: self.sort_imports,
+                        preserve_template_whitespace: self.preserve_template_whitespace,
                     }
-                    .format(source)
+                    .format_document(source)
                 });
         }
         // Parse the SFC
@@ -162,14 +181,22 @@ impl<'a> GlyphFormatter<'a> {
         let first_tag_start = source_order
             .first()
             .map_or(source.len(), |loc| loc.tag_start);
-        let prologue = source.get(..first_tag_start).unwrap_or_default().trim();
+        let original_prologue = source.get(..first_tag_start).unwrap_or_default();
+        let (prologue, first_attachment) = if blocks.is_empty() {
+            (original_prologue.trim(), None)
+        } else {
+            root_content::split_prologue(original_prologue)
+        };
         let mut leading_content = FxHashMap::default();
+        if let Some(content) = first_attachment {
+            leading_content.insert(first_tag_start, (content, true));
+        }
         let mut previous_end = first_tag_start;
         for loc in source_order {
             if let Some(content) = source
                 .get(previous_end..loc.tag_start)
-                .map(str::trim)
-                .filter(|content| !content.is_empty())
+                .map(|gap| (gap.trim(), root_content::is_attached_comment(gap)))
+                .filter(|(content, _)| !content.is_empty())
             {
                 leading_content.insert(loc.tag_start, content);
             }
@@ -193,10 +220,12 @@ impl<'a> GlyphFormatter<'a> {
                 output.extend_from_slice(newline);
                 output.extend_from_slice(newline);
             }
-            if let Some(content) = leading_content.get(&block.location().tag_start) {
+            if let Some((content, attached)) = leading_content.get(&block.location().tag_start) {
                 output.extend_from_slice(content.as_bytes());
                 output.extend_from_slice(newline);
-                output.extend_from_slice(newline);
+                if !attached {
+                    output.extend_from_slice(newline);
+                }
             }
             match block {
                 Block::Script(script) => script_block::write_script_block(
@@ -213,6 +242,7 @@ impl<'a> GlyphFormatter<'a> {
                     self.options,
                     source,
                     self.vue_version,
+                    self.preserve_template_whitespace,
                 )?,
                 Block::Style(style) => {
                     style_block::write_style_block(&mut output, style, self.options, source)?
@@ -250,6 +280,19 @@ impl<'a> GlyphFormatter<'a> {
         let code = unsafe { String::from_utf8_unchecked(output) };
         let changed = code != source;
 
+        Ok(FormatResult { code, changed })
+    }
+
+    // A document BOM is an encoding marker, not an SFC prologue block. Keep
+    // the uncommon prefix outside the ordinary formatting allocation frame.
+    #[cold]
+    #[inline(never)]
+    fn format_bom(&self, source: &str) -> Result<FormatResult, FormatError> {
+        let result = self.format_document(source.strip_prefix('\u{feff}').unwrap_or(source))?;
+        let mut code = String::with_capacity(result.code.len() + '\u{feff}'.len_utf8());
+        code.push('\u{feff}');
+        code.push_str(result.code.as_str());
+        let changed = code.as_str() != source;
         Ok(FormatResult { code, changed })
     }
 

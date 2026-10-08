@@ -45,7 +45,7 @@ for (const job of ["pr-rust-build", "merge-rust-source"]) {
       const context = {
         cwd,
         nextestVersion: "cargo-nextest 0.9.146",
-        rustcVersion: "rustc 1.98.0 (fixture)",
+        rustcVersion: "rustc 1.99.0 (fixture)",
         env: {
           VIZE_NUXT_CONFIG_ITERATIONS: "100",
           ...(job === "merge-rust-source"

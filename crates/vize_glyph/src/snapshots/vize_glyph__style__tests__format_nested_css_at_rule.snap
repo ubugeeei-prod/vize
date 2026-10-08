@@ -4,6 +4,6 @@ expression: result.as_str()
 ---
 @media (min-width: 640px) {
   .container {
-    color:red
+    color: red;
   }
 }

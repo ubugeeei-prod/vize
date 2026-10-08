@@ -7,7 +7,7 @@
       lib,
       moonbit,
       pkgs,
-      rustToolchain,
+      rustDevToolchain,
       system,
       ...
     }:
@@ -51,7 +51,7 @@
           nodejs
           pnpm
           config.packages.vp
-          rustToolchain
+          rustDevToolchain
           pkgs.git
           pkgs.rust-analyzer
           pkgs.wasm-pack
@@ -67,7 +67,7 @@
         ]
         ++ lib.optionals (moonbit != null) [ moonbit ];
 
-        RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
+        RUST_SRC_PATH = "${rustDevToolchain}/lib/rustlib/src/rust/library";
 
         shellHook = ''
           ${clearTestboxEnvironment}

@@ -1,6 +1,6 @@
 //! [`Demand`] — a set of fact groups, built in `const` context.
 
-use crate::pass::{AnalysisId, MAX_ANALYSES, Preserved};
+use crate::pass::{AnalysisId, Preserved};
 
 /// A set of fact groups, keyed by their [`AnalysisId`].
 ///
@@ -105,9 +105,16 @@ impl Demand {
 
     /// The members in ascending id order.
     pub fn iter(self) -> impl Iterator<Item = AnalysisId> {
-        (0..MAX_ANALYSES)
-            .filter(move |index| self.0 & (1u64 << index) != 0)
-            .map(AnalysisId::new)
+        let mut remaining = self.0;
+        core::iter::from_fn(move || {
+            if remaining == 0 {
+                return None;
+            }
+            // A nonzero u64's lowest set bit is an admitted analysis (0..64).
+            let index = remaining.trailing_zeros() as u8;
+            remaining &= remaining - 1;
+            Some(AnalysisId::new(index))
+        })
     }
 }
 
@@ -119,7 +126,7 @@ const fn bit(group: AnalysisId) -> u64 {
 #[cfg(test)]
 mod tests {
     use super::Demand;
-    use crate::pass::{AnalysisId, Preserved};
+    use crate::pass::{AnalysisId, MAX_ANALYSES, Preserved};
     use alloc::vec::Vec;
 
     const A: AnalysisId = AnalysisId::new(0);
@@ -144,6 +151,34 @@ mod tests {
         let set = Demand::NONE.with(C).with(A).with(B);
         let ids: Vec<u8> = set.iter().map(AnalysisId::index).collect();
         assert_eq!(ids, [0, 7, 63]);
+    }
+
+    #[test]
+    fn iteration_matches_the_complete_identity_space_for_dense_and_sparse_masks() {
+        let mut masks = Vec::from([0, u64::MAX, 0xaaaa_aaaa_aaaa_aaaa, 0x5555_5555_5555_5555]);
+        masks.extend((0..MAX_ANALYSES).map(|index| 1u64 << index));
+        let mut mask = 1u64;
+        for _ in 0..1024 {
+            mask = mask.wrapping_mul(6364136223846793005).wrapping_add(1);
+            masks.push(mask);
+        }
+        for mask in masks {
+            let demand = Demand::from_bits(mask);
+            let actual: Vec<u8> = demand.iter().map(AnalysisId::index).collect();
+            let expected: Vec<u8> = (0..MAX_ANALYSES)
+                .filter(|index| demand.contains(AnalysisId::new(*index)))
+                .collect();
+            assert_eq!(actual, expected, "mask: {mask:#018x}");
+        }
+    }
+
+    #[test]
+    fn exhausted_iteration_stays_empty_including_the_highest_identity() {
+        let mut empty = Demand::NONE.iter();
+        assert_eq!((empty.next(), empty.next()), (None, None));
+        let mut highest = Demand::NONE.with(C).iter();
+        assert_eq!(highest.next(), Some(C));
+        assert_eq!((highest.next(), highest.next()), (None, None));
     }
 
     #[test]

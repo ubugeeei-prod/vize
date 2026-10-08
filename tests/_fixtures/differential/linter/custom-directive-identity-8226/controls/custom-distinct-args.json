@@ -1,0 +1,12 @@
+{
+  "id": "custom-distinct-args",
+  "source": "<button v-clipboard:copy=\"text\" v-clipboard:success=\"done\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "custom-distinct-args.vue",
+    "errorCount": 0,
+    "warningCount": 0,
+    "diagnostics": []
+  }
+}

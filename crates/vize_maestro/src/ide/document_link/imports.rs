@@ -1,10 +1,8 @@
-use std::path::Path;
-
 use oxc_allocator::Allocator;
 use oxc_ast::ast::Statement;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use tower_lsp::lsp_types::DocumentLink;
+use tower_lsp::lsp_types::{DocumentLink, Url};
 
 use super::DocumentLinkService;
 
@@ -21,13 +19,27 @@ pub(super) fn collect_import_links(
     source_type: SourceType,
     base_offset: usize,
     full_content: &str,
-    base_path: Option<&Path>,
+    uri: &Url,
     links: &mut Vec<DocumentLink>,
 ) {
     for specifier in collect_static_module_specifiers(script, source_type) {
-        if (specifier.path.starts_with('.') || specifier.path.starts_with('/'))
-            && let Some(target) = DocumentLinkService::resolve_path(&specifier.path, base_path)
-        {
+        let target = crate::ide::definition::import_resolver::resolve_authored_import_specifier(
+            uri,
+            &specifier.path,
+        )
+        .filter(|path| !path.is_dir())
+        .and_then(|path| Url::from_file_path(path).ok())
+        .or_else(|| {
+            if specifier.path.starts_with('/') {
+                DocumentLinkService::resolve_path(
+                    &specifier.path,
+                    uri.to_file_path().ok().as_deref(),
+                )
+            } else {
+                None
+            }
+        });
+        if let Some(target) = target {
             let abs_start = base_offset + specifier.start;
             let abs_end = base_offset + specifier.end;
             links.push(DocumentLinkService::create_link(

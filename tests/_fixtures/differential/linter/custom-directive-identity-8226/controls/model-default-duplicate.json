@@ -1,0 +1,23 @@
+{
+  "id": "model-default-duplicate",
+  "source": "<Comp v-model=\"a\" v-model=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "model-default-duplicate.vue",
+    "errorCount": 1,
+    "warningCount": 0,
+    "diagnostics": [
+      {
+        "rule": "vue/no-duplicate-attributes",
+        "severity": "Error",
+        "message": "Duplicate attribute 'v-model'",
+        "start": 18,
+        "end": 29,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  }
+}

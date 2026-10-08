@@ -1,0 +1,38 @@
+{
+  "issues": [8009],
+  "reportedVersion": "0.432.0",
+  "authority": "complete GitHub issue fenced source blocks",
+  "files": [
+    {
+      "issue": 8009,
+      "authoredPath": "src/Item.vue",
+      "fixture": "8009/Item.vue.txt",
+      "bytes": 144,
+      "sha256": "9eebaccba738d0e52195deed0303616a6014aa5ff09ec230f67a540e423656ff"
+    },
+    {
+      "issue": 8009,
+      "authoredPath": "src/types.ts",
+      "fixture": "8009/types.ts.txt",
+      "bytes": 40,
+      "sha256": "472453de89aaffb9b462eec1326d8cf184f7d878d1835cebaa23d70e9b217df2"
+    },
+    {
+      "issue": 8009,
+      "authoredPath": "src/App.vue",
+      "fixture": "8009/App.vue.txt",
+      "bytes": 497,
+      "sha256": "7ea922d691cb5794b820af6c49000965db72e7d483d1feda6c34c985e6ddd4f5"
+    },
+    {
+      "issue": 8009,
+      "authoredPath": "src/Classy.vue",
+      "fixture": "8009/Classy.vue.txt",
+      "bytes": 374,
+      "sha256": "6f68d27ffdb21701305cfd1e8d1c95be80a542c4470b45ce3485f67080d07102"
+    }
+  ],
+  "config8009sha256": "73483f7df696c623419898f17d62c7b095a9ebfcd9c6f103371f51ae29169128",
+  "staticStyleOriginal": "<Child size=\"large\" style=\"width: 40%\" label=\"Go\" />",
+  "staticStyleEnvironment": "Child/Style complete derived control sources are separately declared by the typed stdio fixture; report supplies only this complete element."
+}

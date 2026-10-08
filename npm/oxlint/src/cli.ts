@@ -5,22 +5,65 @@ import { expectsLintReport, getLintTargets } from "./cli/args.js";
 import { collectVueLikeFilesFromTargets } from "./cli/files.js";
 import { resolveOxlintCliEntrypoint, verifyOxlintCliEntrypoint } from "./cli/oxlint.js";
 import { rewriteReportedPaths } from "./cli/output.js";
+import { rewriteReportedLocations } from "./cli/locations.js";
 import { prepareScriptlessWorkaroundFiles } from "./cli/workaround-files.js";
+import { prepareScopedSelection } from "./cli/scoped-selection.js";
+import { mergeProjectOutput } from "./cli/project-output.js";
 
 async function main(): Promise<void> {
   const cwd = process.cwd();
   const forwardedArgs = process.argv.slice(2);
   const targets = getLintTargets(forwardedArgs);
-  const lintFiles = collectVueLikeFilesFromTargets(cwd, targets);
+  const candidates = new Set<string>();
+  const lintFiles = collectVueLikeFilesFromTargets(cwd, targets, (file) => candidates.add(file));
   const oxlintEntrypoint = resolveOxlintCliEntrypoint(cwd);
   verifyOxlintCliEntrypoint(process.execPath, oxlintEntrypoint);
-  const prepared = prepareScriptlessWorkaroundFiles(cwd, lintFiles);
-  const args = [oxlintEntrypoint, ...forwardedArgs, ...prepared.appendedArgs];
+  const scoped = await prepareScopedSelection(
+    cwd,
+    forwardedArgs,
+    lintFiles,
+    (args) => runOxlint(process.execPath, [oxlintEntrypoint, ...args], cwd),
+    candidates,
+  );
+  const sourceResult = scoped && "result" in scoped ? scoped.result : undefined;
+  const transport = scoped && "prepared" in scoped ? scoped : undefined;
+  const prepared = sourceResult
+    ? prepareScriptlessWorkaroundFiles(cwd, [])
+    : (transport?.prepared ?? prepareScriptlessWorkaroundFiles(cwd, lintFiles));
+  const args = [
+    oxlintEntrypoint,
+    ...(transport?.args ?? [...forwardedArgs, ...prepared.appendedArgs]),
+  ];
 
   try {
-    const result = await runOxlint(process.execPath, args, cwd);
-    const stdout = rewriteReportedPaths(result.stdout, prepared.pathReplacements);
-    const stderr = rewriteReportedPaths(result.stderr, prepared.pathReplacements);
+    let result: Awaited<ReturnType<typeof runOxlint>> | undefined;
+    let merged: Awaited<ReturnType<typeof runOxlint>>;
+    try {
+      result = sourceResult ?? (await runOxlint(process.execPath, args, cwd));
+      const mappedStdout = rewriteReportedPaths(
+        rewriteReportedLocations(result.stdout, prepared.locations),
+        prepared.pathReplacements,
+      );
+      const mappedStderr = rewriteReportedPaths(
+        rewriteReportedLocations(result.stderr, prepared.locations),
+        prepared.pathReplacements,
+      );
+      merged = { ...result, stdout: mappedStdout, stderr: mappedStderr };
+      if (transport?.originalResult)
+        merged = mergeProjectOutput(transport.originalResult, merged, forwardedArgs);
+    } catch (error) {
+      // Preparation, spawn, mapping and JSON failures retain authored packets.
+      if (transport?.originalResult) {
+        process.exitCode = Math.max(transport.originalResult.status ?? 1, result?.status ?? 1, 1);
+        await writeStream(process.stdout, transport.originalResult.stdout);
+        await writeStream(
+          process.stderr,
+          transport.originalResult.stderr + (result?.stderr ?? "") + (result?.stdout ?? ""),
+        );
+      }
+      throw error;
+    }
+    const { stdout, stderr } = merged;
 
     if (stdout) {
       await writeStream(process.stdout, stdout);
@@ -30,7 +73,7 @@ async function main(): Promise<void> {
       await writeStream(process.stderr, stderr);
     }
 
-    if (result.status === 0 && stdout === "" && stderr === "" && expectsLintReport(forwardedArgs)) {
+    if (merged.status === 0 && stdout === "" && stderr === "" && expectsLintReport(forwardedArgs)) {
       await writeStream(
         process.stderr,
         `The oxlint run at ${oxlintEntrypoint} exited 0 but produced no report, ` +
@@ -51,7 +94,7 @@ async function main(): Promise<void> {
       );
     }
 
-    process.exitCode = result.status ?? 1;
+    process.exitCode = merged.status ?? 1;
   } finally {
     prepared.cleanup();
   }
@@ -61,7 +104,7 @@ main().catch((error: unknown) => {
   process.stderr.write(
     `${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
   );
-  process.exitCode = 1;
+  process.exitCode = Math.max(Number(process.exitCode) || 1, 1);
 });
 
 function runOxlint(

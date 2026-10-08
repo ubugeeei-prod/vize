@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ label: string; count?: number }>()
+defineEmits<{ save: [value: string] }>()
+defineSlots<{ default(props: { value: string }): unknown }>()
+defineModel<boolean>()
+</script>
+
+<template><slot value="ready" /></template>

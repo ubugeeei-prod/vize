@@ -12,7 +12,7 @@ pub(super) fn collect_files(patterns: &[String], max_files: Option<usize>) -> Ve
 
     for pattern in patterns {
         let path = Path::new(pattern.as_str());
-        if vize_l0::path::is_git_metadata_path(path) {
+        if vize_carton::path::is_git_metadata_path(path) {
             continue;
         }
         if path.is_file() {
@@ -60,12 +60,13 @@ fn collect_walked_vue_files(
     files: &mut BTreeSet<PathBuf>,
     max_files: Option<usize>,
 ) -> bool {
-    if vize_l0::path::is_git_metadata_path(&vize_l0::path::canonicalize_non_verbatim(root)) {
+    if vize_carton::path::is_git_metadata_path(&vize_carton::path::canonicalize_non_verbatim(root))
+    {
         return false;
     }
     for entry in WalkBuilder::new(root)
         .require_git(false)
-        .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
+        .filter_entry(|entry| !vize_carton::path::is_git_metadata_path(entry.path()))
         .build()
         .flatten()
     {
@@ -102,7 +103,7 @@ fn contains_glob_meta(value: &str) -> bool {
 }
 
 fn is_vue_file(path: &Path) -> bool {
-    !vize_l0::path::is_git_metadata_path(path)
+    !vize_carton::path::is_git_metadata_path(path)
         && path.extension().is_some_and(|extension| extension == "vue")
 }
 
@@ -122,7 +123,8 @@ fn collect_glob_files(
     if root.as_os_str().is_empty() {
         root.push(".");
     }
-    if vize_l0::path::is_git_metadata_path(&vize_l0::path::canonicalize_non_verbatim(&root)) {
+    if vize_carton::path::is_git_metadata_path(&vize_carton::path::canonicalize_non_verbatim(&root))
+    {
         return Ok(false);
     }
     let options = glob::MatchOptions {
@@ -136,7 +138,7 @@ fn collect_glob_files(
         .git_global(false)
         .git_exclude(false)
         .parents(false)
-        .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
+        .filter_entry(|entry| !vize_carton::path::is_git_metadata_path(entry.path()))
         .build()
         .flatten()
     {

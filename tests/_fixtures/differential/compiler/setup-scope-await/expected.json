@@ -1,0 +1,162 @@
+[
+  {
+    "name": "reported",
+    "wraps": 1,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>instance after await: true</p>",
+      "true": "<p>instance after await: true</p>",
+      "false": "<p>instance after await: true</p>"
+    }
+  },
+  {
+    "name": "if-else",
+    "wraps": 2,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|yes:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|yes:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|no:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "unbraced-if",
+    "wraps": 2,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|branch:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|branch:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|branch:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "try-success",
+    "wraps": 2,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|loaded:true:provided|finally:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|loaded:true:provided|finally:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|loaded:true:provided|finally:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "try-catch-finally",
+    "wraps": 3,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|boom:true:provided|caught:true:provided|finally:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|boom:true:provided|caught:true:provided|finally:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|boom:true:provided|caught:true:provided|finally:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "bare-block",
+    "wraps": 1,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|block:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|block:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|block:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "for-loop",
+    "wraps": 1,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|loop0:true:provided|loop1:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|loop0:true:provided|loop1:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|loop0:true:provided|loop1:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "while-do-loop",
+    "wraps": 2,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|while1:true:provided|while2:true:provided|do:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|while1:true:provided|while2:true:provided|do:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|while1:true:provided|while2:true:provided|do:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "for-of-switch",
+    "wraps": 2,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|one:true:provided|two:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|one:true:provided|two:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|one:true:provided|two:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "control-head",
+    "wraps": 1,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|condition:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|condition:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|condition:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "value-contexts",
+    "wraps": 2,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|sum3:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|sum3:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|sum3:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "nested-await",
+    "wraps": 2,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|nested:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|nested:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|nested:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "nested-functions",
+    "wraps": 1,
+    "nestedAwaits": 4,
+    "html": {
+      "default": "<p>start:true:provided|outer:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|outer:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|outer:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "nested-only",
+    "wraps": 0,
+    "nestedAwaits": 3,
+    "html": {
+      "default": "<p>start:true:provided|ordinary:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|ordinary:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|ordinary:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "bare-block-crlf",
+    "wraps": 1,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|block:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|block:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|block:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  },
+  {
+    "name": "object-expression",
+    "wraps": 2,
+    "nestedAwaits": 0,
+    "html": {
+      "default": "<p>start:true:provided|object:true:provided|kept:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "true": "<p>start:true:provided|object:true:provided|kept:true:provided|end:true:provided|prefetch:true:provided</p>",
+      "false": "<p>start:true:provided|object:true:provided|kept:true:provided|end:true:provided|prefetch:true:provided</p>"
+    }
+  }
+]

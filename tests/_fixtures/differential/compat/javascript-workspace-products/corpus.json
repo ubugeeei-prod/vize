@@ -1,0 +1,201 @@
+{
+  "schema": "vize.compat.javascript-workspace-products",
+  "version": 1,
+  "provenance": "authored project; no external report specifies these project bytes",
+  "cohorts": [
+    {
+      "id": "vite",
+      "path": "tools/support/compat/nuxt/fixtures/vite-relative-glob",
+      "vite": "8.2.2",
+      "vue": "3.5.43",
+      "inputs": {
+        "package.json": {
+          "bytes": 207,
+          "sha256": "0606b30c1c8b6ba6f12630a049d2474f7265aa1a7bf090989c37bbe5d2626288"
+        },
+        "package-lock.json": {
+          "bytes": 73391,
+          "sha256": "58afc51c2d16e939f7511bd6fa5165b77cd4dd1c43db887494287736d4d0e9cd"
+        }
+      }
+    },
+    {
+      "id": "nuxt3",
+      "path": "tools/support/compat/nuxt/fixtures/nuxt3-module-build",
+      "nuxt": "3.19.3",
+      "vue": "3.5.43",
+      "inputs": {
+        "package.json": {
+          "bytes": 293,
+          "sha256": "23643b9a052e5bdceaeb1b45570cf69171b01a0db14cb719ef82abc48d645a35"
+        },
+        "package-lock.json": {
+          "bytes": 544807,
+          "sha256": "1a9f41b0dca1237fa994879b7dcd5a809b87fe65cc79cd70a918d1d0503b3a39"
+        }
+      }
+    },
+    {
+      "id": "nuxt4",
+      "path": "tests/_fixtures/_projects/nuxt-critical-css-build",
+      "nuxt": "4.5.2",
+      "vue": "3.5.43",
+      "inputs": {
+        "package.json": {
+          "bytes": 287,
+          "sha256": "be6cc44262073523fbd9f264ec2711b7a4da1c5494873721260eede30574210b"
+        },
+        "package-lock.json": {
+          "bytes": 464892,
+          "sha256": "1b8dd3ebddbd3f8b8fce43a3c248414bce3930e0f5f30ae561f577376d15bc00"
+        }
+      }
+    }
+  ],
+  "files": {
+    "package.json.txt": {
+      "bytes": 144,
+      "sha256": "99c2b271c05a02ce6e79031dffd558a14cf93b1b7b5edc721163f9e765d450b3"
+    },
+    "pnpm-workspace.yaml.txt": {
+      "bytes": 36,
+      "sha256": "253208fa7c1b64372c219b9e19cef15ed70ca93b66a4d5c4c4d2297a5aff8880"
+    },
+    "root-tsconfig.json.txt": {
+      "bytes": 122,
+      "sha256": "aeecd0fb16637dc656c9265b1f9ac3411c768c8b6651d24119635097a48f6e9e"
+    },
+    "vite-package.json.txt": {
+      "bytes": 197,
+      "sha256": "bb6f01b955415c4f8518bf0785e6b82a2358b1b72f7401e48087033468a0c37f"
+    },
+    "vite-tsconfig.json.txt": {
+      "bytes": 408,
+      "sha256": "0aa114bf40be7279971785b46408cfabe575b4dcd7140bc36c7204527431f122"
+    },
+    "vite.config.mjs.txt": {
+      "bytes": 210,
+      "sha256": "50ee90d3d6b49b2f4745cdc70b30ab87f4814043dee3a5d3da9b181e8d37746a"
+    },
+    "index.html.txt": {
+      "bytes": 161,
+      "sha256": "33481b5af4d27c4f00a5010e398c86a9d6a2b79f019aa1f99156700a5cd17f1d"
+    },
+    "vite-main.js.txt": {
+      "bytes": 93,
+      "sha256": "1297cf214fa1b84a364b43b5f05c9c364beb4c5385b7c8aa05c48a9bf41323ce"
+    },
+    "vite-ssr.mjs.txt": {
+      "bytes": 37,
+      "sha256": "7b55d96a9e92bc82de9a2758be98321def5eb59c35098e5da4582ff2e473f679"
+    },
+    "ViteApp.vue.txt": {
+      "bytes": 648,
+      "sha256": "cc70dd2b840ccff5f76c843ac4b96257c78ac7d1c0f121e71caeb115c560ec83"
+    },
+    "nuxt-package.json.txt": {
+      "bytes": 197,
+      "sha256": "90422c4a8c1482ccc4230f94508077b303fcd013ce74e3456d4fe338a902d4c5"
+    },
+    "nuxt-tsconfig.json.txt": {
+      "bytes": 41,
+      "sha256": "56f5b528cc102a257b71c01305f8b1456762d85793bd610bf613f2d7c3e1fc84"
+    },
+    "nuxt-reference-tsconfig.json.txt": {
+      "bytes": 267,
+      "sha256": "858a48de1ff04a1c2948fb90a39ac1a6b9869fd8b97e3fd0dbde89454179e0c0"
+    },
+    "nuxt.config.js.txt": {
+      "bytes": 510,
+      "sha256": "0101978f4e320309574e084058f96b53cce5142075030ee10a642f6422c1ec78"
+    },
+    "NuxtApp.vue.txt": {
+      "bytes": 38,
+      "sha256": "0f726f6a452814de5029d73f9df4803400a737cb2dfa2364455edda42012b5c6"
+    },
+    "NuxtIndex.vue.txt": {
+      "bytes": 547,
+      "sha256": "ee866245e1ed2ee45d16481a068b41bc2c4363295602c753377e7462121d779b"
+    },
+    "useWorkspaceLabel.js.txt": {
+      "bytes": 150,
+      "sha256": "1aed012cf39c7bc85ad084e7539e21d753aa5cd48e752fe6a566d294e1a226ff"
+    },
+    "pricing-package.json.txt": {
+      "bytes": 154,
+      "sha256": "33802dd27f70b1b971af5e778008ced1275217b94b0f9311399d0bbe371ea2cb"
+    },
+    "pricing-index.js.txt": {
+      "bytes": 193,
+      "sha256": "4382e563cc8aa113f9fc2d74294890a48dcd679682da3ce070b5ca9cae4dc469"
+    },
+    "pricing-label.mjs.txt": {
+      "bytes": 143,
+      "sha256": "f69b07aa5a85f573ffd4b1c64188b8c79c0d4997fdb2531e5548ae8ffee626a6"
+    },
+    "ui-package.json.txt": {
+      "bytes": 220,
+      "sha256": "ecb3a750e058722b23eeec8a89cb77ae0651195d151d71c318c5d1cf6ef49a10"
+    },
+    "BadgeCard.vue.txt": {
+      "bytes": 189,
+      "sha256": "59bb8ae6f913d6af826c769a849899a94cc31185657e78300de804d98a14b03f"
+    },
+    "links.json": {
+      "bytes": 484,
+      "sha256": "03efa1e1db2b9fc7a69712939bfadafd0dc8d654d9f9a18b2b420159b8734dfc"
+    },
+    "lint-options.js.txt": {
+      "bytes": 85,
+      "sha256": "e01cc23d43397b9eec4482370dc3d09104f618b01b217594a9291223865a9782"
+    },
+    "ui-package-typed.json.txt": {
+      "bytes": 289,
+      "sha256": "6b2afba6266ffe3904b6f6d22bec9942bc516be19fbeae54135ae39e271b9b9d"
+    },
+    "workspace-declarations-tsconfig.json.txt": {
+      "bytes": 454,
+      "sha256": "7571362b3620773b164c92d779958678c7c635e0cf7a098f2fb347cc9fcf29cf"
+    },
+    "public-input-contract.json": {
+      "bytes": 4794,
+      "sha256": "4215693d70ae44d822bbc2905a12a5ad6cb76f5b96f6824c10b82e7400ac3959"
+    },
+    "nuxt3-typed.config.js.txt": {
+      "bytes": 575,
+      "sha256": "9cc29b016283da93b44d02a82411aa6f48d2eafa0aa026879f0ffc04ac651262"
+    },
+    "nuxt3-package-typed.json.txt": {
+      "bytes": 253,
+      "sha256": "1f4ec4658c9a89329d43fa1aecdade6eabfb951e8ab8c69434ee50617555142b"
+    },
+    "native-editor-authority.json": {
+      "bytes": 2330,
+      "sha256": "1e8b46880dfb72133152a8f4e93dd68ff31ca1513260642284744320ca506fd0"
+    },
+    "nuxt3-owned-schema.config.js.txt": {
+      "bytes": 864,
+      "sha256": "15f68404b5bb59d49e66def8282bca01d1a4c55ab1625b74d0e825eaf811635c"
+    }
+  },
+  "scope": {
+    "ownScripts": "JavaScript only; Nuxt generated provider declarations may be TypeScript",
+    "runtime": "actual installed pinned Nuxt/Vite/Vue cohorts and current source compiler/CLI",
+    "performance": "observations only; no speedup or native Program reuse claim"
+  },
+  "expected": {
+    "Vite": {
+      "initial": "<main data-test=\"workspace\"><h1>JavaScript workspace</h1><output>$12.00</output><aside data-test=\"shared\">Shared: workspace exports</aside><p>Vite: workspace exports</p><button type=\"button\" data-test=\"counter\">Count: 2</button></main>",
+      "clicked": "<main data-test=\"workspace\"><h1>JavaScript workspace</h1><output>$18.00</output><aside data-test=\"shared\">Shared: workspace exports</aside><p>Vite: workspace exports</p><button type=\"button\" data-test=\"counter\">Count: 3</button></main>"
+    },
+    "Nuxt": {
+      "initial": "<main data-test=\"workspace\"><h1>JavaScript workspace</h1><output>$12.00</output><aside data-test=\"shared\">Shared: workspace exports</aside><p>Nuxt: workspace exports</p><button type=\"button\" data-test=\"counter\">Count: 2</button></main>",
+      "clicked": "<main data-test=\"workspace\"><h1>JavaScript workspace</h1><output>$18.00</output><aside data-test=\"shared\">Shared: workspace exports</aside><p>Nuxt: workspace exports</p><button type=\"button\" data-test=\"counter\">Count: 3</button></main>"
+    }
+  },
+  "nodeTypes": {
+    "authority": "actual independently locked driver package graph staged into the owned Nuxt3 consumer; original cohort locks remain unchanged",
+    "node": "25.9.2",
+    "undici": "7.24.6"
+  }
+}

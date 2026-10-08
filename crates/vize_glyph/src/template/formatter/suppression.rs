@@ -17,7 +17,7 @@
 use std::cmp::Ordering;
 
 use super::TemplateFormatter;
-use crate::template::helpers::is_whitespace;
+use crate::template::helpers::{is_tag_name_char, is_whitespace};
 
 /// Pragmas whose suppression covers the line *after* the comment.
 const NEXT_LINE_PRAGMAS: [&[u8]; 4] = [
@@ -60,6 +60,8 @@ pub(super) struct LineJoiner<'s> {
     /// remain adjacent; inserting formatter layout whitespace would create a
     /// runtime Vue text node.
     previous_end: Option<usize>,
+    /// Last ordinary opening tag, borrowed from the existing tag parser.
+    opening: Option<(usize, usize)>,
 }
 
 impl<'s> LineJoiner<'s> {
@@ -69,6 +71,7 @@ impl<'s> LineJoiner<'s> {
             locked: locked_line_ranges(source),
             current: None,
             previous_end: None,
+            opening: None,
         }
     }
 
@@ -116,6 +119,46 @@ impl<'s> LineJoiner<'s> {
                     .copied()
                     .is_some_and(is_whitespace),
         )
+    }
+
+    pub(super) fn opened_element(&mut self, start: usize, end: usize) {
+        self.opening = Some((start, end));
+    }
+
+    pub(super) fn locks_current_line(&self) -> bool {
+        self.current.is_some()
+    }
+
+    /// A sole interpolation touching both parent tags shares their layout depth.
+    pub(super) fn interpolation_depth(&self, start: usize, end: usize, depth: usize) -> usize {
+        let Some((tag_start, tag_end)) = self.opening else {
+            return depth;
+        };
+        if tag_end != start || self.previous_end != Some(start) {
+            return depth;
+        }
+        let opening = self.source.get(tag_start + 1..tag_end).unwrap_or_default();
+        let name_len = opening
+            .iter()
+            .copied()
+            .take_while(|&b| is_tag_name_char(b))
+            .count();
+        let name = opening.get(..name_len).unwrap_or_default();
+        let closing = self.source.get(end..).unwrap_or_default();
+        if closing.starts_with(b"</")
+            && closing.get(2..2 + name_len) == Some(name)
+            && closing
+                .get(2 + name_len..)
+                .unwrap_or_default()
+                .iter()
+                .copied()
+                .find(|&b| !is_whitespace(b))
+                == Some(b'>')
+        {
+            depth.saturating_sub(1)
+        } else {
+            depth
+        }
     }
 
     /// Record the source end of the chunk just emitted.

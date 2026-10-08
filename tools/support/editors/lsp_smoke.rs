@@ -379,7 +379,7 @@ fn expected_diagnostics() -> Value {
 }
 
 fn expected_completion() -> Value {
-    json!([
+    let mut items = json!([
         {
             "detail": " (const)",
             "documentation": {
@@ -402,7 +402,18 @@ fn expected_completion() -> Value {
             "labelDetails": { "detail": " (literal)" },
             "sortText": "0total"
         }
-    ])
+    ]);
+    // #8015: the shared Zed/Helix caret requests expression identifiers. Keep
+    // both complete original objects, followed by the frozen whole global bank.
+    let globals: Vec<Value> = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lsp/template-expression-globals-8015/globals.expected.json"
+    ))
+    .expect("authored complete Vue/JavaScript global fixture");
+    items
+        .as_array_mut()
+        .expect("authored completion array")
+        .extend(globals);
+    items
 }
 
 fn expected_hover() -> Value {
@@ -417,7 +428,6 @@ fn expected_hover() -> Value {
         }
     })
 }
-
 fn expected_code_actions(uri: &str) -> Value {
     let mut changes = Map::new();
     changes.insert(
@@ -448,6 +458,7 @@ fn expected_code_actions(uri: &str) -> Value {
             },
             "isPreferred": true,
             "kind": "quickfix",
+            "diagnostics": [expected_diagnostics()[0].clone()],
             "title": "Fix: Replace multiple spaces with single space"
         },
         {
@@ -456,11 +467,11 @@ fn expected_code_actions(uri: &str) -> Value {
             },
             "isPreferred": false,
             "kind": "quickfix",
+            "diagnostics": [expected_diagnostics()[0].clone()],
             "title": "Suppress with @vize:forget (vue/no-multi-spaces)"
         }
     ])
 }
-
 fn expected_formatting() -> Value {
     json!([
         {

@@ -8,7 +8,6 @@ use crate::{
     RuntimeHelper, SimpleExpressionNode, SourceLocation, TemplateChildNode,
 };
 
-use super::structural_keys::extract_key_value_str;
 use super::traverse::traverse_children;
 use super::{ExitFns, ParentNode, TransformContext};
 
@@ -224,9 +223,10 @@ pub(crate) fn transform_v_if_with_directive<'a>(
         // Create condition expression and process it for identifier prefixing
         let condition = exp.map(|e| condition_expression(ctx, e));
 
-        let (taken_node, user_key) = branch_key::take_user_key(ctx, taken_node);
+        let (taken_node, mut user_key) = branch_key::take_user_key(taken_node);
 
-        // Create branch with the taken element
+        branch_key::process_user_key(ctx, &taken_node, &mut user_key);
+
         let mut branch_children = Vec::new_in(&allocator);
         branch_children.push(taken_node);
 
@@ -290,40 +290,18 @@ pub(crate) fn transform_v_if_with_directive<'a>(
             // Create condition for else-if, None for else
             let condition = exp.map(|e| condition_expression(ctx, e));
 
-            let (taken_node, user_key) = branch_key::take_user_key(ctx, taken_node);
+            let (taken_node, mut user_key) = branch_key::take_user_key(taken_node);
 
-            // Check for key collision with existing branches (vuejs/core #13881)
-            let has_key_collision = if let Some(ref new_key) = user_key {
-                let quirks = ctx.template_syntax_quirks();
-                let src = ctx.source;
-                let new_key_str = extract_key_value_str(new_key, quirks, src);
-                if let Some(children) = ctx.parent.as_ref().and_then(|parent| parent.children_mut())
-                {
-                    if let Some(TemplateChildNode::If(if_node)) = children.get(if_idx) {
-                        if_node.branches.iter().any(|existing_branch| {
-                            if let Some(ref existing_key) = existing_branch.user_key {
-                                let existing_key_str =
-                                    extract_key_value_str(existing_key, quirks, src);
-                                matches!((&new_key_str, &existing_key_str), (Some(nk), Some(ek)) if nk == ek)
-                            } else {
-                                false
-                            }
-                        })
-                    } else {
-                        false
-                    }
-                } else {
-                    false
-                }
-            } else {
-                false
-            };
-
-            if has_key_collision {
-                ctx.on_error(ErrorCode::VIfSameKey, None);
+            // The new branch is raw until all earlier processed keys were compared.
+            if let Some(new_key) = &user_key
+                && let Some(children) = ctx.parent.as_ref().and_then(|parent| parent.children_mut())
+                && let Some(TemplateChildNode::If(if_node)) = children.get(if_idx)
+            {
+                let count = branch_key::collision_count(ctx, if_node, new_key);
+                branch_key::report_collisions(ctx, new_key, count);
             }
+            branch_key::process_user_key(ctx, &taken_node, &mut user_key);
 
-            // Create new branch
             let mut branch_children = Vec::new_in(&allocator);
             branch_children.push(taken_node);
 
@@ -356,9 +334,9 @@ pub(crate) fn transform_v_if_with_directive<'a>(
             ctx.parent = saved_parent;
             ctx.grandparent = saved_grandparent;
             ctx.child_index = saved_child_index;
-
-            // Remove the placeholder we left
+            // Defer removing the placeholder and skipped branch whitespace.
             ctx.remove_node();
+            ctx.node_removed_from = Some(if_idx + 1);
         } else {
             ctx.on_error(ErrorCode::VElseNoAdjacentIf, None);
         }

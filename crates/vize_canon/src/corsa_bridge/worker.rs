@@ -1,8 +1,8 @@
 //! Deadline-bounded worker thread for synchronous, un-cancellable state.
 //!
 //! Every Corsa bridge call is synchronous underneath: `corsa`'s project
-//! session drives its IPC through [`corsa::runtime::block_on`], so a bridge
-//! future never yields. Wrapping such a future in an async `timeout`
+//! session drives its IPC through [`corsa::runtime::block_on`]. Before async
+//! worker replies, a bridge future never yielded. An async `timeout`
 //! combinator cannot bound it — the guarded future owns the executor thread
 //! and the timer half never gets polled again, which is why the diagnostics
 //! pass appeared to promise 10s while `CorsaBridgeConfig::timeout_ms` was read
@@ -20,13 +20,14 @@
 //! reports [`WorkerError::TimedOut`], while the worker keeps draining the
 //! abandoned job so the backend transport is never left half-read. Callers
 //! that arrive while an abandoned job is still draining fail fast instead of
-//! queueing behind it, so a wedged backend costs one deadline in total rather
-//! than one deadline per request.
+//! queueing behind it for synchronous compatibility, startup and shutdown.
+//! Semantic async calls enqueue their actual operation on the same FIFO lane;
+//! the drain consumes that call's original deadline without blocking dispatch.
 //!
-//! The wait is deliberately blocking rather than an `.await`. Making bridge
-//! calls genuinely yield would activate the latent `IdeContext` shard-guard
-//! deadlock recorded in #3377; bounding without yielding keeps that hazard
-//! unreachable.
+//! Synchronous callers retain their blocking wait. Async callers wait on a
+//! worker-owned reply and a shared deadline wakeup, so the LSP can dispatch
+//! cancellation and lifecycle messages while the backend is busy (#8012).
+//! Maestro's IDE contexts own snapshots rather than shard guards (#3377).
 #![expect(clippy::disallowed_types, reason = "shared across threads")]
 
 use std::sync::Arc;
@@ -35,12 +36,16 @@ use std::sync::mpsc::{self, RecvTimeoutError};
 use std::thread;
 use std::time::Duration;
 
+mod async_reply;
+mod deadline;
+pub(crate) mod retirement;
+
 /// A unit of work executed on the worker thread against the owned state.
 type Job<T> = Box<dyn FnOnce(&mut T) + Send>;
 
 /// Why a [`BoundedWorker::submit`] call did not produce a value.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub(super) enum WorkerError {
+pub(crate) enum WorkerError {
     /// The job outran its deadline, or an earlier abandoned job still owns the
     /// worker. Either way the backend did not answer within the bound.
     TimedOut,
@@ -49,7 +54,7 @@ pub(super) enum WorkerError {
 }
 
 /// Owns `T` on a dedicated thread and runs jobs against it under a deadline.
-pub(super) struct BoundedWorker<T> {
+pub(crate) struct BoundedWorker<T> {
     /// `None` when the worker thread could not be started.
     jobs: Option<mpsc::Sender<Job<T>>>,
     /// Jobs whose caller already gave up and which the worker is still
@@ -58,6 +63,9 @@ pub(super) struct BoundedWorker<T> {
 }
 
 impl<T: Send + 'static> BoundedWorker<T> {
+    pub(crate) fn is_draining(&self) -> bool {
+        self.abandoned.load(Ordering::Acquire) > 0
+    }
     /// Move `state` onto a worker thread named `name`.
     ///
     /// A failed thread spawn is not fatal: every later `submit` reports
@@ -68,7 +76,7 @@ impl<T: Send + 'static> BoundedWorker<T> {
     /// abandoned job therefore outlives its owner until that job returns —
     /// the price of never tearing down a transport mid-request.
     #[cfg(test)]
-    pub(super) fn new(name: &str, state: T) -> Self {
+    pub(crate) fn new(name: &str, state: T) -> Self {
         Self::new_with_keepalive(name, state, ())
     }
 

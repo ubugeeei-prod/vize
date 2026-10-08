@@ -1,0 +1,11 @@
+{
+  "runId": 37612234749,
+  "jobId": 112762141010,
+  "sha": "538370a5db8f4443538145c8ae891e5e84008328",
+  "purpose": "Historical raw parser controls only; never current-source or merge acceptance",
+  "logs": {
+    "dom": "3be1c6b81c47b947aca81b66ebe1ae1f3f18abb3b3150343e16b78f5dba2e6c6",
+    "ssr-pug": "2d085b41014f7fad33d20d1675e6fa771443de9ca65e099cd6d8f86bf7109dc2",
+    "reach": "5b4290dfac4402b3da528522d4fded179ae38bf877eb4c530ea3a558a61f2eb7"
+  }
+}

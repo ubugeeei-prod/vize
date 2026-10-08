@@ -10,22 +10,29 @@ pub(super) fn write(bytes: &[u8]) {
     }
 }
 
-pub(super) fn write_text_summary(
+pub(super) fn write_summary(
+    format: super::OutputFormat,
     total_errors: usize,
     total_warnings: usize,
     file_count: usize,
     elapsed: Duration,
     cross_file_tree: Option<&str>,
 ) {
-    write(
-        cstr!(
-            "\n{}\n",
-            format_summary(total_errors, total_warnings, file_count)
-        )
-        .as_bytes(),
-    );
-    write(cstr!("Linted {} files in {:.4?}\n", file_count, elapsed).as_bytes());
-    if let Some(tree) = cross_file_tree {
+    if format == super::OutputFormat::Text {
+        write(
+            cstr!(
+                "\n{}\n",
+                format_summary(total_errors, total_warnings, file_count)
+            )
+            .as_bytes(),
+        );
+        write(cstr!("Linted {} files in {:.4?}\n", file_count, elapsed).as_bytes());
+    }
+    if matches!(
+        format,
+        super::OutputFormat::Text | super::OutputFormat::Plain
+    ) && let Some(tree) = cross_file_tree
+    {
         write(cstr!("\n{tree}\n").as_bytes());
     }
 }

@@ -1,6 +1,7 @@
 import "./hmr.test.ts";
 import "./native-request-gates.test.ts";
 import "./compiler.test.ts";
+import "./compiler-page-meta.test.ts";
 import "./compiler-jsx.test.ts";
 import "./compiler-src-imports.test.ts";
 import "./compiler-custom-elements.test.ts";

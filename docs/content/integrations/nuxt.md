@@ -305,6 +305,8 @@ This configuration uses Musea for component development and documentation while 
 
 ## Notes
 
+- Lint auto-init preserves existing Oxlint and Vite configurations in the project or an ancestor. The Nuxt lint artifact is still generated; compose it explicitly in your existing Vite+ lint setup.
+- Nuxt lint generation writes `.oxlint.vize.json` in the project root. Add it to `.gitignore`. Custom `lint.configFile` locations must contain `lint.rootDir`; a nested `.nuxt/` config cannot apply Oxlint's project ignores. Set `lint.autoInit: false` for a custom config outside the Nuxt root. Exact previous generated loaders migrate automatically; authored configs remain unchanged.
 - Vize is under active development — test thoroughly before using in production Nuxt projects
 - SSR compilation is supported via `vize_atelier_ssr`
 - Nuxt-specific features (auto-imports, composables, middleware) work through Nuxt's own transform layer

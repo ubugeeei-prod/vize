@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const fixtures = import.meta.glob<{ default: object }>("../../../fixtures/*.vue");
+const names = Object.keys(fixtures);
+</script>
+
+<template>
+  <p>{{ names.join(",") || "(none)" }}</p>
+</template>

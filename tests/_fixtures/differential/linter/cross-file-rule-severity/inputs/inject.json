@@ -1,0 +1,10 @@
+[
+  {
+    "path": "src/Consumer.vue",
+    "source": "inputs/inject/src/Consumer.vue.txt"
+  },
+  {
+    "path": "src/main.ts",
+    "source": "inputs/inject/src/main.ts.txt"
+  }
+]

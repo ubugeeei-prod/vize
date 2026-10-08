@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const label = routeCount.missing;
+console.log(label);
+</script>
+<template>{{ label }}</template>

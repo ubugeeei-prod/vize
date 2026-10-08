@@ -120,35 +120,56 @@ fn cli_and_editor_assemble_identical_diagnostics_for_one_sfc() {
     let uri = Url::from_file_path(&app).expect("file uri");
     let state = state_for_fixture(&root, &uri, APP);
     state.load_workspace_config(&root);
-    let mut editor: Vec<Row> =
+    let fixture_configuration = serde_json::json!({
+        "tsconfig":std::fs::read_to_string(root.join("tsconfig.json")).expect("original tsconfig"),
+        "vize_config":std::fs::read_to_string(root.join("vize.config.json")).expect("original config"),
+        "vue_package":std::fs::read_to_string(root.join("node_modules/vue/package.json")).expect("fixture Vue package")
+    });
+    let _custody = super::assembly_parity_custody::observe(&state, &uri);
+    let captured_stamp = state.corsa_request_stamp();
+    let subscriber = tracing_subscriber::fmt()
+        .with_test_writer()
+        .with_max_level(tracing::Level::INFO)
+        .finish();
+    let started = std::time::Instant::now();
+    let full_editor = tracing::subscriber::with_default(subscriber, || {
         crate::runtime::block_on(DiagnosticService::collect_async(&state, &uri))
-            .into_iter()
-            .filter(|diagnostic| diagnostic.source.as_deref() == Some(sources::TYPE_CHECKER))
-            .map(|diagnostic| {
-                let code = match diagnostic.code.expect("checker code") {
-                    NumberOrString::Number(code) => code as u32,
-                    NumberOrString::String(code) => code.trim_start_matches("TS").parse().unwrap(),
-                };
-                let severity = match diagnostic.severity.expect("severity") {
-                    DiagnosticSeverity::ERROR => 1,
-                    DiagnosticSeverity::WARNING => 2,
-                    DiagnosticSeverity::INFORMATION => 3,
-                    _ => 4,
-                };
-                (
-                    diagnostic.range.start.line,
-                    diagnostic.range.start.character,
-                    code,
-                    severity,
-                    diagnostic.message.as_str().into(),
-                )
-            })
-            .collect();
+    });
+    let elapsed = started.elapsed();
+    let mut editor: Vec<Row> = full_editor
+        .clone()
+        .into_iter()
+        .filter(|diagnostic| diagnostic.source.as_deref() == Some(sources::TYPE_CHECKER))
+        .map(|diagnostic| {
+            let code = match diagnostic.code.expect("checker code") {
+                NumberOrString::Number(code) => code as u32,
+                NumberOrString::String(code) => code.trim_start_matches("TS").parse().unwrap(),
+            };
+            let severity = match diagnostic.severity.expect("severity") {
+                DiagnosticSeverity::ERROR => 1,
+                DiagnosticSeverity::WARNING => 2,
+                DiagnosticSeverity::INFORMATION => 3,
+                _ => 4,
+            };
+            (
+                diagnostic.range.start.line,
+                diagnostic.range.start.character,
+                code,
+                severity,
+                diagnostic.message.as_str().into(),
+            )
+        })
+        .collect();
     editor.sort();
+    let custody = super::assembly_parity_custody::take();
 
     assert_eq!(cli, expected(), "vize check");
     assert_eq!(
-        editor, cli,
-        "the editor must assemble what vize check assembles"
+        editor,
+        cli,
+        "the editor must assemble what vize check assembles; full={full_editor:#?}; custody={custody:#?}; config={fixture_configuration:#?}; elapsed={elapsed:?}; captured_stamp={captured_stamp:?}; current_stamp={:?}; bridge={}; init_failure={:?}",
+        state.corsa_request_stamp(),
+        state.has_corsa_bridge(),
+        state.corsa_init_failure(),
     );
 }

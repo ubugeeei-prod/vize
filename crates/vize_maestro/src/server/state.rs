@@ -20,14 +20,21 @@ mod workspace_folders;
 
 #[cfg(feature = "native")]
 mod batch_cache;
+mod binding_occurrences;
 #[cfg(feature = "native")]
 mod corsa;
 #[cfg(feature = "native")]
 mod corsa_overlays;
 #[cfg(feature = "native")]
+mod corsa_requests;
+#[cfg(feature = "native")]
+mod diagnostic_locks;
+#[cfg(feature = "native")]
 mod global_components;
 #[cfg(feature = "native")]
 mod global_tag_names;
+#[cfg(feature = "native")]
+mod workspace_project_files;
 #[cfg(feature = "native")]
 mod workspace_vue_files;
 
@@ -59,6 +66,8 @@ use vize_canon::{BatchTypeChecker, CorsaBridge};
 use crate::document::DocumentStore;
 use crate::virtual_code::{VirtualCodeGenerator, VirtualDocuments};
 
+#[cfg(feature = "native")]
+pub(crate) use corsa_requests::CorsaRequestStamp;
 pub use features::LspFeatureConfig;
 #[cfg(feature = "experimental-source-navigation")]
 pub(crate) use module_links::physical::{ModuleTargetGateError, ModuleTargetStamp};
@@ -97,6 +106,7 @@ pub struct ServerState {
     /// shard guard there deadlocks the whole server against the next
     /// `didOpen`/`didChange` write (#3377, same class as #3315/#3373).
     virtual_docs_cache: DashMap<Url, Arc<VirtualDocuments>>,
+    binding_occurrences: DashMap<Url, Arc<binding_occurrences::CachedOccurrences>>,
     /// Published lint diagnostics for the current document revision. Hover
     /// reads this instead of running the linter on every pointer movement.
     lint_hover_cache: DashMap<Url, (i32, Arc<Vec<Diagnostic>>)>,
@@ -112,12 +122,13 @@ pub struct ServerState {
     component_metadata_cache:
         DashMap<PathBuf, crate::ide::completion::template::CachedComponentMetadata>,
     /// Closed `.vue` files announced through workspace file-operation events.
-    ///
     /// These stay separate from [`Self::documents`]: document features must
     /// only serve editor-open buffers, while workspace symbol search also
     /// needs to follow files created and deleted on disk mid-session.
     #[cfg(feature = "native")]
     workspace_vue_files: DashMap<Url, ()>,
+    #[cfg(feature = "native")]
+    workspace_project_files: workspace_project_files::Inventory,
     /// Enabled LSP feature surface.
     lsp_features: RwLock<LspFeatureConfig>,
     /// Fast path for checking whether type-aware features are enabled.
@@ -138,7 +149,7 @@ pub struct ServerState {
     type_checker_jsx_typecheck: RwLock<bool>,
     experimental_patterned_template: AtomicBool,
     /// Linter options shared by LSP diagnostics.
-    linter_config: RwLock<LinterConfig>,
+    linter_config: RwLock<(LinterConfig, vize_l0::config::LinterFeatureFlags)>,
     /// Typed per-rule lint options (`linter.ruleOptions`) for configurable
     /// script rules; loaded alongside `linter_config` (#1891).
     linter_rule_options: RwLock<vize_l0::config::ConfigLintRuleOptions>,
@@ -160,11 +171,19 @@ pub struct ServerState {
     /// Serializes Corsa bridge initialization without tying us to a runtime.
     #[cfg(feature = "native")]
     corsa_init_lock: AsyncMutex<()>,
+    /// Hold one complete native open/query/map operation, never syntax-only RPCs.
+    #[cfg(feature = "native")]
+    corsa_request_lock: AsyncMutex<()>,
+    /// Source-independent project/config/backend changes fence pending replies.
+    #[cfg(feature = "native")]
+    corsa_environment_revision: std::sync::atomic::AtomicU64,
+    #[cfg(feature = "native")]
+    corsa_environment_changes: std::sync::atomic::AtomicUsize,
     /// Per-document diagnostic passes. Watcher refreshes and consecutive
     /// didChange notifications may be polled concurrently by tower-lsp, but
     /// they must not race the same Corsa virtual document.
     #[cfg(feature = "native")]
-    diagnostic_locks: DashMap<Url, Arc<AsyncMutex<()>>>,
+    diagnostic_locks: DashMap<Url, Arc<diagnostic_locks::DiagnosticDocument>>,
     /// Flag to track if Corsa initialization has been attempted and failed
     #[cfg(feature = "native")]
     corsa_init_failed: std::sync::atomic::AtomicBool,
@@ -208,6 +227,7 @@ impl ServerState {
             resident: resident::ResidentCache::default(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
+            binding_occurrences: DashMap::new(),
             lint_hover_cache: DashMap::new(),
             open_imports: super::importers::OpenImportIndex::with_package_routes(
                 package_route_resolver.clone(),
@@ -216,6 +236,8 @@ impl ServerState {
             component_metadata_cache: DashMap::new(),
             #[cfg(feature = "native")]
             workspace_vue_files: DashMap::new(),
+            #[cfg(feature = "native")]
+            workspace_project_files: workspace_project_files::Inventory::default(),
             lsp_features: RwLock::new(default_features),
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             type_checker_config: RwLock::new((TypeCheckerConfig::default(), 60_000)),
@@ -233,7 +255,7 @@ impl ServerState {
             native_linked_editing: AtomicBool::new(false),
             #[cfg(feature = "experimental-source-navigation")]
             native_names: RwLock::new(native_names::Generations::default()),
-            linter_config: RwLock::new(LinterConfig::default()),
+            linter_config: RwLock::default(),
             linter_rule_options: RwLock::new(vize_l0::config::ConfigLintRuleOptions::default()),
             dialect_config: RwLock::new(None),
             workspace_folder_configs: RwLock::new(Vec::new()),
@@ -243,6 +265,12 @@ impl ServerState {
             corsa_bridge: RwLock::new(None),
             #[cfg(feature = "native")]
             corsa_init_lock: AsyncMutex::new(()),
+            #[cfg(feature = "native")]
+            corsa_request_lock: AsyncMutex::new(()),
+            #[cfg(feature = "native")]
+            corsa_environment_revision: std::sync::atomic::AtomicU64::new(0),
+            #[cfg(feature = "native")]
+            corsa_environment_changes: std::sync::atomic::AtomicUsize::new(0),
             #[cfg(feature = "native")]
             diagnostic_locks: DashMap::new(),
             #[cfg(feature = "native")]
@@ -276,32 +304,13 @@ impl ServerState {
         }
     }
 
-    /// Owned per-document lock for a diagnostic pass. Clone the `Arc` before
-    /// awaiting so no DashMap guard survives across a suspension point.
-    #[cfg(feature = "native")]
-    pub(crate) fn diagnostic_lock(&self, uri: &Url) -> Arc<AsyncMutex<()>> {
-        self.diagnostic_locks
-            .entry(uri.clone())
-            .or_insert_with(|| Arc::new(AsyncMutex::new(())))
-            .clone()
-    }
-
-    #[cfg(feature = "native")]
-    fn remove_idle_diagnostic_lock(&self, uri: &Url) {
-        if let dashmap::mapref::entry::Entry::Occupied(entry) =
-            self.diagnostic_locks.entry(uri.clone())
-            && Arc::strong_count(entry.get()) == 1
-        {
-            entry.remove();
-        }
-    }
-
     /// Rename a document while dropping the overlay cached under its old URI.
     pub(crate) fn rename_document(&self, old_uri: &Url, new_uri: Url) -> bool {
         let renamed = self.resident.rename(&self.documents, old_uri, new_uri);
         #[cfg(feature = "native")]
         if renamed {
             self.corsa_overlays.remove(old_uri);
+            self.remove_idle_diagnostic_lock(old_uri);
         }
         renamed
     }
@@ -331,14 +340,6 @@ impl ServerState {
             Some(_) => VueDialect::Vue,
             None => vize_l0::dialect::standalone_html_dialect(None, content),
         }
-    }
-
-    /// Resolve Vue 3 Options API template bindings. Implied by legacy mode.
-    #[inline]
-    pub(crate) fn options_api_enabled(&self) -> bool {
-        *self.type_checker_options_api.read()
-            || self.lsp_features().options_api
-            || self.legacy_vue2_enabled()
     }
 
     /// Check whether LSP lint diagnostics are enabled.

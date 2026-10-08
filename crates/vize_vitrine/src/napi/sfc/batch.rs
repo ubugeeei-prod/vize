@@ -40,8 +40,13 @@ fn compile_sfc_batch_inner(
     use vize_atelier_sfc::{
         ScriptCompileOptions, SfcCompileOptions, SfcParseOptions, SfcScriptOutputMode,
         StyleCompileOptions, TemplateCompileOptions,
-        compile_sfc_for_adapter_with_experimental_options as sfc_compile_for_adapter,
-        parse_sfc as sfc_parse,
+        compile_sfc_for_adapter_with_experimental_options,
+        compile_sfc_for_adapter_with_nuxt_page_meta, parse_sfc as sfc_parse,
+    };
+    let sfc_compile_for_adapter = if opts.nuxt_page_meta.unwrap_or(false) {
+        compile_sfc_for_adapter_with_nuxt_page_meta
+    } else {
+        compile_sfc_for_adapter_with_experimental_options
     };
 
     let files: Vec<_> = glob(&pattern)
@@ -101,7 +106,7 @@ fn compile_sfc_batch_inner(
     );
     let read_inputs: Vec<_> = files
         .par_iter()
-        .map(|path| match vize_l0::source_io::read_to_string(path) {
+        .map(|path| match vize_carton::source_io::read_to_string(path) {
             Ok(source) => Ok((path.clone(), source)),
             Err(_) => Err(()),
         })

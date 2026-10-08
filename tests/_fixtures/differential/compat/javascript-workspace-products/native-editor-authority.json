@@ -1,0 +1,74 @@
+{
+  "schema": "vize.compat.javascript-workspace-editor-authority",
+  "version": 1,
+  "authority": "Source-authored complete Vite native suggestion vectors; independent error-only stock vue-tsc CLI remains a separate consumer. No stock native editor execution is claimed.",
+  "providerVersion": "7.0.2",
+  "primary": [
+    {
+      "pinnedCommit": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "path": "internal/checker/checker.go",
+      "gitBlob": "b639d488e444b348467e45cbf1980c16612361f2",
+      "bytes": 1417177,
+      "sha256": "32384dde486c33c59c5695505f4c951c3009c6d7e50589cb5b18d0ea92cbf161",
+      "url": "https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/checker/checker.go",
+      "relevantLineSpans": [
+        [
+          13949,
+          13956
+        ],
+        [
+          15238,
+          15243
+        ],
+        [
+          15300,
+          15308
+        ],
+        [
+          15403,
+          15424
+        ]
+      ]
+    },
+    {
+      "pinnedCommit": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "path": "internal/ls/diagnostics.go",
+      "gitBlob": "27c35e49c6dbdf87b981296b7f60f863b184baba",
+      "bytes": 2196,
+      "sha256": "47c64127323bf4575932ef14264cf52b59d234119268d1878794859a12443f2c",
+      "url": "https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/ls/diagnostics.go",
+      "relevantLineSpans": [
+        [
+          14,
+          22
+        ],
+        [
+          26,
+          49
+        ]
+      ]
+    },
+    {
+      "pinnedCommit": "2bd066d87f5bafd315be9f40889d0a60b9e58e0b",
+      "path": "internal/ls/lsconv/converters.go",
+      "gitBlob": "0ff39bea16a5042ece28cf4b85cecafcb96308da",
+      "bytes": 11562,
+      "sha256": "54d5881b5596cf99074e168ed54aacbb582c62e3cc4294c5f1a3ed1d989fd3ac",
+      "url": "https://github.com/microsoft/typescript-go/blob/2bd066d87f5bafd315be9f40889d0a60b9e58e0b/internal/ls/lsconv/converters.go",
+      "relevantLineSpans": [
+        [
+          269,
+          281
+        ]
+      ]
+    }
+  ],
+  "diagnostics": {
+    "7016": {
+      "nativeCategory": "Suggestion",
+      "lspSeverity": 4,
+      "source": "vize/types",
+      "scope": "two loaded external-library JS exports in Vite only; unchanged whole2345/2307 error and repair vectors"
+    }
+  }
+}

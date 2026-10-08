@@ -14,6 +14,7 @@ fn shared_file_order_places_known_paths_before_missing_entries() {
         injects: FxHashMap::default(),
         reactive_provides: FxHashSet::default(),
         component_parents: FxHashMap::default(),
+        slot_scopes: Default::default(),
         stable_file_order: FxHashMap::from_iter([(first, 0), (second, 1)]),
     };
 

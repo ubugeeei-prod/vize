@@ -12,6 +12,7 @@ mod attributes;
 mod directives;
 mod formatter;
 pub(crate) mod helpers;
+pub(crate) mod literal_lines;
 mod vue_filters;
 
 /// Native HTML elements whose authored text is whitespace-significant.
@@ -40,14 +41,32 @@ pub fn format_template_content(
     format_template_content_with_vue_version(source, options, crate::VueVersion::V3)
 }
 
+/// Format only markup syntax while retaining every authored text-run byte.
+pub(crate) fn format_template_content_preserving_text(
+    source: &str,
+    options: &FormatOptions,
+    vue_version: crate::VueVersion,
+) -> Result<String, FormatError> {
+    TemplateFormatter::new(options, vue_version, 0).format_preserving_text(source.as_bytes())
+}
+
 pub(crate) fn format_template_content_with_vue_version(
     source: &str,
     options: &FormatOptions,
     vue_version: crate::VueVersion,
 ) -> Result<String, FormatError> {
+    format_template_content_with_base_depth(source, options, vue_version, 0)
+}
+
+pub(crate) fn format_template_content_with_base_depth(
+    source: &str,
+    options: &FormatOptions,
+    vue_version: crate::VueVersion,
+    base_depth: usize,
+) -> Result<String, FormatError> {
     if options.end_of_line == crate::EndOfLine::Auto {
         return options.format_with_source_line_ending(source, |options| {
-            format_template_content_with_vue_version(source, options, vue_version)
+            format_template_content_with_base_depth(source, options, vue_version, base_depth)
         });
     }
     let bytes = source.as_bytes();
@@ -57,7 +76,7 @@ pub(crate) fn format_template_content_with_vue_version(
         return Ok(String::default());
     }
 
-    let formatter = TemplateFormatter::new(options, vue_version);
+    let formatter = TemplateFormatter::new(options, vue_version, base_depth);
     formatter.format(bytes)
 }
 

@@ -5,6 +5,7 @@ use super::component_ref_callbacks::{
     ComponentRefCallbackBindings, collect_component_ref_callback_bindings,
 };
 use super::directive_values::{DirectiveValueBindings, collect_directive_value_bindings};
+use super::model_modifiers::{ModelModifierBindings, collect_model_modifier_bindings};
 use super::native_props::{NativePropBindings, collect_native_prop_bindings};
 use crate::virtual_ts::scope::ScopeGenerationOptions;
 use vize_croquis::Croquis;
@@ -21,6 +22,7 @@ pub(crate) struct TemplateValueChecks<'a> {
     pub(crate) native_props: &'a NativePropBindings,
     pub(crate) directive_values: &'a DirectiveValueBindings,
     pub(crate) component_ref_callbacks: &'a ComponentRefCallbackBindings,
+    pub(crate) model_modifiers: &'a ModelModifierBindings,
     /// The template text the tables were collected from, for the few
     /// mappings that need bytes an expression record does not carry (a
     /// dynamic argument's directive prefix).
@@ -41,6 +43,7 @@ pub(crate) struct TemplateValueCheckTables {
     native_props: NativePropBindings,
     directive_values: DirectiveValueBindings,
     component_ref_callbacks: ComponentRefCallbackBindings,
+    model_modifiers: ModelModifierBindings,
     check_unknown_directives: bool,
 }
 
@@ -48,6 +51,10 @@ impl TemplateValueCheckTables {
     pub(crate) fn collect(summary: &Croquis, options: &ScopeGenerationOptions<'_, '_>) -> Self {
         let legacy_vue2 = options.legacy_vue2;
         Self {
+            model_modifiers: collect_model_modifier_bindings(
+                options.template_ast,
+                options.check_options.check_props && !legacy_vue2,
+            ),
             native_props: collect_native_prop_bindings(
                 options.template_ast,
                 options.check_options.check_props && !legacy_vue2,
@@ -57,7 +64,10 @@ impl TemplateValueCheckTables {
                     options.template_ast,
                     bindings,
                     (options.has_default_alias, options.check_options.vapor),
-                    options.check_options.check_template_bindings && !legacy_vue2,
+                    (
+                        options.check_options.check_template_bindings && !legacy_vue2,
+                        options.check_options.check_unknown_directives,
+                    ),
                 )
             }),
             component_ref_callbacks: collect_component_ref_callback_bindings(
@@ -70,6 +80,21 @@ impl TemplateValueCheckTables {
         }
     }
 
+    pub(crate) fn emit_valueless_directives(
+        &self,
+        ts: &mut vize_carton::String,
+        mappings: &mut Vec<crate::virtual_ts::VizeMapping>,
+        offset: u32,
+    ) {
+        super::directive_values::generate_valueless_directive_presence(
+            ts,
+            mappings,
+            &self.directive_values,
+            offset,
+            self.check_unknown_directives,
+        );
+    }
+
     pub(crate) fn as_checks<'a>(
         &'a self,
         template_source: Option<&'a str>,
@@ -78,6 +103,7 @@ impl TemplateValueCheckTables {
             native_props: &self.native_props,
             directive_values: &self.directive_values,
             component_ref_callbacks: &self.component_ref_callbacks,
+            model_modifiers: &self.model_modifiers,
             template_source,
             check_unknown_directives: self.check_unknown_directives,
         }

@@ -21,10 +21,14 @@ mod define_art;
 mod expose;
 mod extract;
 mod globals;
+mod occurrences;
 mod parse;
 mod process;
 mod recovery;
 mod result;
+mod ssr_calls;
+mod ssr_functions;
+mod ssr_guards;
 mod type_definitions;
 mod typeof_refs;
 mod unused;
@@ -37,12 +41,16 @@ pub use parse::{
     parse_script_with_options, parse_script_with_options_and_jsx,
 };
 pub(crate) use parse::{
-    analyze_script_setup_program_skipping, parse_script_plain, parse_script_setup_for_unused,
+    analyze_script_setup_program_demand, parse_script_plain, parse_script_setup_for_unused,
 };
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
 pub use recovery::parse_program_for_analysis;
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
 pub use result::{ScriptParseResult, ScriptParserOptions};
+pub(crate) use typeof_refs::{
+    annotation_has_value_reads, arguments_have_value_reads, has_value_type_reads,
+    parameters_have_value_reads,
+};
 pub(crate) use unused::unused_setup_bindings;
 
 #[cfg(test)]

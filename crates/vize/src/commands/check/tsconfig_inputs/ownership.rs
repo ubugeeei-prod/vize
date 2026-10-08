@@ -47,7 +47,7 @@ pub(crate) fn resolve_tsconfig_program_inputs(
         .collect::<Vec<_>>();
 
     for file in files.iter().filter(|path| {
-        !vize_l0::path::is_git_metadata_path(path)
+        !vize_carton::path::is_git_metadata_path(path)
             && is_supported_check_file_with_options(
                 path,
                 SupportedFileOptions {

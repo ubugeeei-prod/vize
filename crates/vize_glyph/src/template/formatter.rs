@@ -6,22 +6,20 @@
 
 use crate::{error::FormatError, options::FormatOptions};
 use memchr::memchr3;
-use vize_l0::{String, ToCompactString};
+use vize_l0::String;
 
 use super::{
-    attributes::{
-        ParsedAttribute, render_attribute, should_use_multiline_attrs, sort_attributes,
-        write_rendered_attributes,
-    },
-    directives::normalize_attribute_with_vue_version,
+    attributes::sort_attributes,
     helpers::{
-        byte_at, find_bytes, is_tag_name_char, is_void_element_str, is_whitespace,
-        parse_closing_tag, sub_slice,
+        byte_at, find_bytes, is_void_element_str, is_whitespace, parse_closing_tag, sub_slice,
     },
 };
 
 mod interpolation;
+mod opening_attributes;
+mod preserved_text;
 mod suppression;
+mod tags;
 mod text;
 mod whitespace_significant;
 
@@ -38,16 +36,22 @@ pub(crate) struct TemplateFormatter<'a> {
     vue_version: crate::VueVersion,
     indent: &'static [u8],
     newline: &'static [u8],
+    base_depth: usize,
 }
 
 impl<'a> TemplateFormatter<'a> {
     #[inline]
-    pub(crate) fn new(options: &'a FormatOptions, vue_version: crate::VueVersion) -> Self {
+    pub(crate) fn new(
+        options: &'a FormatOptions,
+        vue_version: crate::VueVersion,
+        base_depth: usize,
+    ) -> Self {
         Self {
             options,
             vue_version,
             indent: options.indent_bytes(),
             newline: options.newline_bytes(),
+            base_depth,
         }
     }
 
@@ -86,6 +90,7 @@ impl<'a> TemplateFormatter<'a> {
                 self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                 let expr =
                     std::str::from_utf8(sub_slice(source, expr_start..expr_end)).unwrap_or("");
+                let depth = joiner.interpolation_depth(pos, end_pos, depth);
                 self.open_chunk(&mut output, depth, joiner.open(pos));
                 self.write_multiline_interpolation(&mut output, expr, depth);
                 joiner.finish(end_pos);
@@ -148,53 +153,14 @@ impl<'a> TemplateFormatter<'a> {
                     output.push(b'<');
                     output.extend_from_slice(tag_name.as_bytes());
 
-                    let mut closing_bracket_on_own_line = false;
-                    if !sorted_attrs.is_empty() {
-                        // Render each attribute exactly once; both the
-                        // multiline decision and emission below reuse this.
-                        let mut rendered: Vec<String> = Vec::with_capacity(sorted_attrs.len());
-                        rendered.extend(sorted_attrs.iter().map(render_attribute));
-
-                        let use_multiline = should_use_multiline_attrs(
-                            self.options,
-                            &tag_name,
-                            &sorted_attrs,
-                            &rendered,
-                            depth,
-                            self.indent,
-                        );
-
-                        if use_multiline {
-                            let max_per_line = if self.options.single_attribute_per_line {
-                                1
-                            } else {
-                                self.options
-                                    .max_attributes_per_line
-                                    .unwrap_or(1) // default 1 when multiline
-                                    .max(1) as usize
-                            };
-
-                            write_rendered_attributes(
-                                &mut output,
-                                &sorted_attrs,
-                                &rendered,
-                                self.newline,
-                                self.indent,
-                                depth + 1,
-                                max_per_line,
-                            );
-                            if !self.options.bracket_same_line {
-                                output.extend_from_slice(self.newline);
-                                self.write_indent(&mut output, depth);
-                                closing_bracket_on_own_line = true;
-                            }
-                        } else {
-                            for attr in &rendered {
-                                output.push(b' ');
-                                output.extend_from_slice(attr.as_bytes());
-                            }
-                        }
-                    }
+                    let closing_bracket_on_own_line = self.write_opening_attributes_with_prefix(
+                        &mut output,
+                        &tag_name,
+                        &sorted_attrs,
+                        depth,
+                        join.is_continuation() && !joiner.locks_current_line(),
+                        if is_self_closing { 3 } else { 1 },
+                    );
 
                     // Compute once per opening tag; consumed in the two
                     // void-element branches below.
@@ -235,6 +201,7 @@ impl<'a> TemplateFormatter<'a> {
                         output.push(b'>');
                         if !is_void {
                             depth += 1;
+                            joiner.opened_element(pos, end_pos);
                         }
                     }
                     output.extend_from_slice(self.newline);
@@ -298,12 +265,9 @@ impl<'a> TemplateFormatter<'a> {
             output.pop();
         }
 
-        // SAFETY: `output` contains only copied ranges from the UTF-8 template
-        // source, formatter-produced `&str` fragments, and ASCII indentation or
-        // line breaks. The cursor moves across UTF-8 using the parser's byte
-        // ranges and ASCII delimiter checks, so the buffer cannot contain an
-        // invalid byte sequence. Skipping validation preserves formatter
-        // throughput for large templates.
+        // SAFETY: copied UTF-8 template ranges, formatter `&str` fragments and ASCII layout
+        // keep valid bytes. Parser ranges and ASCII delimiter checks maintain UTF-8 boundaries.
+        // Skipping validation preserves formatter throughput for large templates.
         Ok(unsafe { String::from_utf8_unchecked(output) })
     }
 
@@ -319,191 +283,5 @@ impl<'a> TemplateFormatter<'a> {
         self.write_indent(output, depth);
         output.extend_from_slice(content);
         output.extend_from_slice(self.newline);
-    }
-
-    /// Parse an opening tag into structured attributes.
-    fn parse_opening_tag(
-        &self,
-        source: &[u8],
-        start: usize,
-    ) -> Option<(String, Vec<ParsedAttribute>, bool, usize)> {
-        let len = source.len();
-        let mut pos = start + 1; // Skip '<'
-
-        // Parse tag name
-        let tag_start = pos;
-        while pos < len && is_tag_name_char(byte_at(source, pos)) {
-            pos += 1;
-        }
-        if pos == tag_start {
-            return None;
-        }
-
-        let tag_name = std::str::from_utf8(sub_slice(source, tag_start..pos))
-            .unwrap_or("")
-            .to_compact_string();
-
-        // Parse attributes
-        let mut attrs = Vec::new();
-        let mut is_self_closing = false;
-        let mut attr_index: usize = 0;
-
-        while pos < len && byte_at(source, pos) != b'>' {
-            // Skip whitespace
-            while pos < len && is_whitespace(byte_at(source, pos)) {
-                pos += 1;
-            }
-            if pos >= len {
-                break;
-            }
-
-            // Check for self-closing or end
-            if byte_at(source, pos) == b'/' {
-                is_self_closing = true;
-                pos += 1;
-                continue;
-            }
-            if byte_at(source, pos) == b'>' {
-                break;
-            }
-
-            // Parse single attribute
-            let (attr, new_pos) = self.parse_single_attribute(source, pos, attr_index);
-            if let Some(attr) = attr {
-                attrs.push(attr);
-                attr_index += 1;
-            }
-            pos = new_pos;
-        }
-
-        // Skip '>'
-        if pos < len && byte_at(source, pos) == b'>' {
-            pos += 1;
-        }
-
-        Some((tag_name, attrs, is_self_closing, pos))
-    }
-
-    /// Return the end of an immediately following matching closing tag.
-    fn parse_immediate_empty_closing_tag(
-        &self,
-        source: &[u8],
-        start: usize,
-        tag_name: &str,
-    ) -> Option<usize> {
-        let len = source.len();
-        let mut pos = start;
-
-        while pos < len && is_whitespace(byte_at(source, pos)) {
-            pos += 1;
-        }
-
-        if pos + 1 >= len || byte_at(source, pos) != b'<' || byte_at(source, pos + 1) != b'/' {
-            return None;
-        }
-
-        let (closing_tag_name, end_pos) = parse_closing_tag(source, pos)?;
-        if closing_tag_name.as_str() == tag_name {
-            Some(end_pos)
-        } else {
-            None
-        }
-    }
-
-    /// Parse a single attribute: name, optional `="value"`.
-    fn parse_single_attribute(
-        &self,
-        source: &[u8],
-        start: usize,
-        index: usize,
-    ) -> (Option<ParsedAttribute>, usize) {
-        let len = source.len();
-        let mut pos = start;
-
-        // Parse attribute name (may include :, @, #, ., v-, etc.)
-        let name_start = pos;
-        while pos < len {
-            let b = byte_at(source, pos);
-            if is_whitespace(b) || b == b'>' || b == b'/' || b == b'=' {
-                break;
-            }
-            pos += 1;
-        }
-
-        if pos == name_start {
-            // Skip unknown byte to avoid infinite loop
-            return (None, pos + 1);
-        }
-
-        let raw_name = std::str::from_utf8(sub_slice(source, name_start..pos))
-            .unwrap_or("")
-            .to_compact_string();
-
-        // Skip whitespace before '='
-        let mut val_pos = pos;
-        while val_pos < len && matches!(byte_at(source, val_pos), b' ' | b'\t') {
-            val_pos += 1;
-        }
-
-        // Check for '=' and value
-        let value = if val_pos < len && byte_at(source, val_pos) == b'=' {
-            val_pos += 1; // skip '='
-
-            // Skip whitespace after '='
-            while val_pos < len && matches!(byte_at(source, val_pos), b' ' | b'\t') {
-                val_pos += 1;
-            }
-
-            if val_pos < len && matches!(byte_at(source, val_pos), b'"' | b'\'') {
-                // Quoted value
-                let quote = byte_at(source, val_pos);
-                val_pos += 1;
-                let value_start = val_pos;
-                while val_pos < len && byte_at(source, val_pos) != quote {
-                    val_pos += 1;
-                }
-                let value = std::str::from_utf8(sub_slice(source, value_start..val_pos))
-                    .unwrap_or("")
-                    .to_compact_string();
-                if val_pos < len {
-                    val_pos += 1; // skip closing quote
-                }
-                pos = val_pos;
-                Some(value)
-            } else {
-                // Unquoted value
-                let value_start = val_pos;
-                while val_pos < len
-                    && !is_whitespace(byte_at(source, val_pos))
-                    && byte_at(source, val_pos) != b'>'
-                    && byte_at(source, val_pos) != b'/'
-                {
-                    val_pos += 1;
-                }
-                let value = std::str::from_utf8(sub_slice(source, value_start..val_pos))
-                    .unwrap_or("")
-                    .to_compact_string();
-                pos = val_pos;
-                Some(value)
-            }
-        } else {
-            // Boolean attribute (no value)
-            None
-        };
-
-        // Normalize directives and determine priority
-        let (name, value, priority, indent_multiline_value) =
-            normalize_attribute_with_vue_version(&raw_name, value, self.options, self.vue_version);
-
-        (
-            Some(ParsedAttribute {
-                name,
-                value,
-                priority,
-                original_index: index,
-                indent_multiline_value,
-            }),
-            pos,
-        )
     }
 }

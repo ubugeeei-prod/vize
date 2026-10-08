@@ -127,9 +127,11 @@ pub(crate) fn generate_vue_document_virtual_ts_with_options_and_alias_resolver(
         options,
         VueCodegenOptions {
             check_options: VirtualTsCheckOptions::default(),
+            typed_router_root: None,
             preserve_unused_diagnostics: false,
             options_api: document_options.options_api,
             preserve_authored_component: false,
+            preserve_script_on_template_error: true,
             component_name: None,
             preserve_event_navigation: document_options.preserve_event_navigation,
             legacy_vue2: document_options.legacy_vue2,

@@ -1,0 +1,12 @@
+<script setup>
+const color = "red"
+</script>
+
+<template>
+  <p>one</p>
+  <p>two</p>
+</template>
+
+<style>
+p { color: v-bind(color); }
+</style>

@@ -170,7 +170,7 @@ function __setup() {
     const $attrs = __ctx.$attrs;
     const $slots = __ctx.$slots;
     const $refs = __ctx.$refs;
-    const $emit = __ctx.$emit;
+    const $emit = undefined as unknown as __EmitFn<Emits>;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   // Props are available in template as variables

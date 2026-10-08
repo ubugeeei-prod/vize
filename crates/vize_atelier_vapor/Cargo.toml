@@ -55,6 +55,11 @@ vize_atelier_ssr = { workspace = true }
 insta = { workspace = true }
 serde_json = { workspace = true }
 
+[[test]]
+name = "davinci_vapor_native_budget"
+# Keep libtest reporting outside the process-global measured compile windows.
+harness = false
+
 [[bench]]
 name = "davinci"
 harness = false

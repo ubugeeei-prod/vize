@@ -83,6 +83,22 @@ impl<'a> Script<'a> {
         self.symbol(ident).and_then(|symbol| self.import_of(symbol))
     }
 
+    /// A value import; type-only declarations cannot establish installation.
+    pub fn runtime_import(&self, ident: &IdentifierReference<'a>) -> Option<Import<'a>> {
+        let symbol = self.symbol(ident)?;
+        let node = self.semantic.symbol_declaration(symbol);
+        if matches!(node.kind(), AstKind::ImportSpecifier(named) if named.import_kind.is_type()) {
+            return None;
+        }
+        let AstKind::ImportDeclaration(declaration) = self.semantic.nodes().parent_kind(node.id())
+        else {
+            return None;
+        };
+        (!declaration.import_kind.is_type())
+            .then(|| self.import_of(symbol))
+            .flatten()
+    }
+
     /// Whether `ident` resolves to `import { name } from 'source'`.
     pub fn is_import_of(&self, ident: &IdentifierReference<'a>, source: &str, name: &str) -> bool {
         self.import(ident).is_some_and(|import| {

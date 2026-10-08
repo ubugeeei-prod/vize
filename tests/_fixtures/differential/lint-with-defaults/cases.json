@@ -1,0 +1,171 @@
+[
+  {
+    "id": "original-sfc",
+    "input": "SizeLabel.vue.txt",
+    "filename": "SizeLabel.vue",
+    "kind": "sfc",
+    "spans": []
+  },
+  {
+    "id": "original-comment",
+    "input": "comment-only.ts.txt",
+    "filename": "comment-only.ts",
+    "kind": "script",
+    "spans": []
+  },
+  {
+    "id": "original-source-check",
+    "input": "source-check.ts.txt",
+    "filename": "source-check.ts",
+    "kind": "script",
+    "spans": []
+  },
+  {
+    "id": "typed-spaced",
+    "input": "TypedSpaced.vue.txt",
+    "filename": "TypedSpaced.vue",
+    "kind": "sfc",
+    "spans": [
+      [
+        39,
+        51
+      ]
+    ]
+  },
+  {
+    "id": "typed-wrapped",
+    "input": "TypedWrapped.vue.txt",
+    "filename": "TypedWrapped.vue",
+    "kind": "sfc",
+    "spans": [
+      [
+        41,
+        53
+      ]
+    ]
+  },
+  {
+    "id": "parenthesized-calls",
+    "input": "Parenthesized.vue.txt",
+    "filename": "Parenthesized.vue",
+    "kind": "sfc",
+    "spans": [
+      [
+        40,
+        52
+      ]
+    ]
+  },
+  {
+    "id": "expression-statement",
+    "input": "Expression.vue.txt",
+    "filename": "Expression.vue",
+    "kind": "sfc",
+    "spans": [
+      [
+        25,
+        37
+      ]
+    ]
+  },
+  {
+    "id": "runtime-props-invalid",
+    "input": "RuntimeProps.vue.txt",
+    "filename": "RuntimeProps.vue",
+    "kind": "sfc",
+    "spans": [
+      [
+        39,
+        51
+      ]
+    ]
+  },
+  {
+    "id": "missing-defaults-invalid",
+    "input": "MissingDefaults.vue.txt",
+    "filename": "MissingDefaults.vue",
+    "kind": "sfc",
+    "spans": [
+      [
+        39,
+        51
+      ]
+    ]
+  },
+  {
+    "id": "ordinary-expressions",
+    "input": "OrdinaryExpressions.vue.txt",
+    "filename": "OrdinaryExpressions.vue",
+    "kind": "sfc",
+    "spans": []
+  },
+  {
+    "id": "classic-script",
+    "input": "ClassicScript.vue.txt",
+    "filename": "ClassicScript.vue",
+    "kind": "sfc",
+    "spans": []
+  },
+  {
+    "id": "plain-actual-call",
+    "input": "plain-call.ts.txt",
+    "filename": "plain-call.ts",
+    "kind": "script",
+    "spans": []
+  },
+  {
+    "id": "inline-html",
+    "input": "Inline.html.txt",
+    "filename": "Inline.html",
+    "kind": "html",
+    "spans": []
+  },
+  {
+    "id": "dual-script-unicode-crlf",
+    "input": "DualScript.vue.txt",
+    "filename": "DualScript.vue",
+    "kind": "sfc",
+    "spans": [
+      [
+        202,
+        214
+      ]
+    ]
+  },
+  {
+    "id": "nested-shadow-does-not-hide-macro",
+    "input": "NestedShadow.vue.txt",
+    "filename": "NestedShadow.vue",
+    "kind": "sfc",
+    "spans": [
+      [
+        111,
+        123
+      ]
+    ]
+  },
+  {
+    "id": "escaped-callee",
+    "input": "Escaped.vue.txt",
+    "filename": "Escaped.vue",
+    "kind": "sfc",
+    "spans": [
+      [
+        39,
+        56
+      ]
+    ]
+  },
+  {
+    "id": "multiple-declarators",
+    "input": "Multiple.vue.txt",
+    "filename": "Multiple.vue",
+    "kind": "sfc",
+    "spans": [
+      [
+        68,
+        80
+      ]
+    ]
+  }
+]

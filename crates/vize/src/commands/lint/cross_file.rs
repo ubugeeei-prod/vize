@@ -4,13 +4,17 @@ mod absent_props;
 mod component;
 mod fallthrough;
 mod sfc;
+
+use super::routes::config::{CrossFileRuleSettings, RuleSetting, setting};
+pub(super) use component::RULE as CROSS_COMPONENT_RULE;
+pub(super) use fallthrough::RULE as FALLTHROUGH_RULE;
 mod uses_attrs;
 
 use sfc::{CrossFileSourceOffsets, analyze_sfc_for_cross_file};
 use std::path::{Path, PathBuf};
 use vize_croquis_cf::{
     CrossFileAnalyzer, CrossFileDiagnostic, CrossFileDiagnosticKind, CrossFileOptions,
-    DiagnosticSeverity, FileId,
+    DiagnosticSeverity, DiagnosticSource, FileId,
 };
 use vize_curator::complexity::render_cross_file_complexity;
 use vize_l0::{CompactString, FxHashMap, String, ToCompactString, cstr};
@@ -29,6 +33,7 @@ pub(super) fn apply_sfc_cross_file_lint(
     help_level: HelpLevel,
     include_tree: bool,
     include_complexity: bool,
+    settings: &CrossFileRuleSettings<'_>,
 ) -> Option<String> {
     let targets: Vec<_> = results
         .iter()
@@ -48,6 +53,7 @@ pub(super) fn apply_sfc_cross_file_lint(
         help_level,
         include_tree,
         include_complexity,
+        Some(settings),
     );
     let report = combine_cross_file_report(
         output.provide_inject_tree.as_deref(),
@@ -69,7 +75,7 @@ pub(super) fn build_cross_file_lint_output<S: AsRef<str>>(
     help_level: HelpLevel,
     include_tree: bool,
 ) -> CrossFileLintOutput {
-    build_cross_file_lint_output_with_report(files, help_level, include_tree, false)
+    build_cross_file_lint_output_with_report(files, help_level, include_tree, false, None)
 }
 
 pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
@@ -77,6 +83,7 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
     help_level: HelpLevel,
     include_tree: bool,
     include_complexity: bool,
+    settings: Option<&CrossFileRuleSettings<'_>>,
 ) -> CrossFileLintOutput {
     let root = std::env::current_dir().unwrap_or_default();
     let mut analyzer = CrossFileAnalyzer::with_project_root(patina_cross_file_options(), root);
@@ -122,16 +129,43 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
             .get(&diagnostic.primary_file)
             .copied()
             .unwrap_or_default();
-        let (Some((_, source)), Some(result)) = (files.get(index), results.get_mut(index)) else {
+        let (Some((path, source)), Some(result)) = (files.get(index), results.get_mut(index))
+        else {
             continue;
         };
         let source_len = source.as_ref().len();
+        let rule = diagnostic
+            .code()
+            .strip_prefix("vize:")
+            .unwrap_or(diagnostic.code());
+        let configured;
+        let diagnostic = match setting(settings, path, rule) {
+            RuleSetting::Off => continue,
+            RuleSetting::Default => diagnostic,
+            RuleSetting::Severity(severity) => {
+                configured = CrossFileDiagnostic {
+                    severity: match severity {
+                        vize_patina::Severity::Error => DiagnosticSeverity::Error,
+                        vize_patina::Severity::Warning => DiagnosticSeverity::Warning,
+                    },
+                    ..diagnostic.clone()
+                };
+                &configured
+            }
+        };
         result.diagnostics.push(cross_file_diagnostic_to_lint(
             diagnostic, offsets, source_len, help_level,
         ));
     }
 
-    component::apply(files, &analyzer, &file_indexes, &mut results, help_level);
+    component::apply(
+        files,
+        &analyzer,
+        &file_indexes,
+        &mut results,
+        help_level,
+        settings,
+    );
     fallthrough::apply(
         files,
         &analyzer,
@@ -139,7 +173,7 @@ pub(super) fn build_cross_file_lint_output_with_report<S: AsRef<str>>(
         &file_indexes,
         &source_offsets,
         &mut results,
-        help_level,
+        (help_level, settings),
     );
 
     for result in &mut results {
@@ -211,8 +245,12 @@ fn cross_file_diagnostic_to_lint(
 ) -> LintDiagnostic {
     let source_len = source_len as u32;
     let offset = cross_file_diagnostic_offset(diagnostic, offsets);
-    let start = (diagnostic.primary_offset + offset).min(source_len);
-    let raw_end = diagnostic.primary_end_offset + offset;
+    let map = |position| match diagnostic.primary_source {
+        DiagnosticSource::Script => offsets.map_script(position),
+        _ => position + offset,
+    };
+    let start = map(diagnostic.primary_offset).min(source_len);
+    let raw_end = map(diagnostic.primary_end_offset);
     let end = raw_end.max(start.saturating_add(1)).min(source_len);
     let message = cstr!("{}: {}", diagnostic.code(), diagnostic.message);
     let help = help_level.process(diagnostic.to_markdown().as_str());
@@ -235,6 +273,11 @@ fn cross_file_diagnostic_offset(
     diagnostic: &CrossFileDiagnostic,
     offsets: CrossFileSourceOffsets,
 ) -> u32 {
+    match diagnostic.primary_source {
+        DiagnosticSource::Script => return offsets.script,
+        DiagnosticSource::Template => return offsets.template,
+        DiagnosticSource::Unspecified => {}
+    }
     match diagnostic.kind {
         CrossFileDiagnosticKind::DuplicateElementId { .. }
         | CrossFileDiagnosticKind::NonUniqueIdInLoop { .. }
@@ -257,58 +300,4 @@ pub(super) fn merge_lint_result(target: &mut LintResult, mut extra: LintResult) 
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use std::fs;
-
-    #[test]
-    fn cross_file_complexity_report_mentions_hotspot_reason() {
-        let dir = tempfile::tempdir().unwrap();
-        let app = dir.path().join("App.vue");
-        let child = dir.path().join("Child.vue");
-
-        fs::write(&app, r#"<script setup lang="ts">
-import { reactive } from 'vue'
-import Child from './Child.vue'
-const ready = true
-const enabled = true
-const fallback = false
-const state = reactive({ count: 0 })
-</script>
-<template><Child v-if="ready && enabled" :item="state" /><Child v-if="fallback" :item="state" /></template>
-"#).unwrap();
-        fs::write(
-            &child,
-            r#"<script setup lang="ts">
-defineProps<{ item: { count: number } }>()
-</script>
-"#,
-        )
-        .unwrap();
-
-        let files = [&app, &child]
-            .into_iter()
-            .map(|path| (path.to_path_buf(), fs::read_to_string(path).unwrap()))
-            .collect::<Vec<_>>();
-        let output =
-            build_cross_file_lint_output_with_report(&files, HelpLevel::Short, false, true);
-        let report = output
-            .complexity_report
-            .as_deref()
-            .expect("complexity report should be rendered");
-
-        assert!(report.contains("## Cross-file Complexity"));
-        assert!(report.contains("App.vue"));
-        assert!(report.contains("template-control-flow"));
-        assert!(report.contains("template cyclomatic=4"));
-        assert!(report.contains("### Template Complexity"));
-        assert!(report.contains("prop edges=2"));
-    }
-
-    #[test]
-    fn combined_cross_file_report_keeps_tree_before_complexity() {
-        let report = combine_cross_file_report(Some("tree"), Some("complexity")).unwrap();
-
-        assert_eq!(report, "tree\ncomplexity");
-    }
-}
+mod tests;

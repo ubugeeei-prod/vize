@@ -50,6 +50,8 @@ pub(in crate::corsa_bridge) struct AliasContext {
     route_inputs: Vec<PathBuf>,
     mirror: Option<VirtualProject>,
     virtual_ts_options: crate::virtual_ts::VirtualTsOptions,
+    pub(in crate::corsa_bridge) query_surface:
+        std::sync::OnceLock<crate::corsa_bridge::vue_document::build::QuerySurface>,
 }
 
 impl AliasContext {
@@ -181,6 +183,10 @@ impl AliasContext {
         let mirror = self.mirror.as_ref()?;
         mirror.preferred_materialized_path_for_original(source)?;
         Some(mirror.virtual_root().to_path_buf())
+    }
+
+    pub(in crate::corsa_bridge) fn mirror_project_config_path(&self) -> Option<PathBuf> {
+        Some(self.mirror.as_ref()?.generated_tsconfig_path())
     }
 
     pub(in crate::corsa_bridge) fn materialized_sources(

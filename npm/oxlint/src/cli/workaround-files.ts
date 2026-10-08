@@ -1,13 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { isStandaloneHtmlFile } from "../file-kinds.js";
-import { appendScriptlessWorkaround } from "../workaround.js";
+import { isStandaloneHtmlFile } from "../file-kinds.ts";
+import { prepareWorkaroundSource } from "../workaround.ts";
+import type { BridgeLocations } from "./locations.js";
 
 export interface PreparedWorkaroundFiles {
   appendedArgs: string[];
   cleanup(): void;
   pathReplacements: ReadonlyMap<string, string>;
+  locations: ReadonlyMap<string, BridgeLocations>;
   usedScriptlessWorkaround: boolean;
 }
 
@@ -22,6 +24,7 @@ export function prepareScriptlessWorkaroundFiles(
   const ignoreArgs: string[] = [];
   const tempArgs: string[] = [];
   const pathReplacements = new Map<string, string>();
+  const locations = new Map<string, BridgeLocations>();
   let counter = 0;
 
   for (const filename of filenames) {
@@ -40,11 +43,13 @@ export function prepareScriptlessWorkaroundFiles(
     counter += 1;
 
     fs.mkdirSync(path.dirname(tempFilename), { recursive: true });
-    fs.writeFileSync(tempFilename, appendScriptlessWorkaround(source, filename));
+    const bridge = prepareWorkaroundSource(source, filename);
+    fs.writeFileSync(tempFilename, bridge.source);
 
     ignoreArgs.push("--ignore-pattern", toCliPath(relativeFilename));
     tempArgs.push(tempFilename);
     registerPathReplacementVariants(pathReplacements, cwd, tempFilename, filename);
+    registerLocationVariants(locations, cwd, tempFilename, bridge.locations);
   }
 
   return {
@@ -62,8 +67,24 @@ export function prepareScriptlessWorkaroundFiles(
       }
     },
     pathReplacements,
+    locations,
     usedScriptlessWorkaround: pathReplacements.size > 0,
   };
+}
+
+export function registerLocationVariants(
+  locations: Map<string, BridgeLocations>,
+  cwd: string,
+  filename: string,
+  map: BridgeLocations,
+): void {
+  for (const name of [
+    filename,
+    toCliPath(filename),
+    path.relative(cwd, filename),
+    toCliPath(path.relative(cwd, filename)),
+  ])
+    locations.set(name, map);
 }
 
 function createWorkaroundTempDir(
@@ -103,7 +124,7 @@ function toCliPath(filename: string): string {
   return filename.split(path.sep).join("/");
 }
 
-function registerPathReplacementVariants(
+export function registerPathReplacementVariants(
   replacements: Map<string, string>,
   cwd: string,
   tempFilename: string,

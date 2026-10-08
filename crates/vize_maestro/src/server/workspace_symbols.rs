@@ -20,6 +20,11 @@ pub(super) async fn search(
     }
 
     yield_to_pending_cancellation().await;
+    #[cfg(feature = "native")]
+    let sources = server.state.discover_workspace_project_sources().await;
+    #[cfg(feature = "native")]
+    let symbols = WorkspaceSymbolsService::search_sources(&sources, &params.query);
+    #[cfg(not(feature = "native"))]
     let symbols = WorkspaceSymbolsService::search(&server.state, &params.query);
 
     if symbols.is_empty() {

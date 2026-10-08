@@ -46,7 +46,10 @@ fn no_boolean_attr_value_fires_on_jsx_and_tsx_lowered_markup() {
         diag.help.as_deref(),
         Some(r#"Remove the value. Use just disabled instead of disabled="..."."#)
     );
-    assert_eq!(diag.fix.as_ref().map(|_| "some"), None);
+    assert_eq!(
+        diag.fix.as_ref().unwrap().apply(source),
+        "const A = () => <input disabled />;"
+    );
 
     let tsx = linter.lint_jsx(
         r#"const A = (): JSX.Element => <input disabled="disabled" />;"#,
@@ -140,7 +143,7 @@ fn no_boolean_attr_value_reports_multiple_attrs_in_source_order() {
             }
         })
         .collect();
-    assert_eq!(fix_states, vec!["none", "none"]);
+    assert_eq!(fix_states, vec!["some", "some"]);
 }
 
 #[test]

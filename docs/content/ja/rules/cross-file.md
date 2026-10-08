@@ -2,885 +2,104 @@
 title: ファイル間ルール
 ---
 
-<!-- Generated translation; source: rules/cross-file.md -->
+# ファイル間ルール
 
-# クロスファイルルール
+プロジェクトの検査には解析対象のコンポーネント構成が必要です。各ページに共通ファイルと悪い例・良い例を示します。共通ファイルは両方の例で使ってください。
 
-クロスファイル診断は、`vize lint --cross-file` によって発行されます。彼らは使用します
-`vize:croquis/cf/*` 診断コードは、分離されたグラフではなくプロジェクト グラフを分析するためです。
-SFC。これらのチェックは、ファイル間情報を必要とする Patina ルールの現在の公開表面です。
-キーが次の場合、プロバイダーとインジェクターの値の型の不一致は TypeScript 診断に委ねられます。
-`InjectionKey<T>` で宣言されます。
-
-以下の各例は、小さな複数ファイルのフィクスチャとして書かれています。ファイル間の部分は次の関係です。
-コンポーネントのインポート、テンプレートの使用、キーの提供/注入、または 1 つのファイルから移動するリアクティブな値
-別のものに。 `v-for` 内の ID などのローカル回線を報告するルールは、引き続き次の文書に記載されています。
-同じプロジェクト グラフ パス中に診断が発行されるため、この形状になります。
-
-## `vize:croquis/cf/unmatched-inject`
-
-キーが分析対象の到達可能な `provide()` と一致しない `inject()` をレポートします。
-成分グラフ。
-
-悪い：
+次の Vite+ 設定から始めてください。vp run lint は Vize と Oxlint を実行します。組み込みの vp lint は Vite+ 自身の検査を実行します。
 
 ```ts
-// keys/theme.ts
-import type { InjectionKey, Ref } from "vue";
-
-export interface Theme {
-  color: string;
-}
-
-export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
-```
-
-```vue
-<!-- App.vue -->
-<script setup lang="ts">
-import ThemeLabel from "./ThemeLabel.vue";
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-```vue
-<!-- ThemeLabel.vue -->
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-良い：
-
-```vue
-<!-- App.vue -->
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey, type Theme } from "./keys/theme";
-
-const theme = ref<Theme>({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-```vue
-<!-- ThemeLabel.vue -->
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-## `vize:croquis/cf/unused-provide`
-
-グラフ内で到達可能であるが、一致するインジェクターがない `provide()` を報告します。
-
-悪い：
-
-```vue
-<!-- App.vue -->
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import Dashboard from "./Dashboard.vue";
-import { ThemeKey, type Theme } from "./keys/theme";
-
-const theme = ref<Theme>({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <Dashboard />
-</template>
-```
-
-```vue
-<!-- Dashboard.vue -->
-<template>
-  <h1>Dashboard</h1>
-</template>
-```
-
-良い：
-
-```vue
-<!-- App.vue -->
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import Dashboard from "./Dashboard.vue";
-import { ThemeKey, type Theme } from "./keys/theme";
-
-const theme = ref<Theme>({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <Dashboard />
-</template>
-```
-
-```vue
-<!-- Dashboard.vue -->
-<script setup lang="ts">
-import ThemeLabel from "./ThemeLabel.vue";
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-```vue
-<!-- ThemeLabel.vue -->
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-## `vize:croquis/cf/provide-without-symbol`
-
-文字列キーを使用する `provide()` 呼び出しを報告します。シンボルはファイル間で 1 つのキー ID を保持し、
-無関係なプロバイダーとインジェクターの間で偶発的に一致することを避けます。
-
-悪い：
-
-```vue
-<!-- ThemeProvider.vue -->
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-
-const theme = ref({ color: "blue" });
-provide("theme", theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-```vue
-<!-- ThemeLabel.vue -->
-<script setup lang="ts">
-import { inject } from "vue";
-
-const theme = inject("theme");
-</script>
-```
-
-良い：
-
-```ts
-// keys/theme.ts
-import type { InjectionKey, Ref } from "vue";
-
-export interface Theme {
-  color: string;
-}
-
-export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
-```
-
-```vue
-<!-- ThemeProvider.vue -->
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey, type Theme } from "./keys/theme";
-
-const theme = ref<Theme>({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-```vue
-<!-- ThemeLabel.vue -->
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-## `vize:croquis/cf/inject-without-symbol`
-
-文字列キーを使用する `inject()` 呼び出しを報告します。
-
-悪い：
-
-```vue
-<!-- ThemeProvider.vue -->
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-
-const theme = ref({ color: "blue" });
-provide("theme", theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-```vue
-<!-- ThemeLabel.vue -->
-<script setup lang="ts">
-import { inject } from "vue";
-
-const theme = inject("theme");
-</script>
-```
-
-良い：
-
-```vue
-<!-- ThemeProvider.vue -->
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = ref({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-```vue
-<!-- ThemeLabel.vue -->
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-## `vize:croquis/cf/non-reactive-provide`
-
-レポートでは、反応的な値ではなく単純なスナップショットの値が提供されました。 `ref()` または
-`computed()` なので、別のファイルのコンシューマーはプロバイダーからの更新を監視します。
-
-悪い：
-
-```ts
-// keys/theme.ts
-export const ThemeKey = Symbol("theme");
-```
-
-```vue
-<!-- ThemeProvider.vue -->
-<script setup lang="ts">
-import { provide } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = { color: "blue" };
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-```vue
-<!-- ThemeLabel.vue -->
-<script setup lang="ts">
-import { inject } from "vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = inject(ThemeKey);
-</script>
-```
-
-良い：
-
-```vue
-<!-- ThemeProvider.vue -->
-<script setup lang="ts">
-import { provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey } from "./keys/theme";
-
-const theme = ref({ color: "blue" });
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-良い：
-
-```vue
-<!-- ThemeProvider.vue -->
-<script setup lang="ts">
-import { computed, provide, ref } from "vue";
-import ThemeLabel from "./ThemeLabel.vue";
-import { ThemeKey } from "./keys/theme";
-
-const color = ref("blue");
-const theme = computed(() => ({ color: color.value }));
-provide(ThemeKey, theme);
-</script>
-
-<template>
-  <ThemeLabel />
-</template>
-```
-
-## `vize:croquis/cf/duplicate-id`
-
-分析されたコンポーネント グラフ全体で重複する静的 ID をレポートします。ルールは、2 つの場合にこれを報告します。
-異なるコンポーネントを一緒にレンダリングして、同じ DOM ID を生成できます。
-
-悪い：
-
-```vue
-<!-- CheckoutForm.vue -->
-<script setup lang="ts">
-import BillingAddress from "./BillingAddress.vue";
-import ShippingAddress from "./ShippingAddress.vue";
-</script>
-
-<template>
-  <ShippingAddress />
-  <BillingAddress />
-</template>
-```
-
-```vue
-<!-- ShippingAddress.vue -->
-<template>
-  <label for="postal-code">Shipping postal code</label>
-  <input id="postal-code" />
-</template>
-```
-
-```vue
-<!-- BillingAddress.vue -->
-<template>
-  <label for="postal-code">Billing postal code</label>
-  <input id="postal-code" />
-</template>
-```
-
-良い：
-
-```vue
-<!-- ShippingAddress.vue -->
-<script setup lang="ts">
-import { useId } from "vue";
-
-const postalCodeId = useId();
-</script>
-
-<template>
-  <label :for="postalCodeId">Shipping postal code</label>
-  <input :id="postalCodeId" />
-</template>
-```
-
-```vue
-<!-- BillingAddress.vue -->
-<script setup lang="ts">
-import { useId } from "vue";
-
-const postalCodeId = useId();
-</script>
-
-<template>
-  <label :for="postalCodeId">Billing postal code</label>
-  <input :id="postalCodeId" />
-</template>
-```
-
-## `vize:croquis/cf/non-unique-id`
-
-繰り返されるテンプレート スコープ内の静的 ID をレポートします。問題のある行はローカルですが、ルールは実行されます
-グラフ パス内で、ファイル間の重複 ID もチェックします。
-
-悪い：
-
-```vue
-<!-- ResultsList.vue -->
-<template>
-  <article v-for="result in results" :key="result.id">
-    <h2 id="result-title">{{ result.title }}</h2>
-  </article>
-</template>
-```
-
-良い：
-
-```vue
-<!-- ResultsList.vue -->
-<template>
-  <article v-for="result in results" :key="result.id">
-    <h2 :id="`result-${result.id}-title`">{{ result.title }}</h2>
-  </article>
-</template>
-```
-
-## `vize:croquis/cf/spread-breaks-reactivity`
-
-レポート オブジェクトは、コンポーネントの境界を越えた後、そのスナップショットの反応状態を拡散します。
-
-悪い：
-
-```vue
-<!-- UserPage.vue -->
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada", role: "admin" });
-</script>
-
-<template>
-  <UserSummary :user="user" />
-</template>
-```
-
-```vue
-<!-- UserSummary.vue -->
-<script setup lang="ts">
-const props = defineProps<{ user: { name: string; role: string } }>();
-const copiedUser = { ...props.user };
-</script>
-```
-
-良い：
-
-```vue
-<!-- UserSummary.vue -->
-<script setup lang="ts">
-import { toRef } from "vue";
-
-const props = defineProps<{ user: { name: string; role: string } }>();
-const user = toRef(props, "user");
-</script>
-```
-
-## `vize:croquis/cf/reassignment-breaks-reactivity`
-
-状態がファイル境界を越えた後にプレーンな値に置き換えられるリアクティブな参照をレポートします。
-
-悪い：
-
-```vue
-<!-- UserPage.vue -->
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada" });
-</script>
-
-<template>
-  <UserSummary :user="user" />
-</template>
-```
-
-```vue
-<!-- UserSummary.vue -->
-<script setup lang="ts">
-import { toRef } from "vue";
-
-const props = defineProps<{ user: { name: string } }>();
-let user = toRef(props, "user");
-
-user = props.user;
-</script>
-```
-
-良い：
-
-```vue
-<!-- UserSummary.vue -->
-<script setup lang="ts">
-import { toRef } from "vue";
-
-const props = defineProps<{ user: { name: string } }>();
-const user = toRef(props, "user");
-</script>
-```
-
-## `vize:croquis/cf/value-extraction-breaks-reactivity`
-
-長期存続するプレーン バインディングにコピーされるリアクティブな値を報告します。ダイレクトリアクティブプロップ
-分解は許可されます。問題は、その構造化されたバインディングを別のプレーンに代入することです
-バインディング。
-
-悪い：
-
-```vue
-<!-- UserPage.vue -->
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada" });
-</script>
-
-<template>
-  <UserSummary :item="user" />
-</template>
-```
-
-```vue
-<!-- UserSummary.vue -->
-<script setup lang="ts">
-const { item } = defineProps<{ item: { name: string } }>();
-const itemSnapshot = item;
-</script>
-```
-
-良い：
-
-```vue
-<!-- UserSummary.vue -->
-<script setup lang="ts">
-import { computed } from "vue";
-
-const { item } = defineProps<{ item: { name: string } }>();
-const itemView = computed(() => item);
-</script>
-```
-
-## `vize:croquis/cf/destructuring-breaks-reactivity`
-
-Vue のリアクティブ プロパティの destruction でカバーされていないリアクティブ オブジェクトの分割をレポートします。
-変身する。
-
-悪い：
-
-```vue
-<!-- UserPage.vue -->
-<script setup lang="ts">
-import { reactive } from "vue";
-import UserSummary from "./UserSummary.vue";
-
-const user = reactive({ name: "Ada" });
-</script>
-
-<template>
-  <UserSummary :item="user" />
-</template>
-```
-
-```vue
-<!-- UserSummary.vue -->
-<script setup lang="ts">
-const props = defineProps<{ item: { name: string } }>();
-const { item } = props;
-</script>
-```
-
-良い：
-
-```vue
-<!-- UserSummary.vue -->
-<script setup lang="ts">
-import { toRef } from "vue";
-
-const props = defineProps<{ item: { name: string } }>();
-const item = toRef(props, "item");
-</script>
-```
-
-## `vize:croquis/cf/hydration-risk`
-
-サーバーとクライアント間でレンダリングが異なる可能性がある値をレポートします。グラフはポイントを助けます
-ルートまたは親コンポーネントから、非決定的な値をレンダリングするコンポーネントまで。
-
-悪い：
-
-```vue
-<!-- App.vue -->
-<script setup lang="ts">
-import ClockBadge from "./ClockBadge.vue";
-</script>
-
-<template>
-  <ClockBadge />
-</template>
-```
-
-```vue
-<!-- ClockBadge.vue -->
-<template>
-  <time>{{ new Date().toLocaleString() }}</time>
-</template>
-```
-
-良い：
-
-```vue
-<!-- ClockBadge.vue -->
-<script setup lang="ts">
-const renderedAt = useState("rendered-at", () => new Date().toISOString());
-</script>
-
-<template>
-  <time :datetime="renderedAt">{{ renderedAt }}</time>
-</template>
-```
-
-## `vize:croquis/cf/async-boundary`
-
-クリーンアップが登録されていない限り、読み取った状態を超えて存続する可能性がある非同期のリアクティブな作業をレポートします。
-
-悪い：
-
-```vue
-<!-- SearchPage.vue -->
-<script setup lang="ts">
-import { ref } from "vue";
-import SearchResults from "./SearchResults.vue";
-
-const query = ref("");
-</script>
-
-<template>
-  <SearchResults :query="query" />
-</template>
-```
-
-```vue
-<!-- SearchResults.vue -->
-<script setup lang="ts">
-import { ref, watch } from "vue";
-
-const props = defineProps<{ query: string }>();
-const result = ref<Result | null>(null);
-
-watch(
-  () => props.query,
-  async (value) => {
-    result.value = await load(value);
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: { preset: "incremental", crossFile: true,
+      rules: { "cross-file": "warn" },
+    },
   },
-);
-</script>
-```
-
-良い：
-
-```vue
-<!-- SearchResults.vue -->
-<script setup lang="ts">
-import { ref, watch } from "vue";
-
-const props = defineProps<{ query: string }>();
-const result = ref<Result | null>(null);
-
-watch(
-  () => props.query,
-  async (value, _oldValue, onCleanup) => {
-    const controller = new AbortController();
-    let active = true;
-
-    onCleanup(() => {
-      active = false;
-      controller.abort();
-    });
-
-    const next = await load(value, { signal: controller.signal });
-    if (active) result.value = next;
-  },
-);
-</script>
-```
-
-## `vize:croquis/cf/watcheffect-async`
-
-依存関係の収集と非同期作業を混在させる `watchEffect` コールバックをレポートします。明示的なものを使用する
-ソースに `watch()` が設定されているため、無効化によって古いリクエストをキャンセルできます。
-
-悪い：
-
-```vue
-<!-- SearchPage.vue -->
-<script setup lang="ts">
-import { ref } from "vue";
-import SearchResults from "./SearchResults.vue";
-
-const query = ref("");
-</script>
-
-<template>
-  <SearchResults :query="query" />
-</template>
-```
-
-```vue
-<!-- SearchResults.vue -->
-<script setup lang="ts">
-import { ref, watchEffect } from "vue";
-
-const props = defineProps<{ query: string }>();
-const result = ref<Result | null>(null);
-
-watchEffect(async () => {
-  result.value = await load(props.query);
 });
-</script>
 ```
 
-良い：
-
-```vue
-<!-- SearchResults.vue -->
-<script setup lang="ts">
-import { ref, watch } from "vue";
-
-const props = defineProps<{ query: string }>();
-const result = ref<Result | null>(null);
-
-watch(
-  () => props.query,
-  async (value, _oldValue, onCleanup) => {
-    const controller = new AbortController();
-    let active = true;
-
-    onCleanup(() => {
-      active = false;
-      controller.abort();
-    });
-
-    const next = await load(value, { signal: controller.signal });
-    if (active) result.value = next;
-  },
-);
-</script>
+```sh
+vp run lint
 ```
 
-## `vize:croquis/cf/injected-async-mutation-race`
+CLI では vize lint --cross-file で同じ検査を実行できます。表示コード vize:croquis/cf/* は、lint.vize.rules には vize: を除いた croquis/cf/* として指定します。information / hint は CLI では warning として表示されます。関連位置から提供元と使用側の関係を確認できます。
 
-プロバイダーまたは兄弟インジェクターと競合する可能性がある、注入された状態への非同期変異を報告します。しましょう
-プロバイダーは共有ミューテーションを所有するか、明示的なイベント/アクションをプロバイダーに渡します。
+公開されている 60 のコードは対応範囲が異なります。19 は CLI の検査対象（18 の完全なソースの例と 1 つの参照構成の例）で、16 は実験的な Rust analyzer に実装があるものの CLI では個別コードとして生成されません。25 は現在の生成元がない公開契約です。ルール名を設定しても未対応の生成元は有効になりません。
 
-悪い：
+## プロジェクト固有の lint ID
 
-```ts
-// keys/store.ts
-import type { InjectionKey } from "vue";
+| ルール | 重大度 |
+| --- | --- |
+| [`ecosystem/vue-router-unknown-route`](./project/ecosystem-vue-router-unknown-route.md) | error |
+| [`ecosystem/vue-router-extra-param`](./project/ecosystem-vue-router-extra-param.md) | error |
+| [`ecosystem/vue-router-param-type`](./project/ecosystem-vue-router-param-type.md) | error |
+| [`ecosystem/vue-router-missing-param`](./project/ecosystem-vue-router-missing-param.md) | warning |
+| [`html/cross-component-nesting`](./project/html-cross-component-nesting.md) | warning |
+| [`vue/cross-file-attrs-fallthrough`](./project/vue-cross-file-attrs-fallthrough.md) | warning |
 
-export interface Store {
-  count: number;
-}
+## 公開 analyzer コード
 
-export const StoreKey: InjectionKey<Store> = Symbol("store");
-```
-
-```vue
-<!-- StoreProvider.vue -->
-<script setup lang="ts">
-import { provide, reactive } from "vue";
-import CountLoader from "./CountLoader.vue";
-import CountSummary from "./CountSummary.vue";
-import { StoreKey, type Store } from "./keys/store";
-
-const store = reactive<Store>({ count: 0 });
-provide(StoreKey, store);
-</script>
-
-<template>
-  <CountLoader />
-  <CountSummary />
-</template>
-```
-
-```vue
-<!-- CountLoader.vue -->
-<script setup lang="ts">
-import { inject, ref, watch } from "vue";
-import { StoreKey } from "./keys/store";
-
-const store = inject(StoreKey)!;
-const query = ref("");
-
-watch(query, async (value) => {
-  store.count = await loadCount(value);
-});
-</script>
-```
-
-良い：
-
-```vue
-<!-- StoreProvider.vue -->
-<script setup lang="ts">
-import { provide, reactive } from "vue";
-import CountLoader from "./CountLoader.vue";
-import CountSummary from "./CountSummary.vue";
-import { StoreKey, type Store } from "./keys/store";
-
-const store = reactive<Store>({ count: 0 });
-provide(StoreKey, store);
-
-function applyLoadedCount(count: number) {
-  store.count = count;
-}
-</script>
-
-<template>
-  <CountLoader @loaded="applyLoadedCount" />
-  <CountSummary />
-</template>
-```
-
-```vue
-<!-- CountLoader.vue -->
-<script setup lang="ts">
-import { ref, watch } from "vue";
-
-const emit = defineEmits<{ loaded: [count: number] }>();
-const query = ref("");
-
-watch(query, async (value, _oldValue, onCleanup) => {
-  const controller = new AbortController();
-  let active = true;
-
-  onCleanup(() => {
-    active = false;
-    controller.abort();
-  });
-
-  const count = await loadCount(value, { signal: controller.signal });
-  if (active) emit("loaded", count);
-});
-</script>
-```
-
-## 実装の方向性
-
-クロスファイル エンジンは、使用しているにもかかわらず、ルールとして意図的に文書化されています。
-今日の診断コード。将来の作業では、必要に応じて、より多くの Patina ルールをこのレイヤーにプロモートできるようになります。
-インポート、コンポーネントの関係、またはプロジェクト全体のシンボル ID を使用して、問題を正確に説明します。
+| コード | 対応状況 |
+| --- | --- |
+| [`vize:croquis/cf/array-mutation`](./project/vize-croquis-cf-array-mutation.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/async-boundary`](./project/vize-croquis-cf-async-boundary.md) | CLI |
+| [`vize:croquis/cf/async-no-suspense`](./project/vize-croquis-cf-async-no-suspense.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/browser-api-ssr`](./project/vize-croquis-cf-browser-api-ssr.md) | CLI |
+| [`vize:croquis/cf/circular-dep`](./project/vize-croquis-cf-circular-dep.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/circular-reactive-dependency`](./project/vize-croquis-cf-circular-reactive-dependency.md) | CLI |
+| [`vize:croquis/cf/closure-captures-reactive`](./project/vize-croquis-cf-closure-captures-reactive.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/composable-outside-setup`](./project/vize-croquis-cf-composable-outside-setup.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/computed-side-effects`](./project/vize-croquis-cf-computed-side-effects.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/deep-import`](./project/vize-croquis-cf-deep-import.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/destructuring-breaks-reactivity`](./project/vize-croquis-cf-destructuring-breaks-reactivity.md) | CLI |
+| [`vize:croquis/cf/di-outside-setup`](./project/vize-croquis-cf-di-outside-setup.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/dom-access-without-next-tick`](./project/vize-croquis-cf-dom-access-without-next-tick.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/duplicate-id`](./project/vize-croquis-cf-duplicate-id.md) | CLI |
+| [`vize:croquis/cf/event-listener-leak`](./project/vize-croquis-cf-event-listener-leak.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/event-modifier`](./project/vize-croquis-cf-event-modifier.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/hydration-risk`](./project/vize-croquis-cf-hydration-risk.md) | CLI |
+| [`vize:croquis/cf/inherit-attrs-unused`](./project/vize-croquis-cf-inherit-attrs-unused.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/inject-without-symbol`](./project/vize-croquis-cf-inject-without-symbol.md) | CLI |
+| [`vize:croquis/cf/injected-async-mutation-race`](./project/vize-croquis-cf-injected-async-mutation-race.md) | CLI |
+| [`vize:croquis/cf/lifecycle-outside-setup`](./project/vize-croquis-cf-lifecycle-outside-setup.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/lifecycle-without-cleanup`](./project/vize-croquis-cf-lifecycle-without-cleanup.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/missing-required-prop`](./project/vize-croquis-cf-missing-required-prop.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/missing-suspense`](./project/vize-croquis-cf-missing-suspense.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/module-scope-reactive`](./project/vize-croquis-cf-module-scope-reactive.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/multi-root-attrs`](./project/vize-croquis-cf-multi-root-attrs.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/mutated-after-escape`](./project/vize-croquis-cf-mutated-after-escape.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/non-reactive-provide`](./project/vize-croquis-cf-non-reactive-provide.md) | CLI |
+| [`vize:croquis/cf/non-unique-id`](./project/vize-croquis-cf-non-unique-id.md) | CLI |
+| [`vize:croquis/cf/object-identity-comparison`](./project/vize-croquis-cf-object-identity-comparison.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/pinia-getter`](./project/vize-croquis-cf-pinia-getter.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/prop-type-mismatch`](./project/vize-croquis-cf-prop-type-mismatch.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/provide-inject-type`](./project/vize-croquis-cf-provide-inject-type.md) | CLI |
+| [`vize:croquis/cf/provide-without-symbol`](./project/vize-croquis-cf-provide-without-symbol.md) | CLI |
+| [`vize:croquis/cf/reactive-export`](./project/vize-croquis-cf-reactive-export.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/reactivity-outside-setup`](./project/vize-croquis-cf-reactivity-outside-setup.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/reassignment-breaks-reactivity`](./project/vize-croquis-cf-reassignment-breaks-reactivity.md) | CLI |
+| [`vize:croquis/cf/reference-escapes-scope`](./project/vize-croquis-cf-reference-escapes-scope.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/setup-context-violation`](./project/vize-croquis-cf-setup-context-violation.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/shallow-deep-access`](./project/vize-croquis-cf-shallow-deep-access.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/spread-breaks-reactivity`](./project/vize-croquis-cf-spread-breaks-reactivity.md) | CLI |
+| [`vize:croquis/cf/suspense-no-fallback`](./project/vize-croquis-cf-suspense-no-fallback.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/template-ref-timing`](./project/vize-croquis-cf-template-ref-timing.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/toraw-mutation`](./project/vize-croquis-cf-toraw-mutation.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/uncaught-error`](./project/vize-croquis-cf-uncaught-error.md) | CLI |
+| [`vize:croquis/cf/undeclared-emit`](./project/vize-croquis-cf-undeclared-emit.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/undeclared-prop`](./project/vize-croquis-cf-undeclared-prop.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/undefined-slot`](./project/vize-croquis-cf-undefined-slot.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/unhandled-event`](./project/vize-croquis-cf-unhandled-event.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/unmatched-inject`](./project/vize-croquis-cf-unmatched-inject.md) | CLI |
+| [`vize:croquis/cf/unmatched-listener`](./project/vize-croquis-cf-unmatched-listener.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/unregistered-component`](./project/vize-croquis-cf-unregistered-component.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/unresolved-import`](./project/vize-croquis-cf-unresolved-import.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/unused-attrs`](./project/vize-croquis-cf-unused-attrs.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/unused-emit`](./project/vize-croquis-cf-unused-emit.md) | Rust analyzer。CLI は別の表示または未有効 |
+| [`vize:croquis/cf/unused-provide`](./project/vize-croquis-cf-unused-provide.md) | CLI |
+| [`vize:croquis/cf/value-extraction-breaks-reactivity`](./project/vize-croquis-cf-value-extraction-breaks-reactivity.md) | CLI |
+| [`vize:croquis/cf/watch-can-be-computed`](./project/vize-croquis-cf-watch-can-be-computed.md) | 契約のみ。現在の生成元なし |
+| [`vize:croquis/cf/watcheffect-async`](./project/vize-croquis-cf-watcheffect-async.md) | CLI |
+| [`vize:croquis/cf/watcher-outside-setup`](./project/vize-croquis-cf-watcher-outside-setup.md) | 契約のみ。現在の生成元なし |

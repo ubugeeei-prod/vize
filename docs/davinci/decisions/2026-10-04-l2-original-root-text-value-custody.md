@@ -118,3 +118,30 @@ Stack membership, exact source/full104/both-parent gates and actual signed
 merges; historical removed candidates remain separate proof.
 
 Paired private source decisions: [#6838](https://github.com/ubugeeei-prod/vize/issues/6838#issuecomment-5979762362) and [#6839](https://github.com/ubugeeei-prod/vize/issues/6839#issuecomment-5979762577).
+
+## Delivery qualification (2026-10-08)
+
+The genuine L1 provider [#7802](https://github.com/ubugeeei-prod/vize/pull/7802)
+actually merged as `ff53f40f`. The original L2 preparation
+`8bad93c713b1cecde6ff6876fe85287c9bca5687`, including its preceding checked
+Text extraction, is retained as ancestry rather than recreated. The delivery
+branch composes it with actual main `3e493feb7f98ef664cdaf2ce53d1ba94cb25c86b`.
+Every original production body and law remains unchanged; the current
+storage inventory retains all incoming rows with only the two reviewed
+File-owned vector uses added.
+
+Rust 1.99 formatting and all six existing storage-policy controls pass locally.
+These are source checks, not executed native-law evidence. Exact-head hosted
+Actions must execute the fifteen original L2 laws, three added boundary laws,
+two L3 refusal/control laws, compile-fail contracts and full affected source
+suites. The added laws retain the first typed error through retry, completion
+and readback, cover actual ordinary JS/TS scripts and transport the unchanged
+original special-parent/verbatim failures before root-extent policy. Fresh protected corpus,
+all 104 unchanged instruction ceilings and actual merge remain required.
+
+The selected product walk still calls its original root condensation provider;
+this change does not admit entity Text to any product. The original output and
+envelope packets remain unchanged. The separate 120 earlier-outcome baseline
+capture and full native DOM module/map/runtime qualification are prerequisites
+for a later explicit output consumer. SSR/Vapor and default replacement remain
+closed, and this provider earns no native output or release credit.

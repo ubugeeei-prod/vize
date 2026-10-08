@@ -1,0 +1,20 @@
+[
+  {
+    "path": "src/App.vue",
+    "source": "inputs/receiver-shadows-owner/src--App.vue.txt",
+    "bytes": 231,
+    "sha256": "46dc2afbeab56dec46e1a891265560065064f1201a844bdf5e18f88e4981ae75"
+  },
+  {
+    "path": "src/Consumer.vue",
+    "source": "inputs/receiver-shadows-owner/src--Consumer.vue.txt",
+    "bytes": 144,
+    "sha256": "c6ec2b6e5ed03d730e53d398b16b86a32d72279419c38bd9c86bb6a0b0f83a9b"
+  },
+  {
+    "path": "src/Provider.vue",
+    "source": "inputs/receiver-shadows-owner/src--Provider.vue.txt",
+    "bytes": 151,
+    "sha256": "85e759e43e28ddbe47aee262697ded35d516e70458469a659120b4e5b65593ac"
+  }
+]

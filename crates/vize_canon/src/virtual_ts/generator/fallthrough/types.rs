@@ -85,7 +85,7 @@ pub(in crate::virtual_ts::generator) fn fallthrough_props_type_ref(
     template_ast: Option<&RootNode<'_>>,
     legacy_vue2: bool,
 ) -> Option<String> {
-    if legacy_vue2 {
+    if legacy_vue2 || (scope.checks.strict_component_attrs() && !scope.resolve_component_roots) {
         return None;
     }
     fallthrough_type_ref(scope.summary, template_ast, false, Some(scope))
@@ -156,6 +156,15 @@ fn targets_type_ref(
                 });
                 surface.push_str(reference.as_str());
                 surface.push('>');
+                if check_required
+                    && scope.is_some_and(|scope| scope.checks.check_unknown_fallthrough_props)
+                {
+                    // Omit over an open keyof loses the root's declared names.
+                    // Remove that index before excluding the authored bindings.
+                    surface = vize_carton::cstr!(
+                        "{{ [K in keyof ({surface}) as string extends K ? never : K]: ({surface})[K] }}"
+                    );
+                }
                 (root, surface)
             }
         };

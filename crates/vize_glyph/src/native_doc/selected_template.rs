@@ -10,6 +10,8 @@ use super::{
     Doc, ExpressionRefusal, Line, TemplateRefusal, UnsupportedSyntax, expression_document,
 };
 
+#[path = "selected_template/binding.rs"]
+mod binding;
 #[path = "selected_template/builder.rs"]
 mod builder;
 #[path = "selected_template/conditional.rs"]
@@ -26,6 +28,7 @@ pub use value::NativeTemplateValuePolicy;
 use value::ValuePolicy;
 
 pub use observed::{
+    ObservedNativeTemplateBindingFailureParts, ObservedNativeTemplateBindingParts,
     ObservedNativeTemplateDocument, ObservedNativeTemplateFailure,
     ObservedNativeTemplateFailureParts, ObservedNativeTemplateRefusal,
     observed_native_template_document, observed_native_template_document_with_policy,
@@ -62,6 +65,31 @@ pub enum NativeTemplateRefusal {
         hole: Option<EmbedHole>,
     },
     AttributeExpression {
+        span: Span,
+        refusal: ExpressionRefusal,
+    },
+    BindingHead {
+        span: Span,
+        kind: NativeAttributeOperandError,
+    },
+    BindingObservation {
+        span: Span,
+        index: usize,
+        kind: NativeAttributeOperandError,
+    },
+    MissingBindingOperand {
+        offset: usize,
+        index: usize,
+    },
+    UnquotedBindingValue {
+        span: Span,
+    },
+    BindingRejected {
+        span: Span,
+        index: usize,
+        hole: Option<EmbedHole>,
+    },
+    BindingExpression {
         span: Span,
         refusal: ExpressionRefusal,
     },

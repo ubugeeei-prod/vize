@@ -58,9 +58,54 @@ const removedSystem =
 const digest = (text: string) => createHash("sha256").update(text).digest("hex");
 type Reader = (file: string) => string | undefined;
 
+/** Retain original replay through exact later exporter and IO/path host states.
+ * Current continuations are checks only; replay never overwrites those sources.
+ */
+export function allocatorReplayText(file: string, text: string | undefined): string | undefined {
+  if (
+    file === "crates/vize_carton/src/lib.rs" &&
+    text !== undefined &&
+    [
+      "ca130e97a8c3e035dfb68202184392532bf119012a3fffc5d58d44caeaa02f94",
+      "9c135560ad6debbba6078194084a36e6dc086bb9129c48d8d61d04ba12d14ae2",
+      "fc77ccf3dc066dedce6fb03b83b02d503fe3414328139a0ae001edb393b6f49e",
+    ].includes(digest(text))
+  ) {
+    const historical = text
+      .replace("\npub mod timing_observer;\n", "")
+      .replace("\npub mod path;\n", "")
+      .replace("\npub mod source_io;\n", "");
+    if (digest(historical) !== contracts.find((contract) => contract.file === file)!.next)
+      throw new Error("changed, missing, colliding or partial allocator selection");
+    return historical;
+  }
+  if (
+    file !== profileExportContract ||
+    text === undefined ||
+    ![
+      "18a7b520cdb57b36e6c29c609be9d23632ae4875830d2d4e86d6528baeb5b82e",
+      "4e1dcd7780d3d7d80041143e806c61ee731a90ef952bce9e8fbbf76949a5b347",
+    ].includes(digest(text))
+  )
+    return text;
+  let historical = text;
+  for (const addition of [
+    '      "3d1747c3dcfcf4ec8bc80ec722a6bd58d488cfdef2c7de84374a526417ebc9f9",\n',
+    '  assembly: [\n    "crates/vize_carton/src/profile_export/assemble.rs",\n    "9f9c430af4303fe7fc5dabf12d1a2f7ec9c2794bab3541e64b3d5fe7d8c780ab",\n  ],\n',
+    '  snapshotCompanion: "109d5bce0860c6d2007e00593d8eba756ee5d1b4bd7cb4e251cf89a4635d425d",\n  snapshotCaller: [\n    "crates/vize_curator/src/inspector/stages/profile.rs",\n    "7e1ad6a552d23ff11d409b32c135047857bbff88b35bfe058345af34aa5cd533",\n  ],\n',
+  ])
+    historical = historical.replace(addition, "");
+  if (digest(historical) !== contracts.find((contract) => contract.file === file)!.next)
+    throw new Error("changed, missing, colliding or partial allocator selection");
+  return historical;
+}
+
 /** Return a complete validated plan; reject partial or changed input first. */
 export function prepareAllocatorSelection(read: Reader): Map<string, string> {
-  const found = contracts.map((contract) => ({ ...contract, text: read(contract.file) }));
+  const found = contracts.map((contract) => ({
+    ...contract,
+    text: allocatorReplayText(contract.file, read(contract.file)),
+  }));
   const module = read(hostModule);
   const old =
     module === undefined &&
@@ -119,7 +164,7 @@ export function originalAllocatorSelection(read: Reader): Map<string, string> {
     throw new Error("original recovery requires final state");
   const original = new Map<string, string>();
   for (const contract of contracts) {
-    let text = read(contract.file)!;
+    let text = allocatorReplayText(contract.file, read(contract.file))!;
     if (contract.file === "davinci/vize_l0/src/profiler/allocation.rs")
       text = text
         .replace(

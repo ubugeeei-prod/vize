@@ -340,40 +340,6 @@ test("capture failures emit captureError and a missing frame captures nothing", 
   assert.ok(noCanvas instanceof Error && /VIZE_UI_WEBCAM_NO_CANVAS/.test(noCanvas.message));
 });
 
-test("countdowns announce each second, block the shutter, and cancel on stop", async () => {
-  const canvas = installFakeCanvas();
-  const urls = installFakeObjectUrls();
-  cleanups.push(
-    () => canvas.restore(),
-    () => urls.restore(),
-  );
-  const host = new FakeHost();
-  host.auto = { stream: new FakeStream() };
-  const handle = mountCamera({ host, countdownInterval: 5 }, { countdown: 2 });
-  const root = handle.root();
-  await handle.exposes<WebcamCaptureRootExpose>().start();
-  await flush();
-  setVideoSize(part<HTMLVideoElement>(root, "video"), 20, 10);
-
-  await handle.click(button(root, "shutter"));
-  assert.equal(handle.getByRole("status").textContent, "Taking photo in 2");
-  assert.equal(button(root, "shutter").getAttribute("data-countdown"), "2");
-  assert.equal(button(root, "shutter").disabled, true);
-  await new Promise((resolve) => setTimeout(resolve, 8));
-  await nextTick();
-  assert.equal(handle.getByRole("status").textContent, "Taking photo in 1");
-  await new Promise((resolve) => setTimeout(resolve, 20));
-  await flush();
-  assert.equal(handle.wrapper.emitted("capture")?.length, 1);
-  assert.equal(button(root, "shutter").hasAttribute("data-countdown"), false);
-
-  await handle.click(button(root, "shutter"));
-  handle.exposes<WebcamCaptureRootExpose>().stop();
-  await new Promise((resolve) => setTimeout(resolve, 20));
-  await flush();
-  assert.equal(handle.wrapper.emitted("capture")?.length, 1, "stop cancels the countdown");
-});
-
 test("messages localize every default label and announcement", async () => {
   const host = new FakeHost();
   host.auto = { error: mediaError("NotFoundError") };

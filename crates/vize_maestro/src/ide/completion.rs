@@ -14,6 +14,7 @@
 
 mod dispatch;
 mod items;
+mod literal_context;
 #[cfg(feature = "native")]
 mod native_items;
 #[cfg(feature = "native")]

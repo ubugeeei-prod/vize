@@ -1,14 +1,19 @@
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Expression, Statement};
+use oxc_ast::ast::Statement;
+use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::SourceType;
 use vize_carton::{String, ToCompactString};
 
 use crate::module_map::Runs;
 
+mod collector;
+mod emit;
+
 /// Transform top-level await expressions to use `_withAsyncContext`.
 ///
-/// Handles two patterns:
+/// Recurses through setup statements and expressions, excluding nested functions.
+/// The established direct-statement forms retain their emitted bytes and maps:
 /// 1. `const x = await expr` → `const x = (\n  ([__temp,__restore] = _withAsyncContext(() => expr)),\n  __temp = await __temp,\n  __restore(),\n  __temp\n)`
 /// 2. `await expr` (statement) → `;(\n  ([__temp,__restore] = _withAsyncContext(() => expr)),\n  await __temp,\n  __restore()\n)`
 ///
@@ -91,132 +96,7 @@ fn rewrite_awaits(source: &str, is_ts: bool, runs: &mut Runs) -> Option<String> 
         return None;
     };
 
-    let offset = AWAIT_WRAP_PREFIX.len();
-    let mut cursor = 0usize;
-    let mut transformed = String::with_capacity(source.len() + 128);
-
-    for stmt in body.statements.iter() {
-        let stmt_span = stmt.span();
-        let stmt_start = stmt_span.start.try_into().ok().and_then(|start: usize| {
-            start
-                .checked_sub(offset)
-                .filter(|start| *start <= source.len())
-        })?;
-        let stmt_end =
-            stmt_span.end.try_into().ok().and_then(|end: usize| {
-                end.checked_sub(offset).filter(|end| *end <= source.len())
-            })?;
-
-        if stmt_start < cursor || stmt_start > stmt_end {
-            return None;
-        }
-
-        runs.copy(transformed.len(), cursor, stmt_start - cursor);
-        transformed.push_str(source.get(cursor..stmt_start)?);
-
-        if let Some(replacement) = transform_await_statement(source, stmt, offset) {
-            runs.point(transformed.len(), stmt_start);
-            transformed.push_str(&replacement);
-        } else {
-            runs.copy(transformed.len(), stmt_start, stmt_end - stmt_start);
-            transformed.push_str(source.get(stmt_start..stmt_end)?);
-        }
-
-        cursor = stmt_end;
-    }
-
-    runs.copy(transformed.len(), cursor, source.len() - cursor);
-    transformed.push_str(source.get(cursor..)?);
-    Some(transformed)
-}
-
-fn transform_await_statement(source: &str, stmt: &Statement<'_>, offset: usize) -> Option<String> {
-    match stmt {
-        Statement::ExpressionStatement(expr_stmt) => {
-            let Expression::AwaitExpression(await_expr) = &expr_stmt.expression else {
-                return None;
-            };
-            build_standalone_await_replacement(source, stmt.span(), await_expr.span(), offset)
-        }
-        Statement::VariableDeclaration(var_decl) => {
-            if var_decl.declarations.len() != 1 {
-                return None;
-            }
-            let declarator = var_decl.declarations.first()?;
-            let init = declarator.init.as_ref()?;
-            let Expression::AwaitExpression(await_expr) = init else {
-                return None;
-            };
-            build_await_assignment_replacement(source, stmt.span(), await_expr.span(), offset)
-        }
-        _ => None,
-    }
-}
-
-fn build_await_assignment_replacement(
-    source: &str,
-    stmt_span: oxc_span::Span,
-    await_span: oxc_span::Span,
-    offset: usize,
-) -> Option<String> {
-    let stmt_start = stmt_span.start as usize - offset;
-    let stmt_end = stmt_span.end as usize - offset;
-    let await_start = await_span.start as usize - offset;
-    let await_end = await_span.end as usize - offset;
-
-    let prefix = source.get(stmt_start..await_start)?;
-    let expr = await_expression_source(source, await_start, await_end)?;
-    let suffix = source.get(await_end..stmt_end)?;
-
-    let mut out = String::with_capacity(prefix.len() + expr.len() + suffix.len() + 96);
-    out.push_str(prefix);
-    out.push_str(" (\n");
-    out.push_str("  ([__temp,__restore] = _withAsyncContext(() => ");
-    out.push_str(expr);
-    out.push_str(")),\n");
-    out.push_str("  __temp = await __temp,\n");
-    out.push_str("  __restore(),\n");
-    out.push_str("  __temp\n");
-    out.push(')');
-    out.push_str(suffix);
-    Some(out)
-}
-
-fn build_standalone_await_replacement(
-    source: &str,
-    stmt_span: oxc_span::Span,
-    await_span: oxc_span::Span,
-    offset: usize,
-) -> Option<String> {
-    let stmt_start = stmt_span.start as usize - offset;
-    let stmt_end = stmt_span.end as usize - offset;
-    let await_start = await_span.start as usize - offset;
-    let await_end = await_span.end as usize - offset;
-
-    if stmt_start != await_start {
-        return None;
-    }
-
-    let expr = await_expression_source(source, await_start, await_end)?;
-    let suffix = source.get(await_end..stmt_end)?;
-
-    let mut out = String::with_capacity(expr.len() + suffix.len() + 72);
-    out.push_str(";(\n");
-    out.push_str("  ([__temp,__restore] = _withAsyncContext(() => ");
-    out.push_str(expr);
-    out.push_str(")),\n");
-    out.push_str("  await __temp,\n");
-    out.push_str("  __restore()\n");
-    out.push(')');
-    out.push_str(suffix);
-    Some(out)
-}
-
-fn await_expression_source(source: &str, start: usize, end: usize) -> Option<&str> {
-    let await_source = source.get(start..end)?;
-    let expr = await_source.strip_prefix("await")?.trim_start();
-    if expr.is_empty() {
-        return None;
-    }
-    Some(expr)
+    let mut awaits = collector::SetupAwaits::default();
+    awaits.visit_statements(&body.statements);
+    emit::rewrite(source, &awaits.regions, AWAIT_WRAP_PREFIX.len(), runs)
 }

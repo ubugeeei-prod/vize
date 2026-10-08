@@ -53,7 +53,18 @@ pub(in crate::script_parser) fn add_binding_pattern_to_scope(
     offset: u32,
 ) {
     let mut names = vize_carton::SmallVec::<[CompactString; 4]>::new();
-    extract_param_names(pattern, &mut names);
+    if let Some(capture) = result.occurrence_capture.as_mut() {
+        let scope = result.scopes.current_id();
+        let has_default = collect_param_sites(pattern, &mut |name, span| {
+            names.push(CompactString::new(name));
+            capture.declaration(scope, name, span);
+        });
+        if has_default {
+            capture.refuse();
+        }
+    } else {
+        extract_param_names(pattern, &mut names);
+    }
     for name in names {
         result
             .scopes
@@ -107,6 +118,81 @@ pub(in crate::script_parser) fn extract_param_names(
         }
         BindingPattern::AssignmentPattern(assign) => {
             extract_param_names(&assign.left, names);
+        }
+    }
+}
+
+/// Replace the existing parameter-name walk only when authored sites are demanded.
+#[inline]
+pub(in crate::script_parser) fn extract_function_params_with_occurrences(
+    result: &mut ScriptParseResult,
+    params: &oxc_ast::ast::FormalParameters<'_>,
+) -> vize_carton::SmallVec<[CompactString; 4]> {
+    let Some(capture) = result.occurrence_capture.as_mut() else {
+        return extract_function_params(params);
+    };
+    let mut names = vize_carton::SmallVec::new();
+    let mut type_read = false;
+    let has_default = {
+        let mut note = |name: &str, span| {
+            names.push(CompactString::new(name));
+            capture.parameters.push((CompactString::new(name), span));
+        };
+        let mut has_default = false;
+        for param in &params.items {
+            type_read |= param.type_annotation.as_ref().is_some_and(|annotation| {
+                super::typeof_refs::has_value_type_reads(&annotation.type_annotation)
+            });
+            has_default |= collect_param_sites(&param.pattern, &mut note);
+            has_default |= param.initializer.is_some();
+        }
+        if let Some(rest) = &params.rest {
+            type_read |= rest.type_annotation.as_ref().is_some_and(|annotation| {
+                super::typeof_refs::has_value_type_reads(&annotation.type_annotation)
+            });
+            has_default |= collect_param_sites(&rest.rest.argument, &mut note);
+        }
+        has_default
+    };
+    if has_default || type_read {
+        capture.refuse();
+    }
+    names
+}
+
+pub(in crate::script_parser) fn collect_param_sites(
+    pattern: &BindingPattern<'_>,
+    note: &mut impl FnMut(&str, oxc_span::Span),
+) -> bool {
+    match pattern {
+        BindingPattern::BindingIdentifier(id) => {
+            note(id.name.as_str(), id.span);
+            false
+        }
+        BindingPattern::ObjectPattern(object) => {
+            let mut has_default = false;
+            for property in &object.properties {
+                has_default |= property.computed;
+                has_default |= collect_param_sites(&property.value, note);
+            }
+            if let Some(rest) = &object.rest {
+                has_default |= collect_param_sites(&rest.argument, note);
+            }
+            has_default
+        }
+        BindingPattern::ArrayPattern(array) => {
+            let mut has_default = false;
+            for item in array.elements.iter().flatten() {
+                has_default |= collect_param_sites(item, note);
+            }
+            if let Some(rest) = &array.rest {
+                has_default |= collect_param_sites(&rest.argument, note);
+            }
+            has_default
+        }
+        BindingPattern::AssignmentPattern(assignment) => {
+            collect_param_sites(&assignment.left, note);
+            true
         }
     }
 }

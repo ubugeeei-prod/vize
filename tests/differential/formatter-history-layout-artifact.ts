@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { preservedHuggedInterpolationSnapshot } from "./formatter-hugged-interpolation-reference.ts";
 import { sha256 } from "./manifest.mjs";
 
 // #7704 changes production entry/indent logic. Frozen capture receipts bind
@@ -9,7 +10,7 @@ import { sha256 } from "./manifest.mjs";
 const OWNERS: Record<string, { originalSha: string; currentSha: string; asset: string }> = {
   "crates/vize_glyph/src/style.rs": {
     originalSha: "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
-    currentSha: "3e78de603e74c971baa4e1619d010d45f5aae1424909495122a1bfd5f776ea54",
+    currentSha: "42f4d9b0e90359faeab4f3e26fa3c3370f44681e191966e0d447f411478fb335",
     asset: "tests/_fixtures/differential/formatter-history/source-witnesses/style.cc87.txt",
   },
   "crates/vize_glyph/src/formatter/block_indent.rs": {
@@ -23,6 +24,8 @@ export function resolvePreservedLayoutSource(
   root: string,
   artifact: { path: string; sha256: string },
 ) {
+  const snapshot = preservedHuggedInterpolationSnapshot(root, artifact);
+  if (snapshot) return snapshot;
   const owner = OWNERS[artifact.path];
   if (!owner || artifact.sha256 !== owner.originalSha) return null;
   const current = fs.readFileSync(path.join(root, artifact.path));

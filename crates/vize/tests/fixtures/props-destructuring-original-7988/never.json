@@ -1,0 +1,38 @@
+[
+  {
+    "file": "MyBadgeA.vue",
+    "messages": [
+      {
+        "ruleId": "script/no-with-defaults",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/no-with-defaults] Prefer destructuring defaults over withDefaults (Vue 3.5+)",
+        "line": 2,
+        "column": 15,
+        "endLine": 2,
+        "endColumn": 27,
+        "help": "Use destructuring with defaults: const { count = 0, name = 'default' } = defineProps<Props>()"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "MyBadgeB.vue",
+    "messages": [
+      {
+        "ruleId": "script/define-props-destructuring",
+        "ruleDocsPath": "docs/content/rules/type-and-script.md",
+        "severity": 1,
+        "message": "[vize:script/define-props-destructuring] Avoid destructuring the return value of defineProps().",
+        "line": 2,
+        "column": 7,
+        "endLine": 2,
+        "endColumn": 22,
+        "help": "Assign props to a single binding and access props.foo to follow the configured style preference."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  }
+]

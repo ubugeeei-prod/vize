@@ -99,10 +99,15 @@ export function createFileCompilerOptions(
   config: ResolvedVizeConfig | null,
   root: string,
   explicit: VizeOptions,
+  defaults: Pick<VizeOptions, "whitespace"> = {},
 ): ((file: string) => VizeOptions) | undefined {
   if (!config) return undefined;
   const scopes = compileScopes(config, root);
   if (scopes.length === 0) return undefined;
   return (file) =>
-    mergeCompilerOptions(explicit, { ...config, compiler: resolveScopes(config, scopes, file) });
+    mergeCompilerOptions(
+      explicit,
+      { ...config, compiler: resolveScopes(config, scopes, file) },
+      defaults,
+    );
 }

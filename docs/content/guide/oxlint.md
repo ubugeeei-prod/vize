@@ -45,6 +45,12 @@ in use. It also refuses to write anything rather than fall back to a file your l
 
 ## Basic Usage With `vp lint`
 
+> [!WARNING]
+> `vp lint` uses the direct Oxlint JS plugin lifecycle. With Oxlint 1.78 and 1.86, a `.vue` file
+> without `<script>` or `<script setup>` never invokes Vize's per-file rules, even when they are
+> enabled in the `lint` block. `vp check` has the same limitation when it runs that lint path.
+> For template-only SFCs, use the native Vize task described below or `oxlint-vize`.
+
 `createVizeLintConfig()` returns a complete Vite+ `lint` block, so the `jsPlugins` entry that loads
 the bridge cannot go missing. The default preset is `"happy-path"`/`"general-recommended"`: use it
 when you want a safe Vue baseline without taking a position on stronger style or framework choices.
@@ -109,6 +115,21 @@ export default defineConfig({
 The exported fragments include `flatConfigs.recommended`, `flatConfigs.happyPath`,
 `flatConfigs.essential`, `flatConfigs.ecosystem`, `flatConfigs.nuxt`, `flatConfigs.opinionated`,
 and `flatConfigs.all`, plus the same `*WithTypeAware` variants as `configs`.
+
+For native Vue linting, including template-only SFCs, install `vize` and `@vizejs/vite-plugin`
+and use its Vite+ configuration:
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: { vize: { preset: "happy-path" } },
+});
+```
+
+Run the generated task with `vp run lint`. If a package script already uses `lint`, the generated
+task is `vp run vize:lint`; explicit task names take precedence. See [Rules](../rules/index.md)
+for native rule options. Calling `vp lint` still selects the direct Oxlint path.
 
 ## Basic Usage With `oxlint` And `oxlint-vize`
 
@@ -190,8 +211,15 @@ Settings are passed through `settings.vize`:
 
 - `locale` controls the diagnostic language.
 - `preset` accepts `"general-recommended"`/`"happy-path"`, `"essential"`, `"ecosystem"`, `"incremental"`, `"opinionated"`, `"nuxt"`, or `"all"`.
-- `preset` defaults to `"general-recommended"`.
+- Without a runtime `preset`, the bridge runs explicitly configured rules as `"incremental"`.
+  This also applies when Oxlint does not propagate settings through `extends`.
+  The configuration helpers still default to the `"general-recommended"` bundle.
 - `incremental` runs only the rules you explicitly configure.
+- `rules` accepts rule names (with or without the `vize/` prefix) or an Oxlint rule map.
+  A map with `vize/` keys selects only those entries; a native map supports
+  `vue/`, `script/`, `css/`, `style/`, `type/`, `nuxt/`, and `ecosystem/` names.
+  It batches matching rules into one native lint call per file. Oxlint's top-level `rules`
+  still controls which diagnostics are reported and their severity.
 - `all` is accepted as a settings alias for `incremental`; use `configs.all` or
   `createVizeLintConfig({ preset: "all" })` when you also want every rule emitted.
 - `helpLevel` accepts `"full"`, `"short"`, or `"none"`.
@@ -199,9 +227,36 @@ Settings are passed through `settings.vize`:
 - `corsaPath` selects the Corsa or `tsgo` executable for type-aware linting.
 - `showHelp` and `settings.patina` are still accepted for backward compatibility.
 
+For an explicit subset, share the rule map with the native batch so rule options are preserved:
+
+```ts
+const vueRules = {
+  "vize/vue/require-v-for-key": "error",
+  "vize/vue/no-v-html": "warn",
+  "vize/vue/attribute-hyphenation": ["error", "always"],
+};
+
+export default {
+  plugins: ["vue"],
+  jsPlugins: ["oxlint-plugin-vize"],
+  settings: {
+    vize: { preset: "incremental", helpLevel: "none", rules: vueRules },
+  },
+  rules: vueRules,
+};
+```
+
+`createVizeLintConfig` and `defineVizeLintConfig` generate this selection automatically from
+the final Vize rule map, including rule options and disabled entries. A manual name list
+batches rules using their default options; a configured rule with different options runs
+separately. File overrides that add rules or change options also run separately, so a shared
+batch cannot hide their diagnostics. Overrides that only disable rules or change severity
+continue to use Oxlint's reporting policy.
+
 ## Current Limitations
 
-- Raw `oxlint` can still miss some `.vue` files without `<script>` or `<script setup>`. Use
+- Direct `oxlint`, `vp lint`, and the corresponding `vp check` lint path omit Vize callbacks for
+  scriptless `.vue` files in Oxlint 1.78 and 1.86. Use the native `vp run lint` task or
   `oxlint-vize` if your project includes template-only SFCs.
 - Oxlint JS plugins still anchor ranges to the extracted script program, so template and style
   diagnostics do not yet preserve original SFC ranges in every formatter.
@@ -210,6 +265,11 @@ Settings are passed through `settings.vize`:
   positions.
 - Type-aware rule exports are experimental. Use a `*WithTypeAware` config and set
   `settings.vize.typeAware: true` when you want the shared full-file pass to run those rules eagerly.
+
+The source-built n8n fixture replay checks all 1,369 licensed SFCs, 51 configured Vize rules/options,
+and six per-file rule overrides through the native bridge and `oxlint-vize`. This includes 19 scriptless
+inputs; it does not establish direct SDK callback coverage for them. The two n8n-local plugins
+and its complete workspace configuration remain outside that qualification.
 
 ## Local Development
 

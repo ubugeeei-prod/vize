@@ -1,0 +1,6 @@
+<template>
+  <p class="tight-row">
+    <span>tight-alpha</span>
+    <span>tight-beta</span>
+  </p>
+</template>

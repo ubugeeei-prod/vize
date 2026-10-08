@@ -10,24 +10,26 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product                     | kind  | module    | files | sites |
 | --------------------------- | ----- | --------- | ----: | ----: |
-| `BindingMetadata`           | type  | `croquis` |    12 |    31 |
-| `Croquis`                   | type  | `croquis` |    10 |    22 |
-| `Drawer`                    | type  | `drawer`  |     2 |     9 |
+| `BindingMetadata`           | type  | `croquis` |    13 |    34 |
+| `Croquis`                   | type  | `croquis` |    12 |    35 |
+| `Drawer`                    | type  | `drawer`  |     3 |    18 |
 | `DrawerOptions`             | type  | `drawer`  |     1 |     5 |
 | `ScopeKind`                 | type  | `scope`   |     1 |     2 |
-| `Croquis.binding_spans`     | field | `croquis` |     1 |     1 |
+| `Croquis.binding_spans`     | field | `croquis` |     2 |     2 |
 | `Croquis.bindings`          | field | `croquis` |     7 |    23 |
 | `Croquis.import_statements` | field | `croquis` |     1 |     2 |
 | `Croquis.macros`            | field | `croquis` |     6 |    17 |
 | `Croquis.scopes`            | field | `croquis` |     1 |     2 |
 | `Croquis.types`             | field | `croquis` |     4 |    16 |
-| `Croquis.unused_bindings`   | field | `croquis` |     2 |     5 |
+| `Croquis.unused_bindings`   | field | `croquis` |     4 |     8 |
 
 ## Non-product `vize_croquis` imports
 
 | item                                      | files | sites |
 | ----------------------------------------- | ----: | ----: |
-| `BindingType`                             |    17 |   131 |
+| `BindingIdentity`                         |     1 |     1 |
+| `BindingOccurrences`                      |     6 |     7 |
+| `BindingType`                             |    19 |   142 |
 | `BlockLocation`                           |     5 |     7 |
 | `DEFINE_EMITS`                            |     1 |     2 |
 | `DEFINE_EXPOSE`                           |     1 |     1 |
@@ -37,15 +39,16 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `DEFINE_SLOTS`                            |     1 |     1 |
 | `EmitDefinition`                          |     1 |     1 |
 | `ModelDefinition`                         |     1 |     1 |
+| `OccurrenceBlock`                         |     1 |    15 |
 | `PadOption`                               |     1 |     1 |
 | `PropDefinition`                          |     3 |     5 |
 | `ResolvedTypeWorld`                       |     4 |     7 |
 | `ScriptParseResult`                       |     1 |     1 |
 | `ScriptParserOptions`                     |     1 |     1 |
 | `SfcCustomBlock`                          |     2 |     2 |
-| `SfcDescriptor`                           |    18 |    45 |
-| `SfcError`                                |    22 |    64 |
-| `SfcParseOptions`                         |    22 |   126 |
+| `SfcDescriptor`                           |    20 |    49 |
+| `SfcError`                                |    22 |    65 |
+| `SfcParseOptions`                         |    26 |   134 |
 | `SfcScriptBlock`                          |     2 |     2 |
 | `SfcStyleBlock`                           |     5 |     8 |
 | `SfcTemplateBlock`                        |     7 |     9 |
@@ -63,6 +66,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `checked_v_bind_expression_ranges`        |     1 |     1 |
 | `extract_and_transform_v_bind`            |     1 |     1 |
 | `extract_and_transform_v_bind_with_scope` |     1 |     1 |
+| `extract_identifier_refs_with_witness`    |     1 |     1 |
 | `extract_identifiers_checked`             |     1 |     1 |
 | `find_matching_paren`                     |     1 |     1 |
 | `is_builtin_component`                    |     1 |     1 |
@@ -74,5 +78,5 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `parse_script_with_options_and_jsx`       |     1 |     1 |
 | `parse_sfc`                               |     1 |     1 |
 | `prod_scoped_v_bind_name`                 |     1 |     1 |
-| `runtime_erased_macro_names`              |     3 |     5 |
+| `runtime_erased_macro_names`              |     1 |     1 |
 | `scoped_v_bind_name`                      |     1 |     1 |

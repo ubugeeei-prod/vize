@@ -5,6 +5,7 @@ import type {
   PatinaSettings,
 } from "./model.js";
 import { loadBinding } from "./native.js";
+import { getActivePreset } from "./settings.js";
 
 export function lintPatina(
   source: string,
@@ -17,7 +18,7 @@ export function lintPatina(
     filename,
     locale: settings.locale,
     helpLevel: settings.helpLevel,
-    preset: settings.preset,
+    preset: getActivePreset(settings),
     enabledRules: enabledRules ? [...enabledRules] : undefined,
     typeAware: settings.typeAware,
     corsaPath: settings.corsaPath,

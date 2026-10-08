@@ -1,0 +1,23 @@
+{
+  "id": "custom-same-ordered-modifiers",
+  "source": "<div v-custom:arg.stop.prevent=\"a\" v-custom:arg.stop.prevent=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "custom-same-ordered-modifiers.vue",
+    "errorCount": 1,
+    "warningCount": 0,
+    "diagnostics": [
+      {
+        "rule": "vue/no-duplicate-attributes",
+        "severity": "Error",
+        "message": "Duplicate attribute 'v-custom'",
+        "start": 35,
+        "end": 64,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  }
+}

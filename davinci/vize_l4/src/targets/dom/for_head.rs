@@ -3,7 +3,7 @@
 use super::{DomError, DomErrorKind, Emitter, ExpressionWriter, LinkSink, write::spell};
 use vize_l0::id::NodeId;
 use vize_l2::op::OriginalForOp;
-use vize_l3::decision::dom::{DomChild, DomChildren, DomNode};
+use vize_l3::decision::dom::{DomChild, DomChildren, DomNode, vue::VueReadKind};
 
 impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
     pub(super) fn original_for(
@@ -26,6 +26,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         let [DomChild::Node(body)] = children.as_slice() else {
             return Err(self.error(node, DomErrorKind::InvalidGrouping));
         };
+        let stable = row.collection_read().map(|read| read.kind()) == Some(VueReadKind::SetupConst);
         let alias = row.resolution().value_declaration();
         let name = alias.fact().name();
         // No generated local is introduced inside this callback. All helper
@@ -34,6 +35,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             [
                 self.helpers.open_block,
                 self.helpers.element_block,
+                self.helpers.element,
                 self.helpers.display,
             ]
             .into_iter()
@@ -52,7 +54,7 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         self.writer.anchor(original.span.start);
         self.writer.push("(");
         spell(&mut self.writer, self.vocabulary, self.helpers.open_block);
-        self.writer.push("(true), ");
+        self.writer.push(if stable { "(), " } else { "(true), " });
         spell(
             &mut self.writer,
             self.vocabulary,
@@ -74,7 +76,11 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
         self.node(*body)?;
         self.writer.deindent();
         self.writer.newline();
-        self.writer.push("}), 256 /* UNKEYED_FRAGMENT */))");
+        self.writer.push(if stable {
+            "}), 64 /* STABLE_FRAGMENT */))"
+        } else {
+            "}), 256 /* UNKEYED_FRAGMENT */))"
+        });
         Ok(())
     }
 }

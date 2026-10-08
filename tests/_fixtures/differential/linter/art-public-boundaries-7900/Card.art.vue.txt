@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Button from "./Button.vue";
+
+const title = ref("Hello");
+</script>
+
+<art title="Card" component="./Card.vue">
+  <variant name="Default" default>
+    <Card :title="title">
+      <Button>OK</Button>
+    </Card>
+  </variant>
+</art>

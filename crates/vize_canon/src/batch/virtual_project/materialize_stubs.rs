@@ -10,11 +10,11 @@ use serde_json::Value;
 use vize_carton::String as CompactString;
 
 use crate::batch::error::CorsaResult;
-use crate::batch::materialize_fs::write_if_changed;
+use crate::batch::materialize_fs::{ensure_dir, write_if_changed};
 
 use super::{
     AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUB_PREFIX, MODULE_AUGMENTATION_STUBS_FILE,
-    SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
+    VUE_MODULE_STUBS_FILE, VirtualProject,
 };
 
 impl VirtualProject {
@@ -95,10 +95,11 @@ impl VirtualProject {
             content.push_str("/// <reference types=\"vue/jsx\" />\n");
         }
         content.push_str(crate::virtual_ts::SHARED_PREAMBLE_DTS);
-        write_if_changed(
-            &self.virtual_root.join(SHARED_HELPERS_FILE),
-            content.as_bytes(),
-        )?;
+        let path = self.shared_helpers_path();
+        if let Some(parent) = path.parent() {
+            ensure_dir(parent)?;
+        }
+        write_if_changed(&path, content.as_bytes())?;
         Ok(())
     }
 

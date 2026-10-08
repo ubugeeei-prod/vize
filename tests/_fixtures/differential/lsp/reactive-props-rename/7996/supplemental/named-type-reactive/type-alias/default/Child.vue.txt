@@ -1,0 +1,10 @@
+<script setup lang="ts">
+type Props = {
+  label: string;
+};
+const { label = 'Name' } = defineProps<Props>();
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>

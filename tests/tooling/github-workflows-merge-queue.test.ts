@@ -34,6 +34,9 @@ const recipe = parse(
 const rust = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
   jobs: Record<string, Job>;
 };
+const differential = parse(readRepoFile(".github", "workflows", "pr-rust-differential.yml")) as {
+  jobs: Record<string, Job>;
+};
 const actionPath = "./.github/actions/test-rust-workspace-differential";
 const lanes = [
   "pr-source-plan",
@@ -43,6 +46,7 @@ const lanes = [
   "pr-playground-test",
 ];
 const tailCommands = [
+  "cargo test -p vize_l1 --features legacy-differential --test surface_corpus -- --nocapture",
   "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_lowering_corpus -- --nocapture",
   "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_dom_corpus -- --nocapture",
   "cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_remarks_corpus -- --nocapture",
@@ -70,9 +74,13 @@ test("queue scope reaches the planner and every full source lane remains require
     source.jobs["pr-source-plan"].steps?.find((step) => step.name === "Plan source checks")?.run,
     'node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"',
   );
-  assert.deepEqual(source.jobs["source-report"].needs, [...lanes, "wit-contracts"]);
+  assert.deepEqual(source.jobs["source-report"].needs, [
+    ...lanes,
+    "wit-contracts",
+    "canonical-corpus",
+  ]);
   assert.equal(source.jobs["source-report"].if, "${{ always() }}");
-  assert.match(commands(source.jobs["source-report"]), /require-needs-success\.mjs/);
+  assert.match(commands(source.jobs["source-report"]), /canonical-corpus-selection\.mjs/);
   assert.ok(check.jobs["test-report"].needs?.includes("pr-source-checks"));
   for (const required of [
     "fmt-rust",
@@ -109,13 +117,19 @@ test("queue Rust retains full doctests and the unchanged feature tail beside req
   const workspace = steps.findIndex((step) =>
     /cargo test --workspace --profile ci --doc(?:;|$)/m.test(step.run ?? ""),
   );
-  const tail = steps.findIndex((step) => step.uses === actionPath);
-  const coverage = steps.findIndex((step) => step.name === "Check fixture coverage");
-  assert.ok(pkl >= 0 && pkl < workspace && workspace < tail && tail < coverage);
+  const sibling = differential.jobs["differential"].steps ?? [];
+  const tail = sibling.findIndex((step) => step.uses === actionPath);
+  const coverage = sibling.findIndex((step) => step.name === "Check fixture coverage");
+  assert.ok(pkl >= 0 && pkl < workspace && tail >= 0 && tail < coverage);
   assert.equal(steps[workspace].env?.VIZE_TEST_REQUIRE_TSGO, "1");
-  assert.equal(steps[tail].if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
-  assert.equal(steps[tail].with?.["workspace-already-tested"], "true");
-  assert.notEqual(steps[tail]["continue-on-error"], true);
+  assert.equal(rust.jobs["merge-rust-differential"].needs, "merge-rust-source");
+  assert.equal(
+    rust.jobs["merge-rust-differential"].uses,
+    "./.github/workflows/pr-rust-differential.yml",
+  );
+  assert.equal(sibling[tail].if, "${{ github.event_name == 'merge_group' && inputs.run-rust }}");
+  assert.equal(sibling[tail].with?.["workspace-already-tested"], "true");
+  assert.notEqual(sibling[tail]["continue-on-error"], true);
   const manual = check.jobs["clippy-and-test"].steps?.find((step) => step.name === "Test");
   assert.equal(manual?.uses, actionPath);
   assert.equal(manual?.with?.["workspace-already-tested"], undefined);
@@ -162,8 +176,9 @@ test("the shared bash recipe stops at a failed feature command (simulated cargo)
       { mode: 0o755 },
     );
     for (const [failure, count, status] of [
-      ["davinci_remarks_corpus", 3, 42],
-      ["no-such-command", 11, 0],
+      ["surface_corpus", 1, 42],
+      ["davinci_remarks_corpus", 4, 42],
+      ["no-such-command", 12, 0],
     ] as const) {
       writeFileSync(log, "");
       writeFileSync(argvLog, "");
@@ -195,8 +210,8 @@ test("the shared bash recipe stops at a failed feature command (simulated cargo)
       assert.deepEqual(actualArguments, expectedArguments);
       assert.ok(lines.every((line) => line.includes("|1|")));
       if (status === 0) {
-        assert.ok(lines[5].endsWith(`|${root}`));
-        assert.ok(lines[10].endsWith(`|${root}`));
+        assert.ok(lines[6].endsWith(`|${root}`));
+        assert.ok(lines[11].endsWith(`|${root}`));
       }
     }
   } finally {

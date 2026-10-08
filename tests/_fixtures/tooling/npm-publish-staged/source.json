@@ -1,0 +1,32 @@
+{
+  "schema": "vize.publish.staged-wrapped-stderr-v1",
+  "sourceRevision": "8a8521d6897bbe3fd0af0cbfaebd83f4fc933933",
+  "workflowRun": 37318076195,
+  "runAttempt": 2,
+  "job": 111812350029,
+  "jobUrl": "https://github.com/ubugeeei-prod/vize/actions/runs/37318076195/job/111812350029",
+  "rawJobLog": {
+    "bytes": 96490,
+    "sha256": "ac27edf1b43595c5de978c7464c23f10a91c58b851048cd1ca160c7605f484a6"
+  },
+  "originalLogLines": {
+    "first": 1080,
+    "last": 1084
+  },
+  "extraction": "Complete first publisher stderr diagnostic; strip only GitHub timestamp prefixes and retain every payload character, blank line and escaped JSON quote. Other log lines contain repeated invocations and separate stdout, not omitted parts of this diagnostic.",
+  "fixture": {
+    "path": "wrapped-409.stderr.txt",
+    "bytes": 224,
+    "sha256": "d77a1a7b8aaa18b730238beedb4e8536f6f8443c95925697908fa472b122da87"
+  },
+  "originalLiteralMatch": false,
+  "actualInternalPublishAttempts": 6,
+  "registryVisibilityCause": "Unknown; this fixture addresses diagnostic recognition only.",
+  "publicReleaseMutation": false,
+  "issue": 8054,
+  "reporter": {
+    "login": "ubugeeei",
+    "id": 71201308,
+    "verifiedPublicIdentity": "71201308+ubugeeei@users.noreply.github.com"
+  }
+}

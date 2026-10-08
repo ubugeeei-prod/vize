@@ -11,31 +11,50 @@ on:
     # Daily 03:11 UTC, staggered from native smoke and e2e.
     - cron: "11 3 * * *"
   workflow_dispatch:
+    inputs:
+      allocation-ownership-diagnostic:
+        description: Run the finite allocation ownership experiment on its owned branch
+        type: boolean
+        default: false
 concurrency:
   # A push to main must not cancel an exact-SHA full validation used by release.
   group: check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}
   cancel-in-progress: true
 permissions:
   contents: read
-
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
+  allocation-ownership-diagnostic:
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ci/vapor-allocation-ownership-20261004' && inputs.allocation-ownership-diagnostic }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    permissions: { contents: read, actions: read }
+    env:
+      {
+        CARGO_BUILD_JOBS: "12",
+        CARGO_INCREMENTAL: "0",
+        RUST_TEST_THREADS: "4",
+        VIZE_NUXT_CONFIG_ITERATIONS: "100",
+        VIZE_TEST_REQUIRE_TSGO: "1",
+      }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: ./.github/actions/diagnose-allocation-ownership
+        env: { GH_TOKEN: "${{ github.token }}" }
   pr-source-checks:
     name: PR source checks
+    permissions: { contents: read, actions: read }
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/pr-source-checks.yml
-
   instruction-counts:
     name: Instruction ceilings
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     uses: ./.github/workflows/level-instruction-counts.yml
-
   level-dependency-direction:
     uses: ./.github/workflows/level-dependencies.yml
-
   nix-flake:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 60
@@ -51,7 +70,7 @@ jobs:
       - name: Check flake
         run: nix flake check
   fmt-rust:
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -192,7 +211,7 @@ jobs:
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
       - name: Check package engine matrix
-        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts
+        run: node --test tests/tooling/node-engine-matrix.test.ts tests/tooling/package-manifests.test.ts tests/tooling/dependency-security-compat.test.mjs
 
   check-vize-apps:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -230,7 +249,6 @@ jobs:
         run: vp exec tsx --test gallery/components/MarkdownContent.test.ts
       - name: Check Vize app fixtures
         run: vp run --workspace-root check:ci:vize-apps
-
   vue-parity:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -273,15 +291,19 @@ jobs:
         with: { key: test-scripts, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
       - uses: ./.github/actions/setup-rust-script
       - name: Hydrate CLI diagnostic fixture and install JS dependencies
-        run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
+        run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline && node tools/support/compat/github/prepare-vue-benchmarks.mjs
       - name: Build vize CLI
-        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json
+        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
       - name: Install vize CLI
         run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
+      - name: Check configured Router page CLI and editor types
+        uses: ./.github/actions/check-router-page-types
       - name: Prepare plugin runtime and test native JS setup
         uses: ./.github/actions/test-native-js-setup
       - name: Capture original native attribute values and fixed fresh mounts
         uses: ./.github/actions/test-native-attribute-values-7502
+      - name: Install CSS formatter reference browser
+        uses: ./.github/actions/install-formatter-css-browser
       - name: Test release scripts
         env:
           VIZE_LSP_BIN: ${{ github.workspace }}/target/ci/vize
@@ -353,7 +375,6 @@ jobs:
           path: .artifacts/shared-js-build/
           if-no-files-found: error
           retention-days: 7
-
   test-js-packages:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -380,7 +401,6 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - name: Test JS packages
         run: vp run --workspace-root test:js
-
   clippy-and-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -469,21 +489,16 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
-
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
-
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-llvm-cov
-
       - name: Source coverage report
         run: vp run --workspace-root coverage:source
-
       - name: Verify source coverage summary
         run: test -s target/llvm-cov/source-summary.json
-
       - name: Upload source coverage summary
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -492,7 +507,6 @@ jobs:
           path: target/llvm-cov/source-summary.json
           if-no-files-found: error
           retention-days: 14
-
   branch-coverage:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -524,18 +538,14 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - name: Install Pkl CLI
         run: npm install --global @pkl-community/pkl@0.27.2
-
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
         with:
           tool: cargo-llvm-cov
-
       - name: Branch coverage report
         run: vp run --workspace-root coverage:source:branch
-
       - name: Verify branch coverage summary
         run: test -s target/llvm-cov/source-branch-summary.json
-
       - name: Upload branch coverage summary
         continue-on-error: true
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -544,7 +554,6 @@ jobs:
           path: target/llvm-cov/source-branch-summary.json
           if-no-files-found: error
           retention-days: 14
-
   playground-test:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -590,26 +599,21 @@ jobs:
         with:
           name: shared-js-build
           path: .
-
       - name: Cache Playwright browsers
         id: cache-playwright
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('**/pnpm-lock.yaml') }}
-
       - name: Install Playwright browsers
         if: steps.cache-playwright.outputs.cache-hit != 'true'
         uses: ./.github/actions/install-playwright-browsers
-
       - name: Run playground tests
         run: vp run --filter './playground' test:browser
-
       - name: Run VRT
         run: vp run --filter './playground' test:vrt
         continue-on-error: true
         id: vrt
-
       - name: Upload VRT report
         if: steps.vrt.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -618,7 +622,6 @@ jobs:
           path: playground/playwright-report/
           if-no-files-found: ignore
           retention-days: 7
-
       - name: Upload VRT diff artifacts
         if: steps.vrt.outcome == 'failure'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -626,11 +629,9 @@ jobs:
           name: vrt-diff
           path: playground/e2e/vrt/test-results/
           retention-days: 7
-
       - name: Fail if VRT failed
         if: steps.vrt.outcome == 'failure'
         run: exit 1
-
   test-report:
     name: test-report
     runs-on: ubuntu-24.04
@@ -654,7 +655,6 @@ jobs:
       - name: Require every needed job to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
         run: node tools/support/compat/github/require-needs-success.mjs
-
   test-report-comment:
     name: test-report-comment
     runs-on: ubuntu-24.04

@@ -1,0 +1,7 @@
+<template>
+  <p class="my-note">note</p>
+</template>
+
+<style scoped>
+.flexible, .flex:hover, .widget.flex, .mt-red { color: red; }
+</style>

@@ -1,4 +1,11 @@
-use oxc_ast::ast::{AssignmentTarget, CallExpression, Expression, SimpleAssignmentTarget};
+mod mutations;
+pub(super) use mutations::{
+    keeps_live_ref_value, reactive_plain_value_from_assignment_target,
+    reactive_plain_value_from_mutated_expression,
+    reactive_plain_value_from_simple_assignment_target,
+};
+
+use oxc_ast::ast::{CallExpression, Expression};
 use oxc_span::GetSpan;
 
 use vize_carton::{CompactString, cstr};
@@ -14,7 +21,7 @@ pub(super) fn reactive_plain_value_from_expr(
     match expr {
         Expression::Identifier(id) => {
             let binding_name = id.name.as_str();
-            let origin = result.reactive_value_origins.get(binding_name)?;
+            let origin = result.reactive_origin(binding_name)?;
             let (source_name, getter_name) = plain_origin_labels(origin, binding_name);
             Some(ReactivePlainValue {
                 source_name,
@@ -64,7 +71,7 @@ pub(super) fn reactive_plain_value_from_expr(
                 });
             }
 
-            let root_origin = result.reactive_value_origins.get(root.as_str())?;
+            let root_origin = result.reactive_origin(root.as_str())?;
             let (source_name, _) = plain_origin_labels(root_origin, root.as_str());
             Some(ReactivePlainValue {
                 source_name,
@@ -172,7 +179,7 @@ pub(super) fn reactive_member_destructure_source(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_value_origins.contains_key(root.as_str())
+                || result.reactive_origin(root.as_str()).is_some()
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -184,7 +191,7 @@ pub(super) fn reactive_member_destructure_source(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_value_origins.contains_key(root.as_str())
+                || result.reactive_origin(root.as_str()).is_some()
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -214,9 +221,8 @@ pub(super) fn reactive_expression_label_for_spread(
     match expr {
         Expression::Identifier(id) => {
             let name = id.name.as_str();
-            (result.reactivity.is_reactive(name)
-                || result.reactive_value_origins.contains_key(name))
-            .then(|| CompactString::new(name))
+            (result.reactivity.is_reactive(name) || result.reactive_origin(name).is_some())
+                .then(|| CompactString::new(name))
         }
         Expression::StaticMemberExpression(member) => {
             if is_ref_value_member_root(result, expr) {
@@ -227,7 +233,7 @@ pub(super) fn reactive_expression_label_for_spread(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_value_origins.contains_key(root.as_str())
+                || result.reactive_origin(root.as_str()).is_some()
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -242,7 +248,7 @@ pub(super) fn reactive_expression_label_for_spread(
                 .reactivity
                 .lookup(root.as_str())
                 .is_some_and(|source| !source.kind.needs_value_access())
-                || result.reactive_value_origins.contains_key(root.as_str())
+                || result.reactive_origin(root.as_str()).is_some()
             {
                 return Some(super::super::common::expression_label(source, member.span));
             }
@@ -285,7 +291,7 @@ pub(super) fn reactive_plain_identifier_value_from_expr(
     match expr {
         Expression::Identifier(id) => {
             let binding_name = id.name.as_str();
-            let origin = result.reactive_value_origins.get(binding_name)?;
+            let origin = result.reactive_origin(binding_name)?;
             let (source_name, _) = plain_origin_labels(origin, binding_name);
             Some(ReactivePlainValue {
                 source_name,
@@ -348,179 +354,6 @@ fn static_ref_value_access<'a>(
             _ => return None,
         }
     }
-}
-
-pub(super) fn reactive_plain_value_from_assignment_target(
-    result: &ScriptParseResult,
-    target: &AssignmentTarget<'_>,
-    source: &str,
-) -> Option<ReactivePlainValue> {
-    match target {
-        AssignmentTarget::AssignmentTargetIdentifier(id) => {
-            reactive_plain_mutation_identifier_value(
-                result,
-                id.name.as_str(),
-                id.span.start,
-                id.span.end,
-            )
-        }
-        AssignmentTarget::StaticMemberExpression(member) => {
-            reactive_plain_value_from_mutated_member(
-                result,
-                &member.object,
-                source,
-                member.span.start,
-                member.span.end,
-            )
-        }
-        AssignmentTarget::ComputedMemberExpression(member) => {
-            reactive_plain_value_from_mutated_member(
-                result,
-                &member.object,
-                source,
-                member.span.start,
-                member.span.end,
-            )
-        }
-        _ => None,
-    }
-}
-
-pub(super) fn reactive_plain_value_from_simple_assignment_target(
-    result: &ScriptParseResult,
-    target: &SimpleAssignmentTarget<'_>,
-    source: &str,
-) -> Option<ReactivePlainValue> {
-    match target {
-        SimpleAssignmentTarget::AssignmentTargetIdentifier(id) => {
-            reactive_plain_mutation_identifier_value(
-                result,
-                id.name.as_str(),
-                id.span.start,
-                id.span.end,
-            )
-        }
-        SimpleAssignmentTarget::StaticMemberExpression(member) => {
-            reactive_plain_value_from_mutated_member(
-                result,
-                &member.object,
-                source,
-                member.span.start,
-                member.span.end,
-            )
-        }
-        SimpleAssignmentTarget::ComputedMemberExpression(member) => {
-            reactive_plain_value_from_mutated_member(
-                result,
-                &member.object,
-                source,
-                member.span.start,
-                member.span.end,
-            )
-        }
-        _ => None,
-    }
-}
-
-pub(super) fn reactive_plain_value_from_mutated_expression(
-    result: &ScriptParseResult,
-    expr: &Expression<'_>,
-    source: &str,
-) -> Option<ReactivePlainValue> {
-    match expr {
-        Expression::Identifier(id) => reactive_plain_mutation_identifier_value(
-            result,
-            id.name.as_str(),
-            id.span.start,
-            id.span.end,
-        ),
-        Expression::StaticMemberExpression(member) => reactive_plain_value_from_mutated_member(
-            result,
-            &member.object,
-            source,
-            member.span.start,
-            member.span.end,
-        ),
-        Expression::ComputedMemberExpression(member) => reactive_plain_value_from_mutated_member(
-            result,
-            &member.object,
-            source,
-            member.span.start,
-            member.span.end,
-        ),
-        Expression::ChainExpression(chain) => match &chain.expression {
-            oxc_ast::ast::ChainElement::StaticMemberExpression(member) => {
-                reactive_plain_value_from_mutated_member(
-                    result,
-                    &member.object,
-                    source,
-                    member.span.start,
-                    member.span.end,
-                )
-            }
-            oxc_ast::ast::ChainElement::ComputedMemberExpression(member) => {
-                reactive_plain_value_from_mutated_member(
-                    result,
-                    &member.object,
-                    source,
-                    member.span.start,
-                    member.span.end,
-                )
-            }
-            oxc_ast::ast::ChainElement::TSNonNullExpression(expr) => {
-                reactive_plain_value_from_mutated_expression(result, &expr.expression, source)
-            }
-            _ => None,
-        },
-        Expression::ParenthesizedExpression(paren) => {
-            reactive_plain_value_from_mutated_expression(result, &paren.expression, source)
-        }
-        Expression::TSAsExpression(ts_as) => {
-            reactive_plain_value_from_mutated_expression(result, &ts_as.expression, source)
-        }
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            reactive_plain_value_from_mutated_expression(result, &ts_satisfies.expression, source)
-        }
-        Expression::TSNonNullExpression(ts_non_null) => {
-            reactive_plain_value_from_mutated_expression(result, &ts_non_null.expression, source)
-        }
-        _ => None,
-    }
-}
-
-fn reactive_plain_value_from_mutated_member(
-    result: &ScriptParseResult,
-    object: &Expression<'_>,
-    source: &str,
-    start: u32,
-    end: u32,
-) -> Option<ReactivePlainValue> {
-    let mut value = reactive_plain_value_from_mutated_expression(result, object, source)?;
-    value.argument_name =
-        super::super::common::expression_label(source, oxc_span::Span::new(start, end));
-    value.start = start;
-    value.end = end;
-    Some(value)
-}
-
-fn reactive_plain_mutation_identifier_value(
-    result: &ScriptParseResult,
-    binding_name: &str,
-    start: u32,
-    end: u32,
-) -> Option<ReactivePlainValue> {
-    let origin = result.reactive_value_origins.get(binding_name)?;
-    if matches!(origin, ReactiveValueOrigin::PropsDestructure { .. }) {
-        return None;
-    }
-    let (source_name, _) = plain_origin_labels(origin, binding_name);
-    Some(ReactivePlainValue {
-        source_name,
-        argument_name: CompactString::new(binding_name),
-        getter_name: CompactString::new(binding_name),
-        start,
-        end,
-    })
 }
 
 fn getter_call_plain_value(

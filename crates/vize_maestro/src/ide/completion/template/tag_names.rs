@@ -80,6 +80,23 @@ pub(super) fn complete(
     globals: &[vize_l0::String],
 ) -> Option<Vec<CompletionItem>> {
     let tag = context(ctx)?;
+    let analysis = crate::ide::template_scope::analyze(ctx);
+    complete_analyzed(
+        ctx,
+        tag,
+        globals,
+        analysis.as_ref().map(|(croquis, _)| croquis),
+        &BTreeMap::new(),
+    )
+}
+
+fn complete_analyzed(
+    ctx: &IdeContext<'_>,
+    tag: TagNameContext<'_>,
+    globals: &[vize_l0::String],
+    analysis: Option<&vize_croquis::Croquis>,
+    component_types: &BTreeMap<vize_l0::String, bool>,
+) -> Option<Vec<CompletionItem>> {
     let mut names = BTreeMap::<vize_l0::String, (CompletionItemKind, &'static str)>::new();
     for name in HTML_TAGS.iter().chain(SVG_TAGS.iter()) {
         names.insert(
@@ -95,16 +112,16 @@ pub(super) fn complete(
             component(&mut names, &item.label, "Vue component");
         }
     }
-    if let Some((croquis, _)) = crate::ide::template_scope::analyze(ctx) {
+    if let Some(croquis) = analysis {
         if croquis.bindings.is_script_setup {
             for (name, kind) in &croquis.bindings.bindings {
                 if matches!(kind, BindingType::Props | BindingType::LiteralConst) {
                     continue;
                 }
-                if name.chars().next().is_some_and(char::is_uppercase)
+                let guess = name.chars().next().is_some_and(char::is_uppercase)
                     || crate::ide::definition::component_import::resolve_component_file(ctx, name)
-                        .is_some()
-                {
+                        .is_some();
+                if component_types.get(name).copied().unwrap_or(guess) {
                     component(&mut names, name, "Component in script setup");
                 }
             }
@@ -157,8 +174,17 @@ fn component(
 #[cfg(feature = "native")]
 pub(in crate::ide::completion) async fn complete_with_globals(
     ctx: &IdeContext<'_>,
+    bridge: Option<&vize_canon::CorsaBridge>,
 ) -> Option<Vec<CompletionItem>> {
-    context(ctx)?;
+    let tag = context(ctx)?;
     let globals = ctx.state.global_component_tag_names().await;
-    complete(ctx, &globals)
+    if !ctx.state.is_lsp_typecheck_enabled() || bridge.is_none() {
+        return complete(ctx, &globals);
+    }
+    let Some((croquis, _)) = crate::ide::template_scope::analyze(ctx) else {
+        return complete_analyzed(ctx, tag, &globals, None, &BTreeMap::new());
+    };
+    let analysis = super::tag_types::script_analysis(ctx, croquis)?;
+    let types = super::tag_types::classify(ctx, &analysis, bridge?).await;
+    complete_analyzed(ctx, tag, &globals, Some(&analysis.croquis), &types)
 }

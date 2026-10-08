@@ -11,7 +11,9 @@
 
 use tower_lsp::lsp_types::{DocumentHighlight, DocumentHighlightKind, Position, Range};
 
-use super::{IdeContext, token_span_at_offset};
+use super::IdeContext;
+
+mod legacy;
 
 pub struct DocumentHighlightService;
 
@@ -30,8 +32,6 @@ struct PositionWalker<'a> {
     offset: usize,
     line: u32,
     character: u32,
-    /// Byte offset where the current line begins (after the last `\n`).
-    line_start: usize,
 }
 
 impl<'a> PositionWalker<'a> {
@@ -42,7 +42,6 @@ impl<'a> PositionWalker<'a> {
             offset: 0,
             line: 0,
             character: 0,
-            line_start: 0,
         }
     }
 
@@ -57,7 +56,6 @@ impl<'a> PositionWalker<'a> {
             if ch == '\n' {
                 self.line += 1;
                 self.character = 0;
-                self.line_start = byte + 1;
             } else {
                 self.character += ch.len_utf16() as u32;
             }
@@ -65,20 +63,18 @@ impl<'a> PositionWalker<'a> {
         }
         (self.line, self.character)
     }
-
-    /// Byte offset where the line containing the most recently visited target
-    /// begins. Valid immediately after a `position_at` call.
-    fn line_start(&self) -> usize {
-        self.line_start
-    }
 }
 
 impl DocumentHighlightService {
     pub fn highlights(ctx: &IdeContext<'_>) -> Option<Vec<DocumentHighlight>> {
+        let packet = ctx.state.binding_occurrence_facts(ctx.uri, &ctx.content);
+        if packet.as_ref().is_some_and(|packet| packet.is_legacy()) {
+            return legacy::DocumentHighlightService::highlights(ctx);
+        }
         let offset = ctx.offset.min(ctx.content.len());
         // A cursor inside a raw-text block (`<script>`, `<style>`) has no markup
         // region, so it never takes the tag path and falls through to the
-        // identifier scan below.
+        // binding facts below.
         if let Some(region) =
             super::sfc_region::resolve(&ctx.content, ctx.uri.path(), offset).markup
             && let Some(names) = super::tag_pair::names_at(&ctx.content, region, offset)
@@ -86,53 +82,47 @@ impl DocumentHighlightService {
             return Some(tag_highlights(&ctx.content, &names));
         }
 
-        let (start, end) = token_span_at_offset(&ctx.content, offset, is_identifier_char)?;
-        let symbol = ctx.content.get(start..end)?;
-        if !is_highlightable_symbol(symbol) {
-            return None;
-        }
-
-        let highlights = identifier_highlights(&ctx.content, symbol);
-        (!highlights.is_empty()).then_some(highlights)
+        let packet = packet?;
+        let facts = packet.authored()?;
+        let binding = facts.binding_at(offset)?;
+        Some(identifier_highlights(&ctx.content, facts, binding))
     }
 }
 
-fn identifier_highlights(content: &str, symbol: &str) -> Vec<DocumentHighlight> {
-    // Collect matching spans first (ascending, non-overlapping), then convert
-    // every offset to a position with a single forward walk over the document.
-    let mut spans = Vec::new();
-    let mut search_start = 0usize;
-    while let Some(relative) = content
-        .get(search_start..)
-        .and_then(|rest| rest.find(symbol))
-    {
-        let start = search_start + relative;
-        let end = start + symbol.len();
-        if is_identifier_boundary(content.as_bytes(), start, end) {
-            spans.push((start, end));
-        }
-        search_start = end;
-    }
-    if spans.is_empty() {
-        return Vec::new();
-    }
-
+fn identifier_highlights(
+    content: &str,
+    packet: &crate::virtual_code::PhysicalOccurrences,
+    binding: vize_croquis::binding_occurrences::BindingIdentity,
+) -> Vec<DocumentHighlight> {
+    let mut spans = vec![(
+        binding.start as usize,
+        binding.end as usize,
+        Some(DocumentHighlightKind::WRITE),
+    )];
+    spans.extend(
+        packet
+            .references
+            .iter()
+            .filter(|reference| reference.binding == binding)
+            .map(|reference| {
+                (
+                    reference.start,
+                    reference.end,
+                    Some(DocumentHighlightKind::READ),
+                )
+            }),
+    );
+    spans.sort_unstable_by_key(|&(start, end, _)| (start, end));
+    spans.dedup();
     let mut walker = PositionWalker::new(content);
-    let mut highlights = Vec::with_capacity(spans.len());
-    for (start, end) in spans {
-        let (start_line, start_character) = walker.position_at(start);
-        let kind =
-            highlight_kind_for_prefix(content.get(walker.line_start()..start).unwrap_or_default());
-        let (end_line, end_character) = walker.position_at(end);
-        highlights.push(span_highlight(
-            start_line,
-            start_character,
-            end_line,
-            end_character,
-            kind,
-        ));
-    }
-    highlights
+    spans
+        .into_iter()
+        .map(|(start, end, kind)| {
+            let (start_line, start_character) = walker.position_at(start);
+            let (end_line, end_character) = walker.position_at(end);
+            span_highlight(start_line, start_character, end_line, end_character, kind)
+        })
+        .collect()
 }
 
 /// One highlight per name of the resolved element: two for a matched pair, one
@@ -176,58 +166,11 @@ fn span_highlight(
     }
 }
 
-fn highlight_kind_for_prefix(prefix: &str) -> Option<DocumentHighlightKind> {
-    let prefix = prefix.trim_end();
-
-    if prefix.ends_with("const")
-        || prefix.ends_with("let")
-        || prefix.ends_with("var")
-        || prefix.ends_with("function")
-        || prefix.ends_with("class")
-        || prefix.ends_with("interface")
-        || prefix.ends_with("type")
-        || prefix.ends_with("import")
-    {
-        Some(DocumentHighlightKind::WRITE)
-    } else {
-        Some(DocumentHighlightKind::READ)
-    }
-}
-
-fn is_highlightable_symbol(symbol: &str) -> bool {
-    !matches!(
-        symbol,
-        "true"
-            | "false"
-            | "null"
-            | "undefined"
-            | "if"
-            | "else"
-            | "for"
-            | "in"
-            | "of"
-            | "const"
-            | "let"
-            | "var"
-            | "function"
-            | "return"
-            | "import"
-            | "from"
-            | "export"
-    )
-}
-
-#[inline]
-fn is_identifier_char(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')
-}
-
-fn is_identifier_boundary(bytes: &[u8], start: usize, end: usize) -> bool {
-    let before = start.checked_sub(1).and_then(|index| bytes.get(index));
-    let after = bytes.get(end);
-    !before.is_some_and(|byte| is_identifier_char(*byte))
-        && !after.is_some_and(|byte| is_identifier_char(*byte))
-}
-
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod semantic_tests;
+
+#[cfg(test)]
+mod domain_tests;

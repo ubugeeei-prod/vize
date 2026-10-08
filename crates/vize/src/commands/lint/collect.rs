@@ -102,7 +102,7 @@ fn collect_lint_files_from_dir(
     seen: &mut FxHashSet<PathBuf>,
 ) -> bool {
     let mut matched = false;
-    if vize_l0::path::is_git_metadata_path(&normalize_lint_input_path(dir)) {
+    if vize_carton::path::is_git_metadata_path(&normalize_lint_input_path(dir)) {
         return false;
     }
     let explicitly_selected = matcher.map(|matcher| matcher.explicit_directories());
@@ -110,7 +110,7 @@ fn collect_lint_files_from_dir(
         .standard_filters(true)
         .hidden(matcher.is_none())
         .filter_entry(move |entry| {
-            !vize_l0::path::is_git_metadata_path(entry.path())
+            !vize_carton::path::is_git_metadata_path(entry.path())
                 && (entry.depth() == 0
                     || !entry.file_type().is_some_and(|kind| kind.is_dir())
                     || !is_default_excluded_dir(entry, explicitly_selected))
@@ -148,11 +148,11 @@ fn add_lint_file(
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
 ) -> bool {
-    if vize_l0::path::is_git_metadata_path(path) || !is_lintable_path(path) {
+    if vize_carton::path::is_git_metadata_path(path) || !is_lintable_path(path) {
         return false;
     }
     let normalized = normalize_lint_input_path(path);
-    if vize_l0::path::is_git_metadata_path(&normalized) {
+    if vize_carton::path::is_git_metadata_path(&normalized) {
         return false;
     }
     if ignore_set.is_some_and(|ignore_set| ignore_set.is_ignored(&normalized)) {
@@ -310,7 +310,7 @@ fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: 
     let pattern = Path::new(ignore.pattern.as_str());
     if pattern.is_absolute() {
         return if pattern.exists() {
-            vize_l0::path::canonicalize_non_verbatim(pattern)
+            vize_carton::path::canonicalize_non_verbatim(pattern)
         } else {
             pattern.to_path_buf()
         };

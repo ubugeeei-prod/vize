@@ -12,6 +12,7 @@ type Step = {
   with?: Record<string, string | boolean>;
 };
 type Job = {
+  permissions?: Record<string, string>;
   if?: string;
   needs?: string[] | string;
   steps?: Step[];
@@ -42,7 +43,7 @@ test("source planning installs the declared Node runtime before TypeScript impor
   for (const step of [steps[toolchain], steps[metadata]]) {
     assert.equal(step.if, "${{ steps.plan.outputs.rust == 'true' }}");
   }
-  assert.equal(steps[toolchain].with?.toolchain, "1.98.0");
+  assert.equal(steps[toolchain].with?.toolchain, "1.99.0");
   assert.equal(plan.outputs?.tooling, "${{ steps.tooling-plan.outputs.tooling }}");
   assert.equal(
     plan.outputs?.["tooling-matrix"],
@@ -76,7 +77,7 @@ test("every isolated tooling runner regenerates its tier and retains the full me
     (step) => step.name === "Install fixture and JS dependencies",
   );
   const pkl = steps.findIndex(
-    (step) => step.name === "Prepare checksum-pinned Pkl schema dependencies",
+    (step) => step.name === "Prepare checksum-pinned Pkl and upstream lint dependencies",
   );
   const build = steps.findIndex((step) => step.name === "Build and install vize CLI");
   const selected = steps.findIndex((step) => step.name === "Test selected PR tooling scripts");
@@ -84,7 +85,15 @@ test("every isolated tooling runner regenerates its tier and retains the full me
   assert.ok(regenerate >= 0 && regenerate < build && build < selected && selected < full);
   assert.ok(regenerate < dependencies && dependencies < pkl && pkl < build);
   assert.equal(steps[pkl].if, "${{ needs.pr-source-plan.outputs.tooling == 'true' }}");
-  assert.equal(steps[pkl].run, "node tools/support/compat/github/prepare-pkl-schema.mjs");
+  assert.equal(steps[pkl].uses, "./.github/actions/install-formatter-css-browser");
+  const preparation = parse(
+    readRepoFile(".github", "actions", "install-formatter-css-browser", "action.yml"),
+  ) as { runs: { steps: Step[] } };
+  assert.equal(preparation.runs.steps[0].if, "env.VIZE_TOOLING_TEST_PLAN != ''");
+  assert.equal(
+    preparation.runs.steps[0].run,
+    "node tools/support/compat/github/prepare-pkl-schema.mjs && node tools/support/compat/github/prepare-vue-benchmarks.mjs",
+  );
   assert.equal(steps[pkl].env?.VIZE_TOOLING_TEST_PLAN, "${{ runner.temp }}/tooling-plan.json");
   assert.equal(
     steps[pkl].env?.VIZE_TOOLING_TEST_TIER,
@@ -143,7 +152,7 @@ test("every isolated tooling runner regenerates its tier and retains the full me
   assert.ok(source.jobs["source-report"].needs?.includes("pr-tooling-scripts"));
   assert.equal(
     source.jobs["source-report"].steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-needs-success.mjs --check",
+    "node tools/support/compat/github/canonical-corpus-selection.mjs --check",
   );
   assert.match(
     steps[build].run ?? "",
@@ -181,19 +190,46 @@ test("the Rust report waits for the builder and all four independently executing
   assert.match(steps[run].run ?? "", /--partition "hash:\$SHARD\/4"/);
   assert.deepEqual(rust.jobs["rust-source-report"].needs, [
     "merge-rust-source",
+    "merge-rust-differential",
     "pr-rust-build",
     "pr-rust-shard",
   ]);
   assert.equal(rust.jobs["rust-source-report"].if, "${{ always() }}");
   const reportSteps = rust.jobs["rust-source-report"].steps ?? [];
   const gate = reportSteps.findIndex((step) => step.name === "Require the complete Rust tier");
+  const select = reportSteps.findIndex(
+    (step) => step.name === "Select latest source-bound Rust workers",
+  );
   const download = reportSteps.findIndex(
     (step) => step.name === "Download the four current full Rust workers",
   );
   const reconcile = reportSteps.findIndex(
     (step) => step.name === "Require all registered typechecker observations",
   );
-  assert.ok(gate >= 0 && gate < download && download < reconcile);
+  assert.ok(gate >= 0 && gate < select && select < download && download < reconcile);
+  assert.equal(reportSteps[select].if, reportSteps[download].if);
+  assert.equal(reportSteps[reconcile].if, reportSteps[download].if);
+  assert.equal(
+    reportSteps[download].with?.["artifact-ids"],
+    "${{ steps.rust-workers.outputs.artifact-ids }}",
+  );
+  assert.equal(reportSteps[download].with?.pattern, undefined);
+  assert.equal(reportSteps[download].with?.["github-token"], "${{ github.token }}");
+  assert.equal(reportSteps[download].with?.["run-id"], "${{ github.run_id }}");
+  assert.equal(reportSteps[download].with?.["merge-multiple"], false);
+  assert.equal(reportSteps[download].with?.["digest-mismatch"], "error");
+  assert.match(reportSteps[select].run ?? "", /select-rust-workers\.mjs select/);
+  assert.match(
+    reportSteps[reconcile].run ?? "",
+    /select-rust-workers\.mjs verify .*\n.*typechecker-shards\.ts aggregate/,
+  );
+  const check = parse(readRepoFile(".github", "workflows", "check.yml"));
+  for (const job of [
+    check.jobs["pr-source-checks"],
+    source.jobs["pr-rust-source"],
+    rust.jobs["rust-source-report"],
+  ])
+    assert.deepEqual(job.permissions, { contents: "read", actions: "read" });
   assert.equal(reportSteps[gate].if, undefined);
   assert.equal(reportSteps[gate].run, "node tools/support/compat/github/require-rust-tier.mjs");
   assert.deepEqual(reportSteps[gate].env, {

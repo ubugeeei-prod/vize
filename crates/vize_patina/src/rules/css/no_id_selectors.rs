@@ -13,6 +13,9 @@ use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::{CssLintResult, CssRule, CssRuleMeta};
 
+mod selector_positions;
+use selector_positions::SelectorPositions;
+
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/no-id-selectors",
     description: "Discourage use of ID selectors in CSS",
@@ -29,56 +32,66 @@ impl CssRule for NoIdSelectors {
 
     fn check<'i>(
         &self,
-        _source: &'i str,
+        source: &'i str,
         stylesheet: &StyleSheet<'i>,
         offset: usize,
         result: &mut CssLintResult,
     ) {
         for rule in &stylesheet.rules.0 {
-            self.check_rule(rule, offset, result);
+            self.check_rule(source, rule, offset, result);
         }
     }
 }
 
 impl NoIdSelectors {
-    fn check_rule(&self, rule: &LCssRule, offset: usize, result: &mut CssLintResult) {
+    fn check_rule(&self, source: &str, rule: &LCssRule, offset: usize, result: &mut CssLintResult) {
         match rule {
             LCssRule::Style(style_rule) => {
-                for selector in style_rule.selectors.0.iter() {
-                    self.check_selector(selector, offset, result);
+                let mut positions = SelectorPositions::new(source, style_rule.loc);
+                for (index, selector) in style_rule.selectors.0.iter().enumerate() {
+                    self.check_selector(selector, index, &mut positions, offset, result);
                 }
                 for rule in &style_rule.rules.0 {
-                    self.check_rule(rule, offset, result);
+                    self.check_rule(source, rule, offset, result);
                 }
             }
             LCssRule::Media(media) => {
                 for rule in &media.rules.0 {
-                    self.check_rule(rule, offset, result);
+                    self.check_rule(source, rule, offset, result);
                 }
             }
             LCssRule::Supports(supports) => {
                 for rule in &supports.rules.0 {
-                    self.check_rule(rule, offset, result);
+                    self.check_rule(source, rule, offset, result);
                 }
             }
             LCssRule::LayerBlock(layer) => {
                 for rule in &layer.rules.0 {
-                    self.check_rule(rule, offset, result);
+                    self.check_rule(source, rule, offset, result);
                 }
             }
             _ => {}
         }
     }
 
-    fn check_selector(&self, selector: &Selector, offset: usize, result: &mut CssLintResult) {
+    fn check_selector(
+        &self,
+        selector: &Selector,
+        index: usize,
+        positions: &mut SelectorPositions<'_>,
+        offset: usize,
+        result: &mut CssLintResult,
+    ) {
         for component in selector.iter() {
-            if let Component::ID(id) = component {
+            if let Component::ID(id) = component
+                && let Some((start, end)) = positions.take(index, id.0.as_ref(), offset)
+            {
                 result.add_diagnostic(
                     LintDiagnostic::warn(
                         META.name,
                         "Avoid ID selectors - use class selectors for better reusability",
-                        offset as u32,
-                        (offset + id.0.len() + 1) as u32,
+                        start,
+                        end,
                     )
                     .with_help("Replace with a class selector for lower specificity"),
                 );

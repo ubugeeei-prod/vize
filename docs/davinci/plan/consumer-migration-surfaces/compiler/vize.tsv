@@ -6,13 +6,15 @@ compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/cache/tests.rs	
 compiler	Compiler	source	crates/vize/src/commands/build/runner/capture.rs	9	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	source	crates/vize/src/commands/build/runner/capture/page_files.rs	7	l0	L0	stage	vize_l0	preferred	3
 compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/capture/page_files.rs	215	l0	L0	stage	vize_l0	preferred	2
-compiler	Compiler	source	crates/vize/src/commands/build/runner/collect.rs	74	l0	L0	stage	vize_l0	preferred	4
+compiler	Compiler	source	crates/vize/src/commands/build/runner/collect.rs	74	carton	Carton host/compatibility	old	vize_carton	legacy	4
 compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/collect/tests.rs	9	l0	L0	stage	vize_l0	preferred	1
-compiler	Compiler	source	crates/vize/src/commands/build/runner/compile_stats.rs	15	l0	L0	stage	vize_l0	preferred	7
-compiler	Compiler	source	crates/vize/src/commands/build/runner/compile.rs	41	l0	L0	stage	vize_l0	preferred	8
-compiler	Compiler	source	crates/vize/src/commands/build/runner/declarations.rs	66	l0	L0	stage	vize_l0	preferred	1
+compiler	Compiler	source	crates/vize/src/commands/build/runner/compile_stats.rs	16	l0	L0	stage	vize_l0	preferred	6
+compiler	Compiler	source	crates/vize/src/commands/build/runner/compile_stats.rs	16	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	source	crates/vize/src/commands/build/runner/compile.rs	42	l0	L0	stage	vize_l0	preferred	5
+compiler	Compiler	source	crates/vize/src/commands/build/runner/compile.rs	42	carton	Carton host/compatibility	old	vize_carton	legacy	3
+compiler	Compiler	source	crates/vize/src/commands/build/runner/declarations.rs	66	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize/src/commands/build/runner/output.rs	11	l0	L0	stage	vize_l0	preferred	2
 compiler	Compiler	source	crates/vize/src/commands/build/runner/output/plan.rs	3	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/output/tests.rs	5	l0	L0	stage	vize_l0	preferred	1
 compiler	Compiler	source	crates/vize/src/commands/build/runner/profile_facts.rs	6	l0	L0	stage	vize_l0	preferred	3
-compiler	Compiler	source	crates/vize/src/commands/build/runner/settings.rs	5	l0	L0	stage	vize_l0	preferred	3
+compiler	Compiler	test/dev	crates/vize/src/commands/build/runner/settings.rs	8	l0	L0	stage	vize_l0	preferred	3

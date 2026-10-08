@@ -1,0 +1,8 @@
+<script setup vapor>
+import { ref } from "vue";
+const n = ref(0);
+</script>
+
+<template>
+  <i @click="n++">{{ n }}</i>
+</template>

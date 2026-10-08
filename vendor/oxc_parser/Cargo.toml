@@ -38,6 +38,7 @@ num-bigint = "0.5.0"
 num-traits = "0.2.19"
 rustc-hash = "2"
 seq-macro = "0.3.6"
+stacker = "=0.1.25"
 
 memchr = "2.8.2"
 

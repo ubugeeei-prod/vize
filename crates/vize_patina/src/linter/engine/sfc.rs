@@ -21,6 +21,7 @@ impl Linter {
             input.analysis,
             TemplateRuleEnv {
                 sfc_descriptor: input.descriptor,
+                art_script_analysis: None,
                 dialect: VueDialect::Vue,
                 facade_rules: facade::RULES,
             },
@@ -41,6 +42,14 @@ impl Linter {
                 &mut result,
                 None,
             );
+            if super::super::css_rules::has_active_builtin_css_rules(self) {
+                super::super::css_rules::append_builtin_css_diagnostics(
+                    self,
+                    descriptor,
+                    &mut result,
+                    None,
+                );
+            }
             return result;
         };
 
@@ -93,6 +102,17 @@ impl Linter {
             &mut result,
             (!has_fatal_parse_errors).then_some((&root, template.loc.start as u32)),
         );
+        if super::super::css_rules::has_active_builtin_css_rules(self) {
+            super::super::css_rules::append_builtin_css_diagnostics(
+                self,
+                descriptor,
+                &mut result,
+                (!has_fatal_parse_errors
+                    && template.src.is_none()
+                    && template.lang.as_deref().is_none_or(|lang| lang == "html"))
+                .then_some(&root),
+            );
+        }
         result
     }
 
@@ -158,12 +178,14 @@ impl Linter {
                     self,
                     descriptor,
                     &mut template_result,
+                    None,
                 );
             }
             return self.append_sfc_document_rule_diagnostics(
                 source,
                 filename,
                 Self::merge_lint_results(template_result, sfc_result),
+                shared_descriptor,
             );
         }
 
@@ -176,16 +198,7 @@ impl Linter {
             let template_result = match shared_descriptor {
                 Some(descriptor) => {
                     profile!("patina.sfc.descriptor_rules", {
-                        let mut result =
-                            self.lint_sfc_with_descriptor(filename, descriptor, derived);
-                        if super::super::css_rules::has_active_builtin_css_rules(self) {
-                            super::super::css_rules::append_builtin_css_diagnostics(
-                                self,
-                                descriptor,
-                                &mut result,
-                            );
-                        }
-                        result
+                        self.lint_sfc_with_descriptor(filename, descriptor, derived)
                     })
                 }
                 None => self.fast_template_lint_or_empty(source, filename),
@@ -194,6 +207,7 @@ impl Linter {
                 source,
                 filename,
                 Self::merge_lint_results(template_result, sfc_result),
+                shared_descriptor,
             );
         }
 
@@ -210,7 +224,7 @@ impl Linter {
             None => empty_lint_result(filename),
         };
 
-        self.append_sfc_document_rule_diagnostics(source, filename, result)
+        self.append_sfc_document_rule_diagnostics(source, filename, result, shared_descriptor)
     }
 
     /// Template body extracted from an SFC. [`facade::RULES`] run on the L2 facade.
@@ -225,6 +239,7 @@ impl Linter {
             true,
             TemplateRuleEnv {
                 sfc_descriptor: None,
+                art_script_analysis: None,
                 dialect: VueDialect::Vue,
                 facade_rules: facade::RULES,
             },
@@ -250,6 +265,7 @@ impl Linter {
         source: &str,
         filename: &str,
         mut result: LintResult,
+        descriptor: Option<&vize_atelier_sfc::SfcDescriptor<'_>>,
     ) -> LintResult {
         super::super::musea_rules::append_builtin_musea_diagnostics(
             self,
@@ -259,7 +275,7 @@ impl Linter {
         );
         // `<variant>` markup is not an SFC `<template>`, so the template lane
         // never sees it. Gallery variants are real components.
-        self.append_art_variant_template_diagnostics(source, filename, &mut result);
+        self.append_art_variant_template_diagnostics(source, filename, &mut result, descriptor);
         if (source.contains("eslint-") || source.contains("oxlint-"))
             && let Ok(descriptor) = super::super::script_rules::parse_sfc_for_lint(source, filename)
             && crate::context::retain_unless_sfc_suppressed(&descriptor, &mut result.diagnostics)

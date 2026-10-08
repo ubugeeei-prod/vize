@@ -28,12 +28,14 @@ pub(super) fn append_prop_entry(
     open_named_group: &mut bool,
 ) {
     let template_offset = source_context.offset;
+    let mut merged_value_ranges = Vec::new();
     let generated_value = if merge_class_bindings && prop.name.as_str() == "class" {
         if *emitted_merged_class {
             return;
         }
         *emitted_merged_class = true;
-        merged_class_binding_value(class_bindings).map(PropSpan::plain)
+        merged_class_binding_value(class_bindings, Some(&mut merged_value_ranges))
+            .map(PropSpan::plain)
     } else {
         generated_prop_span(prop, template_binding_access)
     };
@@ -103,7 +105,17 @@ pub(super) fn append_prop_entry(
     }
 
     let sub_spans = match merge_class_bindings && prop.name.as_str() == "class" {
-        true => Vec::new(),
+        true => class_bindings
+            .iter()
+            .zip(&merged_value_ranges)
+            .filter(|((binding, _), _)| binding.is_dynamic)
+            .filter_map(|((binding, _), generated)| {
+                Some(VizeSubSpan {
+                    gen_range: value_span.start + generated.start..value_span.start + generated.end,
+                    src_range: prop_value_source_range(source_context, binding)?,
+                })
+            })
+            .collect(),
         false if inline_callback => prop_name_source_range(source_context, prop)
             .map_or_else(Vec::new, |src_range| {
                 key_sub_spans(entry_gen_start..key_gen_end, src_range)
@@ -120,10 +132,29 @@ pub(super) fn append_prop_entry(
         src_range: prop_src_start..prop_src_end,
         sub_spans,
     });
+    if merge_class_bindings && prop.name.as_str() == "class" && !template_binding_access.is_empty()
+    {
+        for ((binding, _), generated) in class_bindings.iter().zip(&merged_value_ranges) {
+            if binding.is_dynamic
+                && let Some(value) = binding.value.as_ref()
+                && let Some(source) = prop_value_source_range(source_context, binding)
+            {
+                map_rewritten_template_binding(
+                    ts.get(..value_span.start + generated.end)
+                        .unwrap_or_default(),
+                    mappings,
+                    value_span.start + generated.start,
+                    source.start,
+                    value.as_str(),
+                    template_binding_access,
+                );
+            }
+        }
+    }
     if !template_binding_access.is_empty()
         && prop.is_dynamic
         && !inline_callback
-        && !merge_class_bindings
+        && !(merge_class_bindings && prop.name.as_str() == "class")
         && let Some(value) = prop.value.as_ref()
         && let Some(source) = prop_value_source_range(source_context, prop)
     {
@@ -144,6 +175,13 @@ fn entry_sub_spans(
     key_gen_range: std::ops::Range<usize>,
     value_gen_range: std::ops::Range<usize>,
 ) -> Vec<VizeSubSpan> {
+    if let Some(spans) = crate::virtual_ts::expressions::model_modifiers::modifier_sub_spans(
+        source_context,
+        prop,
+        value_gen_range.clone(),
+    ) {
+        return spans;
+    }
     let Some(name_src_range) = prop_name_source_range(source_context, prop) else {
         return Vec::new();
     };

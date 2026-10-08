@@ -35,5 +35,31 @@
         "requiredFacets": ["code", "css", "errors", "warnings", "macro_artifacts"]
       }
     }
+  ],
+  "runtimePacks": [
+    {
+      "path": "first-newline-runtime.manifest.json",
+      "sha256": "a4ed88464c4ae0f35879cbc34dc08a5da85ca1f625c523a10ded80fac61bc3cb",
+      "adapter": "compiler-cli-whole-sfc-runtime-v1",
+      "workflow": ".github/workflows/pre-textarea-first-newline.yml"
+    },
+    {
+      "path": "component-slot-text-7970.manifest.json",
+      "sha256": "d5b92bea8b64f88b27aaac9f215daa439e126b4f64c2cae7fe5166e6a4768957",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-component-template-refs-7882/manifest.json",
+      "sha256": "7ae0220119810dd4140ce3953e1ee60422b9bdd900d41dd071dc8bc1f74db219",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-slot-defaults-7886.manifest.json",
+      "sha256": "4a66edd85a4292ad75fc45d6a87dd4bb8e3efcf0917a7e2bf64ac43addd5b30a",
+      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "workflow": ".github/workflows/check.yml"
+    }
   ]
 }

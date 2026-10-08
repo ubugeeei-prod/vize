@@ -135,6 +135,22 @@ test("the judge accepts the ideal transcript and rejects every corrupted expecta
   assert.deepEqual(negativeControl(scenario, idealTranscript(), [root]), []);
 });
 
+test("initialize requires the declared disabled JSX routing hint without weakening exactness", () => {
+  const expected = byId("initialize").expect as any;
+  assert.deepEqual(expected.capabilities.experimental, { vize: { jsxTypecheck: false } });
+  for (const hint of [
+    undefined,
+    { vize: { jsxTypecheck: true } },
+    { vize: { jsxTypecheck: "false" } },
+  ]) {
+    const entries = idealTranscript();
+    const initialize = entries.find((entry) => entry.msg?.result?.serverInfo != null)!;
+    if (hint === undefined) delete initialize.msg!.result.capabilities.experimental;
+    else initialize.msg!.result.capabilities.experimental = hint;
+    assert.deepEqual(failures(entries), ["initialize"]);
+  }
+});
+
 test("a deliberately wrong expectation fails exactly its own step", () => {
   const steps = scenario.steps.map((step) =>
     step.id === "hover" ? corruptExpectation(step) : step,

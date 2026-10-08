@@ -29,5 +29,21 @@ watch(() => [props.code, props.language], highlightCode, { flush: "post" });
 </script>
 
 <template>
-  <code ref="codeElement" :class="`language-${language}`" />
+  <code ref="codeElement" :class="['musea-highlighted-code', `language-${language}`]" />
 </template>
+
+<style scoped>
+.musea-highlighted-code {
+  display: block;
+  width: max-content;
+  min-width: 100%;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  font: inherit;
+  line-height: inherit;
+  white-space: pre;
+  word-break: normal;
+  tab-size: 2;
+}
+</style>

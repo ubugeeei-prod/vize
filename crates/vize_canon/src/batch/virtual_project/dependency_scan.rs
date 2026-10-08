@@ -107,6 +107,10 @@ impl VirtualProject {
             })
             .map(|(pattern, _)| CompactString::from(pattern.trim_end_matches('*')))
             .collect();
+        let declaration_alias_prefixes = aliases
+            .iter()
+            .map(|(pattern, _)| CompactString::from(pattern.trim_end_matches('*')))
+            .collect::<Vec<_>>();
         let mut queue: Vec<PathBuf> = match initial_sources {
             Some(paths) => paths
                 .iter()
@@ -151,7 +155,11 @@ impl VirtualProject {
             if references.is_empty()
                 && !may_resolve_a_dependency(
                     &virtual_content,
-                    &alias_prefixes,
+                    if is_declaration_file(&importer) {
+                        &declaration_alias_prefixes
+                    } else {
+                        &alias_prefixes
+                    },
                     workspace_package_specifiers,
                 )
             {
@@ -193,10 +201,15 @@ impl VirtualProject {
                 .collect::<Vec<_>>();
 
             for (specifier, mode, is_reference) in specifiers {
-                let native_target =
-                    resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases);
+                // Path references are always relative to the containing file,
+                // even without `./`; import aliases and packages do not apply.
+                let native_target = if is_reference {
+                    resolution::probe_candidates(&importer_dir.join(&specifier))
+                } else {
+                    resolve_dependency(&specifier, &importer_dir, &self.project_root, &aliases)
+                };
                 let Some(target) = native_target else {
-                    if let Some(resolve) = package_resolver.as_deref_mut() {
+                    if !is_reference && let Some(resolve) = package_resolver.as_deref_mut() {
                         let _ = resolve(&importer, &specifier, mode);
                     }
                     continue;

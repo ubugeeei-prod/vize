@@ -12,6 +12,13 @@ use super::module_specifier;
 mod tests;
 
 pub(crate) fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<PathBuf> {
+    resolve_authored_import_specifier(uri, specifier)
+        .or_else(|| module_specifier::resolve_specifier(uri, specifier))
+}
+
+/// Resolve relative imports and project-owned aliases without adding links for
+/// bare packages. Definition may additionally resolve those package routes.
+pub(crate) fn resolve_authored_import_specifier(uri: &Url, specifier: &str) -> Option<PathBuf> {
     let file = uri.to_file_path().ok()?;
     if specifier.starts_with("./") || specifier.starts_with("../") {
         return module_specifier::resolve_specifier(uri, specifier).or_else(|| {
@@ -56,7 +63,7 @@ pub(crate) fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<Pat
     if let Some(path) = resolve_project_source_alias(&file, specifier) {
         return Some(path);
     }
-    module_specifier::resolve_specifier(uri, specifier)
+    None
 }
 
 fn resolve_nuxt_source_alias(file: &Path, specifier: &str) -> Option<PathBuf> {

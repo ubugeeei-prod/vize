@@ -106,6 +106,7 @@ corsa_lsp.workspace = true
 davinci_test_support = { workspace = true }
 insta.workspace = true
 lsp-types.workspace = true
+url.workspace = true
 
 [lints]
 workspace = true

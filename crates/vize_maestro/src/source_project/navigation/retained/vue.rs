@@ -96,7 +96,7 @@ pub(in crate::source_project::navigation) fn run(
             }
         },
     };
-    serve(&query, receiver, &control);
+    serve(&query, None, receiver, &control);
     // Borrowed native view/query end before observation; arena and snapshot
     // remain stack owners until all original SFC owners have dropped.
     drop(observation);

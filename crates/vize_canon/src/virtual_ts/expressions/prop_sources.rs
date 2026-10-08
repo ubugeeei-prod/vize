@@ -170,9 +170,27 @@ pub(crate) fn prop_value_source_range(
     let prop_start = prop.start as usize;
     let prop_end = prop.end as usize;
     let raw_prop = source.get(prop_start..prop_end)?;
-    let relative_start = raw_prop.rfind(value)?;
-    let source_start = source_context.offset as usize + prop_start + relative_start;
-    Some(source_start..source_start + value.len())
+    if let Some(relative_start) = raw_prop.rfind(value) {
+        let source_start = source_context.offset as usize + prop_start + relative_start;
+        return Some(source_start..source_start + value.len());
+    }
+    // A same-name binding has no authored value; the retained prop value is
+    // the parser's camelized static argument, whose complete token owns it.
+    if !prop.is_dynamic || prop.name_is_dynamic || raw_prop.contains('=') {
+        return None;
+    }
+    let argument = raw_prop
+        .strip_prefix("v-bind:")
+        .or_else(|| raw_prop.strip_prefix(':'))
+        .or_else(|| raw_prop.strip_prefix('.'))?
+        .split('.')
+        .next()?;
+    if argument != prop.name.as_str()
+        || super::super::helpers::to_camel_case(argument).as_str() != value
+    {
+        return None;
+    }
+    prop_name_source_range(source_context, prop)
 }
 
 /// The authored token a prop-type diagnostic anchors at — `msg` inside

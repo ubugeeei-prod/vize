@@ -89,6 +89,15 @@ const expectedCompletion = [
     labelDetails: { detail: " (literal)" },
     sortText: "0total",
   },
+  ...JSON.parse(
+    fs.readFileSync(
+      new URL(
+        "../../../../tests/_fixtures/differential/lsp/template-expression-globals-8015/globals.expected.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ),
 ];
 
 const expectedHover = {
@@ -105,6 +114,7 @@ const expectedHover = {
 function expectedCodeActions(uri) {
   return [
     {
+      diagnostics: [expectedDiagnostics[0]],
       edit: {
         changes: {
           [uri]: [
@@ -123,6 +133,7 @@ function expectedCodeActions(uri) {
       title: "Fix: Replace multiple spaces with single space",
     },
     {
+      diagnostics: [expectedDiagnostics[0]],
       edit: {
         changes: {
           [uri]: [

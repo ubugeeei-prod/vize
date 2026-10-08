@@ -17,12 +17,14 @@ use corsa::{
     runtime::block_on,
 };
 use std::{
-    path::{Path, PathBuf},
+    path::PathBuf,
     sync::atomic::{AtomicUsize, Ordering},
 };
 use vize_l0::{String, cstr};
 
 use crate::file_uri::path_to_file_uri;
+
+mod workspace;
 
 impl CorsaProjectClient {
     /// Start a Corsa project session rooted at an isolated scratch workspace.
@@ -60,31 +62,13 @@ impl CorsaProjectClient {
         )
     }
 
-    /// Start a Corsa project session rooted at an on-disk workspace.
-    pub fn new_for_workspace(
-        corsa_path: Option<&str>,
-        workspace_root: &Path,
-    ) -> Result<Self, String> {
-        let workspace_root = workspace_root
-            .canonicalize()
-            .unwrap_or_else(|_| workspace_root.to_path_buf());
-        let working_dir = workspace_root.to_string_lossy();
-        let executable = resolve_corsa_executable(corsa_path, Some(working_dir.as_ref()))?;
-
-        Self::spawn_initialized_client(
-            executable.as_str(),
-            workspace_root.clone(),
-            Some(workspace_root),
-            None,
-        )
-    }
-
     /// Shutdown the project session.
     pub fn shutdown(&mut self) -> Result<(), String> {
         if self.closed {
             return Ok(());
         }
 
+        let authored_result = self.retire_original_diagnosing_session();
         let project_result = self.session.take().map_or(Ok(()), |session| {
             corsa::runtime::block_on(session.close())
                 .map_err(|error| cstr!("Failed to close Corsa project session: {error}"))
@@ -94,7 +78,7 @@ impl CorsaProjectClient {
         self.diagnostics.clear();
         self.overlay_versions.clear();
         self.closed = true;
-        project_result.and(editor_result)
+        authored_result.and(project_result).and(editor_result)
     }
 
     /// Open a virtual document.

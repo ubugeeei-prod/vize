@@ -51,6 +51,12 @@ pub(super) struct ProgramExecution {
     _checker_tsconfig: PreparedCheckerTsconfig,
 }
 
+pub(super) struct ProgramPreparation {
+    pub(super) execution: Option<ProgramExecution>,
+    /// Existing explicit inputs rejected by their owning program's file options.
+    pub(super) excluded_explicit_inputs: bool,
+}
+
 pub(super) struct ProgramExecutionInput<'a> {
     pub(super) files: &'a [PathBuf],
     pub(super) reported_files: FxHashSet<PathBuf>,
@@ -180,9 +186,9 @@ pub(super) fn execute_program(
     if let (Some(authored), Some(prepared)) =
         (input.tsconfig_path.as_ref(), checker_tsconfig.path())
     {
-        let prepared = vize_l0::path::canonicalize_non_verbatim(prepared);
+        let prepared = vize_carton::path::canonicalize_non_verbatim(prepared);
         for diagnostic in &mut result.diagnostics {
-            if vize_l0::path::canonicalize_non_verbatim(&diagnostic.file) == prepared {
+            if vize_carton::path::canonicalize_non_verbatim(&diagnostic.file) == prepared {
                 diagnostic.file = authored.clone();
             }
         }

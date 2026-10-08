@@ -30,6 +30,7 @@ mod module_input;
 mod module_target;
 #[cfg(feature = "experimental-source-navigation")]
 mod native_navigation;
+mod native_requests;
 mod open_document;
 mod semantic_tokens;
 mod state;
@@ -197,6 +198,10 @@ pub(crate) fn build_lsp_service() -> (LspService<MaestroServer>, ClientSocket) {
         .custom_method(
             native_navigation::TEMPLATE_HIGHLIGHTS_METHOD,
             MaestroServer::native_template_highlights,
+        )
+        .custom_method(
+            native_navigation::MODULE_LINKS_METHOD,
+            MaestroServer::native_module_document_links,
         );
     builder.finish()
 }

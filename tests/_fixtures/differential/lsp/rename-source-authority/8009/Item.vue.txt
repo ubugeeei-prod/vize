@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ itemKind?: string; label?: string }>();
+</script>
+
+<template>
+  <button>{{ label }}</button>
+</template>

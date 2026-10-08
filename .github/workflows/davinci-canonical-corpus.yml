@@ -1,0 +1,142 @@
+name: Canonical Davinci corpus
+on:
+  workflow_call:
+    inputs:
+      davinci_dom_corpus_mode:
+        type: string
+        required: false
+        default: "enforce"
+permissions:
+  contents: read
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  canonical-observers:
+    name: canonical observer (${{ matrix.observer }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix: { observer: [dom, ssr-pug, reach] }
+    env:
+      VIZE_DAVINCI_DOM_CORPUS_MODE: ${{ inputs.davinci_dom_corpus_mode || 'enforce' }}
+    steps:
+      - name: Checkout matrix commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: ./.github/actions/setup-rust-script
+      - name: Setup Wild linker
+        uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: davinci-dom-corpus, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Plan canonical corpus identity
+        id: corpus-plan
+        run: node tools/support/compat/github/canonical-corpus-observer.mjs plan
+      - name: Restore immutable fixture objects
+        if: ${{ steps.corpus-plan.outputs.cache-trusted != 'true' }}
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: .git/modules/tests/_fixtures/_git
+          key: ${{ steps.corpus-plan.outputs.cache-key }}
+      - name: Cache immutable trusted fixture objects
+        if: ${{ steps.corpus-plan.outputs.cache-trusted == 'true' }}
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: .git/modules/tests/_fixtures/_git
+          key: ${{ steps.corpus-plan.outputs.cache-key }}
+      - name: Select and hydrate full fixture corpus
+        run: |
+          set -o pipefail
+          rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs hydrate 2>&1 | tee real-project-davinci-dom-corpus/initial-hydration.log
+          node tools/support/compat/github/canonical-corpus-observer.mjs rehydrate
+      - name: Capture canonical corpus identity
+        run: node tools/support/compat/github/canonical-corpus-observer.mjs snapshot
+      - name: Run L2 DOM differential corpus
+        if: ${{ matrix.observer == 'dom' }}
+        id: davinci_dom_corpus
+        continue-on-error: true
+        run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs run
+      - name: Run L4 SSR and pug L1 differential corpora
+        id: ssr_pug
+        if: ${{ matrix.observer == 'ssr-pug' }}
+        run: |
+          set -o pipefail
+          (VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_ssr --features legacy-differential --test davinci_ssr_corpus -- --nocapture && VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_l1_to_l2 --features legacy-differential --test davinci_pug_corpus -- --nocapture) 2>&1 | tee real-project-davinci-dom-corpus/ssr-pug.log
+      - name: Measure Davinci production reach on the hydrated corpus
+        id: production_reach
+        if: ${{ matrix.observer == 'reach' }}
+        run: |
+          set -o pipefail
+          VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture 2>&1 | tee real-project-davinci-dom-corpus/reach.log
+      - name: Record required observer evidence
+        if: ${{ always() }}
+        env:
+          OBSERVER: ${{ matrix.observer }}
+          OBSERVER_OUTCOME: ${{ matrix.observer == 'dom' && steps.davinci_dom_corpus.outcome || matrix.observer == 'ssr-pug' && steps.ssr_pug.outcome || steps.production_reach.outcome }}
+        run: node tools/support/compat/github/canonical-corpus-observer.mjs record "$OBSERVER"
+      - name: Upload required observer evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: canonical-corpus-${{ matrix.observer }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
+          path: real-project-davinci-dom-corpus
+          if-no-files-found: error
+          retention-days: 30
+  davinci-dom-corpus:
+    name: s2 dom corpus
+    if: ${{ always() }}
+    needs: canonical-observers
+    permissions: { contents: read, actions: read }
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    env:
+      VIZE_DAVINCI_DOM_CORPUS_MODE: ${{ inputs.davinci_dom_corpus_mode || 'enforce' }}
+    steps:
+      - name: Checkout matrix commit
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false, ref: "${{ github.sha }}" }
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: ./.github/actions/setup-rust-script
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with: { key: davinci-dom-corpus, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}" }
+      - name: Select complete canonical workers
+        id: canonical_workers
+        env: { GH_TOKEN: "${{ github.token }}", NEEDS_JSON: "${{ toJSON(needs) }}" }
+        run: node tools/support/compat/github/canonical-corpus-workers.mjs select real-project-davinci-dom-corpus/selection.json
+      - name: Download current canonical worker artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          artifact-ids: ${{ steps.canonical_workers.outputs.artifact-ids }}
+          github-token: ${{ github.token }}
+          run-id: ${{ github.run_id }}
+          repository: ${{ github.repository }}
+          merge-multiple: false
+          digest-mismatch: error
+          path: .artifacts/canonical-workers
+      - name: Verify complete canonical worker artifacts
+        id: canonical_verification
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: node tools/support/compat/github/canonical-corpus-workers.mjs verify real-project-davinci-dom-corpus/selection.json .artifacts/canonical-workers
+      - name: Finalize L2 DOM corpus evidence
+        if: ${{ always() }}
+        env:
+          VIZE_DAVINCI_DOM_CORPUS_OUTCOME: ${{ steps.canonical_verification.outcome }}
+        run: rust-script tools/commands/fixtures/davinci-dom-corpus-workflow.rs finalize-and-dehydrate
+      - name: Upload L2 DOM corpus evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: real-project-davinci-dom-corpus
+          overwrite: true
+          path: real-project-davinci-dom-corpus
+          if-no-files-found: error
+          retention-days: 30

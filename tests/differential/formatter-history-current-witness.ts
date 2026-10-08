@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { sha256 } from "./manifest.mjs";
+import { validateDeclarationSnapshotAuthority } from "./formatter-declaration-reference.ts";
 import {
   retainedFormatterFunction,
   validatePreservedFormatterWitness,
@@ -20,10 +21,19 @@ const OWNERS: Record<
   string,
   { originalSha256: string; actualMainSha256: string; functions: Record<string, string> }
 > = {
+  // #7826 shares the existing lexer helpers; the original escape law is unchanged.
+  "crates/vize_glyph/src/style/comment_scan.rs": {
+    originalSha256: "1b1dc3ae107887fb740a4139778a38852be910e4299f530269a337ddaf832cb6",
+    actualMainSha256: "ada9e0e8ec0f25f7a3e20cb0e50200054932aac32bb85ced7906f63f19f79102",
+    functions: {
+      css_escapes_do_not_affect_comment_depth:
+        "74fd329fbcaa5a624c497e676c21072aff763aaa477339cc87c2708bd61e8ac0",
+    },
+  },
   // #7704 changes production line endings; complete original law bodies are retained.
   "crates/vize_glyph/src/style.rs": {
     originalSha256: "8e13635eab09e08a32282d372ef5379c22210cc4117fbccf05d164df76233a61",
-    actualMainSha256: "3e78de603e74c971baa4e1619d010d45f5aae1424909495122a1bfd5f776ea54",
+    actualMainSha256: "42f4d9b0e90359faeab4f3e26fa3c3370f44681e191966e0d447f411478fb335",
     functions: {
       test_style_numbers_match_standalone_css_leading_zeroes:
         "768c1b2fee61409a7034b99c2a7a277d7ac19699302a94b36d58dd54912937cb",
@@ -66,7 +76,7 @@ const OWNERS: Record<
   // remain byte-identical to their complete cc87 source bodies.
   "crates/vize_glyph/src/formatter/template_indent.rs": {
     originalSha256: "4e610e8497708dc137ae90209526526875cc70154c376a4ee6e8098f7caccef6",
-    actualMainSha256: "f1e64e4455a47955317f03bf3857bb12adddbfef5f6d3867a15c09806a4a7aa6",
+    actualMainSha256: "dd465917c25d364f94298f984a8491ecf75ceb152cb3b622fff08aa007ea7e3a",
     functions: {
       ordinary_templates_bypass_the_raw_line_mask:
         "252d13f191f01a540b78024c0d9e21603dc9a1a14b4c92cc56594ac3fb4cc115",
@@ -86,9 +96,10 @@ const OWNERS: Record<
         "aeb192094f63391b90c1c078b0c17e49e85702af5daa9122e77c8edcacdff928",
     },
   },
+  // #7880/#8087 stabilization cost changes retain all ten complete original script laws.
   "crates/vize_glyph/src/script.rs": {
     originalSha256: "a205174795bb6d993e84b0cc29dfc5d10c36602dfb6216f1db2278a982b2e0ab",
-    actualMainSha256: "37c77bddfc1984fee12fc856a9db63c51a88e9e23c50df5670399f53fb894a7f",
+    actualMainSha256: "547b8296f7b21c133331e2f207856a72836cc5d1c214f3735bfb4ec6adf1574e",
     functions: {
       test_format_tsx_component_script:
         "d108e897e74d4289b8fdf44555eed4b7ad551aff2ac7673b5a80ca8601220d9b",
@@ -108,9 +119,10 @@ const OWNERS: Record<
         "958b802bade6ac87002b32dff6a6d36a24a9ace640147c100898a7665c6a9a1a",
     },
   },
+  // #7876 adds a read-only lock query; the complete original placement law is unchanged.
   "crates/vize_glyph/src/template/formatter/suppression.rs": {
     originalSha256: "94b99ca1dcf0833d5706b73f95e41c9cdf280160e1dccdb751340ad86607b675",
-    actualMainSha256: "6ed649ce147cb3979b3ee76bbc9eb90d4e5848eb252a487d4660b2ff8c5dc10e",
+    actualMainSha256: "f3b627a268702cf355e78e44806960e0255d0f58f005a23de5f9f100b7798b8c",
     functions: {
       ranges_track_pragma_placement:
         "8120d76a61ca7b815e73c633c93431ba5399f1227d8274a699d09c7d2a5a5400",
@@ -119,6 +131,12 @@ const OWNERS: Record<
 };
 
 export function validateCurrentFormatterWitness(root: string, entry: any, name: string) {
+  if (
+    entry.path === "crates/vize_glyph/src/style.rs" &&
+    name === "test_format_nested_css_at_rule"
+  ) {
+    validateDeclarationSnapshotAuthority(root);
+  }
   if (validatePreservedFormatterWitness(root, entry, name)) return;
   const bytes = fs.readFileSync(path.join(root, entry.path));
   const actual = sha256(bytes);

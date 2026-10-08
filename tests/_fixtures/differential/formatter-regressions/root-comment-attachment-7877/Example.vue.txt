@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const label = "hello";
+</script>
+
+<!-- Explains the template below. -->
+<template>
+  <p>{{ label }}</p>
+</template>

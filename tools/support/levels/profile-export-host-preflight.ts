@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { parse as parseToml } from "@iarna/toml";
+import { withTimingProfileContinuation } from "./timing-profile-continuation.ts";
 import {
   core,
   host,
@@ -64,7 +65,8 @@ export function validateEdges(read: Reader, old: boolean) {
     );
 }
 
-export function prepare(read: Reader): Map<string, string> {
+export function prepare(rawRead: Reader): Map<string, string> {
+  const read = withTimingProfileContinuation(rawRead);
   const planned = new Map<string, string>();
   const get = (file: string) => planned.get(file) ?? read(file);
   const coreSource = read(core),
@@ -98,14 +100,23 @@ export function prepare(read: Reader): Map<string, string> {
         : hashes.tests[1].includes(digest(read(exportTests)))),
     "unexpected moved profile exporter or wire law",
   );
+  if (read(exportFile).includes("mod assemble;"))
+    requireState(
+      digest(read(hashes.assembly[0])) === hashes.assembly[1],
+      "unexpected exact profile assembly body",
+    );
   requireState(
     read("davinci/vize_l0/src/profiler/snapshot.rs").includes("pub fn span_snapshot(&self)") &&
       read("davinci/vize_l0/src/profiler/snapshot.rs").includes("pub fn counter_snapshot(&self)"),
     "public metric readback provider is required",
   );
   validateEdges(read, old);
+  const ownedCaller = !old && digest(get(hashes.snapshotCaller[0])) === hashes.snapshotCaller[1];
+  const companion = digest(read("tests/tooling/support/davinci-profile-host-imports.ts"));
   requireState(
-    digest(read("tests/tooling/support/davinci-profile-host-imports.ts")) === hashes.companion,
+    ownedCaller
+      ? companion === hashes.snapshotCompanion
+      : companion === hashes.companion || (!old && companion === hashes.snapshotCompanion),
     "the reviewed profile host-import companion must accompany replay",
   );
   function change(file: string, before: string, after: string, count = 1) {
@@ -163,8 +174,12 @@ export function prepare(read: Reader): Map<string, string> {
   }
   const oldImports = `use crate::String;\n\nuse super::allocation::AllocationSnapshot;\nuse super::attribution::SpanAttribution;\nuse super::core::Profiler;\nuse super::metrics::Metrics;`;
   const newImports = `use vize_l0::String;\nuse vize_l0::profiler::{AllocationSnapshot, Metrics, Profiler, SpanAttribution};`;
-  change(exportFile, oldImports, newImports);
-  change(exportFile, "[`Profiler::export_report`]", "[`export_report`]");
+  // The complete reviewed owned-input facade and assembly were qualified above.
+  // Its additional CounterMetrics import and API link are not old move inputs.
+  if (!read(exportFile).includes("mod assemble;")) {
+    change(exportFile, oldImports, newImports);
+    change(exportFile, "[`Profiler::export_report`]", "[`export_report`]");
+  }
   const exporter = get(exportFile);
   if (old) {
     const start = exporter.indexOf("impl Profiler {\n"),
@@ -206,14 +221,16 @@ export function prepare(read: Reader): Map<string, string> {
     "use crate::profiler::AllocationSnapshot;",
     "use vize_l0::profiler::AllocationSnapshot;",
   );
-  for (const [file, before, after] of callerChanges) change(file, before, after);
+  for (const [file, before, after] of callerChanges)
+    if (!ownedCaller || file !== hashes.snapshotCaller[0]) change(file, before, after);
   for (const [file, before, after] of calls) {
     requireState(
       (get(file).match(/\.export_report\s*\(/gu) ?? []).length ===
         (old ? (file === exportTests ? 6 : 1) : 0),
       "unexpected extra profiler export call: " + file,
     );
-    change(file, before, after, file === exportTests ? 6 : 1);
+    if (!ownedCaller || file !== hashes.snapshotCaller[0])
+      change(file, before, after, file === exportTests ? 6 : 1);
     requireState(
       !/vize_l0\s*::\s*profiler\s*::\s*(?:ProfileExport|PROFILE_EXPORT_SCHEMA_VERSION|\{[^}]*\bProfileExport)/u.test(
         get(file),

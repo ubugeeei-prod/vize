@@ -6,6 +6,8 @@
 mod corsa_path;
 #[path = "support/corsa_requirement.rs"]
 mod corsa_requirement;
+#[path = "check_cli/empty_inputs.rs"]
+mod empty_inputs;
 #[path = "check_cli/stubs.rs"]
 mod stubs;
 use stubs::{write_test_vite_stub, write_test_vue_runtime_dom_stub, write_test_vue_stub};
@@ -16,7 +18,7 @@ use std::{
     process::Command,
 };
 use vize_carton::corsa_resolver::platform_suffix;
-use vize_l0::{cstr, path::canonicalize_non_verbatim};
+use {vize_carton::path::canonicalize_non_verbatim, vize_l0::cstr};
 
 #[test]
 fn check_json_reports_type_errors_via_project_typechecker() {
@@ -310,35 +312,6 @@ const count = 1
         json["files"][0]["file"], "src/App.vue",
         "stdout:\n{stdout}\nstderr:\n{stderr}"
     );
-
-    let _ = std::fs::remove_dir_all(&project_root);
-}
-
-#[test]
-fn check_json_reports_empty_result_when_no_files_match() {
-    let project_root = create_cli_project("json-empty-inputs", &[]);
-
-    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
-        .current_dir(&project_root)
-        .args(["check", "--format", "json"])
-        .output()
-        .unwrap();
-
-    let stdout = std::string::String::from_utf8(output.stdout).unwrap();
-    let stderr = std::string::String::from_utf8(output.stderr).unwrap();
-    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap_or_else(|error| {
-        panic!("failed to parse stdout as JSON: {error}\nstdout:\n{stdout}\nstderr:\n{stderr}")
-    });
-
-    assert_eq!(
-        output.status.code(),
-        Some(0),
-        "stdout:\n{stdout}\nstderr:\n{stderr}"
-    );
-    assert_eq!(json["fileCount"], 0);
-    assert_eq!(json["errorCount"], 0);
-    assert_eq!(json["warningCount"], 0);
-    assert_eq!(json["files"].as_array().unwrap().len(), 0);
 
     let _ = std::fs::remove_dir_all(&project_root);
 }

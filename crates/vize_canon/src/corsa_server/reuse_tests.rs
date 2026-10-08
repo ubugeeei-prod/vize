@@ -155,7 +155,9 @@ fn expected_diagnostic() -> Value {
 }
 
 fn corsa_path() -> Option<PathBuf> {
+    let required = std::env::var("VIZE_TEST_REQUIRE_TSGO").as_deref() == Ok("1");
     if std::env::var_os("VIZE_TEST_DISABLE_TSGO").is_some() {
+        assert!(!required, "required native session laws cannot be disabled");
         return None;
     }
     let explicit = std::env::var_os("CORSA_PATH").map(PathBuf::from);
@@ -163,7 +165,16 @@ fn corsa_path() -> Option<PathBuf> {
         explicit_path: explicit.as_deref(),
         project_root: Some(Path::new(env!("CARGO_MANIFEST_DIR"))),
     };
-    vize_carton::corsa_resolver::resolve_corsa_executable(request).ok()
+    match vize_carton::corsa_resolver::resolve_corsa_executable(request) {
+        Ok(path) => Some(path),
+        Err(error) => {
+            assert!(
+                !required,
+                "required native session runtime is unavailable: {error}"
+            );
+            None
+        }
+    }
 }
 
 fn write_project(root: &Path) {

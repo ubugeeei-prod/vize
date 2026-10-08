@@ -6,7 +6,7 @@ use vize_carton::{String, append};
 use vize_croquis::Croquis;
 
 use super::super::helpers::to_safe_identifier;
-use crate::virtual_ts::VizeMapping;
+use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 
 pub(crate) struct PropsSource<'a> {
     pub(crate) mappings: &'a mut Vec<VizeMapping>,
@@ -31,6 +31,7 @@ pub(crate) fn prop_source<'a>(
 
 pub(crate) struct PropBindingMappings<'a> {
     mappings: &'a mut Vec<VizeMapping>,
+    semantic_links: &'a mut Vec<VizeSemanticLink>,
     summary: &'a Croquis,
     script_content: Option<&'a str>,
     script_source_offset: &'a dyn Fn(usize) -> usize,
@@ -39,12 +40,14 @@ pub(crate) struct PropBindingMappings<'a> {
 impl<'a> PropBindingMappings<'a> {
     pub(crate) fn new(
         mappings: &'a mut Vec<VizeMapping>,
+        semantic_links: &'a mut Vec<VizeSemanticLink>,
         summary: &'a Croquis,
         script_content: Option<&'a str>,
         script_source_offset: &'a dyn Fn(usize) -> usize,
     ) -> Self {
         Self {
             mappings,
+            semantic_links,
             summary,
             script_content,
             script_source_offset,
@@ -69,6 +72,11 @@ impl<'a> PropBindingMappings<'a> {
             append!(*ts, "  const {binding} = props[\"{name}\"];\n");
         }
         append!(*ts, "  void {binding};\n");
+        let property_start = start + binding.len() + " = props[\"".len();
+        self.link(
+            start..start + binding.len(),
+            property_start..property_start + name.len(),
+        );
 
         let Some(original) = self.authored_name_range(name) else {
             return;
@@ -77,6 +85,24 @@ impl<'a> PropBindingMappings<'a> {
             gen_range: start..start + binding.len(),
             src_range: original,
             sub_spans: Vec::new(),
+        });
+    }
+
+    pub(super) fn link(&mut self, binding: Range<usize>, property: Range<usize>) {
+        self.semantic_links.push(VizeSemanticLink {
+            source_range: binding,
+            target_range: property,
+            kind: VizeSemanticLinkKind::VueTemplatePropBinding,
+        });
+    }
+
+    /// The existing setup/template shadow edge also joins the props object.
+    /// Endpoints are recorded during emission, never inferred from spelling.
+    pub(super) fn link_setup_shadow(&mut self, source: Range<usize>, target: Range<usize>) {
+        self.semantic_links.push(VizeSemanticLink {
+            source_range: source,
+            target_range: target,
+            kind: VizeSemanticLinkKind::VueSetupTemplateRefUnwrap,
         });
     }
 

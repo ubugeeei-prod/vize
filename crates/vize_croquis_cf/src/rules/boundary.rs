@@ -1,16 +1,13 @@
-//! Server/Client boundary and Error/Suspense boundary analysis.
-//!
-//! Detects issues related to:
-//! - Browser APIs used in SSR context
-//! - Async components without Suspense
-//! - Missing error boundaries
-//! - Hydration mismatch risks
-
+//! Server/client, error and Suspense boundary analysis.
+#[path = "boundary_client.rs"]
+mod client;
 #[path = "boundary_graph.rs"]
 mod graph_walk;
 use graph_walk::{find_error_sources, find_protected_components, has_ancestor_with_boundary};
 
-use crate::diagnostics::{CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity};
+use crate::diagnostics::{
+    CrossFileDiagnostic, CrossFileDiagnosticKind, DiagnosticSeverity, DiagnosticSource,
+};
 use crate::facts::ErrorBoundaryRule;
 use crate::graph::{DependencyEdge, DependencyGraph};
 use crate::registry::{FileId, ModuleRegistry};
@@ -49,7 +46,6 @@ pub fn analyze_boundaries(
     let mut boundaries = Vec::new();
     let mut diagnostics = Vec::new();
 
-    // Collect components with boundaries
     let mut error_boundaries: FxHashSet<FileId> = FxHashSet::default();
     let mut suspense_boundaries: FxHashSet<FileId> = FxHashSet::default();
     let mut client_only_apis: Vec<(FileId, CompactString, u32)> = Vec::new();
@@ -59,7 +55,6 @@ pub fn analyze_boundaries(
     for entry in registry.vue_components() {
         let analysis = &entry.analysis;
 
-        // Check for error boundary (onErrorCaptured)
         if has_error_captured(analysis) {
             error_boundaries.insert(entry.id);
             boundaries.push(BoundaryInfo {
@@ -70,7 +65,6 @@ pub fn analyze_boundaries(
             });
         }
 
-        // Check for Suspense usage
         if uses_suspense(analysis) {
             suspense_boundaries.insert(entry.id);
             boundaries.push(BoundaryInfo {
@@ -81,15 +75,17 @@ pub fn analyze_boundaries(
             });
         }
 
-        // Check for async setup
         if analysis.macros.is_async() {
             async_components.insert(entry.id);
         }
 
-        // Check for browser-only APIs used outside client-only hooks
+        // Resolve source-owned function reachability once per component.
+        let client_regions = analysis
+            .setup_context
+            .client_only_browser_ranges(&analysis.scopes, &analysis.template_expressions);
         let browser_usages = find_browser_api_usage(analysis);
-        for (api, offset, context) in browser_usages {
-            if !is_in_client_only_context(analysis, offset) {
+        for (api, offset, context, source) in browser_usages {
+            if !client::is_client_usage(analysis, offset, source, &client_regions) {
                 client_only_apis.push((entry.id, api.clone(), offset));
 
                 diagnostics.push(
@@ -103,7 +99,8 @@ pub fn analyze_boundaries(
                         offset,
                         "Browser API used in potentially SSR context",
                     )
-                    .with_suggestion("Wrap in onMounted() or use import.meta.client check"),
+                    .with_primary_source(source)
+                    .with_suggestion("Wrap in onMounted() or guard with !import.meta.env.SSR, import.meta.client, or typeof window !== 'undefined'"),
                 );
             }
         }
@@ -191,7 +188,7 @@ fn uses_suspense(analysis: &vize_croquis::Croquis) -> bool {
 /// Find browser-only API usage in a component.
 fn find_browser_api_usage(
     analysis: &vize_croquis::Croquis,
-) -> Vec<(CompactString, u32, &'static str)> {
+) -> Vec<(CompactString, u32, &'static str, DiagnosticSource)> {
     let mut usages = Vec::new();
 
     let browser_apis = [
@@ -222,7 +219,12 @@ fn find_browser_api_usage(
     for expr in &analysis.template_expressions {
         for (api, context) in &browser_apis {
             if contains_ident(expr.content.as_str(), api) {
-                usages.push((CompactString::new(*api), expr.start, *context));
+                usages.push((
+                    CompactString::new(*api),
+                    expr.start,
+                    *context,
+                    DiagnosticSource::Template,
+                ));
             }
         }
     }
@@ -237,12 +239,8 @@ fn find_browser_api_usage(
             .find(|(name, _)| *name == api.as_str())
             .map(|(_, context)| *context)
             .unwrap_or("Browser global");
-        usages.push((api.clone(), *offset, context));
+        usages.push((api.clone(), *offset, context, DiagnosticSource::Script));
     }
-
-    // Note: We intentionally don't check global scopes here because they define
-    // browser APIs as globals (window, document, etc.) which would cause false positives.
-    // Instead, we only check template expressions for actual usage of these APIs.
 
     usages
 }
@@ -275,17 +273,13 @@ fn is_ident_byte(byte: u8) -> bool {
     byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
 
-/// Check if an offset is inside a client-only context.
 fn is_in_client_only_context(analysis: &vize_croquis::Croquis, offset: u32) -> bool {
-    // Find the scope at this offset
     for scope in analysis.scopes.iter() {
         if scope.span.start <= offset && offset <= scope.span.end {
-            // Check if this scope or any parent is client-only
             if scope.kind == vize_croquis::ScopeKind::ClientOnly {
                 return true;
             }
 
-            // Check parents
             for &parent_id in &scope.parents {
                 if let Some(parent) = analysis.scopes.get_scope(parent_id)
                     && parent.kind == vize_croquis::ScopeKind::ClientOnly
@@ -333,7 +327,7 @@ mod tests {
 
         let names: Vec<_> = find_browser_api_usage(&analysis)
             .into_iter()
-            .map(|(name, _, _)| name.clone())
+            .map(|(name, _, _, _)| name.clone())
             .collect();
         assert!(names.iter().any(|name| name == "window"), "{names:?}");
         assert!(names.iter().any(|name| name == "confirm"), "{names:?}");

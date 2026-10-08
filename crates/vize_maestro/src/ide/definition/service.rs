@@ -16,6 +16,8 @@ use tower_lsp::lsp_types::GotoDefinitionResponse;
 use vize_canon::CorsaBridge;
 
 mod import_target;
+#[cfg(feature = "native")]
+mod template_props;
 
 use super::{IdeContext, component_event, module_specifier, script};
 #[cfg(feature = "native")]
@@ -29,6 +31,9 @@ use crate::virtual_code::{ArtCursorPosition, BlockType};
 impl super::DefinitionService {
     /// Get definition for the symbol at the current position.
     pub fn definition(ctx: &IdeContext) -> Option<GotoDefinitionResponse> {
+        if crate::ide::template_expression::is_in_template_comment(ctx) {
+            return None;
+        }
         match ctx.block_type? {
             BlockType::Template => import_target::component_tag_definition(ctx)
                 .or_else(|| component_event::definition(ctx))
@@ -52,6 +57,9 @@ impl super::DefinitionService {
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<Arc<CorsaBridge>>,
     ) -> Option<GotoDefinitionResponse> {
+        if crate::ide::template_expression::is_in_template_comment(ctx) {
+            return None;
+        }
         match ctx.block_type? {
             BlockType::Template => Self::definition_in_template_with_corsa(ctx, corsa_bridge).await,
             BlockType::Script | BlockType::ScriptSetup => {
@@ -189,9 +197,14 @@ impl super::DefinitionService {
         if let Some(definition) =
             Self::definition_via_canonical_corsa(ctx, corsa_bridge.as_ref()).await
         {
-            return import_target::normalize_bound_name_definition(ctx, definition);
+            return definition.and_then(|definition| {
+                import_target::normalize_bound_name_definition(ctx, definition)
+            });
         }
 
+        if corsa_support::is_component_attribute_query(ctx) {
+            return None;
+        }
         let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
 
         if word.is_empty() {
@@ -282,15 +295,19 @@ impl super::DefinitionService {
     async fn definition_via_canonical_corsa(
         ctx: &IdeContext<'_>,
         corsa_bridge: Option<&Arc<CorsaBridge>>,
-    ) -> Option<GotoDefinitionResponse> {
+    ) -> Option<Option<GotoDefinitionResponse>> {
         let bridge = corsa_bridge?;
         if !bridge.is_initialized() {
             return None;
         }
 
         let doc = corsa_support::open_canonical_virtual_document(ctx, bridge).await?;
-        let (line, character) =
-            corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)?;
+        let attribute = corsa_support::component_attribute_position(ctx, &doc);
+        let (line, character) = match attribute {
+            Some(Some(position)) => position,
+            Some(None) => return Some(None),
+            None => corsa_support::canonical_source_offset_to_position(&doc, ctx.offset)?,
+        };
         let locations = bridge
             .definition(&doc.request_uri, line, character)
             .await
@@ -299,8 +316,14 @@ impl super::DefinitionService {
             return None;
         }
 
+        let locations = template_props::declarations(bridge, &doc, locations).await?;
         let locations = corsa_support::map_canonical_corsa_locations(ctx, &doc, locations);
-        Self::convert_locations(locations)
+        let mapped = Self::convert_locations(locations);
+        if attribute.is_some() {
+            Some(mapped)
+        } else {
+            mapped.map(Some)
+        }
     }
 
     /// Convert a Corsa location to tower-lsp Location.

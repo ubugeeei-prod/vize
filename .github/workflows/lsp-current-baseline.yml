@@ -1,0 +1,80 @@
+name: Current-source LSP baseline
+
+# Finite, manually approved RPC baseline. Ordinary PR checks run pure controls.
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact reviewed source SHA (must equal the dispatched ref)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lsp-current-baseline-${{ inputs.source_sha }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+
+jobs:
+  misskey:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    env:
+      VIZE_BASELINE_EXPECTED_SOURCE: ${{ inputs.source_sha }}
+      VIZE_PERF_BUDGET_SCALE: "1"
+      RAYON_NUM_THREADS: "4"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.source_sha }}
+          persist-credentials: false
+      - name: Refuse a stale or different dispatch source
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$VIZE_BASELINE_EXPECTED_SOURCE" =~ ^[0-9a-f]{40}$ ]]
+          test "$(git rev-parse HEAD)" = "$VIZE_BASELINE_EXPECTED_SOURCE"
+          test "$GITHUB_SHA" = "$VIZE_BASELINE_EXPECTED_SOURCE"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: package.json
+          cache: true
+          run-install: false
+      - name: Install locked JavaScript and native TypeScript dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Hydrate only the pinned Misskey fixture
+        run: git submodule update --init --depth 1 tests/_fixtures/_git/misskey
+      - name: Install repository Rust toolchain
+        run: |
+          rustup toolchain install || rustup show active-toolchain
+          cargo --version
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: lsp-current-baseline
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Build and receipt the exact current source server
+        run: |
+          cargo build --profile ci -p vize
+          node tests/differential/build-receipt.mjs
+      - name: Qualify pure observation and refusal laws
+        run: node --test tests/tooling/lsp-current-baseline*.test.ts tests/tooling/lsp-session-capture.test.ts
+      - name: Measure three serial fresh sessions with all original checks
+        run: node tests/performance/lsp-current-baseline.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: lsp-current-baseline-${{ github.run_id }}-${{ github.run_attempt }}-${{ inputs.source_sha }}
+          path: |
+            target/vize-tests/lsp-current-baseline/
+            target/differential/lsp-sessions/
+          if-no-files-found: error
+          retention-days: 3

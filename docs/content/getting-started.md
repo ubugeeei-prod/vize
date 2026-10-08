@@ -1,88 +1,81 @@
 ---
 title: Getting Started
+description: Add Vize to Vue with Vite+, one config file, and copyable commands.
 ---
 
 # Getting Started
 
-> **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use.
-> APIs and package boundaries may change without notice.
+Add Vize to your Vue 3 app with [Vite+](https://viteplus.dev/guide/install).
+Keep compilation, Vue linting, formatting, and type-checking settings in **`vite.config.ts`**.
+Vize is under active development; review the [support status](./stability.md) before adoption.
 
-Vize (_/viːz/_) is a Rust-native Vue.js toolchain. It brings compilation, linting, formatting,
-type checking, editor diagnostics, and component exploration into one workspace while keeping each
-capability available through focused packages and commands.
+## 1. Install the integration
 
-| Need                                              | Recommended entry point     |
-| ------------------------------------------------- | --------------------------- |
-| Compile Vue SFCs in Vite                          | `@vizejs/vite-plugin`       |
-| Compile Vue SFCs in Nuxt                          | `@vizejs/nuxt`              |
-| Lint, format, and type-check from project scripts | `vize`                      |
-| Combine Vize diagnostics with Oxlint              | `oxlint-plugin-vize`        |
-| Explore and test components                       | `@vizejs/vite-plugin-musea` |
-| Evaluate editor features                          | VS Code, Zed, or `vize lsp` |
-
-## Set Up an Existing Project
-
-Run the interactive initializer from the project root:
+From an existing Vue project with Vite+ installed:
 
 ```bash
-vpx vize init
+vp install -D @vizejs/vite-plugin
 ```
 
-`vpx` is included with [Vite+](https://viteplus.dev/guide/install). Install Vite+ first if the
-command is not available in your shell.
+The integration uses your project's Vite+ version (0.2.3 or newer).
+For ordinary Vite, use the [Vite plugin migration](./guide/migration.md#vite-plugin).
+For Nuxt, use the [Nuxt integration](./integrations/nuxt.md).
 
-`vize init` detects Vite, Vite+, or Nuxt; the package manager; TypeScript; the active lint command;
-and existing Vize configuration before it writes anything. You choose which parts to configure:
+## 2. Update `vite.config.ts`
 
-- the Vite plugin or Nuxt module
-- the Oxlint plugin, in the configuration file the active lint command reads
-- `vize fmt` and `vize check` project scripts
-- shared `vize.config.*` settings
-- a VS Code extension recommendation
+The Vite+ helper adds Vize's compiler and native check tasks.
+Remove the old Vue plugin import and `vue()` from `plugins`:
 
-Preview every proposed file and dependency change without writing it:
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({});
+```
+
+Keep existing aliases, server settings, tests, and unrelated plugins.
+The [migration guide](./guide/migration.md) shows the exact before/after diff
+and how to carry supported Vue compiler options across.
+
+## 3. Build and check your app
 
 ```bash
-vpx vize init --dry-run
+vp dev
+vp build
+vp run check
 ```
 
-For CI or another non-interactive environment, select the features explicitly:
+`vp run check` runs Vize's Vue type checker, linter, and formatter alongside
+Oxlint and Oxfmt. Use focused tasks while working:
 
 ```bash
-vpx vize init --yes --lint --bundler --fmt --typecheck --editor
+vp run typecheck
+vp run lint
+vp run fmt:check
 ```
 
-See [Project Setup](./guide/init.md) for detection rules, all flags, idempotency guarantees, and the
-cases where the initializer deliberately refuses to edit a file.
+To apply lint fixes and formatting, run `vp run check -- --fix`.
 
-## Choose a Manual Path
+**Use `vp run` for combined Vize tasks.** Built-in `vp check`, `vp lint`, and
+`vp fmt` run Vite+'s own tools. If a `check` script already exists, Vize preserves
+it and generates `vize:check`; run `vp run vize:check`. The same rule applies to
+existing `lint`, `fmt`, and `typecheck` scripts.
+See [task names and overrides](./guide/vite-plus.md#tasks).
 
-Prefer a manual setup when you need to preserve an established configuration or adopt one Vize
-surface at a time:
+## Choose your next step
 
-- [Vite Plugin](./guide/vite-plugin.md) — native Vue SFC compilation in Vite
-- [Nuxt Integration](./integrations/nuxt.md) — the supported path through Nuxt's Vite pipeline
-- [Package Scripts and CLI](./guide/cli.md) — `vize build`, `fmt`, `lint`, `check`, `ready`, and the
-  full Rust CLI
+- [Configure a rule or compiler option](./guide/configuration.md) — one location per integration.
+- [Migrate existing tools](./guide/migration.md) — source-to-target map and literal diffs.
+- [Understand a lint diagnostic](./rules/all.md) — bad and good Vue examples.
+- [Explore components](./guide/ui/index.md) — UI recipes and component reference.
+- [Preview your components](./guide/musea.md) — Musea art files and gallery.
+- [Set up your editor](./guide/vite-plus-editor.md) — editor responsibilities and native settings.
 
-Vite is the recommended bundler integration. The unplugin and Rspack packages remain experimental;
-their current scope is documented in [Other Bundlers](./guide/unplugin.md).
+## Use Vize without Vite+
 
-## Continue with the Focused Guides
+The [standalone CLI](./guide/cli.md) provides `vize lint`, `vize fmt`, and
+`vize check`. Its settings belong in `vize.config.ts`; see
+[standalone configuration](./guide/configuration.md#standalone-cli).
 
-Getting Started is intentionally an orientation page. Use the focused guides as the source of truth
-for configuration and integration details:
-
-- [Configuration](./guide/configuration.md) — `vize.config.*`, compiler options, type-checking, and
-  Musea settings
-- [Static Analysis](./guide/static-analysis.md) — the lint and type-checking model
-- [Rule Documentation](./rules/index.md) — concrete diagnostics and examples
-- [Oxlint Plugin](./guide/oxlint.md) — presets, settings, and the configuration file each command
-  actually reads
-- [VS Code and Other Editors](./integrations/vscode.md) — the opt-in editor profile and LSP setup
-- [JSX & TSX](./guide/jsx.md) — Vue components authored outside `.vue` SFCs
-- [Musea](./guide/musea.md) — component examples, documentation, tokens, a11y, and VRT
-
-For day-to-day Vue editor support, keep using the official
-[`vuejs/language-tools`](https://github.com/vuejs/language-tools) while Vize's editor integration is
-experimental.
+For an interactive setup of an existing Vite, Vite+, or Nuxt project, preview
+proposed changes with `vpx vize init --dry-run`, then run `vpx vize init` to choose
+features. [Project Setup](./guide/init.md) explains detection, flags, and editing limits.

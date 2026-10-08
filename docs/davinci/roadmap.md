@@ -152,10 +152,10 @@ edges now have L2 production witnesses. The
 earlier increments pin the late directive, patch-site, component, hoist-order
 and residual DOM corpus witnesses. Real Project Matrix run
 `33531193323` recorded canonical hydrated zero-divergence evidence over 146
-gitlinks, 142 ecosystem projects, 42,668 files and 42,279 compared templates;
+gitlinks, 143 ecosystem projects, 42,668 files and 42,279 compared templates;
 the full production-lane switch is closed, and P2-20 owns the remaining
 phase-exit gates.
-The executable fixture inventory is 146 gitlinks / 142 ecosystem projects;
+The executable fixture inventory is 148 gitlinks / 143 ecosystem projects;
 fixture checkout hydration is deliberately not a project-count source.
 
 **Exit gate:** DOM corpus parity; Folio dumps for L1/L2 in fixtures; bench

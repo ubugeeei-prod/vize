@@ -21,6 +21,11 @@ identifiers. `@vizejs/nuxt` consumes the same exports and emits them for
 Vize's oxlint integration, so the module and standalone entry point cannot
 drift into separate implementations.
 
+Pass an optional third argument (`2`, `3`, or `4`) to `buildNuxtLintPlan` when
+the Nuxt major is known. Nuxt 2 omits the `import.meta` migration and
+`definePageMeta` rule blocks. Omitting the argument preserves the modern
+Nuxt 3/4 plan; the Nuxt module supplies the detected runtime major.
+
 Compatibility is pinned to the real `@nuxt/eslint` and
 `@nuxt/eslint-config` packages by the committed differential oracle under
 `test/nuxt-eslint-compat`.

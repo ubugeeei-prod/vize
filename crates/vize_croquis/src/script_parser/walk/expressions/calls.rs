@@ -1,8 +1,8 @@
 use super::{
     Argument, CallExpression, ClientOnlyScopeData, ClosureScopeData, CompactString, Expression,
     ScriptParseResult, Statement, detect_call_argument_reactivity_loss, detect_provide_inject_call,
-    detect_race_condition_call, extract_function_params, is_client_only_hook, walk_expression,
-    walk_statement,
+    detect_race_condition_call, extract_function_params_with_occurrences, is_client_only_hook,
+    walk_expression, walk_statement,
 };
 
 /// Walk call expression arguments to find callbacks
@@ -12,6 +12,8 @@ pub(in crate::script_parser) fn walk_call_arguments(
     call: &CallExpression<'_>,
     source: &str,
 ) {
+    super::super::super::ssr_calls::note_call(result, call);
+    result.refuse_type_arguments(call.type_arguments.as_deref());
     // First, walk the callee (might be a chained call like foo.bar().baz())
     walk_expression(result, &call.callee, source);
 
@@ -51,6 +53,9 @@ pub(in crate::script_parser) fn walk_call_arguments(
                     // If this is a lifecycle hook and the argument is a function,
                     // wrap it in a ClientOnly scope
                     if let Some(name) = hook_name {
+                        super::super::super::occurrences::refuse_expression_type_reads(
+                            result, expr,
+                        );
                         match expr {
                             Expression::ArrowFunctionExpression(arrow) => {
                                 lifecycle_callback_scope_recorded = true;
@@ -67,7 +72,8 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                 );
 
                                 // Now create the closure scope inside the client-only scope
-                                let params = extract_function_params(&arrow.params);
+                                let params =
+                                    extract_function_params_with_occurrences(result, &arrow.params);
                                 result.scopes.enter_closure_scope(
                                     ClosureScopeData {
                                         name: None,
@@ -79,6 +85,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                     arrow.span.start,
                                     arrow.span.end,
                                 );
+                                result.install_parameter_occurrences();
 
                                 // Walk the body
                                 if arrow.expression {
@@ -98,6 +105,9 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                 continue;
                             }
                             Expression::FunctionExpression(func) => {
+                                if func.id.is_some() {
+                                    result.refuse_occurrences();
+                                }
                                 lifecycle_callback_scope_recorded = true;
                                 // Enter client-only scope
                                 result.scopes.enter_client_only_scope(
@@ -107,7 +117,8 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                 );
 
                                 // Create closure scope inside client-only scope
-                                let params = extract_function_params(&func.params);
+                                let params =
+                                    extract_function_params_with_occurrences(result, &func.params);
                                 let fn_name = func
                                     .id
                                     .as_ref()
@@ -124,6 +135,7 @@ pub(in crate::script_parser) fn walk_call_arguments(
                                     func.span.start,
                                     func.span.end,
                                 );
+                                result.install_parameter_occurrences();
 
                                 if let Some(body) = &func.body {
                                     for stmt in body.statements.iter() {

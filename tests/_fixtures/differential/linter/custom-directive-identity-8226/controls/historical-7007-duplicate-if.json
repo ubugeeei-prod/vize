@@ -1,0 +1,23 @@
+{
+  "id": "historical-7007-duplicate-if",
+  "source": "<p v-if=\"ok\" v-if=\"!ok\">x</p>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "historical-7007-duplicate-if.vue",
+    "errorCount": 1,
+    "warningCount": 0,
+    "diagnostics": [
+      {
+        "rule": "vue/no-duplicate-attributes",
+        "severity": "Error",
+        "message": "Duplicate attribute 'v-if'",
+        "start": 13,
+        "end": 23,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  }
+}

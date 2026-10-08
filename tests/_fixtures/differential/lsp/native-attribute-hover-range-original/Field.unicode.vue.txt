@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const id = "field";
+</script>
+
+<template>
+  <!-- Ω🧭 --> <label :for="id">Name</label>
+  <!-- 😀 --> <input :id="id" />
+</template>

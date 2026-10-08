@@ -46,7 +46,7 @@ pub use remark::{
     NoRemarks, PassRemarks, RecordedArg, RecordedRemark, Remark, RemarkArg, RemarkArgValue,
     RemarkCollector, RemarkCounter, RemarkKind, RemarkSink, RemarkValue,
 };
-pub use timing::{TimingObserver, WalkTiming};
+pub use timing::WalkTiming;
 
 use super::{Fusability, FusionGroup, PassDesc, PassKind, Pipeline, Preserved};
 

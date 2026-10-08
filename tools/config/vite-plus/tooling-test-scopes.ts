@@ -2,6 +2,7 @@
 // inventory of real tsgo/LSP scenarios and source-built corpus execution,
 // not a filename-prefix exclusion. Pure helper gates remain in T0.
 export const mergeOnlyToolingTests = [
+  "tests/tooling/lint-ssr-script-setup.test.ts",
   "tests/tooling/canon-external-contracts.test.ts",
   "tests/tooling/canon-functional-slot-contracts.test.ts",
   "tests/tooling/canon-jsx-module-contracts.test.ts",
@@ -153,6 +154,7 @@ export const toolingTestScopes = [
       "tests/tooling/release/release-preflight-github.test.ts",
       "tests/tooling/release/release-preflight-matrix-evidence-rejections.test.ts",
       "tests/tooling/release/release-preflight-matrix-evidence.test.ts",
+      "tests/tooling/release/release-preflight-matrix-selection.test.ts",
       "tests/tooling/release/release-preflight-parent-evidence.test.ts",
       "tests/tooling/release/release-preflight-runner-typecheck-policy.test.ts",
       "tests/tooling/release/release-preflight-runner.test.ts",

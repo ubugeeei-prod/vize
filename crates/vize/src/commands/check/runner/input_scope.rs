@@ -157,8 +157,41 @@ pub(super) fn widened_scope_note(
     )
 }
 
-/// Report a run that collected no inputs at all.
-pub(super) fn report_no_inputs(args: &CheckArgs) {
+/// An explicitly selected project must exist before input collection.
+pub(super) fn validate_selected_tsconfig(args: &CheckArgs, tsconfig_path: Option<&Path>) {
+    if let Some(path) = tsconfig_path
+        && !path.is_file()
+    {
+        emit_empty_json(args);
+        eprintln!(
+            "Error: TypeScript config file not found: `{}`; no files were checked.",
+            path.display()
+        );
+        std::process::exit(UNRESOLVED_SCOPE_EXIT_CODE);
+    }
+}
+
+/// A selected project with no workload must not report a successful check.
+/// Unconfigured empty invocations retain their existing no-match behavior.
+pub(super) fn report_no_inputs(args: &CheckArgs, tsconfig_path: Option<&Path>) {
+    emit_empty_json(args);
+    if let Some(path) = tsconfig_path {
+        eprintln!(
+            "Error: No supported source files were selected by TypeScript project `{}`; \
+             no files were checked. Check the project's files/include/exclude and Vize ignores.",
+            path.display()
+        );
+        std::process::exit(UNRESOLVED_SCOPE_EXIT_CODE);
+    }
+    if args.format != "json" {
+        eprintln!(
+            "No {CHECK_INPUTS_DISPLAY} files found matching inputs: {:?}",
+            args.patterns
+        );
+    }
+}
+
+fn emit_empty_json(args: &CheckArgs) {
     if args.format == "json" {
         emit_json_output(JsonOutput {
             files: Vec::new(),
@@ -172,17 +205,12 @@ pub(super) fn report_no_inputs(args: &CheckArgs) {
             eprintln!("Failed to report empty check result: {error}");
             std::process::exit(1);
         });
-        return;
     }
-    eprintln!(
-        "No {CHECK_INPUTS_DISPLAY} files found matching inputs: {:?}",
-        args.patterns
-    );
 }
 
 fn is_strict_ancestor(ancestor: &Path, path: &Path) -> bool {
-    let ancestor = vize_l0::path::canonicalize_non_verbatim(ancestor);
-    let path = vize_l0::path::canonicalize_non_verbatim(path);
+    let ancestor = vize_carton::path::canonicalize_non_verbatim(ancestor);
+    let path = vize_carton::path::canonicalize_non_verbatim(path);
     path != ancestor && path.starts_with(&ancestor)
 }
 

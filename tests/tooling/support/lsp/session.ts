@@ -3,7 +3,7 @@ import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { LspRequestError } from "./errors.ts";
-import { recordLspClientWire, spawnLspSessionProcess } from "./session-process.ts";
+import * as lspProcess from "./session-process.ts";
 import type { JsonRpcId, JsonRpcMessage, LspInitializationOptions } from "./protocol.ts";
 
 export { LspRequestError };
@@ -37,12 +37,17 @@ export class LspSession {
   }> = [];
   /** Passive notification observers that do not consume waiter/backlog entries. */
   readonly notificationObservers: Array<(method: string, params: unknown) => void> = [];
+  /** Passive response/stderr observers; dispatch and payloads stay unchanged. */
+  readonly responseObservers: Array<(message: JsonRpcMessage) => void> = [];
+  readonly stderrObservers: Array<(text: string) => void> = [];
   private buffer = Buffer.alloc(0);
   private nextId = 0;
   private stderr = "";
 
-  constructor() {
-    this.process = spawnLspSessionProcess();
+  constructor(sourceBinding?: Parameters<typeof lspProcess.spawnBoundLspSessionProcess>[0]) {
+    this.process = sourceBinding
+      ? lspProcess.spawnBoundLspSessionProcess(sourceBinding)
+      : lspProcess.spawnLspSessionProcess();
 
     this.process.stdout.on("data", (chunk: Buffer) => {
       this.buffer = Buffer.concat([this.buffer, chunk]);
@@ -51,8 +56,8 @@ export class LspSession {
 
     this.process.stderr.on("data", (chunk: Buffer) => {
       this.stderr += chunk.toString("utf8");
+      for (const observer of this.stderrObservers) observer(this.stderr);
     });
-
     this.process.on("exit", (code, signal) => {
       const error = new Error(
         `vize lsp exited unexpectedly (code=${code ?? "null"}, signal=${signal ?? "null"})\n${this.stderr}`.trim(),
@@ -250,7 +255,7 @@ export class LspSession {
 
   private send(...messages: JsonRpcMessage[]): void {
     const frame = messages.map((message) => frameMessage(message)).join("");
-    recordLspClientWire(this.process, frame);
+    lspProcess.recordLspClientWire(this.process, frame);
     this.process.stdin.write(frame, "utf8");
   }
 
@@ -281,6 +286,7 @@ export class LspSession {
 
   private dispatch(message: JsonRpcMessage): void {
     if (typeof message.id === "number" && message.method == null) {
+      for (const observer of this.responseObservers) observer(message);
       const pending = this.pending.get(message.id);
       if (!pending) {
         return;

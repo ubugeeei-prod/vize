@@ -14,6 +14,8 @@ use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupEleme
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
+mod native;
+
 static META: RuleMeta = RuleMeta {
     name: "a11y/no-autofocus",
     description: "Disallow the use of the autofocus attribute",
@@ -64,6 +66,10 @@ impl MarkupRule for NoAutofocus {
 }
 
 impl Rule for NoAutofocus {
+    fn as_native_template_rule(&self) -> Option<&dyn crate::native::template::NativeTemplateRule> {
+        Some(self)
+    }
+
     fn meta(&self) -> &'static RuleMeta {
         &META
     }

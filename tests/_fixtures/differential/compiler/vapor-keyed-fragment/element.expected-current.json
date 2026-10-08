@@ -1,0 +1,193 @@
+[
+  {
+    "tree": [
+      {
+        "tag": "section",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "reset"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "label"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "attributes": {
+              "value": "first"
+            },
+            "children": [],
+            "value": "first",
+            "checked": false
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              "tail"
+            ]
+          }
+        ]
+      }
+    ],
+    "same": true,
+    "setups": 0,
+    "disposed": 0,
+    "diagnostics": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "section",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "reset"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "label"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "attributes": {
+              "value": "first"
+            },
+            "children": [],
+            "value": "typed",
+            "checked": false
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              "tail"
+            ]
+          }
+        ]
+      }
+    ],
+    "same": true,
+    "setups": 0,
+    "disposed": 0,
+    "diagnostics": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "section",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "reset"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "label"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "attributes": {
+              "value": "first"
+            },
+            "children": [],
+            "value": "first",
+            "checked": false
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              "tail"
+            ]
+          }
+        ]
+      }
+    ],
+    "same": false,
+    "setups": 0,
+    "disposed": 0,
+    "diagnostics": []
+  },
+  {
+    "tree": [
+      {
+        "tag": "section",
+        "attributes": {},
+        "children": [
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "reset"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "button",
+            "attributes": {},
+            "children": [
+              "label"
+            ],
+            "disabled": false
+          },
+          {
+            "tag": "input",
+            "attributes": {
+              "value": "second"
+            },
+            "children": [],
+            "value": "second",
+            "checked": false
+          },
+          {
+            "tag": "p",
+            "attributes": {},
+            "children": [
+              "tail"
+            ]
+          }
+        ]
+      }
+    ],
+    "same": true,
+    "setups": 0,
+    "disposed": 0,
+    "diagnostics": []
+  },
+  {
+    "tree": [],
+    "same": false,
+    "setups": 0,
+    "disposed": 0,
+    "diagnostics": []
+  }
+]

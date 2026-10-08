@@ -9,7 +9,7 @@
 //! Based on eslint-plugin-vuejs-accessibility no-aria-hidden-on-focusable rule.
 
 use crate::context::LintContext;
-use crate::diagnostic::Severity;
+use crate::diagnostic::{HelpLevel, Severity};
 use crate::markup::{MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
@@ -29,22 +29,33 @@ static META: RuleMeta = RuleMeta {
 pub struct NoAriaHiddenOnFocusable;
 
 impl NoAriaHiddenOnFocusable {
-    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
-        if element.is_component() {
+    fn is_hidden_element(element: &MarkupElement<'_>) -> bool {
+        !element.is_component()
+            && markup_helpers::get_static_markup_attribute_value(element, "aria-hidden")
+                == Some("true")
+    }
+
+    fn check_hidden_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>, inert: bool) {
+        if inert
+            || markup_helpers::is_statically_non_focusable(element)
+            || !markup_helpers::is_focusable_markup_element(element)
+        {
             return;
         }
 
-        if let Some(value) =
-            markup_helpers::get_static_markup_attribute_value(element, "aria-hidden")
-            && value == "true"
-            && markup_helpers::is_focusable_markup_element(element)
+        let full_help = ctx.t("a11y/no-aria-hidden-on-focusable.help");
+        let help = if markup_helpers::get_static_markup_attribute_value(element, "tabindex")
+            == Some("-1")
         {
-            ctx.error_at_with_help(
-                ctx.t("a11y/no-aria-hidden-on-focusable.message"),
-                element.range(),
-                ctx.t("a11y/no-aria-hidden-on-focusable.help"),
-            );
-        }
+            HelpLevel::Full.process(&full_help)
+        } else {
+            HelpLevel::Short.process(&full_help)
+        };
+        ctx.error_at_with_help(
+            ctx.t("a11y/no-aria-hidden-on-focusable.message"),
+            element.range(),
+            help.unwrap_or_default(),
+        );
     }
 }
 
@@ -54,7 +65,22 @@ impl MarkupRule for NoAriaHiddenOnFocusable {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        Self::check_element(ctx.lint(), element);
+        if !Self::is_hidden_element(element) {
+            return;
+        }
+        let mut inert = markup_helpers::has_static_inert(element);
+        if !inert && !markup_helpers::blocks_inert_inheritance(element) {
+            for ancestor in ctx.ancestor_elements().rev() {
+                if markup_helpers::has_static_inert(&ancestor) {
+                    inert = true;
+                    break;
+                }
+                if markup_helpers::blocks_inert_inheritance(&ancestor) {
+                    break;
+                }
+            }
+        }
+        Self::check_hidden_element(ctx.lint(), element, inert);
     }
 }
 
@@ -68,7 +94,12 @@ impl Rule for NoAriaHiddenOnFocusable {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        Self::check_element(ctx, &MarkupElement::new(element));
+        let element = MarkupElement::new(element);
+        if !Self::is_hidden_element(&element) {
+            return;
+        }
+        let inert = ctx.aria_hidden_inert || markup_helpers::has_static_inert(&element);
+        Self::check_hidden_element(ctx, &element, inert);
     }
 }
 

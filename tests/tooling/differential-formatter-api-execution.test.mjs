@@ -7,17 +7,18 @@ import { fileURLToPath } from "node:url";
 import { buildFormatterObserver } from "../differential/formatter-api-build.mjs";
 import { runFormatterApiPack } from "../differential/formatter-api.mjs";
 import { runSortingConfigPack } from "../differential/formatter-sorting-config.mjs";
+import { runCssGroupingRegressions } from "../differential/formatter-css-grouping.ts";
 import { validateFormatterHistoryExecution } from "../differential/formatter-history-audit.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const packs = [
   ["script", 6, 4, 0, 2],
-  ["prepared", 82, 81, 1, 0],
-  ["literal", 84, 84, 0, 0],
+  ["prepared", 82, 79, 1, 0],
+  ["literal", 84, 78, 0, 0],
   ["literal-extra", 34, 34, 0, 0],
   ["vue-version", 14, 14, 0, 0],
-  ["capture", 51, 31, 20, 0],
-  ["capture-extra", 25, 24, 0, 1],
+  ["capture", 51, 29, 20, 0],
+  ["capture-extra", 25, 22, 0, 1],
   ["capture-final", 4, 4, 0, 0],
 ];
 
@@ -67,6 +68,10 @@ void test("shared formatter API history observes complete source-built output an
         legacyInternalObservations: internal,
         legacyErrorMatches: errors,
         legacyFailures: 0,
+        ...(name === "prepared" ? { currentReferenceMatches: 2 } : {}),
+        ...(name === "literal" ? { currentReferenceMatches: 6 } : {}),
+        ...(name === "capture" ? { currentReferenceMatches: 2 } : {}),
+        ...(name === "capture-extra" ? { currentReferenceMatches: 2 } : {}),
         nativeUnsupported: count,
         nativeHandled: 0,
         nativeEquivalent: 0,
@@ -151,5 +156,28 @@ void test("shared formatter API history observes complete source-built output an
       pairedComparisons: 0,
     },
     JSON.stringify(malformed.rows, null, 2),
+  );
+  runCssGroupingRegressions({ repoRoot: root, ...built, evidenceDir });
+  runCssGroupingRegressions(
+    { repoRoot: root, ...built, evidenceDir },
+    {
+      path: "crates/vize_glyph/tests/fixtures/style_multi_value_declarations_7968.json",
+      schema: "vize.formatter-css-multi-value-regressions",
+      executionSchema: "vize.formatter-css-multi-value-execution",
+      issue: 7968,
+      count: 27,
+      report: "css-multi-value-declarations-7968-report.json",
+    },
+  );
+  runCssGroupingRegressions(
+    { repoRoot: root, ...built, evidenceDir },
+    {
+      path: "crates/vize_glyph/tests/fixtures/style_authored_declarations_7866.json",
+      schema: "vize.formatter-css-declaration-regressions",
+      executionSchema: "vize.formatter-css-declaration-execution",
+      issue: 7866,
+      count: 27,
+      report: "css-authored-declarations-7866-report.json",
+    },
   );
 });

@@ -16,11 +16,19 @@ export type WorkflowStep = {
 };
 
 export type WorkflowJob = {
+  if?: string;
+  needs?: string | string[];
+  uses?: string;
+  with?: Record<string, unknown>;
   env?: Record<string, string>;
   name?: string;
   "runs-on"?: string;
   steps?: WorkflowStep[];
-  strategy?: { "fail-fast"?: boolean; "max-parallel"?: number; matrix?: { shard?: number[] } };
+  strategy?: {
+    "fail-fast"?: boolean;
+    "max-parallel"?: number;
+    matrix?: { shard?: number[]; observer?: string[] };
+  };
   "timeout-minutes"?: number;
 };
 
@@ -40,6 +48,12 @@ export const shardSummaryCommandPath =
 export function readRealProjectMatrixWorkflow(): RealProjectMatrixWorkflow {
   return parse(
     readRepoFile(".github", "workflows", "real-project-matrix.yml"),
+  ) as RealProjectMatrixWorkflow;
+}
+
+export function readCanonicalCorpusWorkflow(): RealProjectMatrixWorkflow {
+  return parse(
+    readRepoFile(".github", "workflows", "davinci-canonical-corpus.yml"),
   ) as RealProjectMatrixWorkflow;
 }
 

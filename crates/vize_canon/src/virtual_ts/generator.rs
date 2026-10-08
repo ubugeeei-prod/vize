@@ -59,13 +59,12 @@ use self::options_api_support::find_options_api_props;
 use self::script_blocks::ScriptBlockScopes;
 use self::setup_helpers::{SetupHelperComponentContext, emit_setup_helpers};
 use self::setup_imports::SetupImportPlan;
-use self::setup_props::{generate_setup_props, prop_source};
+use self::setup_props::{emit_template_context, generate_setup_props, prop_source};
 use self::setup_type_exports::SetupTypeExportsPlan;
 use self::spans::{DEFINE_COMPONENT_REF, rewrite_export_default_for_module_scope, template_usage};
 use self::type_only_imports::syntactic_type_only_imported_names;
 use self::unresolved_components::emit_unresolved_components;
 use super::{
-    helpers::generate_template_context,
     macro_type_mappings::MacroTypeMappings,
     scope::{ScopeGenerationOptions, generate_scope_closures},
     template_binding_access::TemplateBindingAccess,
@@ -302,7 +301,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     }
 
     let global_components = GlobalComponentPlan::new(
-        summary,
+        (summary, template_ast),
         legacy_vue2,
         has_script_reference_types || check_options.check_unknown_components,
         generation_options.self_component_name,
@@ -599,7 +598,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 script_gen_start,
                 script.len(),
             );
-
             // Vue 2 only; see the bridge module doc for why Vue 3 skips it.
             if legacy_vue2 {
                 let offset = script_offset as usize;
@@ -622,7 +620,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     if has_template_scope && check_options.check_template_bindings {
         profile!("canon.virtual_ts.emit_template_scope", {
             ts.push_str("  // ========== Template Scope (inherits from setup) ==========\n");
-
             let template_ref_unwraps = template_refs::collect_and_emit_scope_preamble(
                 &mut ts,
                 summary,
@@ -636,28 +633,28 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                 inferred_slots || template_record.any(),
                 &mut semantic_links,
             );
-
             // Vue template context (available in template expressions)
             setup_imports.emit_template_slots(&mut ts, &mut mappings, source_offset);
-            let template_context = profile!(
-                "canon.virtual_ts.generate_template_context",
-                generate_template_context(
-                    options,
-                    dialect,
-                    legacy_vue2,
-                    setup_imports.has_own_slots(),
-                    (
-                        setup_imports.attrs_type(),
-                        template_record.template_refs_type()
-                    ),
-                )
+            let template_emit = setup_helpers.template_emit_initializer(&mut ts, summary);
+            emit_template_context(
+                &mut ts,
+                options,
+                dialect,
+                legacy_vue2,
+                &setup_imports,
+                &template_record,
+                template_emit.as_deref(),
             );
-            ts.push_str(&template_context);
-            ts.push('\n');
             let maps = &mut mappings;
             let src = prop_source(maps, summary, script_content, &script_source_offset);
             profile!("canon.virtual_ts.generate_props_variables", {
-                setup_props_plan.generate_props_variables(&mut ts, src, check_props && !legacy_vue2)
+                setup_props_plan.generate_props_variables(
+                    &mut ts,
+                    src,
+                    check_props && !legacy_vue2,
+                    &mut semantic_links,
+                    template_ref_unwraps.props_shadow_anchor(),
+                )
             });
             if options_api {
                 profile!(
@@ -746,7 +743,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     }
 
     emit_setup_scope_macro_anchors(&mut ts, summary, &setup_helpers);
-
     let define_emits_runtime_args = setup_helpers::define_emits_runtime_args(summary);
     let mut setup_return_fields: Vec<String> = Vec::new();
     template_record.push_template_return(&mut setup_return_fields, inferred_slots, has_root_el);
@@ -769,7 +765,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     ambient.emit_return(&mut ts, &setup_return_fields, &mut mappings);
 
     ts.push_str("}\n\n");
-
     // Invoke setup to keep diagnostics inside the generated setup body.
     ts.push_str("// Invoke setup to verify types\n");
     semantic_links.extend(script_module::emit_exports(
@@ -797,6 +792,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let slots_is_generic = emit_slots_type(
         &mut ts,
         summary,
+        MacroTypeMappings::new(&mut mappings, script_content, &script_source_offset),
         generic_injection.as_ref(),
         !module_plan.exported_types.contains("Slots"),
         inferred_slots,
@@ -807,7 +803,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let forwards = template_record.forwarded.emit_helpers(&mut ts);
     let event_inference = super::scope::emit_event_inference_helpers(&mut ts, summary, forwards);
     emit_emit_props_helper(&mut ts, &emits_info, hoist_shared_preamble, event_inference);
-
     let generic_component_params = setup_props_plan.generic_component_params(authored_generic);
     let public_component_type = emit_component_constructors(
         &mut ts,
@@ -838,15 +833,17 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
             .as_deref(),
         ((summary.macros.define_slots().is_some() || inferred_slots) && !slots_is_generic)
             .then_some("__VizeSlots"),
-        self::fallthrough::fallthrough_props_type_ref(
-            &fallthrough_scope,
-            template_ast,
-            legacy_vue2,
-        )
-        .as_deref(),
+        (
+            self::fallthrough::fallthrough_props_type_ref(
+                &fallthrough_scope,
+                template_ast,
+                legacy_vue2,
+            )
+            .as_deref(),
+            check_options,
+        ),
     );
     component_export::emit_component_default_export(&mut ts, generation_options.component_name);
-
     super::mapping::publish_virtual_ts(VirtualTsOutput {
         code: ts,
         mapping: super::mapping::ProjectionMapping::from_parts(mappings, semantic_links),

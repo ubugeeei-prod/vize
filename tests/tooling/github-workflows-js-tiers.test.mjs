@@ -23,8 +23,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const workflow = parse(readFileSync(join(root, ".github/workflows/pr-source-checks.yml"), "utf8"));
 const selectedJs = "${{ needs.pr-source-plan.outputs.js == 'true' }}";
 const selectedHistory = "${{ always() && needs.pr-source-plan.outputs.js == 'true' }}";
-const selectedMerge =
-  "${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.js == 'true' }}";
 const historyActionPath = "./.github/actions/test-js-packages-with-history";
 const history = parse(readFileSync(join(root, historyActionPath, "action.yml"), "utf8"));
 
@@ -43,11 +41,11 @@ function recordingCli(directory, source = "process.exit(0);") {
   };
 }
 
-void test("PR keeps native declaration/type checks; merge queue preserves the complete JS tail", () => {
+void test("PR and merge queue preserve native declaration, type and complete UI checks", () => {
   const names = [
     "Test JS packages",
     "Check Fresco native declarations and consumer types",
-    "Check UI package conformance in merge queue",
+    "Check UI package conformance",
   ];
   const steps = workflow.jobs["pr-js-packages"].steps.filter((step) => names.includes(step.name));
   assert.deepEqual(
@@ -56,7 +54,7 @@ void test("PR keeps native declaration/type checks; merge queue preserves the co
   );
   assert.deepEqual(
     steps.map((step) => step.if),
-    [selectedHistory, selectedJs, selectedMerge],
+    [selectedHistory, selectedJs, selectedJs],
   );
   assert.equal(steps[0].uses, historyActionPath);
   const testStep = history.runs.steps.find((step) => step.name === "Test JS packages");
@@ -76,26 +74,22 @@ void test("PR keeps native declaration/type checks; merge queue preserves the co
     ]) {
       rmSync(cli.calls, { force: true });
       for (const step of steps) {
-        if (!js || (step.if === selectedMerge && event !== "merge_group")) continue;
+        if (!js) continue;
         const command = step.uses === historyActionPath ? testStep.run : step.run;
         const result = spawnSync("/bin/sh", ["-c", command], {
           cwd: root,
           env: cli.env,
           encoding: "utf8",
         });
-        assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+        assert.equal(result.status, 0, `${event}: ${result.stdout}\n${result.stderr}`);
       }
       const expected = js
         ? [
             ["run", "--workspace-root", "test:js"],
             ["run", "--filter", "./npm/fresco-native", "check:generated"],
             ["run", "--filter", "./npm/fresco-native", "check:types"],
-            ...(event === "merge_group"
-              ? [
-                  ["run", "--filter", "./npm/native", "build:ci"],
-                  ["run", "--filter", "./npm/ui", "check"],
-                ]
-              : []),
+            ["run", "--filter", "./npm/native", "build:ci"],
+            ["run", "--filter", "./npm/ui", "check"],
           ]
         : [];
       assert.deepEqual(
@@ -115,17 +109,43 @@ void test("public native evidence remains reachable after prior build or package
   assert.equal(seam.if, selectedHistory);
   assert.equal(seam["continue-on-error"], undefined);
   assert.equal(history.runs.using, "composite");
-  assert.equal(history.runs.steps.length, 2);
-  const [execute, upload] = history.runs.steps;
+  assert.equal(history.runs.steps.length, 5);
+  const [execute, qualification, upload, style, oxlint] = history.runs.steps;
   assert.equal(execute.if, "${{ success() && job.status == 'success' }}");
   assert.equal(execute.shell, "bash");
   assert.equal(execute.run, "vp run --workspace-root test:js");
   assert.equal(execute["continue-on-error"], undefined);
+  assert.equal(qualification.if, "${{ success() && job.status == 'success' }}");
+  assert.equal(qualification.shell, "bash");
+  assert.equal(qualification.run, "node npm/oxlint/scripts/check-project-transport.mjs");
+  assert.equal(qualification["continue-on-error"], undefined);
   assert.equal(upload.if, "${{ always() }}");
   assert.equal(upload.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
   assert.deepEqual(upload.with, {
     name: "public-native-formatter-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
     path: "npm/native/.artifacts/native/formatter-history/**",
+    "if-no-files-found": "warn",
+    "retention-days": 14,
+  });
+  assert.equal(style.if, "${{ always() }}");
+  assert.equal(style.uses, upload.uses);
+  assert.deepEqual(style.with, {
+    name: "template-style-fixes-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
+    path: "target/template-style-fixes-7905.json",
+    "if-no-files-found": "warn",
+    "retention-days": 14,
+  });
+  assert.equal(oxlint.if, "${{ always() }}");
+  assert.equal(oxlint.uses, upload.uses);
+  assert.deepEqual(oxlint.with, {
+    name: "oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
+    path: [
+      "target/oxlint-original-locations-7904.json",
+      "target/oxlint-original-project-checks-7903.json",
+      "target/oxlint-script-safe-carrier-7903.json",
+      "target/oxlint-original-project-transport/**",
+      "",
+    ].join("\n"),
     "if-no-files-found": "warn",
     "retention-days": 14,
   });

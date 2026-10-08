@@ -247,6 +247,12 @@ export interface LinterConfig {
   };
 }
 export interface LintRuleOptions {
+  "script/define-props-destructuring"?: {
+    destructure?: "only-when-assigned" | "always" | "never";
+  };
+  "html/no-empty-palpable-content"?: {
+    contentDirectives?: string[];
+  };
   "type/strict-boolean-expressions"?: {
     allowString?: boolean;
     allowNumber?: boolean;
@@ -267,6 +273,9 @@ export interface LintRuleOptions {
   };
   "vue/no-mutating-props"?: {
     shallowOnly?: boolean;
+  };
+  "vue/require-component-registration"?: {
+    globals?: string[];
   };
   "vue/sfc-element-order"?: {
     order?: (string | string[])[];

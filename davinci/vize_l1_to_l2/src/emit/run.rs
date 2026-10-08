@@ -5,7 +5,7 @@
 //! and the type declarations; nothing here is new behaviour.
 
 use alloc::vec::Vec as StdVec;
-use vize_l0::diag::Severity;
+use vize_l0::diag::{Severity, Stage};
 use vize_l2::op::Namespace;
 
 use crate::lower::Lowered;
@@ -64,11 +64,15 @@ pub(super) fn emit_dom_observed<'f>(
             UnsupportedReason::TypeScriptLaneUnavailable,
         ));
     }
-    if lowered
-        .diagnostics
-        .iter()
-        .any(|diagnostic| diagnostic.severity() == Severity::Error)
-    {
+    if lowered.diagnostics.iter().any(|diagnostic| {
+        diagnostic.severity() == Severity::Error
+            && !(options.prefix_identifiers
+                && diagnostic.stage == Stage::Semantic
+                && diagnostic.message.as_str() == crate::lower::SAME_KEY_MESSAGE
+                && diagnostic
+                    .exemption()
+                    .is_some_and(|exemption| crate::exemptions::LOWERING.eq(exemption)))
+    }) {
         return Err(EmitError::Diagnostics);
     }
     // `static_cache = inline || !hoists.is_empty()`, with `hoists` empty
@@ -122,6 +126,7 @@ pub(super) fn emit_dom_observed<'f>(
         skip_scope_id: false,
         cache_sites: StdVec::new(),
         used_unref: core::cell::Cell::new(u32::MAX),
+        used_is_ref: core::cell::Cell::new((u32::MAX, false)),
         component_name: options.component_name,
         scope: prefix::PrefixScope::new(
             options.bindings,
@@ -130,6 +135,7 @@ pub(super) fn emit_dom_observed<'f>(
             options.inline,
         ),
     };
+    cx.scope.enable_vdom_setup_writes();
     let filters = &facts.legacy.filters;
     if facts.legacy.filter_helper_precedes_components {
         cx.buf.prefer(Helper::ResolveFilter);
@@ -208,6 +214,19 @@ pub(super) fn emit_dom_observed<'f>(
             cx.buf.prefer_at_visit(Helper::Unref, unref_visit);
         }
         cx.buf.use_helper(Helper::Unref);
+    }
+    let (is_ref_visit, unref_before_is_ref) = cx.used_is_ref.get();
+    if is_ref_visit != u32::MAX {
+        // Each real prefix result registers Unref before IsRef. Preserve the
+        // first result's tie; a later read must not reorder an earlier write.
+        if unref_visit < is_ref_visit || (unref_visit == is_ref_visit && unref_before_is_ref) {
+            cx.buf
+                .prefer_at_visit_after(Helper::IsRef, is_ref_visit, Helper::Unref);
+        } else {
+            cx.buf
+                .prefer_at_visit_before(Helper::IsRef, is_ref_visit, Helper::Unref);
+        }
+        cx.buf.use_helper(Helper::IsRef);
     }
     cache_slots::renumber(&mut cx);
     let emit_visits = cx.walk.visits();

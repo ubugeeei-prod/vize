@@ -41,13 +41,17 @@ pub(super) fn rewrite_retained(
     let mut collector = IdentifierCollector::new_unwrapped(ctx, js.raw);
     oxc_ast_visit::Visit::visit_expression(&mut collector, js.ast);
 
+    let has_identifiers = collector.has_identifiers;
     let used_unref = collector.used_unref;
+    let used_is_ref = collector.used_is_ref;
     // Content-relative spans: wrapper offset 0 (the legacy path subtracts 1).
     let result = splice_insertions(js.raw, collector.rewrites, collector.suffix_rewrites, 0);
 
     let result = RewriteResult {
         code: super::rewrite::rewrite_props_aliases(result, ctx),
         used_unref,
+        used_is_ref,
+        has_identifiers,
         parse_error: None,
     };
 
@@ -103,6 +107,8 @@ fn assert_rewrite_agrees(
     let mut collector = IdentifierCollector::new(ctx, &wrapped);
     oxc_ast_visit::Visit::visit_expression(&mut collector, &legacy);
     let legacy_used_unref = collector.used_unref;
+    let legacy_used_is_ref = collector.used_is_ref;
+    let legacy_has_identifiers = collector.has_identifiers;
     let mut all_rewrites: Vec<(usize, String, String)> = collector
         .rewrites
         .into_iter()
@@ -127,8 +133,18 @@ fn assert_rewrite_agrees(
     let legacy_code = super::rewrite::rewrite_props_aliases(legacy_code, ctx);
 
     assert_eq!(
-        (retained.code.as_str(), retained.used_unref),
-        (legacy_code.as_str(), legacy_used_unref),
+        (
+            retained.code.as_str(),
+            retained.used_unref,
+            retained.used_is_ref,
+            retained.has_identifiers
+        ),
+        (
+            legacy_code.as_str(),
+            legacy_used_unref,
+            legacy_used_is_ref,
+            legacy_has_identifiers
+        ),
         "davinci-differential (P1-9): the AST-driven splice diverged from the legacy string rewrite for expression {:?}",
         js.raw
     );

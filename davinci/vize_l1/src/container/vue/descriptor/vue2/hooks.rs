@@ -100,7 +100,11 @@ pub(super) fn after_park(owner: &Vue2DescriptorObservation<'_>) {
     );
 }
 
-impl Drop for Vue2DescriptorObservation<'_> {
+/// Follows the complete actual owner through a consuming handoff.
+#[derive(Debug)]
+pub(super) struct OwnerDrop;
+
+impl Drop for OwnerDrop {
     fn drop(&mut self) {
         update(|state| state.counts.dropped += 1);
     }

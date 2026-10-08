@@ -1,18 +1,19 @@
+use oxc_span::SourceType;
 use tower_lsp::lsp_types::Location;
 use vize_canon::CorsaBridge;
 use vize_croquis::{Drawer, DrawerOptions};
-use vize_l0::FxHashSet;
+use vize_l0::{Allocator, FxHashSet};
+
 use vize_relief::BindingType;
 
 use super::ReferencesService;
 use crate::ide::{IdeContext, corsa_support};
 
-/// Whether the queried word is a top-level `<script setup>` binding declared
-/// in this SFC. Script-setup declarations cannot be imported by other
-/// modules, so their canonical reference surface is the current document plus
-/// its open importers — never the rest of the workspace. Imported names keep
-/// the workspace surface: croquis classifies them with the same `Setup*`
-/// binding types, so an import lookup separates the two.
+mod local_binding;
+
+/// Keep independent setup locals on the inexpensive existing surface. A
+/// shorthand object binding also names its source property, so its native
+/// references may cross modules even though the setup variable is not exported.
 fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
     let Some(word) = ReferencesService::get_word_at_offset(&ctx.content, ctx.offset) else {
         return false;
@@ -26,8 +27,18 @@ fn is_script_setup_local_binding(ctx: &IdeContext<'_>) -> bool {
     let Some(script_setup) = descriptor.script_setup.as_ref() else {
         return false;
     };
+    // Reuse the original analysis parse for the pattern decision and Croquis.
+    let allocator = Allocator::default();
+    let parsed = vize_croquis::script_parser::parse_program_for_analysis(
+        &allocator,
+        &script_setup.content,
+        SourceType::from_path("script.ts").unwrap_or_default(),
+    );
+    if parsed.panicked || local_binding::property_linked(&parsed.program, &word) {
+        return false;
+    }
     let mut analyzer = Drawer::with_options(DrawerOptions::full());
-    analyzer.analyze_script_setup(&script_setup.content);
+    analyzer.analyze_script_setup_program(&parsed.program, &script_setup.content, None);
     matches!(
         analyzer.finish().get_binding_type(&word),
         Some(
@@ -51,33 +62,62 @@ pub(super) async fn references(
     if !bridge.is_initialized() {
         return None;
     }
-    // A top-level `<script setup>` binding is invisible to other modules, so
+    // An independent `<script setup>` local is invisible to other modules, so
     // its references live in this SFC and the already-open project surface;
     // materializing every workspace SFC for it takes minutes on a
     // component-library-sized workspace and cannot add hits.
-    let document_only = !ctx.state.lsp_features().cross_file;
-    let document = if document_only || is_script_setup_local_binding(ctx) {
-        corsa_support::open_canonical_virtual_project_document_strict(ctx, bridge)
+    let document = if is_script_setup_local_binding(ctx) {
+        corsa_support::open_canonical_virtual_navigation_project_document_strict(ctx, bridge)
             .await
             .ok()
             .flatten()?
     } else {
         corsa_support::open_canonical_virtual_workspace_document(ctx, bridge).await?
     };
-    let (line, character) =
-        corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
+    let attribute = corsa_support::component_attribute_position(ctx, &document);
+    let (line, character) = match attribute {
+        Some(Some(position)) => position,
+        Some(None) => return Some(Vec::new()),
+        None => {
+            let position =
+                corsa_support::canonical_source_offset_to_position(&document, ctx.offset)?;
+            let Some(position) = corsa_support::local_binding_reference_position(
+                ctx,
+                &document,
+                &document.request_uri,
+                position,
+            ) else {
+                return Some(Vec::new());
+            };
+            position
+        }
+    };
     let mut locations = bridge
         .references(&document.request_uri, line, character, include_declaration)
         .await
         .ok()?;
-    let (prop_locations, has_component_prop_navigation) =
+    let (prop_locations, _) =
         component_prop_references(ctx, bridge, &document, line, character, include_declaration)
             .await;
     locations.extend(prop_locations);
     let mut linked = linked_positions(&document, &locations);
-    linked.extend(corsa_support::materialized_semantic_positions(
-        &document, ctx.uri, ctx.offset,
-    ));
+    if attribute.is_none() {
+        for mut position in
+            corsa_support::materialized_semantic_positions(&document, ctx.uri, ctx.offset)
+        {
+            let Some((line, character)) = corsa_support::local_binding_reference_position(
+                ctx,
+                &document,
+                &position.request_uri,
+                (position.line, position.character),
+            ) else {
+                return Some(Vec::new());
+            };
+            position.line = line;
+            position.character = character;
+            linked.insert(position);
+        }
+    }
     linked.remove(&corsa_support::CanonicalSemanticPosition {
         request_uri: document.request_uri.clone(),
         line,
@@ -104,12 +144,6 @@ pub(super) async fn references(
     }
     let mut mapped = corsa_support::map_canonical_corsa_locations(ctx, &document, locations);
     mapped.extend(style_locations(ctx, &document, &mapped));
-    // The default project surface already contains open reverse importers.
-    // A component prop's navigation identity can therefore reach its parent
-    // attributes without the opt-in workspace-wide Vue scan.
-    if document_only && !has_component_prop_navigation {
-        mapped.retain(|location| location.uri == *ctx.uri);
-    }
     mapped.sort_by(|left, right| {
         left.uri
             .as_str()
@@ -149,37 +183,7 @@ async fn component_prop_references(
     // TypeScript does not follow that edge onward to the child's template
     // binding. Ask for references at the mapped declaration as well.
     let mut positions = matches.positions.clone();
-    for definition in &matches.authored_definitions {
-        let source = if definition.uri == *ctx.uri {
-            Some(ctx.content.clone())
-        } else {
-            document
-                .authored_source(&definition.uri)
-                .map(str::to_owned)
-                .or_else(|| ctx.state.documents.text(&definition.uri))
-                .or_else(|| {
-                    definition
-                        .uri
-                        .to_file_path()
-                        .ok()
-                        .and_then(|path| std::fs::read_to_string(path).ok())
-                })
-        };
-        let Some(offset) = source.as_deref().and_then(|source| {
-            crate::ide::position_to_offset(
-                source,
-                definition.range.start.line,
-                definition.range.start.character,
-            )
-        }) else {
-            continue;
-        };
-        positions.extend(corsa_support::materialized_semantic_positions(
-            document,
-            &definition.uri,
-            offset,
-        ));
-    }
+    positions.extend(matches.authored_definition_positions(ctx, document, true));
     positions.sort_by(|left, right| {
         (&left.request_uri, left.line, left.character).cmp(&(
             &right.request_uri,

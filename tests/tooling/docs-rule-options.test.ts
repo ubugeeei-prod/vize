@@ -6,8 +6,10 @@ import { test } from "node:test";
 import { repoRoot } from "./_helpers/moonbit.ts";
 
 const configurableRuleOptions = [
+  "html/no-empty-palpable-content",
   "musea/prefer-design-tokens",
   "script/custom-event-name-casing",
+  "script/define-props-destructuring",
   "script/no-restricted-globals",
   "script/no-restricted-members",
   "type/strict-boolean-expressions",
@@ -15,6 +17,7 @@ const configurableRuleOptions = [
   "vue/component-name-in-template-casing",
   "vue/html-self-closing",
   "vue/no-mutating-props",
+  "vue/require-component-registration",
   "vue/sfc-element-order",
   "vue/v-on-event-hyphenation",
 ];
@@ -115,7 +118,9 @@ test("all rules reference shows which rules accept lint rule options", () => {
   assert.match(allRules, /rule-option support/);
 
   for (const ruleId of configurableRuleOptions) {
-    const row = allRules.split("\n").find((line) => line.startsWith(`| \`${ruleId}\` |`));
+    const row = allRules
+      .split("\n")
+      .find((line) => line.startsWith(`| [\`${ruleId}\`](./reference/`));
     assert.ok(row, `${ruleId} must appear in all rules`);
     assert.match(
       row,
@@ -124,7 +129,9 @@ test("all rules reference shows which rules accept lint rule options", () => {
     );
   }
 
-  const a11yRow = allRules.split("\n").find((line) => line.startsWith("| `a11y/img-alt` |"));
+  const a11yRow = allRules
+    .split("\n")
+    .find((line) => line.startsWith("| [`a11y/img-alt`](./reference/"));
   assert.ok(a11yRow, "a sample non-configurable rule must appear in all rules");
   assert.match(a11yRow, /\| No \| \[source\]/);
 });
@@ -146,11 +153,14 @@ function sectionFor(source: string, heading: string): string {
 
 test("strict boolean rows render within the complete option and type-aware tables", () => {
   const expectedOptions = [
+    "html/no-empty-palpable-content",
     "script/no-restricted-globals",
     "script/no-restricted-members",
     "vue/component-name-in-template-casing",
     "script/custom-event-name-casing",
+    "script/define-props-destructuring",
     "vue/no-mutating-props",
+    "vue/require-component-registration",
     "vue/sfc-element-order",
     "vue/html-self-closing",
     "vue/v-on-event-hyphenation",
@@ -181,5 +191,7 @@ function tableRules(source: string): string[] {
     .split(/\n\s*\n/u)
     .find((block) => /^\| (?:Rule|ルール) \|[^\n]*\n\| --- \|/u.test(block));
   assert.ok(block, "table header and separator must share a block");
-  return [...block.matchAll(/^\| `([^`]+)` \|/gmu)].map((match) => match[1]!);
+  return [...block.matchAll(/^\| (?:\[)?`([^`]+)`(?:\]\([^)]*\))? \|/gmu)].map(
+    (match) => match[1]!,
+  );
 }

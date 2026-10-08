@@ -44,11 +44,10 @@ pub(super) async fn initialized(server: &MaestroServer) {
         .log_message(MessageType::INFO, "vize_maestro LSP server initialized")
         .await;
 }
-
 async fn register_typecheck_dependency_watcher(server: &MaestroServer) {
     #[cfg(feature = "native")]
     {
-        if !server.state.is_lsp_typecheck_enabled()
+        if !server.state.project_source_watcher_enabled()
             || !server.state.global_component_watcher_supported()
         {
             return;
@@ -70,7 +69,7 @@ fn typecheck_dependency_watcher_registration() -> Registration {
     let options = DidChangeWatchedFilesRegistrationOptions {
         watchers: [
             "**/*.d.{ts,mts,cts}",
-            "**/*.vue",
+            "**/*.{vue,ts,tsx,mts,cts,js,jsx,mjs,cjs}",
             "**/package.json",
             "**/tsconfig*.json",
             "**/jsconfig.json",
@@ -93,6 +92,8 @@ pub(super) async fn did_change_watched_files(
     server: &MaestroServer,
     params: &DidChangeWatchedFilesParams,
 ) {
+    #[cfg(feature = "native")]
+    super::native_requests::trace_watched_file_events(params);
     #[cfg(feature = "experimental-source-navigation")]
     server
         .state
@@ -103,6 +104,7 @@ pub(super) async fn did_change_watched_files(
         if changes.is_empty() {
             return;
         }
+        server.state.observe_workspace_project_file_events(&changes);
         server.state.invalidate_component_interfaces();
         if changes_invalidate_disk_project_state(&server.state, &changes) {
             invalidate_corsa_disk_state(&server.state);

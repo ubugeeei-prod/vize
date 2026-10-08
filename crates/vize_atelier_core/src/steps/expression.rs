@@ -2,6 +2,7 @@
 
 mod collector;
 mod collector_targets;
+mod function_shape;
 mod inline_handler;
 pub(crate) mod nesting;
 mod parse_checks;
@@ -18,8 +19,12 @@ use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::{Allocator, Box, String, cstr};
 
-use crate::{ConstantType, ExpressionNode, SimpleExpressionNode, lane::TransformContext};
+use crate::{
+    CompoundExpressionChild, CompoundExpressionNode, ConstantType, ExpressionNode,
+    SimpleExpressionNode, lane::TransformContext,
+};
 
+pub use function_shape::is_typescript_function_expression;
 pub use inline_handler::process_inline_handler;
 pub use nesting::{
     MAX_EXPRESSION_NESTING_DEPTH, expression_exceeds_max_depth, expression_has_balanced_delimiters,
@@ -28,7 +33,10 @@ pub use nesting::{
 pub use prefix::{is_simple_identifier, prefix_identifiers_in_expression};
 use rewrite::rewrite_expression;
 pub use scope::is_template_global;
-pub use shape_checks::{is_event_handler_reference_node, is_function_expression_node};
+pub use shape_checks::{
+    is_event_handler_reference_node, is_function_expression_node,
+    is_typescript_function_expression_node,
+};
 use shape_checks::{is_function_shape, is_handler_reference_shape};
 pub use typescript::strip_typescript_from_expression;
 pub use vize_relief::{ExpressionScope, for_each_function_var};
@@ -36,16 +44,27 @@ pub use vize_relief::{ExpressionScope, for_each_function_var};
 /// Returns true if an expression is a callable reference that should be passed
 /// through directly as an event handler, not wrapped as `$event => (...)`.
 pub fn is_event_handler_reference_expression(content: &str) -> bool {
-    with_whole_expression(content, is_handler_reference_shape).unwrap_or(false)
+    with_whole_expression(
+        content,
+        SourceType::default().with_module(true),
+        is_handler_reference_shape,
+    )
+    .unwrap_or(false)
 }
 
 /// Returns true if the whole expression is a function / arrow function expression.
 pub fn is_function_expression(content: &str) -> bool {
-    with_whole_expression(content, is_function_shape).unwrap_or(false)
+    with_whole_expression(
+        content,
+        SourceType::default().with_module(true),
+        is_function_shape,
+    )
+    .unwrap_or(false)
 }
 
 fn with_whole_expression<T>(
     content: &str,
+    source_type: SourceType,
     decide: impl FnOnce(&oxc_ast::ast::Expression<'_>) -> T,
 ) -> Option<T> {
     if !expression_is_safe_to_parse(content) {
@@ -55,13 +74,9 @@ fn with_whole_expression<T>(
     // The bare parser accepts a prefix (`save; count++` as `save`). Require
     // one whole expression. The newline also terminates authored line comments.
     let wrapped = cstr!("({content}\n)");
-    let expr = Parser::new(
-        &allocator,
-        &wrapped,
-        SourceType::default().with_module(true),
-    )
-    .parse_expression()
-    .ok()?;
+    let expr = Parser::new(&allocator, &wrapped, source_type)
+        .parse_expression()
+        .ok()?;
     (expr.span().end as usize == wrapped.len()).then(|| decide(expr.get_inner_expression()))
 }
 
@@ -126,6 +141,22 @@ pub fn process_expression<'a>(
     exp: &ExpressionNode<'a>,
     as_params: bool,
 ) -> ExpressionNode<'a> {
+    process_expression_shape(ctx, exp, as_params, false)
+}
+
+pub(crate) fn process_branch_key<'a>(
+    ctx: &mut TransformContext<'a>,
+    exp: &ExpressionNode<'a>,
+) -> ExpressionNode<'a> {
+    process_expression_shape(ctx, exp, false, true)
+}
+
+fn process_expression_shape<'a>(
+    ctx: &mut TransformContext<'a>,
+    exp: &ExpressionNode<'a>,
+    as_params: bool,
+    branch_key: bool,
+) -> ExpressionNode<'a> {
     let allocator = ctx.allocator;
 
     // `mut` is only consumed by the legacy filter rewrite below; without the
@@ -174,6 +205,7 @@ pub fn process_expression<'a>(
     }
 
     // Strip TypeScript if needed, then optionally prefix identifiers
+    let mut compound_key = false;
     let processed = if ctx.options.prefix_identifiers {
         // rewrite_expression handles both TS stripping and prefixing; the
         // retained AST rides along when it still describes these bytes (P1-7).
@@ -182,12 +214,16 @@ pub fn process_expression<'a>(
         if result.used_unref {
             ctx.helper(crate::RuntimeHelper::Unref);
         }
+        if result.used_is_ref {
+            ctx.helper(crate::RuntimeHelper::IsRef);
+        }
         // The expression failed to parse entirely and was passed through
         // raw — report it instead of silently emitting broken render code.
         // Matches `@vue/compiler-core`'s `X_INVALID_EXPRESSION`.
         if let Some(detail) = &result.parse_error {
             rewrite::report_invalid_expression(ctx, detail, &normalized.loc);
         }
+        compound_key = branch_key && !is_simple_identifier(content) && result.has_identifiers;
         result.code
     } else if ctx.options.is_ts {
         // Only strip TypeScript, no prefixing
@@ -196,7 +232,7 @@ pub fn process_expression<'a>(
         String::new(content)
     };
 
-    ExpressionNode::Simple(Box::new_in(
+    let simple = Box::new_in(
         SimpleExpressionNode {
             content: allocator.alloc_str(&processed),
             is_static: false,
@@ -209,7 +245,16 @@ pub fn process_expression<'a>(
             is_ref_transformed: true,
         },
         &allocator,
-    ))
+    );
+    if compound_key {
+        let mut compound = CompoundExpressionNode::new(allocator, normalized.loc.clone());
+        compound
+            .children
+            .push(CompoundExpressionChild::Simple(simple));
+        ExpressionNode::Compound(Box::new_in(compound, &allocator))
+    } else {
+        ExpressionNode::Simple(simple)
+    }
 }
 
 /// Clone an expression node.

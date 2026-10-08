@@ -40,6 +40,20 @@ impl Drawer {
         generic: Option<&str>,
         jsx: bool,
     ) -> &mut Self {
+        self.draw_script_setup_with_builtin::<false>(source, generic, jsx)
+    }
+
+    /// Collect source-owned primitive hints during the existing editor AST walk.
+    pub fn draw_script_setup_with_builtin_types(&mut self, source: &str) -> &mut Self {
+        self.draw_script_setup_with_builtin::<true>(source, None, false)
+    }
+
+    fn draw_script_setup_with_builtin<const BUILTIN_TYPES: bool>(
+        &mut self,
+        source: &str,
+        generic: Option<&str>,
+        jsx: bool,
+    ) -> &mut Self {
         if !self.options.analyze_script {
             return self;
         }
@@ -49,15 +63,18 @@ impl Drawer {
         // Use OXC-based parser for accurate AST drawing
         let result = profile!(
             "croquis.drawer.script_setup",
-            crate::script_parser::parse_script_setup_for_unused(
+            crate::script_parser::parse_script_setup_for_unused::<BUILTIN_TYPES>(
                 source,
                 generic,
                 jsx,
                 self.track_unused_bindings,
                 !self.options.detect_undefined,
+                self.occurrence_capture.is_some(),
             )
         );
 
+        let mut result = result;
+        self.take_script_occurrences(&mut result, source);
         result.apply_to_croquis(&mut self.croquis);
 
         self
@@ -82,18 +99,21 @@ impl Drawer {
 
         let result = profile!(
             "croquis.drawer.script_setup_program",
-            crate::script_parser::analyze_script_setup_program_skipping(
+            crate::script_parser::analyze_script_setup_program_demand::<false>(
                 program,
                 source,
                 generic,
                 !self.options.detect_undefined,
+                self.occurrence_capture.is_some(),
             )
         );
 
         let mut result = result;
         if self.track_unused_bindings {
-            result.unused_bindings = crate::script_parser::unused_setup_bindings(program, &result);
+            result.unused_bindings =
+                crate::script_parser::unused_setup_bindings(program, &result, generic);
         }
+        self.take_script_occurrences(&mut result, source);
         result.apply_to_croquis(&mut self.croquis);
 
         self
@@ -124,9 +144,12 @@ impl Drawer {
                 },
                 jsx,
                 !self.options.detect_undefined,
+                self.occurrence_capture.is_some(),
             )
         );
 
+        let mut result = result;
+        self.take_script_occurrences(&mut result, source);
         result.apply_to_croquis(&mut self.croquis);
 
         self

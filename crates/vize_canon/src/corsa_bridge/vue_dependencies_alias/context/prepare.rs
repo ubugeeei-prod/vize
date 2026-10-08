@@ -27,6 +27,10 @@ impl AliasContext {
         options: super::super::super::vue_document::CorsaVueVirtualDocumentOptions,
         environment: super::super::super::vue_document::CorsaProjectEnvironment<'_>,
     ) -> Result<PreparedAliasContext, super::super::super::types::CorsaBridgeError> {
+        let capture_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "alias_fingerprint",
+            overlays.len(),
+        );
         let mut fingerprint = ContextFingerprint::capture(
             source_path,
             content,
@@ -37,6 +41,9 @@ impl AliasContext {
             environment.tsconfig_path,
         );
         fingerprint.include_requested_sources(requested_sources);
+        capture_phase.finish();
+        let cache_phase =
+            crate::corsa_bridge::preparation_trace::Phase::start("alias_cache_lookup", 1);
         let cached = {
             let mut cache = environment.editor_session.cache();
             cache.get(source_path, &fingerprint).map(|context| {
@@ -49,6 +56,7 @@ impl AliasContext {
                 (context, catalog)
             })
         };
+        cache_phase.finish();
         if let Some((context, source_catalog)) = cached {
             return Ok(PreparedAliasContext {
                 source_catalog,
@@ -57,7 +65,11 @@ impl AliasContext {
             });
         }
         let mut resolver = environment.package_routes.clone();
-        let context = build::build(
+        let build_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+            "alias_build",
+            requested_sources.len(),
+        );
+        let mut context = build::build(
             source_path,
             content,
             overlays,
@@ -69,7 +81,10 @@ impl AliasContext {
             options,
             environment,
         )?;
+        build_phase.finish();
+        let stamp_phase = crate::corsa_bridge::preparation_trace::Phase::start("alias_stamp", 1);
         fingerprint.stamp(&context);
+        stamp_phase.finish();
         let mut cache = environment.editor_session.cache();
         if let Some(context) = cache.get(source_path, &fingerprint) {
             return Ok(PreparedAliasContext {
@@ -83,14 +98,19 @@ impl AliasContext {
                 materialized_changes: Default::default(),
             });
         }
+        let materialize_phase =
+            crate::corsa_bridge::preparation_trace::Phase::start("alias_materialize", 1);
         let mut materialized_changes = Default::default();
         let mut source_catalog = Default::default();
-        if let Some(mirror) = context.mirror.as_ref() {
+        let materialized_sources = context.materialized_sources();
+        if let Some(mirror) = context.mirror.as_mut() {
+            let previous = cache.materialized_snapshot(mirror.virtual_root());
+            mirror.restore_editor_package_links(&previous);
             let previous_catalog = cache.source_catalog(mirror.virtual_root());
             source_catalog = cache.include_source_catalog(
                 mirror.virtual_root(),
                 fingerprint.overlay_identity(),
-                context.materialized_sources(),
+                materialized_sources,
             );
             let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
             let expected_files = mirror.expected_materialized_files();
@@ -108,7 +128,6 @@ impl AliasContext {
             }
             query_paths.sort();
             query_paths.dedup();
-            let previous = cache.materialized_snapshot(mirror.virtual_root());
             let current = mirror
                 .materialize_editor_union(&preserved_files, &preserved_package_links, &query_paths)
                 .map_err(|error| {
@@ -131,6 +150,7 @@ impl AliasContext {
                 },
             );
         }
+        materialize_phase.finish();
         let context = std::sync::Arc::new(context);
         cache.insert(
             source_path.to_path_buf(),

@@ -15,7 +15,9 @@ use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{InitializeParams, Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
 use vize_carton::config::matcher::LintPlanScope;
-use vize_l0::config::{ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions};
+use vize_l0::config::{
+    ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions, LinterFeatureFlags,
+};
 
 use super::ServerState;
 
@@ -25,13 +27,14 @@ pub(super) struct WorkspaceFolderConfig {
     plan: LinterConfigPlanWithConfigRuleOptions,
     scopes: Vec<LintPlanScope>,
     global_ignores: Vec<LintPlanScope>,
+    features: LinterFeatureFlags,
 }
 
 impl WorkspaceFolderConfig {
     /// Load the folder's own `vize.config.*`; a folder without a config file
     /// gets the built-in defaults so contexts stay order-independent.
     fn load(root: PathBuf) -> Self {
-        let (loaded, plan, _) = vize_carton::config::
+        let (loaded, plan, features) = vize_carton::config::
             load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source(
                 Some(&root),
             );
@@ -73,10 +76,14 @@ impl WorkspaceFolderConfig {
             plan,
             scopes,
             global_ignores,
+            features,
         }
     }
 
-    fn linter_for_path(&self, path: &Path) -> Option<(LinterConfig, ConfigLintRuleOptions)> {
+    fn linter_for_path(
+        &self,
+        path: &Path,
+    ) -> Option<(LinterConfig, ConfigLintRuleOptions, LinterFeatureFlags)> {
         if self.global_ignores.iter().any(|scope| scope.ignores(path)) {
             return None;
         }
@@ -87,7 +94,7 @@ impl WorkspaceFolderConfig {
             .filter_map(|(index, scope)| scope.matches(path).then_some(index))
             .collect::<Vec<_>>();
         let resolved = self.plan.resolve_matching_entries(&matching);
-        Some((resolved.config, resolved.rule_options))
+        Some((resolved.config, resolved.rule_options, self.features))
     }
 }
 
@@ -95,6 +102,7 @@ impl ServerState {
     /// Set the workspace root path.
     #[cfg(feature = "native")]
     pub fn set_workspace_root(&self, path: PathBuf) {
+        let _change = self.corsa_environment_change();
         #[cfg(feature = "experimental-source-navigation")]
         self.update_module_link_context(None, || {
             *self.workspace_root.write() = Some(path);
@@ -111,12 +119,30 @@ impl ServerState {
         // Overlays shadow files resolved relative to the workspace root, so a
         // new root retargets them even though no document changed.
         self.corsa_overlays.invalidate();
+        self.retire_corsa_configuration();
     }
 
     /// Get the workspace root path.
     #[cfg(feature = "native")]
     pub fn get_workspace_root(&self) -> Option<PathBuf> {
         self.workspace_root.read().clone()
+    }
+
+    /// Capture every registered editor folder without rescanning its sources.
+    #[cfg(feature = "native")]
+    pub(crate) fn workspace_root_paths(&self) -> Vec<PathBuf> {
+        let mut roots = self
+            .workspace_folder_configs
+            .read()
+            .iter()
+            .map(|context| context.root.clone())
+            .collect::<Vec<_>>();
+        if let Some(primary) = self.get_workspace_root()
+            && !roots.contains(&primary)
+        {
+            roots.push(primary);
+        }
+        roots
     }
 
     /// Resolve the primary workspace root from `initialize`: `rootUri` when
@@ -139,6 +165,8 @@ impl ServerState {
     /// Replace the workspace-folder contexts with the folders sent by
     /// `initialize`.
     pub(crate) fn set_workspace_folders(&self, roots: Vec<PathBuf>) {
+        #[cfg(feature = "native")]
+        let _change = self.corsa_environment_change();
         let contexts = roots.into_iter().map(WorkspaceFolderConfig::load).collect();
         *self.workspace_folder_configs.write() = contexts;
     }
@@ -162,6 +190,8 @@ impl ServerState {
     /// Apply a `workspace/didChangeWorkspaceFolders` event: removed roots
     /// drop their contexts, added roots load theirs.
     pub(crate) fn update_workspace_folders(&self, added: Vec<PathBuf>, removed: &[PathBuf]) {
+        #[cfg(feature = "native")]
+        let _change = self.corsa_environment_change();
         let mut contexts = self.workspace_folder_configs.write();
         contexts.retain(|context| !removed.contains(&context.root));
         contexts.extend(added.into_iter().map(WorkspaceFolderConfig::load));
@@ -199,14 +229,15 @@ impl ServerState {
     pub(crate) fn linter_settings_for_uri(
         &self,
         uri: &Url,
-    ) -> Option<(LinterConfig, ConfigLintRuleOptions)> {
+    ) -> Option<(LinterConfig, ConfigLintRuleOptions, LinterFeatureFlags)> {
         if let Ok(path) = uri.to_file_path() {
             let contexts = self.workspace_folder_configs.read();
             if let Some(context) = deepest_enclosing_folder(&contexts, &path) {
                 return context.linter_for_path(&path);
             }
         }
-        Some((self.get_linter_config(), self.get_linter_rule_options()))
+        let (config, features) = self.get_linter_config_and_features();
+        Some((config, self.get_linter_rule_options(), features))
     }
 }
 

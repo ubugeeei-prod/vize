@@ -1,0 +1,2270 @@
+{
+  "schema": "vize.lint.content-directives.authored-corpus",
+  "version": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": true,
+    "typecheck": false,
+    "ecosystem": false
+  },
+  "scenarios": [
+    {
+      "id": "original-default",
+      "file": "Notice.vue",
+      "contentDirectives": null,
+      "enabled": true,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "rules": {
+            "html/no-empty-palpable-content": "error"
+          }
+        }
+      },
+      "expectedCli": [
+        {
+          "file": "Notice.vue",
+          "messages": [
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 10,
+              "column": 5,
+              "endLine": 10,
+              "endColumn": 32,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [
+        {
+          "range": {
+            "start": {
+              "line": 9,
+              "character": 4
+            },
+            "end": {
+              "line": 9,
+              "character": 31
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        }
+      ],
+      "reportedElements": [
+        "<p v-safe-html=\"message\" />"
+      ]
+    },
+    {
+      "id": "original-configured",
+      "file": "Notice.vue",
+      "contentDirectives": [
+        "safe-html"
+      ],
+      "enabled": true,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "rules": {
+            "html/no-empty-palpable-content": "error"
+          },
+          "ruleOptions": {
+            "html/no-empty-palpable-content": {
+              "contentDirectives": [
+                "safe-html"
+              ]
+            }
+          }
+        }
+      },
+      "expectedCli": [
+        {
+          "file": "Notice.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [],
+      "reportedElements": []
+    },
+    {
+      "id": "controls-default",
+      "file": "Controls.vue",
+      "contentDirectives": null,
+      "enabled": true,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "rules": {
+            "html/no-empty-palpable-content": "error"
+          }
+        }
+      },
+      "expectedCli": [
+        {
+          "file": "Controls.vue",
+          "messages": [
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 7,
+              "column": 5,
+              "endLine": 7,
+              "endColumn": 32,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 8,
+              "column": 5,
+              "endLine": 8,
+              "endColumn": 39,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 9,
+              "column": 5,
+              "endLine": 9,
+              "endColumn": 39,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 10,
+              "column": 5,
+              "endLine": 10,
+              "endColumn": 31,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 11,
+              "column": 5,
+              "endLine": 11,
+              "endColumn": 37,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 12,
+              "column": 5,
+              "endLine": 12,
+              "endColumn": 18,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 13,
+              "column": 5,
+              "endLine": 13,
+              "endColumn": 35,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 14,
+              "column": 5,
+              "endLine": 14,
+              "endColumn": 30,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 15,
+              "column": 5,
+              "endLine": 15,
+              "endColumn": 8,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 16,
+              "column": 5,
+              "endLine": 16,
+              "endColumn": 20,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            }
+          ],
+          "errorCount": 10,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [
+        {
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 4
+            },
+            "end": {
+              "line": 6,
+              "character": 31
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 4
+            },
+            "end": {
+              "line": 7,
+              "character": 38
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 4
+            },
+            "end": {
+              "line": 8,
+              "character": 38
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 9,
+              "character": 4
+            },
+            "end": {
+              "line": 9,
+              "character": 30
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 10,
+              "character": 4
+            },
+            "end": {
+              "line": 10,
+              "character": 36
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 11,
+              "character": 4
+            },
+            "end": {
+              "line": 11,
+              "character": 17
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 12,
+              "character": 4
+            },
+            "end": {
+              "line": 12,
+              "character": 34
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 13,
+              "character": 4
+            },
+            "end": {
+              "line": 13,
+              "character": 29
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 14,
+              "character": 4
+            },
+            "end": {
+              "line": 14,
+              "character": 7
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 15,
+              "character": 4
+            },
+            "end": {
+              "line": 15,
+              "character": 19
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        }
+      ],
+      "reportedElements": [
+        "<p v-safe-html=\"message\" />",
+        "<p v-safe-html.render=\"message\" />",
+        "<p v-safe-html:notice=\"message\" />",
+        "<p v-sanitize=\"message\" />",
+        "<p v-dompurify-html=\"message\" />",
+        "<p v-focus />",
+        "<p v-safe-htmlish=\"message\" />",
+        "<p vSafeHtml=\"message\" />",
+        "<p></p>",
+        "<p v-if=\"true\"></p>"
+      ]
+    },
+    {
+      "id": "controls-safe-html",
+      "file": "Controls.vue",
+      "contentDirectives": [
+        "safe-html"
+      ],
+      "enabled": true,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "rules": {
+            "html/no-empty-palpable-content": "error"
+          },
+          "ruleOptions": {
+            "html/no-empty-palpable-content": {
+              "contentDirectives": [
+                "safe-html"
+              ]
+            }
+          }
+        }
+      },
+      "expectedCli": [
+        {
+          "file": "Controls.vue",
+          "messages": [
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 10,
+              "column": 5,
+              "endLine": 10,
+              "endColumn": 31,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 11,
+              "column": 5,
+              "endLine": 11,
+              "endColumn": 37,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 12,
+              "column": 5,
+              "endLine": 12,
+              "endColumn": 18,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 13,
+              "column": 5,
+              "endLine": 13,
+              "endColumn": 35,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 14,
+              "column": 5,
+              "endLine": 14,
+              "endColumn": 30,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 15,
+              "column": 5,
+              "endLine": 15,
+              "endColumn": 8,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 16,
+              "column": 5,
+              "endLine": 16,
+              "endColumn": 20,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            }
+          ],
+          "errorCount": 7,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [
+        {
+          "range": {
+            "start": {
+              "line": 9,
+              "character": 4
+            },
+            "end": {
+              "line": 9,
+              "character": 30
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 10,
+              "character": 4
+            },
+            "end": {
+              "line": 10,
+              "character": 36
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 11,
+              "character": 4
+            },
+            "end": {
+              "line": 11,
+              "character": 17
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 12,
+              "character": 4
+            },
+            "end": {
+              "line": 12,
+              "character": 34
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 13,
+              "character": 4
+            },
+            "end": {
+              "line": 13,
+              "character": 29
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 14,
+              "character": 4
+            },
+            "end": {
+              "line": 14,
+              "character": 7
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 15,
+              "character": 4
+            },
+            "end": {
+              "line": 15,
+              "character": 19
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        }
+      ],
+      "reportedElements": [
+        "<p v-sanitize=\"message\" />",
+        "<p v-dompurify-html=\"message\" />",
+        "<p v-focus />",
+        "<p v-safe-htmlish=\"message\" />",
+        "<p vSafeHtml=\"message\" />",
+        "<p></p>",
+        "<p v-if=\"true\"></p>"
+      ]
+    },
+    {
+      "id": "controls-all-content",
+      "file": "Controls.vue",
+      "contentDirectives": [
+        "safe-html",
+        "sanitize",
+        "dompurify-html"
+      ],
+      "enabled": true,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "rules": {
+            "html/no-empty-palpable-content": "error"
+          },
+          "ruleOptions": {
+            "html/no-empty-palpable-content": {
+              "contentDirectives": [
+                "safe-html",
+                "sanitize",
+                "dompurify-html"
+              ]
+            }
+          }
+        }
+      },
+      "expectedCli": [
+        {
+          "file": "Controls.vue",
+          "messages": [
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 12,
+              "column": 5,
+              "endLine": 12,
+              "endColumn": 18,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 13,
+              "column": 5,
+              "endLine": 13,
+              "endColumn": 35,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 14,
+              "column": 5,
+              "endLine": 14,
+              "endColumn": 30,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 15,
+              "column": 5,
+              "endLine": 15,
+              "endColumn": 8,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 16,
+              "column": 5,
+              "endLine": 16,
+              "endColumn": 20,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            }
+          ],
+          "errorCount": 5,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [
+        {
+          "range": {
+            "start": {
+              "line": 11,
+              "character": 4
+            },
+            "end": {
+              "line": 11,
+              "character": 17
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 12,
+              "character": 4
+            },
+            "end": {
+              "line": 12,
+              "character": 34
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 13,
+              "character": 4
+            },
+            "end": {
+              "line": 13,
+              "character": 29
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 14,
+              "character": 4
+            },
+            "end": {
+              "line": 14,
+              "character": 7
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 15,
+              "character": 4
+            },
+            "end": {
+              "line": 15,
+              "character": 19
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        }
+      ],
+      "reportedElements": [
+        "<p v-focus />",
+        "<p v-safe-htmlish=\"message\" />",
+        "<p vSafeHtml=\"message\" />",
+        "<p></p>",
+        "<p v-if=\"true\"></p>"
+      ]
+    },
+    {
+      "id": "controls-exact-names",
+      "file": "Controls.vue",
+      "contentDirectives": [
+        "v-safe-html",
+        "safe"
+      ],
+      "enabled": true,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "rules": {
+            "html/no-empty-palpable-content": "error"
+          },
+          "ruleOptions": {
+            "html/no-empty-palpable-content": {
+              "contentDirectives": [
+                "v-safe-html",
+                "safe"
+              ]
+            }
+          }
+        }
+      },
+      "expectedCli": [
+        {
+          "file": "Controls.vue",
+          "messages": [
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 7,
+              "column": 5,
+              "endLine": 7,
+              "endColumn": 32,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 8,
+              "column": 5,
+              "endLine": 8,
+              "endColumn": 39,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 9,
+              "column": 5,
+              "endLine": 9,
+              "endColumn": 39,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 10,
+              "column": 5,
+              "endLine": 10,
+              "endColumn": 31,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 11,
+              "column": 5,
+              "endLine": 11,
+              "endColumn": 37,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 12,
+              "column": 5,
+              "endLine": 12,
+              "endColumn": 18,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 13,
+              "column": 5,
+              "endLine": 13,
+              "endColumn": 35,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 14,
+              "column": 5,
+              "endLine": 14,
+              "endColumn": 30,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 15,
+              "column": 5,
+              "endLine": 15,
+              "endColumn": 8,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 16,
+              "column": 5,
+              "endLine": 16,
+              "endColumn": 20,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            }
+          ],
+          "errorCount": 10,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [
+        {
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 4
+            },
+            "end": {
+              "line": 6,
+              "character": 31
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 4
+            },
+            "end": {
+              "line": 7,
+              "character": 38
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 4
+            },
+            "end": {
+              "line": 8,
+              "character": 38
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 9,
+              "character": 4
+            },
+            "end": {
+              "line": 9,
+              "character": 30
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 10,
+              "character": 4
+            },
+            "end": {
+              "line": 10,
+              "character": 36
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 11,
+              "character": 4
+            },
+            "end": {
+              "line": 11,
+              "character": 17
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 12,
+              "character": 4
+            },
+            "end": {
+              "line": 12,
+              "character": 34
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 13,
+              "character": 4
+            },
+            "end": {
+              "line": 13,
+              "character": 29
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 14,
+              "character": 4
+            },
+            "end": {
+              "line": 14,
+              "character": 7
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 15,
+              "character": 4
+            },
+            "end": {
+              "line": 15,
+              "character": 19
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        }
+      ],
+      "reportedElements": [
+        "<p v-safe-html=\"message\" />",
+        "<p v-safe-html.render=\"message\" />",
+        "<p v-safe-html:notice=\"message\" />",
+        "<p v-sanitize=\"message\" />",
+        "<p v-dompurify-html=\"message\" />",
+        "<p v-focus />",
+        "<p v-safe-htmlish=\"message\" />",
+        "<p vSafeHtml=\"message\" />",
+        "<p></p>",
+        "<p v-if=\"true\"></p>"
+      ]
+    },
+    {
+      "id": "controls-empty-reset",
+      "file": "Controls.vue",
+      "contentDirectives": [],
+      "enabled": true,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "rules": {
+            "html/no-empty-palpable-content": "error"
+          },
+          "ruleOptions": {
+            "html/no-empty-palpable-content": {
+              "contentDirectives": []
+            }
+          }
+        }
+      },
+      "expectedCli": [
+        {
+          "file": "Controls.vue",
+          "messages": [
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 7,
+              "column": 5,
+              "endLine": 7,
+              "endColumn": 32,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 8,
+              "column": 5,
+              "endLine": 8,
+              "endColumn": 39,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 9,
+              "column": 5,
+              "endLine": 9,
+              "endColumn": 39,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 10,
+              "column": 5,
+              "endLine": 10,
+              "endColumn": 31,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 11,
+              "column": 5,
+              "endLine": 11,
+              "endColumn": 37,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 12,
+              "column": 5,
+              "endLine": 12,
+              "endColumn": 18,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 13,
+              "column": 5,
+              "endLine": 13,
+              "endColumn": 35,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 14,
+              "column": 5,
+              "endLine": 14,
+              "endColumn": 30,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 15,
+              "column": 5,
+              "endLine": 15,
+              "endColumn": 8,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 16,
+              "column": 5,
+              "endLine": 16,
+              "endColumn": 20,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            }
+          ],
+          "errorCount": 10,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [
+        {
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 4
+            },
+            "end": {
+              "line": 6,
+              "character": 31
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 4
+            },
+            "end": {
+              "line": 7,
+              "character": 38
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 4
+            },
+            "end": {
+              "line": 8,
+              "character": 38
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 9,
+              "character": 4
+            },
+            "end": {
+              "line": 9,
+              "character": 30
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 10,
+              "character": 4
+            },
+            "end": {
+              "line": 10,
+              "character": 36
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 11,
+              "character": 4
+            },
+            "end": {
+              "line": 11,
+              "character": 17
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 12,
+              "character": 4
+            },
+            "end": {
+              "line": 12,
+              "character": 34
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 13,
+              "character": 4
+            },
+            "end": {
+              "line": 13,
+              "character": 29
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 14,
+              "character": 4
+            },
+            "end": {
+              "line": 14,
+              "character": 7
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 15,
+              "character": 4
+            },
+            "end": {
+              "line": 15,
+              "character": 19
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        }
+      ],
+      "reportedElements": [
+        "<p v-safe-html=\"message\" />",
+        "<p v-safe-html.render=\"message\" />",
+        "<p v-safe-html:notice=\"message\" />",
+        "<p v-sanitize=\"message\" />",
+        "<p v-dompurify-html=\"message\" />",
+        "<p v-focus />",
+        "<p v-safe-htmlish=\"message\" />",
+        "<p vSafeHtml=\"message\" />",
+        "<p></p>",
+        "<p v-if=\"true\"></p>"
+      ]
+    },
+    {
+      "id": "controls-explicit-off",
+      "file": "Controls.vue",
+      "contentDirectives": [
+        "safe-html"
+      ],
+      "enabled": false,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "rules": {
+            "html/no-empty-palpable-content": "off"
+          },
+          "ruleOptions": {
+            "html/no-empty-palpable-content": {
+              "contentDirectives": [
+                "safe-html"
+              ]
+            }
+          }
+        }
+      },
+      "expectedCli": [
+        {
+          "file": "Controls.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [],
+      "reportedElements": []
+    },
+    {
+      "id": "controls-scoped-replace",
+      "file": "Controls.vue",
+      "contentDirectives": [
+        "safe-html"
+      ],
+      "enabled": true,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "rules": {
+            "html/no-empty-palpable-content": "error"
+          },
+          "ruleOptions": {
+            "html/no-empty-palpable-content": {
+              "contentDirectives": [
+                "safe-html",
+                "sanitize",
+                "dompurify-html"
+              ]
+            }
+          }
+        },
+        "entries": [
+          {
+            "files": [
+              "Controls.vue"
+            ],
+            "linter": {
+              "ruleOptions": {
+                "html/no-empty-palpable-content": {
+                  "contentDirectives": [
+                    "safe-html"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "expectedCli": [
+        {
+          "file": "Controls.vue",
+          "messages": [
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 10,
+              "column": 5,
+              "endLine": 10,
+              "endColumn": 31,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 11,
+              "column": 5,
+              "endLine": 11,
+              "endColumn": 37,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 12,
+              "column": 5,
+              "endLine": 12,
+              "endColumn": 18,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 13,
+              "column": 5,
+              "endLine": 13,
+              "endColumn": 35,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 14,
+              "column": 5,
+              "endLine": 14,
+              "endColumn": 30,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 15,
+              "column": 5,
+              "endLine": 15,
+              "endColumn": 8,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 16,
+              "column": 5,
+              "endLine": 16,
+              "endColumn": 20,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            }
+          ],
+          "errorCount": 7,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [
+        {
+          "range": {
+            "start": {
+              "line": 9,
+              "character": 4
+            },
+            "end": {
+              "line": 9,
+              "character": 30
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 10,
+              "character": 4
+            },
+            "end": {
+              "line": 10,
+              "character": 36
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 11,
+              "character": 4
+            },
+            "end": {
+              "line": 11,
+              "character": 17
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 12,
+              "character": 4
+            },
+            "end": {
+              "line": 12,
+              "character": 34
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 13,
+              "character": 4
+            },
+            "end": {
+              "line": 13,
+              "character": 29
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 14,
+              "character": 4
+            },
+            "end": {
+              "line": 14,
+              "character": 7
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 15,
+              "character": 4
+            },
+            "end": {
+              "line": 15,
+              "character": 19
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        }
+      ],
+      "reportedElements": [
+        "<p v-sanitize=\"message\" />",
+        "<p v-dompurify-html=\"message\" />",
+        "<p v-focus />",
+        "<p v-safe-htmlish=\"message\" />",
+        "<p vSafeHtml=\"message\" />",
+        "<p></p>",
+        "<p v-if=\"true\"></p>"
+      ]
+    },
+    {
+      "id": "controls-scoped-empty-reset",
+      "file": "Controls.vue",
+      "contentDirectives": [],
+      "enabled": true,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "rules": {
+            "html/no-empty-palpable-content": "error"
+          },
+          "ruleOptions": {
+            "html/no-empty-palpable-content": {
+              "contentDirectives": [
+                "safe-html"
+              ]
+            }
+          }
+        },
+        "entries": [
+          {
+            "files": [
+              "Controls.vue"
+            ],
+            "linter": {
+              "ruleOptions": {
+                "html/no-empty-palpable-content": {
+                  "contentDirectives": []
+                }
+              }
+            }
+          }
+        ]
+      },
+      "expectedCli": [
+        {
+          "file": "Controls.vue",
+          "messages": [
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 7,
+              "column": 5,
+              "endLine": 7,
+              "endColumn": 32,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 8,
+              "column": 5,
+              "endLine": 8,
+              "endColumn": 39,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 9,
+              "column": 5,
+              "endLine": 9,
+              "endColumn": 39,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 10,
+              "column": 5,
+              "endLine": 10,
+              "endColumn": 31,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 11,
+              "column": 5,
+              "endLine": 11,
+              "endColumn": 37,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 12,
+              "column": 5,
+              "endLine": 12,
+              "endColumn": 18,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 13,
+              "column": 5,
+              "endLine": 13,
+              "endColumn": 35,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 14,
+              "column": 5,
+              "endLine": 14,
+              "endColumn": 30,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 15,
+              "column": 5,
+              "endLine": 15,
+              "endColumn": 8,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            },
+            {
+              "ruleId": "html/no-empty-palpable-content",
+              "ruleDocsPath": "docs/content/rules/html.md",
+              "severity": 2,
+              "message": "[vize:html/no-empty-palpable-content] <p> element is empty but expects visible content",
+              "line": 16,
+              "column": 5,
+              "endLine": 16,
+              "endColumn": 20,
+              "help": "Add text content, child elements, or use aria-label for accessible content."
+            }
+          ],
+          "errorCount": 10,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [
+        {
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 4
+            },
+            "end": {
+              "line": 6,
+              "character": 31
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 7,
+              "character": 4
+            },
+            "end": {
+              "line": 7,
+              "character": 38
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 8,
+              "character": 4
+            },
+            "end": {
+              "line": 8,
+              "character": 38
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 9,
+              "character": 4
+            },
+            "end": {
+              "line": 9,
+              "character": 30
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 10,
+              "character": 4
+            },
+            "end": {
+              "line": 10,
+              "character": 36
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 11,
+              "character": 4
+            },
+            "end": {
+              "line": 11,
+              "character": 17
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 12,
+              "character": 4
+            },
+            "end": {
+              "line": 12,
+              "character": 34
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 13,
+              "character": 4
+            },
+            "end": {
+              "line": 13,
+              "character": 29
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 14,
+              "character": 4
+            },
+            "end": {
+              "line": 14,
+              "character": 7
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 15,
+              "character": 4
+            },
+            "end": {
+              "line": 15,
+              "character": 19
+            }
+          },
+          "severity": 1,
+          "code": "html/no-empty-palpable-content",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/html/no-empty-palpable-content.html"
+          },
+          "source": "vize/lint",
+          "message": "<p> element is empty but expects visible content\n\nHelp: Add text content, child elements, or use aria-label for accessible content."
+        }
+      ],
+      "reportedElements": [
+        "<p v-safe-html=\"message\" />",
+        "<p v-safe-html.render=\"message\" />",
+        "<p v-safe-html:notice=\"message\" />",
+        "<p v-sanitize=\"message\" />",
+        "<p v-dompurify-html=\"message\" />",
+        "<p v-focus />",
+        "<p v-safe-htmlish=\"message\" />",
+        "<p vSafeHtml=\"message\" />",
+        "<p></p>",
+        "<p v-if=\"true\"></p>"
+      ]
+    },
+    {
+      "id": "controls-options-alone",
+      "file": "Controls.vue",
+      "contentDirectives": [
+        "safe-html"
+      ],
+      "enabled": false,
+      "config": {
+        "linter": {
+          "preset": "incremental",
+          "ruleOptions": {
+            "html/no-empty-palpable-content": {
+              "contentDirectives": [
+                "safe-html"
+              ]
+            }
+          }
+        }
+      },
+      "expectedCli": [
+        {
+          "file": "Controls.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedLsp": [],
+      "reportedElements": []
+    }
+  ]
+}

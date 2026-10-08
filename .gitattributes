@@ -1,11 +1,18 @@
+tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Keep GitHub language statistics focused on authored source code.
 *.snap linguist-generated=true
 **/__snapshots__/** linguist-generated=true
 npm/fresco-native/index.d.ts linguist-generated=true text eol=lf
 
+# Historical observer parser controls retain the complete original command bytes.
+tests/tooling/fixtures/canonical-observer-logs/** -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
+
 # Formatter history references compare exact bytes, including CR/LF and final LF.
 tests/_fixtures/differential/formatter-history/** -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
 crates/vize_glyph/tests/snapshots/history_*.snap.txt -text whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
+
+# Original generic-arrow report and controls retain their authored bytes.
+tests/_fixtures/differential/formatter-regressions/ts-generic-arrow-7965/** -text whitespace=cr-at-eol
 
 # Native script CLI oracles retain exact captured bytes and authored CRLF.
 crates/vize/tests/fixtures/dump_script_cli/** -text whitespace=cr-at-eol
@@ -15,6 +22,10 @@ crates/vize/tests/fixtures/dump_cli/help*.stdout -text
 tests/_fixtures/_git/** linguist-vendored=true
 
 # Preserve the pinned upstream source bytes, including existing trailing spaces.
+tests/_fixtures/differential/compiler/cli-whitespace-7880/** -text
+
+# Full original component-slot report and owned source/DOM corpus (#7970).
+tests/_fixtures/differential/compiler/component-slot-text-7970/** -text
 tests/_fixtures/pattern-reference/upstream/** linguist-vendored whitespace=-blank-at-eol
 tests/_fixtures/vue-language-tools/upstream/** linguist-vendored whitespace=-blank-at-eol
 
@@ -23,9 +34,70 @@ tests/_fixtures/differential/lsp/on-type-crlf/App.vue.txt -text whitespace=cr-at
 tests/_fixtures/differential/lsp/highlight-original-crlf/Crlf.vue.txt -text whitespace=cr-at-eol
 tests/_fixtures/differential/lsp/highlight-original/witness.test.ts.txt -text
 
+# Literal completion inputs retain original LF and authored dirty CRLF bytes.
+tests/_fixtures/differential/lsp/string-literal-completion-original/*.vue.txt -text whitespace=cr-at-eol
+
 # Original type-checker sources and diff context keep their pinned bytes.
 tests/_fixtures/differential/typechecker/split-script-original/**/*.txt -text whitespace=-blank-at-eol
 tests/_fixtures/differential/typechecker/v-for-source-original/**/*.txt -text whitespace=-blank-at-eol
+tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/** -text
 
 # Immutable formatter regressions include literal CRLF/CRCRLF output bytes.
 tests/_fixtures/differential/formatter/sfc-vue*/** -text whitespace=-blank-at-eol
+
+# Reporter examples retain their exact original source and output bytes.
+tests/_fixtures/differential/compiler/vapor-slot-defaults-7886/*.txt -text
+# Preserve authored component-ref sources and literal whole-frame references.
+tests/_fixtures/differential/compiler/vapor-component-template-refs-7882/** -text
+tests/_fixtures/differential/compiler/vapor-slot-defaults-7886/original-issue.md -text
+
+# Complete CSS rule-layout fixtures retain their authored LF/CRLF bytes.
+tests/_fixtures/differential/formatter-regressions/css-rule-layout-7926-7966/*.vue*.txt -text whitespace=cr-at-eol
+
+# Original linter report fixtures retain authored LF/CRLF bytes on every checkout.
+crates/vize_patina/tests/fixtures/issue-7977/** -text whitespace=cr-at-eol
+
+# Original generic setup import inputs retain authored bytes on every checkout.
+tests/_fixtures/differential/linter/generic-type-reads-7938/** -text whitespace=cr-at-eol
+
+# Macro ownership laws retain pinned LF, Unicode and authored CRLF bytes.
+tests/_fixtures/differential/lint-with-defaults/** -text whitespace=cr-at-eol
+
+# Original linter report fixtures retain authored LF/CRLF bytes on every checkout.
+crates/vize_patina/tests/fixtures/issue-7979/** -text whitespace=cr-at-eol
+
+# Preserve whole authored LF/CRLF utility-class regression inputs.
+crates/vize_patina/tests/fixtures/css-utility-literal-tokens/*.vue.txt -text whitespace=cr-at-eol
+
+# Oxlint position laws retain authored source bytes, including CRLF.
+tests/_fixtures/differential/lint/oxlint-original-locations-7904/*.txt -text whitespace=cr-at-eol
+
+# Pinned public root-comment source and authored corpus keep complete checkout bytes.
+tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/** -text whitespace=cr-at-eol
+tests/_fixtures/differential/formatter-regressions/leading-root-comment-8117/habitica/** whitespace=-blank-at-eol,-blank-at-eof,cr-at-eol
+
+# Preserve full authored LF/CRLF CSS continuation originals and references.
+tests/_fixtures/differential/formatter-regressions/css-continuation-indent-7915/** -text whitespace=cr-at-eol
+
+# Preserve complete original and dirty component-completion source bytes.
+tests/_fixtures/differential/lsp/component-global-attributes-8015/*.vue.txt -text whitespace=cr-at-eol
+
+# Generic component hover preserves the complete reporter issue and source bytes.
+tests/_fixtures/differential/lsp/generic-prop-hover-8015/** -text whitespace=cr-at-eol
+
+# Public #7969 whole LF/CRLF formatter carriers stay byte exact.
+tests/_fixtures/differential/formatter-regressions/hugged-interpolation-indent-7969/*.txt -text whitespace=cr-at-eol
+
+# Whole #7876 directive-width inputs and references retain authored LF/CRLF.
+tests/_fixtures/differential/formatter-regressions/directive-print-width-7876/** -text whitespace=cr-at-eol
+tests/_fixtures/differential/formatter/sfc-directive-prefix-print-width/** -text whitespace=cr-at-eol
+tests/_fixtures/differential/formatter-regressions/continuation-prefix-width-7876/** -text whitespace=cr-at-eol
+
+# Original #8015 SFC and Issue inputs retain authored checkout bytes.
+tests/_fixtures/differential/lsp/template-expression-globals-8015/** -text whitespace=cr-at-eol
+
+# Contextual data/ARIA controls preserve complete source and expected payload bytes.
+tests/_fixtures/differential/lsp/data-aria-attributes-8015/** -text whitespace=cr-at-eol
+
+# Whole malformed and Unicode #7903 carriers retain the authored source bytes.
+tests/_fixtures/differential/lint/oxlint-script-safe-carrier-7903/** -text whitespace=cr-at-eol

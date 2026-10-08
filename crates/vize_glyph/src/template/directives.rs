@@ -4,9 +4,9 @@
 //! `v-slot:` -> `#`) and JS expression formatting in directive values.
 
 use crate::{options::FormatOptions, script};
-use vize_l0::{String, ToCompactString, cstr};
+use vize_l0::{SmallVec, String, ToCompactString, cstr};
 
-use super::helpers::template_literal_state_after_line_from;
+use super::literal_lines::{LiteralLineState, Representation, encode_reference_data};
 
 mod normalize;
 pub(crate) use normalize::normalize_attribute_with_vue_version;
@@ -40,10 +40,11 @@ pub(super) fn format_directive_value(
 
     // Formatting a leading line comment as a standalone JS expression moves
     // it onto the opening quote and may rewrap the expression beneath it.
-    // Keep the authored multiline value so the comment still covers the same
-    // expression and the opening/closing quote stay on their own lines.
+    // Keep the authored tokens and quote placement, but rederive same-line
+    // continuations before the attribute and SFC printers add their depth.
+    // Values starting on the following line remain verbatim (#6694).
     if value.contains('\n') && trimmed.starts_with("//") {
-        return (value.to_compact_string(), false);
+        return reanchor_continuation_lines(value, options, Representation::Html);
     }
 
     // v-for has special syntax: "(item, index) in items"
@@ -52,7 +53,9 @@ pub(super) fn format_directive_value(
     }
 
     let decoded = decode_expression_attribute_entities(trimmed);
-    let expression = decoded.as_deref().unwrap_or(trimmed);
+    let expression = decoded
+        .as_ref()
+        .map_or(trimmed, |value| value.code.as_str());
 
     // Vue 2 filters apply to interpolations and bound values, never events.
     if (name.starts_with(':') || name.starts_with("v-bind"))
@@ -64,18 +67,31 @@ pub(super) fn format_directive_value(
     }
 
     // Try to format as JS expression via oxc_formatter
-    match script::format_js_expression_in_attribute(expression, options) {
-        Some(formatted) => {
-            let indent_multiline_value = formatted.contains('\n');
-            (formatted, indent_multiline_value)
+    match script::format_js_expression_in_attribute_with_layout(expression, options) {
+        Some(formatted) if formatted.retained_bare_sequence => {
+            // These authored bytes retain absolute source indentation. Rebase
+            // code continuations before the attribute printer adds its depth.
+            // The bare tag retains the exact decoded source bytes. Protect only
+            // amp DATA produced by decoding before reanchor changes byte offsets.
+            let code = encode_reference_data(
+                formatted.code,
+                decoded
+                    .as_ref()
+                    .map_or(&[], |value| value.amp_positions.as_slice()),
+            );
+            reanchor_continuation_lines(&code, options, Representation::JavaScript)
         }
-        None => reanchor_continuation_lines(value, options),
+        Some(formatted) => {
+            let indent_multiline_value = formatted.code.contains('\n');
+            (formatted.code, indent_multiline_value)
+        }
+        None => reanchor_continuation_lines(value, options, Representation::Html),
     }
 }
 
 /// Re-derive the continuation indentation of a multi-line directive value the
-/// expression formatter could not parse — a statement sequence such as
-/// `foo(1); bar(2)`, or otherwise unparsable source.
+/// expression formatter could not parse, or retained as authored bare sequence
+/// bytes — a statement sequence such as `foo(1); bar(2)`, or comma expressions.
 ///
 /// The value's own bytes are kept, but the leading whitespace of every
 /// continuation line is rebuilt from the value's common indentation, so the
@@ -89,7 +105,11 @@ pub(super) fn format_directive_value(
 /// A value whose first line is blank starts on the line *after* the attribute
 /// name. `compute_raw_line_mask` keeps every line of that shape verbatim, so it
 /// never receives SFC indentation and must not be re-anchored here.
-fn reanchor_continuation_lines(value: &str, options: &FormatOptions) -> (String, bool) {
+pub(super) fn reanchor_continuation_lines(
+    value: &str,
+    options: &FormatOptions,
+    representation: Representation,
+) -> (String, bool) {
     let Some(first_break) = value.find('\n') else {
         return (value.to_compact_string(), false);
     };
@@ -101,60 +121,39 @@ fn reanchor_continuation_lines(value: &str, options: &FormatOptions) -> (String,
         return (value.to_compact_string(), false);
     }
 
-    let common_indent = common_continuation_indent(first_line, rest);
+    let common_indent = common_continuation_indent(first_line, rest, representation);
     let indent = options.indent_string();
     let mut reanchored = String::with_capacity(value.len() + indent.len());
     reanchored.push_str(first_line);
-    let mut state = ContinuationScan::new(first_line);
+    let mut state = LiteralLineState::from_line(first_line, representation);
     for line in rest.split('\n') {
         let line = line.trim_end_matches('\r');
         if state.line_holds_code(line) {
             reanchored.push('\n');
             reanchored.push_str(&indent);
             reanchored.push_str(dedent(line, common_indent));
-        } else if state.in_template_literal {
-            // Raw template-literal content: these bytes belong to the rendered
-            // string value, so the printer keeps them as they are.
+        } else if state.line_is_raw() {
+            // Literal or escaped quoted-string continuation: these bytes
+            // belong to the runtime value, so both printers keep them raw.
             reanchored.push('\n');
             reanchored.push_str(line);
         }
         // Anything else is a blank line outside a template literal: it holds
         // nothing to anchor and would print as bare indentation, so it is
         // dropped, exactly as a formatted expression comes back without it.
-        state.advance(line);
+        state.advance_line(line);
     }
     (reanchored, true)
 }
 
-/// Tracks whether a continuation line starts inside a multiline template
-/// literal, mirroring how `write_rendered_attribute` renders the same lines.
-struct ContinuationScan {
-    in_template_literal: bool,
-}
-
-impl ContinuationScan {
-    fn new(first_line: &str) -> Self {
-        Self {
-            in_template_literal: template_literal_state_after_line_from(false, first_line),
-        }
-    }
-
-    /// A line whose indentation is the formatter's to choose: outside any
-    /// template literal and not blank (a blank line has nothing to anchor).
-    fn line_holds_code(&self, line: &str) -> bool {
-        !self.in_template_literal && !line.trim().is_empty()
-    }
-
-    fn advance(&mut self, line: &str) {
-        self.in_template_literal =
-            template_literal_state_after_line_from(self.in_template_literal, line);
-    }
-}
-
 /// The narrowest indentation shared by the continuation lines that hold code,
 /// which becomes the value's zero column when they are re-anchored.
-fn common_continuation_indent(first_line: &str, rest: &str) -> usize {
-    let mut state = ContinuationScan::new(first_line);
+fn common_continuation_indent(
+    first_line: &str,
+    rest: &str,
+    representation: Representation,
+) -> usize {
+    let mut state = LiteralLineState::from_line(first_line, representation);
     let mut common: Option<usize> = None;
     for line in rest.split('\n') {
         let line = line.trim_end_matches('\r');
@@ -162,7 +161,7 @@ fn common_continuation_indent(first_line: &str, rest: &str) -> usize {
             let width = blank_prefix_len(line);
             common = Some(common.map_or(width, |narrowest| narrowest.min(width)));
         }
-        state.advance(line);
+        state.advance_line(line);
     }
     common.unwrap_or(0)
 }
@@ -176,12 +175,18 @@ fn blank_prefix_len(line: &str) -> usize {
     line.len() - line.trim_start_matches([' ', '\t']).len()
 }
 
-fn decode_expression_attribute_entities(value: &str) -> Option<String> {
+struct DecodedExpression {
+    code: String,
+    amp_positions: SmallVec<[usize; 2]>,
+}
+
+fn decode_expression_attribute_entities(value: &str) -> Option<DecodedExpression> {
     if !value.contains('&') {
         return None;
     }
 
     let mut decoded = String::with_capacity(value.len());
+    let mut amp_positions = SmallVec::new();
     let mut changed = false;
     let mut rest = value;
     while !rest.is_empty() {
@@ -210,6 +215,7 @@ fn decode_expression_attribute_entities(value: &str) -> Option<String> {
             rest = tail;
             changed = true;
         } else if let Some(tail) = rest.strip_prefix("&amp;") {
+            amp_positions.push(decoded.len());
             decoded.push('&');
             rest = tail;
             changed = true;
@@ -222,7 +228,10 @@ fn decode_expression_attribute_entities(value: &str) -> Option<String> {
         }
     }
 
-    changed.then_some(decoded)
+    changed.then_some(DecodedExpression {
+        code: decoded,
+        amp_positions,
+    })
 }
 
 /// Format `v-for` expression: normalize spacing in `(item, index) in items`.

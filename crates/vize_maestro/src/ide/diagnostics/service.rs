@@ -2,7 +2,7 @@
 
 use crate::ide::ecosystem;
 use crate::server::ServerState;
-use crate::utils::{is_jsx_path, is_standalone_html_path};
+use crate::utils::{is_jsx_path, is_plain_script_path, is_standalone_html_path};
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
 
 use super::{LineIndex, Severity};
@@ -34,11 +34,22 @@ impl DiagnosticService {
             return diagnostics;
         }
 
+        if is_plain_script_path(uri.path()) {
+            return diagnostics;
+        }
+
         let line_index = LineIndex::new(&content);
 
         let path = uri.path();
         if path.ends_with(".art.vue") {
             if features.lint {
+                diagnostics.extend(Self::collect_art_lint_diagnostics(
+                    state,
+                    uri,
+                    &content,
+                    features.ecosystem,
+                    &line_index,
+                ));
                 diagnostics.extend(Self::collect_musea_diagnostics(
                     state,
                     uri,
@@ -210,13 +221,24 @@ impl DiagnosticService {
             return diagnostics;
         }
 
+        if is_plain_script_path(uri.path()) {
+            return diagnostics;
+        }
+
         // Build the line index once for this document, shared by every
         // collector below (mirrors `collect`).
         let line_index = LineIndex::new(&content);
 
-        // Art files (*.art.vue): Musea-specific lint only.
+        // Art files (*.art.vue): shared template/script lint and Musea lint.
         let path = uri.path();
         if path.ends_with(".art.vue") {
+            diagnostics.extend(Self::collect_art_lint_diagnostics(
+                state,
+                uri,
+                &content,
+                features.ecosystem,
+                &line_index,
+            ));
             diagnostics.extend(Self::collect_musea_diagnostics(
                 state,
                 uri,

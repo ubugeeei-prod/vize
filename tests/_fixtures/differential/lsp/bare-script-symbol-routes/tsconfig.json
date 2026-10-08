@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ESNext", "DOM"],
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "jsx": "preserve"
+  },
+  "include": ["src/**/*"]
+}

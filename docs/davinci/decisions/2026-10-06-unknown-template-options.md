@@ -1,0 +1,305 @@
+# Explicit unknown template checks
+
+Refs [#7874](https://github.com/ubugeeei-prod/vize/issues/7874), the earlier
+[#7234](https://github.com/ubugeeei-prod/vize/issues/7234) and
+[#7266](https://github.com/ubugeeei-prod/vize/pull/7266). This is a private,
+unexecuted source proposal based on actual main
+`8a8521d6897bbe3fd0af0cbfaebd83f4fc933933`; publication and all runtime acceptance
+remain pending. The finite first-v0.433 admission hold remains in force.
+
+## Original authority
+
+The live #7874 reporter is `ubugeeei` (public account ID `71201308`), the
+maintainer. This is not a third-party report. Preserve all three complete issue
+code blocks in `tests/_fixtures/differential/typechecker/unknown-template-options`:
+
+| Original         | Bytes | SHA256                                                             |
+| ---------------- | ----: | ------------------------------------------------------------------ |
+| `src/Child.vue`  |   120 | `32fa2cf70a75ee2b7d7c5ddecb8df37ef60c8de103217dacf2a2386579cd3ed8` |
+| `src/Parent.vue` |   227 | `c2ff284ede74ed6c7007f1890003ab04930c1b4822cb2212701afc0b075b7c1e` |
+| `tsconfig.json`  |   299 | `43b2d2a49191b2addeebf1a9bba969874453b50858a6c3a28fb57150fabbbd21` |
+
+The reported command is `vize check --no-config` on 0.432.0. The original Vue
+package version is unspecified; the proposed hosted controls use the existing
+genuine locked Vue 3.6.0-rc.10 package and native TypeScript 7.0.2. Those are
+current controls, not an authenticated execution of the historical installation.
+The original vue-tsc prose supplies semantic obligations, not a native message
+or generated output baseline. Live open-PR searches found no duplicate at the
+source-preparation checkpoint; recheck before any publication.
+
+## Causal source findings and bounded correction
+
+The flattened configuration already reads both options. The omission is in
+production TypeScript generation:
+
+- A native-root child's recorded fallthrough marker selects an unconditional
+  `Record<string, unknown>`, so an explicitly strict parent accepts the extra
+  `unknownProp`. Preserve the older no-tsconfig #4461 contract. Carry an internal
+  explicit-strict authority from the existing flattened Vue option and authored
+  per-file comments; close only that arbitrary tail. Keep declared prop values,
+  Vue public props and the existing real global HTML attribute surface. Propagate
+  the same authority to the existing generic export signature.
+- Custom directive collection required an expression. The original valueless
+  `v-not-a-directive` therefore never reached the existing registry-presence
+  emitter. Collect valueless or empty-value names during the existing traversal
+  only when strict directive checking is enabled. Reuse that emitter and its
+  original name mapping in authored order. Setup bindings, local/global
+  registrations and builtin directives keep their existing resolution. No
+  dangling hook/value call is fabricated for an absent expression.
+
+Move the existing naming law into its own test module in a move-only commit.
+The proposal adds no parse, compiler stage, serialized level record, per-hint
+process, production diagnostic filter or weakened comparison. Existing absent
+settings and the original #4461 fallthrough vectors remain unchanged.
+
+## Proposed closed controls and custody
+
+The untouched original project is one of seven complete option cases: original
+true flags, props false, directives false, all false, all absent, strictTemplates
+implicit true, and strictTemplates with explicit false overrides. The two SFC
+inputs are byte-exact in every case; only authored control configurations differ.
+
+A separate authored `Oracle.ts.txt` specifies the label prop, Vue public/native
+attribute types, missing component and missing directive independently of Vize
+output. Its complete direct native CLI stream must contain exactly the authored
+three locations/codes and intact messages. That native compiler-specific type
+display is then compared in full with every public CLI diagnostic message and
+every editor diagnostic; it is never a captured Vize-generated expectation.
+The public CLI law compares the entire JSON report, effective program/options,
+all file vectors, exit status, complete stderr and conserved input bytes.
+The editor law compares the complete `DiagnosticService` vectors for both files
+under all seven configurations, including every range and optional field.
+It is a direct service test, not a stdio-RPC execution claim.
+
+The existing source-native Actions step retains every original cargo command
+and adds a required bounded script for these CLI and editor targets. Runtime
+capture retains original/control inputs, complete native/CLI stdout, stderr,
+status, actual argv/cwd, source SHA, executable/native hashes and actual pinned
+native version output. Original fixture hashes and authored mappings are checked
+without recording new expectations from Vize. Source-only laws also cover
+explicit-vs-absent generation, comments and generic tail contracts.
+
+## Pending gates and TODOs
+
+Only source formatting, shell syntax, the existing pure assertion lint and
+inventory generation have run locally. No Rust build, native probe, LSP session,
+performance experiment or hosted runtime has run for this proposal.
+
+Before delivery: independent technical source review, fresh exact-head ordinary
+and source-native Actions, complete original/control runtime artifact audit,
+protected full Rust/differential suites and all unchanged 104 instruction gates,
+actual signed reporter-credited merge, then a supported public release. A new
+queue admission remains forbidden during the finite first-release hold.
+
+Keep old corpus vectors, all caps and history denominators intact. Full generic
+cross-project option policy, whole type-checker fix history #6879, full LSP
+history #6883, native default replacement, cold/query completion and the global
+10x objective remain unfinished. Do not mark #7874 fixed from source review or
+an old successful run.
+
+Paired private-source decision: [issue comment](https://github.com/ubugeeei-prod/vize/issues/7874#issuecomment-5997806537).
+
+## Independent source review checkpoint
+
+The fixed private commit `5b50b9c73582dad824768c07cc15caffcfacda1b` and its
+complete 32-path source packet received independent `SOURCE_ONLY_CLEAR`. The
+review authenticated the original three inputs, actual reporter, explicit option
+precedence, both prop producers, the existing directive traversal/name mapping,
+all old workflow commands, unchanged #4461 fixture and complete canonical record.
+The source is now authorized for publication as a Draft with automatic current-head
+Actions; this supersedes the initial private-review-pending checkpoint above.
+No Rust/native runtime or diagnostic-vector acceptance follows from this review.
+Fresh whole original/control artifacts, protected suites and actual delivery
+remain required. Ready/queue admission remains subject to the first-release hold.
+
+## First hosted runtime and complete progress contract
+
+Draft #8056 source `1924cb19702dff96209cf580aa4f8f25caba5a83` reached the new
+native CLI test in run `37339177996`, then failed its incorrect empty-stderr
+expectation. Public `check/runner/execution.rs` emits two complete progress lines
+for the two original files and the exact program root. Compare those entire
+source-defined bytes, including both newlines; do not suppress or filter output.
+
+Official artifact `11356809677` has SHA256
+`2604168d106471e7394b18b17793ec6c990f2201d3d02a3c4d7c94b9685b51fe`;
+all 645 members passed CRC and safe unique-path checks in memory. Retained original
+input/config bytes, native version/status/full three-row oracle and complete
+public JSON independently match the authored original obligation. The failed
+test had not reached its whole JSON assertion, remaining six settings or editor
+vectors. This separate artifact comparison does not turn the failed gate green.
+Only the stderr test contract changes; all production, original inputs, full
+diagnostic expectations and budgets remain unchanged. Fresh exact-head native
+and ordinary Actions must qualify the complete seven-case CLI and fourteen
+direct-service vectors before protected delivery.
+
+## Known fallthrough compatibility and source-derived service contract
+
+The first ordinary source run `37339178587` exposed a real regression in two
+unchanged upstream projects: `fallthroughAttributes` and
+`fallthroughAttributes_checkRequired` acquire TS2353 on their declared `bar`
+forwarding. The strict tail must retain genuine keys from the existing child
+fallthrough producer. Map those known keys to optional `unknown` values, exclude
+the arbitrary string index and leave required/value checks intact. The
+non-generic helper omits already accepted Vue public/global HTML keys and returns
+literal `{}` when no extra key remains, preserving the original native type
+display. The generic call uses the same index refusal on its existing exact
+fallthrough reference. Absent/default authority keeps the older open tail.
+Every upstream source/config/oracle and the old #4461 fixture remain unchanged.
+
+That run also rejects two new test-only Clippy shapes. Name the existing case
+tuple and propagate a checked diagnostic-index result to the test boundary;
+no added suppression, input, predicate or diagnostic selection change.
+
+The stderr successor `f4d1fd01fbef6ce3eb21035799d34ffa447a210d` genuinely passes
+all seven CLI cases in native run `37341124150`, then its first editor assertion
+exposes two incorrect expectations. Existing generation emits binding/directive
+checks before prop calls, so the service preserves component/directive/prop
+order. The existing linear mapping maps the 16-byte quoted camel name onto the
+first 16 bytes of the 17-byte authored directive: range `9:9..9:25`, zero based.
+Record that actual source-derived mapping limitation; do not claim a complete
+transformed-token endpoint or change the old mapper. Keep every actual field and
+returned order in the full-vector comparison, without sorting or filtering the
+response. This successor changes the authored service expectation, not production
+ordering or mapping. Its old failed run remains failed; all fourteen service
+vectors, seven CLI cases and complete compatibility corpus require fresh proof.
+
+## Bounded correction review and actual-main replay
+
+Private `4996a202051600a3c18de9a7038938cd094763e2` received independent bounded
+source-only CLEAR for both known-key producers, unchanged default branches and
+the documented mapping limitation. No runtime acceptance transfers from `f4d`.
+The five owned commits were genuinely replayed onto actual signed main
+`9fe172ced209720642d7051c8a94229042cffa4c`, producing source `f6ec46c3` and tree
+`03304604cdd08f4b18c6730291f61ae213dd2f37`, identical to the independent merge
+projection. All 28 noncomposition owned blobs and all five full author/date/body/
+footer records remain exact; the four composition files retain the incoming
+diagnostic modules, complete canonical clauses and genuine census unions.
+Both pure inventories pass and the canonical record remains 350 lines. Publish
+this reviewed correction to the same Draft #8056 with fresh exact-head ordinary/
+native Actions. Fourteen whole service vectors, seven CLI cases, unchanged full
+compatibility corpora, protected suites and actual delivery remain pending.
+
+## Required forwarded keys before authored-key omission
+
+Exact source `658cefc79eb044360a34ef4a822dd7ce89808c3d` completes native run
+`37344084550` successfully, including the required seven whole CLI cases and
+fourteen direct-service vectors. Independent complete artifact custody is still
+pending. The ordinary strict Rust builder now passes, but tooling2
+`111879229531` rejects `bar` in the unchanged upstream
+`fallthroughAttributes_checkRequired` project; `fallthroughAttributes` now passes.
+This ordinary failure remains a blocker and is never relabelled green.
+
+The earlier strict-tail mapping is too late for the required path: a template-less
+Basic component contributes an open string index to its declared prop surface.
+`Omit<Surface, "foo">` loses the genuine unbound `bar` name before that mapping.
+For explicit-strict required forwarding only, remove the broad string index
+from the actual resolved surface before the existing authored-key Omit. Keep
+property values/modifiers and all optional/native/default branches. The source
+law compares both required branches and unchanged optional/native targets; the
+authentic upstream whole-empty project remains the runtime compatibility oracle.
+No original source/config/expectation, shared helper, mapper, stage or cap changes.
+
+Publish this bounded correction to the same Draft only after independent source
+review, then require fresh exact-head source/native Actions and unchanged full
+corpora. Native source success does not grant protected/merge/release or stdio-RPC
+credit. Full history and default replacement remain unfinished.
+
+The exact private `0351c57cd4500c913feb56039659228270fba4e5` correction received
+independent bounded SOURCE_ONLY_CLEAR: the mapped T[K] surface preserves known
+values/modifiers before Omit; all four source contracts match the strict-required
+boundary. All seven owned commits were genuinely replayed onto actual main
+`b416f850aed501d8bc2f5413a96103710087d173`, giving source `cacfcb972def0144bc68c8931b57a5444305b9f3`
+and tree `624940d5cb87d84867fea7845b3a8ae0d348155e`, exactly the independent projection.
+All noncomposition owned blobs and full source-author/date/body/footer records
+remain equal, with every incoming canonical clause and both genuine inventories.
+Publish the same Draft with fresh exact source/native Actions. No old658 execution
+credit transfers to this changed required-surface producer.
+
+## Protected failure and explicit unknown-prop scope
+
+Candidate `c48c590c`, Check `37351946080`, fails six unchanged compatibility
+cases in Rust workers 1–3: native-root ariaZzz, component-root modelValue,
+wide-props missing-title wording, whole generic declaration emission, generic
+root disable forwarding, and native-root unknown/required-label diagnostics.
+The four official JUnit archives have authenticated SHA256/all CRCs; complete
+failures are retained. All104 instruction measurements pass unchanged ceilings,
+but the candidate is failed. Only #8056 was dequeued; healthy #8052 is retained.
+
+The new private fallthrough flag incorrectly inherited the older public
+strictTemplates default. Limit this tightening to explicit checkUnknownProps:true
+configuration or comment, preserving the existing public default method and all
+strict-only open fallthrough behavior. An explicit false prop comment takes
+priority; otherwise a strict-false comment deactivates the private flag. Both
+generic and nongeneric producers consume it directly. Six whole comment controls
+and the original-project strict-only generated contract check this boundary.
+Only the new authored strict-only case drops its unknown-prop expectation; its
+component/directive checks remain. Every old #4461, generic declaration, 121-prop
+wording, input/configuration and complete corpus oracle stays exact.
+
+This private same-PR repair requires independent source review, fresh exact-head
+ordinary/native Actions, whole7 CLI/14 direct-service/original native vectors,
+all unchanged compatibility cases and protected full/all104 delivery. The old
+failed candidate stays failed; no stdio-RPC, history/default, global strict policy
+or 10x completion is claimed. See the [paired issue record](https://github.com/ubugeeei-prod/vize/issues/7874#issuecomment-5997806537).
+
+## Required compatibility snapshots cannot silently skip
+
+Independent source-only review seals private543d; runtime remains pending. The
+old Canon snapshot helper converts setup/scan/check errors to None, allowing
+early returns even with REQUIRE_TSGO. A bounded test-only helper now retains
+complete error/TypeCheckResult before required failure and preserves optional
+local no-SDK behavior. Three pure required/optional-result laws pin this policy.
+Generic setup/scan/emit errors are retained; both full declaration outputs precede
+the unchanged insta comparison. The CLI stores full stdout/stderr/status and
+original inputs before existing assertions. Regular declaration bytes and symlink
+targets are distinguished; typed Batch output does not claim raw native wire.
+
+The existing automatic native qualifier additionally runs all unchanged
+fallthrough CLI, fallthrough_unknown_attrs, wide-props and generic declaration
+cases against the same pinned binary. The CLI invocation first moves unchanged
+into a bounded leaf; the old Canon root test file shrinks. All original raw input
+strings, configs, whole goldens and timeouts stay exact. No production, filter,
+extra campaign, pipeline or cap change. This separate private successor requires
+independent review and fresh actual source/native/full protected qualification.
+Old passes/failedc48 remain historical; merge and release stay pending.
+
+## Reviewed required qualifier and genuine actual-main replay
+
+The separate fail-closed qualifier `0f95d3fc54a3e255806b72c93c858a2e1506c597` received independent SOURCE_ONLY_CLEAR (receipt SHA256 `4d64085d9f73e4d3114cd2cb1c7525b86a31834b40d022b3cedf643eef94993e`). Required setup/scan/check errors cannot hide as None; complete typed Batch fields, both declaration contents and original CLI streams precede unchanged comparisons. Optional no-SDK behavior, all original inputs/configs/goldens/timeouts and the causal543d production remain exact. This review provides no execution or admission credit.
+
+All eleven owned commits were genuinely replayed onto actual signed main `6f17283b88b986cf7eda38bd3cd97964a775933f` as source `28ebc09f28cc0724a6c936dc246f96d08a3f199f` / tree `f4ff41a40053b9619238ff5b55efbee8fb836a4b`, exactly the independent merge projection. Every one of the38 noncomposition owned blobs and all eleven full author/date/body/footer records are retained. The only source-inventory difference is the exact ten incoming8052 LSP rows; all incoming non-owned entries and full350-line canonical bytes are preserved. Replay receipt SHA256 `89c62deda17346b023e5cd8179108fbd7c1c8391e7570a6cfb4e058de68f0006`.
+
+Publish this reviewed correction to the SAME Draft #8056 after a literal remote24e/off-queue fence, then qualify fresh exact-head Actions. The existing native lane must actually execute all six unchanged protected-regression vectors, plus seven complete CLI cases, fourteen direct-service vectors and the original native oracle. Fresh full source/corpus, protected suites/all104, signed reporter-credited actual merge and public release remain required. Failed protectedc48 remains failed; no old-source pass, raw-native-wire, stdio RPC, history/default replacement or global10x credit is transferred.
+
+Source a4347d5 Check 37360344358 has a real early check-js formatter failure in this companion (job 111933083081). The pinned formatter removes only three surplus blank lines; this changes no production, input, vector or qualifier. The failed run remains failed. The formatted same-PR successor requires fresh exact-head Actions before readiness; no pending native result is transferred as current acceptance.
+
+## Hosted report refusal and actual CI repair replay
+
+Source `8d92eb4305a73f8f11775cbb89e5b06d7950c9f4` genuinely passed native run
+`37360870941`: seven whole CLI cases, fourteen direct-service vectors, the
+original native contract and all six required compatibility contracts. Captures
+retain the 21 old CLI cases, five complete Batch results and four entire old
+declaration snapshots. The old CLI tail/quotation normalizer is unchanged; raw
+streams remain intact. Ordinary workers executed 16,249 unique passing cases.
+Executable hashes remain provenance without retained executable-byte rehash.
+
+Check `37360871523` did not obtain aggregate acceptance. One authorized fan-in
+recovery retained all successful suite executions and genuinely passed its Rust
+and PR reports. Its required final test-report was actually cancelled at
+20:49:09 UTC, with no runner or steps and the official hosted non-acquisition
+annotation. No additional retry or admission follows this failed required gate.
+
+The CI runner repair #8066 actually merged at 21:02:06 UTC to
+`2902dc98751b408e803ee663aeee494ffab8413b`. All thirteen owned commits were
+faithfully replayed onto that literal main as `6c1153af2dbda068a2425771eb1b651da78a6dde`,
+with all 39 noncanonical blobs and every author/date/body/footer unchanged.
+The tree `1ab0c8441dc3e3821319256fbe8cc84fdb0ca341` equals the independent
+projection; all 22,051 incoming nonowned entries and whole canonical bytes are
+preserved. Receipt SHA256 `e0313458361be6363b202b834afccde5aacab7f7127a7525b2d2cf042373bd76`.
+
+The same Draft #8056 now requires fresh exact-head ordinary and native Actions;
+8d's execution cannot qualify the new source. Every original input, option,
+whole vector, declaration and timeout stays exact. Current full compatibility,
+protected suites/all 104 three-run ceilings, actual signed reporter-credited
+merge and public release remain required. Direct-service is not stdio RPC;
+fix-history/default replacement and the global 10x goal remain unfinished.

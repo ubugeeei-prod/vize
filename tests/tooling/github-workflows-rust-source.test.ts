@@ -36,6 +36,9 @@ const sourceWorkflow = parse(readRepoFile(".github", "workflows", "pr-source-che
 const rustWorkflow = parse(readRepoFile(".github", "workflows", "pr-rust-checks.yml")) as {
   jobs?: Record<string, Job>;
 };
+const differentialWorkflow = parse(
+  readRepoFile(".github", "workflows", "pr-rust-differential.yml"),
+) as { jobs: Record<string, Job> };
 const jsHistoryPath = "./.github/actions/test-js-packages-with-history";
 const jsHistory = parse(readRepoFile(jsHistoryPath, "action.yml")) as {
   runs: { using: string; steps: NonNullable<Job["steps"]> };
@@ -93,7 +96,10 @@ test("PR and merge-group source checks are included in the required report", () 
     (rustWorkflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
   assert.match(rustCommands("merge-rust-source"), /cargo clippy --workspace/);
   assert.match(rustCommands("merge-rust-source"), /cargo test --workspace/);
-  assert.match(rustCommands("merge-rust-source"), /write-coverage-summary\.rs/);
+  assert.match(
+    differentialWorkflow.jobs["differential"].steps?.map((step) => step.run ?? "").join("\n") ?? "",
+    /write-coverage-summary\.rs/,
+  );
   assert.match(rustCommands("pr-rust-build"), /cargo nextest archive @packages@/);
   assert.match(rustCommands("pr-rust-build"), /cargo test @packages@ --profile ci --doc/);
   assert.match(rustCommands("pr-rust-shard"), /cargo nextest run --archive-file/);
@@ -121,8 +127,9 @@ test("PR and merge-group source checks are included in the required report", () 
   assert.deepEqual(sourceWorkflow.jobs?.["source-report"]?.needs, [
     ...SOURCE_PR_JOBS,
     "wit-contracts",
+    "canonical-corpus",
   ]);
-  assert.match(commands("source-report"), /require-needs-success\.mjs/);
+  assert.match(commands("source-report"), /canonical-corpus-selection\.mjs/);
 });
 
 test("untrusted source checks cannot write trusted sticky disks", () => {

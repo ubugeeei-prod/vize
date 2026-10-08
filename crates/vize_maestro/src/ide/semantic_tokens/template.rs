@@ -5,7 +5,7 @@
 
 use super::{
     encoding::{is_ident_char, offset_to_line_col, utf16_len},
-    expressions::tokenize_expression,
+    expression_lines::tokenize_template_expression as tokenize_expression,
     template_attrs::{
         attribute_value, dynamic_argument_value, is_attribute_name_boundary, is_attribute_start,
         shorthand_name_end,

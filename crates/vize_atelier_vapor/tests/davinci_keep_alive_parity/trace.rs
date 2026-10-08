@@ -13,6 +13,7 @@ pub(super) fn trace(runner: &str, input: Value) -> Vec<Value> {
         .join(runner);
     let mut child = Command::new("node")
         .arg(path)
+        .env("VIZE_MOUNTED_TRACE_OBSERVATIONS", "1")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -27,8 +28,12 @@ pub(super) fn trace(runner: &str, input: Value) -> Vec<Value> {
     let output = child.wait_with_output().unwrap();
     assert!(
         output.status.success(),
-        "{runner} failed:\n{}",
-        String::from_utf8_lossy(&output.stderr)
+        "{runner} failed with {}:\ninput:\n{input:#}\nstdout bytes: {:?}\nstdout:\n{}\nstderr bytes: {:?}\nstderr:\n{}",
+        output.status,
+        output.stdout,
+        String::from_utf8_lossy(&output.stdout),
+        output.stderr,
+        String::from_utf8_lossy(&output.stderr),
     );
     serde_json::from_slice(&output.stdout)
         .unwrap_or_else(|error| panic!("{error}: {}", String::from_utf8_lossy(&output.stdout)))

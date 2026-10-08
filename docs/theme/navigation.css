@@ -1,0 +1,66 @@
+body:not(.entry-page) summary.nav-title {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0 !important;
+  min-height: 2rem;
+  letter-spacing: 0.04em !important;
+}
+
+body:not(.entry-page) summary.nav-title::-webkit-details-marker {
+  display: none;
+}
+
+body:not(.entry-page) summary.nav-title::after {
+  content: "+";
+  font-size: 1rem;
+}
+
+body:not(.entry-page) .nav-section[open] > summary.nav-title {
+  margin-bottom: 0.45rem !important;
+}
+
+body:not(.entry-page) .nav-section[open] > summary.nav-title::after {
+  content: "−";
+}
+
+body:not(.entry-page) summary.nav-title:focus-visible {
+  outline: 2px solid var(--octc-color-primary);
+  outline-offset: 2px;
+}
+
+.content :is(th, td) {
+  min-width: 8rem;
+  max-width: 28rem;
+  word-break: normal;
+  overflow-wrap: normal;
+  vertical-align: top;
+}
+
+.content table code {
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+.content pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.content table {
+  display: block;
+  width: fit-content;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+@media (max-width: 768px) {
+  body:not(.entry-page) .sidebar:not(.open) {
+    visibility: hidden;
+  }
+}

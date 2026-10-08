@@ -25,9 +25,13 @@ pub(crate) mod paths;
 mod queries;
 mod session;
 mod session_paths;
+pub use editor_lsp::snapshot_source;
 mod utils;
 mod virtual_overlay;
 mod workspace_project;
+
+pub(crate) const EXPLICIT_CONFIG_ATTACHMENT_UNSUPPORTED: &str =
+    "Explicit editor configuration attachment is unsupported on this platform";
 
 #[cfg(test)]
 mod tests;
@@ -43,6 +47,8 @@ pub struct CorsaProjectClient {
     overlay_api_disabled: bool,
     materialized_project_session: bool,
     project_root: PathBuf,
+    /// Explicit Batch configuration, retained across editor fallback/retries.
+    explicit_project_config: Option<PathBuf>,
     /// Cached diagnostics keyed by document URI.
     pub(crate) diagnostics: FxHashMap<String, Vec<Diagnostic>>,
     /// Per-document overlay versions so Corsa can keep snapshots ordered.
@@ -59,6 +65,8 @@ pub struct CorsaProjectClient {
     /// project-session API rejects as unsupported (corsa-bind#409), and the
     /// standard-tsgo diagnostics path when no project-session API exists.
     editor_lsp: Option<editor_lsp::EditorLspSession>,
+    /// Independent authored diagnostics never share a live virtual overlay.
+    original_diagnosing_session: Option<editor_lsp::OriginalDiagnosingSession>,
     /// Whether the reusable editor LSP needs the latest virtual project mirror.
     editor_lsp_documents_dirty: bool,
     /// Runtime support for `workspace/willRenameFiles`, probed through the
@@ -78,6 +86,7 @@ impl CorsaProjectClient {
             overlay_api_disabled: false,
             materialized_project_session: false,
             project_root,
+            explicit_project_config: None,
             diagnostics: Default::default(),
             overlay_versions: Default::default(),
             document_texts: Default::default(),
@@ -85,6 +94,7 @@ impl CorsaProjectClient {
             external_document_uris: Default::default(),
             temp_dir: None,
             editor_lsp: None,
+            original_diagnosing_session: None,
             editor_lsp_documents_dirty: true,
             editor_lsp_will_rename_supported: None,
             closed: false,
@@ -131,6 +141,10 @@ pub(crate) struct DiagnosticFetch {
 /// so this classifier is deliberately narrow. Callers may rebuild a session
 /// once for these cases; semantic and configuration errors must propagate.
 fn lsp_transport_error_is_transient(error: &str) -> bool {
+    // Retired callers retain native/cleanup error text without authorizing retry.
+    if error.contains(crate::corsa_bridge::native_operation::INCOMPLETE) {
+        return false;
+    }
     error.contains("protocol error: EOF")
         || error.contains("EOF while parsing")
         || error.contains("process is closed: jsonrpc reader")

@@ -182,6 +182,16 @@ pub(super) fn has_authored_slot_template(el: &ElementNode<'_>) -> bool {
     el.children.iter().any(child_is_slot_template)
 }
 
+pub(super) fn child_is_implicit_default(
+    child: &TemplateChildNode<'_>,
+    has_slot_template: bool,
+) -> bool {
+    if has_slot_template && matches!(child, TemplateChildNode::Comment(_)) {
+        return false;
+    }
+    !matches!(child, TemplateChildNode::Element(el) if el.tag == "template" && has_v_slot(el))
+}
+
 pub(super) fn child_is_slot_template(child: &TemplateChildNode<'_>) -> bool {
     match child {
         TemplateChildNode::Element(el) => el.tag == "template" && has_v_slot(el),

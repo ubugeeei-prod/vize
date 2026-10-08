@@ -1,10 +1,14 @@
 use std::collections::HashMap;
 
 use zed_extension_api::{
-    self as zed,
+    self as zed, Result, serde_json,
     settings::{CommandSettings, LspSettings},
-    Result,
 };
+
+mod initialization_options;
+use initialization_options::initialization_options;
+#[cfg(test)]
+use initialization_options::recommended_initialization_options;
 
 struct VizeExtension;
 
@@ -66,9 +70,10 @@ impl zed::Extension for VizeExtension {
         worktree: &zed::Worktree,
     ) -> Result<Option<zed::serde_json::Value>> {
         let settings = LspSettings::for_worktree(language_server_id.as_ref(), worktree)?;
-        Ok(settings
-            .initialization_options
-            .or_else(|| Some(recommended_initialization_options())))
+        Ok(Some(initialization_options(
+            settings.initialization_options,
+            |filename| worktree.read_text_file(filename).is_ok(),
+        )))
     }
 
     fn language_server_workspace_configuration(
@@ -107,15 +112,10 @@ fn merge_env(shell_env: zed::EnvVars, custom_env: Option<HashMap<String, String>
     env
 }
 
-fn recommended_initialization_options() -> zed::serde_json::Value {
-    zed::serde_json::json!({
-        "editor": true,
-        "ecosystem": true,
-        "lint": true,
-        "typecheck": true,
-    })
-}
-
 #[cfg(test)]
 #[path = "../../../tools/support/editors/zed_unit_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../tools/support/editors/zed_initialization_tests.rs"]
+mod initialization_tests;

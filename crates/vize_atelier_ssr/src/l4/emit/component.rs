@@ -111,6 +111,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         open: SsrStringSegment<'r, 'a>,
         component: &'r l2::ComponentOp<'a>,
         inherit: bool,
+        css_vars: bool,
     ) -> Result<()> {
         let name = plan_source(&open, SsrStringPayloadKind::ComponentName)?;
         self.pos += 1;
@@ -120,17 +121,28 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let no_inherit = Flags {
             as_fragment: false,
             disable_nested_fragments: false,
+            disable_comments: false,
             inherit_attrs: false,
+            css_vars: false,
         };
         match name {
-            "Suspense" | "suspense" => self.suspense(no_inherit)?,
+            "Suspense" | "suspense" => self.suspense(Flags {
+                css_vars,
+                ..no_inherit
+            })?,
+            "TransitionGroup" | "transition-group" => {
+                super::transition_group::admit_directives(attached, open.fact, name)?;
+                self.transition_group(attached, name, inherit, css_vars)?;
+            }
             "Teleport" | "teleport" => self.teleport(attached, no_inherit)?,
             _ if is_transparent_builtin(name) => self.children(Flags {
                 inherit_attrs: inherit,
                 ..no_inherit
             })?,
-            "component" | "Component" => self.dynamic_component(component, attached, inherit)?,
-            _ => self.render_component(name, component, attached, inherit)?,
+            "component" | "Component" => {
+                self.dynamic_component(component, attached, inherit, css_vars)?
+            }
+            _ => self.render_component(name, component, attached, inherit, css_vars)?,
         }
         self.close(Kind::CloseComponent, |source| {
             matches!(source, Source::Component(closed) if core::ptr::eq(*closed, component))
@@ -144,6 +156,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         component: &'r l2::ComponentOp<'a>,
         attached: &Attached<'_, '_>,
         inherit: bool,
+        css_vars: bool,
     ) -> Result<()> {
         let content = self.pos;
         let slots = if component.children.ops.is_empty() {
@@ -152,7 +165,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             Some(self.component_slots(component, content)?)
         };
         let binding = self.ctx.resolve_component_binding_expr(name);
-        let props = self.component_props(attached)?;
+        let props = self.component_props_with_css_vars(attached, css_vars && !inherit)?;
         let props = self.with_scope_id_prop(props);
         let props = self.with_fallthrough_attrs(props, inherit);
         self.ctx.flush_push();
@@ -191,9 +204,11 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         component: &'r l2::ComponentOp<'a>,
         attached: &Attached<'_, '_>,
         inherit: bool,
+        css_vars: bool,
     ) -> Result<()> {
         let callee = self.dynamic_callee(attached)?;
-        let props = self.component_props(&without_is(attached))?;
+        let props =
+            self.component_props_with_css_vars(&without_is(attached), css_vars && !inherit)?;
         let props = self.with_scope_id_prop(props);
         let props = self.with_fallthrough_attrs(props, inherit);
         let slots = if component.children.ops.is_empty() {
@@ -293,28 +308,5 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
             }
         }
         Ok(None)
-    }
-
-    /// `_ssrRenderSuspense(_push, { default: () => { ... }, _: 1 })`.
-    fn suspense(&mut self, flags: Flags) -> Result<()> {
-        self.ctx.flush_push();
-        self.ctx.use_ssr_helper(RuntimeHelper::SsrRenderSuspense);
-        self.ctx.push_indent();
-        self.ctx.push("_ssrRenderSuspense(_push, {\n");
-        self.ctx.indent_level += 1;
-        self.ctx.push_indent();
-        self.ctx.push("default: () => {\n");
-        self.ctx.indent_level += 1;
-        self.children(flags)?;
-        self.ctx.flush_push();
-        self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
-        self.ctx.push("},\n");
-        self.ctx.push_indent();
-        self.ctx.push("_: 1\n");
-        self.ctx.indent_level -= 1;
-        self.ctx.push_indent();
-        self.ctx.push("})\n");
-        Ok(())
     }
 }

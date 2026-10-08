@@ -1,6 +1,6 @@
 use super::super::super::imports_aliases::PathAliasResolver;
 use super::*;
-use vize_l0::path::canonicalize_non_verbatim;
+use vize_carton::path::canonicalize_non_verbatim;
 
 fn write(dir: &Path, rel: &str, contents: &str) -> PathBuf {
     let path = dir.join(rel);

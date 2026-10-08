@@ -1,4 +1,6 @@
+mod comments;
 mod dynamic_argument;
+pub(crate) use comments::is_in_template_comment;
 
 /// Check if a cursor offset is inside a Vue template expression.
 ///
@@ -17,7 +19,8 @@ pub(crate) fn is_in_vue_template_expression(content: &str, offset: usize) -> boo
         return false;
     }
 
-    is_in_mustache_expression(content, offset) || is_in_vue_directive_expression(content, offset)
+    is_in_mustache_expression(content, offset)
+        || directive_expression_start(content, offset).is_some()
 }
 
 /// Check if a cursor offset completes a *member* of the expression to its left,
@@ -34,7 +37,6 @@ pub(crate) fn is_in_vue_template_expression(content: &str, offset: usize) -> boo
 /// end in `?`/`!`, both of which that detector reports as an identifier. Widening
 /// it would change what hover, definition, and references see at the same
 /// position, so the routing question is answered here instead.
-#[cfg(feature = "native")]
 pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool {
     if content.is_empty() {
         return false;
@@ -80,7 +82,6 @@ pub(crate) fn is_at_member_access_position(content: &str, offset: usize) -> bool
 /// the finished number: a decimal point the literal already spent
 /// (`1.5.toFixed`, `.5.toFixed`), an exponent (`1e3.toFixed`, `1e-3.toFixed`), a
 /// radix prefix (`0xFF.toString`), or the BigInt suffix (`1n.toString`).
-#[cfg(feature = "native")]
 fn is_decimal_point(content: &str, dot: usize) -> bool {
     let start = identifier_start(content, dot);
     let Some(token) = content.get(start..dot) else {
@@ -111,7 +112,6 @@ fn is_decimal_point(content: &str, dot: usize) -> bool {
 
 /// Whether the text ending right before a run of decimal digits already closed
 /// the numeric literal those digits belong to.
-#[cfg(feature = "native")]
 fn closes_numeric_literal(before: &str) -> bool {
     // A decimal point the literal already spent (`1.5.`, `.5.`): the scan back
     // over identifier characters stops at that dot, so the digits behind the
@@ -134,7 +134,6 @@ fn closes_numeric_literal(before: &str) -> bool {
 }
 
 /// Walk back from `end` over identifier characters and return the token start.
-#[cfg(feature = "native")]
 fn identifier_start(content: &str, end: usize) -> usize {
     let mut start = end;
     while let Some(ch) = content
@@ -153,7 +152,6 @@ fn identifier_start(content: &str, end: usize) -> usize {
 /// have already typed into a member name: `is_alphanumeric` alone drops the
 /// combining marks of decomposed text (`café` as `cafe` + U+0301) and the
 /// zero-width joiners, both of which end the token one character too early.
-#[cfg(feature = "native")]
 fn is_identifier_char(ch: char) -> bool {
     oxc_syntax::identifier::is_identifier_part(ch)
 }
@@ -178,11 +176,9 @@ fn is_in_mustache_expression(content: &str, offset: usize) -> bool {
         .is_some_and(|rest| rest.contains("}}"))
 }
 
-fn is_in_vue_directive_expression(content: &str, offset: usize) -> bool {
+fn directive_expression_start(content: &str, offset: usize) -> Option<usize> {
     let bytes = content.as_bytes();
-    let Some(before) = content.get(..offset) else {
-        return false;
-    };
+    let before = content.get(..offset)?;
     for (tag_start, _) in before.match_indices('<').rev() {
         let name_start = tag_start + 1;
         if matches!(bytes.get(name_start), Some(b'/' | b'!' | b'?')) {
@@ -212,7 +208,7 @@ fn is_in_vue_directive_expression(content: &str, offset: usize) -> bool {
                     quote_start = None;
                 }
             } else if byte == b'[' && dynamic_argument::contains_cursor(content, pos, offset) {
-                return true;
+                return Some(pos + 1);
             } else if byte == b'"' || byte == b'\'' {
                 quote = Some(byte);
                 quote_start = Some(pos);
@@ -229,10 +225,11 @@ fn is_in_vue_directive_expression(content: &str, offset: usize) -> bool {
             continue;
         };
         return directive_attribute_name_before_quote(content, quote_start)
-            .is_some_and(is_vue_expression_attribute);
+            .filter(|name| is_vue_expression_attribute(name))
+            .map(|_| quote_start + 1);
     }
 
-    false
+    None
 }
 
 fn directive_attribute_name_before_quote(content: &str, quote_start: usize) -> Option<&str> {
@@ -274,5 +271,4 @@ fn is_vue_expression_attribute(attr_name: &str) -> bool {
 }
 
 #[cfg(test)]
-#[cfg(feature = "native")]
 mod member_access_tests;

@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Detail from "./pages/[id]/Detail.vue";
+import { version } from "./lib";
+import Other from "@/pages/[id]/Detail.vue";
+import { ref } from "vue";
+
+const message = ref(`v${version}`);
+</script>
+
+<template>
+  <Detail :name="message" />
+</template>

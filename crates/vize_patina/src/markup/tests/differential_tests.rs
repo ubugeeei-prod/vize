@@ -13,6 +13,27 @@ mod differential_battery {
         assert_eq!(census, PINNED_BATTERY_CENSUS);
     }
 
+    #[test]
+    fn compiler_branch_gap_drop_preserves_the_authored_lint_view() {
+        use crate::markup::differential::{TemplateComparison, compare_template};
+        for source in [
+            include_str!(
+                "../../../../../tests/_fixtures/differential/compiler/conditional-branch-whitespace/inline.template.txt"
+            ),
+            "<p><b v-if=\"a\">A</b>  <!-- gap --> \t<i v-else>B</i> tail</p>",
+            "<pre><p><b v-if=\"a\">A</b>\n\t<i v-else>B</i></p></pre>",
+            "<p><b v-if=\"a\">A</b> \u{a0}\t<i v-else>B</i></p>",
+        ] {
+            assert!(
+                matches!(
+                    compare_template(source),
+                    Ok(TemplateComparison::Compared(lines)) if lines > 0
+                ),
+                "{source}"
+            );
+        }
+    }
+
     /// The JSX roots the P2-16 projection refuses are named, so the refused
     /// count in the census cannot hide a newly refused construct. The custom
     /// directive module (`v-custom={c}`) is admitted: main projects it. The

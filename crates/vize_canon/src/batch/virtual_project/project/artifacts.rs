@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use super::super::build::RegisteredFile;
-use super::super::{SourceArtifacts, VirtualProject};
+use super::super::{SourceArtifacts, VirtualFile, VirtualProject};
 
 const MUSEA_DEFINE_ART_STUB: &str =
     "declare function defineArt(source: string, options?: Record<string, any>): void;";
@@ -22,9 +22,15 @@ impl VirtualProject {
     }
 
     pub(super) fn absorb_registered_file(&mut self, registered: RegisteredFile) {
+        let shared_helpers_before = self.uses_shared_helpers();
         self.incremental_source_nodes_rebuilt += 1;
         let original_path = registered.file.original_path.clone();
-        let previous_materialized = self.remove_registered_source(&original_path);
+        let previous_materialized = self.remove_registered_source_inner(&original_path);
+        if registered.typed_router_import {
+            self.typed_router
+                .import_files
+                .insert(registered.file.virtual_path.clone());
+        }
         let auto_import_count = self.virtual_ts_options.auto_import_stubs.len();
         let mut artifacts = SourceArtifacts::default();
         if is_musea_art_vue_path(&registered.file.original_path)
@@ -67,7 +73,7 @@ impl VirtualProject {
         for file in registered.extra_virtual_files {
             artifacts.virtual_paths.push(file.virtual_path.clone());
             self.passthrough_files.remove(&file.virtual_path);
-            self.virtual_files.insert(file.virtual_path.clone(), file);
+            self.replace_virtual_file(file);
         }
         artifacts
             .virtual_paths
@@ -75,8 +81,7 @@ impl VirtualProject {
         self.passthrough_files.remove(&registered.file.virtual_path);
         // `original_index` maps this source to its own virtual path (inserted above).
         let canonical_virtual = registered.file.virtual_path.clone();
-        self.virtual_files
-            .insert(registered.file.virtual_path.clone(), registered.file);
+        self.replace_virtual_file(registered.file);
         self.index_package_source(&original_path, &canonical_virtual);
         self.mark_package_shadow_source_changed(&canonical_virtual);
         artifacts.virtual_paths.sort();
@@ -101,12 +106,35 @@ impl VirtualProject {
         if previous_shape != new_materialized {
             self.mark_incremental_config_file();
         }
+        self.reconcile_shared_helper_membership(shared_helpers_before);
         if auto_import_count != self.virtual_ts_options.auto_import_stubs.len() {
             self.mark_incremental_stub_files();
         }
     }
 
+    fn replace_virtual_file(&mut self, file: VirtualFile) {
+        self.shared_helper_source_count += usize::from(file.source_map.sfc_map.is_some());
+        let previous = self.virtual_files.insert(file.virtual_path.clone(), file);
+        self.shared_helper_source_count -=
+            usize::from(previous.is_some_and(|file| file.source_map.sfc_map.is_some()));
+    }
+
+    fn reconcile_shared_helper_membership(&mut self, before: bool) {
+        if before != self.uses_shared_helpers() {
+            self.incremental_materialized_candidates
+                .insert(self.shared_helpers_path());
+            self.mark_incremental_config_file();
+        }
+    }
+
     pub(crate) fn remove_registered_source(&mut self, original_path: &Path) -> Vec<PathBuf> {
+        let before = self.uses_shared_helpers();
+        let removed = self.remove_registered_source_inner(original_path);
+        self.reconcile_shared_helper_membership(before);
+        removed
+    }
+
+    fn remove_registered_source_inner(&mut self, original_path: &Path) -> Vec<PathBuf> {
         let canonical = vize_carton::path::canonicalize_non_verbatim(original_path);
         let key = if self.source_artifacts.contains_key(original_path) {
             original_path
@@ -125,7 +153,12 @@ impl VirtualProject {
         let mut removed =
             Vec::with_capacity(artifacts.virtual_paths.len() + artifacts.passthrough_paths.len());
         for path in artifacts.virtual_paths {
-            self.virtual_files.remove(&path);
+            self.shared_helper_source_count -= usize::from(
+                self.virtual_files
+                    .remove(&path)
+                    .is_some_and(|file| file.source_map.sfc_map.is_some()),
+            );
+            self.typed_router.import_files.remove(&path);
             self.original_contents.remove(&path);
             self.pre_rewrite_code.remove(&path);
             self.unchecked_javascript_files.remove(&path);

@@ -5,17 +5,74 @@ on:
     paths:
       - .github/workflows/nuxt3-module-build.yml
       - npm/framework/nuxt/**
+      - npm/framework/nuxt-lint-config/**
+      - npm/oxlint/**
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.mjs
+      - tools/support/compat/nuxt/source-binding*
+      - tools/support/compat/nuxt/prefetch-manifest-*
+      - tools/support/compat/nuxt/lint-config-*
+      - tools/support/compat/nuxt/compiler-defaults-*
+      - tools/support/compat/nuxt/javascript-workspace-*
+      - tests/_fixtures/differential/compat/javascript-workspace-products/**
+      - tests/tooling/support/lsp/javascript-workspace.ts
+      - tools/support/compat/nuxt/relative-glob-*
+      - tools/support/compat/nuxt/fixtures/vite-relative-glob/**
+      - tests/_fixtures/differential/compiler/vite-relative-glob/**
+      - tests/tooling/vite-relative-glob.test.mjs
+      - tests/_fixtures/differential/compiler/nuxt-compiler-defaults/**
+      - tests/tooling/nuxt-compiler-defaults.test.mjs
+      - tests/_fixtures/differential/linter/nuxt-oxlint-config-root/**
+      - tests/tooling/nuxt-oxlint-config-root.test.mjs
+      - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
+      - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
+      - tests/tooling/nuxt-prefetch-manifest.test.mjs
+      - tests/tooling/nuxt-source-binding.test.mjs
+      - npm/native/**
+      - crates/**
+      - davinci/**
+      - Cargo.toml
+      - Cargo.lock
+      - .cargo/**
   push:
     branches: [main]
     paths:
       - .github/workflows/nuxt3-module-build.yml
       - npm/framework/nuxt/**
+      - npm/framework/nuxt-lint-config/**
+      - npm/oxlint/**
       - npm/builder/vite/**
       - tools/support/compat/nuxt/fixtures/nuxt3-module-build/**
       - tools/support/compat/nuxt/nuxt3-module-build.mjs
+      - tools/support/compat/nuxt/source-binding*
+      - tools/support/compat/nuxt/prefetch-manifest-*
+      - tools/support/compat/nuxt/lint-config-*
+      - tools/support/compat/nuxt/compiler-defaults-*
+      - tools/support/compat/nuxt/javascript-workspace-*
+      - tests/_fixtures/differential/compat/javascript-workspace-products/**
+      - tests/tooling/support/lsp/javascript-workspace.ts
+      - tools/support/compat/nuxt/relative-glob-*
+      - tools/support/compat/nuxt/fixtures/vite-relative-glob/**
+      - tests/_fixtures/differential/compiler/vite-relative-glob/**
+      - tests/tooling/vite-relative-glob.test.mjs
+      - tests/_fixtures/differential/compiler/nuxt-compiler-defaults/**
+      - tests/tooling/nuxt-compiler-defaults.test.mjs
+      - tests/_fixtures/differential/linter/nuxt-oxlint-config-root/**
+      - tests/tooling/nuxt-oxlint-config-root.test.mjs
+      - tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**
+      - tests/_fixtures/differential/compiler/nuxt-prefetch-manifest/**
+      - tests/tooling/nuxt-prefetch-manifest.test.mjs
+      - tests/tooling/nuxt-source-binding.test.mjs
+      - npm/native/**
+      - crates/**
+      - davinci/**
+      - Cargo.toml
+      - Cargo.lock
+      - .cargo/**
+  merge_group:
+    types: [checks_requested]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -42,25 +99,134 @@ jobs:
           run-install: false
       - name: Install workspace tooling
         run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/setup-moonbit
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
+        with:
+          toolchain: "1.99.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: nuxt3-source-native
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build and capture the actual source native compiler
+        run: vp run --no-cache --filter './npm/native' build:debug
       - name: Build the candidate Vite adapter
         working-directory: npm/builder/vite
+        run: vp pack
+      - name: Build the candidate Nuxt lint preset
+        working-directory: npm/framework/nuxt-lint-config
+        run: vp pack
+      - name: Build the candidate Oxlint bridge
+        working-directory: npm/oxlint
         run: vp pack
       - name: Build the candidate Nuxt integration
         working-directory: npm/framework/nuxt
         run: vp pack
+      - name: Verify inherited compiler option precedence
+        run: vp env exec node --test npm/framework/nuxt/src/compiler-defaults.test.ts
       - name: Install the pinned Nuxt 3 reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt3-module-build
         run: npm ci --no-audit --no-fund
       - uses: ./.github/actions/setup-ubuntu-archive
-      - name: Install Chromium
-        working-directory: tests
-        run: vize-ci-apt-retry vp exec playwright install --with-deps chromium
+      - name: Download Chromium dependencies while building the current CLI
+        run: |
+          archive_dir=
+          cache_config=
+          download_config=
+          cli_pid=
+          cleanup() {
+            status=$?
+            trap - EXIT INT TERM
+            if [[ -n "$cli_pid" ]]; then
+              kill -TERM -- "-$cli_pid" 2>/dev/null || :
+              wait "$cli_pid" 2>/dev/null || :
+            fi
+            for owned_config in "$download_config" "$cache_config"; do
+              if [[ -n "$owned_config" ]] && ! sudo rm -f -- "$owned_config"; then
+                status=1
+              fi
+            done
+            if [[ -n "$archive_dir" ]] && ! sudo rm -rf -- "$archive_dir"; then
+              status=1
+            fi
+            exit "$status"
+          }
+          trap cleanup EXIT
+          trap 'exit 130' INT
+          trap 'exit 143' TERM
+
+          archive_dir=$(sudo mktemp -d /var/cache/apt/vize-nuxt-archives-XXXXXX)
+          sudo chmod 0755 "$archive_dir"
+          cache_config=$(sudo mktemp /etc/apt/apt.conf.d/99-vize-nuxt-archives-XXXXXX)
+          download_config=$(sudo mktemp /etc/apt/apt.conf.d/98-vize-nuxt-download-only-XXXXXX)
+          sudo tee "$cache_config" >/dev/null <<APT
+          Dir::Cache::archives "$archive_dir";
+          APT::Update::Post-Invoke { "echo 'Nuxt3 archive inventory after package-index update'; find '$archive_dir' -maxdepth 1 -type f -name '*.deb' -print0 | sort -z | xargs -0 -r sha256sum"; };
+          APT
+          sudo tee "$download_config" >/dev/null <<'APT'
+          APT::Get::Download-Only "true";
+          APT
+
+          setsid --wait cargo build --profile ci -p vize &
+          cli_pid=$!
+          download_status=0
+          if (cd tests && vize-ci-apt-retry vp exec playwright install-deps chromium); then
+            :
+          else
+            download_status=$?
+          fi
+          cli_status=0
+          if wait "$cli_pid"; then
+            :
+          else
+            cli_status=$?
+          fi
+          cli_pid=
+          sudo rm -- "$download_config"
+          download_config=
+          printf 'Nuxt3 setup statuses: download=%s CLI=%s\n' "$download_status" "$cli_status"
+          if (( download_status != 0 )); then
+            exit "$download_status"
+          fi
+          if (( cli_status != 0 )); then
+            exit "$cli_status"
+          fi
+          echo 'Nuxt3 archive inventory before the original Chromium installation'
+          sudo find "$archive_dir" -maxdepth 1 -type f -name '*.deb' -print0 | sort -z | xargs -0 -r sha256sum
+          (cd tests && vize-ci-apt-retry vp exec playwright install --with-deps chromium)
       - name: Verify candidate build and SSR routes
         run: vp env exec node tools/support/compat/nuxt/nuxt3-module-build.mjs "$RUNNER_TEMP/nuxt3-module-proof"
+      - name: Install the unchanged pinned Nuxt 4 dependency cohort
+        working-directory: tests/_fixtures/_projects/nuxt-critical-css-build
+        run: npm ci --no-audit --no-fund
+      - name: Verify original SPA manifest and physical prefetch with the source compiler
+        run: vp env exec node tools/support/compat/nuxt/prefetch-manifest-build.mjs "$RUNNER_TEMP/nuxt-prefetch-proof"
+      - name: Verify original Nuxt lint configuration with the source linter
+        run: vp env exec node tools/support/compat/nuxt/lint-config-build.mjs "$RUNNER_TEMP/nuxt-lint-config-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+      - name: Verify original Nuxt scoped compiler defaults and whole rendered outputs
+        run: vp env exec node tools/support/compat/nuxt/compiler-defaults-build.mjs "$RUNNER_TEMP/nuxt-compiler-defaults-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+      - name: Install the unchanged reported Vite 8.2.2 dependency cohort
+        working-directory: tools/support/compat/nuxt/fixtures/vite-relative-glob
+        run: npm ci --no-audit --no-fund
+      - name: Verify original relative glob keys and outside-root Vite and Nuxt runtime
+        run: vp env exec node tools/support/compat/nuxt/relative-glob-build.mjs "$RUNNER_TEMP/vite-relative-glob-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
+      - name: Capture the current CLI for the JavaScript workspace consumers
+        run: vp env exec node tests/differential/build-receipt.mjs
+      - name: Verify real JavaScript Nuxt and Vite workspace products
+        run: vp env exec node tools/support/compat/nuxt/javascript-workspace-build.mjs "$RUNNER_TEMP/javascript-workspace-proof" "$RUNNER_TEMP/nuxt3-module-proof/source-native/custody.json"
       - name: Upload Nuxt 3 build and SSR evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nuxt3-module-proof-${{ github.sha }}
-          path: ${{ runner.temp }}/nuxt3-module-proof
+          path: |
+            ${{ runner.temp }}/nuxt3-module-proof
+            ${{ runner.temp }}/nuxt-prefetch-proof
+            ${{ runner.temp }}/nuxt-lint-config-proof
+            ${{ runner.temp }}/nuxt-compiler-defaults-proof
+            ${{ runner.temp }}/vite-relative-glob-proof
+            ${{ runner.temp }}/javascript-workspace-proof
           if-no-files-found: ignore

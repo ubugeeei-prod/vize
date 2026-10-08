@@ -128,3 +128,5 @@ pub use reactivity_overlay::{
 
 // Re-export common types
 pub use vize_relief::BindingType;
+#[doc(hidden)]
+pub mod binding_occurrences;

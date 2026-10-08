@@ -11,9 +11,8 @@ in
       ...
     }:
     let
-      # crane builds with the toolchain `tools/nix/pkgs.nix` pins, not the one
-      # nixpkgs happens to carry, so the package and the dev shell compile with
-      # the same rustc.
+      # crane builds with the MSRV `tools/nix/pkgs.nix` pins, not the compiler
+      # nixpkgs happens to carry or the newer contributor dev shell toolchain.
       craneLib = (inputs.crane.mkLib pkgs).overrideToolchain rustToolchain;
 
       vize = import (root + /default.nix) { inherit craneLib pkgs root; };

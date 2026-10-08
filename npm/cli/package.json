@@ -1,6 +1,6 @@
 {
   "name": "vize",
-  "version": "0.432.0",
+  "version": "0.435.1",
   "description": "Vize - High-performance Vue.js toolchain in Rust",
   "keywords": [
     "cli",
@@ -76,7 +76,7 @@
   },
   "peerDependencies": {
     "@pkl-community/pkl": "catalog:repo-tooling",
-    "vue": ">=2.6.0"
+    "vue": ">=2.6.0 || >=3.6.0-0"
   },
   "peerDependenciesMeta": {
     "@pkl-community/pkl": {

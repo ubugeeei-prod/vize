@@ -1,0 +1,23 @@
+import { createRequire } from "node:module";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { defineNuxtConfig } from "nuxt/config";
+
+const nuxtRequire = createRequire(createRequire(import.meta.url).resolve("nuxt/package.json"));
+const nuxtSchema = dirname(nuxtRequire.resolve("@nuxt/schema/package.json"));
+
+export default defineNuxtConfig({
+  compatibilityDate: "2025-07-15",
+  srcDir: "src/",
+  modules: process.env.USE_VIZE === "1" ? ["@vizejs/nuxt"] : [],
+  vize: { lint: false, musea: false },
+  alias: {
+    "@nuxt/schema": nuxtSchema,
+    "#pricing": fileURLToPath(new URL("../../packages/pricing/src/index.js", import.meta.url)),
+  },
+  imports: { dirs: ["composables"] },
+  typescript: {
+    strict: true,
+    tsConfig: { compilerOptions: { allowJs: true, checkJs: true, noEmit: true, types: ["node"] } },
+  },
+});

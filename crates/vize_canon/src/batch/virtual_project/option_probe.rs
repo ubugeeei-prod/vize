@@ -77,7 +77,7 @@ impl VirtualProject {
     /// from what the checker actually sees.
     #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
     fn generated_options(&self) -> Map<std::string::String, Value> {
-        let path = self.virtual_root.join("tsconfig.json");
+        let path = self.generated_tsconfig_path();
         std::fs::read_to_string(path)
             .ok()
             .and_then(|content| parse_jsonc_value(&content).ok())

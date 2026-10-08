@@ -17,12 +17,15 @@ use crate::corsa_client::CorsaProjectClient;
 mod call_hierarchy;
 mod code_actions;
 mod completion;
+mod component_types;
 #[path = "bridge/declaration.rs"]
 mod declaration;
 #[path = "bridge/documents.rs"]
 mod documents;
 #[path = "bridge/implementation.rs"]
 mod implementation;
+#[path = "bridge/inlay_hint.rs"]
+mod inlay_hint;
 mod language_features;
 pub(super) use documents::normalize_document_uri;
 
@@ -34,7 +37,7 @@ pub struct CorsaBridge {
     /// Worker thread owning the synchronous Corsa project session.
     worker: BoundedWorker<Option<CorsaProjectClient>>,
     /// Whether the bridge is initialized
-    initialized: AtomicBool,
+    initialized: Arc<AtomicBool>,
     /// Whether the reusable editor LSP session may have read stale disk state.
     disk_project_state_dirty: AtomicBool,
     /// Profiler for performance tracking
@@ -80,7 +83,7 @@ impl CorsaBridge {
                 Arc::clone(&editor_session),
             ),
             config,
-            initialized: AtomicBool::new(false),
+            initialized: Arc::new(AtomicBool::new(false)),
             disk_project_state_dirty: AtomicBool::new(false),
             profiler,
             cache_stats: CacheStats::new(),
@@ -100,15 +103,18 @@ impl CorsaBridge {
         }
 
         let config = self.config.clone();
-        self.submit(move |slot| {
+        let initialized = Arc::clone(&self.initialized);
+        self.submit_async(move |slot| {
             if slot.is_some() {
+                initialized.store(true, Ordering::SeqCst);
                 return Ok(());
             }
             *slot = Some(build_client(&config)?);
+            // The worker owns completion even if the awaiting caller cancels.
+            initialized.store(true, Ordering::SeqCst);
             Ok(())
-        })?;
-
-        self.initialized.store(true, Ordering::SeqCst);
+        })
+        .await?;
 
         if let Some(timer) = _timer {
             timer.record(&self.profiler);
@@ -123,20 +129,29 @@ impl CorsaBridge {
             return Ok(());
         }
 
-        let result = self.submit(|slot| {
-            let outcome = match slot.as_mut() {
-                Some(client) => client
-                    .shutdown()
-                    .map_err(CorsaBridgeError::CommunicationError),
-                None => Ok(()),
-            };
-            *slot = None;
-            outcome
-        });
+        let initialized = Arc::clone(&self.initialized);
+        let editor_session = Arc::clone(&self.editor_session);
+        let result = self
+            .submit_async(move |slot| {
+                let outcome = match slot.as_mut() {
+                    Some(client) => client
+                        .shutdown()
+                        .map_err(CorsaBridgeError::CommunicationError),
+                    None => Ok(()),
+                };
+                *slot = None;
+                editor_session.clear();
+                initialized.store(false, Ordering::SeqCst);
+                outcome
+            })
+            .await;
 
-        if !matches!(result, Err(CorsaBridgeError::Timeout)) {
-            self.initialized.store(false, Ordering::SeqCst);
+        // Entered shutdown owns this state on the worker. Clearing it again
+        // here could overwrite a later successful spawn before we are polled.
+        // A stopped worker cannot run that cleanup or a competing spawn.
+        if matches!(&result, Err(CorsaBridgeError::ProcessTerminated)) {
             self.editor_session.clear();
+            self.initialized.store(false, Ordering::SeqCst);
         }
         result
     }
@@ -144,6 +159,12 @@ impl CorsaBridge {
     /// Check if bridge is initialized.
     pub fn is_initialized(&self) -> bool {
         self.initialized.load(Ordering::SeqCst)
+    }
+
+    /// Whether a cancelled or timed-out call still owns the synchronous lane.
+    /// Retaining this bridge until it drains prevents parallel retry processes.
+    pub fn is_draining(&self) -> bool {
+        self.worker.is_draining()
     }
 
     /// Get profiler reference.
@@ -177,17 +198,15 @@ impl CorsaBridge {
             return Err(CorsaBridgeError::NotInitialized);
         }
 
-        self.submit(move |slot| match slot.as_mut() {
+        self.submit_ready_async(move |slot| match slot.as_mut() {
             Some(client) => f(client),
             None => Err(CorsaBridgeError::ProcessTerminated),
         })
+        .await
     }
 
     /// Run `f` against the session on the worker thread under the configured
-    /// deadline — the one place the bound is real. The wait blocks on purpose:
-    /// the job never yields, so an async `timeout` around it could never be
-    /// polled, and making it yield would activate #3377's shard-guard hazard.
-    /// See [`super::worker`] for the full argument.
+    /// deadline for the synchronous compatibility API.
     fn submit<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
     where
         F: FnOnce(&mut Option<CorsaProjectClient>) -> Result<R, CorsaBridgeError> + Send + 'static,
@@ -197,6 +216,40 @@ impl CorsaBridge {
         // disabling the bridge; no value turns the bound off.
         let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
         match self.worker.submit(deadline, f) {
+            Ok(result) => result,
+            Err(WorkerError::TimedOut) => {
+                let bound = self.config.timeout_ms;
+                tracing::warn!("corsa request outran the {bound}ms bridge bound; abandoned it");
+                Err(CorsaBridgeError::Timeout)
+            }
+            Err(WorkerError::Stopped) => Err(CorsaBridgeError::ProcessTerminated),
+        }
+    }
+
+    async fn submit_async<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
+    where
+        F: FnOnce(&mut Option<CorsaProjectClient>) -> Result<R, CorsaBridgeError> + Send + 'static,
+        R: Send + 'static,
+    {
+        let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
+        match self.worker.submit_async(deadline, f).await {
+            Ok(result) => result,
+            Err(WorkerError::TimedOut) => {
+                let bound = self.config.timeout_ms;
+                tracing::warn!("corsa request outran the {bound}ms bridge bound; abandoned it");
+                Err(CorsaBridgeError::Timeout)
+            }
+            Err(WorkerError::Stopped) => Err(CorsaBridgeError::ProcessTerminated),
+        }
+    }
+
+    async fn submit_ready_async<R, F>(&self, f: F) -> Result<R, CorsaBridgeError>
+    where
+        F: FnOnce(&mut Option<CorsaProjectClient>) -> Result<R, CorsaBridgeError> + Send + 'static,
+        R: Send + 'static,
+    {
+        let deadline = Duration::from_millis(self.config.timeout_ms.max(1));
+        match self.worker.submit_ready_async(deadline, f).await {
             Ok(result) => result,
             Err(WorkerError::TimedOut) => {
                 let bound = self.config.timeout_ms;

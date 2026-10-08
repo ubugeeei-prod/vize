@@ -8,6 +8,7 @@
 //! region segments) is a rejection, never a guess.
 
 mod attrs;
+mod builtin;
 mod component;
 mod component_props;
 mod control;
@@ -22,6 +23,7 @@ mod slot_outlet;
 mod slots;
 mod spans;
 mod text;
+mod transition_group;
 mod vnode;
 mod vnode_control;
 mod vnode_create_slots;
@@ -75,7 +77,9 @@ pub(super) fn emit_plan(
     emitter.children(Flags {
         as_fragment: fragment,
         disable_nested_fragments: false,
+        disable_comments: false,
         inherit_attrs: true,
+        css_vars: emitter.ctx.options.ssr_css_vars.is_some(),
     })?;
     if emitter.pos != emitter.segments.len() {
         return Err(AdmissionFailure::Invalid(
@@ -106,13 +110,18 @@ struct Emitter<'p, 'r, 'a, 'c, 'x, 'e> {
 struct Flags {
     as_fragment: bool,
     disable_nested_fragments: bool,
+    disable_comments: bool,
     inherit_attrs: bool,
+    /// Direct physical roots (including conditional branches), not descendants.
+    css_vars: bool,
 }
 
 const PLAIN: Flags = Flags {
     as_fragment: false,
     disable_nested_fragments: false,
+    disable_comments: false,
     inherit_attrs: false,
+    css_vars: false,
 };
 
 impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
@@ -150,10 +159,14 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let disable = flags.disable_nested_fragments;
         match (segment.kind, segment.source) {
             (Kind::OpenElement, Source::Element(element)) => {
-                vize_l0::ensure_sufficient_stack(|| self.element(segment, element, inherit))
+                vize_l0::ensure_sufficient_stack(|| {
+                    self.element(segment, element, disable, inherit, flags.css_vars)
+                })
             }
             (Kind::Component, Source::Component(component)) => {
-                vize_l0::ensure_sufficient_stack(|| self.component(segment, component, inherit))
+                vize_l0::ensure_sufficient_stack(|| {
+                    self.component(segment, component, inherit, flags.css_vars)
+                })
             }
             (Kind::SlotOutlet, Source::Slot(slot)) => {
                 vize_l0::ensure_sufficient_stack(|| self.slot_outlet(segment, slot))
@@ -168,9 +181,15 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 require_dynamic(&segment)?;
                 text::emit_interpolation(self, &segment, interpolation)
             }
-            (Kind::If, Source::If(if_op)) => {
-                vize_l0::ensure_sufficient_stack(|| self.if_chain(if_op, disable, inherit))
-            }
+            (Kind::If, Source::If(if_op)) => vize_l0::ensure_sufficient_stack(|| {
+                self.if_chain(
+                    if_op,
+                    disable,
+                    flags.disable_comments,
+                    inherit,
+                    flags.css_vars,
+                )
+            }),
             (Kind::For, Source::For(for_op)) => {
                 vize_l0::ensure_sufficient_stack(|| self.for_loop(segment, for_op, disable))
             }
@@ -193,7 +212,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                             | "oxlint-enable"
                     )
                 );
-                if !lint_pragma
+                if !flags.disable_comments
+                    && !lint_pragma
                     && vize_l0::directive::parse_vize_directive(comment.content, 1, 0).is_none()
                 {
                     self.ctx.push_string_part_static("<!--");

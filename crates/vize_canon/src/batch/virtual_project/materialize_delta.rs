@@ -9,7 +9,7 @@ use crate::batch::materialize_fs::{ensure_dir, ensure_materialize_root, write_if
 
 use super::{
     AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUBS_FILE, PACKAGE_BOUNDARY_FILE,
-    SHARED_HELPERS_FILE, VUE_MODULE_STUBS_FILE, VirtualProject,
+    VUE_MODULE_STUBS_FILE, VirtualProject,
 };
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -54,7 +54,7 @@ impl VirtualProject {
 
     pub(super) fn mark_incremental_config_file(&mut self) {
         self.incremental_materialized_candidates
-            .insert(self.virtual_root.join("tsconfig.json"));
+            .insert(self.generated_tsconfig_path());
     }
 
     pub(super) fn mark_incremental_stub_files(&mut self) {
@@ -62,12 +62,13 @@ impl VirtualProject {
             self.virtual_root.join(AUTO_IMPORT_STUBS_FILE),
             self.virtual_root.join(MODULE_AUGMENTATION_STUBS_FILE),
             self.virtual_root.join(VUE_MODULE_STUBS_FILE),
-            self.virtual_root.join(SHARED_HELPERS_FILE),
+            self.shared_helpers_path(),
         ]);
     }
 
     pub(crate) fn discard_incremental_materialization(&mut self) {
         self.incremental_materialized_candidates.clear();
+        self.retired_package_shadow_paths.clear();
         self.incremental_source_nodes_rebuilt = 0;
         self.incremental_dependency_nodes_reconciled = 0;
         self.incremental_shadow_bindings_rebuilt = 0;
@@ -80,12 +81,18 @@ impl VirtualProject {
     pub(crate) fn materialize_incremental_delta(
         &mut self,
     ) -> CorsaResult<IncrementalMaterialization> {
-        let mut candidates = std::mem::take(&mut self.incremental_materialized_candidates);
+        let install_roots = self.workspace_install_roots()?;
         let full_topology_rebuild = self.incremental_link_topology_dirty;
         let local_link_patch = (!full_topology_rebuild
             && !self.incremental_package_link_scopes.is_empty())
         .then(|| self.prepare_incremental_package_link_patch());
         let desired_links = full_topology_rebuild.then(|| self.desired_package_links());
+        let retire = self.validate_incremental_workspace_links(
+            desired_links.as_ref(),
+            local_link_patch.as_ref(),
+        )?;
+        self.retire_workspace_cache_links(retire)?;
+        let mut candidates = std::mem::take(&mut self.incremental_materialized_candidates);
         let package_links_changed = desired_links.as_ref().map_or_else(
             || {
                 local_link_patch
@@ -125,13 +132,11 @@ impl VirtualProject {
         if candidates.contains(&self.virtual_root.join(VUE_MODULE_STUBS_FILE)) {
             self.write_vue_module_stubs()?;
         }
-        if candidates.contains(&self.virtual_root.join(SHARED_HELPERS_FILE))
-            && self.uses_shared_helpers()
-        {
+        if candidates.contains(&self.shared_helpers_path()) && self.uses_shared_helpers() {
             self.write_shared_helpers()?;
         }
-        if candidates.contains(&self.virtual_root.join("tsconfig.json")) {
-            self.write_tsconfig_file(&self.virtual_root.join("tsconfig.json"), None, false)?;
+        if candidates.contains(&self.generated_tsconfig_path()) {
+            self.write_tsconfig_file(&self.generated_tsconfig_path(), None, false)?;
         }
 
         for path in &candidates {
@@ -146,26 +151,30 @@ impl VirtualProject {
                 || local_link_patch
                     .as_ref()
                     .is_some_and(|patch| patch.desired.contains_key(path))
+                || install_roots.contains(path)
             {
                 continue;
             }
             if let Some(parent) = path.parent() {
                 ensure_dir(parent)?;
             }
-            if let Some(file) = self.virtual_files.get(path) {
-                write_if_changed(path, file.content.as_bytes())?;
-            } else if let Some(original) = self.passthrough_files.get(path) {
+            // Match the cold path's final writer when canonical paths overlap
+            // authored package shadows, passthrough modules or virtual files.
+            if let Some(original) = self.package_shadow_manifests.get(path) {
                 write_if_changed(path, &std::fs::read(original)?)?;
             } else if let Some(canonical) = self.package_shadow_files.get(path) {
                 let content = self.package_shadow_content(path, canonical)?;
                 write_if_changed(path, content.as_bytes())?;
-            } else if let Some(original) = self.package_shadow_manifests.get(path) {
+            } else if let Some(original) = self.passthrough_files.get(path) {
                 write_if_changed(path, &std::fs::read(original)?)?;
+            } else if let Some(file) = self.virtual_files.get(path) {
+                write_if_changed(path, file.content.as_bytes())?;
             } else if !self.is_current_generated_path(path) {
                 remove_file_if_present(path)?;
             }
         }
 
+        self.ensure_workspace_alias_targets()?;
         if let Some(desired) = desired_links.as_ref() {
             materialize_package_links(desired)?;
             self.materialized_package_links = desired.clone();
@@ -193,6 +202,7 @@ impl VirtualProject {
         delta.changed.sort();
         delta.created.sort();
         delta.deleted.sort();
+        self.retired_package_shadow_paths.clear();
         Ok(IncrementalMaterialization {
             delta,
             considered,
@@ -207,9 +217,9 @@ impl VirtualProject {
 
     fn is_current_generated_path(&self, path: &Path) -> bool {
         path == self.virtual_root.join(PACKAGE_BOUNDARY_FILE)
-            || path == self.virtual_root.join("tsconfig.json")
+            || path == self.generated_tsconfig_path()
             || path == self.virtual_root.join(VUE_MODULE_STUBS_FILE)
-            || (path == self.virtual_root.join(SHARED_HELPERS_FILE) && self.uses_shared_helpers())
+            || (path == self.shared_helpers_path() && self.uses_shared_helpers())
             || (path == self.virtual_root.join(AUTO_IMPORT_STUBS_FILE)
                 && self.has_global_auto_import_stubs())
             || (path == self.virtual_root.join(MODULE_AUGMENTATION_STUBS_FILE)
@@ -270,6 +280,10 @@ pub(crate) struct MaterializedFileSnapshot {
 }
 
 impl MaterializedFileSnapshot {
+    pub(crate) fn package_links(&self) -> &FxHashMap<PathBuf, PathBuf> {
+        &self.package_links
+    }
+
     #[cfg(test)]
     pub(crate) fn capture(paths: &FxHashSet<PathBuf>) -> CorsaResult<Self> {
         Self::capture_with_links(paths, &FxHashMap::default())

@@ -2,7 +2,17 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { lstatSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import {
+  closeSync,
+  constants,
+  fstatSync,
+  lstatSync,
+  openSync,
+  readFileSync,
+  readlinkSync,
+  realpathSync,
+  writeFileSync,
+} from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,6 +39,7 @@ export const INFRASTRUCTURE_PATHS = new Set([
   "docs/davinci/decisions/2026-10-04-typechecker-cold-native-profiles.md",
   "docs/davinci/decisions/2026-10-04-shared-leaf-native-trivia.md",
   "tools/benchmarks/scripts/typechecker-native-profile-corpus-fixture.mjs",
+  "tools/benchmarks/scripts/typechecker-native-dependency-link.test.mjs",
   ...[
     "typechecker-native-graph-archive",
     "typechecker-native-profile-replay",
@@ -94,6 +105,68 @@ function infrastructureOnly(entries) {
       ),
   );
 }
+const revision = (stat, fields) =>
+  Object.fromEntries(fields.map((field) => [field, stat[field].toString()]));
+const LINK_REVISION = ["dev", "ino", "mode", "size", "mtimeNs", "ctimeNs"];
+const DIRECTORY_IDENTITY = ["dev", "ino", "mode"];
+function dependencyLink(sourceRoot, driverRoot) {
+  const path = join(sourceRoot, "node_modules");
+  const target = join(driverRoot, "node_modules");
+  let targetBefore;
+  try {
+    targetBefore = lstatSync(target, { bigint: true });
+    assert(targetBefore.isDirectory(), "driver dependency target must be a physical directory");
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+  let before;
+  try {
+    before = lstatSync(path, { bigint: true });
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  }
+  // Keep the existing ignored physical-directory contract. Only the workflow's
+  // untracked manual symlink receives the narrowly verified exception below.
+  if (!before.isSymbolicLink()) return null;
+  assert.equal(readlinkSync(path), target, "source dependency link target mismatch");
+  assert(targetBefore, "driver dependency target is absent");
+  const descriptor = openSync(
+    target,
+    constants.O_RDONLY | constants.O_DIRECTORY | constants.O_NOFOLLOW,
+  );
+  try {
+    const opened = fstatSync(descriptor, { bigint: true });
+    assert(opened.isDirectory(), "opened driver dependency target is not a directory");
+    assert.deepEqual(
+      revision(opened, DIRECTORY_IDENTITY),
+      revision(targetBefore, DIRECTORY_IDENTITY),
+    );
+    assert.equal(realpathSync(path), target, "source dependency link canonical target mismatch");
+    assert.deepEqual(
+      revision(lstatSync(target, { bigint: true }), DIRECTORY_IDENTITY),
+      revision(opened, DIRECTORY_IDENTITY),
+      "driver dependency directory changed during custody",
+    );
+    assert.equal(readlinkSync(path), target, "source dependency link retargeted during custody");
+    const after = lstatSync(path, { bigint: true });
+    assert(after.isSymbolicLink(), "source dependency link replaced during custody");
+    assert.deepEqual(
+      revision(after, LINK_REVISION),
+      revision(before, LINK_REVISION),
+      "source dependency link changed during custody",
+    );
+    return {
+      path,
+      target,
+      canonicalTarget: target,
+      revision: revision(before, LINK_REVISION),
+      driverDirectory: { path: target, ...revision(opened, DIRECTORY_IDENTITY) },
+    };
+  } finally {
+    closeSync(descriptor);
+  }
+}
 export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env = process.env }) {
   driverRoot = realpathSync(driverRoot);
   sourceRoot = realpathSync(sourceRoot);
@@ -111,11 +184,6 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
   assert.equal(git(["rev-parse", "HEAD"], sourceRoot).trim(), sourceSha, "source HEAD mismatch");
   for (const root of new Set([driverRoot, sourceRoot])) {
     assert.equal(git(["diff", "--name-only", "HEAD"], root).trim(), "", "dirty tracked source");
-    assert.equal(
-      git(["ls-files", "--others", "--exclude-standard"], root).trim(),
-      "",
-      "untracked source inputs",
-    );
   }
   const manual = event === "workflow_dispatch";
   let baselineSha;
@@ -155,6 +223,19 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
       assert.equal(sourceHash, driverHash, "driver/source dependency or corpus drift: " + file);
     bridgeFiles[file] = { sourceSha256: sourceHash, driverSha256: driverHash };
   }
+  const sourceDependencyLink = manual ? dependencyLink(sourceRoot, driverRoot) : null;
+  for (const root of new Set([driverRoot, sourceRoot])) {
+    const untracked = git(["ls-files", "--others", "--exclude-standard", "-z"], root);
+    const paths = untracked ? untracked.split("\0") : [];
+    if (paths.length) assert.equal(paths.pop(), "", "invalid untracked-input framing");
+    assert.deepEqual(
+      paths.filter(
+        (path) => !(root === sourceRoot && sourceDependencyLink && path === "node_modules"),
+      ),
+      [],
+      "untracked source inputs",
+    );
+  }
   return {
     schemaVersion: 1,
     repository: env.GITHUB_REPOSITORY ?? null,
@@ -182,6 +263,7 @@ export function captureSourceCustody({ driverRoot, sourceRoot = driverRoot, env 
     changedPaths: (manual ? driverDelta : sourceDelta).map((entry) => entry.path),
     changedEntries: manual ? driverDelta : sourceDelta,
     bridgeFiles,
+    sourceDependencyLink,
     nativeProfile: manual ? "pprof-untimed-duplicate-corpus" : "none",
     originalInfrastructurePaths: ORIGINAL_INFRASTRUCTURE,
     allowedInfrastructurePaths: [...INFRASTRUCTURE_PATHS],

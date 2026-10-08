@@ -15,6 +15,20 @@ pub(crate) enum ModuleLinkPublicationError {
     Context(ModuleLinkContextError),
 }
 impl<T> ProjectQueryResult<'_, T> {
+    /// Qualify even context refusal against this original source/cancellation.
+    /// DocumentStore read -> module read; no IO, await or alternate host.
+    pub(crate) fn capture_current_module_link_context(
+        &self,
+    ) -> Result<ModuleLinkContext, ModuleLinkPublicationError> {
+        self.result
+            .with_current(self.host.documents(), || {
+                self.host
+                    .capture_module_link_context()
+                    .map_err(ModuleLinkPublicationError::Context)
+            })
+            .map_err(ModuleLinkPublicationError::Source)?
+    }
+
     /// DocumentStore read -> module read -> synchronous owned publication.
     /// Never reenter a store, lifecycle/map/Names gate, retire/wake workers,
     /// call user code or await. No caller-supplied host can authenticate this.

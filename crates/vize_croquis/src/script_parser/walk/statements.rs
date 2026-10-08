@@ -3,14 +3,16 @@
 //! Walks statement nodes to find block scopes (if, for, while, try/catch),
 //! nested function/class declarations, and variable declarations.
 
+use super::super::ssr_functions::walk_body;
 use oxc_ast::ast::Statement;
 
 use super::{
     BindingType, BlockKind, BlockScopeData, ClosureScopeData, CompactString, GetSpan, ScopeBinding,
-    ScriptParseResult, add_binding_pattern_to_scope, extract_function_params, extract_param_names,
-    walk_expression,
+    ScriptParseResult, add_binding_pattern_to_scope, extract_function_params_with_occurrences,
+    extract_param_names, walk_expression,
 };
 
+mod classes;
 mod with_statement;
 
 /// Walk a statement to find nested scopes
@@ -21,12 +23,21 @@ pub(in crate::script_parser) fn walk_statement(
     source: &str,
 ) {
     match stmt {
+        Statement::EmptyStatement(_) => {}
+
         Statement::ExpressionStatement(expr_stmt) => {
             walk_expression(result, &expr_stmt.expression, source);
         }
         Statement::VariableDeclaration(var_decl) => {
+            if var_decl.kind.is_var()
+                && let Some(capture) = result.occurrence_capture.as_mut()
+            {
+                capture.refuse();
+            }
             // Add variable bindings to current scope and check for reactivity losses
             for decl in var_decl.declarations.iter() {
+                super::super::ssr_functions::note_initializer(result, &decl.id, decl.init.as_ref());
+                result.prepare_ref_value_declaration(decl);
                 add_binding_pattern_to_scope(result, &decl.id, decl.span.start);
                 if let Some(init) = &decl.init {
                     walk_expression(result, init, source);
@@ -54,16 +65,20 @@ pub(in crate::script_parser) fn walk_statement(
         }
         // Nested function declarations
         Statement::FunctionDeclaration(func) => {
+            super::super::ssr_functions::note_function(result, func);
+            result.refuse_function_type_reads(func);
             // Add function name as binding
             if let Some(id) = &func.id {
+                if let Some(capture) = result.occurrence_capture.as_mut() {
+                    capture.declaration(result.scopes.current_id(), id.name.as_str(), id.span);
+                }
                 result.scopes.add_binding(
                     CompactString::new(id.name.as_str()),
                     ScopeBinding::new(BindingType::SetupConst, func.span.start),
                 );
             }
 
-            // Create closure scope
-            let params = extract_function_params(&func.params);
+            let params = extract_function_params_with_occurrences(result, &func.params);
             let name = func
                 .id
                 .as_ref()
@@ -80,47 +95,25 @@ pub(in crate::script_parser) fn walk_statement(
                 func.span.start,
                 func.span.end,
             );
+            result.install_parameter_occurrences();
 
             if let Some(body) = &func.body {
-                for stmt in body.statements.iter() {
-                    walk_statement(result, stmt, source);
-                }
+                super::super::ssr_functions::walk_body(
+                    result,
+                    &body.statements,
+                    source,
+                    body.span.end,
+                );
             }
 
             result.scopes.exit_scope();
         }
         // Nested class declarations
         Statement::ClassDeclaration(class) => {
-            // Add class name as binding
-            if let Some(id) = &class.id {
-                result.scopes.add_binding(
-                    CompactString::new(id.name.as_str()),
-                    ScopeBinding::new(BindingType::SetupConst, class.span.start),
-                );
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
             }
-            // Walk class body for methods
-            for element in class.body.body.iter() {
-                if let oxc_ast::ast::ClassElement::MethodDefinition(method) = element
-                    && let Some(body) = &method.value.body
-                {
-                    let params = extract_function_params(&method.value.params);
-                    result.scopes.enter_closure_scope(
-                        ClosureScopeData {
-                            name: None,
-                            param_names: params,
-                            is_arrow: false,
-                            is_async: method.value.r#async,
-                            is_generator: method.value.generator,
-                        },
-                        method.span.start,
-                        method.span.end,
-                    );
-                    for stmt in body.statements.iter() {
-                        walk_statement(result, stmt, source);
-                    }
-                    result.scopes.exit_scope();
-                }
-            }
+            classes::walk_nested_class(result, class, source);
         }
         Statement::ReturnStatement(ret) => {
             if let Some(arg) = &ret.argument {
@@ -135,15 +128,13 @@ pub(in crate::script_parser) fn walk_statement(
                 block.span.start,
                 block.span.end,
             );
-            for stmt in block.body.iter() {
-                walk_statement(result, stmt, source);
-            }
+            super::super::ssr_functions::walk_body(result, &block.body, source, block.span.end);
             result.scopes.exit_scope();
         }
         Statement::IfStatement(if_stmt) => {
+            super::super::ssr_guards::note_guard(result, stmt, None);
             walk_expression(result, &if_stmt.test, source);
 
-            // Consequent block
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::If,
@@ -154,7 +145,6 @@ pub(in crate::script_parser) fn walk_statement(
             walk_statement(result, &if_stmt.consequent, source);
             result.scopes.exit_scope();
 
-            // Alternate block (else/else if)
             if let Some(alt) = &if_stmt.alternate {
                 result.scopes.enter_block_scope(
                     BlockScopeData {
@@ -168,6 +158,9 @@ pub(in crate::script_parser) fn walk_statement(
             }
         }
         Statement::ForStatement(for_stmt) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::For,
@@ -204,6 +197,9 @@ pub(in crate::script_parser) fn walk_statement(
             result.scopes.exit_scope();
         }
         Statement::ForInStatement(for_in) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::ForIn,
@@ -222,6 +218,9 @@ pub(in crate::script_parser) fn walk_statement(
             result.scopes.exit_scope();
         }
         Statement::ForOfStatement(for_of) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::ForOf,
@@ -264,6 +263,9 @@ pub(in crate::script_parser) fn walk_statement(
             result.scopes.exit_scope();
         }
         Statement::SwitchStatement(switch_stmt) => {
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             walk_expression(result, &switch_stmt.discriminant, source);
             result.scopes.enter_block_scope(
                 BlockScopeData {
@@ -283,7 +285,9 @@ pub(in crate::script_parser) fn walk_statement(
             result.scopes.exit_scope();
         }
         Statement::TryStatement(try_stmt) => {
-            // try block
+            if let Some(capture) = result.occurrence_capture.as_mut() {
+                capture.refuse();
+            }
             result.scopes.enter_block_scope(
                 BlockScopeData {
                     kind: BlockKind::Try,
@@ -291,12 +295,14 @@ pub(in crate::script_parser) fn walk_statement(
                 try_stmt.block.span.start,
                 try_stmt.block.span.end,
             );
-            for stmt in try_stmt.block.body.iter() {
-                walk_statement(result, stmt, source);
-            }
+            walk_body(
+                result,
+                &try_stmt.block.body,
+                source,
+                try_stmt.block.span.end,
+            );
             result.scopes.exit_scope();
 
-            // catch block
             if let Some(handler) = &try_stmt.handler {
                 result.scopes.enter_block_scope(
                     BlockScopeData {
@@ -316,13 +322,10 @@ pub(in crate::script_parser) fn walk_statement(
                         );
                     }
                 }
-                for stmt in handler.body.body.iter() {
-                    walk_statement(result, stmt, source);
-                }
+                walk_body(result, &handler.body.body, source, handler.body.span.end);
                 result.scopes.exit_scope();
             }
 
-            // finally block
             if let Some(finalizer) = &try_stmt.finalizer {
                 result.scopes.enter_block_scope(
                     BlockScopeData {
@@ -331,15 +334,14 @@ pub(in crate::script_parser) fn walk_statement(
                     finalizer.span.start,
                     finalizer.span.end,
                 );
-                for stmt in finalizer.body.iter() {
-                    walk_statement(result, stmt, source);
-                }
+                walk_body(result, &finalizer.body, source, finalizer.span.end);
                 result.scopes.exit_scope();
             }
         }
         Statement::WithStatement(with_stmt) => {
+            result.refuse_occurrences();
             with_statement::walk_with_statement(result, with_stmt, source);
         }
-        _ => {}
+        _ => result.refuse_occurrences(),
     }
 }

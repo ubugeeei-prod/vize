@@ -31,6 +31,7 @@ use std::{
     time::Instant,
 };
 
+use vize_atelier_core::parser::with_whitespace_mode;
 use vize_atelier_core::{CodegenOptions, options::CustomElementMatcher};
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileExperimentalOptions, SfcCompileOptions, SfcParseOptions,
@@ -53,6 +54,9 @@ use super::capture::BuildCapture;
 use super::profile_facts::{self, FileProfileFacts, StatsCacheStatus};
 use super::settings::CompileFileSettings;
 
+mod errors;
+pub(super) use errors::check_compile_result;
+
 /// The ICE-guarded per-file compile (P2-13, charter #30): an injected panic
 /// or a panic caught around the real compile fails **this file** - with a
 /// written `repro.folio` and an `internal compiler error` report - while the
@@ -70,7 +74,8 @@ pub(super) fn compile_file_with_profile(
 ) -> Result<(CompileOutput, FileProfile, Option<BuildCapture>), CompileError> {
     if let Some(injection) = settings.davinci.injection_for(path)
         && (injection.when.is_none()
-            || injection.fires_on(&vize_l0::source_io::read_to_string(path).unwrap_or_default()))
+            || injection
+                .fires_on(&vize_carton::source_io::read_to_string(path).unwrap_or_default()))
     {
         // The injected pass was validated to be in the plan; should it not run,
         // the file compiles normally.
@@ -107,7 +112,7 @@ fn ice_error(
     failure: &davinci_ice::IceFailure,
     inject: Option<&davinci_ice::Injection>,
 ) -> CompileError {
-    let source = vize_l0::source_io::read_to_string(path).unwrap_or_default();
+    let source = vize_carton::source_io::read_to_string(path).unwrap_or_default();
     let folio = davinci_ice::source_repro(
         settings.davinci.plan_string.as_str(),
         settings.davinci.mode,
@@ -147,7 +152,7 @@ fn compile_file_inner(
     // Read file
     let source = match profile!(
         "cli.build.file.read",
-        vize_l0::source_io::read_to_string(path)
+        vize_carton::source_io::read_to_string(path)
     ) {
         Ok(source) => {
             global_profiler().record_fs_read_to_string(source.len());
@@ -257,7 +262,8 @@ fn compile_file_inner(
         scope_id: None,
     };
 
-    let (result, capture) = profile!("atelier.sfc.compile", {
+    let (result, capture) = with_whitespace_mode(settings.whitespace, settings.legacy_line_breaks, || {
+        profile!("atelier.sfc.compile", {
         let experimental = SfcCompileExperimentalOptions {
             self_component: settings.experimental_self_component,
         };
@@ -288,7 +294,9 @@ fn compile_file_inner(
             )
             .map(|result| (result, None))
         }
+        })
     })
+    .and_then(|(result, capture)| check_compile_result(result).map(|result| (result, capture)))
     .map_err(|e| CompileError {
         path: path.clone(),
         error: e.message,

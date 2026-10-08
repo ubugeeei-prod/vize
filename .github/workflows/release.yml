@@ -18,6 +18,11 @@ on:
         required: false
         default: ""
         type: string
+      pinned:
+        description: Publish an immutable source cut after a protected version integration
+        required: false
+        default: false
+        type: boolean
       crate_set:
         {
           description: Manual handoff crate set to publish,
@@ -27,7 +32,7 @@ on:
           options: [jsx-patina],
         }
 run-name: >-
-  ${{ inputs.release_pr != '' && format('Release {0} PR #{1} @ {2}', inputs.tag_name, inputs.release_pr, inputs.expected_sha) || format('Release crate handoff {0}', inputs.tag_name) }}
+  ${{ inputs.release_pr != '' && (inputs.pinned && format('Pinned Release {0} PR #{1} @ {2}', inputs.tag_name, inputs.release_pr, inputs.expected_sha) || format('Release {0} PR #{1} @ {2}', inputs.tag_name, inputs.release_pr, inputs.expected_sha)) || format('Release crate handoff {0}', inputs.tag_name) }}
 concurrency:
   group: ${{ inputs.release_pr != '' && 'release-candidates' || format('release-crates-handoff-{0}-{1}', inputs.tag_name, inputs.crate_set) }}
   cancel-in-progress: false
@@ -59,7 +64,13 @@ jobs:
           RELEASE_PR: ${{ inputs.release_pr }}
           RELEASE_SHA: ${{ inputs.expected_sha }}
           RELEASE_TAG: ${{ inputs.tag_name }}
-        run: rust-script tools/commands/release/pr.rs validate "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"
+          RELEASE_PINNED: ${{ inputs.pinned }}
+        run: |
+          if [ "$RELEASE_PINNED" = true ]; then
+            rust-script tools/commands/release/pr.rs validate-pinned "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"
+          else
+            rust-script tools/commands/release/pr.rs validate "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"
+          fi
   plan-release-platforms:
     if: inputs.release_pr != ''
     needs: candidate
@@ -472,6 +483,7 @@ jobs:
     with:
       release_pr: ${{ inputs.release_pr }}
       tag_name: ${{ inputs.tag_name }}
+      pinned: ${{ inputs.pinned }}
   candidate-ready:
     name: Release candidate ready
     needs:
@@ -496,6 +508,7 @@ jobs:
       release_pr: ${{ inputs.release_pr }}
       expected_sha: ${{ inputs.expected_sha }}
       tag_name: ${{ inputs.tag_name }}
+      pinned: ${{ inputs.pinned }}
   release-npm-native:
     name: Release @vizejs/native to npm
     runs-on: ubuntu-24.04

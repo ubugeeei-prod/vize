@@ -4,6 +4,7 @@ mod component;
 mod deferred;
 mod insertion;
 mod outlet;
+pub(super) use outlet::transform_slot;
 use outlet::{get_slot_outlet_name, get_slot_outlet_props};
 pub(super) mod template;
 
@@ -23,7 +24,7 @@ use self::{
     deferred::{
         transform_element_with_control_flow_children, transform_element_with_dynamic_children,
     },
-    template::{is_static_element, transform_template_ref},
+    template::transform_template_ref,
 };
 
 use super::{
@@ -38,14 +39,23 @@ use super::{
 };
 
 /// Lower an element-like AST node into Vapor IR operations.
-pub(crate) fn transform_element<'a>(
+pub(super) fn transform_element_unkeyed<'a>(
     ctx: &mut TransformContext<'a>,
     el: &ElementNode<'a>,
     block: &mut BlockIRNode<'a>,
 ) {
-    let non_reactive = classify_non_reactive_directive(el);
-    if let Some(ref memo_error) = non_reactive.memo_error {
-        ctx.push_diagnostic(memo_error.clone());
+    let non_reactive = super::key::classify(el, ctx.is_key_non_reactive(), false);
+    transform_classified_element(ctx, el, block, non_reactive);
+}
+
+pub(super) fn transform_classified_element<'a>(
+    ctx: &mut TransformContext<'a>,
+    el: &ElementNode<'a>,
+    block: &mut BlockIRNode<'a>,
+    non_reactive: super::key::DirectiveAnalysis<'a, '_>,
+) {
+    if let Some(memo_error) = non_reactive.memo_error {
+        ctx.push_diagnostic(String::from(memo_error));
     }
     let entered_non_reactive = non_reactive.should_lower_as_once;
     if entered_non_reactive {
@@ -57,7 +67,7 @@ pub(crate) fn transform_element<'a>(
         for child in vize_atelier_core::walk_probe::vapor_children(&el.children) {
             match child {
                 TemplateChildNode::Element(child_el) => {
-                    ensure_sufficient_stack(|| transform_element(ctx, child_el, block));
+                    ensure_sufficient_stack(|| super::key::transform_element(ctx, child_el, block));
                 }
                 TemplateChildNode::Text(text) => {
                     transform_text(ctx, text, block);
@@ -82,21 +92,13 @@ pub(crate) fn transform_element<'a>(
 
     // Check if this element has non-static children that require
     // deferred ID allocation (so inner templates/IDs come first).
-    let has_control_flow_children = el.tag_type == ElementType::Element
-        && el
-            .children
-            .iter()
-            .any(|c| matches!(c, TemplateChildNode::If(_) | TemplateChildNode::For(_)));
-    let has_dynamic_element_children = el.tag_type == ElementType::Element
-        && !has_control_flow_children
-        && el.children.iter().any(
-            |c| matches!(c, TemplateChildNode::Element(child_el) if !is_static_element(child_el)),
-        );
+    let has_control_flow_children = non_reactive.has_control_flow_children;
+    let has_dynamic_element_children = non_reactive.has_dynamic_element_children;
 
     if has_dynamic_element_children {
         // Dynamic element children: allocate child IDs first, then parent ID.
         // Use child/next navigation instead of separate templates.
-        transform_element_with_dynamic_children(ctx, el, block);
+        transform_element_with_dynamic_children(ctx, el, block, non_reactive.into_template());
         if entered_non_reactive {
             ctx.exit_non_reactive_scope();
         }
@@ -106,7 +108,7 @@ pub(crate) fn transform_element<'a>(
     if has_control_flow_children {
         // Control flow children (v-if/v-for): defer parent ID and template
         // allocation until after children, so inner IDs/templates come first.
-        transform_element_with_control_flow_children(ctx, el, block);
+        transform_element_with_control_flow_children(ctx, el, block, non_reactive.into_template());
         if entered_non_reactive {
             ctx.exit_non_reactive_scope();
         }
@@ -127,7 +129,7 @@ pub(crate) fn transform_element<'a>(
 
     match el.tag_type {
         ElementType::Element => {
-            let template = ctx.element_template(el);
+            let template = ctx.element_template(non_reactive.into_template());
 
             // Process props and events
             for prop in el.props.iter() {
@@ -392,60 +394,5 @@ pub(crate) fn transform_element<'a>(
 
     if entered_non_reactive {
         ctx.exit_non_reactive_scope();
-    }
-}
-
-struct NonReactiveDirective {
-    should_lower_as_once: bool,
-    memo_error: Option<String>,
-}
-
-fn classify_non_reactive_directive(el: &ElementNode<'_>) -> NonReactiveDirective {
-    let has_once = el
-        .props
-        .iter()
-        .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "once"));
-    if has_once {
-        return NonReactiveDirective {
-            should_lower_as_once: true,
-            memo_error: None,
-        };
-    }
-
-    for prop in el.props.iter() {
-        let PropNode::Directive(dir) = prop else {
-            continue;
-        };
-        if dir.name != "memo" {
-            continue;
-        }
-
-        let Some(ExpressionNode::Simple(exp)) = dir.exp.as_ref() else {
-            return NonReactiveDirective {
-                should_lower_as_once: false,
-                memo_error: Some(vize_carton::String::from(
-                    "v-memo is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
-                )),
-            };
-        };
-
-        if exp.content.trim() == "[]" {
-            return NonReactiveDirective {
-                should_lower_as_once: true,
-                memo_error: None,
-            };
-        }
-
-        return NonReactiveDirective {
-            should_lower_as_once: false,
-            memo_error: Some(vize_carton::String::from(
-                "v-memo with dependencies is not supported in Vapor yet. Use v-once or v-memo=\"[]\" until memo guards are implemented.",
-            )),
-        };
-    }
-
-    NonReactiveDirective {
-        should_lower_as_once: false,
-        memo_error: None,
     }
 }

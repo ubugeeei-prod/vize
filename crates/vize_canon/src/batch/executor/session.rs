@@ -19,6 +19,8 @@ use crate::batch::virtual_project::{
 };
 
 mod diagnostic_paths;
+#[cfg(test)]
+mod native_test_receipt;
 mod snapshot;
 
 use diagnostic_paths::extend_diagnostic_path_uris;
@@ -45,9 +47,10 @@ impl CorsaExecutor {
         let corsa_path = self.corsa_path.to_string_lossy();
         let mut client = match profile!(
             "canon.corsa.session",
-            CorsaProjectClient::new_for_workspace(
+            CorsaProjectClient::new_for_workspace_config(
                 Some(corsa_path.as_ref()),
-                project.virtual_root()
+                project.virtual_root(),
+                &project.generated_tsconfig_path()
             )
         ) {
             Ok(client) => client,
@@ -68,7 +71,15 @@ impl CorsaExecutor {
             collect_virtual_file_uris(project.virtual_root(), project.source_file_policy())
         )?;
         extend_diagnostic_path_uris(project, &mut uris);
-        check_session_client(&mut client, project, &uris)
+        match check_session_client(&mut client, project, &uris) {
+            Err(error @ crate::batch::error::CorsaError::CorsaExecution { .. })
+                if explicit_config_attachment_unsupported(&error) =>
+            {
+                warn_fallback(FallbackStep::SessionToCli, &error);
+                check_with_cli(&self.corsa_path, project, self.checkers())
+            }
+            result => result,
+        }
     }
 
     pub(crate) fn check_incremental_session(
@@ -133,6 +144,11 @@ impl CorsaExecutor {
     }
 }
 
+fn explicit_config_attachment_unsupported(error: &crate::batch::error::CorsaError) -> bool {
+    matches!(error, crate::batch::error::CorsaError::CorsaExecution { message, .. }
+        if message.as_str() == crate::lsp_client::EXPLICIT_CONFIG_ATTACHMENT_UNSUPPORTED)
+}
+
 impl IncrementalSessionState {
     fn check(
         &mut self,
@@ -182,9 +198,10 @@ impl IncrementalSessionState {
             let corsa_path = corsa_path.to_string_lossy();
             let client = profile!(
                 "canon.corsa.incremental.start",
-                CorsaProjectClient::new_for_workspace(
+                CorsaProjectClient::new_for_workspace_config(
                     Some(corsa_path.as_ref()),
-                    project.virtual_root()
+                    project.virtual_root(),
+                    &project.generated_tsconfig_path()
                 )
             )
             .map_err(map_corsa_error)?;
@@ -244,12 +261,16 @@ fn check_session_client(
     project: &VirtualProject,
     uris: &[String],
 ) -> CorsaResult<TypeCheckResult> {
+    #[cfg(test)]
+    native_test_receipt::begin(client);
     let raw_diagnostics = profile!(
         "canon.corsa.diagnostics",
         client
             .request_diagnostics_batch(uris)
             .map_err(map_corsa_error)
     )?;
+    #[cfg(test)]
+    native_test_receipt::capture(client, project, uris, &raw_diagnostics);
     let diagnostics = profile!(
         "canon.corsa.map_diagnostics",
         map_batch_diagnostics(raw_diagnostics, project)

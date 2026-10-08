@@ -1,0 +1,1 @@
+{ "linter": { "preset": "incremental", "rules": { "vue/require-component-registration": "warn" } } }

@@ -1,7 +1,6 @@
 name: PR source checks
 on: { workflow_call: null }
-permissions:
-  contents: read
+permissions: { contents: read }
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -13,10 +12,11 @@ jobs:
   pr-source-plan:
     name: Plan PR source checks
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     outputs:
       comparison-base: ${{ steps.comparison.outputs.base }}
+      canonical-corpus: ${{ steps.canonical-corpus-plan.outputs.canonical-corpus }}
       rust: ${{ steps.plan.outputs.rust }}
       rust-plan: ${{ steps.rust-plan.outputs.rust-plan }}
       js: ${{ steps.plan.outputs.js }}
@@ -30,10 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        with:
-          node-version-file: "package.json"
-          cache: false
-          run-install: false
+        with: { node-version-file: "package.json", cache: false, run-install: false }
       - name: Resolve and fetch comparison base
         id: comparison
         env:
@@ -46,8 +43,7 @@ jobs:
           fi
       - name: Plan source checks
         id: plan
-        env:
-          BASE_SHA: ${{ steps.comparison.outputs.base }}
+        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
         run: node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
       - name: Report legacy fix differential inputs
         if: ${{ github.event_name == 'pull_request' }}
@@ -56,15 +52,17 @@ jobs:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: node tools/support/compat/github/report-legacy-fix-fixtures.mjs "$BASE_SHA" "$GITHUB_SHA"
+      - name: Plan canonical corpus inputs
+        id: canonical-corpus-plan
+        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
+        run: node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         if: ${{ steps.plan.outputs.rust == 'true' }}
-        with:
-          toolchain: "1.98.0"
+        with: { toolchain: "1.99.0" }
       - name: Plan affected Rust crates
         id: rust-plan
         if: ${{ steps.plan.outputs.rust == 'true' }}
-        env:
-          BASE_SHA: ${{ steps.comparison.outputs.base }}
+        env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
         run: node tools/support/compat/github/plan-affected-rust.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME" "$RUNNER_TEMP/rust-plan.json"
       - name: Plan tooling test inputs
         id: tooling-plan
@@ -72,8 +70,14 @@ jobs:
           BASE_SHA: ${{ steps.comparison.outputs.base }}
           TOOLING_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
         run: node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json" --github-output
+  canonical-corpus:
+    permissions: { contents: read, actions: read }
+    needs: pr-source-plan
+    if: ${{ !cancelled() && needs.pr-source-plan.result == 'success' && needs.pr-source-plan.outputs.canonical-corpus == 'true' }}
+    uses: ./.github/workflows/davinci-canonical-corpus.yml
   pr-rust-source:
     name: PR Rust Clippy, tests, and fixtures
+    permissions: { contents: read, actions: read }
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
     needs: pr-source-plan
     uses: ./.github/workflows/pr-rust-checks.yml
@@ -97,18 +101,14 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        with:
-          node-version-file: "package.json"
-          cache: true
-          run-install: false
+        with: { node-version-file: "package.json", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
         with:
@@ -124,8 +124,8 @@ jobs:
       - name: Check Fresco native declarations and consumer types
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
         run: vp run --filter './npm/fresco-native' check:generated && vp run --filter './npm/fresco-native' check:types
-      - name: Check UI package conformance in merge queue
-        if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.js == 'true' }}
+      - name: Check UI package conformance
+        if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
         run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
   pr-tooling-scripts:
     name: PR tooling scripts (${{ matrix.index }}/${{ matrix.total }})
@@ -157,8 +157,7 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         with:
@@ -177,20 +176,20 @@ jobs:
           node tools/support/compat/github/plan-tooling-tests.mjs "$BASE_SHA" "$GITHUB_SHA" --tier "$TOOLING_TIER" --output "$RUNNER_TEMP/tooling-plan.json"
       - name: Install fixture and JS dependencies
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select && vp install --frozen-lockfile --prefer-offline
-      - name: Prepare checksum-pinned Pkl schema dependencies
+        run: git submodule update --init --force --depth 1 -- tests/_fixtures/_git/ant-design-vue tests/_fixtures/_git/create-vue tests/_fixtures/_git/vue-select tests/_fixtures/_git/vue-router && vp install --frozen-lockfile --prefer-offline
+      - name: Prepare checksum-pinned Pkl and upstream lint dependencies
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
         env:
           VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
           VIZE_TOOLING_TEST_TIER: ${{ github.event_name == 'merge_group' && 'merge' || 'pr' }}
           VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
-        run: node tools/support/compat/github/prepare-pkl-schema.mjs
+        uses: ./.github/actions/install-formatter-css-browser
       - name: Test fresh native SSR modules in the merge queue
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
         uses: ./.github/actions/test-native-ssr
       - name: Build and install vize CLI
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize
+        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
       - name: Verify current-source native scoped CSS and real Vue DOM
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
         uses: ./.github/actions/test-native-scoped-css
@@ -219,7 +218,7 @@ jobs:
         uses: ./.github/actions/test-native-selected-template
       - name: Join original historical Vue interpolation Docs to pinned whole goldens
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
-        uses: ./.github/actions/test-native-historical-text-documents
+        uses: ./.github/actions/test-native-historical-sfc-documents
         with:
           comparison-base: ${{ needs.pr-source-plan.outputs.comparison-base }}
       - name: Test tooling scripts
@@ -341,10 +340,11 @@ jobs:
       - pr-tooling-scripts
       - pr-playground-test
       - wit-contracts
+      - canonical-corpus
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - name: Require every source gate to succeed
         env: { NEEDS_JSON: "${{ toJSON(needs) }}" }
-        run: node tools/support/compat/github/require-needs-success.mjs --check
+        run: node tools/support/compat/github/canonical-corpus-selection.mjs --check

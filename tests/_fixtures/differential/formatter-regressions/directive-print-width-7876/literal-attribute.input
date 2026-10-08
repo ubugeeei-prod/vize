@@ -1,0 +1,3 @@
+<template>
+  <Widget long-property-name="literal value that must retain spaces" other="x" />
+</template>

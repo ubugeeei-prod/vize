@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ visible: boolean; heading?: string }>();
+</script>
+
+<template>
+  <section v-if="visible">{{ heading }}</section>
+</template>

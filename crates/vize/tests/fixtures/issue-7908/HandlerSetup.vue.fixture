@@ -1,0 +1,9 @@
+<script setup lang="ts">
+function goHome() {
+  window.location.assign("/");
+}
+goHome();
+</script>
+<template>
+  <button type="button" @click="goHome">Home</button>
+</template>

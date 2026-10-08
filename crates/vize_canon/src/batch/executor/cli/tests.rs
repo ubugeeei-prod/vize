@@ -1,6 +1,7 @@
 mod checkers_support;
 mod keyof_scope;
 mod shared_leaves;
+mod typed_router;
 use super::{is_cli_diagnostic_line, is_global_diagnostic_line, parse_cli_diagnostics};
 use crate::batch::VirtualProject;
 use crate::batch::executor::diagnostics::DiagnosticMapper;
@@ -22,7 +23,6 @@ fn unique_case_dir(name: &str) -> PathBuf {
             std::process::id()
         ))
 }
-
 #[test]
 fn partitions_vue_files_and_shares_program_wide_sources() {
     use super::partition_virtual_files;

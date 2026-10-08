@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { Link } from "router";
+</script>
+
+<template>
+  <Link to="/">home</Link>
+</template>

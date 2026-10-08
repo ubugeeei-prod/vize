@@ -1,5 +1,9 @@
+mod optional_parameters;
+mod primitive_returns;
 mod rejection;
+mod required_named_exports;
 mod semantics;
+mod typed_parameters;
 mod unwind;
 
 use oxc_parser::{Parser, ProgramObservation};

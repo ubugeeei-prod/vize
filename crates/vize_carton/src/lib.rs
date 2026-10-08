@@ -31,6 +31,8 @@ mod i18n_supplemental_html;
 pub mod profile_allocator;
 pub mod profile_export;
 
+pub mod source_io;
+
 #[cfg(not(target_arch = "wasm32"))]
 pub mod corsa_api_mode;
 #[cfg(not(target_arch = "wasm32"))]
@@ -46,3 +48,7 @@ pub mod corsa_resolver;
     reason = "host JSON-RPC records retain the existing std String and Vec contract"
 )]
 pub mod lsp;
+
+pub mod path;
+
+pub mod timing_observer;

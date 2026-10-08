@@ -7,11 +7,13 @@ use std::{collections::BTreeMap, path::Path};
 use vize_armature::Parser;
 use vize_atelier_sfc::{
     SfcParseOptions,
-    croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_context},
+    croquis::{SfcCroquisOptions, analyze_sfc_descriptor_with_occurrences as capture_sfc},
     parse_sfc,
 };
 use vize_croquis::{EffectGraphScript, build_effect_graph_from_sfc_scripts};
-use vize_croquis_cf::{CrossFileAnalyzer, CrossFileDiagnosticKind, CrossFileOptions, FileId};
+use vize_croquis_cf::{
+    CrossFileAnalyzer, CrossFileDiagnosticKind, CrossFileOptions, DiagnosticSource, FileId,
+};
 use vize_doctor::{
     ContentFingerprint, DoctorFinding, DoctorReport,
     application_analysis::report_from_application_graph,
@@ -162,9 +164,9 @@ fn add_sfc(
                 message: error.message.clone(),
             });
         }
-        analyze_sfc_descriptor_with_context(&descriptor, Some(&root), SfcCroquisOptions::full())
+        capture_sfc(&descriptor, Some(&root), SfcCroquisOptions::full()).0
     } else {
-        analyze_sfc_descriptor_with_context(&descriptor, None, SfcCroquisOptions::full())
+        capture_sfc(&descriptor, None, SfcCroquisOptions::full()).0
     };
     let effect_summary = build_effect_graph_from_sfc_scripts(
         descriptor
@@ -285,7 +287,11 @@ fn normalize_sfc_diagnostics(
     source_maps: &FxHashMap<FileId, SfcSourceMap>,
 ) {
     for diagnostic in diagnostics {
-        let primary_coordinates = primary_coordinates(&diagnostic.kind);
+        let primary_coordinates = match diagnostic.primary_source {
+            DiagnosticSource::Script => SfcCoordinates::Script,
+            DiagnosticSource::Template => SfcCoordinates::Template,
+            DiagnosticSource::Unspecified => primary_coordinates(&diagnostic.kind),
+        };
         if let Some(source_map) = source_maps.get(&diagnostic.primary_file).copied() {
             diagnostic.primary_offset =
                 source_map.map(primary_coordinates, diagnostic.primary_offset);

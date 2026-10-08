@@ -32,6 +32,7 @@ pub(crate) struct ComponentPropSource<'a> {
     pub(crate) template: Option<&'a str>,
     pub(crate) offset: u32,
     pub(crate) scopes: &'a ScopeChain,
+    pub(crate) model_modifiers: Option<&'a super::model_modifiers::ModelModifierBindings>,
 }
 
 impl<'a> ComponentPropSource<'a> {
@@ -44,7 +45,16 @@ impl<'a> ComponentPropSource<'a> {
             template,
             offset,
             scopes,
+            model_modifiers: None,
         }
+    }
+
+    pub(crate) const fn with_model_modifiers(
+        mut self,
+        bindings: &'a super::model_modifiers::ModelModifierBindings,
+    ) -> Self {
+        self.model_modifiers = Some(bindings);
+        self
     }
 }
 
@@ -96,10 +106,18 @@ pub(super) fn collect_generated_class_bindings<'a>(
         .collect()
 }
 
-pub(super) fn merged_class_binding_value(bindings: &[(&PassedProp, String)]) -> Option<String> {
+pub(super) fn merged_class_binding_value(
+    bindings: &[(&PassedProp, String)],
+    mut ranges: Option<&mut Vec<std::ops::Range<usize>>>,
+) -> Option<String> {
     match bindings {
         [] => None,
-        [(_, value)] => Some(value.clone()),
+        [(_, value)] => {
+            if let Some(ranges) = ranges.as_mut() {
+                ranges.push(0..value.len());
+            }
+            Some(value.clone())
+        }
         _ => {
             let mut value = String::default();
             value.push('[');
@@ -107,7 +125,10 @@ pub(super) fn merged_class_binding_value(bindings: &[(&PassedProp, String)]) -> 
                 if index > 0 {
                     value.push_str(", ");
                 }
-                append_prop_value(&mut value, binding_value.as_str());
+                let generated = append_prop_value(&mut value, binding_value.as_str());
+                if let Some(ranges) = ranges.as_mut() {
+                    ranges.push(generated);
+                }
             }
             value.push(']');
             Some(value)
@@ -250,7 +271,11 @@ pub(crate) fn generate_component_prop_checks(
                     src_range,
                 });
             }
-            if let Some(src_range) = value_src_range.clone() {
+            if let Some(spans) =
+                super::model_modifiers::modifier_sub_spans(source_context, prop, value_span.clone())
+            {
+                sub_spans.extend(spans);
+            } else if let Some(src_range) = value_src_range.clone() {
                 sub_spans.push(VizeSubSpan {
                     gen_range: value_span,
                     src_range,

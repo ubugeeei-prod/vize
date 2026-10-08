@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { vSafeHtml } from "./safe-html";
+
+const message = "<b>Saved</b>";
+</script>
+
+<template>
+  <div>
+    <p v-html="message" />
+    <p v-safe-html="message" />
+  </div>
+</template>

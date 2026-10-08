@@ -23,6 +23,8 @@ mod native_adapter_tests;
 mod pending_text;
 #[cfg(all(test, feature = "legacy"))]
 mod tokenizer_contract_tests;
+#[cfg(all(test, feature = "legacy"))]
+mod tokenizer_first_newline_witness;
 mod whitespace;
 mod whitespace_context;
 
@@ -32,6 +34,8 @@ pub use whitespace_context::{
     with_whitespace_strategy,
 };
 
+#[cfg(test)]
+mod first_newline_tests;
 #[cfg(test)]
 mod tests;
 

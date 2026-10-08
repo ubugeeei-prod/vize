@@ -4,7 +4,5 @@ expression: all_diagnostic_summary(&output.results)
 ---
 [
     "Warning|vize:croquis/cf/provide-without-symbol: provide('count') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow|82..105",
-    "Warning|vize:croquis/cf/unused-provide: provide('count') is not used by any descendant component|82..105",
-    "Error|vize:croquis/cf/unmatched-inject: **Unmatched Inject**: `inject('count')` has no matching `provide()` in any ancestor component and returns `undefined` at runtime.|69..84",
     "Warning|vize:croquis/cf/inject-without-symbol: inject('count') uses a string injection key; prefer Symbol/InjectionKey for typed, collision-safe dependency flow|69..84",
 ]

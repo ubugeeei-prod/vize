@@ -1,0 +1,5 @@
+<script setup>
+const items = [1, 2];
+const shown = false;
+</script>
+<template><TransitionGroup><li v-for="item in items" :key="item">{{ item }}</li><li v-if="shown">hidden</li><!-- filtered --></TransitionGroup></template>

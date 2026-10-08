@@ -1,7 +1,9 @@
 //! LSP protocol handler implementations.
 
 mod formatting;
+mod inlay_hint;
 mod linked_editing;
+mod typed;
 
 use tower_lsp::{
     LanguageServer,
@@ -30,10 +32,10 @@ use tower_lsp::{
 use tower_lsp::lsp_types::{Position, Range};
 
 use super::MaestroServer;
-use crate::ide::{
-    CompletionService, DocumentHighlightService, DocumentLinkService, HoverService, IdeContext,
-    RenameService, position_to_offset,
-};
+use crate::ide::{DocumentHighlightService, DocumentLinkService, IdeContext, position_to_offset};
+
+#[cfg(feature = "native")]
+use crate::ide::CompletionService;
 
 mod call_hierarchy;
 mod navigation;
@@ -116,7 +118,7 @@ impl LanguageServer for MaestroServer {
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
         let uri = params.text_document.uri;
-        self.publish_diagnostics(&uri).await;
+        self.publish_saved_diagnostics(&uri).await;
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
@@ -124,148 +126,65 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
-        if !self.state.lsp_features().hover {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document_position_params.text_document.uri;
-        let position = params.text_document_position_params.position;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(offset) = position_to_offset(&content, position.line, position.character) else {
-            return Ok(None);
-        };
-        let ctx = IdeContext::with_content(&self.state, uri, offset, content);
-
-        // Type-aware hover for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
-        // Routed before the SFC path since JSX documents never produce an SFC
-        // block type. React `.tsx` is untouched when the flag is off.
-        #[cfg(feature = "native")]
-        if crate::utils::is_jsx_path(uri.path()) {
-            if self.state.jsx_typecheck_enabled() {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                return Ok(crate::ide::JsxService::hover(&ctx, corsa_bridge).await);
-            }
-            return Ok(None);
-        }
-
-        #[cfg(feature = "native")]
-        let mut hover_result: Option<Hover> = {
-            let corsa_bridge = self.state.get_corsa_bridge().await;
-            HoverService::hover_with_corsa(&ctx, corsa_bridge).await
-        };
-
-        #[cfg(not(feature = "native"))]
-        let mut hover_result: Option<Hover> = HoverService::hover(&ctx);
-
-        let lint_hover = self.get_lint_hover_at_position(uri, position);
-        if let Some(lint_info) = lint_hover {
-            hover_result = Some(Self::merge_hover_with_lint(hover_result, lint_info));
-        }
-
-        Ok(hover_result)
+        self.native_request(self.hover_request(params)).await
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
-        if !self.state.lsp_features().completion {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document_position.text_document.uri;
-        let position = params.text_document_position.position;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(ctx) = position_to_offset(&content, position.line, position.character)
-            .and_then(|offset| IdeContext::at_completion(&self.state, uri, offset))
-        else {
-            return Ok(None);
-        };
-        // JSX completion is opt-in so React remains untouched.
-        #[cfg(feature = "native")]
-        if crate::utils::is_jsx_path(uri.path()) {
-            if self.state.jsx_typecheck_enabled() {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                if let Some(response) = crate::ide::JsxService::completion(&ctx, corsa_bridge).await
-                {
-                    return Ok(Some(response));
-                }
-            }
-            return Ok(None);
-        }
-
-        #[cfg(feature = "native")]
-        {
-            if let Some(response) = CompletionService::complete_static_object_member(&ctx) {
-                return Ok(Some(response));
-            }
-            let corsa_bridge = self.state.get_corsa_bridge().await;
-            if let Some(response) = CompletionService::complete_with_corsa(&ctx, corsa_bridge).await
-            {
-                return Ok(Some(response));
-            }
-        }
-
-        #[cfg(not(feature = "native"))]
-        if let Some(response) = CompletionService::complete(&ctx) {
-            return Ok(Some(response));
-        }
-
-        if ctx.block_type.is_some() {
-            return Ok(None);
-        }
-
-        let items = self.get_block_snippets();
-        if items.is_empty() {
-            Ok(None)
-        } else {
-            Ok(Some(CompletionResponse::Array(items)))
-        }
+        self.native_request(self.completion_request(params)).await
     }
 
     async fn completion_resolve(&self, item: CompletionItem) -> Result<CompletionItem> {
-        #[cfg(feature = "native")]
-        let item = CompletionService::resolve(&self.state, item).await;
-        Ok(item)
+        self.native_request(async {
+            #[cfg(feature = "native")]
+            let item = CompletionService::resolve(&self.state, item).await;
+            Ok(item)
+        })
+        .await
     }
 
     async fn signature_help(&self, params: SigHelpParams) -> Result<Option<SigHelp>> {
-        signature_help::signature_help(self, params).await
+        self.native_request(async { signature_help::signature_help(self, params).await })
+            .await
     }
 
     async fn goto_definition(&self, params: DefParams) -> Result<Option<DefResponse>> {
-        navigation::goto_definition(self, params).await
+        self.native_request(async { navigation::goto_definition(self, params).await })
+            .await
     }
 
     async fn goto_type_definition(&self, params: TypeDefParams) -> Result<Option<TypeDefResponse>> {
-        navigation::goto_type_definition(self, params).await
+        self.native_request(async { navigation::goto_type_definition(self, params).await })
+            .await
     }
 
     async fn goto_declaration(&self, params: DeclParams) -> Result<Option<DeclResponse>> {
-        navigation::goto_declaration(self, params).await
+        self.native_request(async { navigation::goto_declaration(self, params).await })
+            .await
     }
 
     async fn goto_implementation(&self, params: ImplParams) -> Result<Option<ImplResponse>> {
-        navigation::goto_implementation(self, params).await
+        self.native_request(async { navigation::goto_implementation(self, params).await })
+            .await
     }
 
     async fn prepare_call_hierarchy(&self, params: CHPrepareParams) -> Result<Option<CHItems>> {
-        call_hierarchy::prepare(self, params).await
+        self.native_request(async { call_hierarchy::prepare(self, params).await })
+            .await
     }
 
     async fn incoming_calls(&self, params: CHIncomingParams) -> Result<Option<CHIncomingResponse>> {
-        call_hierarchy::incoming(self, params).await
+        self.native_request(async { call_hierarchy::incoming(self, params).await })
+            .await
     }
 
     async fn outgoing_calls(&self, params: CHOutgoingParams) -> Result<Option<CHOutgoingResponse>> {
-        call_hierarchy::outgoing(self, params).await
+        self.native_request(async { call_hierarchy::outgoing(self, params).await })
+            .await
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
-        references::references(self, params).await
+        self.native_request(async { references::references(self, params).await })
+            .await
     }
 
     async fn document_highlight(
@@ -305,91 +224,20 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
-        Ok(super::code_actions::code_actions(self, &params).await)
+        self.native_request(async { Ok(super::code_actions::code_actions(self, &params).await) })
+            .await
     }
 
     async fn prepare_rename(
         &self,
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
-        if !self.state.lsp_features().rename {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document.uri;
-        let position = params.position;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(ctx) = position_to_offset(&content, position.line, position.character)
-            .and_then(|offset| IdeContext::new(&self.state, uri, offset))
-        else {
-            return Ok(None);
-        };
-
-        // Type-aware prepare-rename for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
-        #[cfg(feature = "native")]
-        if crate::utils::is_jsx_path(uri.path()) {
-            if self.state.jsx_typecheck_enabled() {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                return Ok(crate::ide::JsxRenameService::prepare_rename(&ctx, corsa_bridge).await);
-            }
-            return Ok(None);
-        }
-
-        #[cfg(feature = "native")]
-        {
-            let corsa_bridge = self.state.get_corsa_bridge().await;
-            Ok(RenameService::prepare_rename_with_corsa(&ctx, corsa_bridge).await)
-        }
-
-        #[cfg(not(feature = "native"))]
-        {
-            Ok(RenameService::prepare_rename(&ctx))
-        }
+        self.native_request(self.prepare_rename_request(params))
+            .await
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
-        if !self.state.lsp_features().rename {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document_position.text_document.uri;
-        let position = params.text_document_position.position;
-        let new_name = &params.new_name;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(ctx) = position_to_offset(&content, position.line, position.character)
-            .and_then(|offset| IdeContext::new(&self.state, uri, offset))
-        else {
-            return Ok(None);
-        };
-
-        // Type-aware rename for `.jsx`/`.tsx` (opt-in `typeChecker.jsxTypecheck`).
-        #[cfg(feature = "native")]
-        if crate::utils::is_jsx_path(uri.path()) {
-            if self.state.jsx_typecheck_enabled() {
-                let corsa_bridge = self.state.get_corsa_bridge().await;
-                return Ok(
-                    crate::ide::JsxRenameService::rename(&ctx, new_name, corsa_bridge).await,
-                );
-            }
-            return Ok(None);
-        }
-
-        #[cfg(feature = "native")]
-        {
-            let corsa_bridge = self.state.get_corsa_bridge().await;
-            Ok(RenameService::rename_with_corsa(&ctx, new_name, corsa_bridge).await)
-        }
-
-        #[cfg(not(feature = "native"))]
-        {
-            Ok(RenameService::rename(&ctx, new_name))
-        }
+        self.native_request(self.rename_request(params)).await
     }
 
     async fn semantic_tokens_full(
@@ -421,7 +269,10 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn will_rename_files(&self, params: RenameFilesParams) -> Result<Option<WorkspaceEdit>> {
-        Ok(super::workspace_files::will_rename_files(&self.state, &params).await)
+        self.native_request(async {
+            Ok(super::workspace_files::will_rename_files(&self.state, &params).await)
+        })
+        .await
     }
 
     async fn did_change_watched_files(&self, params: DidChangeWatchedFilesParams) {
@@ -460,10 +311,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
-        if !self.state.lsp_features().inlay_hints {
-            return Ok(None);
-        }
-        Ok(super::annotations::inlay_hint(&self.state, &params))
+        self.native_request(self.inlay_hint_request(params)).await
     }
 
     /// Colour swatches for the CSS a `.vue` file authors. Rides the

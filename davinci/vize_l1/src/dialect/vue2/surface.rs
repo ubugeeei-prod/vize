@@ -15,6 +15,11 @@ use crate::surface::SurfaceTree;
 
 mod body;
 pub use body::{TextChild, TextChildren, TextRefusal, TextView};
+mod retained;
+pub use retained::{
+    ComponentExpressionPool, RetainedTextChild, RetainedTextChildren, RetainedTextRefusal,
+    RetainedTextView,
+};
 
 /// An original Vue 2 owner. Captures and modern carriers cannot construct it.
 ///

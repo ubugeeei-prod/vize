@@ -1,0 +1,4 @@
+import { readdirSync, readFileSync } from "node:fs";
+const dir = ".output/public/_nuxt";
+const js = readdirSync(dir).filter(f => f.endsWith(".js")).map(f => readFileSync(`${dir}/${f}`, "utf8")).join("\n");
+for (const row of ["tight", "loose"]) console.log(`${row}: ${new RegExp(`.{0,40}${row}-alpha.{0,80}`).exec(js)?.[0]}`);

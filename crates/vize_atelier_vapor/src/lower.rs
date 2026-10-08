@@ -6,6 +6,7 @@ mod context;
 mod control;
 mod directive;
 mod element;
+mod key;
 mod merged_props;
 mod text;
 
@@ -16,7 +17,6 @@ use vize_atelier_core::{RootNode, TemplateChildNode};
 
 use context::{TemplateSpans, TransformContext};
 use control::{transform_for_node, transform_if_node};
-use element::transform_element;
 use text::{transform_interpolation, transform_text};
 
 /// Transform AST to Vapor IR
@@ -92,12 +92,21 @@ pub(crate) fn transform_children<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],
 ) -> BlockIRNode<'a> {
-    ensure_sufficient_stack(|| transform_children_guarded(ctx, children))
+    transform_children_with_keys(ctx, children, true)
+}
+
+pub(super) fn transform_children_with_keys<'a>(
+    ctx: &mut TransformContext<'a>,
+    children: &[TemplateChildNode<'a>],
+    own_keys: bool,
+) -> BlockIRNode<'a> {
+    ensure_sufficient_stack(|| transform_children_guarded(ctx, children, own_keys))
 }
 
 fn transform_children_guarded<'a>(
     ctx: &mut TransformContext<'a>,
     children: &[TemplateChildNode<'a>],
+    own_keys: bool,
 ) -> BlockIRNode<'a> {
     vize_atelier_core::walk_probe::record_visits(
         vize_atelier_core::walk_probe::WalkStage::VaporLower,
@@ -127,7 +136,7 @@ fn transform_children_guarded<'a>(
     for child in children {
         match child {
             TemplateChildNode::Element(el) => {
-                transform_element(ctx, el, &mut block);
+                key::element(ctx, el, &mut block, own_keys);
             }
             TemplateChildNode::Text(text) => {
                 transform_text(ctx, text, &mut block);

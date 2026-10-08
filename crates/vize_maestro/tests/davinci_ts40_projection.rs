@@ -29,6 +29,7 @@ fn current_projection_matrix_is_exact_and_non_empty() {
         "TS-40 matrix must not be vacuous"
     );
 
+    let mut failures = Vec::new();
     for fixture in &matrix.fixtures {
         let record = capture_fixture(fixture);
         record.assert_non_empty(fixture);
@@ -42,8 +43,15 @@ fn current_projection_matrix_is_exact_and_non_empty() {
             "default"
         };
         let snapshot = cstr!("davinci_ts40__{}__{feature}", fixture.id);
-        insta::assert_snapshot!(snapshot.as_str(), record.render());
+        if std::panic::catch_unwind(|| {
+            insta::assert_snapshot!(snapshot.as_str(), record.render());
+        })
+        .is_err()
+        {
+            failures.push(fixture.id.as_str());
+        }
     }
+    assert!(failures.is_empty(), "TS-40 snapshot failures: {failures:?}");
 }
 
 #[test]

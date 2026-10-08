@@ -183,7 +183,6 @@ impl<'a> NativeDocument<'a> {
         self.root.source()
     }
 
-    #[must_use]
     pub fn tokens(&self) -> impl ExactSizeIterator<Item = DocumentToken<'_, 'a>> {
         self.events
             .iter()

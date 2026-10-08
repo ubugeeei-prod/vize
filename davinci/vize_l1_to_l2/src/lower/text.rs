@@ -87,11 +87,15 @@ use vize_l0::id::NodeId;
 use vize_l0::{Span, String};
 use vize_l2::op::Op;
 
+mod branch_gap;
 mod condense;
+mod leading_newline;
 mod run;
 
+pub use branch_gap::branch_gap_text;
 pub(crate) use condense::{TextAction, plan_whitespace, suppresses_condense};
 use condense::{collapse_fused, extends_run};
+use leading_newline::normalize_special_text;
 pub(crate) use run::{lower_text_run, lower_v_pre_text_run};
 
 /// One part of a merged run, owned (the fact crosses compile boundaries

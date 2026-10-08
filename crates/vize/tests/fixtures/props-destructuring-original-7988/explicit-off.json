@@ -1,0 +1,14 @@
+[
+  {
+    "file": "MyBadgeA.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "MyBadgeB.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  }
+]

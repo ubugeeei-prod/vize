@@ -1,0 +1,8 @@
+{
+  "linter": {
+    "preset": "incremental",
+    "rules": {
+      "ecosystem/vue-router-missing-param": "warn"
+    }
+  }
+}

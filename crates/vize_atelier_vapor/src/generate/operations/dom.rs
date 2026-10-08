@@ -20,7 +20,9 @@ pub(crate) fn set_prop_call(
     set_prop: &SetPropIRNode<'_>,
 ) -> EmitDocument {
     let element = cstr!("n{}", set_prop.element);
-    let key = &set_prop.prop.key.content;
+    let raw_key = set_prop.prop.key.content;
+    let forced_attr = raw_key.strip_prefix('^');
+    let key = &forced_attr.unwrap_or(raw_key);
     let is_svg = is_svg_tag(set_prop.tag);
 
     // Build value handling multiple values (static+dynamic merge)
@@ -58,14 +60,18 @@ pub(crate) fn set_prop_call(
         line
     };
 
-    let (helper, line) = if (*key == "class" || *key == "style") && is_svg {
+    let (helper, line) = if forced_attr.is_some() || (*key == "class" || *key == "style") && is_svg
+    {
         ("setAttr", call("_setAttr", Some(&named), ""))
     } else if *key == "class" {
         ("setClass", call("_setClass", None, ""))
     } else if *key == "style" {
         ("setStyle", call("_setStyle", None, ""))
-    } else if *key == "value" && set_prop.tag == "option" && !set_prop.prop_modifier {
-        // Select models read the option's raw `_value`, not its DOM string.
+    } else if *key == "value"
+        && matches!(set_prop.tag, "input" | "option")
+        && !set_prop.prop_modifier
+    {
+        // Input values also retain their default attribute; options retain `_value`.
         ("setValue", call("_setValue", None, ""))
     } else if set_prop.prop_modifier {
         ("setDOMProp", call("_setDOMProp", Some(&named), ""))

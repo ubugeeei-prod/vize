@@ -142,11 +142,17 @@ test("a phase does not inherit another runner's context", () => {
     NODE_V8_COVERAGE: "/tmp/coverage",
     PATH: "/usr/bin",
     VIZE_TEST_REQUIRE_TSGO: "1",
+    VIZE_LSP_BIN: "/source/target/ci/vize",
+    VIZE_LSP_REQUIRE_SOURCE_BUILD: "1",
+    VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci -p vize --features legacy",
   });
   assert.deepEqual(stripped, {
     NODE_OPTIONS: "--disable-warning=DEP0040",
     PATH: "/usr/bin",
     VIZE_TEST_REQUIRE_TSGO: "1",
+    VIZE_LSP_BIN: "/source/target/ci/vize",
+    VIZE_LSP_REQUIRE_SOURCE_BUILD: "1",
+    VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci -p vize --features legacy",
   });
 });
 

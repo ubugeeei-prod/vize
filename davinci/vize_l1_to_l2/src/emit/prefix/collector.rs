@@ -17,6 +17,8 @@ use oxc_ast_visit::{
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::String;
 
+mod setup_write;
+
 use super::globals::{is_generated_filter_helper, is_global_allowed};
 use super::scope::PrefixScope;
 use super::scope_walk::ExpressionScope;
@@ -32,6 +34,10 @@ pub(super) struct IdentifierCollector<'s, 'a> {
     wrapped: bool,
     /// Set when a binding was read through `_unref(…)`.
     pub(super) used_unref: bool,
+    pub(super) used_is_ref: bool,
+    /// Vue key shape retains all expression identifiers, including local
+    /// bindings and member names; static object property keys are excluded.
+    pub(super) has_identifier_references: bool,
     offset: usize,
     local_scopes: StdVec<StdVec<String>>,
     pub(super) rewrites: StdVec<(usize, String)>,
@@ -47,6 +53,8 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
             source,
             wrapped: true,
             used_unref: false,
+            used_is_ref: false,
+            has_identifier_references: false,
             offset: 0,
             local_scopes: alloc::vec![StdVec::new()],
             rewrites: StdVec::new(),
@@ -115,7 +123,12 @@ impl<'s, 'a> IdentifierCollector<'s, 'a> {
 }
 
 impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
+    fn visit_binding_identifier(&mut self, _ident: &oxc_ast_types::BindingIdentifier<'_>) {
+        self.has_identifier_references = true;
+    }
+
     fn visit_identifier_reference(&mut self, ident: &oxc_ast_types::IdentifierReference<'_>) {
+        self.has_identifier_references = true;
         let name = ident.name.as_str();
         if self.is_local(name) || is_generated_filter_helper(name) {
             return;
@@ -162,9 +175,11 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
                 self.visit_expression(&computed.expression);
             }
             oxc_ast_types::MemberExpression::StaticMemberExpression(static_expr) => {
+                self.has_identifier_references = true;
                 self.visit_expression(&static_expr.object);
             }
             oxc_ast_types::MemberExpression::PrivateFieldExpression(private) => {
+                self.has_identifier_references = true;
                 self.visit_expression(&private.object);
             }
         }
@@ -224,17 +239,20 @@ impl<'s, 'a> Visit<'_> for IdentifierCollector<'s, 'a> {
     fn visit_assignment_expression(&mut self, expr: &oxc_ast_types::AssignmentExpression<'_>) {
         self.collect_assignment_targets(&expr.left);
         walk_assignment_expression(self, expr);
+        self.guard_setup_assignment(expr);
     }
 
     fn visit_update_expression(&mut self, expr: &oxc_ast_types::UpdateExpression<'_>) {
         self.collect_simple_assignment_targets(&expr.argument);
         walk_update_expression(self, expr);
+        self.guard_setup_update(expr);
     }
 
     fn visit_object_property(&mut self, prop: &oxc_ast_types::ObjectProperty<'_>) {
         if prop.shorthand
             && let oxc_ast_types::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
+            self.has_identifier_references = true;
             let name = ident.name.as_str();
             // Destructured `v-for` / slot aliases live in `slot_params`, not
             // the transform-scope string. Expanding them and then stripping

@@ -24,7 +24,7 @@ use super::EmitError;
 use super::UnsupportedReason as Reason;
 use super::buf::Buf;
 use super::js::{RawJs, expr_source};
-use crate::pass::{SlotFacts, SlotName};
+use crate::pass::{SlotCarrier, SlotFacts, SlotName};
 
 /// First `v-slots="expr"` (no argument) on the component, matching
 /// `codegen/slots/detect.rs`. An argument spelling is a different
@@ -179,6 +179,9 @@ pub(super) fn emit_slots(
     cx.buf.push("{");
     cx.buf.indent();
     for (group, bucket) in facts.groups.iter().zip(&buckets) {
+        if bucket.is_empty() && matches!(group.carrier, SlotCarrier::Implicit) {
+            continue;
+        }
         cx.buf.newline();
         emit_slot_key(cx, &group.name);
         cx.buf.push(": ");

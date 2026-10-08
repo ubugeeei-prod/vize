@@ -10,7 +10,7 @@ use vize_atelier_core::{
     TemplateChildNode,
 };
 
-use super::{context::TransformContext, transform_children};
+use super::context::TransformContext;
 
 /// Transform IfNode (from compiler-core v-if transform)
 pub(crate) fn transform_if_node<'a>(
@@ -73,7 +73,7 @@ fn transform_if_node_with_options<'a>(
     let _positive_branch_id = ctx.next_id();
 
     // Transform first branch children
-    let positive = transform_children(ctx, &first_branch.children);
+    let positive = super::key::transform_branch(ctx, first_branch);
 
     // Handle remaining branches (v-else-if, v-else)
     let negative = if rest.is_empty() {
@@ -134,7 +134,7 @@ pub(crate) fn transform_remaining_branches<'a>(
         // Consume ID for positive branch block
         let _positive_branch_id = ctx.next_id();
 
-        let positive = transform_children(ctx, &branch.children);
+        let positive = super::key::transform_branch(ctx, branch);
 
         let negative = if rest.is_empty() {
             None
@@ -158,7 +158,7 @@ pub(crate) fn transform_remaining_branches<'a>(
     } else {
         // v-else: consume ID for the else branch block
         let _else_branch_id = ctx.next_id();
-        NegativeBranch::Block(transform_children(ctx, &branch.children))
+        NegativeBranch::Block(super::key::transform_branch(ctx, branch))
     }
 }
 
@@ -231,8 +231,14 @@ fn transform_for_node_with_options<'a>(
     // Consume ID for the render block
     let _render_block_id = ctx.next_id();
 
-    // Transform children as render block
-    let render = transform_children(ctx, &for_node.children);
+    // Refs on the loop root and all descendants belong to this loop body.
+    ctx.for_depth += 1;
+    let render = super::transform_children_with_keys(
+        ctx,
+        &for_node.children,
+        for_node.parse_result.match_scope,
+    );
+    ctx.for_depth -= 1;
 
     let ir_for = ForIRNode {
         id: for_id,

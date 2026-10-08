@@ -47,15 +47,11 @@ pub(super) fn config(
 }
 
 fn is_project_config_path(path: &Path, project: &VirtualProject) -> bool {
-    let Ok(relative) = path.strip_prefix(project.virtual_root()) else {
-        return false;
-    };
-    if relative.components().count() != 1 {
+    if path.parent() != project.generated_tsconfig_path().parent() {
         return false;
     }
 
-    relative
-        .file_name()
+    path.file_name()
         .and_then(|name| name.to_str())
         .is_some_and(|name| {
             name == "tsconfig.json"

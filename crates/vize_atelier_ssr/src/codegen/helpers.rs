@@ -1,6 +1,6 @@
 //! HTML escaping utilities and child/control-flow processing for SSR codegen.
 
-mod branch_fragment;
+pub(crate) mod branch_fragment;
 mod destructure;
 mod escape;
 mod match_scope;
@@ -10,7 +10,7 @@ use vize_atelier_core::{
     TemplateChildNode, TextNode,
 };
 
-use super::SsrCodegenContext;
+use super::{SsrCodegenContext, css_vars::RootCssVars};
 pub(crate) use destructure::{collect_for_scoped_params, extract_destructure_params};
 pub(crate) use escape::{escape_html, escape_html_attr};
 use vize_l0::{String, ToCompactString};
@@ -33,56 +33,6 @@ impl<'a> SsrCodegenContext<'a> {
         );
     }
 
-    /// Process root-level children and inherit `_attrs` into a single renderable
-    /// root, matching Vue's fallthrough attrs behavior for SSR.
-    pub(crate) fn process_root_children(
-        &mut self,
-        children: &[TemplateChildNode<'a>],
-        as_fragment: bool,
-        disable_nested_fragments: bool,
-        disable_comment: bool,
-    ) {
-        self.process_children_with_fallthrough_attrs(
-            children,
-            as_fragment,
-            disable_nested_fragments,
-            disable_comment,
-            true,
-        );
-    }
-
-    pub(crate) fn process_children_with_fallthrough_attrs(
-        &mut self,
-        children: &[TemplateChildNode<'a>],
-        as_fragment: bool,
-        disable_nested_fragments: bool,
-        disable_comment: bool,
-        inherit_attrs: bool,
-    ) {
-        if as_fragment {
-            self.push_string_part_static("<!--[-->");
-        }
-
-        let fallthrough_child_index = if inherit_attrs && !as_fragment {
-            single_fallthrough_child_index(children).unwrap_or(usize::MAX)
-        } else {
-            usize::MAX
-        };
-
-        for (index, child) in vize_atelier_core::walk_probe::ssr_children(children).enumerate() {
-            self.process_child(
-                child,
-                disable_nested_fragments,
-                disable_comment,
-                fallthrough_child_index == index,
-            );
-        }
-
-        if as_fragment {
-            self.push_string_part_static("<!--]-->");
-        }
-    }
-
     /// Process a single child node
     pub(crate) fn process_child(
         &mut self,
@@ -90,6 +40,7 @@ impl<'a> SsrCodegenContext<'a> {
         disable_nested_fragments: bool,
         disable_comment: bool,
         inherit_attrs: bool,
+        css_vars: RootCssVars,
     ) {
         match child {
             TemplateChildNode::Element(el) => {
@@ -97,6 +48,7 @@ impl<'a> SsrCodegenContext<'a> {
                     el,
                     disable_nested_fragments,
                     inherit_attrs,
+                    css_vars,
                 );
             }
             TemplateChildNode::Text(text) => {
@@ -116,6 +68,7 @@ impl<'a> SsrCodegenContext<'a> {
                     disable_nested_fragments,
                     disable_comment,
                     inherit_attrs,
+                    css_vars,
                 );
             }
             TemplateChildNode::For(for_node) if for_node.parse_result.match_scope => {
@@ -169,6 +122,7 @@ impl<'a> SsrCodegenContext<'a> {
         disable_nested_fragments: bool,
         disable_comment: bool,
         inherit_attrs: bool,
+        css_vars: RootCssVars,
     ) {
         // Flush current push before if statement
         self.flush_push();
@@ -200,19 +154,23 @@ impl<'a> SsrCodegenContext<'a> {
             let needs_fragment =
                 !disable_nested_fragments && branch_fragment::needs_fragment(&branch.children);
 
-            self.process_children_with_fallthrough_attrs(
+            self.process_children_with_fallthrough_attrs_and_css_vars(
                 &branch.children,
                 needs_fragment,
                 disable_nested_fragments,
-                disable_comment,
+                false,
                 inherit_attrs,
+                RootCssVars {
+                    enabled: css_vars.enabled,
+                    template_wrapper: branch.is_template_if,
+                },
             );
             self.flush_push();
             self.indent_level -= 1;
         }
 
         // If no else branch, emit empty comment
-        if if_node.branches.iter().all(|b| b.condition.is_some()) {
+        if !disable_comment && if_node.branches.iter().all(|b| b.condition.is_some()) {
             self.push_indent();
             self.push("} else {\n");
             self.indent_level += 1;
@@ -314,7 +272,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 }
 
-fn single_fallthrough_child_index(children: &[TemplateChildNode]) -> Option<usize> {
+pub(crate) fn single_fallthrough_child_index(children: &[TemplateChildNode]) -> Option<usize> {
     let mut index = None;
 
     for (current_index, child) in children.iter().enumerate() {

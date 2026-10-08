@@ -81,6 +81,33 @@ impl<'a> MacroTypeMappings<'a> {
         self.script?.get(range.0 as usize..range.1 as usize)
     }
 
+    /// Map only retained static slot keys in the unchanged public type copy.
+    /// Payload references keep their original setup-scope diagnostic ownership.
+    pub(crate) fn map_slot_keys(
+        &mut self,
+        generated: Range<usize>,
+        declarations: &vize_croquis::macros::MacroTracker,
+    ) {
+        let Some((inner_start, inner_end)) = declarations.slot_type_argument_range() else {
+            return;
+        };
+        if inner_end.saturating_sub(inner_start) as usize != generated.len() {
+            return;
+        }
+        let inner_start = inner_start as usize;
+        for authored in declarations.static_slot_declarations() {
+            let Some(start) = (authored.0 as usize).checked_sub(inner_start) else {
+                continue;
+            };
+            let Some(end) = (authored.1 as usize).checked_sub(inner_start) else {
+                continue;
+            };
+            if start < end && end <= generated.len() {
+                self.map_exact(generated.start + start..generated.start + end, authored);
+            }
+        }
+    }
+
     pub(crate) fn map_model_props(
         &mut self,
         ts: &str,

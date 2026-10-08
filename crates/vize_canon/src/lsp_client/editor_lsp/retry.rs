@@ -21,6 +21,15 @@ pub(super) fn retry_transient_editor_request<State, Output>(
     // `retire_editor_lsp` clears the old session even when graceful shutdown
     // reports an error, so a fresh spawn is still safe and useful.
     let recovery_error = recover(state).err();
+    // Mandatory old-session cleanup drains even if this caller retires during it.
+    if let Err(retired) = crate::corsa_bridge::native_operation::checkpoint() {
+        return Err(match recovery_error {
+            Some(cleanup) => cstr!(
+                "{retired}; first editor LSP request failed: {first_error}; editor LSP session retirement also failed: {cleanup}"
+            ),
+            None => cstr!("{retired}; first editor LSP request failed: {first_error}"),
+        });
+    }
     match retry(state) {
         Ok(output) => Ok(output),
         Err(retry_error) => Err(match recovery_error {
@@ -154,3 +163,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod retirement_tests;

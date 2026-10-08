@@ -4,16 +4,18 @@
 //! code using OXC's formatter (oxfmt).
 
 mod block_identity;
+mod expression_wrapper;
 mod format;
 
 use crate::error::FormatError;
 use crate::options::FormatOptions;
 use oxc_allocator::Allocator as OxcAllocator;
 use oxc_formatter::{QuoteStyle, format_program, parse_for_format};
-use oxc_span::SourceType;
+use oxc_span::{FileExtension, SourceType};
 use vize_l0::{Allocator, String, ToCompactString};
 
 pub(crate) use block_identity::format_sfc_script_content_stable;
+pub(crate) use expression_wrapper::FormattedExpression;
 
 const MAX_SCRIPT_STABILIZATION_PASSES: usize = 6;
 
@@ -54,13 +56,14 @@ pub(crate) fn format_script_content_stable(
         source_type,
         sort_imports,
     )?;
-    // Skip the second (idempotence) pass when the caller only needs change
-    // detection (`fmt --check`), or when the first pass was already a no-op:
-    // the input is then a fixed point, so re-formatting cannot change it.
-    if options.skip_script_stabilization || current.trim_end() == source.trim_end() {
+    if options.skip_script_stabilization {
         return Ok(current);
     }
-
+    let mut current_trimmed_len = current.trim_end().len();
+    let source_trimmed = source.trim_end();
+    if source_trimmed.len() == current_trimmed_len && current.starts_with(source_trimmed) {
+        return Ok(current);
+    }
     for _ in 1..MAX_SCRIPT_STABILIZATION_PASSES {
         let next = match format::format_script_content_with_sort_imports(
             current.as_str(),
@@ -72,12 +75,13 @@ pub(crate) fn format_script_content_stable(
             Ok(next) => next,
             Err(_) => return Ok(current),
         };
-        if next.trim_end() == current.trim_end() {
+        let next_trimmed = next.trim_end();
+        if next_trimmed.len() == current_trimmed_len && current.starts_with(next_trimmed) {
             return Ok(next);
         }
+        current_trimmed_len = next_trimmed.len();
         current = next;
     }
-
     Ok(current)
 }
 
@@ -97,6 +101,7 @@ pub(crate) fn format_ts_script_content_stable(
 
 pub(crate) fn source_type_for_script_lang(lang: Option<&str>) -> SourceType {
     match lang {
+        Some("ts") => SourceType::from(FileExtension::Ts).with_module(true),
         Some("jsx") => SourceType::jsx().with_module(true),
         Some("tsx") => SourceType::tsx().with_module(true),
         _ => SourceType::ts().with_module(true),
@@ -117,7 +122,7 @@ thread_local! {
 /// Format a JS expression (for use in template directive values and interpolations).
 /// Returns None if the expression cannot be parsed/formatted.
 pub fn format_js_expression(expr: &str, options: &FormatOptions) -> Option<String> {
-    format_js_expression_with_quote_style(expr, options, None)
+    format_js_expression_with_quote_style(expr, options, None).map(|formatted| formatted.code)
 }
 
 /// HTML attributes use double quotes independently of the script quote option.
@@ -126,17 +131,27 @@ pub(crate) fn format_js_expression_in_attribute(
     expr: &str,
     options: &FormatOptions,
 ) -> Option<String> {
+    format_js_expression_in_attribute_with_layout(expr, options).map(|formatted| formatted.code)
+}
+
+pub(crate) fn format_js_expression_in_attribute_with_layout(
+    expr: &str,
+    options: &FormatOptions,
+) -> Option<FormattedExpression> {
     format_js_expression_with_quote_style(expr, options, Some(QuoteStyle::Single))
 }
 
-fn format_js_expression_with_quote_style(
+pub(crate) fn format_js_expression_with_quote_style(
     expr: &str,
     options: &FormatOptions,
     quote_style: Option<QuoteStyle>,
-) -> Option<String> {
+) -> Option<FormattedExpression> {
     let trimmed = expr.trim();
     if trimmed.is_empty() {
-        return Some(String::default());
+        return Some(FormattedExpression {
+            code: String::default(),
+            retained_bare_sequence: false,
+        });
     }
 
     EXPR_SCRATCH.with(|cell| {
@@ -175,13 +190,14 @@ fn format_js_expression_with_quote_style(
         let formatted = formatted.strip_suffix(';').unwrap_or(formatted);
         let inner = formatted.strip_prefix("void ").unwrap_or(formatted);
 
-        // Strip outer parens if the formatter kept them
-        let inner = inner
-            .strip_prefix('(')
-            .and_then(|rest| rest.strip_suffix(')'))
-            .unwrap_or(inner);
+        // The retained AST distinguishes the wrapper from authored call/member
+        // parentheses and sequences whose grouping Vue consumers require.
+        let inner = expression_wrapper::unwrap_argument(inner, &parsed.program, trimmed)?;
 
-        Some(inner.trim().to_compact_string())
+        Some(FormattedExpression {
+            code: inner.text.trim().to_compact_string(),
+            retained_bare_sequence: inner.retained_bare_sequence,
+        })
     })
 }
 

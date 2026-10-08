@@ -1,4 +1,4 @@
-//! Project-root, `tsconfig`, declaration-output, and miscellaneous path
+//! Project-root, TypeScript/JavaScript config, declaration-output, and path
 //! resolution helpers for the `check` runner.
 
 use std::path::{Path, PathBuf};
@@ -52,7 +52,7 @@ pub(super) fn resolve_project_root(
         } else {
             cwd.join(tsconfig)
         };
-        let tsconfig_dir = vize_l0::path::canonicalize_non_verbatim(&tsconfig_path)
+        let tsconfig_dir = vize_carton::path::canonicalize_non_verbatim(&tsconfig_path)
             .parent()
             .map(|parent| parent.to_path_buf())
             .unwrap_or_else(|| cwd.to_path_buf());
@@ -89,29 +89,18 @@ pub(super) fn resolve_tsconfig_path(
         } else {
             cwd.join(tsconfig)
         };
-        return Some(vize_l0::path::canonicalize_non_verbatim(&tsconfig_path));
+        return Some(vize_carton::path::canonicalize_non_verbatim(&tsconfig_path));
     }
 
-    let candidate = project_root.join("tsconfig.json");
-    if candidate.exists() {
-        return Some(candidate);
-    }
-
-    for file in files {
-        let Some(root) = find_nearest_tsconfig_dir(file) else {
-            continue;
-        };
-        let candidate = root.join("tsconfig.json");
-        if candidate.exists() {
-            return Some(candidate);
-        }
-    }
-
-    None
+    project_config_path(project_root).or_else(|| {
+        files
+            .iter()
+            .find_map(|file| find_nearest_tsconfig_path(file))
+    })
 }
 
 pub(super) fn explicit_input_root(project_root: &Path, cwd: &Path) -> PathBuf {
-    let cwd = vize_l0::path::canonicalize_non_verbatim(cwd);
+    let cwd = vize_carton::path::canonicalize_non_verbatim(cwd);
     if project_root.starts_with(&cwd) {
         cwd
     } else {
@@ -175,9 +164,9 @@ pub(super) fn validate_inputs_in_root(
 }
 
 fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<(), String> {
-    let root = vize_l0::path::canonicalize_non_verbatim(root);
+    let root = vize_carton::path::canonicalize_non_verbatim(root);
     for file in files {
-        let path = vize_l0::path::canonicalize_non_verbatim(file);
+        let path = vize_carton::path::canonicalize_non_verbatim(file);
         if !path.starts_with(&root) {
             return Err(vize_l0::cstr!(
                 "explicit check input `{}` is outside project root `{}`.",
@@ -189,22 +178,11 @@ fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<()
     Ok(())
 }
 
-pub(super) fn find_nearest_tsconfig_dir(path: &Path) -> Option<PathBuf> {
-    let mut current = if path.is_dir() {
-        Some(path)
-    } else {
-        path.parent()
-    };
+mod config;
 
-    while let Some(dir) = current {
-        if dir.join("tsconfig.json").exists() {
-            return Some(dir.to_path_buf());
-        }
-        current = dir.parent();
-    }
-
-    None
-}
+pub(super) use config::{
+    find_nearest_tsconfig_dir, find_nearest_tsconfig_path, project_config_path,
+};
 
 fn resolve_project_root_from_files(files: &[PathBuf]) -> Option<PathBuf> {
     let common = common_file_parent(files)?;

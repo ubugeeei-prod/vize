@@ -160,6 +160,7 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) summary: &'a Croquis,
     pub(super) template_ast: Option<&'a vize_relief::RootNode<'template>>,
     pub(super) template_source: Option<&'a str>,
+    pub(super) model_modifiers: &'a crate::virtual_ts::expressions::ModelModifierBindings,
     pub(super) children_map: &'a FxHashMap<u32, Vec<ScopeId>>,
     pub(super) vfor_enclosing_guards: &'a FxHashMap<u32, String>,
     pub(super) template_binding_access: &'a TemplateBindingAccess,
@@ -172,6 +173,8 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) component_binding_check: ComponentBindingCheck<'a>,
     pub(super) legacy_vue2: bool,
     pub(super) check_unknown_props: bool,
+    pub(super) check_unknown_fallthrough_props: bool,
+    pub(super) strict_component_attrs: bool,
     pub(super) experimental_strict_slot_children: bool,
     /// Starts of the component usages that are this component's fallthrough
     /// roots under `checkRequiredFallthroughAttributes`: their required props
@@ -189,5 +192,6 @@ impl<'a> ComponentPropsContext<'a, '_> {
             self.template_offset,
             &self.summary.scopes,
         )
+        .with_model_modifiers(self.model_modifiers)
     }
 }

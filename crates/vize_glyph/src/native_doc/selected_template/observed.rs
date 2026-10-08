@@ -3,7 +3,8 @@
 use std::vec::Vec as OwnedVec;
 use vize_l0::{Allocator, Vec};
 use vize_l1::markup::{
-    NativeAttributeExpression, NativeInterpolationOperand, NativeTemplateComponent,
+    NativeAttributeBindingExpression, NativeAttributeExpression, NativeInterpolationOperand,
+    NativeTemplateComponent,
 };
 
 use super::super::template::Cursor;
@@ -12,8 +13,11 @@ use super::{
     Builder, Doc, NativeTemplateValuePolicy, TemplateRefusal, ValuePolicy, check_selected,
 };
 
+#[path = "observed/binding.rs"]
+mod binding;
 #[path = "observed/failure.rs"]
 mod failure;
+pub use binding::{ObservedNativeTemplateBindingFailureParts, ObservedNativeTemplateBindingParts};
 pub use failure::{
     ObservedNativeTemplateFailure, ObservedNativeTemplateFailureParts,
     ObservedNativeTemplateRefusal,
@@ -35,6 +39,7 @@ pub struct ObservedNativeTemplateDocument<'p, 'a> {
     original: &'p NativeTemplateComponent<'a>,
     operands: OwnedVec<NativeInterpolationOperand<'a>>,
     attributes: OwnedVec<NativeAttributeExpression<'a>>,
+    bindings: OwnedVec<NativeAttributeBindingExpression<'a>>,
     document: Doc<'a>,
 }
 
@@ -45,6 +50,7 @@ impl core::fmt::Debug for ObservedNativeTemplateDocument<'_, '_> {
             .field("original", &self.original)
             .field("operand_count", &self.operands.len())
             .field("attribute_count", &self.attributes.len())
+            .field("binding_count", &self.bindings.len())
             .field("document", &self.document)
             .finish()
     }
@@ -60,6 +66,9 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
     pub fn attribute_operands(&self) -> &[NativeAttributeExpression<'a>] {
         &self.attributes
     }
+    pub fn binding_operands(&self) -> &[NativeAttributeBindingExpression<'a>] {
+        &self.bindings
+    }
     pub(in crate::native_doc) fn into_observations(self) -> (Observed<'a>, Doc<'a>) {
         (
             Observed {
@@ -67,6 +76,8 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
                 failure: None,
                 attributes: self.attributes,
                 attribute_failure: None,
+                bindings: self.bindings,
+                binding_failure: None,
             },
             self.document,
         )
@@ -74,8 +85,10 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
     pub fn document(&self) -> &Doc<'a> {
         &self.document
     }
-    /// Transfer all genuine observations with the same selection borrow and Doc.
+    /// Transfer interpolation/conditional observations with the same selection and Doc.
     /// The independent owned vectors preserve their own original event order.
+    /// This preserves the existing four-part schema and releases binding custody;
+    /// retain the owner or use `into_binding_parts` to transfer all three families.
     pub fn into_full_parts(
         self,
     ) -> (
@@ -86,9 +99,19 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
     ) {
         (self.original, self.operands, self.attributes, self.document)
     }
+    /// Transfer all genuine observations with the same selection borrow and Doc.
+    pub fn into_binding_parts(self) -> ObservedNativeTemplateBindingParts<'p, 'a> {
+        ObservedNativeTemplateBindingParts {
+            original: self.original,
+            operands: self.operands,
+            attributes: self.attributes,
+            bindings: self.bindings,
+            document: self.document,
+        }
+    }
     /// Preserve the original interpolation-only transfer contract.
-    /// This releases conditional attribute observations; retain the whole owner
-    /// or use `into_full_parts` when those observations must survive.
+    /// This releases conditional and binding observations; retain the whole owner
+    /// or use `into_binding_parts` when all observations must survive.
     /// The transferred Doc alone does not retain the selection borrow or grant
     /// enclosing-SFC admission; its text/composition borrow authored source/arena.
     pub fn into_parts(
@@ -135,7 +158,9 @@ pub fn observed_native_template_document<'p, 'a>(
 /// opaque/strict routes add no value parse or preliminary scan. The explicit
 /// conditional policy uses each real L1 head once for name layout and its one
 /// original value observation, parked before quote/admission/Doc checks. Other
-/// valued directives still refuse. The failure keeps both observed prefixes.
+/// valued directives still refuse. The combined conditional/static binding policy
+/// keeps binding owners distinct and consumes each sealed static selection once.
+/// A first failure keeps all observed prefixes and the actual observer failure.
 pub fn observed_native_template_document_with_policy<'p, 'a>(
     original: &'p NativeTemplateComponent<'a>,
     allocator: &'a Allocator,
@@ -182,6 +207,12 @@ pub fn observed_native_template_document_with_policy<'p, 'a>(
                 index: *index,
                 kind: failure.kind(),
             }
+        } else if let Some((span, index, failure)) = &observations.binding_failure {
+            ObservedNativeTemplateRefusal::Binding {
+                span: *span,
+                index: *index,
+                kind: failure.kind(),
+            }
         } else if let Some(failure) = &observations.failure {
             ObservedNativeTemplateRefusal::Interpolation {
                 offset,
@@ -201,6 +232,7 @@ pub fn observed_native_template_document_with_policy<'p, 'a>(
         original,
         operands: observations.operands,
         attributes: observations.attributes,
+        bindings: observations.bindings,
         document: Doc::concat(parts),
     })
 }

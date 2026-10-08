@@ -1,0 +1,8 @@
+<template>
+<Dialog>
+  <template #title>T</template>
+
+  <!-- note -->
+  <Confirm />
+</Dialog>
+</template>

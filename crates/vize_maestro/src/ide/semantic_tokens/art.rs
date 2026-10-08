@@ -165,11 +165,11 @@ fn collect_tag_tokens(
     for (start, _) in slice.match_indices(tag.open) {
         let next_pos = start + tag.open.len();
         if matches!(bytes.get(next_pos), Some(b' ' | b'\n' | b'\t' | b'>')) {
-            let (line, col) = line_index.line_col(range_start + start);
+            let (line, col) = line_index.line_col(range_start + start + 1);
             tokens.push(AbsoluteToken {
                 line,
                 start: col,
-                length: tag.open.len() as u32,
+                length: (tag.open.len() - 1) as u32,
                 token_type: tag.token_type as u32,
                 modifiers: TokenModifier::encode(&[TokenModifier::Declaration]),
             });
@@ -177,11 +177,11 @@ fn collect_tag_tokens(
     }
 
     for (start, _) in slice.match_indices(tag.close) {
-        let (line, col) = line_index.line_col(range_start + start);
+        let (line, col) = line_index.line_col(range_start + start + 2);
         tokens.push(AbsoluteToken {
             line,
             start: col,
-            length: tag.close.len() as u32,
+            length: (tag.close.len() - 3) as u32,
             token_type: tag.token_type as u32,
             modifiers: 0,
         });

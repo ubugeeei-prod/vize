@@ -1,0 +1,128 @@
+[
+  {
+    "name": "empty",
+    "input": "empty.wire",
+    "inputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout": "empty.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 0,
+    "stderr": ""
+  },
+  {
+    "name": "fragmented-and-concatenated",
+    "input": "fragmented-and-concatenated.wire",
+    "inputSha256": "2d651d804827557b3bea09c23e3a5cb40080a91e8b9634e278e16cd88cb8ca16",
+    "stdout": "fragmented-and-concatenated.response",
+    "stdoutSha256": "2b6978ec0aa53a8e95ce5e8899310ab2aadadab9ddd3b07c41478f8d8d50bd63",
+    "status": 0,
+    "stderr": ""
+  },
+  {
+    "name": "exact-header-boundary",
+    "input": "exact-header-boundary.wire",
+    "inputSha256": "07f3ef53a44079cc660ef426c69b59486cedec56b73fa6be832f32873e067f2e",
+    "stdout": "exact-header-boundary.response",
+    "stdoutSha256": "303dbf233dad9d689b53f1ce05202b1a6f345874a254bda86f9a24e694a1b21a",
+    "status": 0,
+    "stderr": ""
+  },
+  {
+    "name": "single-oversized-header",
+    "input": "single-oversized-header.wire",
+    "inputSha256": "e5c8309afda18ec4ec225ada92dab2d5768f7d845d8cebf2b9968392a6bfd6de",
+    "stdout": "single-oversized-header.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 1,
+    "stderr": "vize content-mapper: content-mapper headers exceed 8 KiB\n"
+  },
+  {
+    "name": "aggregate-oversized-headers",
+    "input": "aggregate-oversized-headers.wire",
+    "inputSha256": "07c0d251c14f6d262c4eff3b624e243062542aab4410ab9633fe29b2c1d69cee",
+    "stdout": "aggregate-oversized-headers.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 1,
+    "stderr": "vize content-mapper: content-mapper headers exceed 8 KiB\n"
+  },
+  {
+    "name": "one-byte-over-boundary",
+    "input": "one-byte-over-boundary.wire",
+    "inputSha256": "96c6ceb4373ce15e9f20670686bbdfb47b8198b259fb942e54058e9313b9b1f7",
+    "stdout": "one-byte-over-boundary.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 1,
+    "stderr": "vize content-mapper: content-mapper headers exceed 8 KiB\n"
+  },
+  {
+    "name": "equal-duplicate-length",
+    "input": "equal-duplicate-length.wire",
+    "inputSha256": "8630fdaf33911db448af7fb14a1fe704c6d3fe91510a08051195172bf52b2944",
+    "stdout": "equal-duplicate-length.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 1,
+    "stderr": "vize content-mapper: duplicate Content-Length header\n"
+  },
+  {
+    "name": "mixed-case-conflicting-length",
+    "input": "mixed-case-conflicting-length.wire",
+    "inputSha256": "03555364a16f860054a528873ac02fedace47307b64630a60295d09d3cfa0f54",
+    "stdout": "mixed-case-conflicting-length.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 1,
+    "stderr": "vize content-mapper: duplicate Content-Length header\n"
+  },
+  {
+    "name": "missing-length",
+    "input": "missing-length.wire",
+    "inputSha256": "4e3f5b2315153c438947c1fe308aa7a5a65da715b3350d5e9df8d015582745f5",
+    "stdout": "missing-length.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 1,
+    "stderr": "vize content-mapper: missing Content-Length header\n"
+  },
+  {
+    "name": "invalid-length",
+    "input": "invalid-length.wire",
+    "inputSha256": "48e63818c0bc1d35ef49c4ac1cb7a2e90bd5b5c11c08729647936ec20617554a",
+    "stdout": "invalid-length.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 1,
+    "stderr": "vize content-mapper: invalid Content-Length\n"
+  },
+  {
+    "name": "truncated-headers",
+    "input": "truncated-headers.wire",
+    "inputSha256": "2d0fb1d8ad49423c5a689e7f3203ce2b8bad3374dcea0b014065301575a5393c",
+    "stdout": "truncated-headers.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 1,
+    "stderr": "vize content-mapper: EOF inside content-mapper headers\n"
+  },
+  {
+    "name": "truncated-body",
+    "input": "truncated-body.wire",
+    "inputSha256": "0b71ed2640e0b0de1ce5735f3e30921a3147c5a7216b9307f8317edb7f490db4",
+    "stdout": "truncated-body.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 1,
+    "stderr": "vize content-mapper: failed to fill whole buffer\n"
+  },
+  {
+    "name": "oversized-body",
+    "input": "oversized-body.wire",
+    "inputSha256": "0a6c5a81396473de92d40ed8041758d2430d8950fd1d973e1e8092d732d5bbb2",
+    "stdout": "oversized-body.response",
+    "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "status": 1,
+    "stderr": "vize content-mapper: content-mapper message exceeds 64 MiB\n"
+  },
+  {
+    "name": "valid-then-broken",
+    "input": "valid-then-broken.wire",
+    "inputSha256": "63563a9456890457a773cbdba285f56e86449bd847fcbcc9aa3e769ade4ffcde",
+    "stdout": "valid-then-broken.response",
+    "stdoutSha256": "303dbf233dad9d689b53f1ce05202b1a6f345874a254bda86f9a24e694a1b21a",
+    "status": 1,
+    "stderr": "vize content-mapper: duplicate Content-Length header\n"
+  }
+]

@@ -1,0 +1,17 @@
+import { fileURLToPath } from "node:url";
+import { defineNuxtConfig } from "nuxt/config";
+
+export default defineNuxtConfig({
+  compatibilityDate: "2025-07-15",
+  srcDir: "src/",
+  modules: process.env.USE_VIZE === "1" ? ["@vizejs/nuxt"] : [],
+  vize: { lint: false, musea: false },
+  alias: {
+    "#pricing": fileURLToPath(new URL("../../packages/pricing/src/index.js", import.meta.url)),
+  },
+  imports: { dirs: ["composables"] },
+  typescript: {
+    strict: true,
+    tsConfig: { compilerOptions: { allowJs: true, checkJs: true, noEmit: true, types: ["node"] } },
+  },
+});

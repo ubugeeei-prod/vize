@@ -41,6 +41,7 @@ fn run() -> Result<(), String> {
         "zed/languages/art-vue/outline.scm",
         "zed/languages/art-vue/overrides.scm",
         "zed/src/lib.rs",
+        "zed/src/initialization_options.rs",
     ];
     editor_archive::require_entries(
         &archive,
@@ -69,6 +70,7 @@ fn run() -> Result<(), String> {
             "zed/languages/art-vue/overrides.scm",
             "zed/src/",
             "zed/src/lib.rs",
+            "zed/src/initialization_options.rs",
         ],
         "Zed archive",
     )?;
@@ -89,6 +91,7 @@ fn run() -> Result<(), String> {
     let extension = editor_archive::read_tar_text(&archive, "zed/extension.toml")?;
     let cargo = editor_archive::read_tar_text(&archive, "zed/Cargo.toml")?;
     let lib = editor_archive::read_tar_text(&archive, "zed/src/lib.rs")?;
+    let profile = editor_archive::read_tar_text(&archive, "zed/src/initialization_options.rs")?;
     let art_config = editor_archive::read_tar_text(&archive, "zed/languages/art-vue/config.toml")?;
     let injections =
         editor_archive::read_tar_text(&archive, "zed/languages/art-vue/injections.scm")?;
@@ -121,10 +124,10 @@ fn run() -> Result<(), String> {
         (&lib, r#"unwrap_or_else(|| vec!["lsp".to_string()])"#),
         (&lib, "language_server_initialization_options"),
         (&lib, "recommended_initialization_options"),
-        (&lib, r#""editor": true"#),
-        (&lib, r#""ecosystem": true"#),
-        (&lib, r#""lint": true"#),
-        (&lib, r#""typecheck": true"#),
+        (&profile, r#""editor": true"#),
+        (&profile, r#""ecosystem": true"#),
+        (&profile, r#""lint": true"#),
+        (&profile, r#""typecheck": true"#),
         (&lib, "language_server_workspace_configuration"),
         (&lib, "zed::register_extension!(VizeExtension);"),
         (&art_config, r#"name = "Art Vue""#),

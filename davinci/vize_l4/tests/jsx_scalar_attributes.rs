@@ -188,30 +188,31 @@ fn mixed_duplicate_and_attribute_comment_forms_keep_exact_target_refusals()
 #[test]
 fn genuine_tsx_attribute_owner_does_not_gain_runtime_typescript_erasure() -> Result<(), &'static str>
 {
-    let arena = Allocator::default();
-    let typed = "export function render(label: string){return <div title={label}/>;}";
-    assert!(analyze(&arena, typed, SourceType::tsx().with_module(true)).is_err());
-    let source = "export function render(label){return <div title={label}/>;}";
-    let analysis = analyze(&arena, source, SourceType::tsx().with_module(true))?;
-    assert!(
-        analysis
-            .decisions()
-            .any(|row| row.kind() == Kind::ExpressionAttribute { name: "title" })
-    );
-    assert_eq!(
-        emit_js_module::<Recorded>(&analysis)
+    for source in [
+        "export function render(label: string){return <div title={label}/>;}",
+        "export function render(label){return <div title={label}/>;}",
+    ] {
+        let arena = Allocator::default();
+        let analysis = analyze(&arena, source, SourceType::tsx().with_module(true))?;
+        assert!(
+            analysis
+                .decisions()
+                .any(|row| row.kind() == Kind::ExpressionAttribute { name: "title" })
+        );
+        let recorded = emit_js_module::<Recorded>(&analysis)
             .err()
-            .ok_or("TS refusal")?
-            .kind,
-        Error::Typescript
-    );
-    assert_eq!(
-        emit_js_module::<NoLinks>(&analysis)
-            .err()
-            .ok_or("plain TS refusal")?
-            .kind,
-        Error::Typescript
-    );
-    assert!(analysis.owner().file().is_complete());
+            .ok_or("TS refusal")?;
+        assert_eq!(recorded.kind, Error::Typescript);
+        assert_eq!(recorded.span.start, 0);
+        assert_eq!(recorded.span.end as usize, source.len());
+        assert_eq!(
+            emit_js_module::<NoLinks>(&analysis)
+                .err()
+                .ok_or("plain TS refusal")?,
+            recorded
+        );
+        assert!(analysis.owner().file().is_complete());
+        assert_eq!(analysis.owner().file().artifact().source(), source);
+    }
     Ok(())
 }

@@ -8,6 +8,7 @@ use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, profile};
 
 use super::IdentifierRef;
+use walk::facts::IdentifierWalk;
 
 /// OXC-based identifier extraction for expressions with object literals.
 #[inline]
@@ -31,19 +32,36 @@ pub(super) fn extract_identifiers_oxc_ast(expr: &str) -> Vec<CompactString> {
 pub(super) fn extract_identifiers_retained_ast(
     ast: &oxc_ast::ast::Expression<'_>,
 ) -> Vec<CompactString> {
-    let mut identifiers = Vec::with_capacity(4);
-    profile!(
-        "croquis.helpers.identifiers.walk_expr",
-        walk::walk_expr(ast, &mut identifiers)
-    );
-    identifiers
+    extract_identifier_refs_retained_ast(ast)
         .into_iter()
         .map(|identifier| identifier.name)
         .collect()
 }
 
+pub(super) fn extract_identifier_refs_retained_ast(
+    ast: &oxc_ast::ast::Expression<'_>,
+) -> Vec<IdentifierRef> {
+    retained_references(ast, false).0
+}
+
+pub(super) fn retained_references(
+    ast: &Expression<'_>,
+    demanded: bool,
+) -> (Vec<IdentifierRef>, bool) {
+    let mut identifiers = IdentifierWalk::new(demanded);
+    profile!(
+        "croquis.helpers.identifiers.walk_expr",
+        walk::walk_expr(ast, &mut identifiers)
+    );
+    (identifiers.values, identifiers.complete)
+}
+
 #[inline]
 pub(super) fn extract_identifier_refs_oxc_ast(expr: &str) -> Vec<IdentifierRef> {
+    parsed_references(expr, false).0
+}
+
+pub(super) fn parsed_references(expr: &str, demanded: bool) -> (Vec<IdentifierRef>, bool) {
     let allocator = Allocator::default();
     let source_type = SourceType::from_path("expr.ts").unwrap_or_default();
 
@@ -54,22 +72,20 @@ pub(super) fn extract_identifier_refs_oxc_ast(expr: &str) -> Vec<IdentifierRef> 
     let parsed_expr = match ret {
         Ok(expr) => expr,
         Err(_) => {
-            return extract_identifier_refs_oxc_program(expr, source_type).unwrap_or_default();
+            return extract_identifier_refs_oxc_program(expr, source_type, demanded)
+                .unwrap_or_default();
         }
     };
 
     if !expression_consumes_source(expr, &parsed_expr)
-        && let Some(identifiers) = extract_identifier_refs_oxc_program(expr, source_type)
+        && let Some(identifiers) = extract_identifier_refs_oxc_program(expr, source_type, demanded)
     {
         return identifiers;
     }
 
-    let mut identifiers = Vec::with_capacity(4);
-    profile!(
-        "croquis.helpers.identifiers.walk_expr",
-        walk::walk_expr(&parsed_expr, &mut identifiers)
-    );
-    identifiers
+    let mut references = retained_references(&parsed_expr, demanded);
+    references.1 &= !demanded || expression_consumes_source(expr, &parsed_expr);
+    references
 }
 
 fn expression_consumes_source(expr: &str, parsed_expr: &Expression<'_>) -> bool {
@@ -81,7 +97,8 @@ fn expression_consumes_source(expr: &str, parsed_expr: &Expression<'_>) -> bool 
 fn extract_identifier_refs_oxc_program(
     expr: &str,
     source_type: SourceType,
-) -> Option<Vec<IdentifierRef>> {
+    demanded: bool,
+) -> Option<(Vec<IdentifierRef>, bool)> {
     let allocator = Allocator::default();
     let ret = profile!(
         "croquis.helpers.identifiers.oxc_parse_program",
@@ -90,6 +107,7 @@ fn extract_identifier_refs_oxc_program(
     if ret.panicked {
         return None;
     }
+    let syntax_complete = ret.diagnostics.is_empty();
 
     // A missing member name still reads its receiver. Reuse the same bounded,
     // byte-preserving analysis view as scripts so incomplete template edits
@@ -98,6 +116,7 @@ fn extract_identifier_refs_oxc_program(
     // A statement body owns lexical bindings (loops, catches, functions,
     // classes, enums). Only unresolved value references reach template scope.
     let built = SemanticBuilder::new()
+        .with_check_syntax_error(demanded)
         .with_build_nodes(true)
         .build(&ret.program);
     let semantic = &built.semantic;
@@ -116,7 +135,13 @@ fn extract_identifier_refs_oxc_program(
         })
         .collect();
     identifiers.sort_unstable_by_key(|reference| reference.offset);
-    Some(identifiers)
+    let complete = !demanded
+        || (syntax_complete
+            && built.diagnostics.is_empty()
+            && !scoping
+                .scope_descendants_from_root()
+                .any(|scope| scoping.scope_flags(scope).contains_direct_eval()));
+    Some((identifiers, complete))
 }
 
 #[cfg(test)]

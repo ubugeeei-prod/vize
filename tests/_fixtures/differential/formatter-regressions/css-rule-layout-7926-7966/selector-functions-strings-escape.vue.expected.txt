@@ -1,0 +1,11 @@
+<template>
+  <div class="a b c 次" data-label="a,b"></div>
+</template>
+
+<style scoped>
+:is(.a, .b),
+[data-label="a,b"],
+.comma\,name {
+  color: red;
+}
+</style>

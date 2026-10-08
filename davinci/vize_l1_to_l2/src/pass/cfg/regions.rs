@@ -84,9 +84,10 @@ fn visit_region_guarded(
 
 /// Enter a region at `depth`, recording the deepest depth reached.
 fn visit_nested(walk: &mut PageWalk, ops: &[Op<'_>], depth: u32, facts: &mut ComplexityFacts) {
-    if !ops.is_empty() {
-        facts.max_nesting = facts.max_nesting.max(depth);
+    if ops.is_empty() {
+        return;
     }
+    facts.max_nesting = facts.max_nesting.max(depth);
     visit_region(walk, ops, depth, facts);
 }
 

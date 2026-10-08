@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Consumer from './Consumer.vue'
+import Provider from './Provider.vue'
+</script>
+
+<template>
+  <Provider>
+    <template #body><Consumer /></template>
+  </Provider>
+</template>

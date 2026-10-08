@@ -54,6 +54,8 @@ pub(super) fn process_inline_handler(
             return RewriteResult {
                 code,
                 used_unref: false,
+                used_is_ref: false,
+                has_identifier_references: true,
                 parse_error: false,
             };
         }
@@ -78,6 +80,8 @@ pub(super) fn process_inline_handler(
         // The wrap is the shipped lane's `$event => (…)`; the helper the
         // rewritten *body* needed is still the transform's registration.
         used_unref: rewritten.used_unref,
+        used_is_ref: rewritten.used_is_ref,
+        has_identifier_references: rewritten.has_identifier_references,
         parse_error: rewritten.parse_error,
     }
 }
@@ -99,6 +103,8 @@ fn process(
             String::from(content)
         },
         used_unref: false,
+        used_is_ref: false,
+        has_identifier_references: false,
         parse_error: false,
     }
 }

@@ -4,12 +4,16 @@
 //! in Vue SFC `<style>` blocks using lightningcss for parsing and printing.
 
 mod authored;
+mod blank_lines;
 #[path = "style_chunk.rs"]
 mod chunk;
 mod color;
 mod comment_scan;
+mod declaration;
 mod number;
+mod rule_layout;
 mod stabilization;
+mod values;
 
 use chunk::{contains_comment, format_chunk};
 

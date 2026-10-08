@@ -1,0 +1,121 @@
+# Original kebab and reactive rename report qualification
+
+Owning reports: [#7994](https://github.com/ubugeeei-prod/vize/issues/7994) and
+[#7996](https://github.com/ubugeeei-prod/vize/issues/7996).
+
+The original #7994 supplemental three-component Panel/Wrapper/App report and
+#7996 multiline `checked: boolean` Child with literal Parent argument remained
+separate acceptance obligations after the synthetic mixed-role and recursive
+controls. This is a corpus qualification gap, not evidence of a current product
+failure. Retain the complete original comments, exact code-fence source bytes
+and independently authored full repaired files before any new native query.
+
+For #7994, the original Wrapper local origin selects exactly its binding and
+Panel shorthand value. Rename expands the binding to `isOpened: visible` and
+the directive to `:is-opened="visible"`, preserving all Panel/App bytes.
+The original App Panel public origin selects exactly Panel's declaration and
+`v-if`, Wrapper's Panel argument and App's Panel argument. Rename expands the
+Wrapper directive to `:visible="isOpened"`, preserving Wrapper's independent
+public/local declaration, App's Wrapper argument and both heading sites.
+Independent App Wrapper public-prop and Wrapper heading controls retain every
+opposite component and value site.
+
+For #7996, either original public origin selects the Child destructure property
+and type key plus Parent's argument. Rename expands to `{ active: checked }`,
+preserving the local ternary and Parent's literal `true`. Local binding and
+template controls instead select only the binding/value identity, expand to
+`{ checked: active }` and preserve the public type key and complete Parent.
+
+Sixteen mandatory source-built stdio sessions exercise all eight origins with
+LF and CRLF. Each expected transaction includes the complete references and
+WorkspaceEdit, whole repaired source/disk bytes for every file and empty
+version-2 post-edit diagnostics. Apply actual returned edits; retain duplicate,
+zero-length, truncated, extra and refusal responses as exact assertion failures.
+Preserve that complete actual observation before separately installing the
+independently authored repaired files and asserting every disk byte and complete
+empty version-3 diagnostic array in the same process. These repair controls do
+not replace or weaken any version-2 or transaction assertion.
+Reuse the existing pinned Vue/native fixture without a skip path or extra
+native pipeline stage. All prior report files, routing/scope controls, mixed
+24, recursive 40 and reactive 32 sessions remain unchanged.
+
+These original-report controls add no production behavior. The existing #8188
+[scoped declaration correction](./2026-10-08-reactive-props-rename-identity.md#composed-native-regression-and-scoped-declaration-projections)
+separately repairs the composed model/package/event regression. Fresh
+exact-source Actions, genuine protected native execution with `VIZE_TEST_REQUIRE_TSGO=1` and no disable
+override, full inherited suites and budgets, actual signed merge and installed
+release acceptance remain required. Keep both issues open until their original
+cases genuinely pass and merge; public release qualification remains separate.
+
+## Original native reference geometry correction
+
+The first actual original-report producer at `3cb00e5e21` compiled every new
+control and captured all 16 complete transactions. Four #7994 sessions failed:
+Wrapper local references added an empty `9:14..14` range, while App Panel public
+references added truncated `9:5..13` alongside the correct full `9:5..14` range,
+each LF/CRLF. All 16 full WorkspaceEdits, applied source/disk texts, version-2
+diagnostics and independent version-3 golden repairs matched; the other 12
+complete transactions matched too. Panel's `v-if` is present. These exact
+packets and the complete [failed worker log](https://github.com/ubugeeei-prod/vize/actions/runs/37673937304/job/112975443433)
+preserve the independent pre-query goldens. This source is unqualified.
+
+For parser-classified components, a parser-marked same-name binding owns the
+authored static argument, even when its synthesized camelized expression has an
+empty location. Record that argument's complete source location in the template
+expression. Component prop
+value emission previously searched the raw attribute for `isOpened`, which is
+absent from `:is-opened`; lacking a value range, the props literal lost both
+key/value subspans and mapped through the broad fallback. For a retained dynamic
+static prop with no authored assignment, permit its same-name value to use the
+argument range only when the authored argument exactly names that prop and
+camelizes to the retained value. Preserve the normal authored-value path,
+dynamic-argument refusal, prior rename ownership guards and all old/new vectors.
+
+This corrects producer geometry before native mapping; no returned reference is
+removed by zero length, spelling or endpoint count. Fresh complete source and
+REQUIRE_TSGO execution must rerun all four failing sessions, the other original
+12, existing reactive/recursive controls and the three old native bodies before
+normal readmission. No prior edit-only success qualifies the reference contract.
+
+## Preserve native check table ownership
+
+Source `c49d8021f8` genuinely passed all 16 complete original-report packets:
+references, WorkspaceEdit, actual source/disk/version-2 diagnostics and the
+independent version-3 repair. Existing 32 reactive/intersection and 40 recursive
+sessions plus three geometry laws also passed through current source workers.
+Those observations remain bound to that exact source and do not qualify a
+successor; optional native model/package/event bodies still need actual full
+execution.
+
+Restrict the expression-location correction to parser-classified component
+nodes with static parser-marked shorthand. Native DOM and slot typed-check
+tables use their original AST expression ranges as join keys; retaining those
+locations preserves their existing check routes. This is a source-ownership
+preservation guard, without an inferred DOM runtime failure or returned-range
+filter. Preserve all independent 16/32/40/three oracles and existing meaningful
+DOM/native controls byte for byte. Before readmission, require one fresh exact
+source full REQUIRE_TSGO execution and normal source Actions, then the new
+protected candidate, actual signed merge and separate release verification.
+
+## Actual original-report source delivery
+
+PR [#8188](https://github.com/ubugeeei-prod/vize/pull/8188) actually merged at
+2026-10-07 22:12:28 UTC as signed
+`177933f33e75af1f696fdc468665e7850025d28b`, independently verified on fresh
+main. Its [exact protected Check](https://github.com/ubugeeei-prod/vize/actions/runs/37692670456)
+passed with current original 16 complete transactions, inherited 32/40 sessions,
+three geometry laws, four native requirement laws, per-unit required
+model/event/package execution and 104 budgets measured three times. Historical
+source and replaced candidate results supply no execution credit.
+
+The original Expected text of #7994/#7996 requires the delivered shorthand
+expansions and inline reactive public/local identity with code that type-checks.
+The source bugs closed after genuine native execution and actual signed merge;
+[paired #7994](https://github.com/ubugeeei-prod/vize/issues/7994#issuecomment-6047945164)
+and [#7996](https://github.com/ubugeeei-prod/vize/issues/7996#issuecomment-6047945636)
+retain the concrete delivery facts. Installed v0.435.1 replay and publication
+remain independent release authority. The configured feature differential job
+uses its declared smoke corpus with `closure_evidence=false`; it provides no
+full-corpus closure authority. Local named type-alias/interface combinations
+are a separate [48-session test-only qualification](./2026-10-08-reactive-named-type-rename-controls.md),
+not an invented original source-bug closure condition.

@@ -2,10 +2,11 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { validateBuildReceipt } from "../../../differential/build-receipt.mjs";
+import { BUILD_RECIPE, validateBuildReceipt } from "../../../differential/build-receipt.mjs";
 import { sha256 } from "../../../differential/harness.mjs";
 import { decodeFrames } from "../../../differential/lsp-wire.ts";
 import type { VerifiedLspLaunch } from "./launch.ts";
+import { validatePublishedLaunch, type VerifiedPublishedLspLaunch } from "./published-launch.ts";
 import { linkSessionSourceOrigins, type SourceWitness } from "./session-source-links.ts";
 
 const MAX_CAPTURE_BYTES = 16 * 1024 * 1024;
@@ -20,7 +21,11 @@ function sourceWitnesses(repoRoot: string, callerStack: string): SourceWitness[]
     if (!frame) continue;
     const absolute = fileURLToPath(frame[1]);
     const relative = path.relative(repoRoot, absolute);
-    if (!relative.startsWith(`tests${path.sep}tooling${path.sep}`)) continue;
+    if (
+      !relative.startsWith(`tests${path.sep}tooling${path.sep}`) &&
+      !relative.startsWith(`tests${path.sep}snapshots${path.sep}`)
+    )
+      continue;
     if (relative.endsWith("session-process.ts") || relative.endsWith("session.ts")) continue;
     witnesses.push({
       path: relative.split(path.sep).join("/"),
@@ -35,7 +40,7 @@ function sourceWitnesses(repoRoot: string, callerStack: string): SourceWitness[]
 /** Passive whole-wire observations are pending evidence, never accepted corpus rows. */
 export class LspSessionCapture {
   readonly directory: string;
-  private readonly launch: VerifiedLspLaunch;
+  private readonly launch: VerifiedLspLaunch | VerifiedPublishedLspLaunch;
   private readonly witnesses: SourceWitness[];
   private readonly sourceOrigins: ReturnType<typeof linkSessionSourceOrigins>;
   private readonly chunks: Record<Stream, Buffer[]> = { client: [], server: [], stderr: [] };
@@ -54,11 +59,12 @@ export class LspSessionCapture {
   }: {
     repoRoot: string;
     outputRoot: string;
-    launch: VerifiedLspLaunch;
+    launch: VerifiedLspLaunch | VerifiedPublishedLspLaunch;
     callerStack: string;
   }) {
     assert.ok(launch, "verified source launch is required for raw observations");
-    validateBuildReceipt(launch.receipt, launch.expected);
+    if ("authority" in launch) validatePublishedLaunch(launch);
+    else validateBuildReceipt(launch.receipt, launch.expected, launch.buildRecipe ?? BUILD_RECIPE);
     const probe = launch.versionProbe;
     assert.ok(probe, "actual source version probe is required for raw observations");
     assert.equal(probe.exitStatus, 0);
@@ -149,7 +155,9 @@ export class LspSessionCapture {
       version: 1,
       state,
       sourceRevision: this.launch.expected.sourceRevision,
-      buildReceipt: this.launch.receipt,
+      ...("authority" in this.launch
+        ? { launchAuthority: this.launch.authority, publicationReceipt: this.launch.receipt }
+        : { buildReceipt: this.launch.receipt }),
       binary: this.launch.expected,
       versionProbe: this.launch.versionProbe,
       argv: ["lsp"],

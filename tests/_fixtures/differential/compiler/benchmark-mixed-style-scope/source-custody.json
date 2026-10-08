@@ -1,0 +1,13 @@
+{
+  "upstream": "https://github.com/pikax/vue-benchmarks",
+  "sourceCommit": "5489aee433cd1054b9d72973457498544da7c467",
+  "path": "scripts/lib/style-feature-gates.mjs",
+  "gitBlob": "c74492077bfc08adb29415b03c718a91eb5cafcd",
+  "moduleSha256": "66ab9cebe78785e83d649bd636e6f3b078c7e554e8c1f08c6b7ac30f4da8e24b",
+  "plantId": "multiple-style-blocks",
+  "sourceSha256": "78c44890f7d99f3716c9291712f962bf5fcf4b09efbe2f020a92b3cd6778d35b",
+  "sourceBytes": 229,
+  "historicalVizeVersion": "0.429.1",
+  "historicalSnapshotSource": "8a8848276c52956d7e54e262e5846e41fc922288",
+  "currentAcceptance": false
+}

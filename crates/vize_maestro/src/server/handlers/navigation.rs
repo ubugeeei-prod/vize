@@ -11,7 +11,7 @@ use super::super::MaestroServer;
 #[cfg(feature = "native")]
 use crate::ide::{
     DeclarationService, ImplementationService, JsxDeclarationService, JsxImplementationService,
-    JsxService, JsxTypeDefinitionService, TypeDefinitionService,
+    JsxService, JsxTypeDefinitionService, ScriptSymbolsService, TypeDefinitionService,
 };
 use crate::ide::{DefinitionService, IdeContext, position_to_offset};
 
@@ -57,6 +57,13 @@ pub(super) async fn goto_definition(
             }
         }
         return Ok(None);
+    }
+
+    #[cfg(feature = "native")]
+    if crate::utils::is_plain_script_path(uri.path()) {
+        return Ok(
+            ScriptSymbolsService::definition(&ctx, server.state.get_corsa_bridge().await).await,
+        );
     }
 
     #[cfg(feature = "native")]

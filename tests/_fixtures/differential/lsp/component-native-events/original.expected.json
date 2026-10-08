@@ -1,0 +1,343 @@
+[
+  {
+    "label": "v-if",
+    "kind": 14,
+    "detail": "Conditional rendering",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-if=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-if`**\n\n_Vue directive_\n\nConditional rendering\n\n**Example**\n\n```vue\n<template>\n  <div v-if=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-else-if",
+    "kind": 14,
+    "detail": "Else-if block",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-else-if=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-else-if`**\n\n_Vue directive_\n\nElse-if block\n\n**Example**\n\n```vue\n<template>\n  <div v-else-if=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-else",
+    "kind": 14,
+    "detail": "Else block",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-else",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-else`**\n\n_Vue directive_\n\nElse block\n\n**Example**\n\n```vue\n<template>\n  <div v-else></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-for",
+    "kind": 14,
+    "detail": "List rendering",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-for=\"$1 in $2\" :key=\"$3\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-for`**\n\n_Vue directive_\n\nList rendering\n\n**Example**\n\n```vue\n<template>\n  <div v-for=\"... in ...\" :key=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-on",
+    "kind": 23,
+    "detail": "Event listener",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-on:$1=\"$2\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-on`**\n\n_Vue directive_\n\nEvent listener\n\n**Example**\n\n```vue\n<template>\n  <div v-on:...=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-bind",
+    "kind": 10,
+    "detail": "Attribute binding",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-bind:$1=\"$2\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-bind`**\n\n_Vue directive_\n\nAttribute binding\n\n**Example**\n\n```vue\n<template>\n  <div v-bind:...=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-model",
+    "kind": 10,
+    "detail": "Two-way binding",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-model=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-model`**\n\n_Vue directive_\n\nTwo-way binding\n\n**Example**\n\n```vue\n<template>\n  <div v-model=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-slot",
+    "kind": 5,
+    "detail": "Named slot",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-slot:$1",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-slot`**\n\n_Vue directive_\n\nNamed slot\n\n**Example**\n\n```vue\n<template>\n  <div v-slot:...></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-show",
+    "kind": 14,
+    "detail": "Toggle visibility",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-show=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-show`**\n\n_Vue directive_\n\nToggle visibility\n\n**Example**\n\n```vue\n<template>\n  <div v-show=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-pre",
+    "kind": 14,
+    "detail": "Skip compilation",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-pre",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-pre`**\n\n_Vue directive_\n\nSkip compilation\n\n**Example**\n\n```vue\n<template>\n  <div v-pre></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-once",
+    "kind": 14,
+    "detail": "Render once",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-once",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-once`**\n\n_Vue directive_\n\nRender once\n\n**Example**\n\n```vue\n<template>\n  <div v-once></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-memo",
+    "kind": 14,
+    "detail": "Memoize subtree",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-memo=\"[$1]\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-memo`**\n\n_Vue directive_\n\nMemoize subtree\n\n**Example**\n\n```vue\n<template>\n  <div v-memo=\"[...]\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-cloak",
+    "kind": 14,
+    "detail": "Hide until compiled",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-cloak",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-cloak`**\n\n_Vue directive_\n\nHide until compiled\n\n**Example**\n\n```vue\n<template>\n  <div v-cloak></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-text",
+    "kind": 14,
+    "detail": "Set text content",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-text=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-text`**\n\n_Vue directive_\n\nSet text content\n\n**Example**\n\n```vue\n<template>\n  <div v-text=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "v-html",
+    "kind": 14,
+    "detail": "Set innerHTML",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "v-html=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`v-html`**\n\n_Vue directive_\n\nSet innerHTML\n\n**Example**\n\n```vue\n<template>\n  <div v-html=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "@",
+    "kind": 23,
+    "detail": "Event shorthand",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "@$1=\"$2\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`@`**\n\n_Vue directive_\n\nEvent shorthand\n\n**Example**\n\n```vue\n<template>\n  <div @...=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": ":",
+    "kind": 10,
+    "detail": "Bind shorthand",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": ":$1=\"$2\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`:`**\n\n_Vue directive_\n\nBind shorthand\n\n**Example**\n\n```vue\n<template>\n  <div :...=\"...\"></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "#",
+    "kind": 5,
+    "detail": "Slot shorthand",
+    "labelDetails": { "description": "Vue directive" },
+    "insertText": "#$1",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`#`**\n\n_Vue directive_\n\nSlot shorthand\n\n**Example**\n\n```vue\n<template>\n  <div #...></div>\n</template>\n```\n\n**Docs**\n\n[Vue built-in directives](https://vuejs.org/api/built-in-directives.html)"
+    }
+  },
+  {
+    "label": "@input",
+    "kind": 23,
+    "detail": "Input event",
+    "labelDetails": { "description": "Vue event" },
+    "insertText": "@input=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`@input`**\n\n_Vue event listener_\n\nShorthand for `v-on:event`. The handler runs in component scope.\n\n**Example**\n\n```vue\n<template>\n  <button @input=\"handler\"></button>\n</template>\n```\n\n**Docs**\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
+    }
+  },
+  {
+    "label": "@submit",
+    "kind": 23,
+    "detail": "Submit event",
+    "labelDetails": { "description": "Vue event" },
+    "insertText": "@submit=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`@submit`**\n\n_Vue event listener_\n\nShorthand for `v-on:event`. The handler runs in component scope.\n\n**Example**\n\n```vue\n<template>\n  <button @submit=\"handler\"></button>\n</template>\n```\n\n**Docs**\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
+    }
+  },
+  {
+    "label": "@keydown",
+    "kind": 23,
+    "detail": "Key down event",
+    "labelDetails": { "description": "Vue event" },
+    "insertText": "@keydown=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`@keydown`**\n\n_Vue event listener_\n\nShorthand for `v-on:event`. The handler runs in component scope.\n\n**Example**\n\n```vue\n<template>\n  <button @keydown=\"handler\"></button>\n</template>\n```\n\n**Docs**\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
+    }
+  },
+  {
+    "label": "@keyup",
+    "kind": 23,
+    "detail": "Key up event",
+    "labelDetails": { "description": "Vue event" },
+    "insertText": "@keyup=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`@keyup`**\n\n_Vue event listener_\n\nShorthand for `v-on:event`. The handler runs in component scope.\n\n**Example**\n\n```vue\n<template>\n  <button @keyup=\"handler\"></button>\n</template>\n```\n\n**Docs**\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
+    }
+  },
+  {
+    "label": "@focus",
+    "kind": 23,
+    "detail": "Focus event",
+    "labelDetails": { "description": "Vue event" },
+    "insertText": "@focus=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`@focus`**\n\n_Vue event listener_\n\nShorthand for `v-on:event`. The handler runs in component scope.\n\n**Example**\n\n```vue\n<template>\n  <button @focus=\"handler\"></button>\n</template>\n```\n\n**Docs**\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
+    }
+  },
+  {
+    "label": "@blur",
+    "kind": 23,
+    "detail": "Blur event",
+    "labelDetails": { "description": "Vue event" },
+    "insertText": "@blur=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`@blur`**\n\n_Vue event listener_\n\nShorthand for `v-on:event`. The handler runs in component scope.\n\n**Example**\n\n```vue\n<template>\n  <button @blur=\"handler\"></button>\n</template>\n```\n\n**Docs**\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
+    }
+  },
+  {
+    "label": "@mouseenter",
+    "kind": 23,
+    "detail": "Mouse enter event",
+    "labelDetails": { "description": "Vue event" },
+    "insertText": "@mouseenter=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`@mouseenter`**\n\n_Vue event listener_\n\nShorthand for `v-on:event`. The handler runs in component scope.\n\n**Example**\n\n```vue\n<template>\n  <button @mouseenter=\"handler\"></button>\n</template>\n```\n\n**Docs**\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
+    }
+  },
+  {
+    "label": "@mouseleave",
+    "kind": 23,
+    "detail": "Mouse leave event",
+    "labelDetails": { "description": "Vue event" },
+    "insertText": "@mouseleave=\"$1\"",
+    "insertTextFormat": 2,
+    "documentation": {
+      "kind": "markdown",
+      "value": "**`@mouseleave`**\n\n_Vue event listener_\n\nShorthand for `v-on:event`. The handler runs in component scope.\n\n**Example**\n\n```vue\n<template>\n  <button @mouseleave=\"handler\"></button>\n</template>\n```\n\n**Docs**\n\n[Vue event handling](https://vuejs.org/guide/essentials/event-handling.html)"
+    }
+  },
+  {
+    "label": "checked",
+    "kind": 10,
+    "detail": "prop: boolean (required)",
+    "labelDetails": { "detail": ": boolean", "description": "required" },
+    "insertText": "checked",
+    "insertTextFormat": 2,
+    "sortText": "00-prop-checked",
+    "documentation": {
+      "kind": "markdown",
+      "value": "**Prop `checked`**\n\n_Required component prop_\n\n```typescript\ninterface Props {\n  checked: boolean\n}\n```\n\n**Requirement**\n\nRequired\n\n**Example**\n\n```vue\n<Component checked />\n<Component :checked=\"value\" />\n```\n\n**Docs**\n\n[Vue Component Props](https://vuejs.org/guide/components/props.html)"
+    }
+  },
+  {
+    "label": "@change",
+    "kind": 23,
+    "detail": "event: [checked: boolean]",
+    "insertText": "@change=\"$1\"",
+    "insertTextFormat": 2,
+    "sortText": "00-event-change"
+  },
+  {
+    "label": "@click",
+    "kind": 23,
+    "detail": "event: []",
+    "insertText": "@click=\"$1\"",
+    "insertTextFormat": 2,
+    "sortText": "00-event-click"
+  }
+]

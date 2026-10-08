@@ -18,18 +18,18 @@ fn scoped_rules_and_global_ignores_match_document_paths() {
     state.apply_initialize_workspace_folders(None, Some(&root));
 
     let legacy = Url::from_file_path(root.join("src/legacy/table.vue")).unwrap();
-    let (legacy_config, _) = state.linter_settings_for_uri(&legacy).unwrap();
+    let (legacy_config, _, _) = state.linter_settings_for_uri(&legacy).unwrap();
     assert_eq!(
         legacy_config.rules.get("vue/permitted-contents"),
         Some(&LintRuleSeverity::Off)
     );
 
     let other = Url::from_file_path(root.join("src/other.vue")).unwrap();
-    let (other_config, _) = state.linter_settings_for_uri(&other).unwrap();
+    let (other_config, _, _) = state.linter_settings_for_uri(&other).unwrap();
     assert_eq!(other_config.rules.get("vue/permitted-contents"), None);
 
     let skipped = Url::from_file_path(root.join("src/legacy/skip.vue")).unwrap();
-    let (skipped_config, _) = state.linter_settings_for_uri(&skipped).unwrap();
+    let (skipped_config, _, _) = state.linter_settings_for_uri(&skipped).unwrap();
     assert_eq!(skipped_config.rules.get("vue/permitted-contents"), None);
 
     let ignored = Url::from_file_path(root.join("src/generated/table.vue")).unwrap();
@@ -67,11 +67,11 @@ fn documents_resolve_their_own_folder_config_regardless_of_order() {
         state.set_workspace_folders(roots);
 
         let strict_uri = Url::from_file_path(strict.join("List.vue")).unwrap();
-        let (strict_config, _) = state.linter_settings_for_uri(&strict_uri).unwrap();
+        let (strict_config, _, _) = state.linter_settings_for_uri(&strict_uri).unwrap();
         assert_eq!(strict_config.rules.get("vue/require-v-for-key"), None);
 
         let relaxed_uri = Url::from_file_path(relaxed.join("List.vue")).unwrap();
-        let (relaxed_config, _) = state.linter_settings_for_uri(&relaxed_uri).unwrap();
+        let (relaxed_config, _, _) = state.linter_settings_for_uri(&relaxed_uri).unwrap();
         assert_eq!(
             relaxed_config.rules.get("vue/require-v-for-key"),
             Some(&LintRuleSeverity::Off),
@@ -98,14 +98,14 @@ fn removed_folders_drop_their_context_and_outside_documents_use_globals() {
     let state = ServerState::new();
     state.set_workspace_folders(vec![relaxed.clone()]);
     let uri = Url::from_file_path(relaxed.join("List.vue")).unwrap();
-    let (config, _) = state.linter_settings_for_uri(&uri).unwrap();
+    let (config, _, _) = state.linter_settings_for_uri(&uri).unwrap();
     assert_eq!(
         config.rules.get("vue/require-v-for-key"),
         Some(&LintRuleSeverity::Off),
     );
 
     state.update_workspace_folders(Vec::new(), std::slice::from_ref(&relaxed));
-    let (config, _) = state.linter_settings_for_uri(&uri).unwrap();
+    let (config, _, _) = state.linter_settings_for_uri(&uri).unwrap();
     assert_eq!(config.rules.get("vue/require-v-for-key"), None);
 
     let _ = std::fs::remove_dir_all(parent);

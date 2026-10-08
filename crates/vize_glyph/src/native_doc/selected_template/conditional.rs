@@ -1,17 +1,14 @@
 //! Same-event original attribute selection, expression custody and quoted Doc.
 
-use vize_l0::{Allocator, Vec};
-use vize_l1::{
-    ElementClose,
-    markup::{NativeElement, NativeTemplateComponent},
-};
+use vize_l0::Vec;
+use vize_l1::{ElementClose, markup::NativeElement};
 
 use super::super::{
     directive::name_document,
-    template::{Cursor, attribute_with_name, open_element_with},
+    template::{attribute_with_name, open_element_with},
 };
 use super::input::Input;
-use super::{Doc, NativeTemplateRefusal, TemplateRefusal, expression_document};
+use super::{Builder, Doc, NativeTemplateRefusal, TemplateRefusal, expression_document};
 
 /// These original recovery/verbatim facts only select the unchanged refusal
 /// route. Positive head authority is still minted by the real L1 receiver.
@@ -35,14 +32,16 @@ pub(super) fn eligible(element: &NativeElement<'_, '_>) -> bool {
 }
 
 pub(super) fn open_element<'p, 'a, I: Input<'p, 'a>>(
-    selected: &'p NativeTemplateComponent<'a>,
+    builder: &mut Builder<'p, 'a, I>,
     element: &NativeElement<'p, 'a>,
-    input: &mut I,
     parts: &mut Vec<'a, Doc<'a>>,
-    cursor: &mut Cursor<'a>,
-    allocator: &'a Allocator,
     depth: usize,
 ) -> Result<(), NativeTemplateRefusal> {
+    let selected = builder.selected;
+    let allocator = builder.allocator;
+    let formats_bindings = builder.values.formats_bindings();
+    let input = &mut builder.input;
+    let cursor = &mut builder.cursor;
     let block = selected.component().block();
     open_element_with(
         element.surface(),
@@ -68,6 +67,13 @@ pub(super) fn open_element<'p, 'a, I: Input<'p, 'a>>(
             }
             let name = name_document(head.name_block(), head.directive(), allocator)
                 .map_err(|refusal| local_name_refusal(refusal, block.start(), offset))?;
+            // Selection does not prepare a value. Defer its error until the
+            // existing original name/eq/open/content checks have completed.
+            let mut binding = if formats_bindings && head.condition_kind().is_none() {
+                Some(head.static_binding())
+            } else {
+                None
+            };
             attribute_with_name(
                 head.attribute().surface(),
                 name,
@@ -82,7 +88,20 @@ pub(super) fn open_element<'p, 'a, I: Input<'p, 'a>>(
                         .span_of(content.text)
                         .ok_or(TemplateRefusal::SourceMismatch { offset })?;
                     if head.condition_kind().is_none() {
-                        return Err(NativeTemplateRefusal::DirectiveValue { span });
+                        let Some(candidate) = binding.take() else {
+                            return Err(NativeTemplateRefusal::DirectiveValue { span });
+                        };
+                        let candidate =
+                            candidate.map_err(|kind| NativeTemplateRefusal::BindingHead {
+                                span: head.name_block().span(),
+                                kind,
+                            })?;
+                        return match candidate {
+                            Some(binding) => super::binding::value(
+                                selected, input, binding, span, offset, allocator,
+                            ),
+                            None => Err(NativeTemplateRefusal::DirectiveValue { span }),
+                        };
                     }
                     let (index, operand) = input.attribute(&head, offset)?;
                     // Park the actual expression even when its quote frame refuses.
@@ -108,7 +127,21 @@ pub(super) fn open_element<'p, 'a, I: Input<'p, 'a>>(
                         )?;
                     Ok(Some(expression.into_parts().1))
                 },
-            )
+            )?;
+            // No value callback ran. Preserve original name/eq checks first,
+            // then park the genuine IncompleteValue failure at this event.
+            if head.attribute().surface().value.is_none()
+                && let Some(candidate) = binding.take()
+            {
+                let candidate = candidate.map_err(|kind| NativeTemplateRefusal::BindingHead {
+                    span: head.name_block().span(),
+                    kind,
+                })?;
+                if let Some(binding) = candidate {
+                    input.binding(binding, offset)?;
+                }
+            }
+            Ok(())
         },
     )
 }

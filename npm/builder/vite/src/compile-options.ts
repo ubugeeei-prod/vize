@@ -6,6 +6,7 @@ export interface CompileFileOptions extends PluginVueCompileOptions {
   sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
+  nuxtPageMeta?: boolean;
   mode?: "module" | "function";
   customRenderer?: boolean;
   customElements?: string[];
@@ -26,6 +27,7 @@ export interface CompileBatchOptions extends PluginVueCompileOptions {
   sourceMap: boolean;
   ssr: boolean;
   vapor: boolean;
+  nuxtPageMeta?: boolean;
   mode?: "module" | "function";
   customRenderer?: boolean;
   customElements?: string[];
@@ -51,6 +53,7 @@ export function buildCompileFileOptions(
     sourceMap: options.sourceMap,
     ssr: options.ssr,
     vapor: options.vapor,
+    ...(options.nuxtPageMeta === undefined ? {} : { nuxtPageMeta: options.nuxtPageMeta }),
     ...(options.whitespace === undefined ? {} : { whitespace: options.whitespace }),
     customRenderer: options.customRenderer ?? false,
     ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
@@ -91,6 +94,7 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
   return {
     ssr: options.ssr,
     vapor: options.vapor,
+    ...(options.nuxtPageMeta === undefined ? {} : { nuxtPageMeta: options.nuxtPageMeta }),
     ...(options.whitespace === undefined ? {} : { whitespace: options.whitespace }),
     customRenderer: options.customRenderer ?? false,
     ...(options.customElements === undefined ? {} : { customElements: options.customElements }),

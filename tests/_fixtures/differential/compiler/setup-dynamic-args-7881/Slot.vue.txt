@@ -1,0 +1,8 @@
+<script setup>
+import { ref } from "vue";
+import Child from "./Child.vue";
+const evt = ref("mouseup");
+const attr = ref("data-note");
+const n = ref(0);
+</script>
+<template><Child v-slot="{ evt, attr }"><button @[evt]="n++" :[attr]="'tip'">{{ n }}</button></Child></template>

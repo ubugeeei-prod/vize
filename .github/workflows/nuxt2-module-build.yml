@@ -5,15 +5,21 @@ on:
     paths:
       - .github/workflows/nuxt2-module-build.yml
       - npm/framework/nuxt/**
+      - npm/framework/nuxt-lint-config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.mjs
+      - tools/support/compat/nuxt/nuxt2-lint-config.mjs
+      - tools/support/compat/nuxt/nuxt-auto-init-config.mjs
   push:
     branches: [main]
     paths:
       - .github/workflows/nuxt2-module-build.yml
       - npm/framework/nuxt/**
+      - npm/framework/nuxt-lint-config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.mjs
+      - tools/support/compat/nuxt/nuxt2-lint-config.mjs
+      - tools/support/compat/nuxt/nuxt-auto-init-config.mjs
   workflow_dispatch:
 
 permissions:
@@ -41,9 +47,14 @@ jobs:
           run-install: false
       - name: Install workspace tooling
         run: vp install --frozen-lockfile --prefer-offline
+      - name: Build the candidate Nuxt lint preset
+        working-directory: npm/framework/nuxt-lint-config
+        run: vp pack
       - name: Build the candidate Nuxt integration
         working-directory: npm/framework/nuxt
         run: vp pack
+      - name: Verify version-specific plans and original modern oracle
+        run: vp node --test npm/framework/nuxt-lint-config/src/*.test.ts npm/framework/nuxt/src/lint/generation*.test.ts npm/framework/nuxt/src/builder.test.ts
       - name: Install the Nuxt 2 reproduction
         working-directory: tools/support/compat/nuxt/fixtures/nuxt2-module-build
         run: npm ci --legacy-peer-deps --no-audit --no-fund

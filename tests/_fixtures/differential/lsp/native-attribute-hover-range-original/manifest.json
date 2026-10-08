@@ -1,0 +1,292 @@
+{
+  "schema": "vize.native-attribute-hover-range.corpus",
+  "version": 1,
+  "source": {
+    "path": "source.json",
+    "sha256": "195a8e24814e897accd1b2f34a66f2e5993a60481d9a29445db771657151f56b"
+  },
+  "config": {
+    "path": "tsconfig.json.txt",
+    "sha256": "3e69f1b19380514b0a42913c6dc21a2fffed65855e4bad30534c3f6a71116b23"
+  },
+  "originals": [
+    {
+      "path": "Field.vue.txt",
+      "sha256": "24ae0b5b278779dd760ae7fd6bcd3926dbcb87a281e5675f16c13d8b354833e7"
+    },
+    {
+      "path": "lsp-req.mjs.txt",
+      "sha256": "4f2d195d15af1617c5400e66b1077c3908f959ae5e7281da99687100d8173c29"
+    },
+    {
+      "path": "issue-body.md",
+      "sha256": "b972cf7b7992c26d057c3d62bcf8c8bb368d6284606d9018f80d16acb17886b5"
+    }
+  ],
+  "plannedSessions": 4,
+  "plannedWholeResponses": 12,
+  "initialization": {
+    "capabilities": {},
+    "options": {
+      "editor": true,
+      "hover": true,
+      "lint": false,
+      "typecheck": true
+    }
+  },
+  "contentsContract": "Retain every complete native answer; full contents must be identical across all four matched physical variants for each role. Original complete native contents were not supplied and are not fabricated.",
+  "sessions": [
+    {
+      "id": "original-lf",
+      "file": {
+        "path": "Field.vue.txt",
+        "sha256": "24ae0b5b278779dd760ae7fd6bcd3926dbcb87a281e5675f16c13d8b354833e7"
+      },
+      "requests": [
+        {
+          "role": "for-name",
+          "position": {
+            "line": 5,
+            "character": 10
+          },
+          "range": {
+            "start": {
+              "line": 5,
+              "character": 10
+            },
+            "end": {
+              "line": 5,
+              "character": 13
+            }
+          },
+          "signature": "(property) HTMLLabelElement.htmlFor: string"
+        },
+        {
+          "role": "id-name",
+          "position": {
+            "line": 6,
+            "character": 10
+          },
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 10
+            },
+            "end": {
+              "line": 6,
+              "character": 12
+            }
+          },
+          "signature": "(property) Element.id: string"
+        },
+        {
+          "role": "id-value",
+          "position": {
+            "line": 6,
+            "character": 14
+          },
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 14
+            },
+            "end": {
+              "line": 6,
+              "character": 16
+            }
+          },
+          "signature": "const id: \"field\""
+        }
+      ]
+    },
+    {
+      "id": "original-crlf",
+      "file": {
+        "path": "Field.crlf.vue.txt",
+        "sha256": "f14133c1c5b815b89db299ba85641868655e748d9823516c99e2aa9875ebdce8"
+      },
+      "requests": [
+        {
+          "role": "for-name",
+          "position": {
+            "line": 5,
+            "character": 10
+          },
+          "range": {
+            "start": {
+              "line": 5,
+              "character": 10
+            },
+            "end": {
+              "line": 5,
+              "character": 13
+            }
+          },
+          "signature": "(property) HTMLLabelElement.htmlFor: string"
+        },
+        {
+          "role": "id-name",
+          "position": {
+            "line": 6,
+            "character": 10
+          },
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 10
+            },
+            "end": {
+              "line": 6,
+              "character": 12
+            }
+          },
+          "signature": "(property) Element.id: string"
+        },
+        {
+          "role": "id-value",
+          "position": {
+            "line": 6,
+            "character": 14
+          },
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 14
+            },
+            "end": {
+              "line": 6,
+              "character": 16
+            }
+          },
+          "signature": "const id: \"field\""
+        }
+      ]
+    },
+    {
+      "id": "unicode-lf",
+      "file": {
+        "path": "Field.unicode.vue.txt",
+        "sha256": "599d3e7dab4a617c2fa5a0eb32f3f141d74498697eb996c651b10ef743ae4a06"
+      },
+      "requests": [
+        {
+          "role": "for-name",
+          "position": {
+            "line": 5,
+            "character": 23
+          },
+          "range": {
+            "start": {
+              "line": 5,
+              "character": 23
+            },
+            "end": {
+              "line": 5,
+              "character": 26
+            }
+          },
+          "signature": "(property) HTMLLabelElement.htmlFor: string"
+        },
+        {
+          "role": "id-name",
+          "position": {
+            "line": 6,
+            "character": 22
+          },
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 22
+            },
+            "end": {
+              "line": 6,
+              "character": 24
+            }
+          },
+          "signature": "(property) Element.id: string"
+        },
+        {
+          "role": "id-value",
+          "position": {
+            "line": 6,
+            "character": 26
+          },
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 26
+            },
+            "end": {
+              "line": 6,
+              "character": 28
+            }
+          },
+          "signature": "const id: \"field\""
+        }
+      ]
+    },
+    {
+      "id": "unicode-crlf",
+      "file": {
+        "path": "Field.unicode-crlf.vue.txt",
+        "sha256": "06659820290106e3561edad379efe9d6a7a4acf562b81cd54c2d17123adca636"
+      },
+      "requests": [
+        {
+          "role": "for-name",
+          "position": {
+            "line": 5,
+            "character": 23
+          },
+          "range": {
+            "start": {
+              "line": 5,
+              "character": 23
+            },
+            "end": {
+              "line": 5,
+              "character": 26
+            }
+          },
+          "signature": "(property) HTMLLabelElement.htmlFor: string"
+        },
+        {
+          "role": "id-name",
+          "position": {
+            "line": 6,
+            "character": 22
+          },
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 22
+            },
+            "end": {
+              "line": 6,
+              "character": 24
+            }
+          },
+          "signature": "(property) Element.id: string"
+        },
+        {
+          "role": "id-value",
+          "position": {
+            "line": 6,
+            "character": 26
+          },
+          "range": {
+            "start": {
+              "line": 6,
+              "character": 26
+            },
+            "end": {
+              "line": 6,
+              "character": 28
+            }
+          },
+          "signature": "const id: \"field\""
+        }
+      ]
+    }
+  ]
+}

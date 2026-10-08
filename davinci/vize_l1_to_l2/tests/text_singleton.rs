@@ -15,7 +15,7 @@ fn final_text_keeps_condensing_provenance_and_authored_spans() {
         (
             "<pre>日本語\r\n  😀</pre>",
             "日本語\r\n  😀",
-            "日本語\r\n  😀",
+            "日本語\n  😀",
         ),
     ] {
         with_transformed(source, |lowered, folio, facts, _| {

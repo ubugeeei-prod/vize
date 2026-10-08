@@ -1,0 +1,50 @@
+{
+  "version": "3.8.3",
+  "entrySha256": "957fef9460db20185f9ebc2681c2720225ebdf98d3e0cc49bdb6a88ea2deef78",
+  "reference": "https://prettier.io/docs/options#tab-width",
+  "scope": "separate whole stock output and fixed point; Vize preserves authored first value line rather than adopting stock property-only line layout",
+  "rows": [
+    {
+      "options": {
+        "tabWidth": 2
+      },
+      "source": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "output": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition:\n    background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "again": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition:\n    background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n"
+    },
+    {
+      "options": {
+        "tabWidth": 4
+      },
+      "source": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "output": "<template>\n    <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    transition:\n        background-color var(--duration, 0.2s) var(--ease, ease),\n        color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "again": "<template>\n    <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n    transition:\n        background-color var(--duration, 0.2s) var(--ease, ease),\n        color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n"
+    },
+    {
+      "options": {
+        "useTabs": true
+      },
+      "source": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "output": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition:\n\t\tbackground-color var(--duration, 0.2s) var(--ease, ease),\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "again": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition:\n\t\tbackground-color var(--duration, 0.2s) var(--ease, ease),\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n"
+    },
+    {
+      "options": {
+        "useTabs": true,
+        "tabWidth": 4
+      },
+      "source": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "output": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition:\n\t\tbackground-color var(--duration, 0.2s) var(--ease, ease),\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "again": "<template>\n\t<button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n\ttransition:\n\t\tbackground-color var(--duration, 0.2s) var(--ease, ease),\n\t\tcolor var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n"
+    },
+    {
+      "options": {
+        "tabWidth": 4,
+        "endOfLine": "crlf"
+      },
+      "source": "<template>\n  <button class=\"button\" type=\"button\">Save</button>\n</template>\n\n<style scoped>\n.button {\n  transition: background-color var(--duration, 0.2s) var(--ease, ease),\n    color var(--duration, 0.2s) var(--ease, ease);\n}\n</style>\n",
+      "output": "<template>\r\n    <button class=\"button\" type=\"button\">Save</button>\r\n</template>\r\n\r\n<style scoped>\r\n.button {\r\n    transition:\r\n        background-color var(--duration, 0.2s) var(--ease, ease),\r\n        color var(--duration, 0.2s) var(--ease, ease);\r\n}\r\n</style>\r\n",
+      "again": "<template>\r\n    <button class=\"button\" type=\"button\">Save</button>\r\n</template>\r\n\r\n<style scoped>\r\n.button {\r\n    transition:\r\n        background-color var(--duration, 0.2s) var(--ease, ease),\r\n        color var(--duration, 0.2s) var(--ease, ease);\r\n}\r\n</style>\r\n"
+    }
+  ]
+}

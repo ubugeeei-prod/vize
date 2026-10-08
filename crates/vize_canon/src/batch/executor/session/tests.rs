@@ -4,6 +4,29 @@ use std::path::PathBuf;
 use vize_carton::FxHashMap;
 
 #[test]
+fn unsupported_explicit_editor_selection_uses_only_the_exact_internal_fallback_reason() {
+    use crate::batch::error::CorsaError;
+    let reason = crate::lsp_client::EXPLICIT_CONFIG_ATTACHMENT_UNSUPPORTED;
+    assert!(super::explicit_config_attachment_unsupported(
+        &CorsaError::CorsaExecution {
+            exit_code: -1,
+            message: reason.into(),
+        }
+    ));
+    for message in [
+        "invalid generated configuration",
+        "Cannot open explicit diagnosing project",
+    ] {
+        assert!(!super::explicit_config_attachment_unsupported(
+            &CorsaError::CorsaExecution {
+                exit_code: -1,
+                message: message.into(),
+            }
+        ));
+    }
+}
+
+#[test]
 fn snapshot_diff_classifies_created_changed_and_deleted_files() {
     let previous = snapshot(&[("/virtual/changed.ts", 1), ("/virtual/deleted.ts", 2)]);
     let current = snapshot(&[("/virtual/changed.ts", 3), ("/virtual/created.ts", 4)]);

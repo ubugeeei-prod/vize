@@ -31,15 +31,21 @@ pub(super) fn build(
     // package-private `imports` manifest from its generated source companions.
     let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
     let source_path = source_path.as_path();
-    let discovered_root = source_path
-        .ancestors()
-        .skip(1)
-        .find(|dir| dir.join("tsconfig.json").is_file())
-        .map(Path::to_path_buf);
+    let discovered_config = source_path.ancestors().skip(1).find_map(|dir| {
+        ["tsconfig.json", "jsconfig.json"]
+            .into_iter()
+            .map(|name| dir.join(name))
+            .find(|path| path.is_file())
+    });
     let root = environment
         .project_root
         .map(Path::to_path_buf)
-        .or(discovered_root.clone())
+        .or_else(|| {
+            discovered_config
+                .as_deref()
+                .and_then(Path::parent)
+                .map(Path::to_path_buf)
+        })
         .unwrap_or_else(|| source_path.parent().unwrap_or(source_path).to_path_buf());
     let root = vize_carton::path::canonicalize_non_verbatim(&root);
     let configured_tsconfig = environment.tsconfig_path.map(|path| {
@@ -60,9 +66,7 @@ pub(super) fn build(
     // The workspace root selects the mirror's filesystem scope, not the
     // compiler options for every package beneath it. Anchor the source to its
     // nearest config before resolving a solution-style project's references.
-    if let Some(tsconfig) =
-        configured_tsconfig.or_else(|| discovered_root.map(|dir| dir.join("tsconfig.json")))
-    {
+    if let Some(tsconfig) = configured_tsconfig.or(discovered_config) {
         project.set_tsconfig_path(Some(tsconfig));
     }
     project.use_effective_tsconfig_for_source(source_path);
@@ -97,6 +101,10 @@ pub(super) fn build(
     let mut package_bindings = Vec::new();
     let mut route_inputs = Vec::new();
 
+    let register_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+        "alias_register_inputs",
+        revision.requested_sources.len() + 1,
+    );
     project
         .register_path_with_content(source_path, content)
         .map_err(bridge_error)?;
@@ -127,6 +135,9 @@ pub(super) fn build(
             .register_path_with_content(&path, source)
             .map_err(bridge_error)?;
     }
+    register_phase.finish();
+    let reachable_phase =
+        crate::corsa_bridge::preparation_trace::Phase::start("alias_reachable_dependencies", 1);
     let virtual_file = project.find_by_original(source_path).ok_or_else(|| {
         CorsaBridgeError::CommunicationError(vize_carton::cstr!(
             "Canon did not retain registered host {}",
@@ -179,6 +190,9 @@ pub(super) fn build(
             .map_err(bridge_error)?;
     }
 
+    reachable_phase.finish();
+    let routes_phase =
+        crate::corsa_bridge::preparation_trace::Phase::start("alias_package_routes", 1);
     let mut scanned_package_sources = FxHashSet::default();
     loop {
         project.set_package_routes(package_bindings.clone());
@@ -221,6 +235,7 @@ pub(super) fn build(
         .register_package_route_targets()
         .map_err(bridge_error)?;
     project.finalize_package_routes().map_err(bridge_error)?;
+    routes_phase.finish();
     route_inputs.sort();
     route_inputs.dedup();
     // A host must retain one session-private identity as dependencies appear
@@ -235,9 +250,13 @@ pub(super) fn build(
         route_inputs,
         mirror,
         virtual_ts_options: environment.virtual_ts_options.clone(),
+        query_surface: Default::default(),
     })
 }
 
 fn bridge_error(error: impl std::fmt::Display) -> CorsaBridgeError {
     CorsaBridgeError::CommunicationError(vize_carton::cstr!("{error}"))
 }
+
+#[cfg(test)]
+mod jsconfig_tests;

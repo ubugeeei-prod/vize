@@ -104,3 +104,5 @@ fn caught_enter_unwind_keeps_normal_program_collection_params_and_alias_scope() 
         resolution
     ));
 }
+
+mod constant;

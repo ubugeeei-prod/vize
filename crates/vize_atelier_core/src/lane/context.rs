@@ -53,7 +53,7 @@ impl<'a> TransformContext<'a> {
             errors: std::vec::Vec::new(),
             template_syntax_quirks,
             jsx_compat: super::JsxTransformCompat::default(),
-            node_removed: false,
+            node_removed_from: None,
             analysis: None,
             hoisted_scope_id: None,
         }
@@ -477,7 +477,7 @@ impl<'a> TransformContext<'a> {
     /// Remove current node
     pub fn remove_node(&mut self) {
         self.current_node = None;
-        self.node_removed = true;
+        self.node_removed_from = Some(self.child_index);
     }
 
     /// Remove a specific node
@@ -489,18 +489,18 @@ impl<'a> TransformContext<'a> {
             if index < self.child_index {
                 self.child_index -= 1;
             }
-            self.node_removed = true;
+            self.node_removed_from = Some(self.child_index);
         }
     }
 
     /// Check if node was removed
     pub fn was_node_removed(&self) -> bool {
-        self.node_removed
+        self.node_removed_from.is_some()
     }
 
     /// Reset node removed flag
     pub fn reset_node_removed(&mut self) {
-        self.node_removed = false;
+        self.node_removed_from = None;
     }
 }
 
