@@ -49,3 +49,14 @@ Statement-body complexity coverage remains unfinished as documented by the
 current implementation; this slice does not add that product behavior.
 The weighted score remains exploratory and is separate from the opt-in own
 lint rule and Doctor's rendered-complexity notice.
+
+## Public metric specification links
+
+The deployed EN/JA metric-specification links returned 404 because the pinned
+Ox Content 2.81.0 renderer treated an external URL ending in `.md` as a local
+Markdown page. Add GitHub's `?plain=1` query to these two links, preserving the
+same blob path. The actual installed renderer retains the complete external
+URL and its security attributes; every other rendered byte remains unchanged.
+No dependency, renderer, algorithm, example or other locale is changed.
+Current-head Actions and the real post-merge Pages/browser targets must pass
+before the public-link repair is complete. Retain the original 404 evidence.
