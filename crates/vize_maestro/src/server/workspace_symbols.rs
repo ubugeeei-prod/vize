@@ -7,6 +7,7 @@ use tower_lsp::{
     lsp_types::{SymbolInformation, WorkspaceSymbolParams},
 };
 
+#[cfg(not(feature = "native"))]
 use crate::ide::WorkspaceSymbolsService;
 
 use super::MaestroServer;
@@ -21,9 +22,10 @@ pub(super) async fn search(
 
     yield_to_pending_cancellation().await;
     #[cfg(feature = "native")]
-    let sources = server.state.discover_workspace_project_sources().await;
-    #[cfg(feature = "native")]
-    let symbols = WorkspaceSymbolsService::search_sources(&sources, &params.query);
+    let symbols = server
+        .state
+        .search_workspace_project_symbols(&params.query)
+        .await;
     #[cfg(not(feature = "native"))]
     let symbols = WorkspaceSymbolsService::search(&server.state, &params.query);
 

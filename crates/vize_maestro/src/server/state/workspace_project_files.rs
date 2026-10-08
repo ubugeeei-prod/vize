@@ -11,12 +11,17 @@ use vize_l0::FxHashMap;
 
 use super::{ServerState, global_components::is_excluded_directory};
 
+mod paths;
+mod symbols;
+
 #[derive(Default)]
 pub(super) struct Inventory {
     generation: AtomicU64,
     paths: RwLock<Option<CachedPaths>>,
     retired: RwLock<Vec<PathBuf>>,
     scan: Mutex<()>,
+    #[cfg(test)]
+    symbol_worker_failure: std::sync::atomic::AtomicBool,
     #[cfg(test)]
     read_pause: RwLock<Option<(oneshot::Sender<()>, oneshot::Receiver<()>)>>,
 }
@@ -93,54 +98,14 @@ impl ServerState {
     pub(crate) async fn discover_workspace_project_sources(
         &self,
     ) -> Vec<(Url, std::string::String)> {
-        let inventory = &self.workspace_project_files;
         let sources = loop {
-            let roots = self.project_source_roots();
-            let generation = inventory.generation.load(Ordering::Acquire);
-            if let Some(uris) = inventory.cached_paths(&roots, generation) {
-                if let Some(sources) = self
-                    .read_current_project_sources(uris, &roots, generation)
-                    .await
-                {
-                    break sources;
-                }
-                continue;
+            let paths = self.current_project_paths().await;
+            if let Some(sources) = self
+                .read_current_project_sources(paths.uris, &paths.roots, paths.generation)
+                .await
+            {
+                break sources;
             }
-            let _scan = inventory.scan.lock().await;
-            if inventory.generation.load(Ordering::Acquire) != generation {
-                continue;
-            }
-            if let Some(uris) = inventory.cached_paths(&roots, generation) {
-                if let Some(sources) = self
-                    .read_current_project_sources(uris, &roots, generation)
-                    .await
-                {
-                    break sources;
-                }
-                continue;
-            }
-            let scan_roots = roots.clone();
-            let retired = inventory.retired.read().clone();
-            let Some((uris, sources, complete)) = background(move || {
-                let (uris, complete) = discover_paths(&scan_roots);
-                let sources = read_sources(&uris, &retired);
-                (uris, sources, complete)
-            })
-            .await
-            else {
-                break Vec::new();
-            };
-            if !self.project_source_snapshot_current(&roots, generation) {
-                continue;
-            }
-            if complete {
-                *inventory.paths.write() = Some(CachedPaths {
-                    generation,
-                    roots,
-                    uris,
-                });
-            }
-            break sources;
         };
         let mut sources = sources.into_iter().collect::<FxHashMap<_, _>>();
         for uri in self.documents.uris() {

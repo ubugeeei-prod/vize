@@ -1,0 +1,9 @@
+{
+  "issue": 3952,
+  "purpose": "Complete unchanged workspace/symbol responses through bounded closed-source reads",
+  "inputs": {
+    "Widget.vue.txt": "Original project-navigation-8013 Widget source, unchanged",
+    "module.ts.txt": "Original authored UTF16/CRLF top-level AST control, unchanged"
+  },
+  "expected": "Complete empty-query symbol objects; no nested or commented symbol. Streamed and original materialized consumers must both match."
+}
