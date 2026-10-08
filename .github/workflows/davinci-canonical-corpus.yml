@@ -59,6 +59,11 @@ jobs:
           node tools/support/compat/github/canonical-corpus-observer.mjs rehydrate
       - name: Capture canonical corpus identity
         run: node tools/support/compat/github/canonical-corpus-observer.mjs snapshot
+      - name: Diagnose complete original corpus source IO
+        id: corpus_io
+        if: ${{ matrix.observer == 'ssr-pug' }}
+        continue-on-error: true
+        run: node tools/support/compat/github/canonical-corpus-io-probe.mjs
       - name: Run L2 DOM differential corpus
         if: ${{ matrix.observer == 'dom' }}
         id: davinci_dom_corpus
@@ -76,6 +81,9 @@ jobs:
         run: |
           set -o pipefail
           VIZE_DAVINCI_DIFFERENTIAL_CORPUS=tests/_fixtures/_git cargo test -p vize_atelier_sfc --features legacy-dom-differential --test davinci_production_reach -- --nocapture 2>&1 | tee real-project-davinci-dom-corpus/reach.log
+      - name: Require complete source IO diagnostic success
+        if: ${{ always() && matrix.observer == 'ssr-pug' && steps.corpus_io.outcome != 'success' }}
+        run: echo 'Complete source IO diagnostic failed; retained raw evidence grants no gate waiver.' >&2; exit 1
       - name: Record required observer evidence
         if: ${{ always() }}
         env:
