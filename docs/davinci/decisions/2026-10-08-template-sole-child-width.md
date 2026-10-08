@@ -238,3 +238,21 @@ remain unchanged. This refines the earlier source-repair description: the
 observed defect is inherited environment control in the test observer. Wait
 for actual signed provider delivery before genuinely refreshing this parent;
 no unmerged repair or observed output normalization is used.
+
+The observer repair actually merges on 2026-10-08 at 08:12:09Z as signed
+`e8a00fbb629d3e092e08fd474a58a01d1aeadc47`. Its exact original-caller
+source-coverage job 113194708236 succeeds with all four BOM bodies and the
+unchanged coverage caps; protected Check 37745743753 also succeeds. Preserve
+the D5 raw whole failure and every original expected packet.
+
+Genuinely rebase all eight preserved owned commits from actual signed 68e
+onto freshly fetched actual signed e8a00fbb, retaining the old local head
+`0da49113a64ae0d532d493c68acf142cfb7cd771` under a backup branch. The
+resulting pre-receipt head `304e4269008d966f3a7d00ca80db85d219d0b2e3` is
+clean: all 35 noncanonical owned paths are byte-identical to that preserved
+head, and all 350 incoming canonical rows survive with only the authorized
+formatter rows 187/189 changed. No fixture, expected output or instruction
+ceiling changes. Fresh exact-head full Check, native phases and all 104
+three-repetition measurements remain required; no D5 success transfers.
+Only a qualified parent may own the genuine 13-vector dependent closing
+child and native Stack registration, before protected queue admission.
