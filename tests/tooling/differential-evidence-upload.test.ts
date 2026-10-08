@@ -77,7 +77,7 @@ test("PR and full tooling gates retain failed observations after their tests", (
     assert.ok(tests.length > 0);
     for (const step of tests) assert.ok(job.steps.indexOf(step) < uploadIndex);
     const build = job.steps.find((step) =>
-      /tests\/differential\/build-receipt\.mjs/.test(step.run ?? ""),
+      /tests\/differential\/build-receipt\.ts/.test(step.run ?? ""),
     );
     assert.ok(build, "uploaded CLI receipt must be made by the actual selected source build");
     assert.ok(job.steps.indexOf(build) < uploadIndex);

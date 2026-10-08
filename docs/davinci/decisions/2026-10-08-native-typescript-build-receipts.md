@@ -37,3 +37,17 @@ must follow the genuine current TypeScript foundation chain with registered
 native Stack membership before admission, or fresh signed `main` after actual
 parent delivery. The source migration supplies no installed-package, complete
 adoption, or performance qualification.
+
+The commit above records the original authoring boundary; genuine replays retain
+that separate move-only boundary before typing.
+
+The initial exact789 source run rejected the reviewed extension as an unqualified
+harness delta before any original 400 provider execution. A finite source
+qualifier now checks all 73 complete caller bodies against the sole `.mjs` to
+`.ts` token change, authenticated original/current provider and hash-helper
+bytes, exact primitive extraction, scoped project and check-command addition,
+and three command assertions with their original checks.
+Only the complete reviewed closure may enter the existing original 400 campaign;
+its inputs, recipes, oracles and budgets remain unchanged. Failed run
+37764288919/job113267998705 remains retained; no performance credit or retry
+waiver follows from this source-extension admission.

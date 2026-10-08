@@ -156,7 +156,7 @@ test("every isolated tooling runner regenerates its tier and retains the full me
   );
   assert.match(
     steps[build].run ?? "",
-    /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.mjs/,
+    /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.ts/,
   );
 });
 

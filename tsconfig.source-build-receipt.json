@@ -5,5 +5,10 @@
     "incremental": false
   },
   "include": [],
-  "files": ["tests/differential/build-receipt.ts", "tests/differential/sha256.ts"]
+  "files": [
+    "tests/differential/build-receipt.ts",
+    "tests/differential/sha256.ts",
+    "tests/performance/support/warm-type-backed-build-receipt-extension.ts",
+    "tests/tooling/source-build-receipt-extension.test.ts"
+  ]
 }
