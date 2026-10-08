@@ -58,7 +58,7 @@
     "fmt": "vp fmt --write src vite.config.ts",
     "test": "node scripts/run-tests.mjs",
     "test:prepared": "node scripts/run-tests.mjs --require-prepared && node src/test.ts && node --test src/vite-plus/*.test.ts",
-    "test:types:real-vite": "vp exec node type-tests/plugin-vue/check.mjs"
+    "test:types:real-vite": "vp exec node type-tests/plugin-vue/check.ts"
   },
   "dependencies": {
     "@vizejs/native": "workspace:*",

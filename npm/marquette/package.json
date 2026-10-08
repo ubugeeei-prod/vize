@@ -82,10 +82,10 @@
     "access": "public"
   },
   "scripts": {
-    "build": "vp pack && node scripts/check-size.mjs",
+    "build": "vp pack && node scripts/check-size.ts",
     "check": "vp check README.md package.json tsconfig.json src scripts vite.config.ts && tsc --noEmit -p tsconfig.json",
     "check:fix": "vp check --fix README.md package.json tsconfig.json src scripts vite.config.ts",
-    "check:size": "node scripts/check-size.mjs",
+    "check:size": "node scripts/check-size.ts",
     "check:types": "tsc --noEmit -p tsconfig.json",
     "dev": "vp pack --watch",
     "fmt": "vp fmt --write README.md package.json tsconfig.json src scripts vite.config.ts",

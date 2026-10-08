@@ -11,6 +11,8 @@
     "tools/support/compat/github/plan-source-checks.ts",
     "tests/tooling/comparison-base.test.ts",
     "tests/tooling/plan-source-checks.test.ts",
-    "tests/tooling/typescript-tooling-project.test.ts"
+    "tests/tooling/typescript-tooling-project.test.ts",
+    "npm/marquette/scripts/check-size.ts",
+    "npm/builder/vite/type-tests/plugin-vue/check.ts"
   ]
 }
