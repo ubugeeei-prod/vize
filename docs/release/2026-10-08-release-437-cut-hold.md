@@ -8,37 +8,71 @@ v0.437.0 has no source before versioning (C), frozen versioned source (H), or
 Release run (R): all three identities are unset. The prepared observer worktree
 does not establish a cut or qualification.
 
-Start only after the following three prerequisites are satisfied on genuine
-protected delivery. The guard and BOM changes must actually merge; the corpus
-condition requires demonstrated cause resolution and full fresh qualification.
-Successful local controls, source Actions, diagnostics and queue admission
+The operator has reviewed this revised admission condition. It takes effect
+only after its policy documentation has actual protected delivery. Select C only
+after that delivery and all three prerequisites below are authenticated on main.
+It permits a fresh fully gated candidate while the inaccessible historical
+failure remains unexplained. It does not grant a production repair or waive any
+current failure. Successful local controls, source Actions and queue admission
 remain separate from actual signed delivery.
 
-| Prerequisite                     | Current receipt                                                                                                                                                                                                                           | Required before the cut                                                                                                                                                                                                                                 |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Early complete-catalog rejection | [#8284](https://github.com/ubugeeei-prod/vize/pull/8284), source `7a9979e521868c258bf7a4ef2faa48eae8595857`, [Check 37741886065](https://github.com/ubugeeei-prod/vize/actions/runs/37741886065)                                          | Actual protected merge of the required integration/own-queue guard, retaining the unchanged complete comparator and exact candidate authentication.                                                                                                     |
-| Malformed BOM error observation  | [#8290](https://github.com/ubugeeei-prod/vize/pull/8290), source `7e683445cd01c1d83955b9de52cfeedcf3597495`; original source-coverage job [113185989482](https://github.com/ubugeeei-prod/vize/actions/runs/37739279068/job/113185989482) | Actual protected delivery of the essential observation repair, with original input bytes and complete stderr expectations preserved. Ambient ANSI differences must be accounted for explicitly.                                                         |
-| Strict canonical-corpus ELOOP    | [#8262](https://github.com/ubugeeei-prod/vize/pull/8262), failed source `3e1f18d5d0888d0cc89086e998dd2d49fbc01f0d`, [SSR/Pug job 113185713196](https://github.com/ubugeeei-prod/vize/actions/runs/37738930679/job/113185713196)           | Resolve the demonstrated cause through the essential producer or authenticated source/build/cache ownership, then qualify the full original corpus from actual protected delivery. Diagnostics or a clean rerun alone cannot satisfy this prerequisite. |
+| Prerequisite                                      | Current receipt                                                                                                                                                                                                                                                                                                                  | Required before the cut                                                                                                                                                                                                                                                      |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Early complete-catalog rejection                  | [#8284](https://github.com/ubugeeei-prod/vize/pull/8284), actual signed merge [`8e18cfb61e74b00d117f3d1e876f9ad25227654a`](https://github.com/ubugeeei-prod/vize/commit/8e18cfb61e74b00d117f3d1e876f9ad25227654a), protected [Check 37745158942](https://github.com/ubugeeei-prod/vize/actions/runs/37745158942)                 | Fulfilled: actual protected delivery retains the unchanged complete comparator and exact integration/own-candidate authentication.                                                                                                                                           |
+| Malformed BOM error observation                   | [#8290](https://github.com/ubugeeei-prod/vize/pull/8290), actual signed merge [`e8a00fbb629d3e092e08fd474a58a01d1aeadc47`](https://github.com/ubugeeei-prod/vize/commit/e8a00fbb629d3e092e08fd474a58a01d1aeadc47), protected [Check 37745743753](https://github.com/ubugeeei-prod/vize/actions/runs/37745743753)                 | Fulfilled: actual protected observation repair preserves original input bytes and complete stderr expectations, with ambient ANSI accounted for explicitly.                                                                                                                  |
+| Current complete corpus and fatal I/O diagnostics | [#8292](https://github.com/ubugeeei-prod/vize/pull/8292), actual signed merge [`8d758d28bd9be7ec51dace5fbf3ba1b0e48cebfc`](https://github.com/ubugeeei-prod/vize/commit/8d758d28bd9be7ec51dace5fbf3ba1b0e48cebfc) at 09:35:11 UTC, protected [Check 37755002716](https://github.com/ubugeeei-prod/vize/actions/runs/37755002716) | Fulfilled: actual protected delivery retains the original SSR/Pug, DOM and reach qualification and fatal lossless post-SSR diagnostics, with all 44,367 files, 5,576 Jellyfin aliases, 148 gitlinks and byte operations. Source-green alone does not satisfy this condition. |
 
-The ELOOP receipt binds tested snapshot
-`b08d4899a6676651dbcf5d761e374311b3a16dd5` and a strict read refusal on pinned
-UpNext alias 33. The owned diagnostic probe
-[#8292](https://github.com/ubugeeei-prod/vize/pull/8292), source
-`43c01097e88e20a91d8591343604f884cd841188`, is diagnostic only; an essential
-repair producer has not yet been identified, and the original failed root cause
-remains unknown. A production change must not be invented if the demonstrated
-cause belongs to source/build/cache ownership, such as archived build-root
-provenance. Retain all 44,367 files, 5,576 Jellyfin aliases and 148 gitlinks,
-complete original vectors, inputs and whole expectations. Diagnostic byte I/O
-or an unexplained clean rerun does not establish cause resolution. Symlink
-causality and repair acceptance require actual observation; removing files,
-weakening refusal rules or substituting counts cannot qualify a cut.
+The historical ELOOP remains **UNKNOWN** and [#7951](https://github.com/ubugeeei-prod/vize/issues/7951)
+stays open. The failed [#8262](https://github.com/ubugeeei-prod/vize/pull/8262)
+source `3e1f18d5d0888d0cc89086e998dd2d49fbc01f0d`,
+[SSR/Pug job 113185713196](https://github.com/ubugeeei-prod/vize/actions/runs/37738930679/job/113185713196)
+and snapshot `b08d4899a6676651dbcf5d761e374311b3a16dd5` retain the strict read
+refusal on pinned UpNext alias 33. The original binary and outside-prefix
+topology are unavailable; current successes cannot reconstruct their cause.
+The old job had a target-cache miss and fresh SSR compilation, so a cached
+SSR binary explanation is unsupported. Preserve the original malformed-BOM
+[source-coverage failure](https://github.com/ubugeeei-prod/vize/actions/runs/37739279068/job/113185989482)
+separately from this unexplained corpus failure.
+
+The diagnostic change earns no ELOOP production-repair credit. It preserves the
+ordinary SSR/Pug reader and executes the lossless, fatal diagnostic afterward.
+Admission requires its actual protected delivery and a freshly qualified full
+original corpus, including all 44,367 files, 5,576 Jellyfin aliases, 148 gitlinks,
+every retained vector/input/whole expectation, both literal root prefixes and
+every Rust/Node operation and byte comparison. A diagnostic source run or an
+unexplained clean rerun alone remains insufficient. Do not invent a production
+normalization, remove inputs, suppress I/O failures or substitute counts.
+
+The actual diagnostic merge retains tree
+`39891882c658e0dfd03ac856bae8cdd8eb9f69a7`. Its exact merge-group Check and
+four automatic companions completed successfully:
+[Musea](https://github.com/ubugeeei-prod/vize/actions/runs/37755001590),
+[Nuxt module](https://github.com/ubugeeei-prod/vize/actions/runs/37755001607),
+[Nuxt scoped styles](https://github.com/ubugeeei-prod/vize/actions/runs/37755001600)
+and [n8n](https://github.com/ubugeeei-prod/vize/actions/runs/37755001651).
+Authenticated SSR/Pug artifact `11540191905` retains 26,477,703 bytes,
+SHA-256 `53fcea358c39831d96dc35cbe421f67958239bd98feda6c4be65cbf09a40bd37`
+and all 53 ZIP CRCs. Both literal full roots retain all 44,367 inputs and
+177,468 Rust operations each, complete Node/snapshot byte equality and all
+58,058/58,062 prefixes; both pinned minimal roots retain 41 aliases. Complete
+vectors, file identities, collector source, toolchain and selected gitlinks
+match across all three workers and the historical failed artifact. This is
+current protected qualification, with no historical cause or repair credit.
+
+This replaces the requirement to prove the inaccessible historical binary's
+cause before trying a new candidate. It does not close #7951, claim the old
+failure was repaired or transfer any source/diagnostic evidence to the new H.
 
 ## Restart after actual delivery
 
-1. Authenticate fresh genuine `main` containing the delivered guard and BOM
-   changes, with the demonstrated corpus cause resolved and freshly qualified.
-   Confirm there is no active release operator or other open version owner.
+1. After actual protected delivery of this reviewed policy, authenticate fresh
+   genuine `main` containing the protected guard, BOM observation repair and qualified fatal
+   post-SSR diagnostic delivery, with the full original corpus freshly accepted.
+   Coordinate actual main delivery of the ready manifest/product heads #8293,
+   #8298 and #8262 before selecting C, so their legitimate changes do not create
+   another catalog drift. Independent repository cleanup and Docs delivery need
+   not postpone the cut; all exact-H release gates still must succeed. Confirm
+   there is no active release operator or other open version owner.
 2. Start the official minor flow from an installed, authenticated workspace:
 
    ```sh
