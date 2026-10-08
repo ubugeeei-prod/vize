@@ -28,5 +28,10 @@ repair before any property query.
 The existing strict ES2022/Bundler pinned-Vue project helper is reused unchanged.
 These are finite configured public-CLI contracts. They do not establish imported
 or complex aliases, destructured-local rename parity, or universal native
-provider-entry authority. No product fix is claimed until authentic source
-execution demonstrates a defect and qualifies its correction.
+provider-entry authority. The first source run on head `0089aaed` exposed six complete defaulted-tone
+rename failures. `historical-0089/` retains those exact full packets and a verified
+artifact/source receipt. Declaration/template renames omitted the defaults key;
+key-origin renames omitted the alias/template. Actual application yielded TS2353,
+while every independent golden and native guard repaired cleanly. The correction
+joins only AST-owned inline keys to existing binding metadata; all sources and
+expected transactions remain byte-exact, with fresh hosted qualification required.

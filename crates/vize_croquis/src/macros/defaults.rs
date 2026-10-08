@@ -1,6 +1,6 @@
 //! Authored defaults retained before imported prop declarations are expanded.
 
-use super::{MacroTracker, PropDefinition};
+use super::{MacroKind, MacroTracker, PropDefinition};
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 
 #[derive(Clone, Default)]
@@ -36,6 +36,8 @@ impl StaticDefaultObject {
 pub(super) struct WithDefaults {
     expression: Option<CompactString>,
     values: FxHashMap<CompactString, CompactString>,
+    key_ranges: FxHashMap<CompactString, Vec<(u32, u32)>>,
+    key_owner: Option<u32>,
     resolved_names: FxHashSet<CompactString>,
     objects: FxHashMap<CompactString, StaticDefaultObject>,
 }
@@ -65,12 +67,46 @@ impl MacroTracker {
         &mut self,
         expression: CompactString,
         values: FxHashMap<CompactString, CompactString>,
+        key_ranges: FxHashMap<CompactString, Vec<(u32, u32)>>,
+        key_owner: Option<u32>,
     ) {
         self.with_defaults.expression = Some(expression);
         self.with_defaults.values = values;
+        self.with_defaults.key_ranges = key_ranges;
+        self.with_defaults.key_owner = key_owner;
         for prop in &mut self.props {
             if let Some(value) = self.with_defaults.values.get(&prop.name) {
                 prop.default_value = Some(value.clone());
+            }
+        }
+    }
+
+    /// Inline, non-shorthand default keys owned by the recognized defineProps
+    /// invocation. Imported and ambiguous property declarations grant no edge.
+    pub fn with_defaults_key_ranges(&self, name: &str) -> &[(u32, u32)] {
+        if self.prop_declaration(name).is_none()
+            || self.with_defaults.key_owner != self.define_props().map(|owner| owner.start)
+            || self.all_calls().iter().any(|call| {
+                call.kind == MacroKind::DefineProps
+                    && Some(call.start) != self.with_defaults.key_owner
+            })
+        {
+            return &[];
+        }
+        self.with_defaults
+            .key_ranges
+            .get(name)
+            .map_or(&[], Vec::as_slice)
+    }
+
+    pub(super) fn shift_with_defaults_key_ranges(&mut self, delta: u32) {
+        if let Some(owner) = &mut self.with_defaults.key_owner {
+            *owner = owner.saturating_add(delta);
+        }
+        for ranges in self.with_defaults.key_ranges.values_mut() {
+            for (start, end) in ranges {
+                *start = start.saturating_add(delta);
+                *end = end.saturating_add(delta);
             }
         }
     }

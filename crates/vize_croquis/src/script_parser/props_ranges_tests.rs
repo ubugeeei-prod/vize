@@ -95,3 +95,56 @@ fn repeated_members_do_not_claim_one_arbitrary_authored_owner() {
     let result = parse_script_setup(source);
     assert!(result.macros.prop_declaration("shared").is_none());
 }
+
+#[test]
+fn inline_defaults_keys_retain_exact_owner_ranges_and_shift_with_the_script() {
+    let source = "type Props = { tone?: string }; const unrelated = { tone: 'dark' }; withDefaults(defineProps<Props>(), { tone: 'light' });";
+    let mut result = parse_script_setup(source);
+    let ranges = result.macros.with_defaults_key_ranges("tone");
+    assert_eq!(ranges.len(), 1);
+    let (start, end) = ranges[0];
+    assert_eq!(source.get(start as usize..end as usize), Some("tone"));
+    assert_eq!(start as usize, source.rfind("tone:").unwrap());
+    result.macros.shift_offsets(17);
+    assert_eq!(
+        result.macros.with_defaults_key_ranges("tone"),
+        &[(start + 17, end + 17)]
+    );
+}
+
+#[test]
+fn default_key_spelling_does_not_bless_distinct_or_ambiguous_owners() {
+    for defaults in [
+        "defaults",
+        "{ tone }",
+        "{ 'tone': 'light' }",
+        "{ [tone]: 'light' }",
+        "{ ...defaults, tone: 'light' }",
+        "{ get tone() { return 'light' } }",
+        "{ tone() { return 'light' } }",
+    ] {
+        let source = vize_carton::cstr!(
+            "type Props = {{ tone?: string }}; const tone = 'dark'; const defaults = {{ tone: 'light' }}; withDefaults(defineProps<Props>(), {defaults});"
+        );
+        assert!(
+            parse_script_setup(&source)
+                .macros
+                .with_defaults_key_ranges("tone")
+                .is_empty()
+        );
+    }
+    for source in [
+        "type Props = { tone: string } & { tone: number }; withDefaults(defineProps<Props>(), { tone: 'light' });",
+        "type Props = { tone?: string }; defineProps<Props>(); withDefaults(other(), { tone: 'light' });",
+        "type A = { tone?: string }; type B = { tone?: string }; withDefaults(defineProps<A>(), { tone: 'a' }); defineProps<B>();",
+        "import type { Imported } from './props'; type A = { tone?: string }; defineProps<A>(); withDefaults(defineProps<Imported>(), { tone: 'a' });",
+        "type A = { tone?: string }; type B = { tone: string } & { tone: number }; defineProps<A>(); withDefaults(defineProps<B>(), { tone: 'a' });",
+    ] {
+        assert!(
+            parse_script_setup(source)
+                .macros
+                .with_defaults_key_ranges("tone")
+                .is_empty()
+        );
+    }
+}

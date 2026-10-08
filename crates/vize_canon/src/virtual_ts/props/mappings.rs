@@ -81,6 +81,34 @@ impl<'a> PropBindingMappings<'a> {
         let Some(original) = self.authored_name_range(name) else {
             return;
         };
+        for &(key_start, key_end) in self.summary.macros.with_defaults_key_ranges(name) {
+            let source = (self.script_source_offset)(key_start as usize)
+                ..(self.script_source_offset)(key_end as usize);
+            // Only an exact copied setup mapping can project this retained AST
+            // key. Synthetic name mappings and text searches grant no edge.
+            for mapping in self.mappings.iter() {
+                if mapping.sub_spans.is_empty()
+                    && mapping.gen_range.len() == mapping.src_range.len()
+                    && mapping.src_range.start <= source.start
+                    && source.end <= mapping.src_range.end
+                {
+                    let generated =
+                        mapping.gen_range.start + source.start - mapping.src_range.start;
+                    let target = generated..generated + source.len();
+                    let authored = self
+                        .script_content
+                        .and_then(|script| script.get(key_start as usize..key_end as usize));
+                    if authored.is_none() || ts.get(target.clone()) != authored {
+                        continue;
+                    }
+                    self.semantic_links.push(VizeSemanticLink {
+                        source_range: start..start + binding.len(),
+                        target_range: target,
+                        kind: VizeSemanticLinkKind::VueTemplatePropBinding,
+                    });
+                }
+            }
+        }
         self.mappings.push(VizeMapping {
             gen_range: start..start + binding.len(),
             src_range: original,

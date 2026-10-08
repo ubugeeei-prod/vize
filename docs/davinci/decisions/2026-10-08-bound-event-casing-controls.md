@@ -214,3 +214,16 @@ head first, verify the stale queue entry is removed, then dissolve only the
 remaining open Stack membership, retarget to main and register the remaining
 #8233/#8262 dependent chain as a native Stack. Record its actual number and
 positions before admission; never enable individual layer auto-merge.
+
+The first fresh-head push was also rejected by GH006 because the obsolete
+entry remained queued. The root coordinator closed #8233, verified removal
+from the actual main queue, and unstacked #8234. GitHub retained merged #8218
+but reported both #8233 and #8262 with `stack: null`. The guarded fresh-head
+push then succeeded. Closed-base edits and reopen after head divergence failed;
+the original parent ref still existed at exact `a9fe63401b909b1c2c1357da10f7b5a810eccfa9`.
+Restore only the child remote to archived c7 with an exact fresh-head lease,
+reopen, retarget to main, then push authenticated `482f1d8416` with an exact c7
+lease. This sequence succeeded. No branch protection bypass or individual
+auto-merge was used, and the already-existing parent ref is preserved.
+Supplemental #8262 is replayed onto that fresh child before actual native Stack
+registration and new-head qualification.

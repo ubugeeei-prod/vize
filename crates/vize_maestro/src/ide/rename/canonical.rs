@@ -222,7 +222,7 @@ fn linked_positions(
 ) -> Vec<corsa_support::CanonicalSemanticPosition> {
     let mut positions = FxHashSet::default();
     let mut push = |uri: &Url, range: Range| {
-        if let Some(position) = corsa_support::linked_semantic_position(
+        for position in corsa_support::linked_semantic_positions(
             document,
             uri.as_str(),
             &corsa_support::tower_range(range),

@@ -15,7 +15,8 @@ pub struct VizeSemanticLink {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum VizeSemanticLinkKind {
     VueSetupTemplateRefUnwrap,
-    /// A synthetic bare template prop binding and its typed property access.
+    /// A synthetic bare template prop binding and its typed property access or
+    /// an AST-owned inline withDefaults key for the same authored property.
     VueTemplatePropBinding,
     /// A plain-script export alias and the authored setup declaration it exposes.
     VuePlainScriptExport,

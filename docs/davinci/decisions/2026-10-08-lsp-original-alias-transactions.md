@@ -5,7 +5,8 @@
 Preserve the original `E.vue` and complete #8011 report, along with all six local
 alias sessions delivered in #8181. Add separate frozen withDefaults and partial
 destructure fixtures to qualify the remaining original-report forms using
-whole public transactions. No production source or existing oracle changes.
+whole public transactions. The initial test-only head now provides an authentic
+producer failure; preserve every existing oracle while correcting that identity.
 
 The existing alias test skips `tone` for both nonplain forms and normalizes edit
 entries before comparison. Its withDefaults form tests only the independent
@@ -49,7 +50,8 @@ Use the unchanged strict ES2022/Bundler pinned-Vue helper and actual source-buil
 native checker, without claiming per-request backend-entry proof. Original
 fixture bytes, runtime ownership controls, provider contracts, native assets,
 400-file workload inputs, closed selectors, recipes, and numeric ceilings are
-unchanged. The new test adds no production parser, query, or pipeline stage.
+unchanged. The correction adds no parser or native-query stage. It reuses retained AST
+facts, copied setup mappings and the existing native follow-up batch.
 
 The slice depends on the existing #8218/#8233 Stack until its prefix actually
 merges. Register it in the same native Stack and let the root coordinator admit
@@ -60,10 +62,50 @@ installed release replay remain necessary. These finite contracts do not close
 imported/complex alias, destructured-local, named-model, or stock ContentMapper
 parity obligations.
 
-No functional defect is asserted by the read-only coverage audit. Preserve any
-authentic hosted failure and all authored expectations before correcting a
-producer. The native guard, whole edits, diagnostics, and original fixture
-identity must not be weakened to turn that failure green.
+## Authentic source failure and correction
+
+Exact PR head `0089aaed4115c3b677a4507d90873f98fe98c2c0` ran Check
+`37729980618`, attempt 1. The successful builder compiled pull-request merge
+`b00330c5077b5833f2342f79b5f32df60e39266d`; Rust shard 2 job
+`113158950643` failed the six defaulted-tone transactions. All other 26 new
+captures matched, including all six definition sessions, and every native guard
+and independent version-3 repair was clean. Preserve the six complete failed
+packets under `supplemental/historical-0089/`, without removing or normalizing
+fields. Their receipt binds both source identities and artifact `11529702568`;
+the downloaded ZIP matches GitHub's published SHA256
+`0592816b890532dbe31294db8173d3f6bc224a82fb194d2508509848a265324d`.
+Packet `sourceSha: null` remains unchanged; run/job/artifact custody supplies the
+source binding, and no per-request backend-entry authority is invented.
+
+Declaration and template origins returned only their two edits, leaving the
+original defaults key. The defaults-key origin returned only its own edit,
+leaving the alias and template names. Applying those actual whole edits produced
+TS2353; the independent full repairs were clean. References from the defaults key
+already reached all three locations, and its native definition reached the alias
+member. No expectation, original fixture, guard or diagnostic receiver changes.
+
+Croquis retains direct inline, static, non-shorthand initializer key spans in the
+existing AST walk, tied to the actual wrapped `defineProps` call. Keys with
+separate objects, spreads, computed/string keys, methods or accessors grant no
+edge. Unowned/imported or ambiguous members, and multiple distinct defineProps
+owners, also grant no edge. Owner and key offsets shift together. Canon projects
+those exact spans through existing equal-length copied setup mappings and checks
+the generated endpoint bytes against the retained key bytes. The existing
+`VueTemplatePropBinding` metadata joins the bare binding to that default key;
+its prior bare-binding-to-public-access link remains first and unchanged.
+
+Maestro completes the exact connected binding endpoint set before its existing
+native follow-up batch, from any of the three origins. Exact ranges, visited
+endpoints and destination deduplication prevent collision and cycles;
+component-navigation/completion owner edges are excluded. Unrelated endpoints
+return without allocating graph state. Whole native packet admission before
+mapping, the component-role declaration guard, final authored-scope checks and
+all ownership/refusal controls remain unchanged. Generated TypeScript bytes,
+helper signatures, public enum shape and public struct fields do not change.
+Focused owner/shift, collision/cycle and copied-mapping controls accompany the
+unchanged 32 complete CLI sessions. Fresh hosted source/protected execution and
+performance gates still decide acceptance; this source change does not grant
+runtime, merge or release credit.
 
 Paired issue decision: #8011. The canonical decision record receives the same
 clause in this change through the root coordinator; no upstream write is made.

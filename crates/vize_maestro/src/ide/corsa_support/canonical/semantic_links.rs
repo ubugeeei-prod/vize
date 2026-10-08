@@ -8,7 +8,7 @@ use crate::ide::diagnostics::VirtualTsResult;
 mod binding_links;
 mod binding_roles;
 
-pub(crate) use binding_links::linked_semantic_position;
+pub(crate) use binding_links::linked_semantic_positions;
 mod component_arguments;
 mod component_props;
 
@@ -212,4 +212,3 @@ mod semantic_position_tests {
         assert_eq!((positions[0].line, positions[0].character), (0, 16));
     }
 }
-
