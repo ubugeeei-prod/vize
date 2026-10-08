@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import { resolveSemverChangeMarker } from "../../tools/support/compat/github/semver-change-marker.mjs";
 import { readRepoFile, workflowJobBody } from "./support/github-workflows.ts";
@@ -8,7 +9,7 @@ test("release SemVer checks classify the exact candidate without push metadata",
   const workflow = readRepoFile(".github", "workflows", "check.yml");
   const job = workflowJobBody(workflow, "semver-checks");
 
-  assert.match(job, /permissions:\n(?:[^\S\n]+\S.*\n)*[^\S\n]+contents:\s*read\n/);
+  assert.deepEqual(parse(workflow).jobs["semver-checks"].permissions, { contents: "read" });
   assert.doesNotMatch(job, /pull-requests:\s*read/);
   assert.match(
     job,
