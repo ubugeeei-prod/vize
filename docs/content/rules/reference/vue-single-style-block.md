@@ -6,6 +6,8 @@ title: "vue/single-style-block"
 
 Recommend having a single style block
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The component splits its scoped panel and title styles across two style blocks.
+
 ```vue
 <style scoped>
 .panel {
@@ -50,6 +54,8 @@ vp run lint
 ```
 
 ## Good
+
+Both selectors stay scoped in one style block, satisfying the single-block convention without dropping either style.
 
 ```vue
 <style scoped>

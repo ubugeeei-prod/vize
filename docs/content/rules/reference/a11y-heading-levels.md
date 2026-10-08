@@ -6,6 +6,8 @@ title: "a11y/heading-levels"
 
 Disallow skipping heading levels
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The heading sequence jumps directly from `h1` to `h3`, skipping level two.
+
 ```vue
 <template>
   <h1>Account</h1>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+Changing the billing heading to `h2` preserves a consecutive heading hierarchy.
 
 ```vue
 <template>

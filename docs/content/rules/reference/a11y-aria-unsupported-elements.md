@@ -6,6 +6,8 @@ title: "a11y/aria-unsupported-elements"
 
 Disallow ARIA attributes on elements that do not support them
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The metadata element carries `aria-hidden`, although `meta` does not support ARIA attributes.
+
 ```vue
 <template>
   <meta charset="utf-8" aria-hidden="true" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Removing the ARIA attribute leaves the charset declaration intact.
 
 ```vue
 <template>

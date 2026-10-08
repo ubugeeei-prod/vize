@@ -6,6 +6,8 @@ title: "a11y/placeholder-label-option"
 
 select のプレースホルダー option に disabled または hidden を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+空の値を持つ案内の option が、国の選択肢と同じように選択できる状態です。
+
 ```vue
 <template>
   <select v-model="country">
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## 良い
+
+disabled を追加し、案内を Japan の選択肢と区別します。
 
 ```vue
 <template>

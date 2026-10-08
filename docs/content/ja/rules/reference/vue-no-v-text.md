@@ -6,6 +6,8 @@ title: "vue/no-v-text"
 
 v-text の代わりに mustache を使う方針を適用します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+要素の内容を v-text のディレクティブで指定しています。
+
 ```vue
 <template>
 <div v-text="message"></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ文字のバインディングを、要素の内容の mustache で指定します。
 
 ```vue
 <template>

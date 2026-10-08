@@ -6,6 +6,8 @@ title: "a11y/label-has-for"
 
 Require labels to have associated form controls
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The separate label is neither associated through `for` nor wrapped around the input.
+
 ```vue
 <template>
   <label>Email</label>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+`for="email"` matches the input ID and explicitly associates the two elements.
 
 ```vue
 <template>

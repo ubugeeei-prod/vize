@@ -6,6 +6,8 @@ title: "vue/valid-v-html"
 
 v-html の値・引数・modifier を検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`v-html` の式がないか、対応していない引数・修飾子を指定しています。
+
 ```vue
 <template>
 <div v-html></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+`v-html="html"` で正しい式を渡します。構文が正しくても HTML の無害化や未信頼の内容の安全性は保証されません。
 
 ```vue
 <template>

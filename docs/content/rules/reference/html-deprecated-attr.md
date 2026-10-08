@@ -6,6 +6,8 @@ title: "html/deprecated-attr"
 
 Disallow deprecated HTML attributes
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The paragraph uses the deprecated presentational `align` attribute.
+
 ```vue
 <template>
 <p align="center">Notice</p>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The class and `text-align: center` declaration express the alignment through CSS.
 
 ```vue
 <template><p class="notice">Notice</p></template>

@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -47,6 +47,8 @@ createApp(Root).mount("#app");
 ```
 
 ## 悪い
+
+子の `ref(props.count)` は初期値を一度コピーし、後の親の prop 変更には追従しません。現在の prop-to-ref 生成元の例で、非決定的な SSR 全般の例ではありません。
 
 `App.vue`
 
@@ -70,6 +72,8 @@ const count = ref(props.count);
 
 ## 良い
 
+初期値を独立した state にコピーせず、`toRef(props, "count")` で prop を参照します。
+
 `App.vue`
 
 ```vue
@@ -90,7 +94,7 @@ const count = toRef(props, "count");
 <template><p>{{ count }}</p></template>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

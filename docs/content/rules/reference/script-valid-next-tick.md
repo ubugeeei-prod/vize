@@ -6,6 +6,8 @@ title: "script/valid-next-tick"
 
 Require the result of a nextTick() call to be awaited, chained, or given a callback
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The imported `nextTick()` is a bare expression with no callback, so its returned Promise is ignored and no work waits for the DOM flush.
+
 ```vue
 <script setup lang="ts">
 import { nextTick } from "vue";
@@ -43,6 +47,8 @@ nextTick();
 ```
 
 ## Good
+
+`await nextTick()` consumes the Promise and explicitly waits for the next DOM update before subsequent setup code continues.
 
 ```vue
 <script setup lang="ts">

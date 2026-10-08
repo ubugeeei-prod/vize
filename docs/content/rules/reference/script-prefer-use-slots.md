@@ -6,6 +6,8 @@ title: "script/prefer-use-slots"
 
 Recommend using useSlots() over context.slots
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`setup` destructures `slots` from its context argument, the access form this rule prefers to replace.
+
 ```vue
 <script lang="ts">
 import { defineComponent, h } from "vue";
@@ -45,6 +49,8 @@ export default defineComponent({
 ```
 
 ## Good
+
+`useSlots()` retrieves the slots inside setup, preserving the render function and its optional default-slot call without a context parameter.
 
 ```vue
 <script lang="ts">

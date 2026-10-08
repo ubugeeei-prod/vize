@@ -6,6 +6,8 @@ title: "type/no-unsafe-template-binding"
 
 テンプレートで安全でない型の値を使用する箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -38,6 +40,8 @@ vp run lint
 
 ## 悪い
 
+補間する `value` の型を明示的に `any` とし、チェッカーがテンプレートの binding を安全な具体的な型として確認できません。
+
 ```vue
 <script setup lang="ts">
 const value: any = "Hello";
@@ -46,6 +50,8 @@ const value: any = "Hello";
 ```
 
 ## 良い
+
+型注釈を `string` に変え、描画する値を変えずに、同じ補間へ検査できる具体的な型を与えます。
 
 ```vue
 <script setup lang="ts">

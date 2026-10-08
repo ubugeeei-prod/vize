@@ -6,6 +6,8 @@ title: "script/prefer-ref-over-reactive"
 
 Recommend using ref() over reactive() for state management
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The state is created with `reactive`, contrary to this opinionated rule’s preference for refs. The example illustrates a style preference, not an inherently invalid reactive object.
+
 ```vue
 <script setup lang="ts">
 // reactive requires careful handling to avoid losing reactivity
@@ -46,6 +50,8 @@ name: 'foo'
 ```
 
 ## Good
+
+The examples create both scalar and object state with `ref`; related fields may also be split into separate refs. This satisfies the preferred state-construction form.
 
 ```vue
 <script setup lang="ts">

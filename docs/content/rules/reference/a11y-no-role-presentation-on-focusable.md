@@ -6,6 +6,8 @@ title: "a11y/no-role-presentation-on-focusable"
 
 Disallow role="presentation" or role="none" on focusable elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The focusable billing link requests role=presentation, which conflicts with its interactive link role; browsers must ignore that presentation request.
+
 ```vue
 <template>
   <a href="/billing" role="presentation">Billing</a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Remove the conflicting presentation request and rely on the native link role and billing destination.
 
 ```vue
 <template>

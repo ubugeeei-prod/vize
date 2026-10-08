@@ -9,33 +9,24 @@ on:
   pull_request:
     paths:
       - ".github/workflows/typechecker-native-phases.yml"
-      - ".github/actions/check-batch-generated-config/**"
       - "tools/benchmarks/scripts/typechecker-native-*.mjs"
-      - "tools/benchmarks/scripts/type-snapshot-cli-corpus.mjs"
-      - "tools/benchmarks/scripts/type-snapshot-cli-leaf-corpus.mjs"
-      - "tools/benchmarks/scripts/type-snapshot-cli-protocol.mjs"
-      - "crates/vize/tests/check_template_emit_cli.rs"
-      - "crates/vize/tests/check_canon_define_model_modifiers_cli.rs"
+      - "tools/benchmarks/scripts/type-snapshot-cli-*.mjs"
+      - "crates/vize/tests/check_*_cli.rs"
       - "tests/fixtures/typechecker/model-modifier-ranges/**"
-      - "crates/vize/tests/check_vue_helper_scope_cli.rs"
       - "crates/vize/tests/lint_unchecked_indexed_access_cli**"
       - "crates/vize_patina/src/linter/corsa_session/paths/**"
       - "tests/_fixtures/differential/linter/unchecked-index-access/**"
       - "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_emit_tests.rs"
-      - "tests/_fixtures/differential/typechecker/template-dollar-emit/**"
-      - "docs/davinci/decisions/2026-10-04-typechecker-native-phases.md"
-      - "docs/davinci/decisions/2026-10-04-typechecker-cold-native-profiles.md"
+      - "docs/davinci/decisions/2026-10-04-typechecker-*.md"
       - "tools/benchmarks/scripts/generate.mjs"
       - "tools/benchmarks/scripts/check-gate-*.mjs"
       - "tools/benchmarks/scripts/typecheck-command.mjs"
       - "tools/benchmarks/scripts/benchmark-binary.mjs"
-      - "crates/vize/tests/check_outside_import_types_cli.rs"
       - "tests/_fixtures/differential/typechecker/**"
       - "crates/vize_canon/**"
       - ".github/actions/check-*/**"
       - "tests/tooling/**"
       - "tests/_fixtures/differential/lsp/**"
-      - ".github/actions/check-computed-inlay/**"
       - "crates/vize/tests/lsp_*_cli.rs"
       - "crates/vize_maestro/src/ide/hover/component_prop**"
       - "crates/vize_maestro/src/ide/completion**"
@@ -44,9 +35,7 @@ on:
       - "crates/vize_croquis/src/**"
       - "crates/vize/tests/support/**"
       - "crates/vize/src/**"
-      - "crates/vize/tests/check_undefined_default_props_cli.rs"
       - "crates/vize_maestro/src/ide/diagnostics/editor_typecheck_defaults_tests.rs"
-      - "tests/_fixtures/differential/typechecker/undefined-default-prop/**"
       - "Cargo.toml"
       - "Cargo.lock"
       - "pnpm-lock.yaml"
@@ -140,20 +129,30 @@ jobs:
           VIZE_TEMPLATE_EMIT_CAPTURE: ${{ runner.temp }}/template-dollar-emit
           VIZE_VUE_HELPER_CAPTURE: ${{ runner.temp }}/config-scoped-vue-helpers
           VIZE_TSCONFIG_TYPES_CAPTURE: ${{ runner.temp }}/tsconfig-types-extends
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          unset VIZE_TEST_DISABLE_TSGO
-          cd "$NATIVE_PHASE_SOURCE_ROOT"
-          VIZE_UNCHECKED_INDEX_CAPTURE="$RUNNER_TEMP/unchecked-index-access" cargo test --locked --profile ci-opt -p vize --test check_template_emit_cli --test check_vue_helper_scope_cli --test lint_unchecked_indexed_access_cli --test check_canon_define_model_modifiers_cli --test lsp_generic_prop_hover_cli --test lsp_data_aria_attributes_cli --test tsconfig_diamond --test check_tsconfig_types_extends_cli --test lsp_bare_script_symbols_cli --test check_tsconfig_bom_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
-          export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_TEMPLATE_EMIT_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')"
-          cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_emit_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
-          cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_vue_helper_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
-          export VIZE_TEMPLATE_EMIT_TS40_CAPTURE="$RUNNER_TEMP/template-emit-ts40-projection"
-          cargo test --locked --profile ci-opt -p vize_maestro --test davinci_ts40_projection current_projection_matrix_is_exact_and_non_empty --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
-          node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs
-          node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs
-          node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs
-          bash tools/benchmarks/scripts/typechecker-native-unknown-options.sh && cargo test --locked --profile ci-opt -p vize_patina --test documented_rule_examples documented_type_aware_examples_match_with_the_required_corsa_runtime --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+          [[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags origin "$GITHUB_WORKFLOW_SHA"
+          for helper in typechecker-native-source-recipe.mjs typechecker-native-release-metadata.mjs; do git show "$GITHUB_WORKFLOW_SHA:tools/benchmarks/scripts/$helper" > "$RUNNER_TEMP/$helper"; done
+          recipe="$(node "$RUNNER_TEMP/typechecker-native-source-recipe.mjs")"
+          if [[ -n "$recipe" ]]; then
+            if [[ "$(node -p 'Boolean(JSON.parse(require("node:fs").readFileSync(process.env.RUNNER_TEMP+"/native-source-recipe.json")).originalEnvironment.VIZE_TSCONFIG_TYPES_CAPTURE)')" != true ]]; then unset VIZE_TSCONFIG_TYPES_CAPTURE; fi; unset GH_TOKEN; bash --noprofile --norc -e -o pipefail "$recipe"
+          else
+            # VIZE_NATIVE_SOURCE_INLINE_BEGIN
+            unset VIZE_TEST_DISABLE_TSGO
+            cd "$NATIVE_PHASE_SOURCE_ROOT"
+            VIZE_UNCHECKED_INDEX_CAPTURE="$RUNNER_TEMP/unchecked-index-access" cargo test --locked --profile ci-opt -p vize --test check_template_emit_cli --test check_vue_helper_scope_cli --test lint_unchecked_indexed_access_cli --test check_canon_define_model_modifiers_cli --test lsp_generic_prop_hover_cli --test lsp_data_aria_attributes_cli --test tsconfig_diamond --test check_tsconfig_types_extends_cli --test lsp_bare_script_symbols_cli --test check_tsconfig_bom_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+            export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_TEMPLATE_EMIT_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')"
+            cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_emit_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+            cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_vue_helper_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+            export VIZE_TEMPLATE_EMIT_TS40_CAPTURE="$RUNNER_TEMP/template-emit-ts40-projection"
+            cargo test --locked --profile ci-opt -p vize_maestro --test davinci_ts40_projection current_projection_matrix_is_exact_and_non_empty --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+            node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs
+            node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs
+            node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs
+            bash tools/benchmarks/scripts/typechecker-native-unknown-options.sh && cargo test --locked --profile ci-opt -p vize_patina --test documented_rule_examples documented_type_aware_examples_match_with_the_required_corsa_runtime --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
+            # VIZE_NATIVE_SOURCE_INLINE_END
+          fi
       - name: Check exact neutral inputs, strict phase parser and projection probe
         run: |
           node tools/benchmarks/scripts/typechecker-native-phases.mjs --self-test
@@ -329,6 +328,7 @@ jobs:
           path: |
             ${{ runner.temp }}/outside-import-types/
             ${{ runner.temp }}/typechecker-native-source-custody.json
+            ${{ runner.temp }}/native-source-recipe*
             ${{ runner.temp }}/reference-path-module/
             ${{ runner.temp }}/typechecker-native-phases.json
             ${{ runner.temp }}/typechecker-native-phases.json.samples/provenance.json

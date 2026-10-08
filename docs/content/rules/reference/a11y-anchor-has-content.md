@@ -6,6 +6,8 @@ title: "a11y/anchor-has-content"
 
 Require anchor elements to have accessible content
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The `/settings` link has no text or other naming content, so its destination has no accessible description.
+
 ```vue
 <template>
   <a href="/settings"></a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The visible `Settings` text supplies content for the same destination link.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "script/no-multiple-slot-args"
 
 Disallow passing more than one argument to a scoped-slot function call
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The slot calls pass multiple positional arguments or spread an unknown argument list. Vue slots receive one props object, not a positional parameter list.
+
 ```vue
 <script setup lang="ts">
 slots.default(foo, bar)
@@ -46,6 +50,8 @@ slots.default(...args)
 ```
 
 ## Good
+
+`{ foo, bar }` combines the data into one argument; `slotProps` and the argument-free call also stay within the supported slot-call shape.
 
 ```vue
 <script setup lang="ts">

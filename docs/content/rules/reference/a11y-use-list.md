@@ -6,6 +6,8 @@ title: "a11y/use-list"
 
 Suggest using list elements for bullet-like text
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The task items are separate paragraphs with typed dash markers rather than list elements.
+
 ```vue
 <template>
   <p>- First task</p>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+An unordered list and list items express the same tasks with list semantics.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/v-on-handler-style"
 
 イベント handler の参照・関数形式を揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+イベント属性の中に変更処理や複数の文を直接記述しています。
+
 ```vue
 <template>
 <button @click="count++"></button>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+handler の参照を使うか、インライン処理が必要なら arrow / function 式で関数の境界を明示します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/no-root-v-if"
 
 Disallow v-if on the single root element of a template
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The component root itself appears and disappears under v-if.
+
 ```vue
 <template>
 <div v-if="show">content</div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+A stable outer div remains the root while the nested paragraph carries the visibility condition.
 
 ```vue
 <template>

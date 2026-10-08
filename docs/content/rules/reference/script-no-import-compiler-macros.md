@@ -6,6 +6,8 @@ title: "script/no-import-compiler-macros"
 
 Disallow importing Vue compiler macros that are auto-imported
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The `vue` import includes `defineProps` and `defineEmits`, although these are compiler macros available directly in `<script setup>`.
+
 ```vue
 <script setup lang="ts">
 import { defineProps, defineEmits } from "vue";
@@ -44,6 +48,8 @@ const emit = defineEmits<{ save: [id: number] }>();
 ```
 
 ## Good
+
+Removing the macro imports leaves both typed macro calls intact; no runtime import is needed for either declaration.
 
 ```vue
 <script setup lang="ts">

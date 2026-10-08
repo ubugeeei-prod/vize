@@ -6,6 +6,8 @@ title: "type/require-typed-emits"
 
 defineEmits に型定義を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -38,6 +40,8 @@ vp run lint
 
 ## 悪い
 
+配列だけの `defineEmits(["save"])` はイベント名を宣言するだけで、型付きの payload 契約がありません。
+
 ```vue
 <script setup lang="ts">
 defineEmits(["save"]);
@@ -45,6 +49,8 @@ defineEmits(["save"]);
 ```
 
 ## 良い
+
+`defineEmits<{ save: [] }>()` で空の payload タプルを持つ型付きの `save` イベントを宣言し、payload の引数を受け取らないことを明示します。
 
 ```vue
 <script setup lang="ts">

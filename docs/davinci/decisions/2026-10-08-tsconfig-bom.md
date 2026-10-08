@@ -57,3 +57,22 @@ installed acceptance and the general 10x target remain unfinished under
 The first source qualification of 129c correctly rejected the new CLI test's direct Carton macro import under the existing L0 stage-alias law. Change only that CLI test import to `vize_l0::cstr`; Canon retains its existing Carton convention. Preserve both production guards, complete parser/CLI inputs and gold, every native target/field, and all existing gates and budgets. The first tooling failure remains archived; fresh corrected-head source and mandatory native execution are required, with no infrastructure retry or prior-head acceptance credit.
 
 The next source tooling run correctly identified the derived import inventory after the CLI stage-alias repair. Regenerate the two complete typechecker TSV shards with the existing scanner: retain every prior row and add exactly the new CLI test/dev L0 alias row and Canon test/dev Carton compatibility row. The configuration-only index and all other shards remain unchanged; Carton receives no native-stage credit. Production, authored inputs/gold, parser/CLI test bodies, native fields/targets and all caps remain unchanged. Archive that first inventory failure and require fresh corrected-head source and mandatory native execution without a retry or gate waiver.
+
+Refresh the same PR on genuine actual main
+`b8ea16711117c502b14724e1eb1e4a7022a7f1d7` after the immutable native-source
+recipe actually merges. Preserve its complete recipe wrapper, helper custody,
+marked fallback, environment, prior target list, timeouts and budgets, and add
+only `check_tsconfig_bom_cli` to that fallback's existing cargo invocation.
+All original BOM production, parser, CLI and corpus bytes remain unchanged.
+The previous `02b5ab1725d76093c509bb4f4b2ada05998e486f` source green and actual
+native execution are historical evidence; fresh exact-head Actions and current
+protected qualification remain required before this composed head is delivered.
+
+The strict recipe law correctly rejected the first composed command because
+its immutable incoming nine-target script omitted the new tenth target. Retain
+that original script and digest and all authenticated historical source bytes.
+Add a separate independently authored complete ten-target successor fixture,
+verify its exact additive relation to the original script, compare current and
+future-source recipes against its whole bytes, and reject removal of the new
+target. This changes only the recipe's declared acceptance surface; it does not
+alter any production, original oracle, prior target or publication authority.

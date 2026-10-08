@@ -6,6 +6,8 @@ title: "vue/a11y-img-alt"
 
 Require alt attribute on images for accessibility
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Neither the static image nor the dynamically sourced image supplies an alt attribute.
+
 ```vue
 <template>
 <img src="/photo.jpg" />
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+Informative images get descriptive alt text, decoration gets an empty alt, and the dynamic image binds its description.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/no-deprecated-html-element-is"
 
 Disallow the `is` attribute on native HTML elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+A native div uses the old unprefixed is attribute to request a Vue component.
+
 ```vue
 <template>
 <div is="MyComponent" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+A dynamic component uses :is; the native-element spelling explicitly uses the vue: prefix.
 
 ```vue
 <template>

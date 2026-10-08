@@ -6,6 +6,8 @@ title: "vue/valid-v-model"
 
 v-model の値・引数・modifier を検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+ネイティブの `<div>` は `v-model` のフォーム要素ではなく、値のない input の directive には書き込み先の式がありません。
+
 ```vue
 <template>
   <div v-model="value"></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+input、select、textarea、カスタム コンポーネントを例の書き込み可能な変数に binding します。
 
 ```vue
 <template>

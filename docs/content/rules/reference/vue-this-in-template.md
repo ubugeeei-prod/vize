@@ -6,6 +6,8 @@ title: "vue/this-in-template"
 
 Disallow `this.` in template expressions
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Template expressions explicitly access `this.message`, `this.className`, and `this.handleClick`, although Vue exposes those bindings directly.
+
 ```vue
 <template>
 <div>{{ this.message }}</div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Use `message`, `className`, and `handleClick` directly. The literal string `'this.is.a.string'` stays unchanged because it is not a member access.
 
 ```vue
 <template>

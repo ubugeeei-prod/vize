@@ -72,7 +72,7 @@ fn case_diagnostics(project_root: &Path) -> Option<Vec<(String, Option<u32>, Str
     }
     // Diagnostics come back through the canonical project path; resolve the
     // macOS `/tmp` -> `/private/tmp` symlink before stripping the prefix.
-    let project_root = vize_l0::path::canonicalize_non_verbatim(project_root);
+    let project_root = vize_carton::path::canonicalize_non_verbatim(project_root);
     let project_root = project_root.as_path();
     let mut checker = BatchTypeChecker::with_options_and_corsa_path(
         project_root,

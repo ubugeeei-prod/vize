@@ -6,6 +6,8 @@ title: "vue/valid-v-on"
 
 v-on のイベント名・式・modifier を検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+イベント引数または必要な handler / object 式がありません。
+
 ```vue
 <template>
   <div v-on></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+イベントと handler を指定するか、引数なしの `v-on` に listener object を渡します。
 
 ```vue
 <template>

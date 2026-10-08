@@ -3,13 +3,13 @@
 #![expect(clippy::expect_used, reason = "committed schemas are test oracles")]
 
 use std::path::Path;
+use vize_carton::timing_observer::TimingObserver;
 
 use davinci_test_support::schema as schema_check;
 use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
 use vize_l0::dump::collector::Collector;
 use vize_l0::pass::{
-    BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, TimingObserver,
-    run_pipeline,
+    BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, run_pipeline,
 };
 use vize_l0::profiler::global_profiler;
 

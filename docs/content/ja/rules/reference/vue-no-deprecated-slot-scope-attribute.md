@@ -6,6 +6,8 @@ title: "vue/no-deprecated-slot-scope-attribute"
 
 削除済みの slot-scope 属性を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+廃止された slot-scope で slot の props を受け取っています。
+
 ```vue
 <template>
 <Card><template slot-scope="props">{{ props.name }}</template></Card>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+#default で同じ props を受け取り、slot-scope を取り除きます。
 
 ```vue
 <template>

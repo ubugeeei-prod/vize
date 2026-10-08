@@ -6,6 +6,8 @@ title: "css/prefer-slotted"
 
 Recommend ::v-slotted() for styling slot content
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The scoped stylesheet targets the `slot` outlet rather than the elements supplied through the slot.
+
 ```vue
 <style scoped>
 slot { color: red; }
@@ -42,6 +46,8 @@ slot { color: red; }
 ```
 
 ## Good
+
+`:slotted(.label)` targets the supplied label element through the scoped slot selector.
 
 ```vue
 <style scoped>

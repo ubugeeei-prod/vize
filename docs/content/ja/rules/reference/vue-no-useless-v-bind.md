@@ -6,6 +6,8 @@ title: "vue/no-useless-v-bind"
 
 文字列リテラルだけの不要な v-bind を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+foo に固定の文字列か、補間がない template string をバインドしています。
+
 ```vue
 <template>
 <div :foo="'bar'"></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+固定の値は静的な属性にし、変数や補間がある値はバインディングを残します。
 
 ```vue
 <template>

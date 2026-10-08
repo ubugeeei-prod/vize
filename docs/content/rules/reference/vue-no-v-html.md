@@ -6,6 +6,8 @@ title: "vue/no-v-html"
 
 Warn against v-html to prevent XSS vulnerabilities
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+v-html interprets content as HTML rather than ordinary text.
+
 ```vue
 <template>
   <article v-html="content" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Mustache interpolation displays content as escaped text instead of injecting HTML.
 
 ```vue
 <template>

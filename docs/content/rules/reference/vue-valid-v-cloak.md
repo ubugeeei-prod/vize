@@ -6,6 +6,8 @@ title: "vue/valid-v-cloak"
 
 Enforce valid `v-cloak` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`v-cloak` is given a value, argument, or modifier even though it accepts none of those.
+
 ```vue
 <template>
 <div v-cloak="foo"></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Use bare `v-cloak`; CSS can hide the element until Vue removes that attribute after mounting.
 
 ```vue
 <template>

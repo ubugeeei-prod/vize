@@ -4,6 +4,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
+import { withoutPathHostReferences } from "../support/davinci-path-host-imports.ts";
+
 import { scanConsumerMigrationSurfaces } from "../../../tools/support/compat/davinci/lib/consumer-migration-scan.mjs";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -19,6 +21,7 @@ const recentIssueRows = [
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/css_side_effect_import.rs",
     "test",
     2,
+    1, // The existing real-OS canonicalization call belongs to Carton.
   ],
   [
     "crates/vize_canon/src/batch/type_checker/tests/recent_issues/diagnostic_normalization.rs",
@@ -138,15 +141,17 @@ function typechecker() {
 void test("Canon recent issue tests import L0 through the preferred name", () => {
   const rows = typechecker().fileRows;
 
-  for (const [relPath, mode, sites] of recentIssueRows) {
+  for (const [relPath, mode, sites, hostSites = 0] of recentIssueRows) {
     const row = rows.find((candidate) => candidate.relPath === relPath && candidate.mode === mode);
     assert.ok(row, `${relPath} (${mode})`);
-    assert.equal(row.surfaceCounts.l0, sites, relPath);
-    assert.equal(row.surfaceNameCounts.l0.vize_l0, sites, relPath);
+    assert.equal(row.surfaceCounts.l0, sites - hostSites, relPath);
+    assert.equal(row.surfaceCounts.carton ?? 0, hostSites, relPath);
+    assert.equal(row.surfaceCounts.l0 + (row.surfaceCounts.carton ?? 0), sites, relPath);
+    assert.equal(row.surfaceNameCounts.l0.vize_l0, sites - hostSites, relPath);
     assert.equal(row.surfaceNameCounts.l0.vize_carton ?? 0, 0, relPath);
 
     const source = fs.readFileSync(path.join(repoRoot, relPath), "utf8");
-    assert.doesNotMatch(source, /\bvize_carton\b/u, relPath);
+    assert.doesNotMatch(withoutPathHostReferences(source, relPath), /\bvize_carton\b/u, relPath);
   }
 
   const migratedPaths = new Set(recentIssueRows.map(([relPath]) => relPath));

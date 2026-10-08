@@ -6,6 +6,8 @@ title: "vue/use-v-on-exact"
 
 modifier 付きのイベント操作と競合する handler に .exact を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `essential`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+通常の click handler も Ctrl-click で動くため、別の `.ctrl` handler と重複します。
+
 ```vue
 <template>
   <button type="button" @click="handleClick" @click.ctrl="handleCtrlClick">
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+`.exact` で通常の handler を修飾キーのない click に限定し、Ctrl 専用の handler と分けます。
 
 ```vue
 <template>

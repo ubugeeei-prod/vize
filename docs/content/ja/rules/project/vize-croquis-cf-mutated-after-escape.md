@@ -13,13 +13,91 @@ reactive オブジェクトが、所有者から漏れた後に変更されて�
 
 この公開診断コードには現在の生成元がありません。悪い例・良い例はリスクと修正の説明です。このコードを検出させる設定は現在ありません。
 
+変更しない履歴という明示的な所有方針を示す例です。リアクティブなオブジェクトを渡したり、後で変更したりすることを一般に禁止するものではありません。現在この契約の生成元はありません。
+
+## 共通のプロジェクト ファイル
+
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+
+`main.ts`
+
+```ts
+import { createApp } from 'vue';
+import App from './App.vue';
+createApp(App).mount('#app');
+
+```
+
+`index.html`
+
+```html
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
+<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
+
+```
+
+`archive.ts`
+
+```ts
+export interface Profile { name: string }
+const records: Readonly<Profile>[] = [];
+export function publish(profile: Readonly<Profile>): void { records.push(profile); }
+export function latestName(): string { return records.at(-1)?.name ?? ''; }
+
+```
+
+`App.vue`
+
+```vue
+<script setup lang="ts">
+import { publishProfile } from './profile';
+import { latestName } from './archive';
+publishProfile();
+const archivedName = latestName();
+</script>
+
+<template>
+<p>Archived name: {{ archivedName }}</p>
+</template>
+
+```
+
 ## 悪い
 
-reactive オブジェクトが、所有者から漏れた後に変更されています。
+archive は `publish` に渡した同じオブジェクトを保持します。その後で所有側が名前を変更し、過去の記録まで Grace に変わります。TypeScript の Readonly 引数はオブジェクトをコピーしません。
+
+`profile.ts`
+
+```ts
+import { reactive } from 'vue';
+import { publish } from './archive';
+export function publishProfile(): void {
+  const profile = reactive({ name: 'Ada' });
+  publish(profile);
+  profile.name = 'Grace';
+}
+
+```
 
 ## 良い
 
-返す前に変更するか、新しい値を返してください。
+通常のコピーを公開し、保存した Ada の記録と後のリアクティブな profile の変更を分離します。archive のスナップショット方針を保てるようになります。
+
+`profile.ts`
+
+```ts
+import { reactive } from 'vue';
+import { publish } from './archive';
+export function publishProfile(): void {
+  const profile = reactive({ name: 'Ada' });
+  publish({ ...profile });
+  profile.name = 'Grace';
+}
+
+```
+
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

@@ -6,6 +6,8 @@ title: "html/no-dupe-style-properties"
 
 静的 style 属性内のプロパティ重複を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+静的な style の中で同じプロパティを重複させています。margin と MARGIN も同じプロパティとして扱われます。
+
 ```vue
 <template>
 <div style="color: red; color: blue">text</div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+静的な style では color と background を分けます。動的な style バインディングはこの静的属性の検査の対象外です。
 
 ```vue
 <template>

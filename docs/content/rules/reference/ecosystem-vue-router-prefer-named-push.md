@@ -6,6 +6,8 @@ title: "ecosystem/vue-router-prefer-named-push"
 
 Prefer named route objects for Vue Router programmatic navigation
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `ecosystem`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+router.push receives a path string that is tied to the current URL spelling.
+
 ```vue
 <script setup lang="ts">
 router.push("/settings");
@@ -42,6 +46,8 @@ router.push("/settings");
 ```
 
 ## Good
+
+router.push receives a route object with the stable settings name.
 
 ```vue
 <script setup lang="ts">

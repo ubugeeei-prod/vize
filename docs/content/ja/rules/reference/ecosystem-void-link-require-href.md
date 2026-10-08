@@ -6,6 +6,8 @@ title: "ecosystem/void-link-require-href"
 
 Void Vue の Link に href を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+@void/vue から import した Link に href がありません。
+
 ```vue
 <script setup>
 import { Link } from "@void/vue";
@@ -46,6 +50,8 @@ import { Link } from "@void/vue";
 ```
 
 ## 良い
+
+同じ Link の href に設定画面の移動先を指定します。
 
 ```vue
 <script setup>

@@ -4,7 +4,9 @@ title: "html/require-datetime"
 
 # `html/require-datetime`
 
-Require datetime attribute on <time> element
+Require datetime attribute on &lt;time&gt; element
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The time element contains a human-readable date but no machine-readable datetime value.
+
 ```vue
 <template>
   <time>May 13, 2026</time>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`datetime="2026-05-13"` supplies the corresponding machine-readable date.
 
 ```vue
 <template>

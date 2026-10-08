@@ -6,6 +6,8 @@ title: "a11y/no-aria-hidden-on-focusable"
 
 フォーカス可能な要素を aria-hidden で隠した指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+フォーカスできる Close ボタンを `aria-hidden="true"` でアクセシビリティ ツリーから隠しています。
+
 ```vue
 <template>
   <button aria-hidden="true" @click="close">Close</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+ボタンを隠さず、Close の aria-label を指定します。
 
 ```vue
 <template>

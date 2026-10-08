@@ -6,6 +6,8 @@ title: "vue/component-definition-name-casing"
 
 コンポーネント定義名を PascalCase または kebab-case に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -37,6 +39,8 @@ vp run lint
 
 ## 悪い
 
+ファイル名 myComponent.vue が先頭の小文字と途中の大文字を混在させ、PascalCase / kebab-case のどちらにもなっていません。
+
 `myComponent.vue`
 
 ```vue
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+ファイル名を PascalCase の MyComponent.vue に変更します。テンプレートの内容は同じです。
 
 `MyComponent.vue`
 

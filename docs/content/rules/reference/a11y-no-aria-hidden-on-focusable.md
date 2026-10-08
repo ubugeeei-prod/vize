@@ -6,6 +6,8 @@ title: "a11y/no-aria-hidden-on-focusable"
 
 Disallow aria-hidden="true" on focusable elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The focusable Close button is hidden from the accessibility tree with `aria-hidden="true"`.
+
 ```vue
 <template>
   <button aria-hidden="true" @click="close">Close</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The button remains exposed and receives a `Close` label instead of being hidden.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/use-unique-element-ids"
 
 Enforce unique element IDs using useId() instead of static literals
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The literal `email` ID is reused by every instance of this component, which can misdirect its label when several instances are rendered.
+
 ```vue
 <template>
   <label for="email">Email</label>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+`useId()` produces the instance's `emailId`; bind the same value to the label's `for` and the input's `id`.
 
 ```vue
 <script setup>

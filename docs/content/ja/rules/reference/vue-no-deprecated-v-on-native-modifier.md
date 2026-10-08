@@ -6,6 +6,8 @@ title: "vue/no-deprecated-v-on-native-modifier"
 
 削除済みの v-on の .native modifier を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+コンポーネントのイベントに、廃止された .native を指定しています。
+
 ```vue
 <template>
 <MyComponent @click.native="handler" />
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+.native を取り除き、.stop などの他の modifier は残します。
 
 ```vue
 <template>

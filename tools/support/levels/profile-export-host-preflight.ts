@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { parse as parseToml } from "@iarna/toml";
+import { withTimingProfileContinuation } from "./timing-profile-continuation.ts";
 import {
   core,
   host,
@@ -64,7 +65,8 @@ export function validateEdges(read: Reader, old: boolean) {
     );
 }
 
-export function prepare(read: Reader): Map<string, string> {
+export function prepare(rawRead: Reader): Map<string, string> {
+  const read = withTimingProfileContinuation(rawRead);
   const planned = new Map<string, string>();
   const get = (file: string) => planned.get(file) ?? read(file);
   const coreSource = read(core),

@@ -6,6 +6,8 @@ title: "script/no-unused-emit-declarations"
 
 Flag declared events that are never emitted
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`defineEmits` declares both `change` and `unused`, but the captured `emit` function only emits the literal event `change`.
+
 ```vue
 <script setup lang="ts">
 const emit = defineEmits(['change', 'unused'])
@@ -44,6 +48,8 @@ emit('change')
 ```
 
 ## Good
+
+Removing `unused` makes the declared event list match the observed emission. The example uses a captured, unescaped emit binding so this local usage conclusion is available.
 
 ```vue
 <script setup lang="ts">

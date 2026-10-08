@@ -13,13 +13,103 @@ title: "vize:croquis/cf/di-outside-setup"
 
 この公開診断コードには現在の生成元がありません。悪い例・良い例はリスクと修正の説明です。このコードを検出させる設定は現在ありません。
 
+コンポーネントの provide/inject を使う例です。`app.provide` や対応する `app.runWithContext` 内の inject は別の有効な所属先であり、この例で禁止するものではありません。現在この契約コードの生成元はありません。
+
+## 共通のプロジェクト ファイル
+
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+
+`main.ts`
+
+```ts
+import { createApp } from 'vue';
+import App from './App.vue';
+createApp(App).mount('#app');
+
+```
+
+`index.html`
+
+```html
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><title>Contract scenario</title></head>
+<body><div id="app"></div><script type="module" src="/main.ts"></script></body></html>
+
+```
+
+`theme.ts`
+
+```ts
+import { inject, provide } from 'vue';
+import type { InjectionKey } from 'vue';
+export const ThemeKey: InjectionKey<string> = Symbol('theme');
+export function provideTheme() { provide(ThemeKey, 'dark'); }
+export function useTheme() { return inject(ThemeKey, 'light'); }
+
+```
+
+`ThemedText.vue`
+
+```vue
+<script setup lang="ts">
+import { useTheme } from './theme';
+const theme = useTheme();
+</script>
+
+<template>
+<p>{{ theme }}</p>
+</template>
+
+```
+
 ## 悪い
 
-`provide` または `inject` が `setup` の外で呼ばれています。
+`main.ts` が有効なコンポーネントインスタンスなしで component の `provide` を呼びます。子の `inject` は意図した祖先の値を受け取れず、`light` を使います。
+
+`main.ts`
+
+```ts
+import { createApp } from 'vue';
+import App from './App.vue';
+import { provideTheme } from './theme';
+provideTheme();
+createApp(App).mount('#app');
+
+```
+
+`App.vue`
+
+```vue
+<script setup lang="ts">
+import ThemedText from './ThemedText.vue';
+</script>
+
+<template>
+<ThemedText />
+</template>
+
+```
 
 ## 良い
 
-setup の中で呼んでください。
+App の setup で子を描画する前に provider を呼び、子が祖先コンポーネントの `dark` を受け取れるようにします。
+
+`App.vue`
+
+```vue
+<script setup lang="ts">
+import ThemedText from './ThemedText.vue';
+import { provideTheme } from './theme';
+provideTheme();
+</script>
+
+<template>
+<ThemedText />
+</template>
+
+```
+
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

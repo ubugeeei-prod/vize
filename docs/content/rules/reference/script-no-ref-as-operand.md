@@ -6,6 +6,8 @@ title: "script/no-ref-as-operand"
 
 Require ref-bound variables to be accessed via `.value` when used as an operand
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`count + 1` uses the ref object itself as the arithmetic operand instead of the number it wraps.
+
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
@@ -44,6 +48,8 @@ const next = count + 1;
 ```
 
 ## Good
+
+`count.value + 1` reads the wrapped number before adding one; script arithmetic requires this explicit ref access.
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "a11y/iframe-has-title"
 
 Require iframe elements to have a title attribute
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The checkout frame has a source URL but no `title` describing the embedded content.
+
 ```vue
 <template>
   <iframe src="/checkout"></iframe>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`title="Checkout preview"` names the content of that frame.
 
 ```vue
 <template>

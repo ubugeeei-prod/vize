@@ -6,6 +6,8 @@ title: "a11y/alt-text"
 
 Require alternative text for media elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The image submit control supplies only its image URL; it has no `alt` text describing the action.
+
 ```vue
 <template>
   <input type="image" src="/submit.png" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`alt="Submit search"` gives the image control an accessible name that describes submitting the search.
 
 ```vue
 <template>

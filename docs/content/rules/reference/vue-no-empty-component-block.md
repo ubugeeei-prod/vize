@@ -6,6 +6,8 @@ title: "vue/no-empty-component-block"
 
 Disallow empty SFC blocks
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The template, script, and style blocks contain no meaningful content.
+
 ```vue
 <template></template>
 
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## Good
+
+Each retained block contains actual markup, script declarations, or style declarations.
 
 ```vue
 <template>

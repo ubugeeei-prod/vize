@@ -17,7 +17,8 @@ use std::{
 };
 
 use serde_json::Value;
-use vize_l0::{String as CompactString, cstr, path::canonicalize_non_verbatim};
+use vize_carton::path::canonicalize_non_verbatim;
+use vize_l0::{String as CompactString, cstr};
 
 #[path = "lsp_process/capture.rs"]
 mod capture;

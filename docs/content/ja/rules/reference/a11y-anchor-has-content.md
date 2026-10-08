@@ -6,6 +6,8 @@ title: "a11y/anchor-has-content"
 
 リンクに支援技術で読める内容を用意します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`/settings` へのリンクが空で、移動先を説明する内容がありません。
+
 ```vue
 <template>
   <a href="/settings"></a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じリンクに `Settings` の文字を入れ、移動先を示します。
 
 ```vue
 <template>

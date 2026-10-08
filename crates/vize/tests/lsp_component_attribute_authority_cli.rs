@@ -21,6 +21,8 @@ mod library_refusal;
 mod native_probe;
 #[path = "lsp_component_attribute_authority_cli/original_reads.rs"]
 mod original_reads;
+#[path = "lsp_library_rename_refusal_cli/runtime_distribution.rs"]
+mod runtime_distribution;
 
 const ITEM: &str = include_str!(
     "../../../tests/_fixtures/differential/lsp/rename-source-authority/8009/Item.vue.txt"
@@ -45,6 +47,7 @@ struct Fixture {
     publications: std::collections::HashMap<(String, i64), Value>,
     mismatches: Vec<Value>,
     runtime: std::path::PathBuf,
+    runtime_distribution: Option<runtime_distribution::RuntimeDistribution>,
 }
 
 impl Fixture {
@@ -53,6 +56,15 @@ impl Fixture {
     }
 
     fn with_config(files: &[(&str, &str)], config: &str) -> Self {
+        Self::with_runtime(files, config, false, false)
+    }
+
+    fn with_runtime(
+        files: &[(&str, &str)],
+        config: &str,
+        copy_distribution: bool,
+        relay: bool,
+    ) -> Self {
         let workspace = Path::new(env!("CARGO_MANIFEST_DIR"))
             .parent()
             .unwrap()
@@ -70,6 +82,13 @@ impl Fixture {
             std::fs::create_dir_all(path.parent().unwrap()).unwrap();
             std::fs::write(path, text).unwrap();
         }
+        let runtime_distribution = copy_distribution.then(|| {
+            runtime_distribution::RuntimeDistribution::copy(&runtime, project.path(), relay)
+        });
+        let runtime = runtime_distribution
+            .as_ref()
+            .map(|distribution| distribution.executable.clone())
+            .unwrap_or(runtime);
         std::fs::write(project.path().join("tsconfig.json"), config).unwrap();
         let modules = project.path().join("node_modules");
         std::fs::create_dir_all(&modules).unwrap();
@@ -91,6 +110,9 @@ impl Fixture {
         )
         .unwrap();
         let mut lsp = LspProcess::spawn(project.path());
+        if copy_distribution {
+            lsp.retain_protocol();
+        }
         lsp.send(
             json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{
                 "processId":null,"rootUri":file_uri(project.path()),"capabilities":{},
@@ -106,6 +128,7 @@ impl Fixture {
             publications: Default::default(),
             mismatches: Vec::new(),
             runtime,
+            runtime_distribution,
         };
         native_probe::prove(&mut fixture);
         fixture
@@ -160,24 +183,7 @@ impl Fixture {
     }
 
     fn recv_checked(&mut self, mut matches: impl FnMut(&Value) -> bool) -> Value {
-        let expected = &self.publications;
-        let mismatches = &mut self.mismatches;
-        self.lsp.recv_matching(|message| {
-            if message["method"] == "textDocument/publishDiagnostics" {
-                println!("whole publication: {message}");
-                let _: lsp_types::PublishDiagnosticsParams =
-                    serde_json::from_value(message["params"].clone())
-                        .expect("typed whole publication");
-                let key = (
-                    message["params"]["uri"].as_str().unwrap().to_owned(),
-                    message["params"]["version"].as_i64().unwrap(),
-                );
-                if expected.get(&key) != Some(message) {
-                    mismatches.push(json!({"actual":message,"expected":expected.get(&key)}));
-                }
-            }
-            matches(message)
-        })
+        self.recv_checked_with(|message, _| matches(message))
     }
 
     fn request(&mut self, file: &str, method: &str, position: Value, extra: Value) -> Value {
@@ -212,6 +218,13 @@ impl Fixture {
         );
         self.lsp.send(json!({"jsonrpc":"2.0","method":"exit"}));
         assert!(self.lsp.wait_for_exit().success());
+        if let Some(distribution) = &self.runtime_distribution {
+            distribution.assert_unchanged();
+            println!(
+                "copied native distribution terminal: {}",
+                self.lsp.terminal_evidence()
+            );
+        }
         assert!(
             self.mismatches.is_empty(),
             "all whole publication mismatches: {:#?}",

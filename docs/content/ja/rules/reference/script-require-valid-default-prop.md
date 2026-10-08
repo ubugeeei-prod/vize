@@ -6,6 +6,8 @@ title: "script/require-valid-default-prop"
 
 prop の default を宣言した型に合う値にします。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+Number と Boolean の props に型の合わないスカラー既定値を付け、Array と Object には factory ではなく共有されるリテラル値を使っています。
+
 ```vue
 <script lang="ts">
 export default {
@@ -49,6 +53,8 @@ config: { type: Object, default: {} }       // literal must be a factory
 ```
 
 ## 良い
+
+スカラーの既定値を `0` と `false` にし、配列とオブジェクトの既定値を新しい値を返す関数にします。`[String, Number]` の文字列既定値は、宣言した型の一つに合うため許可されます。
 
 ```vue
 <script lang="ts">

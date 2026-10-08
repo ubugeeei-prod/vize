@@ -6,6 +6,8 @@ title: "vue/prefer-props-shorthand"
 
 Recommend shorthand syntax for props (Vue 3.4+)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Each binding repeats the corresponding variable name, including the camelCase equivalent of a hyphenated argument.
+
 ```vue
 <template>
   <MyComponent :foo="foo" />
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## Good
+
+Vue 3.4+ same-name binding shorthand removes the repeated expressions; a different source variable such as bar remains explicit.
 
 ```vue
 <template>

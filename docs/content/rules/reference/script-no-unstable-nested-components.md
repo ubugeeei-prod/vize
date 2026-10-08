@@ -6,6 +6,8 @@ title: "script/no-unstable-nested-components"
 
 Disallow component definitions inside setup or render functions
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`defineComponent` runs inside the parent’s `setup()`, creating a new `Child` component definition whenever that setup executes.
+
 ```vue
 <script lang="ts">
 import { defineComponent } from "vue";
@@ -43,6 +47,8 @@ export default { setup() { const Child = defineComponent({ render() { return nul
 ```
 
 ## Good
+
+The `Child` definition moves to module scope, and `setup()` returns that existing definition instead of recreating it.
 
 ```vue
 <script lang="ts">

@@ -6,6 +6,8 @@ title: "script/no-deprecated-data-object-declaration"
 
 Disallow an object literal as the component data option (Vue 3 requires a function)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The Options API `data` option is an object literal, a Vue 2 form that Vue 3 no longer accepts.
+
 ```vue
 <script lang="ts">
 export default {
@@ -47,6 +51,8 @@ count: 0
 ```
 
 ## Good
+
+`data()` returns a new `{ count: 0 }` object, providing the function-based data declaration required by Vue 3.
 
 ```vue
 <script lang="ts">

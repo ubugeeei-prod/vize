@@ -6,6 +6,8 @@ title: "script/no-reserved-props"
 
 Disallow reserved names in a component's props declaration
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The object-form `ref` and `$foo`, plus the array-form `key`, are reserved prop names. `ref` and `key` are framework controls, and `$`-prefixed names are rejected.
+
 ```vue
 <script lang="ts">
 export default {
@@ -51,6 +55,8 @@ props: ['key']    // reserved (array form)
 ```
 
 ## Good
+
+The ordinary prop names `name` and `refValue` avoid the reserved names in both spelling and prefix.
 
 ```vue
 <script lang="ts">

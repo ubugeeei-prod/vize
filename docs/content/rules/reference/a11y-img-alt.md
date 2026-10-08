@@ -6,6 +6,8 @@ title: "a11y/img-alt"
 
 Require alt attribute on images for accessibility
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The avatar image is missing its `alt` attribute.
+
 ```vue
 <template>
   <img src="/avatar.png" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`alt="User avatar"` supplies a text alternative for the avatar.
 
 ```vue
 <template>

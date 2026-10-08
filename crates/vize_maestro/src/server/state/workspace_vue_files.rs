@@ -44,7 +44,7 @@ impl ServerState {
             return false;
         };
         self.observe_workspace_project_membership(&path, true);
-        if vize_l0::path::is_git_metadata_path(&path) {
+        if vize_carton::path::is_git_metadata_path(&path) {
             return false;
         }
         if path.is_file() {
@@ -107,7 +107,7 @@ fn vue_files_below(root: &Path) -> impl Iterator<Item = DirEntry> {
         .parents(false)
         .follow_links(false)
         .filter_entry(|entry| {
-            !vize_l0::path::is_git_metadata_path(entry.path())
+            !vize_carton::path::is_git_metadata_path(entry.path())
                 && (!entry.file_type().is_some_and(|kind| kind.is_dir())
                     || !is_excluded_directory(entry.file_name()))
         });
@@ -119,7 +119,7 @@ fn vue_files_below(root: &Path) -> impl Iterator<Item = DirEntry> {
 }
 
 fn is_vue_file(path: &Path) -> bool {
-    !vize_l0::path::is_git_metadata_path(path)
+    !vize_carton::path::is_git_metadata_path(path)
         && path.extension().is_some_and(|extension| extension == "vue")
 }
 
@@ -127,7 +127,7 @@ fn is_vue_uri(uri: &Url) -> bool {
     uri.path().ends_with(".vue")
         && uri
             .to_file_path()
-            .is_ok_and(|path| !vize_l0::path::is_git_metadata_path(&path))
+            .is_ok_and(|path| !vize_carton::path::is_git_metadata_path(&path))
 }
 
 async fn discover_sources_in_background(

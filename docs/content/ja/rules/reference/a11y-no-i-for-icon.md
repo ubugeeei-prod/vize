@@ -6,6 +6,8 @@ title: "a11y/no-i-for-icon"
 
 アイコン用の i 要素を検出し、意味に合う要素を勧めます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+アイコンを i で表示しており、アイコンだけの操作を説明する文字がありません。
+
 ```vue
 <template>
   <button>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+装飾の span でアイコンを隠し、別の `Delete item` の文字で操作を説明します。
 
 ```vue
 <template>

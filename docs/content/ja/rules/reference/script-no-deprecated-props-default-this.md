@@ -6,6 +6,8 @@ title: "script/no-deprecated-props-default-this"
 
 prop の default / validator 内で使えなくなった this を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+prop の既定値関数と validator が `this` を参照していますが、Vue 3 ではこれらの関数からコンポーネントインスタンスに依存できません。
+
 ```vue
 <script lang="ts">
 export default {
@@ -58,6 +62,8 @@ return this.value > 0
 ```
 
 ## 良い
+
+既定値関数は引数の `props.baseSize` を使い、validator は引数の `value` を検査します。どちらも利用できないインスタンスの `this` に依存しなくなります。
 
 ```vue
 <script lang="ts">

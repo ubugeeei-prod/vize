@@ -6,6 +6,8 @@ title: "vue/no-src-attribute"
 
 Discourage src attribute on SFC blocks
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The SFC blocks delegate their template, script, and style content to src files.
+
 ```vue
 <template src="./template.html"></template>
 <script src="./script.ts"></script>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Each SFC block contains its own content without an external src attribute.
 
 ```vue
 <template>

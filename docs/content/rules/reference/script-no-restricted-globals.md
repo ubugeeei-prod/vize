@@ -6,6 +6,8 @@ title: "script/no-restricted-globals"
 
 Disallow references to runtime-environment globals that must go through a typed wrapper
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The example reads the default restricted globals `process`, `localStorage`, and `sessionStorage` directly, bypassing the project’s explicit config and storage helpers.
+
 ```vue
 <script setup lang="ts">
 const flag = process.env.FEATURE_FLAG
@@ -44,6 +48,8 @@ sessionStorage.setItem('view.scroll', String(window.scrollY))
 ```
 
 ## Good
+
+`useFeatureFlag`, `authStorage.read`, and `viewStorage.write` remove those direct restricted-global references. The remaining `window.scrollY` is not a default restriction of this rule; SSR safety is a separate concern.
 
 ```vue
 <script setup lang="ts">

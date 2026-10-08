@@ -6,6 +6,8 @@ title: "vue/no-lone-template"
 
 不要な template 要素を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+内側の template に、構造や slot を指定する役割がありません。
+
 ```vue
 <template>
 <div><template><p>Details</p></template></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+不要な template を取り除き、div に p を直接入れます。
 
 ```vue
 <template>

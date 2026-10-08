@@ -6,6 +6,8 @@ title: "vue/v-bind-style"
 
 Enforce `v-bind` directive style
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`v-bind:class` uses the long form where the configured binding style requires the colon shorthand.
+
 ```vue
 <template>
   <div v-bind:class="panelClass"></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`:class` retains the same expression with the required shorthand; this rule concerns spelling rather than the value's type.
 
 ```vue
 <template>

@@ -31,7 +31,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `index.html`
 
@@ -71,6 +71,8 @@ export const router = createRouter({
 
 ## 悪い
 
+`user-post` の必須 `postId` を省略しています。Vue Router は現在の route から値を継承する場合があるため warning です。
+
 `src/UserPost.vue`
 
 ```vue
@@ -84,6 +86,8 @@ router.push({ name: "user-post", params: { userId: "1" } });
 
 ## 良い
 
+`userId` と `postId` を両方明示し、現在の route の parameter に依存しない navigation にします。
+
 `src/UserPost.vue`
 
 ```vue
@@ -95,6 +99,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [ファイル間ルール一覧](../cross-file.md)

@@ -6,6 +6,8 @@ title: "script/no-top-level-ref-in-script"
 
 Disallow top-level ref/reactive to prevent Cross-Request State Pollution
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The ordinary `<script>` initializes `count` and `user` at module scope. During SSR, these state objects can be shared across component instances and requests.
+
 ```vue
 <script>
 // This state is shared across all requests in SSR!
@@ -50,6 +54,8 @@ return { count, user }
 ```
 
 ## Good
+
+The setup ref is initialized per component instance; the ordinary script keeps only a constant, a state-producing function, and a ref created inside `setup()`. None creates reactive state at ordinary module scope.
 
 ```vue
 <script setup>

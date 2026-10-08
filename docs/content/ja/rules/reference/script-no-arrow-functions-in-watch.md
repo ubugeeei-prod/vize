@@ -6,6 +6,8 @@ title: "script/no-arrow-functions-in-watch"
 
 Options API の watch に this を持たないアロー関数を使う箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+Options API の watcher `value` と `other.handler` がアロー関数です。アロー関数の `this` は外側から引き継がれ、コンポーネントインスタンスとして束縛されません。
+
 ```vue
 <script lang="ts">
 export default {
@@ -52,6 +56,8 @@ handler: () => {}
 ```
 
 ## 良い
+
+両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントに束縛できるようにします。オブジェクト形式の `deep: true` オプションも維持できます。
 
 ```vue
 <script lang="ts">

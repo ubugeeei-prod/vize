@@ -6,6 +6,8 @@ title: "vue/no-template-shadow"
 
 テンプレート変数が外側の名前を隠す箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -37,6 +39,8 @@ vp run lint
 
 ## 悪い
 
+内側の v-for でも item を宣言し、外側の item を隠しています。
+
 ```vue
 <template>
 <div v-for="item in items" :key="item.id"><span v-for="item in item.children" :key="item.id">{{ item.name }}</span></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+内側は child に変更し、外側の item と内側の child を分けます。
 
 ```vue
 <template>

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "originalSource": "b41811e3b33676f68a0843a693c9ed4898f2e86a",
+  "transformedSource": "f6f1e56ba2e6c7822b9df62bcc3f1c618d5f6792",
+  "files": [
+    [
+      "crates/vize/src/commands/davinci_ice.rs",
+      "09a6c068bfd9c7dd12a2296bb6b0fcf4b98fbc6717df63f233603a41815598d0",
+      "a518920c799da44fbe67362e3d1c2517168b6ec10fa4c55eb72f8252b9d11eab"
+    ],
+    [
+      "crates/vize_carton/src/lib.rs",
+      "9c135560ad6debbba6078194084a36e6dc086bb9129c48d8d61d04ba12d14ae2",
+      "fc77ccf3dc066dedce6fb03b83b02d503fe3414328139a0ae001edb393b6f49e"
+    ],
+    [
+      "crates/vize_carton/src/timing_observer.rs",
+      null,
+      "85552a54ac8d9a0008970456f9bf9373d34941ffe5102b191b430c13e947a195"
+    ],
+    [
+      "crates/vize_carton/tests/pass_observer_timing.rs",
+      null,
+      "bc0e294183226f946b1240571db41073cf6b3f2416fd7d68b67df16192f46296"
+    ],
+    [
+      "crates/vize_curator/src/inspector/stages/profile.rs",
+      "7e1ad6a552d23ff11d409b32c135047857bbff88b35bfe058345af34aa5cd533",
+      "1e3b5cc15cf6aa4610320b36e6ef361ba8d7adf423e79f88fee6a9f99493894f"
+    ],
+    [
+      "davinci/vize_l0/src/pass.rs",
+      "4c046c76069b4a6ed6249eb94a448e991b59d016de986d09129ce82c52fcc936",
+      "a306c4db7a67fee56a5d49238c56051e1ddf446dee491b3f5679b537c7e06a4e"
+    ],
+    [
+      "davinci/vize_l0/src/pass/observer.rs",
+      "8d4b07564384f1d2b2f40fee5f2dbbda95f2dc7acd6febcb49a6a380db27b856",
+      "ee5d605be716ba867a6a84d0a2218ca5b16a7cdac21c7fefe4bbedf6c2aad660"
+    ],
+    [
+      "davinci/vize_l0/src/pass/observer/timing.rs",
+      "cca4d5f3a77ea4a849823492b3f1123733876e3993d3aeb4ad731fea33c59f15",
+      "e48f46ff6daa01bc45c4376e2d247fa9c7adb684b3fbee519e536988bd9f2d52"
+    ],
+    [
+      "davinci/vize_l0/tests/dump_collector.rs",
+      "e4bfbb2fd74c4464dd02b15415ea873be035974af2dab2f02184f24649ba487c",
+      "2d35d2a40dd170453134a31c0b98e8f8e36b1d8e37a085d90d47d6f7516dcf87"
+    ],
+    [
+      "davinci/vize_l0/tests/pass_observer_timing.rs",
+      "887262892647fd725260d1fa2b205aa914608049f269395399dbb5322d2fa8f7",
+      null
+    ],
+    [
+      "davinci/vize_l0/tests/remark_zero_cost.rs",
+      "b76378cc208d70243bc6a7c0fbdbae293ecf3e40135775677acf12bedef16187",
+      "8684e0902cff9f56d11e6053f536798188fc59db33aa29ae10fede202723e966"
+    ]
+  ],
+  "preservedBodies": [
+    [
+      "davinci/vize_l0/src/pass/observer/timing/walk.rs",
+      "3887b2faed4ef43a4a8e34fe64f2fe74eda1f12642f65561fd8979be3d098a4e"
+    ],
+    [
+      "davinci/vize_l0/tests/walk_timing.rs",
+      "1ea1009073ec3573f1c9e43ef16d77fe60e85b762bc3f298ea2806cb2161540f"
+    ]
+  ]
+}

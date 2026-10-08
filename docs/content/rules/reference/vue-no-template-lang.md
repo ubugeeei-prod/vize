@@ -6,6 +6,8 @@ title: "vue/no-template-lang"
 
 Discourage lang attribute on template block
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: Not implemented for SFC lint  
@@ -39,6 +41,8 @@ vp run lint
 
 ## Bad
 
+The template selects Pug through lang. This is an intended HTML-only convention; the current SFC path does not diagnose this catalog ID.
+
 ```vue
 <template lang="pug">
 p Notice
@@ -47,12 +51,14 @@ p Notice
 
 ## Good
 
+An ordinary HTML template omits lang and uses the paragraph directly. This illustrates the convention without claiming a current SFC finding.
+
 ```vue
 <template>
 <p>Notice</p>
 </template>
 ```
 
-Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
+Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) · [All rules](../all.md)

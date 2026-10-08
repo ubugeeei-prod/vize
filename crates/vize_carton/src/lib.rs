@@ -48,3 +48,7 @@ pub mod corsa_resolver;
     reason = "host JSON-RPC records retain the existing std String and Vec contract"
 )]
 pub mod lsp;
+
+pub mod path;
+
+pub mod timing_observer;

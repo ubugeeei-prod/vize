@@ -6,6 +6,8 @@ title: "vue/valid-v-for"
 
 Enforce valid `v-for` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The loops omit their iteration expression or add an unsupported `.stop` modifier.
+
 ```vue
 <template>
   <div v-for></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Use `item in items` or `(item, index) of items` with a complete iteration expression and the shown keys.
 
 ```vue
 <template>

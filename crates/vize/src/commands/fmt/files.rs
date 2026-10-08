@@ -17,7 +17,7 @@ pub(crate) fn collect_files(
 ) -> Vec<PathBuf> {
     let mut files = Vec::new();
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    if vize_l0::path::is_git_metadata_path(&cwd) {
+    if vize_carton::path::is_git_metadata_path(&cwd) {
         return files;
     }
 
@@ -26,7 +26,7 @@ pub(crate) fn collect_files(
         // File-based routes (`pages/[id].vue`) contain `[` but are literal files.
         // A glob would treat the brackets as a character class and skip them.
         let literal = PathBuf::from(normalized.as_str());
-        if vize_l0::path::is_git_metadata_path(&literal) {
+        if vize_carton::path::is_git_metadata_path(&literal) {
             continue;
         }
         if literal.is_file() {
@@ -78,7 +78,8 @@ fn collect_walked_files(
         .git_exclude(respect_ignores)
         .require_git(false)
         .filter_entry(|entry| {
-            !vize_l0::path::is_git_metadata_path(entry.path()) && !is_dependency_path(entry.path())
+            !vize_carton::path::is_git_metadata_path(entry.path())
+                && !is_dependency_path(entry.path())
         })
         .build();
 
@@ -91,7 +92,7 @@ fn collect_walked_files(
 }
 
 fn should_include_format_file(path: &Path, ignore_set: Option<&FmtIgnoreSet>) -> bool {
-    !vize_l0::path::is_git_metadata_path(path)
+    !vize_carton::path::is_git_metadata_path(path)
         && path.is_file()
         && is_format_target(path)
         && !is_dependency_path(path)

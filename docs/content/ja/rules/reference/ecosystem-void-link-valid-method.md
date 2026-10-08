@@ -6,6 +6,8 @@ title: "ecosystem/void-link-valid-method"
 
 Void Vue の Link に有効な静的 method を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+DELETE の操作に、ページ移動のリクエスト向けの prefetch を指定しています。
+
 ```vue
 <script setup>
 import { Link } from "@void/vue";
@@ -46,6 +50,8 @@ import { Link } from "@void/vue";
 ```
 
 ## 良い
+
+prefetch を取り除き、DELETE のリクエストを事前取得しない形にします。
 
 ```vue
 <script setup>

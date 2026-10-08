@@ -6,6 +6,8 @@ title: "script/require-symbol-provide"
 
 provide / inject のキーに衝突しにくい Symbol を使います。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`provide` と `inject` が `'user'`、`'theme'` のような文字列キーを使い、同じ綴りを使うほかの provider と衝突し得ます。
+
 ```vue
 <script setup lang="ts">
 // String keys can collide
@@ -47,6 +51,8 @@ provide('theme', { dark: true })
 ```
 
 ## 良い
+
+共有する `UserKey` を `Symbol` で作り、`InjectionKey<User>` の型を付けます。両呼び出しに同じキーを渡し、文字列リテラルを使わないようにします。
 
 ```vue
 <script lang="ts">

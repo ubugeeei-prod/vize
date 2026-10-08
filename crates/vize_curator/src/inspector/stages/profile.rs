@@ -20,8 +20,8 @@ use core::time::Duration;
 use vize_carton::profile_export::{
     ProfileExportBudget, ProfileExportOptions, export_report_from_snapshots,
 };
+use vize_carton::timing_observer::TimingObserver;
 use vize_l0::FxHashMap;
-use vize_l0::pass::TimingObserver;
 use vize_l0::profiler::{Metrics, SpanAttribution};
 
 use super::ladder::LadderStep;

@@ -6,6 +6,8 @@ title: "vue/no-deprecated-inline-template"
 
 Disallow the deprecated `inline-template` attribute
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Card uses the deprecated inline-template attribute for its supplied content.
+
 ```vue
 <template>
 <Card inline-template><p>Details</p></Card>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The same content is passed normally without the inline-template attribute.
 
 ```vue
 <template>

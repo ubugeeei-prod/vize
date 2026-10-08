@@ -6,6 +6,8 @@ title: "script/no-side-effects-in-computed-properties"
 
 Options API の computed getter 内の副作用を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらも値を導出すべき getter が元の状態を変更しています。
+
 ```vue
 <script lang="ts">
 export default {
@@ -55,6 +59,8 @@ return this.items.reverse() // side effect: mutates the array
 ```
 
 ## 良い
+
+`doubled` は代入せず乗算結果を返します。`reversed` は配列をコピーしてから反転し、getter が元のコンポーネント状態を変更しないようにします。
 
 ```vue
 <script lang="ts">

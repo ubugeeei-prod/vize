@@ -6,6 +6,8 @@ title: "script/no-reserved-keys"
 
 Options API のキーに Vue の予約名を使う箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+data の `$el` が Vue 組み込みのインスタンスプロパティと重なり、予約された `$` 接頭辞も使っています。
+
 ```vue
 <script lang="ts">
 export default { data() { return { $el: "custom" }; } };
@@ -42,6 +46,8 @@ export default { data() { return { $el: "custom" }; } };
 ```
 
 ## 良い
+
+アプリケーションのデータ名を `elementLabel` に変え、組み込みのインスタンス API と予約接頭辞を避けます。
 
 ```vue
 <script lang="ts">

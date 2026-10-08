@@ -6,6 +6,8 @@ title: "script/require-explicit-emits"
 
 Require emitted events to be declared in defineEmits or the emits option
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The captured emit function emits `save`, but `defineEmits([])` declares no such event.
+
 ```vue
 <script setup lang="ts">
 const emit = defineEmits([]);
@@ -43,6 +47,8 @@ emit("save");
 ```
 
 ## Good
+
+Adding `"save"` to the declaration makes the emitted literal event part of the component’s explicit event contract.
 
 ```vue
 <script setup lang="ts">

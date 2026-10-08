@@ -6,6 +6,8 @@ title: "type/no-reactivity-loss"
 
 代入や呼び出しによって反応性を失うスナップショットを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -38,6 +40,8 @@ vp run lint
 
 ## 悪い
 
+`const count = state.count` がリアクティブなプロパティから数値のスナップショットを取り、その後の `state.count` の更新が変数へ反映されなくなります。
+
 ```vue
 <script setup lang="ts">
 import { reactive } from "vue";
@@ -47,6 +51,8 @@ const count = state.count;
 ```
 
 ## 良い
+
+`toRef(state, "count")` で現在のプリミティブ値をコピーせず、`count` を元のリアクティブなプロパティにつなげます。
 
 ```vue
 <script setup lang="ts">

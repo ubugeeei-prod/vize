@@ -6,6 +6,8 @@ title: "vue/no-boolean-attr-value"
 
 Disallow explicit values for boolean HTML attributes
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The boolean disabled and checked attributes redundantly contain string values.
+
 ```vue
 <template>
   <input disabled="disabled" />
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The presence of each boolean attribute expresses the same enabled state without a value.
 
 ```vue
 <template>

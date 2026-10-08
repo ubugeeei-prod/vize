@@ -3,6 +3,13 @@ const script = (source) => vue(`<script setup lang="ts">\n${source}\n</script>`)
 const pair = (bad, good, evidence, extra = {}) => ({ bad, good, evidence, ...extra });
 
 export const scopedOverrides = {
+  "vue/no-negated-v-if-condition": pair(
+    vue('<template>\n<div v-if="!ok">A</div>\n<div v-else>B</div>\n</template>'),
+    vue(
+      '<template>\n<div v-if="ok">B</div>\n<div v-else>A</div>\n\n<div v-if="!ok">A</div>\n\n<div v-if="a !== b">A</div>\n<div v-else>B</div>\n</template>',
+    ),
+    "crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs",
+  ),
   "vue/component-definition-name-casing": pair(
     vue("<template><p>Content</p></template>"),
     vue("<template><p>Content</p></template>"),

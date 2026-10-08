@@ -6,6 +6,8 @@ title: "ecosystem/void-link-valid-method"
 
 Validate static Void Vue Link method props
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `ecosystem`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The DELETE action requests prefetching, although prefetch is intended for navigation requests.
+
 ```vue
 <script setup>
 import { Link } from "@void/vue";
@@ -46,6 +50,8 @@ import { Link } from "@void/vue";
 ```
 
 ## Good
+
+Removing prefetch keeps the DELETE action without prefetching that non-GET request.
 
 ```vue
 <script setup>

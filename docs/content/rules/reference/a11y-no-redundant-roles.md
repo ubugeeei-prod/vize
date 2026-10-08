@@ -6,6 +6,8 @@ title: "a11y/no-redundant-roles"
 
 Disallow redundant ARIA roles
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The native button already has the button role, so `role="button"` repeats its implicit semantics.
+
 ```vue
 <template>
   <button role="button">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Removing the repeated role keeps the button semantics supplied by HTML.
 
 ```vue
 <template>

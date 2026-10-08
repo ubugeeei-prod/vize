@@ -15,7 +15,7 @@ title: "vize:croquis/cf/unhandled-event"
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -33,6 +33,8 @@ createApp(Root).mount("#app");
 ```
 
 ## 悪い
+
+`Child.vue` が `save` を emit しますが、直接の wrapper が受け取りません。コンポーネントのイベントは wrapper を自動的に通り抜けません。
 
 `App.vue`
 
@@ -64,6 +66,8 @@ emit("save");
 
 ## 良い
 
+`Wrapper.vue` が直接の子に `save` listener を付けます。空の callback はこの検査での受信を示すもので、保存処理全体ではありません。
+
 `App.vue`
 
 ```vue
@@ -92,7 +96,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

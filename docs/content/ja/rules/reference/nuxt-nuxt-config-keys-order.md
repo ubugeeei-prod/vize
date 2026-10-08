@@ -6,6 +6,8 @@ title: "nuxt/nuxt-config-keys-order"
 
 Nuxt 設定のプロパティを推奨順に並べます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `nuxt`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+設定内で `ssr` が `modules` より先に置かれ、このルールが推奨する Nuxt 設定キーの順序が逆になっています。
+
 `nuxt.config.ts`
 
 ```ts
@@ -42,6 +46,8 @@ export default defineNuxtConfig({ ssr: true, modules: [] });
 ```
 
 ## 良い
+
+`modules` を `ssr` より前に移し、各値を保ったまま指定の順序にそろえます。変更するのは配置であり、設定値の意味ではありません。
 
 `nuxt.config.ts`
 

@@ -6,6 +6,8 @@ title: "vue/no-reserved-component-names"
 
 Disallow the use of reserved names as component names
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The component name button conflicts with a native HTML element name.
+
 ```vue
 <script>
 export default {
@@ -44,6 +48,8 @@ export default {
 ```
 
 ## Good
+
+AppButton is an application component name and does not reuse the native button name.
 
 ```vue
 <script setup lang="ts">

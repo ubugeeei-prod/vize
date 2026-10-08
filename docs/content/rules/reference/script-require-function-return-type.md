@@ -6,6 +6,8 @@ title: "script/require-function-return-type"
 
 Require return type annotations on functions
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Both `add` and `greet` annotate their parameters but omit a return-type annotation; inferred returns do not satisfy this explicit-annotation policy.
+
 ```vue
 <script setup lang="ts">
 const add = (a: number, b: number) => {
@@ -48,6 +52,8 @@ return `Hello, ${name}`
 ```
 
 ## Good
+
+`add` declares `: number`, and `greet` declares `: string`, making the return contracts explicit without changing either body.
 
 ```vue
 <script setup lang="ts">

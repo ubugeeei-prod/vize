@@ -6,6 +6,8 @@ title: "script/prefer-use-slots"
 
 setup の context.slots を useSlots() に置き換えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`setup` がコンテキスト引数から `slots` を分割代入で取り出しており、このルールが置換を推奨する参照形式です。
+
 ```vue
 <script lang="ts">
 import { defineComponent, h } from "vue";
@@ -45,6 +49,8 @@ export default defineComponent({
 ```
 
 ## 良い
+
+setup 内で `useSlots()` から slot を取得し、コンテキスト引数を使わずに render 関数と default slot の任意の呼び出しを保ちます。
 
 ```vue
 <script lang="ts">

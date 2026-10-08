@@ -6,6 +6,8 @@ title: "vue/valid-v-once"
 
 Enforce valid `v-once` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`v-once` has a value, argument, or modifier, although this directive is a value-free render-once marker.
+
 ```vue
 <template>
 <div v-once="foo"></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Bare `v-once` marks the subtree for one-time rendering without unsupported syntax.
 
 ```vue
 <template>

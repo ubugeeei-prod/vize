@@ -6,6 +6,8 @@ title: "vue/no-multiple-objects-in-class"
 
 Disallow multiple object literals inside a :class array binding
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+A class array contains two top-level object literals that can be merged.
+
 ```vue
 <template>
 <div :class="[{ a }, { b }]"></div>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## Good
+
+One object contains the class conditions; arrays with one object and a string or with non-literal entries remain allowed.
 
 ```vue
 <template>

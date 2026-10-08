@@ -6,6 +6,8 @@ title: "musea/require-component"
 
 art ブロックに対象の component を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+art に title はありますが、プレビューする component の指定がありません。
+
 ```vue
 <art title="Button">
   <variant name="primary" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+defineArt で ./Button.vue を art の component として指定します。
 
 ```vue
 <script setup>

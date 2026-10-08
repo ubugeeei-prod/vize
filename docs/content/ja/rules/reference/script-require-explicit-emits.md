@@ -6,6 +6,8 @@ title: "script/require-explicit-emits"
 
 emit するイベントを defineEmits または emits に宣言します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+受け取った emit 関数が `save` を送信しますが、`defineEmits([])` にはそのイベントが宣言されていません。
+
 ```vue
 <script setup lang="ts">
 const emit = defineEmits([]);
@@ -43,6 +47,8 @@ emit("save");
 ```
 
 ## 良い
+
+宣言に `"save"` を追加し、送信する文字列イベントをコンポーネントの明示的なイベント契約に含めます。
 
 ```vue
 <script setup lang="ts">

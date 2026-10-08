@@ -6,6 +6,8 @@ title: "type/require-typed-props"
 
 defineProps に型定義を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -38,6 +40,8 @@ vp run lint
 
 ## 悪い
 
+配列だけの `defineProps(["title"])` は `title` の名前だけを宣言し、型を指定していません。
+
 ```vue
 <script setup lang="ts">
 defineProps(["title"]);
@@ -45,6 +49,8 @@ defineProps(["title"]);
 ```
 
 ## 良い
+
+`defineProps<{ title: string }>()` で、名前だけの実行時宣言に代えて `title` の string 型を明示します。
 
 ```vue
 <script setup lang="ts">

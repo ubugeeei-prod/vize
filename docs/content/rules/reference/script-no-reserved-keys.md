@@ -6,6 +6,8 @@ title: "script/no-reserved-keys"
 
 Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The returned data key `$el` collides with Vue’s built-in component-instance property and also uses a reserved `$` prefix.
+
 ```vue
 <script lang="ts">
 export default { data() { return { $el: "custom" }; } };
@@ -42,6 +46,8 @@ export default { data() { return { $el: "custom" }; } };
 ```
 
 ## Good
+
+Renaming the application data to `elementLabel` avoids the built-in instance surface and reserved prefix.
 
 ```vue
 <script lang="ts">

@@ -6,6 +6,8 @@ title: "vue/no-negated-v-if-condition"
 
 Disallow a negated v-if condition when the chain has a v-else
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The paired v-if and v-else branches begin with a negated condition.
+
 ```vue
 <template>
 <div v-if="!ok">A</div>
@@ -44,10 +48,12 @@ vp run lint
 
 ## Good
 
+A positive ok condition comes first; when inverting a condition, place the original opposite branch first. A lone negated v-if and !== comparisons remain allowed.
+
 ```vue
 <template>
-<div v-if="ok">A</div>
-<div v-else>B</div>
+<div v-if="ok">B</div>
+<div v-else>A</div>
 
 <div v-if="!ok">A</div>
 

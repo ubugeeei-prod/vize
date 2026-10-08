@@ -3,8 +3,11 @@ import { resolve } from "node:path";
 import { generateCategoryPages } from "./category-render.mjs";
 import { generateProjectPages } from "./project-render.mjs";
 import { ruleExamples } from "./examples.mjs";
+import { exampleExplanations, validateExampleExplanations } from "./explanations.mjs";
 import { migrationPage } from "./migration.mjs";
 import { purposeJa } from "./purpose-ja.mjs";
+import { exampleLinks } from "./example-links.mjs";
+import { projectIndex } from "./project-index.mjs";
 
 export const configurableRules = new Set([
   "html/no-empty-palpable-content",
@@ -31,6 +34,7 @@ export function generateRulePages({
   categoryLabels,
 }) {
   const checking = process.argv.includes("--check");
+  validateExampleExplanations(rules);
   generateProjectPages(workspaceRoot, checking);
   generateCategoryPages(workspaceRoot, rules, checking);
   for (const locale of ["", "ja/"]) {
@@ -69,38 +73,27 @@ export function generateRulePages({
         ? "[ESLint からのルール移行対応表](./migration.md)で対応名と未実装の範囲を確認できます。"
         : "See the [ESLint migration map](./migration.md) for rule IDs, differences, and unsupported mappings.",
       "",
-      `## ${ja ? "カテゴリ" : "Categories"}`,
+      `## ${ja ? "単一ファイルのルール" : "Single-file rules"} (${rules.length})`,
       "",
-      ja ? "| カテゴリ | ルール数 |" : "| Category | Rules |",
-      "| --- | ---: |",
+      ja
+        ? "| ルール | 例 | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 | カテゴリ |"
+        : "| Rule | Examples | Severity | Presets | Fixable | Options | Implementation | Description | Category |",
+      "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ];
-    for (const category of sortedCategories) {
-      const label = categoryLabels[category] ?? category;
-      const count = groupedRules.get(category).length;
-      lines.push(`| [${label}](#${slug(`${label} ${count}`)}) | ${count} |`);
-    }
     for (const category of sortedCategories) {
       const group = groupedRules.get(category);
       const label = categoryLabels[category] ?? category;
-      lines.push(
-        "",
-        `## ${label} (${group.length})`,
-        "",
-        ja
-          ? "| ルール | 重大度 | プリセット | 自動修正 | オプション | 実装 | 目的 |"
-          : "| Rule | Severity | Presets | Fixable | Options | Implementation | Description |",
-        "| --- | --- | --- | --- | --- | --- | --- |",
-      );
       for (const rule of group) {
         const path = `${slug(rule.name)}.md`;
         const example = ruleExamples(workspaceRoot, rule);
         if (!purposeJa[rule.name]) throw new Error(`Missing Japanese purpose for ${rule.name}`);
         lines.push(
-          `| [\`${rule.name}\`](./reference/${path}) | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? (ja ? "あり" : "Yes") : ja ? "なし" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : ja ? "なし" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} |`,
+          `| [\`${rule.name}\`](./reference/${path}) | ${exampleLinks(`./reference/${path}`, ja)} | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? (ja ? "あり" : "Yes") : ja ? "なし" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : ja ? "なし" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} | ${cell(label)} |`,
         );
         output(resolve(directory, "reference", path), detail(rule, example, ja), checking);
       }
     }
+    lines.push(...projectIndex(workspaceRoot, ja));
     output(resolve(directory, "all.md"), `${lines.join("\n")}\n`, checking);
   }
 }
@@ -130,7 +123,9 @@ function detail(rule, example, ja) {
     "",
     `# \`${rule.name}\``,
     "",
-    ja ? purposeJa[rule.name] : rule.description,
+    prose(ja ? purposeJa[rule.name] : rule.description),
+    "",
+    exampleLinks("", ja),
     "",
     `${label("Default severity", "既定の重大度")}: \`${rule.defaultSeverity}\`  `,
     `${label("Presets", "プリセット")}: ${presets(rule.presets)}  `,
@@ -145,6 +140,14 @@ function detail(rule, example, ja) {
     lines.push(`${label("Bad diagnostic", "悪い例での診断")}: \`${example.badDiagnostic}\``, "");
   const note = ja ? example.noteJa : example.note;
   if (note) lines.push(note, "");
+  if (rule.name === "vue/max-template-complexity")
+    lines.push(
+      label(
+        "See [complexity scoring and component boundaries](../../guide/cross-file-complexity.md) for the contributions behind the example's two scores.",
+        "例の二つの値の計算内訳は[複雑度の計算とコンポーネントの境界](../../guide/cross-file-complexity.md)を参照してください。",
+      ),
+      "",
+    );
   if (config.typeAware)
     lines.push(
       label(
@@ -180,16 +183,21 @@ function detail(rule, example, ja) {
       language = "ts";
       source = source.replace(/^<script[^>]*>\n/, "").replace(/\n<\/script>$/, "");
     }
-    lines.push(`## ${title}`, "");
+    lines.push(`## ${title}`, "", exampleExplanations.get(rule.name)[key][ja ? "ja" : "en"], "");
     const filename = example[`${key}Filename`] ?? example.filename;
     if (filename) lines.push(`\`${filename}\``, "");
     lines.push(`\`\`\`${language}`, source, "```", "");
   }
   lines.push(
-    label(
-      "Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.",
-      "良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。",
-    ),
+    example.availability
+      ? label(
+          "Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.",
+          "良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。",
+        )
+      : label(
+          "Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.",
+          "良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。",
+        ),
     "",
     `[${label("Implementation", "実装")}](https://github.com/ubugeeei-prod/vize/blob/main/${rule.implementationPath}#L${rule.implementationLine}) · [${label("All rules", "全ルール")}](../all.md)`,
     "",
@@ -254,6 +262,11 @@ function cell(value) {
     .replaceAll(">", "&gt;")
     .replace(/\s+/g, " ")
     .trim();
+}
+function prose(value) {
+  return String(value).replace(/(`+)([\s\S]*?)\1|[<>]/g, (token) =>
+    token === "<" ? "&lt;" : token === ">" ? "&gt;" : token,
+  );
 }
 function output(path, content, checking) {
   if (checking) {

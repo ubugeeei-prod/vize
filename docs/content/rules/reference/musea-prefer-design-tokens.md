@@ -6,6 +6,8 @@ title: "musea/prefer-design-tokens"
 
 Prefer design token CSS variables over hardcoded primitive values
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -48,6 +50,8 @@ vp run lint
 
 ## Bad
 
+The art example uses the literal blue color instead of the configured primary design token.
+
 `Button.art.vue`
 
 ```vue
@@ -62,6 +66,8 @@ vp run lint
 ```
 
 ## Good
+
+The style refers to --color-primary, the token configured for this example.
 
 `Button.art.vue`
 

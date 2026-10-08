@@ -6,6 +6,8 @@ title: "vue/v-on-style"
 
 v-on の表記形式を揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`v-on:click` が長い形式で、このルールの省略形に合いません。
+
 ```vue
 <template>
   <div v-on:click="handleClick"></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+handler を変えずに `@click` の省略形を使います。
 
 ```vue
 <template>

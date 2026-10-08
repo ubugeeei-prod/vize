@@ -6,6 +6,8 @@ title: "vue/no-deprecated-slot-scope-attribute"
 
 Disallow the deprecated `slot-scope` attribute
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The template receives slot props through the deprecated slot-scope attribute.
+
 ```vue
 <template>
 <Card><template slot-scope="props">{{ props.name }}</template></Card>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The #default directive receives those props without slot-scope.
 
 ```vue
 <template>

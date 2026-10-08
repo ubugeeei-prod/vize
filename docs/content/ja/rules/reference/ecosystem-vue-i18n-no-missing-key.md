@@ -6,6 +6,8 @@ title: "ecosystem/vue-i18n-no-missing-key"
 
 SFC 内の翻訳データに存在しない静的キーを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+テンプレートは auth.missing を参照しますが、ローカルの英語メッセージには auth.login しかありません。
+
 ```vue
 <template>{{ $t("auth.missing") }}</template>
 
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+ローカルのメッセージにある auth.login を参照します。
 
 ```vue
 <template>{{ $t("auth.login") }}</template>

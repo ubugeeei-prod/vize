@@ -6,6 +6,8 @@ title: "ecosystem/vue-router-prefer-named-link"
 
 Prefer named route objects over static path strings in RouterLink
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `ecosystem`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The RouterLink destination is a literal path rather than a named route.
+
 ```vue
 <template>
   <RouterLink to="/settings">Settings</RouterLink>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The bound route object identifies the destination by its settings route name.
 
 ```vue
 <template>

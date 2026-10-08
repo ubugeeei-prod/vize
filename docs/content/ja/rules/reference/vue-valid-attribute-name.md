@@ -6,6 +6,8 @@ title: "vue/valid-attribute-name"
 
 有効な属性名を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -39,6 +41,8 @@ vp run lint
 
 ## 悪い
 
+`my"attr` の引用符で属性名が壊れています。この例の診断は `parser/template` で、別のルール診断の生成を約束するものではありません。
+
 ```vue
 <template>
 <div my"attr="value"></div>
@@ -46,6 +50,8 @@ vp run lint
 ```
 
 ## 良い
+
+`my-attr` は正しい属性名で、テンプレート parser が属性と値を読み取れます。
 
 ```vue
 <template>

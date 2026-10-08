@@ -4,7 +4,9 @@ title: "html/no-consecutive-br"
 
 # `html/no-consecutive-br`
 
-Disallow consecutive <br> elements
+Disallow consecutive &lt;br&gt; elements
+
+[Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Two consecutive break elements create spacing between blocks inside a single paragraph.
+
 ```vue
 <template>
   <p>First line<br /><br />Second block</p>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Separate paragraphs express the two content blocks without repeated break elements.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "css/prefer-slotted"
 
 slot や子コンポーネントに対する scoped CSS のセレクターを検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+scoped の CSS で、渡された要素ではなく slot の出口を対象にしています。
+
 ```vue
 <style scoped>
 slot { color: red; }
@@ -42,6 +46,8 @@ slot { color: red; }
 ```
 
 ## 良い
+
+:slotted(.label) を使い、slot から渡される label の要素を対象にします。
 
 ```vue
 <style scoped>

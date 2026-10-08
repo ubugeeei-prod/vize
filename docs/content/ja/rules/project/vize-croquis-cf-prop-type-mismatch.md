@@ -15,7 +15,7 @@ title: "vize:croquis/cf/prop-type-mismatch"
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -33,6 +33,8 @@ createApp(Root).mount("#app");
 ```
 
 ## 悪い
+
+親が数値式 `42` を、解決した子の `title: string` prop に渡しています。
 
 `App.vue`
 
@@ -54,6 +56,8 @@ const props = defineProps<{ title: string }>();
 
 ## 良い
 
+文字列の `title="Hello"` を渡し、子の宣言と合わせます。
+
 `App.vue`
 
 ```vue
@@ -72,7 +76,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

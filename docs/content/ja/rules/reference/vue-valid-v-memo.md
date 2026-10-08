@@ -6,6 +6,8 @@ title: "vue/valid-v-memo"
 
 v-memo の値を配列の式にします。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+値のない `v-memo` では、サブツリーを再利用する判断に必要な依存式を渡せません。
+
 ```vue
 <template>
   <div v-memo></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+`v-memo="[valueA, valueB]"` でメモ化に使う依存配列を渡します。
 
 ```vue
 <template>

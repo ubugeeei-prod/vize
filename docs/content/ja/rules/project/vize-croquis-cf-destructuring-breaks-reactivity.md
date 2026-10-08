@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -47,6 +47,8 @@ createApp(Root).mount("#app");
 ```
 
 ## 悪い
+
+`props` object の通常の分割代入は現在の `item` を取り出します。Vue 3.5 の `defineProps()` から直接行う分割代入とは別です。
 
 `UserPage.vue`
 
@@ -74,6 +76,8 @@ const { item } = props;
 
 ## 良い
 
+`toRef(props, "item")` で `props` の property への接続を維持します。
+
 `UserPage.vue`
 
 ```vue
@@ -100,7 +104,7 @@ const item = toRef(props, "item");
 </script>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

@@ -6,6 +6,8 @@ title: "script/no-use-computed-property-like-method"
 
 Disallow calling an Options API computed property like a method
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`this.total()` calls the value exposed by the computed getter; the getter returns `3`, which is not callable.
+
 ```vue
 <script lang="ts">
 export default { computed: { total() { return 3; } }, methods: { log() { console.log(this.total()); } } };
@@ -42,6 +46,8 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 ```
 
 ## Good
+
+`this.total` reads the computed value without call parentheses, so `log` prints the derived number.
 
 ```vue
 <script lang="ts">

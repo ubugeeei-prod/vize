@@ -6,6 +6,8 @@ title: "nuxt/no-nuxt-config-test-key"
 
 Nuxt が自動判定する test 環境の手動設定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+エクスポートした Nuxt 設定で `test` キーに真偽値 `true` を指定しており、このルールが拒否する旧形式の設定です。
+
 `nuxt.config.ts`
 
 ```ts
@@ -42,6 +46,8 @@ export default defineNuxtConfig({ test: true });
 ```
 
 ## 良い
+
+空の設定にすることで、真偽値の `test` プロパティを取り除きます。テスト設定のオブジェクトまで禁止する例ではありません。
 
 `nuxt.config.ts`
 

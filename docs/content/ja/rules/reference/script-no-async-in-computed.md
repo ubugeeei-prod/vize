@@ -6,6 +6,8 @@ title: "script/no-async-in-computed"
 
 computed の getter で非同期関数を使う箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`computed` の getter が `async` であり、fetch の結果を同期的な計算値ではなく Promise として返します。
+
 ```vue
 <script setup lang="ts">
 import { computed } from "vue";
@@ -46,6 +50,8 @@ const data = computed(async () => {
 ```
 
 ## 良い
+
+非同期の fetch を `watch` に移し、結果を `data.value` に保存します。クリーンアップで古い要求を中止し、無効になったコールバックが古い結果を書き込むのを防ぎます。async な computed getter は残りません。
 
 ```vue
 <script setup lang="ts">

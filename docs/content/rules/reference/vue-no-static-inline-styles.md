@@ -6,6 +6,8 @@ title: "vue/no-static-inline-styles"
 
 Disallow static inline style attributes
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The paragraph carries the constant color declaration in its style attribute.
+
 ```vue
 <template>
 <p style="color: red">Notice</p>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+A notice class and scoped stylesheet hold the constant color outside the template attribute.
 
 ```vue
 <template><p class="notice">Notice</p></template>

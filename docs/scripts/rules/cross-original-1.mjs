@@ -32,11 +32,11 @@ export const original1 = {
     },
     bad: {
       "ResultsList.vue":
-        '<template>\n  <article v-for="result in results" :key="result.id">\n    <h2 id="result-title">{{ result.title }}</h2>\n  </article>\n</template>',
+        '<script setup lang="ts">\nconst results = [{ id: "first", title: "First result" }, { id: "second", title: "Second result" }];\n</script>\n<template>\n  <article v-for="result in results" :key="result.id">\n    <h2 id="result-title">{{ result.title }}</h2>\n  </article>\n</template>',
     },
     good: {
       "ResultsList.vue":
-        '<template>\n  <article v-for="result in results" :key="result.id">\n    <h2 :id="`result-${result.id}-title`">{{ result.title }}</h2>\n  </article>\n</template>',
+        '<script setup lang="ts">\nconst results = [{ id: "first", title: "First result" }, { id: "second", title: "Second result" }];\n</script>\n<template>\n  <article v-for="result in results" :key="result.id">\n    <h2 :id="`result-${result.id}-title`">{{ result.title }}</h2>\n  </article>\n</template>',
     },
     evidence: "Previous complete cross-file reference, with missing shared files restored",
   },

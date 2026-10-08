@@ -29,7 +29,7 @@ vp run lint
 
 ## Shared project files
 
-Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.
+Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.
 
 `main.ts`
 
@@ -48,6 +48,8 @@ createApp(Root).mount("#app");
 
 ## Bad
 
+The parent passes `class="notice"` to a resolved fragment child that has no automatic attribute target and never reads `$attrs`.
+
 `App.vue`
 
 ```vue
@@ -65,6 +67,8 @@ import Child from "./Child.vue";
 
 ## Good
 
+The child chooses `<main>` as its target by binding `$attrs` there; its sibling `<aside>` remains separate.
+
 `App.vue`
 
 ```vue
@@ -80,6 +84,6 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-Good avoids this finding; other diagnostics can still apply to the complete project.
+The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Cross-file index](../cross-file.md)

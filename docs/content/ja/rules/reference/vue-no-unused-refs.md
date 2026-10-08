@@ -6,6 +6,8 @@ title: "vue/no-unused-refs"
 
 テンプレートに宣言しているのに参照しない ref を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+テンプレートの unused の ref に対応する script の参照がありません。
+
 ```vue
 <template><input ref="unused" /></template>
 <script setup>
@@ -43,6 +47,8 @@ const x = 1
 ```
 
 ## 良い
+
+inputEl のテンプレート ref に、script setup の同じ名前の ref を対応させます。
 
 ```vue
 <template><input ref="inputEl" /></template>

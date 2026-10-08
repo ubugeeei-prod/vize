@@ -6,10 +6,20 @@ import { original2 } from "./cross-original-2.mjs";
 import { extra, composed } from "./cross-extra.mjs";
 import { crossMetadata, explanation } from "./project-metadata.mjs";
 import { routerExamples } from "./router-project.mjs";
+import { projectExplanations } from "./project-explanations.mjs";
+import { exampleLinks } from "./example-links.mjs";
+import { contractExamples } from "./project-contracts.mjs";
+import { reactiveCycleExample } from "./reactive-cycle-project.mjs";
 const examples = { ...original0, ...original1, ...original2, ...extra };
 const slug = (id) => id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
 export function generateProjectPages(root, checking) {
   const metadata = crossMetadata(root);
+  const contracts = metadata
+    .filter((rule) => rule.status === "contract")
+    .map((rule) => rule.name)
+    .sort();
+  if (JSON.stringify(contracts) !== JSON.stringify(Object.keys(contractExamples).sort()))
+    throw new Error("Contract examples must match all published producer-free contracts");
   for (const locale of ["", "ja/"]) {
     const ja = Boolean(locale);
     const directory = resolve(root, `docs/content/${locale}rules`);
@@ -40,18 +50,20 @@ export function generateProjectPages(root, checking) {
       ),
       "",
       label(
-        "The 60 published cross-file codes have different support boundaries: 19 belong to the CLI pass (18 complete source pairs and one reactive-graph scenario); 16 have experimental Rust analyzer producers but are not individually emitted by that pass; 25 are published contracts without a current diagnostic producer. Enabling a rule ID does not activate an unavailable producer.",
-        "公開されている 60 のコードは対応範囲が異なります。19 は CLI の検査対象（18 の完全なソースの例と 1 つの参照構成の例）で、16 は実験的な Rust analyzer に実装があるものの CLI では個別コードとして生成されません。25 は現在の生成元がない公開契約です。ルール名を設定しても未対応の生成元は有効になりません。",
+        "The 60 published cross-file codes have different support boundaries: 19 belong to the CLI pass (18 qualified source pairs and one illustrative Vue project with its reactive-flow graph); 16 have experimental Rust analyzer producers but are not individually emitted by that pass; 25 are published contracts without a current diagnostic producer. Enabling a rule ID does not activate an unavailable producer.",
+        "公開されている 60 のコードは対応範囲が異なります。19 は CLI の検査対象（18 の検証済みソースの例と、参照構成を併記した 1 つの具体的な Vue プロジェクト例）で、16 は実験的な Rust analyzer に実装があるものの CLI では個別コードとして生成されません。25 は現在の生成元がない公開契約です。ルール名を設定しても未対応の生成元は有効になりません。",
       ),
       "",
       `## ${label("Project-specific lint IDs", "プロジェクト固有の lint ID")}`,
       "",
-      `| ${label("Rule", "ルール")} | ${label("Severity", "重大度")} |`,
-      "| --- | --- |",
+      `| ${label("Rule", "ルール")} | ${label("Examples", "例")} | ${label("Severity", "重大度")} |`,
+      "| --- | --- | --- |",
     ];
     for (const [id, example] of [...Object.entries(routerExamples), ...Object.entries(composed)]) {
       const severity = example.severity ?? "warning";
-      lines.push(`| [\`${id}\`](./project/${slug(id)}.md) | ${severity} |`);
+      lines.push(
+        `| [\`${id}\`](./project/${slug(id)}.md) | ${exampleLinks(`./project/${slug(id)}.md`, ja)} | ${severity} |`,
+      );
       output(
         resolve(directory, `project/${slug(id)}.md`),
         projectDetail(id, example, ja, severity),
@@ -62,8 +74,8 @@ export function generateProjectPages(root, checking) {
       "",
       `## ${label("Published analyzer codes", "公開 analyzer コード")}`,
       "",
-      `| ${label("Code", "コード")} | ${label("Status", "対応状況")} |`,
-      "| --- | --- |",
+      `| ${label("Code", "コード")} | ${label("Examples", "例")} | ${label("Status", "対応状況")} |`,
+      "| --- | --- | --- |",
     );
     for (const rule of metadata) {
       const status =
@@ -75,7 +87,9 @@ export function generateProjectPages(root, checking) {
                 "Rust analyzer。CLI は別の表示または未有効",
               )
             : label("Contract only; no current producer", "契約のみ。現在の生成元なし");
-      lines.push(`| [\`${rule.code}\`](./project/${slug(rule.code)}.md) | ${status} |`);
+      lines.push(
+        `| [\`${rule.code}\`](./project/${slug(rule.code)}.md) | ${exampleLinks(`./project/${slug(rule.code)}.md`, ja)} | ${status} |`,
+      );
       output(
         resolve(directory, `project/${slug(rule.code)}.md`),
         crossDetail(root, rule, ja),
@@ -151,6 +165,16 @@ function crossDetail(root, rule, ja) {
       ),
       "",
     );
+  if (name === "circular-reactive-dependency")
+    lines.push(
+      "Example qualification: `illustrative-source-pair`",
+      "",
+      label(
+        "The complete Vue project below illustrates update feedback and its repair. It is not a qualified CLI finding witness: the diagnostic producer requires retained reactive-flow reference identities and edges, as shown by the accompanying graph. These sources do not establish that the current source path will emit this exact code. Dedicated tracked-ID graph finding controls remain separate from source grammar checks.",
+        "以下の完全な Vue プロジェクトは、更新の循環とその修正を具体的に示します。このソースによる CLI の検出は検証済みではありません。診断の生成元には、併記したグラフのように保持された参照の ID と流れが必要です。このソースだけで現在の処理がこの診断コードを生成すると断定しません。参照 ID を保持したグラフに対する専用の検出検証と、ソースの構文検査は分けて扱います。",
+      ),
+      "",
+    );
   if (name === "provide-inject-type")
     lines.push(
       label(
@@ -167,32 +191,14 @@ function crossDetail(root, rule, ja) {
       ),
       "",
     );
-  const example = examples[name];
-  if (example) lines.push(...fixture(example, ja));
-  else {
-    if (status !== "contract" && name !== "circular-reactive-dependency")
-      throw new Error(`Missing complete project scenario: ${code}`);
-    lines.push(
-      `## ${label("Bad", "悪い")}`,
-      "",
-      name === "circular-reactive-dependency"
-        ? label(
-            "The analyzer's tracked reactive-flow graph contains a cycle: provider A → consumer B → provider A. Both references are the same graph identities, rather than unrelated variables that share a name.",
-            "analyzer が追跡するリアクティブな参照の流れが提供元 A → 使用側 B → 提供元 A と循環しています。同名の無関係な変数ではなく、同一の参照として記録された構成です。",
-          )
-        : info.purpose,
-      "",
-      `## ${label("Good", "良い")}`,
-      "",
-      name === "circular-reactive-dependency"
-        ? label(
-            "Remove the B → A flow: let A own the source, and let B read a computed value or emit an action instead of feeding that reference back. The tracked flow graph becomes acyclic.",
-            "B → A の流れをなくします。元の値は A が管理し、B は computed の読み取りや action の通知を使います。同じ参照を A に戻さなければ、追跡対象の循環がなくなります。",
-          )
-        : info.help,
-      "",
-    );
-  }
+  const example =
+    examples[name] ??
+    contractExamples[name] ??
+    (name === "circular-reactive-dependency" ? reactiveCycleExample : undefined);
+  const contractNote = contractExamples[name]?.note?.[ja ? "ja" : "en"];
+  if (contractNote) lines.push(contractNote, "");
+  if (example) lines.push(...fixture({ ...example, ...projectExplanations.get(name) }, ja));
+  else throw new Error(`Missing complete project scenario: ${code}`);
   lines.push(
     `[${label("Public explanation", "公開の説明")}](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/${ja ? "ja" : "en"}.txt)`,
     "",
@@ -245,7 +251,7 @@ function projectDetail(id, example, ja, severity) {
       : []),
     ...config(id, ja),
     "",
-    ...fixture(example, ja),
+    ...fixture({ ...example, ...projectExplanations.get(id) }, ja),
     `[${label("Cross-file index", "ファイル間ルール一覧")}](../cross-file.md)`,
     "",
   ].join("\n");
@@ -256,8 +262,8 @@ function fixture(example, ja) {
     `## ${label("Shared project files", "共通のプロジェクト ファイル")}`,
     "",
     label(
-      "Use these unchanged files in both Bad and Good. Install Vue (and vue-router for Router examples) in the project. The entry root makes the component relationship explicit.",
-      "以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。",
+      "Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.",
+      "以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。",
     ),
     "",
   ];
@@ -278,12 +284,17 @@ function fixture(example, ja) {
     ["good", label("Good", "良い")],
   ]) {
     lines.push(`## ${title}`, "");
+    const rationale = example[`${key}Explanation`]?.[ja ? "ja" : "en"];
+    if (!rationale) throw new Error(`Missing project example explanation: ${title}`);
+    lines.push(rationale, "");
     files(example[key]);
+    const graph = example[`${key}Graph`];
+    if (graph) lines.push("```text", graph, "```", "");
   }
   lines.push(
     label(
-      "Good avoids this finding; other diagnostics can still apply to the complete project.",
-      "良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。",
+      "The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.",
+      "良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。",
     ),
     "",
   );

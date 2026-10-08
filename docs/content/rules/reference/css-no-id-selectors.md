@@ -6,6 +6,8 @@ title: "css/no-id-selectors"
 
 Discourage use of ID selectors in CSS
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `opinionated`, `nuxt`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`#submit` ties the style rule to an ID selector.
+
 ```vue
 <style scoped>
 #submit {
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The `.submit` class expresses the reusable styling hook without an ID selector.
 
 ```vue
 <style scoped>

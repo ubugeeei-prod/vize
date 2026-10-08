@@ -6,6 +6,8 @@ title: "vue/mustache-interpolation-spacing"
 
 Enforce consistent spacing inside mustache interpolations
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: Available for supported findings  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The text interpolation is missing a space at one or both delimiter boundaries.
+
 ```vue
 <template>
   <div>{{text}}</div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Spaces separate the expression from both opening and closing mustache delimiters.
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/no-template-target-blank"
 
 Disallow target="_blank" without rel="noopener noreferrer"
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The external link opens a new browsing context without the expected rel protection.
+
 ```vue
 <template>
 <a href="https://example.com" target="_blank">x</a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The same link includes noopener noreferrer alongside target=_blank.
 
 ```vue
 <template>

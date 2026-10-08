@@ -6,6 +6,8 @@ title: "script/no-ref-as-operand"
 
 ref を演算の値として使う際に .value を参照します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`count + 1` は ref が包む数値ではなく、ref オブジェクトそのものを算術演算の対象にしています。
+
 ```vue
 <script setup lang="ts">
 import { ref } from "vue";
@@ -44,6 +48,8 @@ const next = count + 1;
 ```
 
 ## 良い
+
+`count.value + 1` で内側の数値を取り出してから加算します。script の演算では ref の値を明示的に参照します。
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "css/no-display-none"
 
 表示切り替えに display: none を使う箇所で v-show を検討します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+ローカルの p を `.message` の CSS で非表示にし、テンプレートに表示条件を指定していません。
+
 ```vue
 <template>
   <p class="message">Saved</p>
@@ -48,6 +52,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ p に `v-show="isSaved"` で表示条件を指定し、display: none を取り除きます。
 
 ```vue
 <template>

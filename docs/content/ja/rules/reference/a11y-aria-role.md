@@ -6,6 +6,8 @@ title: "a11y/aria-role"
 
 有効で抽象的ではない ARIA role を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`datepicker` は認識される ARIA role ではありません。
+
 ```vue
 <template>
   <section role="datepicker">...</section>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+認識される `dialog` を使い、日付を選択する領域の名前も指定します。
 
 ```vue
 <template>

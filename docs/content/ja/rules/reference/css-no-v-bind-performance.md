@@ -6,6 +6,8 @@ title: "css/no-v-bind-performance"
 
 CSS v-bind() の実行時コストを検討するための警告です。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `opinionated`, `nuxt`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+変化する offset を SFC の CSS の v-bind() で参照しています。
+
 ```vue
 <style scoped>
 .card {
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+変化する transform を要素の style バインディングに直接指定します。
 
 ```vue
 <template>

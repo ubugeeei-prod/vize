@@ -6,6 +6,8 @@ title: "vue/no-unused-properties"
 
 defineProps に宣言しているのに使わない prop を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+description の prop を宣言していますが、表示には title しか使っていません。
+
 ```vue
 <script setup lang="ts">
 defineProps<{ title: string; description: string }>();
@@ -46,6 +50,8 @@ defineProps<{ title: string; description: string }>();
 ```
 
 ## 良い
+
+宣言した両方の prop をテンプレートで参照します。
 
 ```vue
 <script setup lang="ts">

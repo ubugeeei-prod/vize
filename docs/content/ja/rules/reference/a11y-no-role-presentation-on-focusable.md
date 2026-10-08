@@ -6,6 +6,8 @@ title: "a11y/no-role-presentation-on-focusable"
 
 フォーカス可能な要素の意味を presentation で消した指定を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+focus できる Billing のリンクに role=presentation を指定し、操作可能なリンクの役割と矛盾させています。ブラウザはこの presentation の指定を無視する必要があります。
+
 ```vue
 <template>
   <a href="/billing" role="presentation">Billing</a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+矛盾する presentation の指定を除き、Billing への標準のリンクの役割を使います。
 
 ```vue
 <template>

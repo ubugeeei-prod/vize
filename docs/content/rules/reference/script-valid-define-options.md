@@ -6,6 +6,8 @@ title: "script/valid-define-options"
 
 Enforce valid defineOptions() usage (single object arg, no props/emits/expose/slots)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The first call puts the dedicated `props` declaration inside `defineOptions`; the later calls also repeat the macro and include a non-object argument. These illustrate the forbidden shape and repeated-call constraints.
+
 ```vue
 <script setup lang="ts">
 defineOptions({ props: ['foo'] })   // use defineProps instead
@@ -45,6 +49,8 @@ defineOptions('Foo')                // not an object literal
 ```
 
 ## Good
+
+One `defineOptions` call receives an object containing only the supported ordinary options `name` and `inheritAttrs`.
 
 ```vue
 <script setup lang="ts">

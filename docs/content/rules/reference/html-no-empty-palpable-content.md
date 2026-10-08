@@ -6,6 +6,8 @@ title: "html/no-empty-palpable-content"
 
 Disallow empty elements that expect visible content
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The paragraph, list item, and table cell all have empty palpable content.
+
 ```vue
 <template>
   <p></p>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+Text fills the paragraph, interpolation supplies the list item, and aria-label explicitly names the otherwise empty cell.
 
 ```vue
 <template>

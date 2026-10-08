@@ -6,6 +6,8 @@ title: "ecosystem/router-link-require-to"
 
 Require a `to` target on RouterLink and NuxtLink components
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `ecosystem`  
 Automatic fix: None; review the suggested change  
@@ -37,6 +39,8 @@ vp run lint
 
 ## Bad
 
+The nested RouterLink has no `to` destination; it cannot rely on root attribute fallthrough.
+
 ```vue
 <template>
 <nav><RouterLink>Settings</RouterLink></nav>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+`to="/settings"` explicitly supplies the nested link destination.
 
 ```vue
 <template>

@@ -23,7 +23,7 @@
 //! its own binary — the `davinci_expr_reparse_floor.rs` shape.
 
 use vize_carton::profile_export::{ProfileExportBudget, ProfileExportOptions, export_report};
-use vize_l0::pass::observer::TimingObserver;
+use vize_carton::timing_observer::TimingObserver;
 use vize_l0::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassKind, Pipeline, Preserved, run_pipeline,
 };

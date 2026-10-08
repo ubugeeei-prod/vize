@@ -62,3 +62,80 @@ example inputs and whole expected findings remain intact; fresh exact-head Actio
 all pairs and the six required Corsa cases. A production Docs build must qualify eight English
 and Japanese rule routes on both desktop and mobile before queue admission. The navigation companion owns the site-wide
 menu and Vite+ onboarding; this change owns rule generation, content, and rule-specific coverage.
+
+The next #6101 slice addresses example usefulness and discovery. Every one of the 251 source
+catalog IDs has authored English and Japanese explanations immediately before its Bad and Good
+code. Each explanation identifies the literal defect and the specific repair, including filename,
+configuration, Vue-version, parser-owned, native-runtime, and non-emitted boundaries. Missing or
+unregistered explanation records fail deterministic generation; no generic fallback substitutes
+for an authored rationale. The four unsupported SFC callbacks and six required-Corsa cases retain
+their existing explicit contracts. The negated-condition Good example now swaps its A/B bodies
+when inverting the condition, preserving the Bad branch behavior; other single-file source inputs
+remain intact. The repeated-ID project pair also defines its previously missing `results` input
+with two items in both alternatives, making the copied project complete without changing either
+ID example or expected finding. Other previously authored source project contexts remain intact.
+The injected async-mutation project's shared `loadCount` helper now accepts and forwards the
+optional abort signal already passed by its Good loader, fixing an inherited argument mismatch
+and making its cancellation work. Both component bodies and finding expectations remain intact.
+
+All-rule, category, and cross-file tables link directly to both example sections. The all-rule
+index additionally includes the 66 project entries, with CLI/library/contract status shown in
+each row. petite-vue gains its missing category, and petite-vue plus Ecosystem/Nuxt become visible
+in the English/Japanese rule navigation. Source declarations remain the authority for counts:
+251 single-file entries and 60 cross-file codes plus six project-specific IDs, or 317 reference
+pages per locale. The preset reader accepts the example column without changing preset metadata.
+
+The 25 producer-free contracts receive concrete illustrative project sources and explanations.
+They remain marked as unavailable diagnostics and gain no CLI invocation or fabricated producer.
+The reactive-cycle entry uses the same explicit tracked reference identities in its Bad/Good
+graphs; a source snippet cannot establish that internal identity graph by variable spelling alone.
+The historical array-index contract is qualified against Vue 3 proxy behavior. Reserved contracts,
+the missing async macro fact, and unimplemented ESLint mappings remain implementation TODOs rather
+than completed linter behavior.
+
+The existing tooling coverage test checks direct example links and concrete project scenarios.
+The existing Docs render verifier compares every generated reference's complete code packets
+and actual Bad/Good anchor IDs against authored source, and captures eight representative rule
+routes in English/Japanese on desktop/mobile in both light and dark themes through the real
+theme toggle. These include category navigation, configured props
+destructuring, accessibility, a reserved contract, and the identity graph. Fresh Actions must replay
+the original 245 ordinary pairs, six required-Corsa pairs, and 25 complete CLI project cases;
+earlier qualification is historical evidence, not credit for this change. No production linter,
+highlight styles, complexity algorithm, dependencies, or diagnostic oracle changes are involved.
+
+The first exact-head Docs render exposed raw `<script setup>` metadata prose consuming the
+following example sections as HTML script content. Generated leaf purposes now escape angle
+brackets, as the summary tables already did. All 317 whole-code and real-anchor checks remain
+strict; authored Bad/Good source packets are unchanged. The failed run is retained as evidence,
+and fresh Actions and Docs must qualify the corrected head before queue admission.
+
+The first source tooling run also exposed inherited layout assumptions after adding examples.
+The all-rule index now uses one category-labelled single-file table plus the complete project
+table, retaining all 317 rows and direct example links within 344 lines in both locales.
+The owning options test verifies the Examples column and the same six type-aware rows in that
+table. petite-vue navigation uses the existing English/Japanese locale override because other
+locales have no authored petite-vue page; every locale has aligned labels. Seven terse Japanese
+rationales gain literal-specific context. Purpose escaping preserves existing inline-code spans
+so angle brackets inside backticks remain readable rather than becoming literal entities.
+
+The next exact-head Docs run completed the desktop pages and whole EN/JA packet checks, then
+exposed the verifier selecting the hidden desktop theme toggle on mobile. The mobile screenshot
+pass now clicks the existing visible `[data-mobile-theme]` footer button; both native controls
+use the same production theme controller. Root data-theme and persisted theme assertions remain
+strict, with the actual control selector included in each screenshot receipt. No styles or theme
+controller are changed, and only a fresh complete run qualifies the corrected head.
+
+The expanded Japanese static-element rationale names the unchanged Enter-key handler exactly;
+it does not describe a click handler. This text correction changes no source example or oracle.
+
+The final screenshot review exposed one example-usability gap: circular-reactive-dependency
+showed only tracked A/B identities and edges. Supplement that unchanged graph with a complete
+Vue/TypeScript project: App provides a typed Ref, and CycleView computes its next value; Bad
+watches the derived value back into the same Ref, while Good removes only that feedback. All
+other 316 source pairs and the original 25 CLI witness inputs/count/oracles remain exact.
+The illustrative-source-pair marker explicitly separates this source explanation from an emitted
+CLI finding claim. Existing tooling parses and compiles its complete shared, Bad and Good scripts;
+dedicated native analyzer controls assert the complete cycle diagnostic, an acyclic graph, and a
+same-name/different-offset identity negative. Every generated source and retained graph packet
+remains covered by the strict all-317 browser/anchor observer. Fresh exact-head Actions and real
+rendered screenshots must qualify this correction before queue admission and public acceptance.

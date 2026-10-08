@@ -6,6 +6,8 @@ title: "vue/no-reserved-component-names"
 
 予約済みのコンポーネント名を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+コンポーネント名の button が、標準の HTML 要素名と競合しています。
+
 ```vue
 <script>
 export default {
@@ -44,6 +48,8 @@ export default {
 ```
 
 ## 良い
+
+標準の button と重複しない、アプリの AppButton の名前を指定します。
 
 ```vue
 <script setup lang="ts">

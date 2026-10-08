@@ -15,7 +15,7 @@ Vue が許さない使い方で setup コンテキストを使っています。
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -34,6 +34,8 @@ createApp(Root).mount("#app");
 
 ## 悪い
 
+`ref(0)` を通常の script の module scope に作り、この analyzer が扱うインスタンスごとの setup 文脈から外しています。
+
 `App.vue`
 
 ```vue
@@ -47,6 +49,8 @@ export default {};
 
 ## 良い
 
+script setup に移し、各インスタンスが count を持ち、テンプレートから読み取れる形にします。
+
 `App.vue`
 
 ```vue
@@ -57,7 +61,7 @@ const count = ref(0);
 <template><p>{{ count }}</p></template>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

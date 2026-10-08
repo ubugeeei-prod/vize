@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。Vue を、Router の例では vue-router もインストールしてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
 
 `main.ts`
 
@@ -49,8 +49,8 @@ createApp(Root).mount("#app");
 `api.ts`
 
 ```ts
-export async function loadCount(query: string): Promise<number> {
-  const response = await fetch(`/count?q=${encodeURIComponent(query)}`);
+export async function loadCount(query: string, options?: { signal?: AbortSignal }): Promise<number> {
+  const response = await fetch(`/count?q=${encodeURIComponent(query)}`, options);
   return Number(await response.text());
 }
 ```
@@ -67,6 +67,8 @@ const store = inject(StoreKey)!;
 ```
 
 ## 悪い
+
+`CountLoader.vue` が await の結果を、`CountSummary.vue` と共有する inject 済み store に直接書き込み、古い処理が両方に作用できます。
 
 `keys/store.ts`
 
@@ -117,6 +119,8 @@ watch(query, async (value) => {
 ```
 
 ## 良い
+
+loader は無効化した処理を中止し、有効な結果だけ emit します。store の変更は提供側の `applyLoadedCount` が担当します。
 
 `keys/store.ts`
 
@@ -178,7 +182,7 @@ watch(query, async (value, _oldValue, onCleanup) => {
 </script>
 ```
 
-良い例はこの検出を避ける修正です。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

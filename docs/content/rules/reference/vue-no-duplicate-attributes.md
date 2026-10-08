@@ -6,6 +6,8 @@ title: "vue/no-duplicate-attributes"
 
 Disallow duplicate attributes on the same element
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The same button declares class twice instead of one combined class value.
+
 ```vue
 <template>
   <button class="primary" class="large">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Both class tokens appear in a single class attribute.
 
 ```vue
 <template>

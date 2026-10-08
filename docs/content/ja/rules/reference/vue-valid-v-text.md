@@ -6,6 +6,8 @@ title: "vue/valid-v-text"
 
 v-text の値・引数・modifier を検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`v-text` に文字列の式がないか、対応していない引数・修飾子を指定しています。
+
 ```vue
 <template>
 <div v-text></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+`v-text="msg"` は構文として有効です。別の `vue/no-v-text` は mustache の使用を推奨する場合があります。
 
 ```vue
 <template>

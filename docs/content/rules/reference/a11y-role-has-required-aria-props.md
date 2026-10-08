@@ -6,6 +6,8 @@ title: "a11y/role-has-required-aria-props"
 
 Require ARIA roles to have required properties
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The checkbox role omits `aria-checked`, which conveys the checkbox state.
+
 ```vue
 <template>
   <span role="checkbox">Receive updates</span>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`aria-checked="false"` supplies the state required by the checkbox role.
 
 ```vue
 <template>

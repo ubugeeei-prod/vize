@@ -6,6 +6,8 @@ title: "vue/no-mutating-props"
 
 Disallow mutating component props
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Incrementing props.count writes directly to a value supplied by the parent.
+
 ```vue
 <script setup lang="ts">
 const props = defineProps<{ count: number }>();
@@ -44,6 +48,8 @@ props.count++;
 ```
 
 ## Good
+
+The component emits update:count with the next value, leaving the parent responsible for updating the prop.
 
 ```vue
 <script setup lang="ts">

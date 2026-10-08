@@ -6,6 +6,8 @@ title: "vue/no-invalid-html-attribute"
 
 Disallow invalid static values for HTML attributes
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The anchor uses stylesheet as a rel value, although that value belongs to stylesheet link elements.
+
 ```vue
 <template>
 <a href="/guide" rel="stylesheet">Guide</a>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+The anchor uses help, a rel value appropriate for a linked help resource.
 
 ```vue
 <template>

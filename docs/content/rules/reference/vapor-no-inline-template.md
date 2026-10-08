@@ -6,6 +6,8 @@ title: "vapor/no-inline-template"
 
 Disallow deprecated inline-template attribute
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+LegacyCard uses the inline-template attribute for its child markup.
+
 ```vue
 <template>
   <LegacyCard inline-template>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+The markup is passed through the default slot instead of an inline template.
 
 ```vue
 <template>

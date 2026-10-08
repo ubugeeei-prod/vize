@@ -6,6 +6,8 @@ title: "script/return-in-computed-property"
 
 Require a return value in every computed getter
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The block-bodied computed getter evaluates `1 + 2` but never returns it, leaving the computed value undefined.
+
 ```vue
 <script setup lang="ts">
 import { computed } from "vue";
@@ -43,6 +47,8 @@ const total = computed(() => { 1 + 2; });
 ```
 
 ## Good
+
+`return 1 + 2` turns the expression into the getter’s returned value. The rule looks for a value-returning return in the getter itself, not merely an expression statement.
 
 ```vue
 <script setup lang="ts">

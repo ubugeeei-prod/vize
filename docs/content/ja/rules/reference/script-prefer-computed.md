@@ -6,6 +6,8 @@ title: "script/prefer-computed"
 
 他の状態から導ける値を watcher で同期する代わりに computed で表現します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -37,6 +39,8 @@ vp run lint
 
 ## 悪い
 
+watcher が `count` から求めた値を別の ref `doubled` に書き込むだけであり、派生状態を手作業で同期しています。
+
 ```vue
 <script setup lang="ts">
 import { ref, watch } from "vue";
@@ -47,6 +51,8 @@ watch(count, (value) => { doubled.value = value * 2; });
 ```
 
 ## 良い
+
+`computed(() => count.value * 2)` で導出を直接表し、書き込み可能な追加 ref と同期用 watcher を取り除きます。
 
 ```vue
 <script setup lang="ts">

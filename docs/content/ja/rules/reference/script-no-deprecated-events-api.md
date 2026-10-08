@@ -6,6 +6,8 @@ title: "script/no-deprecated-events-api"
 
 Vue 3 で削除された $on / $off / $once を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`$on`、`$once`、`$off` の呼び出しが、Vue 3 で削除されたインスタンスのイベントバスメソッドを使っています。
+
 ```vue
 <script setup lang="ts">
 this.$on('event', handler)
@@ -45,6 +49,8 @@ emitter.$off('event')
 ```
 
 ## 良い
+
+有効な `$emit` は維持し、イベントバスへの購読は外部 emitter の `on` に移します。親へのイベント送信と外部イベントバスを別々の API で表します。
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "vue/valid-v-for"
 
 v-for の式と変数宣言を検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+繰り返し式がないか、対応していない `.stop` 修飾子を付けています。
+
 ```vue
 <template>
   <div v-for></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+`item in items` や `(item, index) of items` の完全な式と、例の key を使います。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/attribute-hyphenation"
 
 コンポーネントの prop 属性名を設定した形式に揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+コンポーネントの属性名を camelCase の firstName にしています。
+
 ```vue
 <template>
 <UserCard firstName="Ada" />
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+first-name に変更し、ハイフンで区切る既定の属性名の方針に合わせます。
 
 ```vue
 <template>

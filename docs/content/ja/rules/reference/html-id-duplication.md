@@ -6,6 +6,8 @@ title: "html/id-duplication"
 
 同じテンプレート内の ID 重複を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+入力欄と説明の p が同じ email の ID を使い、label の参照先が重複しています。
+
 ```vue
 <template>
   <label for="email">Email</label>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+入力欄は email、説明は email-help に分け、aria-describedby で説明を参照します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "a11y/landmark-roles"
 
 ランドマーク role の配置と重複を検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+同じテンプレートに main が二つあり、主要な領域が重複しています。
+
 ```vue
 <template>
   <main>Dashboard</main>
@@ -43,6 +47,8 @@ vp run lint
 ```
 
 ## 良い
+
+Dashboard を main として残し、Settings を名前付きの nav に変更します。
 
 ```vue
 <template>

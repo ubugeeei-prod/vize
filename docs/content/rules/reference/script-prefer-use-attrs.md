@@ -6,6 +6,8 @@ title: "script/prefer-use-attrs"
 
 Recommend using useAttrs() over context.attrs
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`setup` obtains `attrs` by destructuring its context parameter, which this rule asks to replace with the Composition API helper.
+
 ```vue
 <script lang="ts">
 export default { setup(_props, { attrs }) { console.log(attrs.class); } };
@@ -42,6 +46,8 @@ export default { setup(_props, { attrs }) { console.log(attrs.class); } };
 ```
 
 ## Good
+
+`useAttrs()` supplies `attrs` inside setup, retaining the `attrs.class` read without depending on the second setup parameter.
 
 ```vue
 <script lang="ts">

@@ -6,6 +6,8 @@ title: "type/no-reactivity-loss"
 
 Disallow plain snapshots of reactive values across assignments and calls
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -38,6 +40,8 @@ vp run lint
 
 ## Bad
 
+`const count = state.count` takes a plain numeric snapshot of the reactive property, so later updates of `state.count` are not reflected in that binding.
+
 ```vue
 <script setup lang="ts">
 import { reactive } from "vue";
@@ -47,6 +51,8 @@ const count = state.count;
 ```
 
 ## Good
+
+`toRef(state, "count")` keeps `count` linked to the original reactive property rather than copying its current primitive value.
 
 ```vue
 <script setup lang="ts">

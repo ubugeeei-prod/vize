@@ -6,6 +6,8 @@ title: "vue/valid-v-text"
 
 Enforce valid `v-text` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`v-text` lacks its text expression or uses an unsupported argument/modifier.
+
 ```vue
 <template>
 <div v-text></div>
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## Good
+
+`v-text="msg"` is syntactically valid. The separate `vue/no-v-text` style rule can still prefer interpolation.
 
 ```vue
 <template>

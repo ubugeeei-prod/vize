@@ -35,6 +35,7 @@ a flat `1`, and a **run of like logical operators** pays a flat `1`.
 regions, `ui.for` bodies and scoped-slot bodies; inside one expression, each
 enclosing `?:` adds one more. Plain elements and components never nest.
 `max-nesting` is the deepest non-empty region depth the template reaches.
+Expression-only ternary nesting does not increase that region maximum.
 
 ## Rules
 
@@ -71,16 +72,21 @@ owner's bindings evaluate at the owner's own depth; only its children stand
 inside a scoped slot.
 
 **Not counted.** `v-for` aliases and slot params (binding patterns, not
-evaluated code); a slot outlet's fallback (the parent's choice, not this
-template's — it neither counts nor nests); `v-show` itself (both states
-render the same subtree); `?.`; logical assignment (`&&=`, `||=`, `??=`);
-style-block `v-bind()`; `v-once` and `v-cloak` (no expression).
+evaluated code); a slot outlet's fallback selection (the parent's choice,
+so its existence adds no decision or nesting). Fallback contents are still
+visited at the existing depth. `v-show` itself (both states render the same
+subtree), `?.` and logical assignment (`&&=`, `||=`, `??=`) add no decision,
+but their evaluated expression children are visited. Style-block `v-bind()`,
+`v-once` and `v-cloak` (no expression) are excluded.
 
 **Unknown.** An opaque expression (no retained AST: multi-statement handlers,
 text the parser or nesting guard refused), a foreign-dialect expression and a
 Vue 2 filter chain add nothing and are recorded as one `unknown` row each, so
 "simple" and "not analysed" stay distinguishable (the opaque pessimal law: no
 conclusion is drawn from the text).
+This describes expression carriers: the current `OnHandlerRef::Body` returns
+no expression and is not traversed or counted as unknown by this pass. A lowered
+`OriginalFor` counts its loop structure without walking a collection AST.
 
 ## Corpus distribution and default thresholds
 
@@ -161,6 +167,6 @@ exceeds 139 gets one `VIZE_DOCTOR_TEMPLATE_COMPLEXITY_HOTSPOT` notice
    penalty), as Sonar's `else if` / `else`.
 3. **`unknown` covers every non-JS payload**, not only `Opaque`: foreign
    dialects and Vue 2 filter chains are not analysed either.
-4. **Handlers count.** A `v-on` handler is evaluated template code; its
-   operators and `?:` count like any other expression's.
+4. **Retained handler expressions count.** Their operators and `?:` count
+   like any other expression's; statement-body traversal remains unfinished.
 5. **Thresholds warn strictly above p95** (the recommendation said "at p95").

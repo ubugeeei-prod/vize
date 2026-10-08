@@ -6,6 +6,8 @@ title: "a11y/no-access-key"
 
 Disallow the use of the accesskey attribute
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The `accesskey="s"` shortcut may conflict with browser or assistive-technology shortcuts.
+
 ```vue
 <template>
   <button accesskey="s">Save</button>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Removing `accesskey` keeps the ordinary Save button available.
 
 ```vue
 <template>

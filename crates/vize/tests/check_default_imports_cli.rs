@@ -14,7 +14,7 @@ mod workspace_package_vue_exports;
 
 use std::{path::Path, process::Command};
 
-use vize_l0::{cstr, path::canonicalize_non_verbatim};
+use {vize_carton::path::canonicalize_non_verbatim, vize_l0::cstr};
 
 #[test]
 fn default_check_reports_diagnostics_from_imports_outside_tsconfig_include() {

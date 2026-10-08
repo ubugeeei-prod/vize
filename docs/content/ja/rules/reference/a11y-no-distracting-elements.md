@@ -6,6 +6,8 @@ title: "a11y/no-distracting-elements"
 
 marquee や blink などの注意をそらす要素を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+marquee を使って文字を自動的に動かしています。
+
 ```vue
 <template>
   <marquee>Limited offer</marquee>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ案内を p に入れ、自動的に動く要素を使いません。
 
 ```vue
 <template>

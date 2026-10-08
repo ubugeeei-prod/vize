@@ -6,6 +6,8 @@ title: "vue/no-lone-template"
 
 Disallow unnecessary `<template>` elements
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The inner template has no directive or slot role that gives it a structural purpose.
+
 ```vue
 <template>
 <div><template><p>Details</p></template></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+Removing the unnecessary wrapper leaves the paragraph directly inside div.
 
 ```vue
 <template>

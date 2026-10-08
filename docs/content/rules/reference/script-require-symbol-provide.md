@@ -6,6 +6,8 @@ title: "script/require-symbol-provide"
 
 Recommend using Symbol as injection key for provide/inject
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`provide` and `inject` use literal string keys such as `'user'` and `'theme'`, which can collide with another provider using the same spelling.
+
 ```vue
 <script setup lang="ts">
 // String keys can collide
@@ -47,6 +51,8 @@ provide('theme', { dark: true })
 ```
 
 ## Good
+
+The shared `UserKey` is created with `Symbol` and annotated as `InjectionKey<User>`; both calls pass that key instead of a literal string.
 
 ```vue
 <script lang="ts">

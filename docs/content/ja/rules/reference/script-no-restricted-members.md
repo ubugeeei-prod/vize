@@ -6,6 +6,8 @@ title: "script/no-restricted-members"
 
 設定で禁止した object.property へのアクセスを検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -47,6 +49,8 @@ vp run lint
 
 ## 悪い
 
+`ruleOptions` に `{ object: "window", property: "localStorage" }` を設定した場合、`window.localStorage` は禁止されたオブジェクトとメンバーの組み合わせです。このルールに既定の禁止メンバーはありません。
+
 ```vue
 <script setup lang="ts">
 const token = window.localStorage.getItem("token");
@@ -54,6 +58,8 @@ const token = window.localStorage.getItem("token");
 ```
 
 ## 良い
+
+`authStorage.read("token")` でアプリケーションのストレージヘルパーに処理を任せ、設定で禁止した `window.localStorage` を参照しなくなります。
 
 ```vue
 <script setup lang="ts">

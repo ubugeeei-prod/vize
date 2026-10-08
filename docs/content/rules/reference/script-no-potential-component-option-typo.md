@@ -6,6 +6,8 @@ title: "script/no-potential-component-option-typo"
 
 Flag likely typos in Options API component option names
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The option is spelled `method`, one edit away from the recognized `methods` option; Vue would not treat it as the intended methods declaration.
+
 ```vue
 <script lang="ts">
 export default { method: { save() {} } };
@@ -42,6 +46,8 @@ export default { method: { save() {} } };
 ```
 
 ## Good
+
+Changing the key to `methods` places `save()` under the recognized component option.
 
 ```vue
 <script lang="ts">

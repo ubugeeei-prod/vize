@@ -6,6 +6,8 @@ title: "vue/no-child-content"
 
 v-html / v-text と子コンテンツを同時に指定する箇所を検出します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+v-text が p の内容を置き換えるため、中に書いた fallback の文字を表示できません。
+
 ```vue
 <template>
   <p v-text="message">Fallback text</p>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+子の文字を取り除き、p の内容を v-text だけで指定します。
 
 ```vue
 <template>

@@ -6,6 +6,8 @@ title: "vue/valid-v-memo"
 
 Enforce valid `v-memo` directives
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `error`  
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+Bare `v-memo` gives Vue no dependency expression for deciding when to reuse the subtree.
+
 ```vue
 <template>
   <div v-memo></div>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## Good
+
+`v-memo="[valueA, valueB]"` supplies the dependency array used for memoization.
 
 ```vue
 <template>

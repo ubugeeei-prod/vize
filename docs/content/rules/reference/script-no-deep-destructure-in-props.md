@@ -6,6 +6,8 @@ title: "script/no-deep-destructure-in-props"
 
 Disallow deeply nested destructuring in defineProps
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+The binding pattern descends through `user` to destructure `name`, exceeding the default shallow props-destructuring depth.
+
 ```vue
 <script setup lang="ts">
 const { user: { name } } = defineProps<{ user: { name: string } }>();
@@ -42,6 +46,8 @@ const { user: { name } } = defineProps<{ user: { name: string } }>();
 ```
 
 ## Good
+
+The props object remains intact, and a computed getter reads `props.user.name`. The nested access stays explicit without a deeply nested binding pattern.
 
 ```vue
 <script setup lang="ts">

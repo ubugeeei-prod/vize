@@ -6,6 +6,8 @@ title: "script/prefer-use-id"
 
 Recommend using useId() for generating unique IDs (Vue 3.5+)
 
+[Bad](#bad) · [Good](#good)
+
 Default severity: `warning`  
 Presets: _none_  
 Automatic fix: None; review the suggested change  
@@ -35,6 +37,8 @@ vp run lint
 
 ## Bad
 
+`id` contains `Math.random()`, so the generated input/label identifier can differ between server and client rendering. Its ID-named binding is the rule’s recognized generation context.
+
 ```vue
 <script setup lang="ts">
 const id = `input-${Math.random()}`;
@@ -43,6 +47,8 @@ const id = `input-${Math.random()}`;
 ```
 
 ## Good
+
+Vue 3.5+ `useId()` generates the identifier, and both `:for` and `:id` continue reading the same binding instead of independently generating random values.
 
 ```vue
 <script setup lang="ts">

@@ -6,6 +6,8 @@ title: "script/require-function-return-type"
 
 関数に戻り値の型注釈を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+`add` と `greet` は引数の型を指定していますが、戻り値の型を省略しています。この明示的な型指定の規則では、戻り値の推論だけでは条件を満たしません。
+
 ```vue
 <script setup lang="ts">
 const add = (a: number, b: number) => {
@@ -48,6 +52,8 @@ return `Hello, ${name}`
 ```
 
 ## 良い
+
+`add` に `: number`、`greet` に `: string` を付け、本体を変えずに戻り値の契約を明示します。
 
 ```vue
 <script setup lang="ts">

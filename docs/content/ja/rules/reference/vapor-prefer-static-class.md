@@ -6,6 +6,8 @@ title: "vapor/prefer-static-class"
 
 文字列リテラルの :class を静的 class に置き換えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+変化しないクラスの文字列をバインディングで評価しています。
+
 ```vue
 <template>
   <section :class="'panel panel-primary'">Profile</section>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じ panel のクラスを静的な class 属性に指定します。
 
 ```vue
 <template>

@@ -27,12 +27,12 @@ A definição das métricas e os limites fixados no corpus estão em
 
 O relatório expõe tanto os sinais brutos quanto as pontuações derivadas.
 
-| Campo             | Significado                                                                                                                                  |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `cyclomaticScore` | Soma da complexidade ciclomática própria do template de cada componente.                                                                     |
-| `cognitiveScore`  | Soma da complexidade cognitiva própria do template de cada componente.                                                                       |
+| Campo             | Significado                                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `cyclomaticScore` | Soma da complexidade ciclomática própria do template de cada componente.                                                                         |
+| `cognitiveScore`  | Soma da complexidade cognitiva própria do template de cada componente.                                                                           |
 | `totalScore`      | Soma das pontuações por dimensão: fluxo do template, slots, prop drilling, estado global, provide/inject, atributos fallthrough e grafo reativo. |
-| `band`            | Faixa legível: `low`, `moderate`, `high` ou `extreme`.                                                                                       |
+| `band`            | Faixa legível: `low`, `moderate`, `high` ou `extreme`.                                                                                           |
 
 A entrada bruta também guarda os números por trás da pontuação, incluindo:
 
@@ -75,16 +75,24 @@ corpus real da Vize, com 40.724 templates. O aviso aponta para a tag `<template>
 construções que mais adicionam complexidade.
 
 Como os limites são um p95, cerca de um componente real em cada vinte os ultrapassa. Nenhum preset
-ativa a regra, então ativá-la é uma decisão do projeto. Declare-a em `linter.rules` para ativá-la:
+ativa a regra, então ativá-la é uma decisão do projeto. Declare-a em `lint.vize.rules` para ativá-la:
 
 ```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
 export default defineConfig({
-  linter: {
-    rules: {
-      "vue/max-template-complexity": "warn",
+  lint: {
+    vize: {
+      rules: {
+        "vue/max-template-complexity": "warn",
+      },
     },
   },
 });
+```
+
+```sh
+vp run lint
 ```
 
 `vize doctor` reporta um ponto crítico de complexidade de template, como notice, quando a

@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { test } from "node:test";
 import { withoutHostRuntimeReferences } from "./support/davinci-host-imports.ts";
+import { currentTimingOraclePath } from "../../tools/support/levels/timing-profile-continuation.ts";
 import {
   profileHostImports,
   previousCuratorProfileImport,
@@ -91,7 +92,8 @@ test("owned Curator replay requires the entire caller and its exact companion", 
 });
 
 test("replay rejects malformed actual callers, metric bodies and wire law before returning writes", () => {
-  for (const [file, , after] of callerChanges) {
+  for (const [originalFile, , after] of callerChanges) {
+    const file = currentTimingOraclePath(originalFile);
     const parts = after.split(/(?<=;)\s*(?=use )/u);
     const changed = read(file).replace(
       profileHostImports[file] ?? parts[0],
@@ -100,7 +102,8 @@ test("replay rejects malformed actual callers, metric bodies and wire law before
     assert.notEqual(changed, read(file));
     assert.throws(() => prepare((path) => (path === file ? changed : read(path))), /unexpected/u);
   }
-  for (const [file, , after] of calls) {
+  for (const [originalFile, , after] of calls) {
+    const file = currentTimingOraclePath(originalFile);
     const changed = read(file).replace(
       /export_report(?:_from_snapshots)?\(/u,
       "unexpected_report(",

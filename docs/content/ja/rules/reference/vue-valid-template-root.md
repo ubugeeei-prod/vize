@@ -6,6 +6,8 @@ title: "vue/valid-template-root"
 
 Vue 3 の fragment に対応する有効なテンプレートルートを検査します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+描画上の役割を与える directive がない通常の `<template>` を、テンプレートのルートに置いています。
+
 ```vue
 <template>
 <template>content</template>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+描画される `<div>` をルートにします。Vue 3 の fragment 全般を一つのルートに制限する例ではありません。
 
 ```vue
 <template>

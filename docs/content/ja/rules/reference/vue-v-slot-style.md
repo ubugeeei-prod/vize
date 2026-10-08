@@ -6,6 +6,8 @@ title: "vue/v-slot-style"
 
 v-slot の表記形式を揃えます。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: 対応する検出で利用可能  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+コンポーネントで `#default`、template で `v-slot:header` を使い、場所ごとの規約と逆になっています。
+
 ```vue
 <template>
   <MyComponent #default="props">{{ props.item }}</MyComponent>
@@ -45,6 +49,8 @@ vp run lint
 ```
 
 ## 良い
+
+コンポーネントの default slot は `v-slot`、template の名前付き slot は `#header` にします。
 
 ```vue
 <template>

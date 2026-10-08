@@ -6,6 +6,8 @@ title: "vue/multi-word-component-names"
 
 コンポーネント名を複数の単語で構成します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `error`  
 プリセット: `essential`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -37,6 +39,8 @@ vp run lint
 
 ## 悪い
 
+Item.vue は一つの語だけのコンポーネント名です。
+
 `Item.vue`
 
 ```vue
@@ -44,6 +48,8 @@ vp run lint
 ```
 
 ## 良い
+
+同じテンプレートの名前を、複数の語を持つ TodoItem.vue にします。
 
 `TodoItem.vue`
 

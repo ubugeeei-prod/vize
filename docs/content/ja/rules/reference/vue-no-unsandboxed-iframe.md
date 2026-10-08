@@ -6,6 +6,8 @@ title: "vue/no-unsandboxed-iframe"
 
 iframe に sandbox 属性を指定します。
 
+[悪い例](#悪い) · [良い例](#良い)
+
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
@@ -35,6 +37,8 @@ vp run lint
 
 ## 悪い
 
+iframe に sandbox がなく、機能の制限を指定していません。
+
 ```vue
 <template>
 <iframe src="/embed"></iframe>
@@ -42,6 +46,8 @@ vp run lint
 ```
 
 ## 良い
+
+sandbox で制限し、script が必要な場合にだけ allow-scripts を明示します。
 
 ```vue
 <template>
