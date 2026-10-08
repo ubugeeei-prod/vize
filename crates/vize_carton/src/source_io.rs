@@ -17,6 +17,10 @@ pub use vize_l0::source_io::decode_utf8;
 ///
 /// Filesystem errors and invalid-UTF-8 error kind/message match
 /// [`std::fs::read_to_string`]. Empty files, BOMs and newlines are preserved.
+#[expect(
+    clippy::disallowed_types,
+    reason = "Preserve the validated std file buffer without an additional allocation or copy"
+)]
 #[cfg(not(target_arch = "wasm32"))]
 pub fn read_to_string(path: impl AsRef<Path>) -> io::Result<FileString> {
     let bytes = std::fs::read(path)?;

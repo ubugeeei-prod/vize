@@ -8,6 +8,9 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../..");
 const level = "davinci/vize_l0/src/source_io";
 const host = "crates/vize_carton/src/source_io";
+const ownedBufferExpectation =
+  "#[expect(\n    clippy::disallowed_types,\n" +
+  '    reason = "Preserve the validated std file buffer without an additional allocation or copy"\n)]\n';
 const planned = new Map<string, string>();
 const read = (file: string): string =>
   planned.get(file) ?? readFileSync(path.join(root, file), "utf8");
@@ -55,6 +58,12 @@ function moveOnly(): void {
 function integrate(): void {
   const source = read(`${host}.rs`);
   if (source.includes("pub use vize_l0::source_io::decode_utf8;")) {
+    assert.ok(
+      source.includes(
+        ownedBufferExpectation + '#[cfg(not(target_arch = "wasm32"))]\npub fn read_to_string',
+      ),
+      "missing scoped owned-buffer expectation",
+    );
     assert.ok(existsSync(path.join(root, `${level}.rs`)), "missing restored L0 decoder");
     assert.ok(existsSync(path.join(root, `${level}/tests.rs`)), "missing restored L0 decoder laws");
     const decoder = read(`${level}.rs`);
@@ -77,7 +86,12 @@ function integrate(): void {
     const testsStart = source.indexOf('#[cfg(all(test, not(target_arch = "wasm32")))]');
     assert.ok(decodeStart > 0 && hostStart > decodeStart && testsStart > hostStart);
     const decode = source.slice(decodeStart, hostStart);
-    const readFile = source.slice(hostStart, testsStart);
+    const readFile = source
+      .slice(hostStart, testsStart)
+      .replace(
+        '#[cfg(not(target_arch = "wasm32"))]\npub fn read_to_string',
+        ownedBufferExpectation + '#[cfg(not(target_arch = "wasm32"))]\npub fn read_to_string',
+      );
     write(
       `${level}.rs`,
       "//! Borrowed UTF-8 validation for authored source bytes.\n//! Validation never normalizes or repairs bytes, preserving exact offsets.\n\n" +

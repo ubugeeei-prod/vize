@@ -37,6 +37,14 @@ checks, unchanged differential corpora, original protected instruction ceilings
 and actual signed merge remain required. Local extraction and static checks
 grant no runtime or measured performance credit.
 
+The first hosted head `8273be6e` passed all three original decoder laws and
+the real-file law, then failed Clippy at the host reader's `FileString` return
+and unchecked buffer conversion. Its import-level expectation covered only
+the import; L0's previous crate allowance had covered these existing uses.
+Keep a function-scoped expectation for the unchanged owned buffer and have
+the integration script reproduce it. Neither function body, input nor
+benchmark ceiling changes. Fresh complete checks remain pending.
+
 Whole #6834 remains open. This slice does not establish a `no_std` build or
 complete platform isolation: timing, profile stacks, allocator/pool globals,
 path/config and other host dependencies retain their own remaining work.
