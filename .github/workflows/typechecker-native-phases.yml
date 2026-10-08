@@ -122,9 +122,7 @@ jobs:
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
           target-path: target
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
-        with:
-          node-version-file: package.json
-          run-install: false
+        with: { node-version-file: package.json, run-install: false }
       - name: Reject source, lock, corpus, workflow and baseline drift before installation
         run: node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
       - name: Install pinned native runtime and shared Vue dependencies

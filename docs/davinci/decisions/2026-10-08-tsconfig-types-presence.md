@@ -44,3 +44,23 @@ its three existing memo laws; this supplies no compiled public CLI acceptance.
 Fresh exact-head source Actions, required native execution and full fresh
 protected suites are pending. The broad #3984 project/declaration/build/watch/
 LSP/parity/performance roadmap remains open; no legacy provider is replaced.
+
+## Source workflow layout recovery
+
+The first source Check for #8235 at `8a21bb53` passed 3,079 tooling tests,
+skipped sixteen and failed only the source-length check: the native workflow
+had 352 physical lines against the existing 350-line limit. Fold the existing
+setup-vp mapping into the same YAML flow style already used by this workflow.
+Its `node-version-file: package.json` and `run-install: false` values remain
+identical. This restores 350 physical lines while preserving the new target,
+capture environment and uploaded receipt directory, every original target and
+flag, all jobs and phases, strict runtime assertions and all timeouts/budgets.
+Production, whole fixtures, original stock packets and complete expected DTOs
+remain byte-exact.
+
+The same source Check separately failed while downloading the Cargo advisory
+database: a remote pack entry could not be streamed because the response body
+operation timed out. No advisory result is inferred. Locks, audit configuration
+and allowlists stay unchanged; the necessary source correction gets fresh
+Actions rather than a retry of the now-obsolete source head. Required native
+execution and protected full-suite qualification remain head-specific.
