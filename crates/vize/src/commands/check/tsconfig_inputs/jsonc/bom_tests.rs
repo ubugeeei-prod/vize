@@ -1,7 +1,7 @@
 //! Shared whole JSONC controls for the two existing config readers.
 use super::parse_jsonc_value;
 use serde_json::Value;
-use vize_carton::cstr;
+use vize_l0::cstr;
 
 const CONTROLS: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),

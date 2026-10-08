@@ -53,3 +53,5 @@ This is a narrow config lexical acceptance repair. Complete tsconfig
 semantics, project/build/watch parity, negative template prop diagnostics,
 installed acceptance and the general 10x target remain unfinished under
 #3984; this change does not close that issue or replace a legacy path.
+
+The first source qualification of 129c correctly rejected the new CLI test's direct Carton macro import under the existing L0 stage-alias law. Change only that CLI test import to `vize_l0::cstr`; Canon retains its existing Carton convention. Preserve both production guards, complete parser/CLI inputs and gold, every native target/field, and all existing gates and budgets. The first tooling failure remains archived; fresh corrected-head source and mandatory native execution are required, with no infrastructure retry or prior-head acceptance credit.
