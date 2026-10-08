@@ -204,11 +204,11 @@ fn normalize_requested_virtual_ts_path(cwd: &Path, path: &Path) -> PathBuf {
     } else {
         cwd.join(path)
     };
-    vize_l0::path::canonicalize_non_verbatim(&absolute)
+    vize_carton::path::canonicalize_non_verbatim(&absolute)
 }
 
 fn paths_refer_to_same_file(candidate_path: &Path, requested_path: &Path) -> bool {
-    let candidate_path = vize_l0::path::canonicalize_non_verbatim(candidate_path);
+    let candidate_path = vize_carton::path::canonicalize_non_verbatim(candidate_path);
     candidate_path == requested_path
 }
 

@@ -137,19 +137,19 @@ pub(super) fn map_materialized_sources(
 }
 
 pub(super) fn authored_uri(ctx: &IdeContext<'_>, source_path: &std::path::Path) -> Option<Url> {
-    let source_path = vize_l0::path::canonicalize_non_verbatim(source_path);
+    let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
     ctx.state
         .documents
         .uris()
         .into_iter()
         .find(|uri| {
-            uri.to_file_path()
-                .ok()
-                .is_some_and(|path| vize_l0::path::canonicalize_non_verbatim(&path) == source_path)
+            uri.to_file_path().ok().is_some_and(|path| {
+                vize_carton::path::canonicalize_non_verbatim(&path) == source_path
+            })
         })
         .or_else(|| {
             let root = ctx.state.get_workspace_root()?;
-            let physical_root = vize_l0::path::canonicalize_non_verbatim(&root);
+            let physical_root = vize_carton::path::canonicalize_non_verbatim(&root);
             let relative = source_path.strip_prefix(physical_root).ok()?;
             Url::from_file_path(root.join(relative)).ok()
         })

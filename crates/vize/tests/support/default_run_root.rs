@@ -148,8 +148,8 @@ pub fn build_case(name: &str, layout: Layout) -> Case {
     // directory is itself reached through a link on macOS, so expectations are
     // written against the resolved spelling.
     Case {
-        workspace: vize_l0::path::canonicalize_non_verbatim(&workspace),
-        app: vize_l0::path::canonicalize_non_verbatim(&app),
+        workspace: vize_carton::path::canonicalize_non_verbatim(&workspace),
+        app: vize_carton::path::canonicalize_non_verbatim(&app),
         store,
     }
 }

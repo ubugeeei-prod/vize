@@ -184,7 +184,7 @@ fn collect_nuxt_virtual_module_imports(cwd: &Path) -> FxHashMap<String, ModuleIm
         let walker = WalkBuilder::new(root)
             .hidden(false)
             .standard_filters(true)
-            .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
+            .filter_entry(|entry| !vize_carton::path::is_git_metadata_path(entry.path()))
             .build();
 
         for entry in walker.flatten() {

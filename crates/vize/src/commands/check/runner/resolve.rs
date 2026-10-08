@@ -52,7 +52,7 @@ pub(super) fn resolve_project_root(
         } else {
             cwd.join(tsconfig)
         };
-        let tsconfig_dir = vize_l0::path::canonicalize_non_verbatim(&tsconfig_path)
+        let tsconfig_dir = vize_carton::path::canonicalize_non_verbatim(&tsconfig_path)
             .parent()
             .map(|parent| parent.to_path_buf())
             .unwrap_or_else(|| cwd.to_path_buf());
@@ -89,7 +89,7 @@ pub(super) fn resolve_tsconfig_path(
         } else {
             cwd.join(tsconfig)
         };
-        return Some(vize_l0::path::canonicalize_non_verbatim(&tsconfig_path));
+        return Some(vize_carton::path::canonicalize_non_verbatim(&tsconfig_path));
     }
 
     project_config_path(project_root).or_else(|| {
@@ -100,7 +100,7 @@ pub(super) fn resolve_tsconfig_path(
 }
 
 pub(super) fn explicit_input_root(project_root: &Path, cwd: &Path) -> PathBuf {
-    let cwd = vize_l0::path::canonicalize_non_verbatim(cwd);
+    let cwd = vize_carton::path::canonicalize_non_verbatim(cwd);
     if project_root.starts_with(&cwd) {
         cwd
     } else {
@@ -164,9 +164,9 @@ pub(super) fn validate_inputs_in_root(
 }
 
 fn validate_explicit_inputs_in_root(root: &Path, files: &[PathBuf]) -> Result<(), String> {
-    let root = vize_l0::path::canonicalize_non_verbatim(root);
+    let root = vize_carton::path::canonicalize_non_verbatim(root);
     for file in files {
-        let path = vize_l0::path::canonicalize_non_verbatim(file);
+        let path = vize_carton::path::canonicalize_non_verbatim(file);
         if !path.starts_with(&root) {
             return Err(vize_l0::cstr!(
                 "explicit check input `{}` is outside project root `{}`.",

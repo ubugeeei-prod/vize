@@ -40,7 +40,7 @@ fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: 
     let pattern = Path::new(ignore.pattern.as_str());
     if pattern.is_absolute() {
         return if pattern.exists() {
-            vize_l0::path::canonicalize_non_verbatim(pattern)
+            vize_carton::path::canonicalize_non_verbatim(pattern)
         } else {
             pattern.to_path_buf()
         };

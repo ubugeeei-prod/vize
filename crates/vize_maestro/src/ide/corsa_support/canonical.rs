@@ -231,8 +231,8 @@ fn file_uri_paths_match(left: &str, right: &str) -> bool {
     else {
         return false;
     };
-    vize_l0::path::canonicalize_non_verbatim(&left)
-        == vize_l0::path::canonicalize_non_verbatim(&right)
+    vize_carton::path::canonicalize_non_verbatim(&left)
+        == vize_carton::path::canonicalize_non_verbatim(&right)
 }
 
 pub(super) fn is_private_materialized_uri(doc: &CanonicalVirtualDocument, raw_uri: &str) -> bool {
@@ -244,7 +244,7 @@ pub(super) fn is_private_materialized_uri(doc: &CanonicalVirtualDocument, raw_ur
     };
     doc.session_project_roots.iter().any(|root| {
         path.starts_with(root)
-            || vize_l0::path::canonicalize_non_verbatim(&path)
-                .starts_with(vize_l0::path::canonicalize_non_verbatim(root))
+            || vize_carton::path::canonicalize_non_verbatim(&path)
+                .starts_with(vize_carton::path::canonicalize_non_verbatim(root))
     })
 }

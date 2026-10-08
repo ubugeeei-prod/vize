@@ -148,8 +148,8 @@ defineSlots<{
                 .materialized_sources
                 .iter()
                 .find(|source| {
-                    vize_l0::path::canonicalize_non_verbatim(&source.source_path)
-                        == vize_l0::path::canonicalize_non_verbatim(&host_path)
+                    vize_carton::path::canonicalize_non_verbatim(&source.source_path)
+                        == vize_carton::path::canonicalize_non_verbatim(&host_path)
                 })
                 .expect("host must be materialized beside its sibling dependencies");
             assert_eq!(
