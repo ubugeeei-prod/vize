@@ -40,6 +40,8 @@ use super::vue_codegen::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtu
 
 #[path = "content_mapper_masked_spans.rs"]
 mod masked_spans;
+#[path = "content_mapper_quoted_spans.rs"]
+mod quoted_spans;
 #[path = "content_mapper_span_features.rs"]
 mod span_features;
 #[path = "content_mapper_span_normalize.rs"]
@@ -246,35 +248,7 @@ fn protocol_spans(
     generated: &str,
     mappings: &[VizeMapping],
 ) -> Vec<ContentMapperSpan> {
-    let mut candidates = mappings
-        .iter()
-        .filter_map(|mapping| {
-            if mapping.sub_spans.is_empty() {
-                Some(vec![candidate(
-                    source,
-                    generated,
-                    mapping.gen_range.clone(),
-                    mapping.src_range.clone(),
-                )?])
-            } else {
-                Some(
-                    mapping
-                        .sub_spans
-                        .iter()
-                        .filter_map(|span| {
-                            candidate(
-                                source,
-                                generated,
-                                span.gen_range.clone(),
-                                span.src_range.clone(),
-                            )
-                        })
-                        .collect(),
-                )
-            }
-        })
-        .flatten()
-        .collect::<Vec<_>>();
+    let mut candidates = quoted_spans::candidates(source, generated, mappings);
 
     masked_spans::expand(&mut candidates, source, generated);
     let mut accepted = span_normalize::normalize(candidates);
