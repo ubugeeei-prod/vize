@@ -1,0 +1,11 @@
+{
+  "logSha256": "229262c852dca0707fff4571e13713275c5cd29bad101f0177b1a06a9ebc4dd8",
+  "leftSha256": "2d4ea5cebb2daa02d7320aea333860f034196317502b5aba2353e4784ad68224",
+  "rightSha256": "e2c8c552ebc102edf5679e97491e12d9d3e3b6d2e8624fb6e4e71d59f65ce236",
+  "pages": 399,
+  "actualAssertionChangedPages": [
+    "=== vue/no-deprecated-slot-attribute"
+  ],
+  "other398PagesWholeExact": true,
+  "correction": "Earlier2-page comparison used actual left versus older declared7c Git snapshot, not executed right; actual assertion differs only in owned slot page. Raw log and both complete decoded strings retained without field/page filtering."
+}

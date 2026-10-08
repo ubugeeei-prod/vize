@@ -34,3 +34,11 @@ The sibling `deprecated-template-research-47c6/` corpus is historical 118-case
 research at another committed source. These fixtures grant no CLI, installed
 package, monorepo, performance, exhaustive rule-parity, or adoption completion
 credit. Exact-head Actions, protected merge, and public delivery remain required.
+
+The complete retained hosted CLI `explain` failure log and both executed EN
+assertion strings are separately compressed here. All 399 pages remain whole.
+Actual left/right differs only in the slot example; actual right equals the
+fresh signed main snapshot. The older declared7c snapshot is a separate reference
+and caused an explicitly corrected two-page comparison. Neither JA nor ZH actual
+execution is inferred from the first failed EN assertion. These presentation
+packets grant no linter CLI, installed-product, or performance qualification.

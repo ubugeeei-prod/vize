@@ -105,3 +105,32 @@ await test("the original 40 packets and fresh baseline custody remain intact", (
     assert.equal(sha256(bytes), entry.sha256, name);
   }
 });
+
+await test("the complete executed explain assertion keeps its actual right packet", () => {
+  const read = (name) => gunzipSync(fs.readFileSync(path.join(corpusRoot, name))).toString("utf8");
+  const log = read("explain-hosted-failure-log.txt.gz");
+  const receipt = JSON.parse(
+    fs.readFileSync(path.join(corpusRoot, "explain-assertion-correction-receipt.json")),
+  );
+  assert.equal(sha256(log), receipt.logSha256);
+  const executed = (side) => {
+    const line = log.split("\n").find((row) => row.includes(`      ${side}: `));
+    assert.ok(line, side);
+    return JSON.parse(line.slice(line.indexOf(`${side}: `) + side.length + 2));
+  };
+  const left = read("explain-executed-left-en.txt.gz");
+  const right = read("explain-executed-right-en.txt.gz");
+  assert.equal(left, executed("left"));
+  assert.equal(right, executed("right"));
+  assert.equal(sha256(left), receipt.leftSha256);
+  assert.equal(sha256(right), receipt.rightSha256);
+  const pages = (text) => text.split(/(?=^=== )/m).filter(Boolean);
+  const a = pages(left),
+    b = pages(right);
+  assert.equal(a.length, 399);
+  assert.equal(b.length, 399);
+  assert.deepEqual(
+    a.flatMap((page, index) => (page === b[index] ? [] : [page.split("\n")[0]])),
+    ["=== vue/no-deprecated-slot-attribute"],
+  );
+});

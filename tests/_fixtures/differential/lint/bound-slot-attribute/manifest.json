@@ -3,8 +3,8 @@
   "scope": "Source API research and whole independent packets only; original40 retained, extended46 separately executed; no transferable head/CLI/public/performance proof",
   "files": {
     "README.md": {
-      "bytes": 2384,
-      "sha256": "9e0da1eec3a67b29d1ec578c55d15896f7ac06538cd174ff97876e5032bad9f2"
+      "bytes": 2933,
+      "sha256": "b281991cf503468f17c7fcdf234ecde0dd8a194eac8c096c9c99282558b1b6f3"
     },
     "after-observer.rs": {
       "bytes": 5974,
@@ -113,6 +113,30 @@
     "after-build.txt.gz": {
       "bytes": 778,
       "sha256": "cb1e50c2f18e499896aa6caf51d960081562988836137968e79eb60328a15541"
+    },
+    "explain-assertion-correction-receipt.json": {
+      "bytes": 639,
+      "sha256": "7f7182f2a07c140c7e46ef81225f5000885ae95cbb9244a8d5f19b76f14b5595"
+    },
+    "explain-declared-old-head-en.txt.gz": {
+      "bytes": 35618,
+      "sha256": "2afc7c6a24aa8be565b8884eb41ae3367bcb3ec1005d7d90b51cc9aef15ea259"
+    },
+    "explain-executed-left-en.txt.gz": {
+      "bytes": 35652,
+      "sha256": "22731bd14f823e8861d8467e69a5e90410bb65a636b60306f65535b0b763a444"
+    },
+    "explain-executed-right-en.txt.gz": {
+      "bytes": 35637,
+      "sha256": "e5d43ca67834fe99a6f4e96d9cb125260800d19cd5f82d20b63b32629bad85c6"
+    },
+    "explain-fresh-main-8e18-incoming-custody.json": {
+      "bytes": 1627,
+      "sha256": "718080a43643ce7246fa23d71f8075e90bbfbf6044b529aedab9db0910c9f384"
+    },
+    "explain-hosted-failure-log.txt.gz": {
+      "bytes": 229059,
+      "sha256": "829568aa16c314299ce1428edb6c797781db26204a1f648ef8eaa125f5cbfbff"
     }
   }
 }
