@@ -41,3 +41,30 @@ claim effective project authority. This change does not replace a legacy product
 close #3984, qualify complete project/build/watch/invalidation/LSP/Content Mapper
 parity, establish n8n JSONC transport authority, or demonstrate the 10x performance
 target. Upstream TypeScript and n8n remain read-only.
+
+## Required native CLI coverage
+
+The first protected candidate at `9df572dbd17b56ae16e8b9d61ea886df8cf91969`
+executed the first public CLI call in each new law. Both expected exit statuses
+matched, but the harness then rejected the existing normal progress messages on
+stderr before parsing the complete JSON. Neither law established its full
+selection, declaration/map or independent-consumer contract in that candidate.
+The original raw progress and failed worker receipts remain historical evidence;
+there is no protected rerun or acceptance credit from that failure.
+
+The new harness now uses the existing public `--quiet` option while retaining
+its complete input, JSON, diagnostic, declaration, map, copied-package and exit
+expectations. Production output is unchanged. The corpus module moves to the
+standalone `tsconfig_diamond` Cargo test target in a move-only commit, followed by
+separate wiring with the original helper literals and removal of only its own
+former parent-module link. Existing declaration targets and fixtures stay intact.
+
+The existing required-native source CLI qualifier adds only
+`--test tsconfig_diamond` to its current argv. Every prior target and flag, the
+same job and stage, and its original 40-minute limit remain. The new target must
+execute both complete public laws and all eight original CLI invocations under
+the required native runtime before source readiness, followed by the full fresh
+protected suites and immutable instruction gates before actual merge. An ordinary
+PR worker's disable-TSGO early return remains zero native-body acceptance. This
+coverage change does not qualify the separate types-array successor or close the
+full #3984 project, declaration, build/watch, LSP, parity or performance roadmap.

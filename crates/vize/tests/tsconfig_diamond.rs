@@ -3,8 +3,87 @@
     clippy::disallowed_types,
     reason = "complete corpus and JSON use std strings"
 )]
-use super::*;
+#[path = "support/corsa_requirement.rs"]
+mod corsa_requirement;
+#[path = "support/vue_stub.rs"]
+mod vue_stub;
+
 use serde_json::{Value, json};
+use std::{path::Path, process::Command};
+use vize_l0::{String, ToCompactString, cstr};
+
+fn workspace_root() -> &'static Path {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("workspace root should exist")
+}
+
+fn unique_case_dir(name: &str) -> std::path::PathBuf {
+    static NEXT_CASE_ID: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let case_id = NEXT_CASE_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    workspace_root()
+        .join("target")
+        .join("vize-tests")
+        .join("tests")
+        .join(cstr!("{name}-{}-{case_id}", std::process::id()).as_str())
+}
+
+fn link_workspace_node_modules(project_root: &Path) {
+    let source = workspace_root().join("node_modules");
+    let target = project_root.join("node_modules");
+    if target.exists() {
+        return;
+    }
+    #[cfg(unix)]
+    std::os::unix::fs::symlink(source, target).unwrap();
+    #[cfg(windows)]
+    std::os::windows::fs::symlink_dir(source, target).unwrap();
+}
+
+fn create_cli_project(name: &str, files: &[(&str, &str)]) -> std::path::PathBuf {
+    let project_root = unique_case_dir(name);
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(&project_root).unwrap();
+    link_workspace_node_modules(&project_root);
+    std::fs::write(
+        project_root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true
+  },
+  "include": ["src/**/*"]
+}"#,
+    )
+    .unwrap();
+
+    for (path, source) in files {
+        let file_path = project_root.join(path);
+        if let Some(parent) = file_path.parent() {
+            std::fs::create_dir_all(parent).unwrap();
+        }
+        std::fs::write(file_path, source).unwrap();
+    }
+
+    project_root
+}
+
+fn resolve_test_corsa_path() -> Option<String> {
+    let workspace_root = workspace_root();
+    let sibling_cache = workspace_root.parent()?.join("corsa-bind/.cache/tsgo");
+    if sibling_cache.exists() {
+        return Some(sibling_cache.to_string_lossy().to_compact_string());
+    }
+
+    let workspace_bin = workspace_root.join("node_modules/.bin/tsgo");
+    workspace_bin
+        .exists()
+        .then(|| workspace_bin.to_string_lossy().to_compact_string())
+}
 
 const INPUT: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
@@ -40,7 +119,7 @@ fn check(root: &Path, corsa: &str, declaration: bool, expected_status: i32) -> V
     command
         .current_dir(root)
         .env("CORSA_PATH", corsa)
-        .args(["check", "--format", "json"]);
+        .args(["check", "--quiet", "--format", "json"]);
     if declaration {
         command.arg("--declaration");
     }
