@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "target": "es2022",
+        "module": "esnext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "types": [
+            "first"
+        ]
+    },
+    "files": [
+        "./src/main.ts"
+    ],
+    "include": [
+        "configs/../src/**/*"
+    ]
+}
