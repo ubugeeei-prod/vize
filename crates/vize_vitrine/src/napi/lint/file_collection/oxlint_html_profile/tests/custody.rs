@@ -3,7 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
-use vize_carton::cstr;
+use vize_l0::cstr;
 
 use super::super::{HostProfile, Refusal, Selection};
 use super::Case;

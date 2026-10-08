@@ -30,7 +30,7 @@ fn command(
     let output = match Command::new(program).args(args).current_dir(root).output() {
         Ok(output) => output,
         Err(error) => {
-            journal.push(json!({"program":program,"args":args,"cwd":root,"spawn_error":vize_carton::cstr!("{error}")}));
+            journal.push(json!({"program":program,"args":args,"cwd":root,"spawn_error":vize_l0::cstr!("{error}")}));
             receipt.setup(journal, false);
             panic!("owned setup spawn failed: {program} {args:?}: {error}");
         }

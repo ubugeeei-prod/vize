@@ -8,7 +8,7 @@
 //! Sorted paths are this internal contract, not Oxlint's parallel report order.
 
 use std::path::{Path, PathBuf};
-use vize_carton::{String, ToCompactString};
+use vize_l0::{String, ToCompactString};
 
 mod envelope;
 mod policy;

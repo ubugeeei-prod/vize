@@ -110,6 +110,14 @@ Preserve all 45 authored cases, source/config/ignore bytes, full expected sets,
 counts and ceilings. The failed source grants no runtime acceptance; the
 successor requires fresh compiled Actions and all 90 actual observations.
 
+Successor `e14737e7` compiled and produced 90 actual private observations in
+four successful Rust workers, but source tooling rejected six new files using
+raw Carton storage imports. Import the identical existing L0 types and macros
+through the required `vize_l0` alias; do not waive the gate or change producer
+semantics, the default collector, original inputs or full expected packets.
+Retain those failed-head runtime receipts as historical evidence and require
+fresh whole-source Actions and all 90 observations for the next source.
+
 Source qualification, protected queue validation and actual merge are separate
 steps. Until those are terminal, this is prepared internal work. Even after
 merge, the wrapper and installed acceptance stay unqualified.

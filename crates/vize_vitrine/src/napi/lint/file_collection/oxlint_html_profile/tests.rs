@@ -50,7 +50,7 @@ struct Case {
     #[serde(default)]
     no_ignore: bool,
     #[serde(default)]
-    cli: Vec<vize_carton::String>,
+    cli: Vec<vize_l0::String>,
     custom: Option<String>,
     files: BTreeMap<String, String>,
     #[serde(default)]
@@ -195,8 +195,8 @@ fn original_html_profiles_match_independently_authored_corpus() {
         let actual = Sha256::digest(fs::read(Path::new(CORPUS).join(filename)).unwrap());
         let hex = actual
             .iter()
-            .fold(vize_carton::String::default(), |mut hex, byte| {
-                hex.push_str(&vize_carton::cstr!("{byte:02x}"));
+            .fold(vize_l0::String::default(), |mut hex, byte| {
+                hex.push_str(&vize_l0::cstr!("{byte:02x}"));
                 hex
             });
         assert_eq!(hex.as_str(), expected, "frozen literal source identity");

@@ -5,7 +5,7 @@ use std::sync::{Arc, Mutex};
 use ignore::WalkBuilder;
 use ignore::gitignore::{Gitignore, GitignoreBuilder};
 use ignore::overrides::{Override, OverrideBuilder};
-use vize_carton::{String, ToCompactString, cstr};
+use vize_l0::{String, ToCompactString, cstr};
 
 use super::{Origin, Original, Refusal, RefusalKind, Request, Selection, SourceRole, envelope};
 

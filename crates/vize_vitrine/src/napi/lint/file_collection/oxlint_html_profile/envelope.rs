@@ -1,6 +1,6 @@
 use std::fs;
 use std::path::{Component, Path, PathBuf};
-use vize_carton::ToCompactString;
+use vize_l0::ToCompactString;
 
 use super::{Refusal, RefusalKind, Request, Selection, SourceCustody, SourceRole};
 
