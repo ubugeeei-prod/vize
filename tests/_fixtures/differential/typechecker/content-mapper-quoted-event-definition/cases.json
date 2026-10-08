@@ -1,0 +1,601 @@
+{
+  "original": {
+    "literal": "\"submit\"",
+    "sourceRange": [
+      49,
+      57
+    ],
+    "spanLength": 8,
+    "kind": 0,
+    "features": 1048575
+  },
+  "cases": [
+    {
+      "name": "double-quoted exact pair",
+      "source": "\"submit\"",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ]
+        },
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          0,
+          8,
+          0,
+          8,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "single-quoted exact pair",
+      "source": "'submit'",
+      "generated": "'submit'",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ]
+        },
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          0,
+          8,
+          0,
+          8,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "whole entry without companion",
+      "source": "\"submit\"",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          6,
+          1,
+          6,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "interior entry without whole",
+      "source": "\"submit\"",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          6,
+          1,
+          6,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "reversed pair",
+      "source": "\"submit\"",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            1,
+            7
+          ]
+        },
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          6,
+          1,
+          6,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "mismatched source quote",
+      "source": "'submit'",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ]
+        },
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          6,
+          1,
+          6,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "mismatched companion source",
+      "source": "\"submit\" \"submit\"",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ]
+        },
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            10,
+            16
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          6,
+          1,
+          6,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "mismatched companion generated",
+      "source": "\"submit\"",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ]
+        },
+        {
+          "generated": [
+            2,
+            7
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          2,
+          5,
+          1,
+          6,
+          1,
+          3
+        ]
+      ]
+    },
+    {
+      "name": "different literal",
+      "source": "\"submit\"",
+      "generated": "\"cancel\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ]
+        },
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          6,
+          1,
+          6,
+          1,
+          3
+        ]
+      ]
+    },
+    {
+      "name": "escaped name",
+      "source": "\"sub\\mit\"",
+      "generated": "\"sub\\mit\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            9
+          ],
+          "original": [
+            1,
+            8
+          ]
+        },
+        {
+          "generated": [
+            1,
+            8
+          ],
+          "original": [
+            1,
+            8
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          7,
+          1,
+          7,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "empty name",
+      "source": "\"\"",
+      "generated": "\"\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            2
+          ],
+          "original": [
+            1,
+            1
+          ]
+        },
+        {
+          "generated": [
+            1,
+            1
+          ],
+          "original": [
+            1,
+            1
+          ]
+        }
+      ],
+      "expected": []
+    },
+    {
+      "name": "missing source opening quote",
+      "source": "submit",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            0,
+            6
+          ]
+        },
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            0,
+            6
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          6,
+          0,
+          6,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "missing source closing quote",
+      "source": "\"submit",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ]
+        },
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          6,
+          1,
+          6,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "whole has sub-span",
+      "source": "\"submit\"",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ],
+          "subSpans": [
+            {
+              "generated": [
+                1,
+                7
+              ],
+              "original": [
+                1,
+                7
+              ]
+            }
+          ]
+        },
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          6,
+          1,
+          6,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "interior has sub-span",
+      "source": "\"submit\"",
+      "generated": "\"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            0,
+            8
+          ],
+          "original": [
+            1,
+            7
+          ]
+        },
+        {
+          "generated": [
+            1,
+            7
+          ],
+          "original": [
+            1,
+            7
+          ],
+          "subSpans": [
+            {
+              "generated": [
+                1,
+                7
+              ],
+              "original": [
+                1,
+                7
+              ]
+            }
+          ]
+        }
+      ],
+      "expected": [
+        [
+          1,
+          6,
+          1,
+          6,
+          0,
+          1048575
+        ]
+      ]
+    },
+    {
+      "name": "replacement feature metadata differs",
+      "source": "\"submit\"",
+      "generated": "void __vize_model_events_completion_                                 \"submit\"",
+      "mappings": [
+        {
+          "generated": [
+            69,
+            77
+          ],
+          "original": [
+            1,
+            7
+          ]
+        },
+        {
+          "generated": [
+            70,
+            76
+          ],
+          "original": [
+            1,
+            7
+          ]
+        }
+      ],
+      "expected": [
+        [
+          70,
+          6,
+          1,
+          6,
+          0,
+          1048575
+        ]
+      ]
+    }
+  ]
+}
