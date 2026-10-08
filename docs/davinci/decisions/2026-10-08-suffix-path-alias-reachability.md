@@ -69,8 +69,10 @@ child TS2322, the exact child file and `(1, 6)` location, then no diagnostics
 after repairing only that child and repeating the App-only cold scan with a
 fresh checker. Persistent disk invalidation is outside this suffix law. A local
 required-native attempt refused an unavailable Corsa executable; it is not a
-native diagnostic qualification. Natural Actions with the existing
-`VIZE_TEST_REQUIRE_TSGO=1` remains mandatory before queue admission.
+native diagnostic qualification. The protected full Rust shard must actually execute this law with
+`VIZE_TEST_REQUIRE_TSGO=1` and native-disable absent before actual source
+delivery completes. Ordinary source PR Rust workers disable the native
+backend; their nominal native-case PASS grants no diagnostic credit.
 
 ## Remaining scope
 
