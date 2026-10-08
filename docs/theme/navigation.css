@@ -52,6 +52,8 @@ body:not(.entry-page) summary.nav-title:focus-visible {
 
 .content table {
   display: block;
+  width: fit-content;
+  min-width: 0;
   max-width: 100%;
   overflow-x: auto;
   overscroll-behavior-x: contain;
