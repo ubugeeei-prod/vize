@@ -29,7 +29,7 @@ See the [ESLint migration map](./migration.md) for rule IDs, differences, and un
 | [`vue/no-deprecated-inline-template`](#vue-no-deprecated-inline-template) | [Bad](#vue-no-deprecated-inline-template-bad) · [Good](#vue-no-deprecated-inline-template-good) | `error` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20) | Disallow the deprecated `inline-template` attribute | Essential |
 | [`vue/no-deprecated-router-link-tag-prop`](#vue-no-deprecated-router-link-tag-prop) | [Bad](#vue-no-deprecated-router-link-tag-prop-bad) · [Good](#vue-no-deprecated-router-link-tag-prop-good) | `error` | _none_ | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs#L37) | Disallow the `tag` prop on &lt;router-link&gt; | Essential |
 | [`vue/no-deprecated-scope-attribute`](#vue-no-deprecated-scope-attribute) | [Bad](#vue-no-deprecated-scope-attribute-bad) · [Good](#vue-no-deprecated-scope-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38) | Disallow the deprecated `scope` attribute on &lt;template&gt; | Essential |
-| [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [Bad](#vue-no-deprecated-slot-attribute-bad) · [Good](#vue-no-deprecated-slot-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L38) | Disallow the deprecated `slot` attribute | Essential |
+| [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [Bad](#vue-no-deprecated-slot-attribute-bad) · [Good](#vue-no-deprecated-slot-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) | Disallow the deprecated `slot` attribute | Essential |
 | [`vue/no-deprecated-slot-scope-attribute`](#vue-no-deprecated-slot-scope-attribute) | [Bad](#vue-no-deprecated-slot-scope-attribute-bad) · [Good](#vue-no-deprecated-slot-scope-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs#L33) | Disallow the deprecated `slot-scope` attribute | Essential |
 | [`vue/no-deprecated-v-bind-sync`](#vue-no-deprecated-v-bind-sync) | [Bad](#vue-no-deprecated-v-bind-sync-bad) · [Good](#vue-no-deprecated-v-bind-sync-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) | Disallow the deprecated `.sync` modifier on `v-bind` | Essential |
 | [`vue/no-deprecated-v-on-native-modifier`](#vue-no-deprecated-v-on-native-modifier) | [Bad](#vue-no-deprecated-v-on-native-modifier-bad) · [Good](#vue-no-deprecated-v-on-native-modifier-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | No | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) | Disallow the deprecated `.native` modifier on `v-on` | Essential |
@@ -1112,6 +1112,7 @@ The header slot is selected through the old slot attribute.
 <template>
 <Foo>
 <template slot="header"><h1>Title</h1></template>
+<div :slot="name">Title</div>
 </Foo>
 </template>
 ```
@@ -1132,7 +1133,7 @@ v-slot:header explicitly selects the header slot with the current directive.
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L38) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) · [All rules](all.md)
 
 <span id="vue-no-deprecated-slot-scope-attribute"></span>
 

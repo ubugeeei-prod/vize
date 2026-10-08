@@ -29,7 +29,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vue/no-deprecated-inline-template`](#vue-no-deprecated-inline-template) | [悪い例](#vue-no-deprecated-inline-template-bad) · [良い例](#vue-no-deprecated-inline-template-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20) | 削除済みの inline-template 属性を検出します。 | Essential |
 | [`vue/no-deprecated-router-link-tag-prop`](#vue-no-deprecated-router-link-tag-prop) | [悪い例](#vue-no-deprecated-router-link-tag-prop-bad) · [良い例](#vue-no-deprecated-router-link-tag-prop-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs#L37) | router-link の削除済み tag prop を検出します。 | Essential |
 | [`vue/no-deprecated-scope-attribute`](#vue-no-deprecated-scope-attribute) | [悪い例](#vue-no-deprecated-scope-attribute-bad) · [良い例](#vue-no-deprecated-scope-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38) | template の削除済み scope 属性を検出します。 | Essential |
-| [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [悪い例](#vue-no-deprecated-slot-attribute-bad) · [良い例](#vue-no-deprecated-slot-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L38) | 削除済みの slot 属性を検出します。 | Essential |
+| [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [悪い例](#vue-no-deprecated-slot-attribute-bad) · [良い例](#vue-no-deprecated-slot-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) | 削除済みの slot 属性を検出します。 | Essential |
 | [`vue/no-deprecated-slot-scope-attribute`](#vue-no-deprecated-slot-scope-attribute) | [悪い例](#vue-no-deprecated-slot-scope-attribute-bad) · [良い例](#vue-no-deprecated-slot-scope-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs#L33) | 削除済みの slot-scope 属性を検出します。 | Essential |
 | [`vue/no-deprecated-v-bind-sync`](#vue-no-deprecated-v-bind-sync) | [悪い例](#vue-no-deprecated-v-bind-sync-bad) · [良い例](#vue-no-deprecated-v-bind-sync-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) | 削除済みの v-bind の .sync modifier を検出します。 | Essential |
 | [`vue/no-deprecated-v-on-native-modifier`](#vue-no-deprecated-v-on-native-modifier) | [悪い例](#vue-no-deprecated-v-on-native-modifier-bad) · [良い例](#vue-no-deprecated-v-on-native-modifier-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) | 削除済みの v-on の .native modifier を検出します。 | Essential |
@@ -1112,6 +1112,7 @@ vp run lint
 <template>
 <Foo>
 <template slot="header"><h1>Title</h1></template>
+<div :slot="name">Title</div>
 </Foo>
 </template>
 ```
@@ -1132,7 +1133,7 @@ vp run lint
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
-[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L38) · [全ルール](all.md)
+[実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) · [全ルール](all.md)
 
 <span id="vue-no-deprecated-slot-scope-attribute"></span>
 

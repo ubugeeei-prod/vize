@@ -104,8 +104,13 @@ translation write occurs. Four offline regression laws retain complete fences,
 YAML, links and provider behavior. Real Vite/Vue builds and Chromium interaction
 capture for eight UI preview families retain all 258 asset/PNG/evidence bytes on
 both Node versions. The typed render verifier also passes all four existing
-EN/JA Getting Started desktop/mobile controls. Complete hosted catalogue, queue
-and public acceptance remain required. This applies the maintainer's repository-wide
+EN/JA Getting Started desktop/mobile controls. After the signed #8293 bound-slot fix reaches main, regenerate the catalogues
+from its retained reference source. This carries its new bound-slot Bad line and
+correct implementation line 39 into both inline catalogues; no incoming example
+is removed or rewritten. The earlier 680-file migration equality belongs to its
+original input snapshot. Fresh source acceptance compares every complete current
+reference packet. Complete hosted catalogue, queue and public acceptance remain
+required. This applies the maintainer's repository-wide
 `.mjs` removal direction without changing upstream or historical artifact sources.
 
 ## Acceptance and unfinished work
