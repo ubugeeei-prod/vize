@@ -109,8 +109,8 @@ void test("public native evidence remains reachable after prior build or package
   assert.equal(seam.if, selectedHistory);
   assert.equal(seam["continue-on-error"], undefined);
   assert.equal(history.runs.using, "composite");
-  assert.equal(history.runs.steps.length, 5);
-  const [execute, qualification, upload, style, oxlint] = history.runs.steps;
+  assert.equal(history.runs.steps.length, 6);
+  const [execute, qualification, upload, style, oxlint, cleanup] = history.runs.steps;
   assert.equal(execute.if, "${{ success() && job.status == 'success' }}");
   assert.equal(execute.shell, "bash");
   assert.equal(execute.run, "vp run --workspace-root test:js");
@@ -119,6 +119,7 @@ void test("public native evidence remains reachable after prior build or package
   assert.equal(qualification.shell, "bash");
   assert.equal(qualification.run, "node npm/oxlint/scripts/check-project-transport.mjs");
   assert.equal(qualification["continue-on-error"], undefined);
+  assert.equal(qualification.id, "original-project-qualification");
   assert.equal(upload.if, "${{ always() }}");
   assert.equal(upload.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
   assert.deepEqual(upload.with, {
@@ -136,6 +137,7 @@ void test("public native evidence remains reachable after prior build or package
     "retention-days": 14,
   });
   assert.equal(oxlint.if, "${{ always() }}");
+  assert.equal(oxlint.id, "original-project-evidence");
   assert.equal(oxlint.uses, upload.uses);
   assert.deepEqual(oxlint.with, {
     name: "oxlint-original-locations-${{ github.sha }}-${{ github.run_attempt }}-${{ github.job }}",
@@ -149,6 +151,17 @@ void test("public native evidence remains reachable after prior build or package
     "if-no-files-found": "warn",
     "retention-days": 14,
   });
+  assert.equal(
+    cleanup.if,
+    "${{ always() && steps.original-project-qualification.outcome == 'success' && steps.original-project-evidence.outcome == 'success' }}",
+  );
+  assert.equal(cleanup.shell, "bash");
+  assert.equal(cleanup.run, "node npm/oxlint/scripts/project-native-staging.ts --cleanup");
+  assert.deepEqual(cleanup.env, {
+    VIZE_OXLINT_STAGING_DIRECTORY:
+      "${{ steps.original-project-qualification.outputs.staging-directory }}",
+  });
+  assert.equal(cleanup["continue-on-error"], undefined);
 });
 
 void test("Fresco checks generate declarations and invoke static TypeScript without executing the loader", () => {

@@ -9,6 +9,7 @@ runs:
       shell: bash
       run: vp run --workspace-root test:js
     - name: Qualify original project checks with both real Oxlint hosts
+      id: original-project-qualification
       if: ${{ success() && job.status == 'success' }}
       shell: bash
       run: node npm/oxlint/scripts/check-project-transport.mjs
@@ -29,6 +30,7 @@ runs:
         if-no-files-found: warn
         retention-days: 14
     - name: Preserve original Oxlint bridge locations
+      id: original-project-evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
@@ -40,3 +42,9 @@ runs:
           target/oxlint-original-project-transport/**
         if-no-files-found: warn
         retention-days: 14
+    - name: Clean completed original project staging after evidence upload
+      if: ${{ always() && steps.original-project-qualification.outcome == 'success' && steps.original-project-evidence.outcome == 'success' }}
+      shell: bash
+      env:
+        VIZE_OXLINT_STAGING_DIRECTORY: ${{ steps.original-project-qualification.outputs.staging-directory }}
+      run: node npm/oxlint/scripts/project-native-staging.ts --cleanup
