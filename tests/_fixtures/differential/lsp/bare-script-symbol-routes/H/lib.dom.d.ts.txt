@@ -1,0 +1,5 @@
+/// <reference no-default-lib="true"/>
+/// <reference lib="esnext"/>
+/// <reference lib="dom"/>
+export declare const declaredValue: number;
+export declare const mirrorValue: typeof declaredValue;

@@ -39,6 +39,15 @@ pub(super) async fn references(
         return Ok(None);
     }
     #[cfg(feature = "native")]
+    if crate::utils::is_plain_script_path(uri.path()) {
+        return Ok(crate::ide::ScriptSymbolsService::references(
+            &ctx,
+            include_declaration,
+            server.state.get_corsa_bridge().await,
+        )
+        .await);
+    }
+    #[cfg(feature = "native")]
     {
         Ok(ReferencesService::references_with_corsa(
             &ctx,
