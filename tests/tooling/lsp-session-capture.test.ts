@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { pathToFileURL } from "node:url";
-import { LEGACY_BUILD_RECIPE, writeBuildReceipt } from "../differential/build-receipt.mjs";
+import { LEGACY_BUILD_RECIPE, writeBuildReceipt } from "../differential/build-receipt.ts";
 import { sha256 } from "../differential/harness.mjs";
 import { frameMessage } from "../differential/lsp-wire.ts";
 import { resolveVizeLaunchCommand, type VerifiedLspLaunch } from "./support/lsp/launch.ts";

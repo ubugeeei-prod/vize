@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { BUILD_RECIPE } from "../../../differential/build-receipt.mjs";
+import { BUILD_RECIPE } from "../../../differential/build-receipt.ts";
 import { sha256 } from "../../../differential/harness.mjs";
 import {
   initializeCapabilities,

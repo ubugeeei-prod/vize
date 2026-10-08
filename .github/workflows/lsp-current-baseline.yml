@@ -64,7 +64,7 @@ jobs:
       - name: Build and receipt the exact current source server
         run: |
           cargo build --profile ci -p vize
-          node tests/differential/build-receipt.mjs
+          node tests/differential/build-receipt.ts
       - name: Qualify pure observation and refusal laws
         run: node --test tests/tooling/lsp-current-baseline*.test.ts tests/tooling/lsp-session-capture.test.ts
       - name: Measure three serial fresh sessions with all original checks

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { BUILD_RECIPE, validateBuildReceipt } from "../../../differential/build-receipt.mjs";
+import { BUILD_RECIPE, validateBuildReceipt } from "../../../differential/build-receipt.ts";
 import { sha256 } from "../../../differential/harness.mjs";
 import { decodeFrames } from "../../../differential/lsp-wire.ts";
 import type { VerifiedLspLaunch } from "./launch.ts";

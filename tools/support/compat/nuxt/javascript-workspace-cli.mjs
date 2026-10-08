@@ -7,7 +7,7 @@ import { createRequire } from "node:module";
 import {
   expectedBuildIdentity,
   validateBuildReceipt,
-} from "../../../../tests/differential/build-receipt.mjs";
+} from "../../../../tests/differential/build-receipt.ts";
 import { lexical, save, sha } from "./javascript-workspace-project.mjs";
 import { expectedCheckMembership, projectEvidence } from "./javascript-workspace-config.mjs";
 import { packageDeclarations } from "./javascript-workspace-declarations.mjs";

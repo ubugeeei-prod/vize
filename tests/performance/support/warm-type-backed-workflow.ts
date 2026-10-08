@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { aliasHostPaths } from "./warm-type-backed-alias-host.ts";
+import { unqualifiedReceiptPaths } from "./warm-type-backed-build-receipt-extension.ts";
 import { finiteCut } from "./warm-type-backed-cut.ts";
 import { gitBodyDigest, qualifyPathHostMove } from "./warm-type-backed-path-host.ts";
 import { qualifyTimingHostMove } from "./warm-type-backed-timing-host.ts";
@@ -214,7 +215,7 @@ if (process.argv[2] === "prepare") {
       "docs/davinci/decisions/2026-09-27-level-restructure.md",
       "docs/davinci/decisions/2026-10-05-lsp-warm-query-surfaces.md",
     ]);
-    for (const file of changed)
+    for (const file of unqualifiedReceiptPaths(changed, harness, driverRoot, baseline, head))
       assert.ok(
         harness.has(file) ||
           /^tests\/performance\/support\/warm-type-backed-[a-z-]+\.ts$/u.test(file),

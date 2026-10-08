@@ -4,7 +4,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts";
 import { assertExactRows, sha256 } from "./harness.mjs";
 import { initializeCapabilities, loadLspManifest, NATIVE_REASON } from "./lsp-manifest.ts";
 import { inspectLspObservation, validateLspReport } from "./lsp-report.ts";

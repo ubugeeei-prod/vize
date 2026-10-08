@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "../differential/build-receipt.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 const fixture = path.join(root, "tests/_fixtures/cli/lint-schema-side-effects");

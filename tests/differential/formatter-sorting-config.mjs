@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts";
 import { loadFormatterApiManifest } from "./formatter-api.mjs";
 import { assertOriginalSortingConfig } from "./formatter-sorting-config-source.mjs";
 import { sha256 } from "./manifest.mjs";

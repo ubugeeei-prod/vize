@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { sourceRevision } from "../differential/build-receipt.mjs";
+import { sourceRevision } from "../differential/build-receipt.ts";
 import { repoRoot } from "./realworld-patch.ts";
 
 export type CompilerOutput = {

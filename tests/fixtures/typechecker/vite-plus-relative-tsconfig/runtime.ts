@@ -12,7 +12,7 @@ import {
   binaryRelativePath,
   expectedBuildIdentity,
   validateBuildReceipt,
-} from "../../../differential/build-receipt.mjs";
+} from "../../../differential/build-receipt.ts";
 import { resolveTsgoBinary } from "../../../_helpers/realworld-typecheck.ts";
 import { originalInputs, repoRoot, sha256 } from "./fixture.ts";
 import { sourceTaskConfig } from "./factory.ts";

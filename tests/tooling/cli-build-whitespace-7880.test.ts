@@ -11,7 +11,7 @@ import {
   binaryRelativePath,
   expectedBuildIdentity,
   validateBuildReceipt,
-} from "../differential/build-receipt.mjs";
+} from "../differential/build-receipt.ts";
 
 const repository = fileURLToPath(new URL("../../", import.meta.url));
 const corpus = new URL("../_fixtures/differential/compiler/cli-whitespace-7880/", import.meta.url);

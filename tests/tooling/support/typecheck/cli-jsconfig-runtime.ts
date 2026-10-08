@@ -8,7 +8,7 @@ import {
   binaryRelativePath,
   expectedBuildIdentity,
   validateBuildReceipt,
-} from "../../../differential/build-receipt.mjs";
+} from "../../../differential/build-receipt.ts";
 
 export const repoRoot = fileURLToPath(new URL("../../../../", import.meta.url));
 export const corpusRoot = path.join(

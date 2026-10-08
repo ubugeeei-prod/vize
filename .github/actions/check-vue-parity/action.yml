@@ -102,7 +102,7 @@ runs:
           cargo_args+=(--jobs 2)
         fi
         cargo "${cargo_args[@]}"
-        vp exec node tests/differential/build-receipt.mjs --legacy
+        vp exec node tests/differential/build-receipt.ts --legacy
         cat target/ci/vize.differential-build.json
         oracle_args=(build --profile ci -p vize_atelier_sfc --features legacy --example cli_build_result_oracle)
         if [ "$RUNNER_ENVIRONMENT" = "github-hosted" ]; then

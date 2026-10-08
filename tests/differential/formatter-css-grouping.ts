@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts";
 import { validateObserverReceipt } from "./formatter-api-build.mjs";
 import { formatterHistoryCliExpected } from "./formatter-history-cli.ts";
 import { sha256 } from "./manifest.mjs";

@@ -189,7 +189,7 @@ jobs:
         uses: ./.github/actions/test-native-ssr
       - name: Build and install vize CLI
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.mjs && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
+        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
       - name: Verify current-source native scoped CSS and real Vue DOM
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
         uses: ./.github/actions/test-native-scoped-css

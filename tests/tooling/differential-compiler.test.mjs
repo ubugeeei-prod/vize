@@ -5,7 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { summarizeNativeAcceptance } from "../differential/acceptance-rates.mjs";
-import { BUILD_RECIPE } from "../differential/build-receipt.mjs";
+import { BUILD_RECIPE } from "../differential/build-receipt.ts";
 import {
   COMPILER_ARGV,
   compilerAttempt,

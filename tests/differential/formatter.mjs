@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { compareBytes } from "./compare.mjs";
 import { FORMATTER_ARGV, loadFormatterManifest, sha256 } from "./manifest.mjs";
-import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.mjs";
+import { expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts";
 import { runPlannedCases, validateResultEnvelope } from "./harness.mjs";
 import { expressionWidthReference } from "./formatter-expression-width-reference.mjs";
 import { soleChildWidthCliReference } from "./formatter-sole-child-width-reference.mjs";

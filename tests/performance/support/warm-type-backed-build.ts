@@ -7,7 +7,7 @@ import {
   SHIPPING_BUILD_RECIPE,
   BUILD_RECIPE,
   writeBuildReceipt,
-} from "../../differential/build-receipt.mjs";
+} from "../../differential/build-receipt.ts";
 import { driverRoot, git, sha256, sourceIdentity } from "./warm-type-backed-source.ts";
 import {
   assertChangedDependenciesBuilt,
