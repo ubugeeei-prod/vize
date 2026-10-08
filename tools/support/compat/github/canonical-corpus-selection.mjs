@@ -1,7 +1,7 @@
 import { appendFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { changedPaths } from "./plan-source-checks.ts";
-import { aggregateCheckNeedsResults } from "./require-needs-success.mjs";
+import { aggregateCheckNeedsResults } from "./require-needs-success.ts";
 
 const inputs = [
   /^\.gitmodules$/,
@@ -18,6 +18,7 @@ const inputs = [
   /^tools\/support\/compat\/davinci\/lib\/corpus-baseline-contract\.mjs$/,
   /^tools\/support\/compat\/github\/(?:canonical-corpus-(?:selection|identity|inventory|hydration|observer|workers)|comparison-base|plan-source-checks|require-needs-success|prepare-vue-benchmarks)\.mjs$/,
   /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks)\.ts$/,
+  /^tools\/support\/compat\/github\/(?:require-needs-success|require-rust-tier)\.ts$/,
 ];
 
 export function canonicalCorpusRequired(paths, eventName) {

@@ -50,7 +50,7 @@ test("affected Maestro source builds require real native feature tests before re
   assert.equal(report.if, "${{ always() }}");
   const aggregate = report.steps.find(
     (step: { run?: string }) =>
-      step.run === "node tools/support/compat/github/require-rust-tier.mjs",
+      step.run === "node tools/support/compat/github/require-rust-tier.ts",
   );
   assert.ok(aggregate);
   assert.equal(aggregate.env.NEEDS_JSON, "${{ toJSON(needs) }}");

@@ -197,6 +197,19 @@ test("the Rust report waits for the builder and all four independently executing
   assert.equal(rust.jobs["rust-source-report"].if, "${{ always() }}");
   const reportSteps = rust.jobs["rust-source-report"].steps ?? [];
   const gate = reportSteps.findIndex((step) => step.name === "Require the complete Rust tier");
+  const gateRuntime = reportSteps.findIndex((step) =>
+    step.uses?.startsWith("voidzero-dev/setup-vp@"),
+  );
+  assert.ok(gateRuntime >= 0 && gateRuntime < gate);
+  assert.equal(reportSteps[gateRuntime].if, undefined);
+  assert.equal(
+    reportSteps.filter((step) => step.uses?.startsWith("voidzero-dev/setup-vp@")).length,
+    1,
+  );
+  assert.deepEqual(reportSteps[gateRuntime].with, {
+    "node-version-file": "package.json",
+    "run-install": false,
+  });
   const select = reportSteps.findIndex(
     (step) => step.name === "Select latest source-bound Rust workers",
   );
@@ -231,7 +244,7 @@ test("the Rust report waits for the builder and all four independently executing
   ])
     assert.deepEqual(job.permissions, { contents: "read", actions: "read" });
   assert.equal(reportSteps[gate].if, undefined);
-  assert.equal(reportSteps[gate].run, "node tools/support/compat/github/require-rust-tier.mjs");
+  assert.equal(reportSteps[gate].run, "node tools/support/compat/github/require-rust-tier.ts");
   assert.deepEqual(reportSteps[gate].env, {
     RUN_RUST: "${{ inputs.run-rust }}",
     NEEDS_JSON: "${{ toJSON(needs) }}",

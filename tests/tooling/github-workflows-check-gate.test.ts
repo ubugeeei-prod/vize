@@ -3,7 +3,7 @@ import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.mjs";
+import { aggregateNeedsResults } from "../../tools/support/compat/github/require-needs-success.ts";
 import { readRepoFile, root } from "./support/github-workflows.ts";
 
 const CORE_PR_JOBS = [
@@ -109,7 +109,7 @@ test("source gates cover PRs and merge groups while extra checks require schedul
   );
   assert.equal(
     workflow.jobs?.["test-report"]?.steps?.at(-1)?.run,
-    "node tools/support/compat/github/require-needs-success.mjs",
+    "node tools/support/compat/github/require-needs-success.ts",
   );
   const commands = (job: string) =>
     (workflow.jobs?.[job]?.steps ?? []).map((step) => step.run ?? "").join("\n");
@@ -217,7 +217,7 @@ test("report fails closed when any PR check fails or skips", () => {
 });
 
 test("report command exits nonzero for a failed dependency", () => {
-  const script = "tools/support/compat/github/require-needs-success.mjs";
+  const script = "tools/support/compat/github/require-needs-success.ts";
   const result = spawnSync(process.execPath, [script], {
     cwd: root,
     encoding: "utf8",

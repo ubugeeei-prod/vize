@@ -277,16 +277,15 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          run-install: false
       - name: Require the complete Rust tier
         env:
           RUN_RUST: ${{ inputs.run-rust }}
           NEEDS_JSON: ${{ toJSON(needs) }}
-        run: node tools/support/compat/github/require-rust-tier.mjs
-      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
-        if: ${{ github.event_name == 'merge_group' && inputs.run-rust && needs.pr-rust-shard.result == 'success' }}
-        with:
-          node-version-file: "package.json"
-          run-install: false
+        run: node tools/support/compat/github/require-rust-tier.ts
       - name: Select latest source-bound Rust workers
         id: rust-workers
         if: ${{ github.event_name == 'merge_group' && inputs.run-rust && needs.pr-rust-shard.result == 'success' }}
