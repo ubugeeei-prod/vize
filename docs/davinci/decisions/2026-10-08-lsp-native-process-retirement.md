@@ -52,6 +52,14 @@ merge tests also retain the law. Historical immutable-source recipe mode skips
 this new observer and records `not-qualified`; it does not demand a test from
 an older source or award process-fix credit to a zero-test selection. The marked
 inline source recipe and original 7/9/10/11 target fixtures remain unchanged.
+The small observer helper is copied from the immutable executed workflow
+revision. Its raw bytes, source/workflow recipe identities and actual source
+HEAD/tree are authenticated before the mode is selected. It preserves both
+original editor/monorepo native-binary equality checks while keeping the
+workflow below its unchanged 350-line ceiling. Six adversarial observer
+controls reject forged bytes, unknown modes, stale historical receipts and
+zero-test selections; historical sources need no new source helper, fixture or
+test and receive explicit no credit.
 
 This slice does not close #3952. Session 2 independently failed the original
 128 MiB server RSS ceiling (128.94 MiB at `file-lifecycle-1`). Source acceptance
