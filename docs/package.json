@@ -8,8 +8,9 @@
     "generate:reference": "node ../npm/ui/scripts/generate-reference-docs.ts",
     "generate:ui-previews": "node ./scripts/build-ui-previews.ts",
     "check:ui-docs": "node ./previews/ui/check-site.ts",
-    "dev": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && vp build && vp preview",
-    "build": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && vp build && pnpm check:ui-docs",
+    "generate:og-images": "node ./scripts/generate-og-images.mjs",
+    "dev": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && vp build && pnpm generate:og-images && vp preview",
+    "build": "node ./scripts/ensure-browser.ts && pnpm generate:ui-previews && pnpm generate:reference && vp build && pnpm generate:og-images && pnpm check:ui-docs",
     "preview": "vp preview"
   },
   "devDependencies": {

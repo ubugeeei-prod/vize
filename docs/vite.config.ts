@@ -45,19 +45,12 @@ export default defineConfig({
         ],
       },
 
-      ogImage: true,
-      ogImageOptions: {
-        template: resolve(themeDir, "og.vue"),
-        vuePlugin: "vizejs",
-        width: 1200,
-        height: 630,
-        cache: true,
-      },
-
       ssg: {
         siteName: "Vize",
         siteUrl: "https://vizejs.dev",
-        generateOgImage: true,
+        // Strict page-specific generation runs after SSG. Ox Content 2.81's
+        // automatic path swallows template/browser errors and omits images.
+        generateOgImage: false,
         theme: defineTheme({
           extends: defaultTheme,
 

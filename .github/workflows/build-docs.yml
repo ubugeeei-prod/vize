@@ -69,10 +69,15 @@ jobs:
           fc-match --format '%{family}\n' ':lang=ja'
 
       - name: Build docs
-        run: vp run --filter './docs' build
+        # The page manifest records this exact source SHA; do not replay an
+        # earlier script result when only other source files changed.
+        run: vp run --no-cache --filter './docs' build
 
       - name: Verify rendered navigation and adoption guides
         run: vp node docs/scripts/verify-navigation-render.ts
+
+      - name: Verify every page's Open Graph metadata and image
+        run: vp node docs/scripts/verify-og-images.mjs
 
       - name: Upload rendered docs screenshots
         if: ${{ always() }}

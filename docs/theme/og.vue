@@ -3,15 +3,32 @@ const props = defineProps<{
   title: string;
   description?: string;
   siteName?: string;
+  category?: string;
+  localeName?: string;
+  locale?: string;
+  route?: string;
+  isHome?: boolean;
+  assetFingerprint?: string;
 }>();
 </script>
 
 <template>
-  <div class="og">
+  <div
+    class="og"
+    :lang="props.locale"
+    :class="{
+      'is-home': props.isHome,
+      'long-title': props.title.length > 38,
+      'very-long-title': props.title.length > 70,
+    }"
+  >
     <div class="left">
       <div class="header">
         <img alt="" class="header-logo" height="28" src="/logo.svg" width="28" />
         <span class="site-name"> VIZE </span>
+        <span v-if="!props.isHome" class="category"
+          >{{ props.category }} · {{ props.localeName }}</span
+        >
       </div>
       <div class="title-area">
         <h1 class="title">
@@ -21,7 +38,7 @@ const props = defineProps<{
           {{ props.description || "High-Performance Vue.js Toolchain in Rust" }}
         </p>
       </div>
-      <span class="url"> vizejs.dev </span>
+      <span class="url">{{ props.isHome ? "vizejs.dev" : `vizejs.dev${props.route}` }}</span>
     </div>
     <div class="right">
       <img alt="" class="logo" src="/logo.svg" />
@@ -181,5 +198,49 @@ const props = defineProps<{
   text-orientation: mixed;
   max-height: 240px;
   opacity: 0.5;
+}
+
+.og:not(.is-home) {
+  --og-title-size: 72px;
+  font-family:
+    "Helvetica Neue", Helvetica, Arial, "Noto Sans CJK JP", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic", system-ui, sans-serif;
+}
+
+.og:not(.is-home).long-title {
+  --og-title-size: 56px;
+}
+
+.og:not(.is-home).very-long-title {
+  --og-title-size: 44px;
+}
+
+.og:not(.is-home) .title {
+  max-width: 640px;
+  overflow-wrap: anywhere;
+  letter-spacing: -0.04em;
+}
+
+.category {
+  font-size: 16px;
+  color: var(--og-muted-ink);
+  margin-inline-start: 16px;
+}
+
+.og:not(.is-home) .url {
+  max-width: 650px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.og:not(.is-home) .right {
+  width: 360px;
+}
+
+.og:not(.is-home) .logo {
+  height: 280px;
+  opacity: 0.7;
 }
 </style>

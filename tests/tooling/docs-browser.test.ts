@@ -22,6 +22,7 @@ test("docs build prepares its browser before previews and checks the rendered si
     "pnpm generate:ui-previews",
     "pnpm generate:reference",
     "vp build",
+    "pnpm generate:og-images",
     "pnpm check:ui-docs",
   ]);
   assert.equal(packageJson.scripts["generate:ui-previews"], "node ./scripts/build-ui-previews.ts");
@@ -30,6 +31,7 @@ test("docs build prepares its browser before previews and checks the rendered si
     "node ../npm/ui/scripts/generate-reference-docs.ts",
   );
   assert.equal(packageJson.scripts["check:ui-docs"], "node ./previews/ui/check-site.ts");
+  assert.equal(packageJson.scripts["generate:og-images"], "node ./scripts/generate-og-images.mjs");
 });
 
 test("docs browser helper reuses an existing browser path without invoking Playwright install", () => {
