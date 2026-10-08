@@ -1,0 +1,2 @@
+export declare const ordinaryValue: number;
+export declare const ordinaryMirror: typeof ordinaryValue;
