@@ -58,6 +58,41 @@ weakening refusal rules or substituting counts cannot qualify a cut.
    original issue cases with the actual public installation; credit only fixes
    included in this C/H and genuinely accepted issue scope.
 
+## Read the actual H publication plan
+
+Derive npm and crate identities, CLI/editor/SBOM assets and editor source bytes
+from replacement-disabled raw H objects. A literal `git rev-parse H` result
+alone is insufficient: an active replacement ref can retain that displayed
+identity while `git show` and `git ls-tree` read another tree. An inert scratch
+reproduction changed the old verifier's npm/crate plan and editor file set
+without changing its reported H. No real release repository was modified.
+
+Use explicit replacement-disabled reads, confirm H is a commit and require the
+hash of its raw commit bytes to equal the supplied full H:
+
+```sh
+git --no-replace-objects cat-file -t FULL_H
+git --no-replace-objects cat-file commit FULL_H > raw-H.commit
+git --no-replace-objects hash-object -t commit raw-H.commit
+git --no-replace-objects cat-file blob FULL_H:.github/workflows/release.yml
+git --no-replace-objects ls-tree -r -z FULL_H -- editors/
+```
+
+Validate source blob types and hashes before interpreting their bytes. Keep
+binary editor comparisons byte-exact. The corrected prospective verifiers
+restore the original complete plan under an active replacement ref; ordinary
+committed source yields the same plan as before: 26 npm packages, 26 published
+crates, eight CLI archives, six editor assets, two SBOMs and 78 planned GitHub
+assets at the [reviewed preparation source](https://github.com/ubugeeei-prod/vize/tree/8aefbbd6ee57efa6ba0d1ac35ab08da85f380a1c).
+Derive these counts anew from the actual future
+H, rather than treating today's plan as the next release's authority.
+
+Legacy grafts can rewrite history queries but did not alter these tree/blob
+plans. This correction adds no new parent gate or release admission criterion.
+Where the existing C/H relation is checked, use raw parent headers. These
+source-only controls establish no public installation, signature verification,
+native execution, successful publication or resolution of the original ELOOP.
+
 The [unpublished v0.436.0 retirement](../davinci/decisions/2026-10-08-release-436-catalog-retirement.md)
 remains `ABANDONED_UNPUBLISHED`: source #8249 is closed draft and unmerged, run
 37717489915 attempt 2 is terminal cancelled, and its publication dependents
