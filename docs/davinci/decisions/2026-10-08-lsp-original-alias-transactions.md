@@ -205,3 +205,26 @@ generators or length law. Add only these two exact reviewed extraction paths to
 the original400 closed qualifier, now 36 literal paths. Every original input,
 golden, count-one oracle, native guard, provider recipe/selector and performance
 ceiling remains unchanged; the corrected source requires new complete execution.
+
+## Changed Croquis dependency custody
+
+Current source head `3e1f18d5d0888d0cc89086e998dd2d49fbc01f0d` passed
+the closed 36-path qualifier, but original400 run `37738930121`, job
+`113184860823`, failed before workloads. Its authenticated complete Cargo JSON
+records E0599: Canon requested `with_defaults_key_ranges` from a reused baseline
+Croquis artifact. The shared target was cleaned for Canon, Maestro and CLI, but
+the existing changed-source dependency table omitted Croquis. Preserve the whole
+job log, Cargo output, actual clean command and source binding in
+`supplemental/historical-3e-dependency-custody/`; its receipt binds the verified
+artifact ZIP `11533351378`. No resource or performance result was measured.
+
+Add only the literal `vize_croquis` / `crates/vize_croquis/` owner to the existing
+dependency table. The unchanged build route cleans that owner and requires a
+linked artifact with `fresh: false` on both sides. Controls reject a reused
+Croquis artifact, an absent linked artifact and a similarly named unrelated
+crate. This corrects cache invalidation; it does not waive the failure. Preserve
+the original400 inputs, complete provider results, all previous literal paths,
+build recipes, native custody and three-process / 128MiB ceilings. Fresh full
+before/after execution and all normal source/protected gates remain required.
+
+Paired decision: [#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6054220460).
