@@ -56,6 +56,8 @@ const props = defineProps<{
   --og-title-size: 96px;
   --og-description-size: 21px;
   --og-caption-size: 10px;
+  --og-category-size: 16px;
+  --og-url-size: 12px;
   --og-content-layer: 1;
 
   width: 1200px;
@@ -205,6 +207,29 @@ const props = defineProps<{
   font-family:
     "Helvetica Neue", Helvetica, Arial, "Noto Sans CJK JP", "Hiragino Kaku Gothic ProN",
     "Yu Gothic", system-ui, sans-serif;
+
+  .title {
+    max-width: 640px;
+    overflow-wrap: anywhere;
+    letter-spacing: -0.04em;
+  }
+
+  .url {
+    max-width: 650px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--og-url-size);
+  }
+
+  .right {
+    width: 360px;
+  }
+
+  .logo {
+    height: 280px;
+    opacity: 0.7;
+  }
 }
 
 .og:not(.is-home).long-title {
@@ -215,32 +240,9 @@ const props = defineProps<{
   --og-title-size: 44px;
 }
 
-.og:not(.is-home) .title {
-  max-width: 640px;
-  overflow-wrap: anywhere;
-  letter-spacing: -0.04em;
-}
-
 .category {
-  font-size: 16px;
+  font-size: var(--og-category-size);
   color: var(--og-muted-ink);
   margin-inline-start: 16px;
-}
-
-.og:not(.is-home) .url {
-  max-width: 650px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 12px;
-}
-
-.og:not(.is-home) .right {
-  width: 360px;
-}
-
-.og:not(.is-home) .logo {
-  height: 280px;
-  opacity: 0.7;
 }
 </style>

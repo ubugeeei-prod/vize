@@ -54,7 +54,7 @@ async function markdownFiles(directory, prefix = "") {
     )
       result.push(relative);
   }
-  return result.sort();
+  return result.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 const { template, assetFingerprint } = await buildOgTemplate(docsRoot);

@@ -15,7 +15,7 @@ const english = {
   language: "en",
 };
 
-test("authored guide text and localized route identity remain independent", () => {
+await test("authored guide text and localized route identity remain independent", () => {
   const en = pageMetadata("/getting-started/", english, "template-a");
   const ja = pageMetadata(
     "/ja/getting-started/",
@@ -41,7 +41,7 @@ test("authored guide text and localized route identity remain independent", () =
   assert.throws(() => pageMetadata("/ja/getting-started/", english, "a"), /HTML language/);
 });
 
-test("rule content supplies its own missing description and long title", () => {
+await test("rule content supplies its own missing description and long title", () => {
   const rule = pageMetadata(
     "/rules/reference/vue-component-name-in-template-casing/",
     {
@@ -61,7 +61,7 @@ test("rule content supplies its own missing description and long title", () => {
   assert.equal(rule.type, "website");
 });
 
-test("equal-title routes and changed rendering assets receive distinct image URLs", () => {
+await test("equal-title routes and changed rendering assets receive distinct image URLs", () => {
   const first = pageMetadata("/guide/configuration/", english, "a");
   const second = pageMetadata("/guide/migration/", english, "a");
   const changed = pageMetadata("/guide/configuration/", english, "changed-logo-or-css");
@@ -80,7 +80,7 @@ test("equal-title routes and changed rendering assets receive distinct image URL
   );
 });
 
-test("social metadata replaces stale tags, preserves unrelated head and escapes content", () => {
+await test("social metadata replaces stale tags, preserves unrelated head and escapes content", () => {
   const page = pageMetadata(
     "/guide/configuration/",
     {
@@ -106,7 +106,7 @@ test("social metadata replaces stale tags, preserves unrelated head and escapes 
   assert.throws(() => applyOpenGraphMetadata("<body></body>", page), /no head/);
 });
 
-test("invalid or wrong-size images fail before publication", () => {
+await test("invalid or wrong-size images fail before publication", () => {
   const header = Buffer.alloc(24);
   Buffer.from("89504e470d0a1a0a", "hex").copy(header);
   header.write("IHDR", 12);
