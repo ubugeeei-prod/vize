@@ -1,0 +1,29 @@
+{
+  "scope": "Whole failed source-coverage log and first complete failure packet; original8 malformed controls remain unchanged",
+  "sourceHead": "d5fa74e48d01cfe7dfd9a21f41a5d2bc41d42fff",
+  "runId": 37739279068,
+  "jobId": 113185989482,
+  "url": "https://github.com/ubugeeei-prod/vize/actions/runs/37739279068/job/113185989482",
+  "compressedLog": "malformed-color-before-d5fa.log.gz",
+  "compressedLogSha256": "9eb0cb22e4e9ed23ab4cdbdb98fc5ac6cf0d86fb6e47b1ec100a9cbdb0d0cf85",
+  "rawLogSha256": "fb1d46d20a40d0d1fdb72eadb08b7e067bbbd5322c8feaea2491dc370db17a2d",
+  "rawLogBytes": 294862,
+  "originalInputSha256": "b095dd3bbc687e671d4cae2f8c1a70207f73ac791a2a8feb5dccb3127c6d360d",
+  "originalMalformedControlsSha256": "39db5cc8bd548050f4e929b6e7b1df8f8cc71b87b7ae8ecdc1a8d7880aeebc04",
+  "firstFailedCase": {
+    "group": "direct",
+    "variant": "bom",
+    "explicit": false,
+    "actualWholePacket": {
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "\u001b[31mError:\u001b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"
+    },
+    "expectedWholePacket": {
+      "exitCode": 1,
+      "stdout": "",
+      "stderr": "Error: JSON parse error: EOF while parsing a value at line 1 column 20\n"
+    }
+  },
+  "parentColorVariableAuthority": "The original source-coverage log does not capture the exact child forcing variable; its origin is unqualified. Current and original CLI authority separately prove both forcing overrides. No log or stream normalization."
+}

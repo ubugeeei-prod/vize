@@ -66,7 +66,7 @@ fn expected(root: &Path, phase: &str) -> Value {
     whole[phase].clone()
 }
 
-fn check(root: &Path, native: &Path, corpus: &Value, explicit: bool) -> Value {
+fn check_command(root: &Path, native: &Path, corpus: &Value, explicit: bool) -> Command {
     let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
     command
         .current_dir(root)
@@ -77,7 +77,29 @@ fn check(root: &Path, native: &Path, corpus: &Value, explicit: bool) -> Value {
             command.arg(path.as_str().unwrap());
         }
     }
-    packet(&mut command)
+    command
+}
+
+fn plain_output(command: &mut Command) -> &mut Command {
+    // Match existing plain-output tests: forced color takes precedence over NO_COLOR.
+    command
+        .env("NO_COLOR", "1")
+        .env_remove("FORCE_COLOR")
+        .env_remove("CLICOLOR_FORCE")
+}
+
+fn check(root: &Path, native: &Path, corpus: &Value, explicit: bool) -> Value {
+    packet(plain_output(&mut check_command(
+        root, native, corpus, explicit,
+    )))
+}
+
+fn capture_malformed(name: &str, actual: &Value) {
+    if let Some(capture) = std::env::var_os("VIZE_TSCONFIG_TYPES_CAPTURE") {
+        let dir = PathBuf::from(capture).join("utf8-bom");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join(name), serde_json::to_vec_pretty(actual).unwrap()).unwrap();
+    }
 }
 
 fn run_group(group: &str, variants: &[&str], native: &Path) {
@@ -185,25 +207,71 @@ fn malformed_plain_and_bom_configs_preserve_whole_original_cli_failure() {
             }
             for explicit in [false, true] {
                 let output = check(&root, &native, &corpus, explicit);
+                calls += 1;
+                actual.push(json!({"group":group,"variant":variant,"explicit":explicit,"wholePacket":output}));
+                capture_malformed("malformed-runtime.json", &json!(actual));
                 assert_eq!(
                     output, malformed["expectedPlainFailure"],
                     "{group}/{variant}/explicit={explicit}"
                 );
-                calls += 1;
-                actual.push(json!({"group":group,"variant":variant,"explicit":explicit,"wholePacket":output}));
             }
         }
         std::fs::remove_dir_all(root).unwrap();
     }
     assert_eq!(calls, 8);
-    if let Some(capture) = std::env::var_os("VIZE_TSCONFIG_TYPES_CAPTURE") {
-        let dir = PathBuf::from(capture).join("utf8-bom");
-        std::fs::create_dir_all(&dir).unwrap();
-        std::fs::write(
-            dir.join("malformed-runtime.json"),
-            serde_json::to_vec_pretty(&actual).unwrap(),
-        )
-        .unwrap();
-    }
     eprintln!("complete config BOM malformed: {calls} public CLI failures accepted");
+}
+
+#[test]
+fn malformed_whole_packets_obey_controlled_plain_and_forced_color_policies() {
+    let Some(native) = corsa_requirement::required_or_skip(None::<PathBuf>) else {
+        return;
+    };
+    let corpus: Value = serde_json::from_str(INPUT).unwrap();
+    let malformed: Value = serde_json::from_str(MALFORMED).unwrap();
+    // Authored independently from the current response; no escape removal or filtering.
+    let colored = json!({"exitCode":1,"stdout":"",
+        "stderr":"\x1b[31mError:\x1b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"});
+    let mut actual = Vec::new();
+    for (group, variants) in malformed["wholeCases"].as_object().unwrap() {
+        let root = project(cstr!("color-{group}").as_str(), &corpus);
+        for (variant, files) in variants.as_object().unwrap() {
+            for (name, text) in files.as_object().unwrap() {
+                write(&root, name, text.as_str().unwrap());
+            }
+            for explicit in [false, true] {
+                for overrides in [
+                    &["FORCE_COLOR"][..],
+                    &["CLICOLOR_FORCE"],
+                    &["FORCE_COLOR", "CLICOLOR_FORCE"],
+                ] {
+                    let mut command = check_command(&root, &native, &corpus, explicit);
+                    plain_output(&mut command);
+                    for name in overrides {
+                        command.env(name, "1");
+                    }
+                    let forced = packet(&mut command);
+                    actual.push(json!({"group":group,"variant":variant,"explicit":explicit,
+                        "forcingVariables":overrides,"noColor":"1","forcedWholePacket":forced}));
+                    capture_malformed("malformed-color-runtime.json", &json!(actual));
+                    assert_eq!(
+                        forced, colored,
+                        "{group}/{variant}/{explicit}/{overrides:?}"
+                    );
+                    let controlled = packet(plain_output(&mut command));
+                    actual.last_mut().unwrap()["controlledWholePacket"] = controlled.clone();
+                    capture_malformed("malformed-color-runtime.json", &json!(actual));
+                    assert_eq!(
+                        controlled, malformed["expectedPlainFailure"],
+                        "{group}/{variant}/{explicit}/{overrides:?}"
+                    );
+                }
+            }
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    assert_eq!(actual.len(), 24);
+    eprintln!(
+        "complete config BOM color policy: 24 forced and 24 controlled whole CLI packets accepted"
+    );
 }

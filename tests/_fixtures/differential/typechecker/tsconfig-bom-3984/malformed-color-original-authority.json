@@ -1,0 +1,352 @@
+{
+  "historicalCliSha256": "4d02d0c14a83e5ce4d4d8239d69c8f221a9f5b0875237e44b17af67d4f95730d",
+  "nativePath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@typescript+typescript-darwin-arm64@7.0.2/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+  "nativeSha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+  "originalWholeEightControls": [
+    {
+      "group": "direct",
+      "variant": "plain",
+      "explicit": false,
+      "controls": {
+        "plain-policy": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "Error: JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        },
+        "force-color": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": "1",
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        },
+        "clicolor-force": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": "1"
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        }
+      }
+    },
+    {
+      "group": "direct",
+      "variant": "plain",
+      "explicit": true,
+      "controls": {
+        "plain-policy": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "Error: JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        },
+        "force-color": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": "1",
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        },
+        "clicolor-force": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": "1"
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        }
+      }
+    },
+    {
+      "group": "direct",
+      "variant": "bom",
+      "explicit": false,
+      "controls": {
+        "plain-policy": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+          }
+        },
+        "force-color": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": "1",
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: expected value at line 1 column 1\n"
+          }
+        },
+        "clicolor-force": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": "1"
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: expected value at line 1 column 1\n"
+          }
+        }
+      }
+    },
+    {
+      "group": "direct",
+      "variant": "bom",
+      "explicit": true,
+      "controls": {
+        "plain-policy": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+          }
+        },
+        "force-color": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": "1",
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: expected value at line 1 column 1\n"
+          }
+        },
+        "clicolor-force": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": "1"
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: expected value at line 1 column 1\n"
+          }
+        }
+      }
+    },
+    {
+      "group": "extended",
+      "variant": "plain",
+      "explicit": false,
+      "controls": {
+        "plain-policy": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "Error: JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        },
+        "force-color": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": "1",
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        },
+        "clicolor-force": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": "1"
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        }
+      }
+    },
+    {
+      "group": "extended",
+      "variant": "plain",
+      "explicit": true,
+      "controls": {
+        "plain-policy": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "Error: JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        },
+        "force-color": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": "1",
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        },
+        "clicolor-force": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": "1"
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: EOF while parsing a value at line 1 column 20\n"
+          }
+        }
+      }
+    },
+    {
+      "group": "extended",
+      "variant": "bom-parent",
+      "explicit": false,
+      "controls": {
+        "plain-policy": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+          }
+        },
+        "force-color": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": "1",
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: expected value at line 1 column 1\n"
+          }
+        },
+        "clicolor-force": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": "1"
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: expected value at line 1 column 1\n"
+          }
+        }
+      }
+    },
+    {
+      "group": "extended",
+      "variant": "bom-parent",
+      "explicit": true,
+      "controls": {
+        "plain-policy": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "Error: JSON parse error: expected value at line 1 column 1\n"
+          }
+        },
+        "force-color": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": "1",
+            "CLICOLOR_FORCE": null
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: expected value at line 1 column 1\n"
+          }
+        },
+        "clicolor-force": {
+          "childColorEnvironment": {
+            "NO_COLOR": "1",
+            "FORCE_COLOR": null,
+            "CLICOLOR_FORCE": "1"
+          },
+          "wholePacket": {
+            "exitCode": 1,
+            "stdout": "",
+            "stderr": "\u001b[31mError:\u001b[0m JSON parse error: expected value at line 1 column 1\n"
+          }
+        }
+      }
+    }
+  ],
+  "scope": "Historical original CLI color authority only; no current fixed BOM or installed credit"
+}

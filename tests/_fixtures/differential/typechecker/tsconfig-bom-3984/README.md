@@ -40,3 +40,14 @@ The change strips at most one byte-zero BOM in the two existing readers.
 It adds no generic JSONC recovery, native error/option transport, cache,
 watch/build phase, negative template-prop acceptance or performance claim.
 #3984 remains open for its complete original acceptance criteria.
+
+The [controlled color observation decision](../../../../../docs/davinci/decisions/2026-10-08-tsconfig-bom-color-observer.md)
+archives the full inherited source-coverage failure in
+`malformed-color-before-d5fa.log.gz` with complete packet/hash custody.
+`malformed-color-original-authority.json` retains 24 actual authenticated
+original CLI controls. The Vize test child now uses the existing plain-output
+policy (`NO_COLOR=1`, clear both force variables), and a fourth test compares
+24 complete forced-color packets and 24 subsequent controlled plain packets.
+The original malformed eight and every original input/gold remain unchanged;
+current packets are captured before their assertions. Fresh Actions and
+protected delivery are still required.
