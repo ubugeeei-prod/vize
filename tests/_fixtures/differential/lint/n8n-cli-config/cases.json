@@ -1,0 +1,1338 @@
+{
+  "schema": "vize.n8n.cli-config-authored-cases",
+  "version": 1,
+  "trackingIssue": 8142,
+  "sourcePolicy": "Original Vize-authored minimal sources; no n8n branch source is copied or executed",
+  "coverage": "Targeted full-configuration witnesses for scriptless selection and three explicit options; not independent accuracy qualification of all 51 rules",
+  "cases": [
+    {
+      "id": "scripted-no-v-html-positive",
+      "source": "<script setup lang=\"ts\">\nconst markup = '<b>text</b>';\n</script>\n<template>\n  <div v-html=\"markup\"></div>\n</template>\n",
+      "expectedOracleRuleIds": [
+        "vue/no-v-html"
+      ],
+      "filename": "scripted-no-v-html-positive.vue"
+    },
+    {
+      "id": "scripted-no-v-html-clean",
+      "source": "<script setup lang=\"ts\">\nconst markup = '<b>text</b>';\n</script>\n<template>\n  <div>{{ markup }}</div>\n</template>\n",
+      "expectedOracleRuleIds": [],
+      "filename": "scripted-no-v-html-clean.vue"
+    },
+    {
+      "id": "scriptless-no-v-html-positive",
+      "source": "<template>\n  <div v-html=\"'<b>text</b>'\"></div>\n</template>\n",
+      "expectedOracleRuleIds": [
+        "vue/no-v-html"
+      ],
+      "filename": "scriptless-no-v-html-positive.vue"
+    },
+    {
+      "id": "scriptless-no-v-html-clean",
+      "source": "<template>\n  <div>text</div>\n</template>\n",
+      "expectedOracleRuleIds": [],
+      "filename": "scriptless-no-v-html-clean.vue"
+    },
+    {
+      "id": "loop-missing-key",
+      "source": "<script setup lang=\"ts\">\nconst items = ['one', 'two'];\n</script>\n<template>\n  <ul>\n    <li v-for=\"item in items\">{{ item }}</li>\n  </ul>\n</template>\n",
+      "expectedOracleRuleIds": [
+        "vue/require-v-for-key"
+      ],
+      "filename": "loop-missing-key.vue"
+    },
+    {
+      "id": "loop-key-clean",
+      "source": "<script setup lang=\"ts\">\nconst items = ['one', 'two'];\n</script>\n<template>\n  <ul>\n    <li v-for=\"item in items\" :key=\"item\">{{ item }}</li>\n  </ul>\n</template>\n",
+      "expectedOracleRuleIds": [],
+      "filename": "loop-key-clean.vue"
+    },
+    {
+      "id": "registered-camel-attribute",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from './MyWidget.vue';\n</script>\n<template>\n  <MyWidget fooBar=\"value\" />\n</template>\n",
+      "expectedOracleRuleIds": [
+        "vue/attribute-hyphenation"
+      ],
+      "filename": "registered-camel-attribute.vue"
+    },
+    {
+      "id": "registered-hyphen-attribute",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from './MyWidget.vue';\n</script>\n<template>\n  <MyWidget foo-bar=\"value\" />\n</template>\n",
+      "expectedOracleRuleIds": [],
+      "filename": "registered-hyphen-attribute.vue"
+    },
+    {
+      "id": "registered-kebab-component",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from './MyWidget.vue';\n</script>\n<template>\n  <my-widget />\n</template>\n",
+      "expectedOracleRuleIds": [
+        "vue/component-name-in-template-casing"
+      ],
+      "filename": "registered-kebab-component.vue"
+    },
+    {
+      "id": "registered-pascal-component",
+      "source": "<script setup lang=\"ts\">\nimport MyWidget from './MyWidget.vue';\n</script>\n<template>\n  <MyWidget />\n</template>\n",
+      "expectedOracleRuleIds": [],
+      "filename": "registered-pascal-component.vue"
+    },
+    {
+      "id": "template-before-script",
+      "source": "<template>\n  <div>{{ label }}</div>\n</template>\n<script setup lang=\"ts\">\nconst label = 'text';\n</script>\n",
+      "expectedOracleRuleIds": [
+        "vue/block-order"
+      ],
+      "filename": "template-before-script.vue"
+    },
+    {
+      "id": "script-before-template",
+      "source": "<script setup lang=\"ts\">\nconst label = 'text';\n</script>\n<template>\n  <div>{{ label }}</div>\n</template>\n",
+      "expectedOracleRuleIds": [],
+      "filename": "script-before-template.vue"
+    }
+  ],
+  "optionControls": [
+    {
+      "id": "attribute-hyphenation-never",
+      "ruleOptions": {
+        "vue/attribute-hyphenation": "never"
+      },
+      "caseIds": [
+        "registered-camel-attribute",
+        "registered-hyphen-attribute"
+      ],
+      "expectedOracleRuleIds": {
+        "registered-camel-attribute": [],
+        "registered-hyphen-attribute": [
+          "vue/attribute-hyphenation"
+        ]
+      }
+    },
+    {
+      "id": "component-casing-kebab",
+      "ruleOptions": {
+        "vue/component-name-in-template-casing": {
+          "casing": "kebab-case"
+        }
+      },
+      "caseIds": [
+        "registered-kebab-component",
+        "registered-pascal-component"
+      ],
+      "expectedOracleRuleIds": {
+        "registered-kebab-component": [],
+        "registered-pascal-component": [
+          "vue/component-name-in-template-casing"
+        ]
+      }
+    },
+    {
+      "id": "template-first-order",
+      "ruleOptions": {
+        "vue/sfc-element-order": {
+          "order": [
+            "template",
+            "script",
+            "style"
+          ]
+        }
+      },
+      "caseIds": [
+        "template-before-script",
+        "script-before-template"
+      ],
+      "expectedOracleRuleIds": {
+        "template-before-script": [],
+        "script-before-template": [
+          "vue/block-order"
+        ]
+      }
+    }
+  ],
+  "oracleCapture": {
+    "providers": {
+      "eslint": {
+        "version": "10.4.1",
+        "publicEntrypoint": "lib/api.js",
+        "publicEntrypointSha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2",
+        "packageManifestSha256": "6516811071291ae483f95f74911b3112a0b7f0b3d6e94a85c93c3a371cd7ac8a"
+      },
+      "eslint-plugin-vue": {
+        "version": "10.9.2",
+        "publicEntrypoint": "dist/index.js",
+        "publicEntrypointSha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017",
+        "packageManifestSha256": "f0ea5d1178ef413822f94486698b6ffcd62515e02bf860633d204c261fb70761"
+      },
+      "vue-eslint-parser": {
+        "version": "10.4.1",
+        "publicEntrypoint": "dist/index.cjs",
+        "publicEntrypointSha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087",
+        "packageManifestSha256": "1fc15ea1c21b91e7764982691b84c599e00f9ed7953b2956a659fa16c68580b2"
+      },
+      "@typescript-eslint/parser": {
+        "version": "8.65.0",
+        "publicEntrypoint": "dist/index.js",
+        "publicEntrypointSha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966",
+        "packageManifestSha256": "d9d6b5b45ff43bcbe278b4809f7d193d95fbd5828d665f172ffd262050aa9e8a"
+      }
+    },
+    "projectionSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+    "configurations": [
+      {
+        "id": "latest-cli",
+        "ruleOptions": {
+          "vue/attribute-hyphenation": "always",
+          "vue/component-name-in-template-casing": {
+            "casing": "PascalCase"
+          },
+          "vue/sfc-element-order": {
+            "order": [
+              "script",
+              "template",
+              "style"
+            ]
+          }
+        },
+        "rules": {
+          "vue/attribute-hyphenation": [
+            "error",
+            "always"
+          ],
+          "vue/component-name-in-template-casing": [
+            "error",
+            "PascalCase"
+          ],
+          "vue/no-child-content": "error",
+          "vue/no-deprecated-functional-template": "error",
+          "vue/no-deprecated-html-element-is": "error",
+          "vue/no-deprecated-inline-template": "error",
+          "vue/no-deprecated-router-link-tag-prop": "error",
+          "vue/no-deprecated-scope-attribute": "error",
+          "vue/no-deprecated-slot-attribute": "error",
+          "vue/no-deprecated-slot-scope-attribute": "error",
+          "vue/no-deprecated-v-bind-sync": "error",
+          "vue/no-deprecated-v-on-native-modifier": "error",
+          "vue/no-deprecated-v-on-number-modifiers": "error",
+          "vue/no-dupe-v-else-if": "error",
+          "vue/no-duplicate-attributes": "error",
+          "vue/no-multiple-template-root": "error",
+          "vue/no-template-key": "error",
+          "vue/no-textarea-mustache": "error",
+          "vue/no-unused-components": "error",
+          "vue/no-unused-vars": "error",
+          "vue/no-use-v-if-with-v-for": "error",
+          "vue/no-useless-template-attributes": "error",
+          "vue/no-v-for-template-key-on-child": "error",
+          "vue/no-v-html": "error",
+          "vue/require-component-is": "error",
+          "vue/no-undef-components": "error",
+          "vue/require-toggle-inside-transition": "error",
+          "vue/require-v-for-key": "error",
+          "vue/block-order": [
+            "error",
+            {
+              "order": [
+                "script",
+                "template",
+                "style"
+              ]
+            }
+          ],
+          "vue/use-v-on-exact": "error",
+          "vue/v-slot-style": "error",
+          "vue/valid-attribute-name": "error",
+          "vue/valid-template-root": "error",
+          "vue/valid-v-bind": "error",
+          "vue/valid-v-cloak": "error",
+          "vue/valid-v-else": "error",
+          "vue/valid-v-for": "error",
+          "vue/valid-v-html": "error",
+          "vue/valid-v-if": "error",
+          "vue/valid-v-memo": "error",
+          "vue/valid-v-model": "error",
+          "vue/valid-v-on": "error",
+          "vue/valid-v-once": "error",
+          "vue/valid-v-show": "error",
+          "vue/valid-v-slot": "error",
+          "vue/valid-v-text": "error",
+          "vue/no-deprecated-dollar-listeners-api": "error",
+          "vue/no-deprecated-dollar-scopedslots-api": "error",
+          "vue/no-ref-as-operand": "error",
+          "vue/no-use-computed-property-like-method": "error",
+          "vue/require-valid-default-prop": "error"
+        }
+      },
+      {
+        "id": "attribute-hyphenation-never",
+        "ruleOptions": {
+          "vue/attribute-hyphenation": "never",
+          "vue/component-name-in-template-casing": {
+            "casing": "PascalCase"
+          },
+          "vue/sfc-element-order": {
+            "order": [
+              "script",
+              "template",
+              "style"
+            ]
+          }
+        },
+        "rules": {
+          "vue/attribute-hyphenation": [
+            "error",
+            "never"
+          ],
+          "vue/component-name-in-template-casing": [
+            "error",
+            "PascalCase"
+          ],
+          "vue/no-child-content": "error",
+          "vue/no-deprecated-functional-template": "error",
+          "vue/no-deprecated-html-element-is": "error",
+          "vue/no-deprecated-inline-template": "error",
+          "vue/no-deprecated-router-link-tag-prop": "error",
+          "vue/no-deprecated-scope-attribute": "error",
+          "vue/no-deprecated-slot-attribute": "error",
+          "vue/no-deprecated-slot-scope-attribute": "error",
+          "vue/no-deprecated-v-bind-sync": "error",
+          "vue/no-deprecated-v-on-native-modifier": "error",
+          "vue/no-deprecated-v-on-number-modifiers": "error",
+          "vue/no-dupe-v-else-if": "error",
+          "vue/no-duplicate-attributes": "error",
+          "vue/no-multiple-template-root": "error",
+          "vue/no-template-key": "error",
+          "vue/no-textarea-mustache": "error",
+          "vue/no-unused-components": "error",
+          "vue/no-unused-vars": "error",
+          "vue/no-use-v-if-with-v-for": "error",
+          "vue/no-useless-template-attributes": "error",
+          "vue/no-v-for-template-key-on-child": "error",
+          "vue/no-v-html": "error",
+          "vue/require-component-is": "error",
+          "vue/no-undef-components": "error",
+          "vue/require-toggle-inside-transition": "error",
+          "vue/require-v-for-key": "error",
+          "vue/block-order": [
+            "error",
+            {
+              "order": [
+                "script",
+                "template",
+                "style"
+              ]
+            }
+          ],
+          "vue/use-v-on-exact": "error",
+          "vue/v-slot-style": "error",
+          "vue/valid-attribute-name": "error",
+          "vue/valid-template-root": "error",
+          "vue/valid-v-bind": "error",
+          "vue/valid-v-cloak": "error",
+          "vue/valid-v-else": "error",
+          "vue/valid-v-for": "error",
+          "vue/valid-v-html": "error",
+          "vue/valid-v-if": "error",
+          "vue/valid-v-memo": "error",
+          "vue/valid-v-model": "error",
+          "vue/valid-v-on": "error",
+          "vue/valid-v-once": "error",
+          "vue/valid-v-show": "error",
+          "vue/valid-v-slot": "error",
+          "vue/valid-v-text": "error",
+          "vue/no-deprecated-dollar-listeners-api": "error",
+          "vue/no-deprecated-dollar-scopedslots-api": "error",
+          "vue/no-ref-as-operand": "error",
+          "vue/no-use-computed-property-like-method": "error",
+          "vue/require-valid-default-prop": "error"
+        }
+      },
+      {
+        "id": "component-casing-kebab",
+        "ruleOptions": {
+          "vue/attribute-hyphenation": "always",
+          "vue/component-name-in-template-casing": {
+            "casing": "kebab-case"
+          },
+          "vue/sfc-element-order": {
+            "order": [
+              "script",
+              "template",
+              "style"
+            ]
+          }
+        },
+        "rules": {
+          "vue/attribute-hyphenation": [
+            "error",
+            "always"
+          ],
+          "vue/component-name-in-template-casing": [
+            "error",
+            "kebab-case"
+          ],
+          "vue/no-child-content": "error",
+          "vue/no-deprecated-functional-template": "error",
+          "vue/no-deprecated-html-element-is": "error",
+          "vue/no-deprecated-inline-template": "error",
+          "vue/no-deprecated-router-link-tag-prop": "error",
+          "vue/no-deprecated-scope-attribute": "error",
+          "vue/no-deprecated-slot-attribute": "error",
+          "vue/no-deprecated-slot-scope-attribute": "error",
+          "vue/no-deprecated-v-bind-sync": "error",
+          "vue/no-deprecated-v-on-native-modifier": "error",
+          "vue/no-deprecated-v-on-number-modifiers": "error",
+          "vue/no-dupe-v-else-if": "error",
+          "vue/no-duplicate-attributes": "error",
+          "vue/no-multiple-template-root": "error",
+          "vue/no-template-key": "error",
+          "vue/no-textarea-mustache": "error",
+          "vue/no-unused-components": "error",
+          "vue/no-unused-vars": "error",
+          "vue/no-use-v-if-with-v-for": "error",
+          "vue/no-useless-template-attributes": "error",
+          "vue/no-v-for-template-key-on-child": "error",
+          "vue/no-v-html": "error",
+          "vue/require-component-is": "error",
+          "vue/no-undef-components": "error",
+          "vue/require-toggle-inside-transition": "error",
+          "vue/require-v-for-key": "error",
+          "vue/block-order": [
+            "error",
+            {
+              "order": [
+                "script",
+                "template",
+                "style"
+              ]
+            }
+          ],
+          "vue/use-v-on-exact": "error",
+          "vue/v-slot-style": "error",
+          "vue/valid-attribute-name": "error",
+          "vue/valid-template-root": "error",
+          "vue/valid-v-bind": "error",
+          "vue/valid-v-cloak": "error",
+          "vue/valid-v-else": "error",
+          "vue/valid-v-for": "error",
+          "vue/valid-v-html": "error",
+          "vue/valid-v-if": "error",
+          "vue/valid-v-memo": "error",
+          "vue/valid-v-model": "error",
+          "vue/valid-v-on": "error",
+          "vue/valid-v-once": "error",
+          "vue/valid-v-show": "error",
+          "vue/valid-v-slot": "error",
+          "vue/valid-v-text": "error",
+          "vue/no-deprecated-dollar-listeners-api": "error",
+          "vue/no-deprecated-dollar-scopedslots-api": "error",
+          "vue/no-ref-as-operand": "error",
+          "vue/no-use-computed-property-like-method": "error",
+          "vue/require-valid-default-prop": "error"
+        }
+      },
+      {
+        "id": "template-first-order",
+        "ruleOptions": {
+          "vue/attribute-hyphenation": "always",
+          "vue/component-name-in-template-casing": {
+            "casing": "PascalCase"
+          },
+          "vue/sfc-element-order": {
+            "order": [
+              "template",
+              "script",
+              "style"
+            ]
+          }
+        },
+        "rules": {
+          "vue/attribute-hyphenation": [
+            "error",
+            "always"
+          ],
+          "vue/component-name-in-template-casing": [
+            "error",
+            "PascalCase"
+          ],
+          "vue/no-child-content": "error",
+          "vue/no-deprecated-functional-template": "error",
+          "vue/no-deprecated-html-element-is": "error",
+          "vue/no-deprecated-inline-template": "error",
+          "vue/no-deprecated-router-link-tag-prop": "error",
+          "vue/no-deprecated-scope-attribute": "error",
+          "vue/no-deprecated-slot-attribute": "error",
+          "vue/no-deprecated-slot-scope-attribute": "error",
+          "vue/no-deprecated-v-bind-sync": "error",
+          "vue/no-deprecated-v-on-native-modifier": "error",
+          "vue/no-deprecated-v-on-number-modifiers": "error",
+          "vue/no-dupe-v-else-if": "error",
+          "vue/no-duplicate-attributes": "error",
+          "vue/no-multiple-template-root": "error",
+          "vue/no-template-key": "error",
+          "vue/no-textarea-mustache": "error",
+          "vue/no-unused-components": "error",
+          "vue/no-unused-vars": "error",
+          "vue/no-use-v-if-with-v-for": "error",
+          "vue/no-useless-template-attributes": "error",
+          "vue/no-v-for-template-key-on-child": "error",
+          "vue/no-v-html": "error",
+          "vue/require-component-is": "error",
+          "vue/no-undef-components": "error",
+          "vue/require-toggle-inside-transition": "error",
+          "vue/require-v-for-key": "error",
+          "vue/block-order": [
+            "error",
+            {
+              "order": [
+                "template",
+                "script",
+                "style"
+              ]
+            }
+          ],
+          "vue/use-v-on-exact": "error",
+          "vue/v-slot-style": "error",
+          "vue/valid-attribute-name": "error",
+          "vue/valid-template-root": "error",
+          "vue/valid-v-bind": "error",
+          "vue/valid-v-cloak": "error",
+          "vue/valid-v-else": "error",
+          "vue/valid-v-for": "error",
+          "vue/valid-v-html": "error",
+          "vue/valid-v-if": "error",
+          "vue/valid-v-memo": "error",
+          "vue/valid-v-model": "error",
+          "vue/valid-v-on": "error",
+          "vue/valid-v-once": "error",
+          "vue/valid-v-show": "error",
+          "vue/valid-v-slot": "error",
+          "vue/valid-v-text": "error",
+          "vue/no-deprecated-dollar-listeners-api": "error",
+          "vue/no-deprecated-dollar-scopedslots-api": "error",
+          "vue/no-ref-as-operand": "error",
+          "vue/no-use-computed-property-like-method": "error",
+          "vue/require-valid-default-prop": "error"
+        }
+      }
+    ],
+    "captures": [
+      {
+        "configuration": "latest-cli",
+        "caseId": "scripted-no-v-html-positive",
+        "sourceSha256": "aadcd9d9ef173fc1a774eba95f7194de8fbf0749881b3355125caac355bce38c",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/scripted-no-v-html-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/no-v-html",
+                "severity": 2,
+                "message": "'v-html' directive can lead to XSS attack.",
+                "line": 5,
+                "column": 8,
+                "messageId": "unexpected",
+                "endLine": 5,
+                "endColumn": 23
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup lang=\"ts\">\nconst markup = '<b>text</b>';\n</script>\n<template>\n  <div v-html=\"markup\"></div>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "scripted-no-v-html-clean",
+        "sourceSha256": "7cb40b008334f7372266f9fb81f0a89d7ae3d4297f9fbe31fac073b2b5cfa431",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/scripted-no-v-html-clean.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "scriptless-no-v-html-positive",
+        "sourceSha256": "c95925dc890b0ee47ad872d6c8e8b604ce389138b6e5e20f49873359a0c69ebc",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/scriptless-no-v-html-positive.vue",
+            "messages": [
+              {
+                "ruleId": "vue/no-v-html",
+                "severity": 2,
+                "message": "'v-html' directive can lead to XSS attack.",
+                "line": 2,
+                "column": 8,
+                "messageId": "unexpected",
+                "endLine": 2,
+                "endColumn": 30
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n  <div v-html=\"'<b>text</b>'\"></div>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "scriptless-no-v-html-clean",
+        "sourceSha256": "62d1872aa1e44d52cbf02e3f93e0252261b1f0326686d01145caa60acc2b7cc4",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/scriptless-no-v-html-clean.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "loop-missing-key",
+        "sourceSha256": "3dc5e20edfb71ebc498fb60faa17df7904cbbd37b95165de61ae0a50860b2e9f",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/loop-missing-key.vue",
+            "messages": [
+              {
+                "ruleId": "vue/require-v-for-key",
+                "severity": 2,
+                "message": "Elements in iteration expect to have 'v-bind:key' directives.",
+                "line": 6,
+                "column": 5,
+                "messageId": "requireKey",
+                "endLine": 6,
+                "endColumn": 31
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<script setup lang=\"ts\">\nconst items = ['one', 'two'];\n</script>\n<template>\n  <ul>\n    <li v-for=\"item in items\">{{ item }}</li>\n  </ul>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "loop-key-clean",
+        "sourceSha256": "609d8a8c15d728d3aa75988fc6a2fa4463d5ff690948a6b761173538a397fbc3",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/loop-key-clean.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "registered-camel-attribute",
+        "sourceSha256": "a8b090c7fb7219f39fdd0e0b93e6640ba35168f2942dd24ac0d77ef91f924fa3",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/registered-camel-attribute.vue",
+            "messages": [
+              {
+                "ruleId": "vue/attribute-hyphenation",
+                "severity": 2,
+                "message": "Attribute 'fooBar' must be hyphenated.",
+                "line": 5,
+                "column": 13,
+                "messageId": "mustBeHyphenated",
+                "endLine": 5,
+                "endColumn": 27,
+                "fix": {
+                  "range": [
+                    97,
+                    103
+                  ],
+                  "text": "foo-bar"
+                }
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 1,
+            "fixableWarningCount": 0,
+            "source": "<script setup lang=\"ts\">\nimport MyWidget from './MyWidget.vue';\n</script>\n<template>\n  <MyWidget fooBar=\"value\" />\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "registered-hyphen-attribute",
+        "sourceSha256": "4ff222d7a25db1b53ba6cdd6d1bdfef36350732028653822e3997f2c17e3cc46",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/registered-hyphen-attribute.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "registered-kebab-component",
+        "sourceSha256": "0db90d8fb48562ed7a292707bc2945ca8d5484f209cc032e4e4d2274c8098e15",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/registered-kebab-component.vue",
+            "messages": [
+              {
+                "ruleId": "vue/component-name-in-template-casing",
+                "severity": 2,
+                "message": "Component name \"my-widget\" is not PascalCase.",
+                "line": 5,
+                "column": 3,
+                "messageId": "incorrectCase",
+                "endLine": 5,
+                "endColumn": 13,
+                "fix": {
+                  "range": [
+                    87,
+                    97
+                  ],
+                  "text": "<MyWidget"
+                }
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 1,
+            "fixableWarningCount": 0,
+            "source": "<script setup lang=\"ts\">\nimport MyWidget from './MyWidget.vue';\n</script>\n<template>\n  <my-widget />\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "registered-pascal-component",
+        "sourceSha256": "d7503b0f13d30e8cb832f5ccdb1230bd021f85e6249c58b6ef0dd853eff831b9",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/registered-pascal-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "template-before-script",
+        "sourceSha256": "11fc65c4164dadeef41f7f8635a9a148b71e584b3cf16b8bd3bf4ff53bcc78ba",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/template-before-script.vue",
+            "messages": [
+              {
+                "ruleId": "vue/block-order",
+                "severity": 2,
+                "message": "'<script setup lang=ts>' should be above '<template>' on line 1.",
+                "line": 4,
+                "column": 1,
+                "messageId": "unexpected",
+                "endLine": 6,
+                "endColumn": 10,
+                "fix": {
+                  "range": [
+                    0,
+                    104
+                  ],
+                  "text": "<script setup lang=\"ts\">\nconst label = 'text';\n</script>\n<template>\n  <div>{{ label }}</div>\n</template>"
+                }
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 1,
+            "fixableWarningCount": 0,
+            "source": "<template>\n  <div>{{ label }}</div>\n</template>\n<script setup lang=\"ts\">\nconst label = 'text';\n</script>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "latest-cli",
+        "caseId": "script-before-template",
+        "sourceSha256": "5907134ca1bcab45d794c19f2474011c0c735a2cc8e3ea69dd3138d3f196b6f7",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-before-template.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "attribute-hyphenation-never",
+        "caseId": "registered-camel-attribute",
+        "sourceSha256": "a8b090c7fb7219f39fdd0e0b93e6640ba35168f2942dd24ac0d77ef91f924fa3",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/registered-camel-attribute.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "attribute-hyphenation-never",
+        "caseId": "registered-hyphen-attribute",
+        "sourceSha256": "4ff222d7a25db1b53ba6cdd6d1bdfef36350732028653822e3997f2c17e3cc46",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/registered-hyphen-attribute.vue",
+            "messages": [
+              {
+                "ruleId": "vue/attribute-hyphenation",
+                "severity": 2,
+                "message": "Attribute 'foo-bar' can't be hyphenated.",
+                "line": 5,
+                "column": 13,
+                "messageId": "cannotBeHyphenated",
+                "endLine": 5,
+                "endColumn": 28,
+                "fix": {
+                  "range": [
+                    97,
+                    104
+                  ],
+                  "text": "fooBar"
+                }
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 1,
+            "fixableWarningCount": 0,
+            "source": "<script setup lang=\"ts\">\nimport MyWidget from './MyWidget.vue';\n</script>\n<template>\n  <MyWidget foo-bar=\"value\" />\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "component-casing-kebab",
+        "caseId": "registered-kebab-component",
+        "sourceSha256": "0db90d8fb48562ed7a292707bc2945ca8d5484f209cc032e4e4d2274c8098e15",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/registered-kebab-component.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "component-casing-kebab",
+        "caseId": "registered-pascal-component",
+        "sourceSha256": "d7503b0f13d30e8cb832f5ccdb1230bd021f85e6249c58b6ef0dd853eff831b9",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/registered-pascal-component.vue",
+            "messages": [
+              {
+                "ruleId": "vue/component-name-in-template-casing",
+                "severity": 2,
+                "message": "Component name \"MyWidget\" is not kebab-case.",
+                "line": 5,
+                "column": 3,
+                "messageId": "incorrectCase",
+                "endLine": 5,
+                "endColumn": 12,
+                "fix": {
+                  "range": [
+                    87,
+                    96
+                  ],
+                  "text": "<my-widget"
+                }
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 1,
+            "fixableWarningCount": 0,
+            "source": "<script setup lang=\"ts\">\nimport MyWidget from './MyWidget.vue';\n</script>\n<template>\n  <MyWidget />\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "template-first-order",
+        "caseId": "template-before-script",
+        "sourceSha256": "11fc65c4164dadeef41f7f8635a9a148b71e584b3cf16b8bd3bf4ff53bcc78ba",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/template-before-script.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      },
+      {
+        "configuration": "template-first-order",
+        "caseId": "script-before-template",
+        "sourceSha256": "5907134ca1bcab45d794c19f2474011c0c735a2cc8e3ea69dd3138d3f196b6f7",
+        "packets": [
+          {
+            "filePath": "tests/_fixtures/differential/lint/n8n-cli-config/script-before-template.vue",
+            "messages": [
+              {
+                "ruleId": "vue/block-order",
+                "severity": 2,
+                "message": "'<template>' should be above '<script setup lang=ts>' on line 1.",
+                "line": 4,
+                "column": 1,
+                "messageId": "unexpected",
+                "endLine": 6,
+                "endColumn": 12,
+                "fix": {
+                  "range": [
+                    0,
+                    104
+                  ],
+                  "text": "<template>\n  <div>{{ label }}</div>\n</template>\n<script setup lang=\"ts\">\nconst label = 'text';\n</script>"
+                }
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 1,
+            "fixableWarningCount": 0,
+            "source": "<script setup lang=\"ts\">\nconst label = 'text';\n</script>\n<template>\n  <div>{{ label }}</div>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      }
+    ]
+  },
+  "expectationOrigin": {
+    "kind": "source-derived-public-CLI-laws",
+    "reviewedSourceRevision": "8e811dc99934c41b99cdea1244fe39f49a744f6f",
+    "helpLevel": "none",
+    "locale": "en",
+    "config": "All 51 explicit projection rules and three options; option controls change only the declared option",
+    "derivation": "Authored byte spans from rule/parser definitions; literal messages from the English catalogue or rule source; complete public JSON envelope via wholeJson",
+    "capturedCliEvidence": false,
+    "capturedLinterApiEvidence": false,
+    "qualification": "These laws must be checked against actual current-source CLI in Actions; they are not native execution, branch-exact CLI or full 51-rule accuracy evidence",
+    "sourceHashes": {
+      "tests/tooling/lint-default-correctness-reference.mjs": "d0fe46840f15d3aee0cad8b0394b4c67dd1f738a9ddaba39f55073fefd9df6b7",
+      "crates/vize_patina/src/output/json.rs": "32937f0714c101c226814a2fe3c3a3ae7aadab54a289aafcbe84809b7f146fdc",
+      "crates/vize_patina/src/output/shared.rs": "5c41a5fb774e5acdeff210a2620abb727bdadcbcaafd0ae9ea0f35fd4b299e43",
+      "crates/vize_carton/src/i18n/en.json": "72a36acc37b24583370c41d87ae2ae59125a3ac5f41d92cfb17fccb25ec0909f",
+      "crates/vize_carton/src/i18n_supplemental_extra2.rs": "d0d81ba4e8686e5baeb759468fd650f22a5e99ad957b657cecdd6bd8932a5884",
+      "crates/vize_patina/src/rules/vue/no_v_html.rs": "250920959485a918511bcd69dd1e0d6613344c6835ce740f4d29ff1d9a3a92c6",
+      "crates/vize_patina/src/rules/vue/require_v_for_key.rs": "2c0d2760fdcbeec3263e67e4c0f7453f0d6c23a9b73a1875958bb99c10403b90",
+      "crates/vize_patina/src/markup/source_ranges.rs": "c00ef1730fc0713d4cf964f212c66fbe60d10b270fbc6a4cd4cdd2035b3d9ae3",
+      "crates/vize_patina/src/rules/vue/attribute_hyphenation.rs": "076339b765cd165fa6623f1489e3254d669444c90c7d4fae451e424ac0f94fd8",
+      "crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs": "56c93c196f8f50c506c1d94523d833a815269ec86954ff1266284ed2a6803023",
+      "crates/vize_armature/src/parser/element/tags.rs": "a30138dda8ce2fd4bc757913e1adbdafaf03c2bdc2b621daeafcb6eac303a452",
+      "crates/vize_patina/src/rules/vue/sfc_element_order.rs": "5c85e10d4cb8277e6fcb89d452828b2a5041fd702950f393dcdded63bdf45153",
+      "crates/vize_patina/src/rules/vue/sfc_element_order/options.rs": "0319f762c49f548d016881c294b111c7a14b745ef87162d677e109ff13672df0",
+      "crates/vize_croquis/src/sfc/types.rs": "bf6e08b04df948189eecddd8686479dfe1a87fa762ddb420f5b7d37156ba2e6d"
+    }
+  },
+  "cliExpectations": [
+    {
+      "configuration": "latest-cli",
+      "caseId": "scripted-no-v-html-positive",
+      "packets": [
+        {
+          "file": "scripted-no-v-html-positive.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-v-html",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 2,
+              "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+              "line": 5,
+              "column": 8,
+              "endLine": 5,
+              "endColumn": 23
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "scripted-no-v-html-clean",
+      "packets": [
+        {
+          "file": "scripted-no-v-html-clean.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "scriptless-no-v-html-positive",
+      "packets": [
+        {
+          "file": "scriptless-no-v-html-positive.vue",
+          "messages": [
+            {
+              "ruleId": "vue/no-v-html",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 2,
+              "message": "[vize:vue/no-v-html] v-html can lead to XSS attacks. Avoid using it with user-provided content",
+              "line": 2,
+              "column": 8,
+              "endLine": 2,
+              "endColumn": 30
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "scriptless-no-v-html-clean",
+      "packets": [
+        {
+          "file": "scriptless-no-v-html-clean.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "loop-missing-key",
+      "packets": [
+        {
+          "file": "loop-missing-key.vue",
+          "messages": [
+            {
+              "ruleId": "vue/require-v-for-key",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 2,
+              "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <li>",
+              "line": 6,
+              "column": 9,
+              "endLine": 6,
+              "endColumn": 30
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "loop-key-clean",
+      "packets": [
+        {
+          "file": "loop-key-clean.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "registered-camel-attribute",
+      "packets": [
+        {
+          "file": "registered-camel-attribute.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 2,
+              "message": "[vize:vue/attribute-hyphenation] Attribute should be hyphenated",
+              "line": 5,
+              "column": 13,
+              "endLine": 5,
+              "endColumn": 27
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "registered-hyphen-attribute",
+      "packets": [
+        {
+          "file": "registered-hyphen-attribute.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "registered-kebab-component",
+      "packets": [
+        {
+          "file": "registered-kebab-component.vue",
+          "messages": [
+            {
+              "ruleId": "vue/component-name-in-template-casing",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 2,
+              "message": "[vize:vue/component-name-in-template-casing] Component should use PascalCase",
+              "line": 5,
+              "column": 3,
+              "endLine": 5,
+              "endColumn": 16
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "registered-pascal-component",
+      "packets": [
+        {
+          "file": "registered-pascal-component.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "template-before-script",
+      "packets": [
+        {
+          "file": "template-before-script.vue",
+          "messages": [
+            {
+              "ruleId": "vue/sfc-element-order",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 2,
+              "message": "[vize:vue/sfc-element-order] <script setup> should come before <template>",
+              "line": 4,
+              "column": 1,
+              "endLine": 6,
+              "endColumn": 10
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "latest-cli",
+      "caseId": "script-before-template",
+      "packets": [
+        {
+          "file": "script-before-template.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "attribute-hyphenation-never",
+      "caseId": "registered-camel-attribute",
+      "packets": [
+        {
+          "file": "registered-camel-attribute.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "attribute-hyphenation-never",
+      "caseId": "registered-hyphen-attribute",
+      "packets": [
+        {
+          "file": "registered-hyphen-attribute.vue",
+          "messages": [
+            {
+              "ruleId": "vue/attribute-hyphenation",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 2,
+              "message": "[vize:vue/attribute-hyphenation] Attribute should not be hyphenated",
+              "line": 5,
+              "column": 13,
+              "endLine": 5,
+              "endColumn": 28
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "component-casing-kebab",
+      "caseId": "registered-kebab-component",
+      "packets": [
+        {
+          "file": "registered-kebab-component.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "component-casing-kebab",
+      "caseId": "registered-pascal-component",
+      "packets": [
+        {
+          "file": "registered-pascal-component.vue",
+          "messages": [
+            {
+              "ruleId": "vue/component-name-in-template-casing",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 2,
+              "message": "[vize:vue/component-name-in-template-casing] Component should use kebab-case",
+              "line": 5,
+              "column": 3,
+              "endLine": 5,
+              "endColumn": 15
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "template-first-order",
+      "caseId": "template-before-script",
+      "packets": [
+        {
+          "file": "template-before-script.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "configuration": "template-first-order",
+      "caseId": "script-before-template",
+      "packets": [
+        {
+          "file": "script-before-template.vue",
+          "messages": [
+            {
+              "ruleId": "vue/sfc-element-order",
+              "ruleDocsPath": "docs/content/rules/vue.md",
+              "severity": 2,
+              "message": "[vize:vue/sfc-element-order] <template> should come before <script setup>",
+              "line": 4,
+              "column": 1,
+              "endLine": 6,
+              "endColumn": 12
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    }
+  ]
+}

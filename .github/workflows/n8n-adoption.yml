@@ -7,8 +7,12 @@ on:
       - .gitmodules
       - tests/_fixtures/_git/n8n
       - tests/_fixtures/n8n-adoption.json
+      - tests/_fixtures/n8n-cli-adoption.json
       - tests/_fixtures/vue-ecosystem-fixtures.json
       - tests/tooling/n8n-adoption-fixture.test.mjs
+      - tests/tooling/n8n-cli-config-contract.test.mjs
+      - tests/tooling/support/n8n-cli-config-*.mjs
+      - tests/_fixtures/differential/lint/n8n-cli-config/**
       - tests/tooling/support/n8n-compiler-*.mjs
       - tests/tooling/support/n8n-default-slot-loop*.mjs
       - tests/_fixtures/differential/compiler/n8n-*/**
@@ -23,6 +27,11 @@ on:
       - crates/vize_maestro/**
       - crates/vize_canon/**
       - crates/vize_corsa/**
+      - crates/vize/src/commands/lint*
+      - crates/vize/src/commands/lint/**
+      - crates/vize_carton/src/config/**
+      - crates/vize_patina/**
+      - npm/cli/**
       - npm/oxlint/**
   merge_group:
     types: [checks_requested]
@@ -143,6 +152,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
@@ -165,3 +175,20 @@ jobs:
         run: cargo test --profile ci -p vize_maestro --lib ide::definition::service::import_target::default_export::tests -- --nocapture
       - name: Check original n8n navigation and unsaved diagnostic repair
         run: vp node --test tests/tooling/n8n-authored-editor.test.ts
+      - name: Build the current public CLI config export
+        run: vp pack
+        working-directory: npm/cli
+      - name: Hydrate unchanged licensed n8n CLI inputs
+        run: git submodule update --init --depth 1 -- tests/_fixtures/_git/n8n
+      - name: Verify current-source CLI configuration, entries and independent witnesses
+        run: |
+          vp node --test tests/tooling/n8n-cli-config-contract.test.mjs
+          vp node tests/tooling/support/n8n-cli-config-acceptance.mjs \
+            "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}"
+      - name: Upload whole CLI and independent oracle packets
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: n8n-cli-config-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/n8n-cli-config
+          if-no-files-found: error
