@@ -23,6 +23,7 @@ const record = (event) =>
       binary,
       binarySha256: custody.binary.sha256,
       control: process.env.VIZE_OXLINT_NATIVE_CONTROL ?? null,
+      hasRuleHint: process.env.VIZE_OXLINT_NATIVE_HINT === "true",
     }) + "\n",
   );
 const load = Module._extensions[".node"];

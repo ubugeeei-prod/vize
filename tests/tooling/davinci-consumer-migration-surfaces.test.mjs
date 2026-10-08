@@ -299,7 +299,7 @@ void test("consumer migration scan keeps every rollout consumer and surface clas
     ["linter", { stage: true, old: true, raw: true }],
     ["typechecker", { stage: true, old: true, raw: true }],
     ["typechecker-content-mapper", { stage: true, old: false, raw: false }],
-    ["formatter", { stage: true, old: false, raw: true }],
+    ["formatter", { stage: true, old: true, raw: true }],
     ["lsp", { stage: true, old: true, raw: true }],
   ]);
 

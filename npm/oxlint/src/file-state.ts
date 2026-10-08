@@ -305,7 +305,7 @@ function evictLeastRecentlyUsedFileState(): void {
   }
 }
 
-function indexDiagnosticsByRule(
+export function indexDiagnosticsByRule(
   diagnostics: readonly PatinaDiagnostic[],
 ): Map<string, PatinaDiagnostic[]> {
   const grouped = new Map<string, PatinaDiagnostic[]>();
@@ -323,7 +323,7 @@ function indexDiagnosticsByRule(
   return grouped;
 }
 
-function diagnosticsForRule(
+export function diagnosticsForRule(
   state: FileState,
   diagnosticsByRule: Map<string, PatinaDiagnostic[]>,
   ruleName: string,

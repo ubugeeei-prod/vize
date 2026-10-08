@@ -31,6 +31,8 @@ mod i18n_supplemental_html;
 pub mod profile_allocator;
 pub mod profile_export;
 
+pub mod source_io;
+
 #[cfg(not(target_arch = "wasm32"))]
 pub mod corsa_api_mode;
 #[cfg(not(target_arch = "wasm32"))]
