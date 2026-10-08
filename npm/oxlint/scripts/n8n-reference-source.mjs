@@ -8,8 +8,8 @@ import { repository, sha256 } from "./n8n-replay-inputs.mjs";
 // The real parent of this performance slice, never a projected main or a
 // redistributed n8n branch. Compare its JS against the same current addon.
 export const referenceSource = {
-  head: "8ec57bb939a1d8206c4a3b73b7f4417a331cc44a",
-  tree: "b86be2f56575ff51ac64b5f8e1f014c05422028f",
+  head: "aad63d5e1eea8b499c991743435b8286fdbe726f",
+  tree: "d7e9bf4b55abbf5bcef1aba5d7fe09c90fe8192e",
 };
 
 export function prepareReferenceSource(output) {
