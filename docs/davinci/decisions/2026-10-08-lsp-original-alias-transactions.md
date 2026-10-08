@@ -36,8 +36,11 @@ Definitions must resolve exactly to the property's authored alias-member span.
 
 The original E.vue remains 192 bytes with SHA256
 `7a32f47587a687f195b78597ffec552480594c928b6efc675715253a99413a36`.
-The complete supplemental files and retained capture arrays are stored beside
-the original corpus under `type-alias-navigation/8011/supplemental/`.
+The complete supplemental sources and goldens are stored beside the original
+corpus under `type-alias-navigation/8011/supplemental/`. The unchanged capture
+helper retains runtime arrays under the configured fix-history capture directory
+or `target/nextest/<profile>/original-rename-report-transactions/`, for inclusion
+in hosted result artifacts.
 
 ## Authority and delivery boundary
 
