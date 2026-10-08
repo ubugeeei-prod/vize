@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 
-import { changedPaths } from "../../tools/support/compat/github/plan-source-checks.mjs";
+import { changedPaths } from "../../tools/support/compat/github/plan-source-checks.ts";
 import {
   planAffectedRust,
   readCargoMetadata,

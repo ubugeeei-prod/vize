@@ -1,6 +1,6 @@
 import { appendFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
-import { changedPaths } from "./plan-source-checks.mjs";
+import { changedPaths } from "./plan-source-checks.ts";
 import { aggregateCheckNeedsResults } from "./require-needs-success.mjs";
 
 const inputs = [
@@ -17,6 +17,7 @@ const inputs = [
   /^tools\/(?:commands\/fixtures|support\/compat\/fixtures|benchmarks)\//,
   /^tools\/support\/compat\/davinci\/lib\/corpus-baseline-contract\.mjs$/,
   /^tools\/support\/compat\/github\/(?:canonical-corpus-(?:selection|identity|inventory|hydration|observer|workers)|comparison-base|plan-source-checks|require-needs-success|prepare-vue-benchmarks)\.mjs$/,
+  /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks)\.ts$/,
 ];
 
 export function canonicalCorpusRequired(paths, eventName) {

@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 import {
   changedPaths,
   planSourceChecks,
-} from "../../tools/support/compat/github/plan-source-checks.mjs";
+} from "../../tools/support/compat/github/plan-source-checks.ts";
 
 void test("compiler and CI changes run both source gates", () => {
   for (const path of [
@@ -83,9 +83,9 @@ void test("unknown planning contexts fail rather than selecting a partial suite"
 
 void test("the CLI applies merge-group scope to a real docs-only comparison", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-queue-plan-"));
-  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  const git = (...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
   const script = fileURLToPath(
-    new URL("../../tools/support/compat/github/plan-source-checks.mjs", import.meta.url),
+    new URL("../../tools/support/compat/github/plan-source-checks.ts", import.meta.url),
   );
   try {
     git("init", "-q");
@@ -101,7 +101,7 @@ void test("the CLI applies merge-group scope to a real docs-only comparison", ()
     for (const [context, expected] of [
       [[], false],
       [["merge_group"], true],
-    ]) {
+    ] as const) {
       const output = join(cwd, `output-${String(expected)}`);
       const run = spawnSync(process.execPath, [script, base, head, ...context], {
         cwd,
@@ -193,7 +193,7 @@ void test("every canonical level and conversion crate retains browser validation
 
 void test("deleted and moved source files still select both gates", () => {
   const cwd = mkdtempSync(join(tmpdir(), "vize-source-checks-"));
-  const git = (...args) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
+  const git = (...args: string[]) => execFileSync("git", args, { cwd, encoding: "utf8" }).trim();
   try {
     git("init", "-q");
     git("config", "user.name", "CI Test");

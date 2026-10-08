@@ -39,7 +39,10 @@ const rustClippyCommand = [
   rustTool("ci/check-workspace-lints", "--check"),
   rustTool("ci/check-skeleton-todos", "--check"),
 ].join(" && ");
-const strictRepoCheckCommand = rustTool("ci/check-warning-budget", "--", localVp, "check");
+const strictRepoCheckCommand = [
+  rustTool("ci/check-warning-budget", "--", localVp, "check"),
+  "node tools/support/typescript/check-project.ts",
+].join(" && ");
 const ciVizeAppCheckCommand = [
   runInDirectory(
     "./examples/vite-musea",

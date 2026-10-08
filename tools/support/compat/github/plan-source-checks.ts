@@ -11,7 +11,7 @@ const censusScripts = new Set([
 // workspace Rust input consumer. The mandatory inventory gate checks the exact
 // generated shard set, including orphan files; unknown helpers/contracts stay
 // conservative. A source-grounded tooling law guards the Rust consumer boundary.
-export function isCensusToolingInput(path) {
+export function isCensusToolingInput(path: string) {
   return (
     censusScripts.has(path) ||
     path === "docs/davinci/plan/croquis-consumption.md" ||
@@ -22,7 +22,7 @@ export function isCensusToolingInput(path) {
 // These authored plans are compiled or read by Rust tests and compiler gates.
 // Keep new contracts conservative. The dated completion ledger is verified
 // prose, with no Rust input consumer; tooling still validates its docs.
-export function isSharedRustInput(path) {
+export function isSharedRustInput(path: string) {
   return (
     (path.startsWith("docs/davinci/plan/") &&
       path !== "docs/davinci/plan/completion-2026-10-03.md" &&
@@ -31,8 +31,11 @@ export function isSharedRustInput(path) {
   );
 }
 
-export function planSourceChecks(paths, eventName = "pull_request") {
-  if (!["pull_request", "merge_group"].includes(eventName)) {
+export function planSourceChecks(
+  paths: readonly string[],
+  eventName: string | null = "pull_request",
+) {
+  if (!["pull_request", "merge_group"].includes(eventName as string)) {
     throw new Error("expected pull_request or merge_group source planning context");
   }
   if (eventName === "merge_group") {
@@ -98,7 +101,7 @@ export function planSourceChecks(paths, eventName = "pull_request") {
   return result;
 }
 
-export function changedPaths(base, head, cwd = process.cwd()) {
+export function changedPaths(base: string, head: string, cwd = process.cwd()) {
   return execFileSync(
     "git",
     ["diff", "--no-renames", "--name-only", "--diff-filter=ACDMRT", "-z", base, head],
@@ -111,14 +114,14 @@ export function changedPaths(base, head, cwd = process.cwd()) {
     .filter(Boolean);
 }
 
-if (process.argv[1]?.endsWith("/plan-source-checks.mjs")) {
+if (process.argv[1]?.endsWith("/plan-source-checks.ts")) {
   const [base, head, eventName = "pull_request"] = process.argv.slice(2);
   if (!/^[0-9a-f]{40}$/.test(base ?? "") || !/^[0-9a-f]{40}$/.test(head ?? "")) {
     throw new Error("expected full base and head commit SHAs");
   }
   // A new branch or an unavailable predecessor gets both gates, never a pass.
-  const paths = /^0+$/.test(base) ? [".github/workflows/check.yml"] : changedPaths(base, head);
-  if (!["pull_request", "merge_group"].includes(eventName))
+  const paths = /^0+$/.test(base) ? [".github/workflows/check.yml"] : changedPaths(base!, head!);
+  if (!["pull_request", "merge_group"].includes(eventName as string))
     throw new Error("invalid source planning context");
   const plan = paths.length
     ? planSourceChecks(paths, eventName)

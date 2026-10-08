@@ -5,14 +5,30 @@ import { fileURLToPath } from "node:url";
 
 const fullSha = /^[0-9a-f]{40}$/;
 
-export function comparisonBase({ event, eventBase, head, checkedOutHead, prHead, commit }) {
-  if (!["pull_request", "merge_group"].includes(event)) {
+interface ComparisonContext {
+  event: string | undefined;
+  eventBase: string | undefined;
+  head: string | undefined;
+  checkedOutHead: string | undefined;
+  prHead?: string;
+  commit: string;
+}
+
+export function comparisonBase({
+  event,
+  eventBase,
+  head,
+  checkedOutHead,
+  prHead,
+  commit,
+}: ComparisonContext) {
+  if (!["pull_request", "merge_group"].includes(event as string)) {
     throw new Error("Unexpected comparison context");
   }
   if (![eventBase, head, checkedOutHead].every((sha) => fullSha.test(sha ?? ""))) {
     throw new Error("Expected full comparison and checkout SHAs");
   }
-  if (event === "merge_group") return { base: eventBase, reason: "merge group event base" };
+  if (event === "merge_group") return { base: eventBase!, reason: "merge group event base" };
   if (!fullSha.test(prHead ?? "")) throw new Error("Expected full pull request head SHA");
   const parents = commit
     .split("\n\n", 1)[0]
@@ -26,11 +42,11 @@ export function comparisonBase({ event, eventBase, head, checkedOutHead, prHead,
     parents[1] === prHead;
   return verified
     ? { base: parents[0], reason: "verified pull request merge parent" }
-    : { base: eventBase, reason: "unverified merge: conservative event base" };
+    : { base: eventBase!, reason: "unverified merge: conservative event base" };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
+  const git = (...args: string[]) => execFileSync("git", args, { encoding: "utf8" }).trim();
   const result = comparisonBase({
     event: process.env.GITHUB_EVENT_NAME,
     eventBase: process.env.EVENT_BASE_SHA,
