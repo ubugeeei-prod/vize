@@ -120,7 +120,7 @@ typechecker	Typechecker	source	crates/vize/src/commands/check/runner/resolve.rs	
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/socket.rs	8	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/runner/text_style.rs	6	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs.rs	14	l0	L0	stage	vize_l0	preferred	1
-typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs.rs	161	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs.rs	164	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/ambient.rs	8	l0	L0	stage	vize_l0	preferred	2
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/ambient/path_manifest_tests.rs	30	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/chain.rs	8	l0	L0	stage	vize_l0	preferred	1
@@ -130,6 +130,7 @@ typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/default_exclude_tests.rs	17	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/glob.rs	94	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/hidden_include_tests.rs	10	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/ignore_file_tests.rs	6	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/jsonc/bom_tests.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/tsconfig_inputs/loader.rs	10	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/tsconfig_inputs/nuxt_manifest_tests.rs	10	l0	L0	stage	vize_l0	preferred	1

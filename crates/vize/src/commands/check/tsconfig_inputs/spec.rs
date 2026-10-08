@@ -159,6 +159,9 @@ impl GlobSpec {
 
 #[derive(Debug, Clone, Copy, Default)]
 pub(super) struct FileCollectionOptions {
+    /// Filesystem ignore files belong to unconfigured discovery. A tsconfig's
+    /// input set is instead controlled by its include/exclude specifications.
+    pub(super) respect_ignore_files: bool,
     pub(super) include_hidden: bool,
     pub(super) include_js: bool,
     pub(super) include_jsx: bool,

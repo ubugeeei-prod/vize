@@ -107,6 +107,6 @@ fn is_wildcard_segment(segment: &str) -> bool {
     segment.contains(['*', '?', '['])
 }
 
-fn is_package_folder(segment: &str) -> bool {
+pub(super) fn is_package_folder(segment: &str) -> bool {
     COMMON_PACKAGE_FOLDERS.contains(&segment)
 }

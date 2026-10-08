@@ -32,6 +32,8 @@ mod diamond_tests;
 #[cfg(test)]
 mod hidden_include_tests;
 #[cfg(test)]
+mod ignore_file_tests;
+#[cfg(test)]
 mod nuxt_manifest_tests;
 #[cfg(test)]
 mod ownership_shared_tests;
@@ -108,6 +110,7 @@ fn collect_default_check_files_inner(
             &[],
             &[],
             FileCollectionOptions {
+                respect_ignore_files: true,
                 include_hidden: false,
                 include_js: false,
                 include_jsx,
@@ -201,6 +204,7 @@ fn collect_default_check_files_for_tsconfig(
             includes,
             excludes,
             FileCollectionOptions {
+                respect_ignore_files: false,
                 include_hidden: false,
                 include_js,
                 include_jsx,
@@ -226,6 +230,7 @@ fn collect_default_check_files_for_tsconfig(
                 includes,
                 excludes,
                 FileCollectionOptions {
+                    respect_ignore_files: false,
                     include_hidden: true,
                     include_js,
                     include_jsx,

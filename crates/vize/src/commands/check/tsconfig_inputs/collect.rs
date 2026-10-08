@@ -6,6 +6,7 @@ use ignore::WalkBuilder;
 use vize_l0::FxHashSet;
 
 use super::glob::{normalize_input_path, normalize_walked_path};
+use super::implicit_exclude::is_package_folder;
 use super::matching::{
     SupportedFileOptions, is_generated_codegen_declaration_path, is_generated_path,
     is_hidden_path_segment, is_nuxt_import_manifest_path, is_supported_check_file_with_options,
@@ -19,18 +20,27 @@ pub(super) fn collect_supported_files_with_options(
     excludes: &[GlobSpec],
     options: FileCollectionOptions,
 ) -> Vec<PathBuf> {
-    // Keep the tsconfig scan ignore-aware and canonicalize only the root. The
-    // matched files are sorted after collection, so the parallel walk can avoid
+    // Canonicalize only the root. The matched files are sorted after collection,
+    // so the parallel walk can avoid
     // expensive per-entry canonicalization without making CLI output unstable.
     let skip_generated = should_skip_generated_for_root(root);
     let normalized_root = normalize_input_path(root);
     if vize_carton::path::is_git_metadata_path(&normalized_root) {
         return Vec::new();
     }
+    let directory_includes = includes.to_vec();
     let walker = WalkBuilder::new(root)
-        .standard_filters(true)
+        .standard_filters(options.respect_ignore_files)
         .hidden(!options.include_hidden)
-        .filter_entry(|entry| !vize_carton::path::is_git_metadata_path(entry.path()))
+        .filter_entry(move |entry| {
+            let path = entry.path();
+            let directory = entry.file_type().is_some_and(|kind| kind.is_dir());
+            !vize_carton::path::is_git_metadata_path(path)
+                && (!directory
+                    || ((!skip_generated || !is_generated_path(path))
+                        && (options.respect_ignore_files
+                            || !skip_implicit_package_directory(path, &directory_includes))))
+        })
         .build_parallel();
 
     let collected = std::sync::Mutex::new(Vec::<PathBuf>::new());
@@ -67,6 +77,28 @@ pub(super) fn collect_supported_files_with_options(
     collected.sort();
     collected.dedup();
     collected
+}
+
+/// Avoid walking installed dependencies once filesystem ignore rules no longer
+/// decide a configured program's roots. Wildcards cannot select a package-folder
+/// segment. A literal package segment can, so retain that include's traversal
+/// conservatively and let its complete matcher select the final files.
+pub(super) fn skip_implicit_package_directory(path: &Path, includes: &[GlobSpec]) -> bool {
+    let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    is_package_folder(name)
+        && !includes.iter().any(|include| {
+            include.base_dir.starts_with(path)
+                || (path.starts_with(&include.base_dir)
+                    && include.normalized.split('/').any(|segment| {
+                        if cfg!(windows) {
+                            segment.eq_ignore_ascii_case(name)
+                        } else {
+                            segment == name
+                        }
+                    }))
+        })
 }
 
 pub(super) fn collect_supported_files_for_include_roots(
