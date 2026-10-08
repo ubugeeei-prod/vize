@@ -54,3 +54,24 @@ retired-shadow, editor-union and overlap negative controls remain mandatory.
 Current literal-graph qualification, protected delivery, installed acceptance,
 complete project/build/watch and performance criteria remain unfinished. This
 change does not close #3984 or #3957. Upstream projects remain read-only.
+
+The first authentic exact-head replay, [run 37733677360](https://github.com/ubugeeei-prod/vize/actions/runs/37733677360)
+at `78ec4ab47e5c0d8fa7f9210cd49c7e98c2dcac35`, passed four native CLI
+laws but failed the clean expanded seven-root command after the narrowed
+six-root command in the same persistent namespace. Its complete packet is
+exit 1, empty stdout, and `Error: IO error: Workspace package alias requires
+owned directories\n` stderr. Both complete raw trees remained unchanged.
+The original ZIP, complete source recipe/custody and API SHA-256 receipt are
+preserved in the corpus before any producer repair; the archive digest is
+`3f46e7c3841765d6bd82e0226ba095b42a3074bc9172426dfbbab620a9072b91`.
+
+Use a conditional owner-private temporary execution namespace for batch
+programs whose authored roots explicitly select installed sources. Preserve
+ordinary persistent root behavior and every raw-link guard. This successor
+changes execution namespace and sacrifices cross-CLI materialization reuse
+for the selected-installed-source case; it does not repair durable
+cross-process completed-plan custody. Prove owner cleanup after success,
+error and unwind, within-process warm reuse, and measure the original cold
+and warm controls. Claim no performance improvement. Durable cross-CLI
+custody is a separate follow-up; no new persistent authority record belongs
+in this bounded fix. Original vectors and historical failure remain intact.

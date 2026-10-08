@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 1,
+  "repository": "ubugeeei-prod/vize",
+  "event": "pull_request",
+  "runId": "37733677360",
+  "runAttempt": "1",
+  "workflow": {
+    "ref": "ubugeeei-prod/vize/.github/workflows/typechecker-native-phases.yml@refs/pull/8274/merge",
+    "sha": "c06bd2f3564fabcfc4cae7afe418d978c82b9041",
+    "driverFileSha256": "1d390319e700c592a51cf88fe415303c920ad8481b77257283b026a01a96f76e",
+    "trust": "existing exact PR-head driver"
+  },
+  "driver": {
+    "root": "/home/runner/_work/vize/vize",
+    "sha": "78ec4ab47e5c0d8fa7f9210cd49c7e98c2dcac35",
+    "tree": "52403ebf855f3d808f19f567817e7106ae4c27cf",
+    "delta": []
+  },
+  "source": {
+    "root": "/home/runner/_work/vize/vize",
+    "sha": "78ec4ab47e5c0d8fa7f9210cd49c7e98c2dcac35",
+    "tree": "52403ebf855f3d808f19f567817e7106ae4c27cf"
+  },
+  "main": {
+    "sha": "db6f2c09fe0b11f6660c8cda40a642ce5ba9e875",
+    "tree": "3d83db4cf4a8eb0ce9df91892e50ff346151d697"
+  },
+  "baseline": {
+    "sha": "b8ea16711117c502b14724e1eb1e4a7022a7f1d7",
+    "tree": "bcb61f4935035006c7145ecb6a451840cbc73d40",
+    "prBaseSha": "ba40e0c0efd28ddb78864dc4eef324efa41f834e"
+  },
+  "productionMatchesBaseline": false,
+  "changedPaths": [
+    ".github/workflows/typechecker-native-phases.yml",
+    "crates/vize/src/commands/check/tsconfig_inputs.rs",
+    "crates/vize/src/commands/check/tsconfig_inputs/collect.rs",
+    "crates/vize/src/commands/check/tsconfig_inputs/ignore_file_tests.rs",
+    "crates/vize/src/commands/check/tsconfig_inputs/implicit_exclude.rs",
+    "crates/vize/src/commands/check/tsconfig_inputs/jsonc.rs",
+    "crates/vize/src/commands/check/tsconfig_inputs/jsonc/bom_tests.rs",
+    "crates/vize/src/commands/check/tsconfig_inputs/spec.rs",
+    "crates/vize/tests/check_tsconfig_bom_cli.rs",
+    "crates/vize/tests/check_tsconfig_ignore_cli.rs",
+    "crates/vize/tests/check_tsconfig_ignore_cli/literal_package.rs",
+    "crates/vize_canon/src/batch/virtual_project/tsconfig_paths.rs",
+    "crates/vize_canon/src/batch/virtual_project/tsconfig_paths/bom_tests.rs",
+    "docs/davinci/decisions/2026-09-27-level-restructure.md",
+    "docs/davinci/decisions/2026-10-08-tsconfig-bom.md",
+    "docs/davinci/decisions/2026-10-08-tsconfig-ignore-authority.md",
+    "docs/davinci/decisions/2026-10-08-tsconfig-literal-package-replay.md",
+    "docs/davinci/plan/consumer-migration-surfaces/typechecker/vize.tsv",
+    "docs/davinci/plan/consumer-migration-surfaces/typechecker/vize_canon.tsv",
+    "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/README.md",
+    "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/before-cli-whole-observations.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/expected-cli.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/input.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/malformed-original-whole-controls.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/official-whole-observations.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/original-custody.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/parser-controls.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/README.md",
+    "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/before-cli-whole-observations.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/generated-before-after-helper-receipts.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/generated-boundaries.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/input.json",
+    "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/literal-package-boundary.json",
+    "tests/_fixtures/tooling/native-current-recipe-8253.sh",
+    "tests/_fixtures/tooling/native-current-recipe-ignore-3984.sh",
+    "tests/_fixtures/tooling/native-source-recipe-436.md",
+    "tools/benchmarks/scripts/typechecker-native-source-recipe-fixture.mjs",
+    "tools/benchmarks/scripts/typechecker-native-source-recipe.test.mjs"
+  ],
+  "changedEntries": [
+    {
+      "path": ".github/workflows/typechecker-native-phases.yml",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "c67635056ff1d77b7d1ddcc6523d92d5a8c4504e",
+      "afterBlob": "21c89e95adef678c64d80c636b6b33b015a9663c"
+    },
+    {
+      "path": "crates/vize/src/commands/check/tsconfig_inputs.rs",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "9c2c3b8419fac78bc03d93c6a659cf10fec63ce0",
+      "afterBlob": "834a3d2b58c78269758fa7885c165caa92afca36"
+    },
+    {
+      "path": "crates/vize/src/commands/check/tsconfig_inputs/collect.rs",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "64dfde0d8dea7666f7bfe48c6a57a15b14c0c191",
+      "afterBlob": "fd46764245fed0b60fe8c413a8a2dbd8272583e4"
+    },
+    {
+      "path": "crates/vize/src/commands/check/tsconfig_inputs/ignore_file_tests.rs",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "637e1e29c9ced8fbca82652f379cee24fa0eb3aa"
+    },
+    {
+      "path": "crates/vize/src/commands/check/tsconfig_inputs/implicit_exclude.rs",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "27a68d3f2a8975c0cad7a20d38941f995f943049",
+      "afterBlob": "3d01ac9f249c21e4c6a3ae0f24e69833cd278472"
+    },
+    {
+      "path": "crates/vize/src/commands/check/tsconfig_inputs/jsonc.rs",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "2592305d3261ce0a40e98289a52c05c14c3ce59d",
+      "afterBlob": "ccec0a39ae1ac33cdd16599c8c3736dca223e666"
+    },
+    {
+      "path": "crates/vize/src/commands/check/tsconfig_inputs/jsonc/bom_tests.rs",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "4eca96adb6a199fa8cecfd58caf97d8772855c0e"
+    },
+    {
+      "path": "crates/vize/src/commands/check/tsconfig_inputs/spec.rs",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "c7a60c6a34fe65119b2a7bbc32dd16ff7c974d58",
+      "afterBlob": "b647eb998576ba3b1b7035800c0efc6672b6045f"
+    },
+    {
+      "path": "crates/vize/tests/check_tsconfig_bom_cli.rs",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "6c3393b2bcf82c0ef60670810211960dc9da3228"
+    },
+    {
+      "path": "crates/vize/tests/check_tsconfig_ignore_cli.rs",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "44a79fc9634513c7c290fe6efff2d119e78acbc6"
+    },
+    {
+      "path": "crates/vize/tests/check_tsconfig_ignore_cli/literal_package.rs",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "957d0bc747d960069990cd2840a5eafbf06bda00"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tsconfig_paths.rs",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "df521f7f0cb042106f5300ea58698700702fc67b",
+      "afterBlob": "e1f49bf07eabd4be5679e445308fb96a6188eaca"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/tsconfig_paths/bom_tests.rs",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "b56771018f4dc132999c133572f956007c38b1e8"
+    },
+    {
+      "path": "docs/davinci/decisions/2026-09-27-level-restructure.md",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "4af07467898e3b3b0ae1346d7768e8d017297fd4",
+      "afterBlob": "75db10877dbdc60684079cec248c6cf39add589a"
+    },
+    {
+      "path": "docs/davinci/decisions/2026-10-08-tsconfig-bom.md",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "33fb563982b404aefe09e24f4ed9de5ce65b48b8"
+    },
+    {
+      "path": "docs/davinci/decisions/2026-10-08-tsconfig-ignore-authority.md",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "40ff963e916884ef0fd2d8e80a7363fc5e045a2d"
+    },
+    {
+      "path": "docs/davinci/decisions/2026-10-08-tsconfig-literal-package-replay.md",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "bcc334c0acd75e50f90aa0f7210b200d514efbf9"
+    },
+    {
+      "path": "docs/davinci/plan/consumer-migration-surfaces/typechecker/vize.tsv",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "06603c4e68d7c80e8cbe3415a6f5417e651eaa22",
+      "afterBlob": "20e51796b44c0ce1b1e1268a8592b9767a9f5cd2"
+    },
+    {
+      "path": "docs/davinci/plan/consumer-migration-surfaces/typechecker/vize_canon.tsv",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "128c85a0532e959c269bdc712087c2e2b095ab52",
+      "afterBlob": "b30dd8c4b42b75ead3a4fba11ef52d5211036dcd"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/README.md",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "fa791735eb2eb5f4808af4f538c4169d1d564569"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/before-cli-whole-observations.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "ec1faa03daac6da62b166f19402951b0f5a76d7b"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/expected-cli.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "a24a31fd5bc91f253a0dd79ec1859163ba71f357"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/input.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "275a76203f16478dcb5e096946333b5ff3157e44"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/malformed-original-whole-controls.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "b2ba9bcfe7db579a15160a114d61ba494937e941"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/official-whole-observations.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "0179515be3f7e5d9889a20cd820cc9e18fa1d126"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/original-custody.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "e9ffe2179ed78715e991c4cd0a917b8f1bb9b22a"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-bom-3984/parser-controls.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "55debb0fc7e624f27a58f671eed0f7783e840e84"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/README.md",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "27f579bbf2e8c8e8f4a6ee6c3149f017c229cc98"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/before-cli-whole-observations.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "c4a3d23e0067b97dea9c06aee86825d3c4041b25"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/generated-before-after-helper-receipts.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "0b45b19cd0631d10a556a90a4b50651c73828a10"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/generated-boundaries.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "cd8399711faebb7c8a3a21f4c4b1921db7c90fc0"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/input.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "ac7f5957db55d10c544745adf1e4f0530895126e"
+    },
+    {
+      "path": "tests/_fixtures/differential/typechecker/tsconfig-ignore-3984/literal-package-boundary.json",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "35eb028a8a7f78a9452d8236d9ecf1261e1f1ac3"
+    },
+    {
+      "path": "tests/_fixtures/tooling/native-current-recipe-8253.sh",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "9da1f3a0d0a09bfe092de957d1ef893b2c1e2990"
+    },
+    {
+      "path": "tests/_fixtures/tooling/native-current-recipe-ignore-3984.sh",
+      "status": "A",
+      "beforeMode": "000000",
+      "afterMode": "100644",
+      "beforeBlob": "0000000000000000000000000000000000000000",
+      "afterBlob": "415c503ffaa5f80285c799c0257479b961d4f995"
+    },
+    {
+      "path": "tests/_fixtures/tooling/native-source-recipe-436.md",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "3e3a54d786069ad0e89ed730532bb79ffe24584d",
+      "afterBlob": "fe3620e58e648cdaea7afbf6ad9a987b9aebd638"
+    },
+    {
+      "path": "tools/benchmarks/scripts/typechecker-native-source-recipe-fixture.mjs",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "fa1d42ba1a51449625b38625399f1cb96fc4128d",
+      "afterBlob": "a51e09ec30c5f3b2f749cb4201a73df41d9aefa2"
+    },
+    {
+      "path": "tools/benchmarks/scripts/typechecker-native-source-recipe.test.mjs",
+      "status": "M",
+      "beforeMode": "100644",
+      "afterMode": "100644",
+      "beforeBlob": "2269e4dccfd88a529638c8ef0df22ee494e95e87",
+      "afterBlob": "68fed23ab510372c29b9da92b94dc6195a1a125a"
+    }
+  ],
+  "bridgeFiles": {
+    "Cargo.toml": {
+      "sourceSha256": "ad3afcf37ded0802c0254c0cb022402d334a625300b602f8c106f0955a7c08f5",
+      "driverSha256": "ad3afcf37ded0802c0254c0cb022402d334a625300b602f8c106f0955a7c08f5"
+    },
+    "Cargo.lock": {
+      "sourceSha256": "1e469da5d9fea0a0203070e48ed7578475bc33ceeeded685605597d5813c2699",
+      "driverSha256": "1e469da5d9fea0a0203070e48ed7578475bc33ceeeded685605597d5813c2699"
+    },
+    "package.json": {
+      "sourceSha256": "d3a2188046e21c5dfe8d1117292136eb8ad0232c42490aed3e994fba71fac34f",
+      "driverSha256": "d3a2188046e21c5dfe8d1117292136eb8ad0232c42490aed3e994fba71fac34f"
+    },
+    "pnpm-lock.yaml": {
+      "sourceSha256": "6c311bea2e8c89e938f1fe4f4c3c87e08d5776022a316070538178e61ef2ea86",
+      "driverSha256": "6c311bea2e8c89e938f1fe4f4c3c87e08d5776022a316070538178e61ef2ea86"
+    },
+    "tools/benchmarks/scripts/type-snapshot-cli-corpus.mjs": {
+      "sourceSha256": "7d32655b382fe822cb04928fb4d64f81ab4c9179afdbb3bf9362ac18d34ec0aa",
+      "driverSha256": "7d32655b382fe822cb04928fb4d64f81ab4c9179afdbb3bf9362ac18d34ec0aa"
+    },
+    "tools/benchmarks/scripts/type-snapshot-cli-leaf-corpus.mjs": {
+      "sourceSha256": "910957c9fdc61e8b480ed23a5521c074599dbc578eed0dba40c7e763a760b54c",
+      "driverSha256": "910957c9fdc61e8b480ed23a5521c074599dbc578eed0dba40c7e763a760b54c"
+    },
+    "tools/benchmarks/scripts/type-snapshot-cli-protocol.mjs": {
+      "sourceSha256": "60dfeeeccb3d3a9bf98a7ae4947d7f5cd041751cb506f1ad87d6f893e1c795a1",
+      "driverSha256": "60dfeeeccb3d3a9bf98a7ae4947d7f5cd041751cb506f1ad87d6f893e1c795a1"
+    }
+  },
+  "sourceDependencyLink": null,
+  "nativeProfile": "none",
+  "originalInfrastructurePaths": [
+    ".github/workflows/typechecker-native-phases.yml",
+    "crates/vize_canon/examples/native_phase_projection.rs",
+    "docs/davinci/decisions/2026-09-27-level-restructure.md",
+    "docs/davinci/decisions/2026-10-04-typechecker-native-phases.md",
+    "tools/benchmarks/scripts/typechecker-native-phases.mjs",
+    "tools/benchmarks/scripts/typechecker-native-phase-capture.mjs",
+    "tools/benchmarks/scripts/typechecker-native-phase-report.mjs",
+    "tools/benchmarks/scripts/typechecker-native-phase-runner.mjs",
+    "tools/benchmarks/scripts/typechecker-native-phase-forwarding.test.mjs",
+    "tools/benchmarks/scripts/type-snapshot-cli-corpus.mjs",
+    "tools/benchmarks/scripts/type-snapshot-cli-leaf-corpus.mjs",
+    "tools/benchmarks/scripts/type-snapshot-cli-protocol.mjs"
+  ],
+  "allowedInfrastructurePaths": [
+    ".github/workflows/typechecker-native-phases.yml",
+    "crates/vize_canon/examples/native_phase_projection.rs",
+    "docs/davinci/decisions/2026-09-27-level-restructure.md",
+    "docs/davinci/decisions/2026-10-04-typechecker-native-phases.md",
+    "tools/benchmarks/scripts/typechecker-native-phases.mjs",
+    "tools/benchmarks/scripts/typechecker-native-phase-capture.mjs",
+    "tools/benchmarks/scripts/typechecker-native-phase-report.mjs",
+    "tools/benchmarks/scripts/typechecker-native-phase-runner.mjs",
+    "tools/benchmarks/scripts/typechecker-native-phase-forwarding.test.mjs",
+    "tools/benchmarks/scripts/type-snapshot-cli-corpus.mjs",
+    "tools/benchmarks/scripts/type-snapshot-cli-leaf-corpus.mjs",
+    "tools/benchmarks/scripts/type-snapshot-cli-protocol.mjs",
+    "docs/davinci/decisions/2026-10-04-typechecker-cold-native-profiles.md",
+    "docs/davinci/decisions/2026-10-04-shared-leaf-native-trivia.md",
+    "tools/benchmarks/scripts/typechecker-native-profile-corpus-fixture.mjs",
+    "tools/benchmarks/scripts/typechecker-native-dependency-link.test.mjs",
+    "tools/benchmarks/scripts/typechecker-native-graph-archive.mjs",
+    "tools/benchmarks/scripts/typechecker-native-graph-archive.test.mjs",
+    "tools/benchmarks/scripts/typechecker-native-profile-replay.mjs",
+    "tools/benchmarks/scripts/typechecker-native-profile-replay.test.mjs",
+    "tools/benchmarks/scripts/typechecker-native-profile-corpus.mjs",
+    "tools/benchmarks/scripts/typechecker-native-profile-corpus.test.mjs",
+    "tools/benchmarks/scripts/typechecker-native-source-custody.mjs",
+    "tools/benchmarks/scripts/typechecker-native-source-custody.test.mjs"
+  ],
+  "build": {
+    "root": "/home/runner/_work/vize/vize",
+    "projectionExample": {
+      "path": "crates/vize_canon/examples/native_phase_projection.rs",
+      "sourceSha256": "1f90c218137798021d51bde756bccb568644f015d7c352f16937ce774520891f",
+      "driverSha256": "1f90c218137798021d51bde756bccb568644f015d7c352f16937ce774520891f"
+    },
+    "cargoProfile": "ci-opt",
+    "inherits": "release",
+    "lto": "thin",
+    "codegenUnits": 16,
+    "stripVize": "symbols",
+    "incremental": false,
+    "crates": [
+      "vize",
+      "vize_canon --example native_phase_projection"
+    ]
+  }
+}

@@ -39,3 +39,13 @@ Its separate POSIX boundary file adds one unrelated raw endpoint and symlink;
 selected remains manifestless. Whole raw package/path/link receipts are retained
 before assertions. Authentic current native execution and protected delivery
 remain pending; the old failure and all original input/gold bytes are unchanged.
+
+`literal-package-before-78ec.zip` is the unchanged authenticated native artifact
+from failed run 37733677360 at source `78ec4ab47e5c0d8fa7f9210cd49c7e98c2dcac35`.
+Its paired receipt pins the complete ZIP and source custody. Four native CLI
+laws passed; the original narrowed-to-expanded clean command failed with
+`Workspace package alias requires owned directories`, while both raw trees
+remained byte-exact. This authentic same-namespace failure is retained before
+a successor changes execution namespace; it grants no successor or release
+credit. Cross-CLI materialization reuse for selected installed sources and
+durable completed-plan custody remain separate follow-up work.
