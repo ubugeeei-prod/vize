@@ -180,7 +180,7 @@ export const accessibilityExplanations = [
     "A static section receives an Enter-key action without an interactive role.",
     "A native button carries the same action with an appropriate interactive element.",
     "操作の役割がない section に Enter キーの操作を指定しています。",
-    "同じ click 操作を標準の button に指定し、要素自体に操作の意味を持たせます。",
+    "同じ Enter キーの操作を標準の button に指定し、要素自体に操作の意味を持たせます。",
   ],
   [
     "a11y/placeholder-label-option",

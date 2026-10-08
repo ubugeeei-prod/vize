@@ -124,3 +124,6 @@ pass now clicks the existing visible `[data-mobile-theme]` footer button; both n
 use the same production theme controller. Root data-theme and persisted theme assertions remain
 strict, with the actual control selector included in each screenshot receipt. No styles or theme
 controller are changed, and only a fresh complete run qualifies the corrected head.
+
+The expanded Japanese static-element rationale names the unchanged Enter-key handler exactly;
+it does not describe a click handler. This text correction changes no source example or oracle.

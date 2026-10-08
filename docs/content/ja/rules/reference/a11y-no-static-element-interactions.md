@@ -47,7 +47,7 @@ vp run lint
 
 ## 良い
 
-同じ click 操作を標準の button に指定し、要素自体に操作の意味を持たせます。
+同じ Enter キーの操作を標準の button に指定し、要素自体に操作の意味を持たせます。
 
 ```vue
 <template>
