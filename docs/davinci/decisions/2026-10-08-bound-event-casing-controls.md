@@ -197,3 +197,20 @@ green transfer applies.
 
 Paired issue decision is published with the conventional dependent PR; this
 record and the canonical companion clause do not themselves close #4075.
+
+## Delivered-prefix synchronization
+
+Parent #8218 actually merged as signed `d0d0c7db0db537c3cbc6735aa0d8f25296e26166`
+on 2026-10-08 at 05:11:32Z. Preserve the former child
+`c7c54f23601f349415aff0558a26ed89acdbd15e` and Stack #8234 positions
+1/2/3 as historical receipts. Replay only the remaining casing commits onto
+actual main, preserving every source/fixture byte and whole incoming canonical
+clause; regenerate unchanged inventory metadata. Previous green runs qualify
+only their historical heads, so fresh exact-head and protected proof are required.
+
+GitHub rejected a direct base change for a stacked PR and rejected dequeueing
+the former child-base entry because that branch has no merge queue. Refresh the
+head first, verify the stale queue entry is removed, then dissolve only the
+remaining open Stack membership, retarget to main and register the remaining
+#8233/#8262 dependent chain as a native Stack. Record its actual number and
+positions before admission; never enable individual layer auto-merge.
