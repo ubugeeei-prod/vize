@@ -123,11 +123,13 @@ fn validate_runtime_output(
     let signal: Option<i32> = None;
     let evidence = |reason: &str| {
         format!(
-            "{backend}: {reason}\nstatus: {}\nexit_code: {:?}\nsignal: {signal:?}\nstdout:\n{}\nstderr:\n{}\nsource:\n{source}\ncases:\n{cases}\ncode:\n{code}",
+            "{backend}: {reason}\nstatus: {}\nexit_code: {:?}\nsignal: {signal:?}\nstdout:\n{}\nstdout_bytes: {:?}\nstderr:\n{}\nstderr_bytes: {:?}\nsource:\n{source}\ncases:\n{cases}\ncode:\n{code}",
             output.status,
             output.status.code(),
             String::from_utf8_lossy(&output.stdout),
+            output.stdout,
             String::from_utf8_lossy(&output.stderr),
+            output.stderr,
         )
     };
     if !output.status.success() {
@@ -142,6 +144,33 @@ fn validate_runtime_output(
         )));
     }
     Ok(())
+}
+
+#[test]
+fn runtime_failure_preserves_non_utf8_child_stream_bytes() {
+    for byte in [255, 254] {
+        let output = Command::new("node")
+            .args([
+                "-e",
+                &format!(
+                    "require('node:fs').writeSync(1, Buffer.from([{byte},0,10,97])); require('node:fs').writeSync(2, Buffer.from([{byte},13,27])); process.exit(13)"
+                ),
+            ])
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(13));
+        assert_eq!(output.stdout, [byte, 0, 10, 97]);
+        assert_eq!(output.stderr, [byte, 13, 27]);
+        let report =
+            validate_runtime_output("vdom", "source", &json!([{}]), "code", &output).unwrap_err();
+        assert_eq!(
+            report,
+            format!(
+                "vdom: runtime child failed\nstatus: {}\nexit_code: Some(13)\nsignal: None\nstdout:\n\u{fffd}\0\na\nstdout_bytes: [{byte}, 0, 10, 97]\nstderr:\n\u{fffd}\r\x1b\nstderr_bytes: [{byte}, 13, 27]\nsource:\nsource\ncases:\n[{{}}]\ncode:\ncode",
+                output.status,
+            )
+        );
+    }
 }
 
 #[test]
@@ -161,7 +190,7 @@ fn runtime_failure_preserves_silent_child_status_and_original_case() {
     assert_eq!(
         report,
         format!(
-            "vdom: runtime child failed\nstatus: {}\nexit_code: Some(13)\nsignal: None\nstdout:\npartial stdout\nstderr:\n\nsource:\nauthored source\ncases:\n[{{\"context\":{{\"items\":[\"original\"]}}}}]\ncode:\nrender code",
+            "vdom: runtime child failed\nstatus: {}\nexit_code: Some(13)\nsignal: None\nstdout:\npartial stdout\nstdout_bytes: [112, 97, 114, 116, 105, 97, 108, 32, 115, 116, 100, 111, 117, 116]\nstderr:\n\nstderr_bytes: []\nsource:\nauthored source\ncases:\n[{{\"context\":{{\"items\":[\"original\"]}}}}]\ncode:\nrender code",
             output.status,
         )
     );
@@ -186,7 +215,7 @@ fn runtime_failure_preserves_real_child_signal_and_both_streams() {
     assert_eq!(
         report,
         format!(
-            "vapor: runtime child failed\nstatus: {}\nexit_code: None\nsignal: Some(15)\nstdout:\nbefore signal\nstderr:\nsignal stderr\nsource:\nsource\ncases:\n[{{}}]\ncode:\ncode",
+            "vapor: runtime child failed\nstatus: {}\nexit_code: None\nsignal: Some(15)\nstdout:\nbefore signal\nstdout_bytes: [98, 101, 102, 111, 114, 101, 32, 115, 105, 103, 110, 97, 108]\nstderr:\nsignal stderr\nstderr_bytes: [115, 105, 103, 110, 97, 108, 32, 115, 116, 100, 101, 114, 114]\nsource:\nsource\ncases:\n[{{}}]\ncode:\ncode",
             output.status,
         )
     );
@@ -214,8 +243,9 @@ fn runtime_protocol_failures_preserve_complete_successful_child_output() {
         assert_eq!(
             report,
             format!(
-                "ssr: {reason}\nstatus: {}\nexit_code: Some(0)\nsignal: None\nstdout:\n{stdout}\nstderr:\n\nsource:\nsource\ncases:\n[{{}}]\ncode:\ncode",
+                "ssr: {reason}\nstatus: {}\nexit_code: Some(0)\nsignal: None\nstdout:\n{stdout}\nstdout_bytes: {:?}\nstderr:\n\nstderr_bytes: []\nsource:\nsource\ncases:\n[{{}}]\ncode:\ncode",
                 output.status,
+                stdout.as_bytes(),
             )
         );
     }
