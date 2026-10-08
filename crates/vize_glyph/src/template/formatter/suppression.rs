@@ -17,7 +17,7 @@
 use std::cmp::Ordering;
 
 use super::TemplateFormatter;
-use crate::template::helpers::{is_tag_name_char, is_whitespace};
+use crate::template::helpers::is_whitespace;
 
 /// Pragmas whose suppression covers the line *after* the comment.
 const NEXT_LINE_PRAGMAS: [&[u8]; 4] = [
@@ -136,30 +136,7 @@ impl<'s> LineJoiner<'s> {
 
     /// A sole interpolation touching both parent tags shares their layout depth.
     pub(super) fn interpolation_depth(&self, start: usize, end: usize, depth: usize) -> usize {
-        let Some((tag_start, tag_end)) = self.opening else {
-            return depth;
-        };
-        if tag_end != start || self.previous_end != Some(start) {
-            return depth;
-        }
-        let opening = self.source.get(tag_start + 1..tag_end).unwrap_or_default();
-        let name_len = opening
-            .iter()
-            .copied()
-            .take_while(|&b| is_tag_name_char(b))
-            .count();
-        let name = opening.get(..name_len).unwrap_or_default();
-        let closing = self.source.get(end..).unwrap_or_default();
-        if closing.starts_with(b"</")
-            && closing.get(2..2 + name_len) == Some(name)
-            && closing
-                .get(2 + name_len..)
-                .unwrap_or_default()
-                .iter()
-                .copied()
-                .find(|&b| !is_whitespace(b))
-                == Some(b'>')
-        {
+        if self.hugged_closing_name(start, end).is_some() {
             depth.saturating_sub(1)
         } else {
             depth

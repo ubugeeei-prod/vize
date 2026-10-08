@@ -52,3 +52,24 @@ measurements grant no composed-head performance or delivery credit. Composite
 children, independent closing-tag reflow, other expression shapes and native
 admission remain unfinished. Native shared accounting stays Unsupported16/16,
 handled0/16 and equivalent0/16. This bounded slice does not close #7876.
+
+Composed source `59d826ba25187bc71c605a4edb20d91888842979`, containing actual
+#8252 merge `09e40bd8ecf5b29f570651f57af1370b8c9ad12b`, failed the unchanged
+complex-template ceiling at 247297 against 244347 in three identical hosted
+runs [37731869349](https://github.com/ubugeeei-prod/vize/actions/runs/37731869349).
+The other three formatter and all 100 level ceilings held. Preserve that
+failure and the complete artifact `11530156510`; this PR was never queued.
+Skip the suppression query for non-mustache text and avoid UTF-8 validation
+and exact-width scans only when the complete byte-length upper bound already
+fits and neither segment has tabs. `unicode-width` 0.2.2 display width never
+exceeds UTF-8 byte length; tabbed or possibly overflowing lines retain the
+original exact width calculation. All source/reference bytes and caps stay
+unchanged; fresh successor measurements and hosted whole-output qualification
+remain required.
+
+Use the same adjacent matching-close query for the retained multiline
+interpolation depth and the new child-width path, as requested in review 4215149196. Source-owned offsets come from the successful opening-tag parser;
+matching names, closing-tag grammar whitespace and parent-depth behavior keep
+their existing rules. The original placement-law body/hash stays unchanged,
+and only the complete current owner pin follows the extraction. Keep every
+retained multiline literal/comment and three-pass law intact.

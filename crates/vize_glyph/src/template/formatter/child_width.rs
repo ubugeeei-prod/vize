@@ -42,7 +42,7 @@ impl TemplateFormatter<'_> {
         depth: usize,
         joiner: &LineJoiner<'_>,
     ) -> bool {
-        if joiner.locks_current_line() || !formatted.starts_with("{{ ") {
+        if !formatted.starts_with("{{ ") || joiner.locks_current_line() {
             return false;
         }
         let Some(name) = joiner.hugged_closing_name(start, end) else {
@@ -50,6 +50,15 @@ impl TemplateFormatter<'_> {
         };
         let line_start = memchr::memrchr2(b'\r', b'\n', output).map_or(0, |pos| pos + 1);
         let line = output.get(line_start..).unwrap_or_default();
+        let suffix_width = name.len() + 3 + self.base_depth * self.options.tab_width as usize;
+        // Without tabs, UTF-8 byte length bounds Unicode display width. Avoid
+        // validation and exact width scans when even that upper bound fits.
+        if line.len() + formatted.len() + suffix_width <= self.options.print_width as usize
+            && memchr::memchr(b'\t', line).is_none()
+            && !formatted.contains('\t')
+        {
+            return false;
+        }
         let width = |value: &str| {
             if value.is_ascii() && !value.contains('\t') {
                 value.len()
@@ -60,13 +69,7 @@ impl TemplateFormatter<'_> {
             }
         };
         let line = core::str::from_utf8(line).unwrap_or_default();
-        if width(line)
-            + width(formatted)
-            + name.len()
-            + 3
-            + self.base_depth * self.options.tab_width as usize
-            <= self.options.print_width as usize
-        {
+        if width(line) + width(formatted) + suffix_width <= self.options.print_width as usize {
             return false;
         }
         let Some((expr_start, expr_end, close)) =

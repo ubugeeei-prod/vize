@@ -120,10 +120,10 @@ const OWNERS: Record<
         "958b802bade6ac87002b32dff6a6d36a24a9ace640147c100898a7665c6a9a1a",
     },
   },
-  // #7876 adds a read-only lock query; the complete original placement law is unchanged.
+  // #7876 shares a read-only matched-close query; the original placement law is unchanged.
   "crates/vize_glyph/src/template/formatter/suppression.rs": {
     originalSha256: "94b99ca1dcf0833d5706b73f95e41c9cdf280160e1dccdb751340ad86607b675",
-    actualMainSha256: "46581bd3d7aeed777c746405fdb6bb2135ba792a569e8d7440d2dafe87aa154a",
+    actualMainSha256: "01ba0be4b4585c696ccba5f75adfcb0f225224fb9f0cf9b073828dcd38759376",
     functions: {
       ranges_track_pragma_placement:
         "8120d76a61ca7b815e73c633c93431ba5399f1227d8274a699d09c7d2a5a5400",
