@@ -113,32 +113,65 @@ impl TemplateTargets {
         self.unknown_tags = true;
     }
 
-    /// Only a standalone simple global subject can prove foreign ownership.
-    /// Compound selectors, lists and filters retain their existing advice.
+    /// Prove absence only from one fully recognized global subject.
+    /// Vue replaces the outer selector with the global argument, so outer
+    /// class/ID/type constraints must never supply the absence proof.
     pub(super) fn is_foreign_global(&self, selector: &Selector<'_>) -> bool {
-        let mut components = selector.iter_raw_match_order();
-        let Some(Component::NonTSPseudoClass(PseudoClass::CustomFunction { name, arguments })) =
-            components.next()
-        else {
-            return false;
-        };
-        if name.as_ref() != "global" || components.next().is_some() {
-            return false;
-        }
-        let mut tokens = arguments.0.iter().filter(|token| !token.is_whitespace());
-        match (tokens.next(), tokens.next(), tokens.next()) {
-            (
-                Some(TokenOrValue::Token(Token::Delim('.'))),
-                Some(TokenOrValue::Token(Token::Ident(name))),
-                None,
-            ) => !self.unknown_classes && !self.classes.contains(name.as_ref()),
-            (Some(TokenOrValue::Token(Token::IDHash(name))), None, None) => {
-                !self.unknown_ids && !self.ids.contains(name.as_ref())
+        let mut global = None;
+        for component in selector.iter_raw_match_order() {
+            match component {
+                Component::NonTSPseudoClass(PseudoClass::CustomFunction { name, arguments })
+                    if name.as_ref() == "global" && global.is_none() =>
+                {
+                    global = self.foreign_compound(&arguments.0);
+                    if global.is_none() {
+                        return false;
+                    }
+                }
+                Component::Class(_) | Component::ID(_) => {}
+                Component::LocalName(name) if is_html_tag(name.lower_name.as_ref()) => {}
+                // Includes multiple globals, every namespace, combinator,
+                // universal, nesting, attribute and pseudo/filter component.
+                _ => return false,
             }
-            (Some(TokenOrValue::Token(Token::Ident(name))), None, None) => {
-                !self.unknown_tags && !self.tags.contains(name.to_ascii_lowercase().as_str())
-            }
-            _ => false,
         }
+        global == Some(true)
+    }
+
+    fn foreign_compound(&self, arguments: &[TokenOrValue<'_>]) -> Option<bool> {
+        let first = arguments.iter().position(|token| !token.is_whitespace())?;
+        let last = arguments.iter().rposition(|token| !token.is_whitespace())?;
+        let mut tokens = arguments.get(first..=last)?.iter().peekable();
+        if let Some(TokenOrValue::Token(Token::Ident(name))) = tokens.peek() {
+            if first == last {
+                return Some(
+                    !self.unknown_tags && !self.tags.contains(name.to_ascii_lowercase().as_str()),
+                );
+            }
+            if !is_html_tag(name.to_ascii_lowercase().as_str()) {
+                return None;
+            }
+            tokens.next();
+        }
+        let mut foreign = false;
+        let mut constrained = false;
+        while let Some(token) = tokens.next() {
+            match token {
+                TokenOrValue::Token(Token::Delim('.')) => {
+                    let Some(TokenOrValue::Token(Token::Ident(name))) = tokens.next() else {
+                        return None;
+                    };
+                    foreign |= !self.unknown_classes && !self.classes.contains(name.as_ref());
+                }
+                TokenOrValue::Token(Token::IDHash(name)) => {
+                    foreign |= !self.unknown_ids && !self.ids.contains(name.as_ref());
+                }
+                // Internal whitespace is a descendant boundary; comments,
+                // commas, attributes, pseudos and all unknown tokens refuse proof.
+                _ => return None,
+            }
+            constrained = true;
+        }
+        constrained.then_some(foreign)
     }
 }

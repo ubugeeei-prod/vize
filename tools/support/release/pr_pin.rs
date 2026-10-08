@@ -33,6 +33,9 @@ mod start;
 #[path = "pr_pin_tags.rs"]
 mod tags;
 #[cfg(test)]
+#[path = "pr_pin_target_tests.rs"]
+mod target_tests;
+#[cfg(test)]
 #[path = "pr_pin_tests.rs"]
 mod tests;
 pub use start::{resume, start};

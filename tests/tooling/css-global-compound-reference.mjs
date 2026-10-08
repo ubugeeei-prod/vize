@@ -1,19 +1,20 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { frozenCorpus, root, sha256 } from "./css-external-target-reference.mjs";
-import { compoundTransition } from "./css-global-compound-transition.mjs";
+import { globalCorpus, root, sha256 } from "./css-global-ownership-reference.mjs";
 
 export { root, sha256 };
-export const fixture = path.join(root, "crates/vize_patina/tests/fixtures/issue-7976-global");
+export const fixture = path.join(root, "crates/vize_patina/tests/fixtures/issue-7976-compound");
 
-export function globalCorpus() {
-  const historical = frozenCorpus();
+export function compoundCorpus() {
+  const historical = globalCorpus();
   const source = JSON.parse(fs.readFileSync(path.join(fixture, "source.json"), "utf8"));
   assert.equal(source.issue, 7976);
   assert.deepEqual(source.author, historical.source.author);
-  assert.equal(source.historyCaseCount, historical.cases.length);
-  assert.equal(source.historyCliObservationCount, 218);
+  assert.equal(source.historicalCaseCount, 120);
+  assert.equal(source.historicalCliObservationCount, 548);
+  assert.equal(source.globalBaselineCaseCount, historical.cases.length);
+  assert.equal(source.semanticTransitionCount, 2);
   for (const row of source.history) {
     const bytes = fs.readFileSync(path.join(root, row.path));
     assert.equal(bytes.length, row.bytes, row.path);
@@ -26,12 +27,8 @@ export function globalCorpus() {
   }
   const { cases } = JSON.parse(fs.readFileSync(path.join(fixture, "cases.json"), "utf8"));
   assert.equal(cases.length, source.caseCount);
-  assert.equal(source.caseCount, 66);
-  assert.equal(source.initialCaseCount, 47);
-  assert.equal(
-    sha256(JSON.stringify(cases.slice(0, source.initialCaseCount))),
-    source.initialCasesSha256,
-  );
+  assert.equal(source.caseCount, 62);
+  assert.equal(source.cliObservationCount, 310);
   assert.equal(new Set(cases.map((row) => row.id)).size, cases.length);
   for (const row of cases) {
     const bytes = Buffer.from(row.source);
@@ -43,5 +40,5 @@ export function globalCorpus() {
     assert.equal(row.expectedCli[0].messages.length, row.expectedStarts.length);
     assert(row.expectedCssStarts.length >= row.expectedStarts.length, row.id);
   }
-  return { source, cases: compoundTransition(cases) };
+  return { source, cases };
 }
