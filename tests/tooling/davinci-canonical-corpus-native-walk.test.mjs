@@ -20,7 +20,7 @@ import {
   validateNativeSource,
 } from "../../tools/support/compat/github/canonical-corpus-native-walk.mjs";
 
-// Authored small controls exercise the unchanged real Rust function, actual
+// Authored small controls exercise the frozen original and current real Rust functions, actual
 // local kernel boundary and raw bytes. They are not the licensed full corpus.
 function fixture(root) {
   const nodes = new Map([["", { path: "", mode: "40000" }]]);
@@ -63,7 +63,7 @@ await test("unchanged original Rust, physical bytes and independent logical Git 
   mkdirSync(root);
   try {
     const { nodes, children } = fixture(root);
-    const source = readFileSync("tests/davinci_test_support/src/corpus.rs");
+    const source = readFileSync("tests/tooling/fixtures/canonical_corpus_collector_original.rs");
     const { body, harness } = collectorHarness(source);
     assert.equal(Buffer.byteLength(body), 778, "The original function body is not rewritten");
     writeFileSync(join(temporary, "original.rs"), harness);
@@ -109,6 +109,67 @@ await test("unchanged original Rust, physical bytes and independent logical Git 
     assert.throws(() => validateLogicalGraph(wrongBlob, children), /directory cycle/);
   } finally {
     rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+await test("current fail-closed Rust collector retains the complete original kernel and alias vector", () => {
+  const temporary = mkdtempSync(join(tmpdir(), "canonical-current-native-walk-"));
+  const root = join(temporary, "shape");
+  mkdirSync(root);
+  try {
+    const { nodes, children } = fixture(root);
+    const versions = [
+      readFileSync("tests/tooling/fixtures/canonical_corpus_collector_original.rs"),
+      readFileSync("tests/davinci_test_support/src/corpus.rs"),
+    ];
+    const vectors = versions.map((source, index) => {
+      const { harness } = collectorHarness(source);
+      const input = join(temporary, `collector-${index}.rs`);
+      const binary = join(temporary, `collector-${index}`);
+      writeFileSync(input, harness);
+      execFileSync("rustc", ["--edition=2024", input, "-o", binary]);
+      return execFileSync(binary, [root]);
+    });
+    assert.deepEqual(vectors[1], vectors[0], "Every original ordered path and NUL is retained");
+    const physical = collectNativePhysical(root, nodes, children);
+    assert.deepEqual(
+      parseNativeVector(vectors[1]),
+      physical.files.map(([path]) => path),
+    );
+    assert.deepEqual(
+      physical.files.map(([path, , , blob]) => [path, blob]),
+      walkCommittedGraph(nodes, children, physical.boundary).files,
+    );
+    const missing = join(temporary, "missing corpus root");
+    assert.throws(
+      () =>
+        execFileSync(join(temporary, "collector-1"), [missing], {
+          stdio: ["ignore", "pipe", "pipe"],
+        }),
+      (error) => {
+        assert.equal(error.status, 101);
+        assert.deepEqual(error.stdout, Buffer.alloc(0));
+        const stderr = error.stderr.toString("utf8");
+        assert(stderr.includes(`corpus IO failed: read directory ${missing}:`));
+        assert(stderr.includes("kind=NotFound"));
+        assert(/raw_os_error=Some\(\d+\)/.test(stderr));
+        return true;
+      },
+    );
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+await test("native collector includes exact required IO helpers and refuses omitted or duplicated definitions", () => {
+  const source = readFileSync("tests/davinci_test_support/src/corpus.rs", "utf8");
+  const { harness } = collectorHarness(Buffer.from(source));
+  for (const name of ["fail_corpus_io", "corpus_entry_path"]) {
+    const definition = source.match(new RegExp(`^fn ${name}\\([\\s\\S]*?\\n\\}\\n`, "m"))?.[0];
+    assert(definition, `Original helper ${name} is present`);
+    assert(harness.toString("utf8").includes(definition));
+    assert.throws(() => collectorHarness(Buffer.from(source.replace(definition, ""))), /unique/);
+    assert.throws(() => collectorHarness(Buffer.from(source + definition)), /unique/);
   }
 });
 

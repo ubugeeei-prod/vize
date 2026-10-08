@@ -43,6 +43,21 @@ directory entry, a selected file removed after collection, invalid UTF-8, and
 byte-exact readable BOM/astral/CRLF source. Failure controls inspect the complete
 panic payload, including the original OS error when one exists.
 
+The [paired harness correction](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-6051767643)
+records the first source run, which compiled these six controls successfully but failed before
+the canonical comparisons: the existing native evidence harness extracted only
+the collector body and omitted its two new private helper definitions. That
+existing harness now carries the exact source helper definitions and refuses
+missing or duplicated helpers. Capture and validation reconstruct the same
+harness; historical sources without helpers retain their original harness.
+The complete original 778-byte collector from signed actual `b41811e3` remains
+a frozen test control with its entire kernel, alias, UTF-8, order, and byte
+assertions. An additional real execution compares the current complete raw
+NUL path vector against that original and the independent physical/Git vectors,
+and requires a missing-root diagnostic with nonzero exit and no success vector.
+No original control, fixture source, vector, or finite corpus requirement is
+weakened or replaced by this harness integration.
+
 TODO: metadata-error and symlink policy, and uniform fail-closed reads in other
 corpus lanes, remain separate work. This bounded installment preserves those
 policies and does not close the CI roadmap or identify the historical errno.
