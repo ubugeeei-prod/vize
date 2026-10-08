@@ -102,12 +102,15 @@ void test("all independent calls require an entire CLI envelope law and retain p
         "column",
         "endColumn",
         "endLine",
+        ...(message.ruleId === "vue/sfc-element-order" ? ["help"] : []),
         "line",
         "message",
         "ruleDocsPath",
         "ruleId",
         "severity",
       ]);
+      if (message.ruleId === "vue/sfc-element-order")
+        assert.match(message.help, /^Recommended order: </u);
     }
   }
   const failure = {

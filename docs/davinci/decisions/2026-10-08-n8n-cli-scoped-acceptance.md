@@ -57,3 +57,26 @@ not cancel its running candidate to manufacture Stack membership: keep the
 child explicitly unlinked, then rebase and retarget it onto genuinely fresh
 main after the parent actually merges, and rerun source Actions. Future
 dependent children must be registered before parent queue admission.
+
+The first hosted producer at `18217af7`
+([run 37733007223](https://github.com/ubugeeei-prod/vize/actions/runs/37733007223))
+replayed the complete original inventory and all scoped/repeat/outside-CWD
+comparisons, then rejected an authored expectation that omitted static
+element-order `help` metadata. JSON retains that metadata even with
+`--help-level none`. Preserve it in the whole envelope; never remove actual
+fields to fit a golden. Capture all 18 authored native packets before their
+assertions so one failure does not hide later provider responses.
+The retained artifact `11530423750` has digest
+`sha256:775f20a9c57c728832cbd94768166ec3e887277483ae672ca877d18e85f750c0`.
+Its original baseline contains 24 findings: 18 attribute findings, five
+multiple-root findings and one missing key; scopes remove six and downgrade
+18 to warnings. The other 48 rules have zero findings in this observation.
+Neither zeros nor counts establish independent accuracy or absence of false
+negatives; a corrected expectation still requires fresh source Actions.
+
+The [51-rule evidence inventory](./2026-10-08-n8n-cli-rule-coverage.md)
+separates five bounded whole independent pairs, two weaker translated or
+filtered oracles, and 44 native-only rows from raw original baseline counts.
+The next actual producer gap is Vue ref import identity
+([#8275](https://github.com/ubugeeei-prod/vize/issues/8275)); registration, slot
+validation and overwritten comments have separate source-proven defects.

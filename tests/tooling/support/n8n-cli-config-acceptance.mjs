@@ -215,6 +215,15 @@ for (const capture of oracle.recorded.captures) {
       capture.configuration + "--" + capture.caseId + ".json",
     ),
   });
+  summary.authored.push({ configuration: capture.configuration, caseId: capture.caseId, packets });
+}
+// Retain every authored response before the whole oracle laws can reject one.
+writeJson(path.join(output, "authored-cli-packets/complete.json"), summary.authored);
+for (const capture of oracle.recorded.captures) {
+  const { packets } = summary.authored.find(
+    ({ configuration, caseId }) =>
+      configuration === capture.configuration && caseId === capture.caseId,
+  );
   const actualRuleIds = packets.flatMap(({ messages }) => messages.map(({ ruleId }) => ruleId));
   const inverse = Object.fromEntries(
     Object.entries(projection.oracleRules).map(([rule, oracle]) => [oracle, rule]),
@@ -229,7 +238,6 @@ for (const capture of oracle.recorded.captures) {
   );
   assert.ok(expectation, "every owned witness requires a whole CLI envelope law");
   assert.deepEqual(packets, expectation.packets, capture.configuration + "/" + capture.caseId);
-  summary.authored.push({ configuration: capture.configuration, caseId: capture.caseId, packets });
 }
 assertUnchanged(workspace, [...corpus.files, ...corpus.licenses, ...packageFiles]);
 assert.deepEqual(verifyCorpus(), corpus, "licensed original fixture remains byte-identical");

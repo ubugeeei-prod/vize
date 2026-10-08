@@ -1016,7 +1016,8 @@
       "crates/vize_patina/src/rules/vue/sfc_element_order.rs": "5c85e10d4cb8277e6fcb89d452828b2a5041fd702950f393dcdded63bdf45153",
       "crates/vize_patina/src/rules/vue/sfc_element_order/options.rs": "0319f762c49f548d016881c294b111c7a14b745ef87162d677e109ff13672df0",
       "crates/vize_croquis/src/sfc/types.rs": "bf6e08b04df948189eecddd8686479dfe1a87fa762ddb420f5b7d37156ba2e6d"
-    }
+    },
+    "helpPolicy": "CLI JSON retains static sfc-element-order help metadata even with --help-level none; no field filtering"
   },
   "cliExpectations": [
     {
@@ -1209,7 +1210,8 @@
               "line": 4,
               "column": 1,
               "endLine": 6,
-              "endColumn": 10
+              "endColumn": 10,
+              "help": "Recommended order: <script> -> <template> -> <style>"
             }
           ],
           "errorCount": 1,
@@ -1326,7 +1328,8 @@
               "line": 4,
               "column": 1,
               "endLine": 6,
-              "endColumn": 12
+              "endColumn": 12,
+              "help": "Recommended order: <template> -> <script> -> <style>"
             }
           ],
           "errorCount": 1,
