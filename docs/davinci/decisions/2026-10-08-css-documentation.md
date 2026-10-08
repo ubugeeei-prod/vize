@@ -126,6 +126,13 @@ from actual signed main `81aa0c449cdeb2daf2959d3c9a272ff880bf4765`.
 The earlier `85f0240debf14ea810782045840a3f26a84ec59d` CSS source is retained
 with its real test-macro, empty-prefix and malformed-observation failures;
 it supplies no qualification credit to this refresh.
+The next `d2ae8fbd3f5455915a345a39c51da3fa3b72c799` source's CSS
+stdio and Benchmark observers exposed an assertion mismatch in the new
+malformed-context scenarios: the selected `v-bind` completion's documented
+signature is `v-bind()`. Assert that complete signature rather than changing
+the preserved Vue Markdown. Retain all four fallback items, exact resolve
+packet preservation, useful reference documentation and null malformed hover.
+Fresh qualification remains required after this observer-only correction.
 Root owns native Stack registration and
 protected admission. After a parent prefix actually merges, rebase and retarget
 any remaining child onto fresh main, then rerun its source Actions. Earlier

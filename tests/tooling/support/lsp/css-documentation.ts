@@ -256,8 +256,9 @@ export async function observeCss(
           assert.deepEqual(remaining, item, "resolve preserves every insertion and identity field");
           text = documentation(resolvedDoc);
         }
-        assert.ok(text.includes(`**${row.label}**`));
-        assert.ok(text.includes("**Docs**"));
+        const title = row.fallback ? "v-bind()" : row.label;
+        assert.ok(text.includes(`**${title}**`), row.name);
+        assert.ok(text.includes("**Docs**"), row.name);
         if (row.fallback) assert.equal(hover.result, null);
         else {
           const hoverText = documentation(record(hover.result).contents);
