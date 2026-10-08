@@ -215,3 +215,26 @@ must compare those full packets directly; the prior sole-child authority's
 separate author-recipe trimming is not applicable to this new packet. Keep
 10 independent closing positives plus three unchanged fit/suppression controls,
 all complete original reporter carriers and the broader composite gap open.
+
+Fresh native-phase run
+[37739282080](https://github.com/ubugeeei-prod/vize/actions/runs/37739282080)
+completes successfully on exact d5fa. Retain whole artifact 11533158046,
+digest `0ba35a0f460586424df5f74452221bf9583dbe5fd2b686b40a8cc8383dc0bfed`.
+Its source-custody packet binds both driver and source to d5fa, tree
+`453317125f73792b76401206c49deb95d2f26091`, baseline/main signed 68e,
+and the `current-inline` source recipe. The earlier f9/27e/7ac missing-target
+red remains intact. PR Check
+[37739283150](https://github.com/ubugeeei-prod/vize/actions/runs/37739283150)
+also succeeds. Full source qualification remains incomplete because the
+separate whole BOM observer failure is retained.
+
+The BOM owner independently reproduces both FORCE_COLOR and CLICOLOR_FORCE
+overriding NO_COLOR through 24 complete original-CLI observations. Reviewed
+[#8290](https://github.com/ubugeeei-prod/vize/pull/8290) repairs the test's
+explicit plain process envelope by clearing both force variables and retaining
+NO_COLOR, with 48 additive actual colored-versus-controlled CLI observations.
+The producer/parser/output policy and all eight original whole gold packets
+remain unchanged. This refines the earlier source-repair description: the
+observed defect is inherited environment control in the test observer. Wait
+for actual signed provider delivery before genuinely refreshing this parent;
+no unmerged repair or observed output normalization is used.

@@ -52,3 +52,30 @@ body, without a second indent or parentheses pair, to isolate it from the
 outer comment's forced break. All original fixtures and expectations remain
 unchanged; add inner-line-comment and long-chain controls, and require fresh
 source/protected Actions.
+
+PR [#8193](https://github.com/ubugeeei-prod/vize/pull/8193)
+actually merged at 2026-10-07 17:36:27Z as signed, GitHub-verified
+`102535bc0cc60e2aa1df1efde9334d5abb2122a9`. Its exact original source head
+`e9eea64a35a7dd6fa729e1e0ab8b91a3e5103509` passed PR Check
+[37649396334](https://github.com/ubugeeei-prod/vize/actions/runs/37649396334).
+The exact protected merge-group Check
+[37656842645](https://github.com/ubugeeei-prod/vize/actions/runs/37656842645)
+passed on that actual merge SHA: 25 successful jobs, 16 planned skips and no
+failed or pending jobs. Check, Musea accessibility/capture, Nuxt 3 build, Nuxt scoped-style build
+and n8n adoption queue workflows completed successfully. The actual child parent is
+`102535bc0cc60e2aa1df1efde9334d5abb2122a9`, preserving the parent-to-child
+delivery relation.
+
+Retain the separate full source Check failure
+[37649406473](https://github.com/ubugeeei-prod/vize/actions/runs/37649406473):
+its headless Vim scenario exits 1 and its Element Plus slot oracle rejects
+whole editor-revision results. They are separate failures; PR/protected
+success does not turn this full source run green. Preserve both complete
+raw job logs and hashes, 112888498650
+`ea5a731a06c3f3cce8d5b4ede4f90dd5abda158cb797fb983a8e3b2d7b255277`, and 112888498718
+`b3f933d91afed04e225c7830e14f4203e065cbe805e679019dedfc65b03588f9`.
+All earlier source failures, original fixture bytes, independent expectations
+and regression controls remain retained. Public installed acceptance remains
+pending: audit fix ancestry against the actual next cut/source receipt and
+replay complete originals through that registry-installed package. The retired
+unpublished 0.436 cut and source-only observations do not close this issue.
