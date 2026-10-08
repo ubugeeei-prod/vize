@@ -1,0 +1,1415 @@
+{
+  "schema": "vize.independent-expression-width-semantics",
+  "version": 1,
+  "corpusSha256": "b986b95eecfa3f2df1d653695f27dc330f3229b22ac7c335c15a2ecb4bb44523",
+  "versions": {
+    "vue": "3.5.35",
+    "compilerDom": "3.5.35",
+    "compilerSfc": "3.5.35",
+    "serverRenderer": "3.5.35"
+  },
+  "providers": {
+    "vue": {
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/index.js",
+      "sha256": "a5287f6056bc5c2c569d318063ee043f55a0d323fa7262f64456d58fd574f928"
+    },
+    "compilerDom": {
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/index.js",
+      "sha256": "21407fc5cebe255208627dd039f2284156be88abbd9123281a79581d349b48c1"
+    },
+    "compilerSfc": {
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/compiler-sfc/index.js",
+      "sha256": "a2226c3eedb827ce90fabd18413c8b6d4008a99269f403f86f160b733c546970"
+    },
+    "serverRenderer": {
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/server-renderer/index.js",
+      "sha256": "0e7735be4e65399d20d9ea65840a0cd0eef7f935fd1b224e6c45b576be12ac13"
+    },
+    "happyDom": {
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/lib/index.js",
+      "sha256": "d38c1614c3184c41b04199fe84d0e1406633414ff07f1003e675faae5628475a"
+    }
+  },
+  "rows": [
+    {
+      "id": "original-deep-lf",
+      "inputSha256": "851c54f3ec30d67d54dc5b6369b06303f3222583da08d873c1144cf3a1a8cb52",
+      "expectedSha256": "b2fb731eb8b2376c016442868a4f632d62cc617c53d50e7d4ffa40a073e28b16",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "original-deep-crlf",
+      "inputSha256": "567927cde0c882b4444bccd87d248fdd4c89fdcb16c0a2380775d79bb412ac0e",
+      "expectedSha256": "77471e2a6d10b1eb07d2fddf6d266c47f4d239365aded119ed45aec8c14e5e73",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "original-compact-lf",
+      "inputSha256": "2ebabc753042ae70cc0390163f416047857fb0d04dad3c4d656d95db6cd7fccf",
+      "expectedSha256": "b2fb731eb8b2376c016442868a4f632d62cc617c53d50e7d4ffa40a073e28b16",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "original-compact-crlf",
+      "inputSha256": "49c2e3df8a170fd99b0ce6ac2f294714eb7bf7c951a0b1f73d7815fbcabe3e1a",
+      "expectedSha256": "77471e2a6d10b1eb07d2fddf6d266c47f4d239365aded119ed45aec8c14e5e73",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "original-edit-lf",
+      "inputSha256": "775f58e087d8eed8db0f4ad6e9717fb4e1cbff3242063552458d9a046b3bc83a",
+      "expectedSha256": "775f58e087d8eed8db0f4ad6e9717fb4e1cbff3242063552458d9a046b3bc83a",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<button type=\"button\"> Edit </button>",
+            "textContent": " Edit ",
+            "calls": []
+          },
+          "afterClick": {
+            "innerHTML": "<button type=\"button\"> Edit </button>",
+            "textContent": " Edit ",
+            "calls": [
+              {
+                "call": "guard",
+                "arguments": 2
+              },
+              {
+                "call": "notice"
+              }
+            ]
+          },
+          "ssr": "<button type=\"button\"> Edit </button>",
+          "ssrCalls": []
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<button type=\"button\"> Edit </button>",
+            "textContent": " Edit ",
+            "calls": []
+          },
+          "afterClick": {
+            "innerHTML": "<button type=\"button\"> Edit </button>",
+            "textContent": " Edit ",
+            "calls": [
+              {
+                "call": "guard",
+                "arguments": 2
+              },
+              {
+                "call": "editor"
+              }
+            ]
+          },
+          "ssr": "<button type=\"button\"> Edit </button>",
+          "ssrCalls": []
+        }
+      ]
+    },
+    {
+      "id": "original-edit-crlf",
+      "inputSha256": "fefac4d18c4c40967f787a4751f5401bc88c91df1ea6b54c3df3a2d1ecb1077a",
+      "expectedSha256": "fefac4d18c4c40967f787a4751f5401bc88c91df1ea6b54c3df3a2d1ecb1077a",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<button type=\"button\"> Edit </button>",
+            "textContent": " Edit ",
+            "calls": []
+          },
+          "afterClick": {
+            "innerHTML": "<button type=\"button\"> Edit </button>",
+            "textContent": " Edit ",
+            "calls": [
+              {
+                "call": "guard",
+                "arguments": 2
+              },
+              {
+                "call": "notice"
+              }
+            ]
+          },
+          "ssr": "<button type=\"button\"> Edit </button>",
+          "ssrCalls": []
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<button type=\"button\"> Edit </button>",
+            "textContent": " Edit ",
+            "calls": []
+          },
+          "afterClick": {
+            "innerHTML": "<button type=\"button\"> Edit </button>",
+            "textContent": " Edit ",
+            "calls": [
+              {
+                "call": "guard",
+                "arguments": 2
+              },
+              {
+                "call": "editor"
+              }
+            ]
+          },
+          "ssr": "<button type=\"button\"> Edit </button>",
+          "ssrCalls": []
+        }
+      ]
+    },
+    {
+      "id": "deep-tabs-four",
+      "inputSha256": "2ebabc753042ae70cc0390163f416047857fb0d04dad3c4d656d95db6cd7fccf",
+      "expectedSha256": "82bce2a1bf4c9cbbf6cc1ebcb0bcfc13d7eea869479e6fe58bb7c49437e17e8d",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep-unicode-call",
+      "inputSha256": "a5084a0d274ccff8200f0b1246ee6e43e248dac01033c7ad4d684f0ba1fa53b9",
+      "expectedSha256": "3a8bdf3560751fa40cd687229930ad694553cf3ccb9b04617f1f73beae0497dc",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "unicode-tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "unicode-tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "unicode-tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "unicode-tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "unicode-tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "unicode-tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep-commented-call",
+      "inputSha256": "51dff7913d4c652707f0dff931d794908b4cbf9b647e8e5cd333c586356f2fa0",
+      "expectedSha256": "4852548b961a6d3fb0485966cb8ad1c4a2f5ba416926b19852742a3da5159b5d",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep-template-literal",
+      "inputSha256": "3e47cad2ce0305dcfcb059b7d697dbaa435dfce13793e105387ad0977beb9bcd",
+      "expectedSha256": "fa859d9d88680f2b9851aa025756e7327f29f19fd5586e4f252af0358ea35ffe",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"first\n  raw second line | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "first\n  raw second line",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"first\n  raw second line | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "first\n  raw second line",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"first\n  raw second line | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "first\n  raw second line",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"first\n  raw second line | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "first\n  raw second line",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"first\n  raw second line | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "first\n  raw second line",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"first\n  raw second line | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "first\n  raw second line",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep-width-96",
+      "inputSha256": "2ebabc753042ae70cc0390163f416047857fb0d04dad3c4d656d95db6cd7fccf",
+      "expectedSha256": "b2fb731eb8b2376c016442868a4f632d62cc617c53d50e7d4ffa40a073e28b16",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep-width-112",
+      "inputSha256": "2ebabc753042ae70cc0390163f416047857fb0d04dad3c4d656d95db6cd7fccf",
+      "expectedSha256": "2ebabc753042ae70cc0390163f416047857fb0d04dad3c4d656d95db6cd7fccf",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep-leading-comment-lf",
+      "inputSha256": "e4959932859c86e396f9368773ad95b8d8459b524a6d6fc835c88062e041fdbb",
+      "expectedSha256": "a3657e1d2ff1c2c25ff88cf3727a9f2ca3f46b4ecb0429519d00e0f3efa7b265",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep-leading-comment-crlf",
+      "inputSha256": "0f3351dc6f0fa88cae2fb9a561f20617f0115f17e687eb3a810130106d9696d2",
+      "expectedSha256": "96f6bdd2789003eee7a58420be0900b7ba53f43ed71e77248894600668aa2ab6",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep-trailing-comment-lf",
+      "inputSha256": "46eefb71e6c5a3b027b39ce3cb4305f631bcc787e0d63fb9a734c142d3d6d3f8",
+      "expectedSha256": "d5f1ff7417da226faef77e2861e1634bfc19ab1ae89e1718dfdeb8b80497efb7",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deep-trailing-comment-crlf",
+      "inputSha256": "7251c6c44cd30eec8d7fb497689f103f91f0604aba33a1bb1608b8df47d78c1d",
+      "expectedSha256": "0d6d6525ba1f7da668eb49895ef79ecda56e019e5098238181136f6e5c82077c",
+      "observations": [
+        {
+          "state": false,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "primary",
+                  "secondary",
+                  "extra"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"primary | secondary | extra\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "primary",
+                "secondary",
+                "extra"
+              ]
+            }
+          ]
+        },
+        {
+          "state": true,
+          "beforeClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "afterClick": {
+            "innerHTML": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+            "textContent": "",
+            "calls": [
+              {
+                "call": "tooltip",
+                "args": [
+                  "世界",
+                  "Ω",
+                  "extra²"
+                ]
+              }
+            ]
+          },
+          "ssr": "<section><ul><li><span class=\"label\" title=\"世界 | Ω | extra²\"></span></li></ul></section>",
+          "ssrCalls": [
+            {
+              "call": "tooltip",
+              "args": [
+                "世界",
+                "Ω",
+                "extra²"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

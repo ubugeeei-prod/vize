@@ -4,7 +4,9 @@ use super::FormattedExpression;
 use super::expression_wrapper;
 use crate::options::FormatOptions;
 use oxc_allocator::Allocator as OxcAllocator;
+use oxc_ast::ast::{Expression, Statement};
 use oxc_formatter::{QuoteStyle, format_program, parse_for_format};
+use oxc_formatter_core::LineWidth;
 use oxc_span::SourceType;
 use vize_l0::{String, ToCompactString};
 
@@ -31,14 +33,21 @@ pub(crate) fn format_js_expression_in_attribute(
     expr: &str,
     options: &FormatOptions,
 ) -> Option<String> {
-    format_js_expression_in_attribute_with_layout(expr, options).map(|formatted| formatted.code)
+    format_js_expression_with_quote_style(expr, options, Some(QuoteStyle::Single))
+        .map(|formatted| formatted.code)
 }
 
 pub(crate) fn format_js_expression_in_attribute_with_layout(
     expr: &str,
     options: &FormatOptions,
+    available_width: u32,
 ) -> Option<FormattedExpression> {
-    format_js_expression_with_quote_style(expr, options, Some(QuoteStyle::Single))
+    format_expression_with_width(
+        expr,
+        options,
+        Some(QuoteStyle::Single),
+        Some(available_width),
+    )
 }
 
 pub(crate) fn format_js_expression_with_quote_style(
@@ -46,11 +55,21 @@ pub(crate) fn format_js_expression_with_quote_style(
     options: &FormatOptions,
     quote_style: Option<QuoteStyle>,
 ) -> Option<FormattedExpression> {
+    format_expression_with_width(expr, options, quote_style, None)
+}
+
+fn format_expression_with_width(
+    expr: &str,
+    options: &FormatOptions,
+    quote_style: Option<QuoteStyle>,
+    available_width: Option<u32>,
+) -> Option<FormattedExpression> {
     let trimmed = expr.trim();
     if trimmed.is_empty() {
         return Some(FormattedExpression {
             code: String::default(),
             retained_bare_sequence: false,
+            owns_attribute_lines: false,
         });
     }
 
@@ -78,6 +97,27 @@ pub(crate) fn format_js_expression_with_quote_style(
         if let Some(quote_style) = quote_style {
             oxc_options.quote_style = quote_style;
         }
+        if let Some(width) = available_width
+            && let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice()
+            && let Expression::UnaryExpression(unary) = &statement.expression
+            && matches!(&unary.argument, Expression::CallExpression(_))
+        {
+            oxc_options.line_width = LineWidth::try_from(width as u16).unwrap_or_default();
+            let code = oxc_formatter::format_unary_call_argument(
+                oxc_allocator,
+                &parsed.program,
+                oxc_options,
+            )?
+            .print()
+            .ok()?
+            .into_code();
+            let code = code.trim();
+            return Some(FormattedExpression {
+                code: code.to_compact_string(),
+                retained_bare_sequence: false,
+                owns_attribute_lines: code.contains('\n'),
+            });
+        }
         let formatted = format_program(oxc_allocator, &parsed.program, oxc_options, None)
             .print()
             .ok()?
@@ -97,6 +137,7 @@ pub(crate) fn format_js_expression_with_quote_style(
         Some(FormattedExpression {
             code: inner.text.trim().to_compact_string(),
             retained_bare_sequence: inner.retained_bare_sequence,
+            owns_attribute_lines: false,
         })
     })
 }

@@ -6,6 +6,9 @@ use std::{error::Error, fs, path::Path, process::Command};
 #[path = "../../../tests/support/formatter_continuation_reference.rs"]
 mod current_reference;
 
+#[path = "../../../tests/support/formatter_expression_width_reference.rs"]
+mod expression_reference;
+
 fn fmt(root: &Path, args: &[&str]) -> Result<std::process::Output, std::io::Error> {
     Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(root)
@@ -30,6 +33,7 @@ fn configured_check_write_and_second_check_match_complete_reference_bytes()
         let input = fs::read(directory.join(case["input"].as_str().ok_or("missing input")?))?;
         let expected = fs::read(directory.join(case["output"].as_str().ok_or("missing output")?))?;
         let expected = current_reference::expected(id, &input, expected);
+        let expected = expression_reference::expected(id, &input, expected);
         let project = tempfile::tempdir()?;
         let root = project.path();
         let file = root.join("Example.vue");

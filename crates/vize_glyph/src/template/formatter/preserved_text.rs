@@ -47,7 +47,7 @@ impl TemplateFormatter<'_> {
             }
             if source.get(pos) == Some(&b'<')
                 && let Some((tag_name, mut attrs, self_closing, end)) =
-                    self.parse_opening_tag(source, pos)
+                    self.parse_opening_tag(source, pos, depth)
                 && source.get(end.saturating_sub(1)) == Some(&b'>')
             {
                 if self.options.sort_attributes {

@@ -140,7 +140,7 @@ impl<'a> TemplateFormatter<'a> {
                     continue;
                 }
                 if let Some((tag_name, attrs, is_self_closing, end_pos)) =
-                    self.parse_opening_tag(source, pos)
+                    self.parse_opening_tag(source, pos, depth)
                 {
                     self.flush_text_buffer(&mut output, &mut text, depth, &mut joiner);
                     let join = joiner.open(pos);

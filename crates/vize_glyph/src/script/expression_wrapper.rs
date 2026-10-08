@@ -4,6 +4,7 @@ use oxc_ast::ast::{Expression, Program, Statement};
 pub(crate) struct FormattedExpression {
     pub code: vize_l0::String,
     pub retained_bare_sequence: bool,
+    pub owns_attribute_lines: bool,
 }
 
 pub(super) struct Argument<'a> {

@@ -51,7 +51,8 @@ void test("source-built formatter matches every exact reference and reaches a fi
     report.summary,
     {
       plannedCases: count,
-      legacyMatches: count,
+      legacyMatches: count - 1,
+      currentReferenceMatches: 1,
       legacyFailures: 0,
       baselineDrift: 0,
       nativeUnsupported: count,
