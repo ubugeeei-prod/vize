@@ -1,0 +1,1 @@
+/*😀*/ export const exportValue = 1;

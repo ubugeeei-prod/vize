@@ -18,7 +18,7 @@ use std::{
     process::Command,
 };
 use vize_carton::corsa_resolver::platform_suffix;
-use vize_l0::{cstr, path::canonicalize_non_verbatim};
+use {vize_carton::path::canonicalize_non_verbatim, vize_l0::cstr};
 
 #[test]
 fn check_json_reports_type_errors_via_project_typechecker() {

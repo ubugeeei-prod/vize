@@ -114,7 +114,8 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/art_variant.rs	1	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_options_index_signature.rs	13	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/component_vif_guard_ts7006.rs	56	l0	L0	stage	vize_l0	preferred	2
-typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/css_side_effect_import.rs	20	l0	L0	stage	vize_l0	preferred	2
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/css_side_effect_import.rs	20	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/css_side_effect_import.rs	20	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/diagnostic_normalization.rs	3	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/directive_anchors.rs	11	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/type_checker/tests/recent_issues/directive_values.rs	9	l0	L0	stage	vize_l0	preferred	1

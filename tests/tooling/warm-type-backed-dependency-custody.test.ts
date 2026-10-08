@@ -41,3 +41,29 @@ test("qualified config and lint changes rebuild their actual dependencies on bot
       );
     }
 });
+
+test("the path host move rebuilds both exact foundation owners", () => {
+  const dependencies = changedSourceDependencies([
+    "davinci/vize_l0/src/lib.rs",
+    "crates/vize_carton/src/path.rs",
+  ]);
+  assert.deepEqual(dependencies, ["vize_l0", "vize_carton"]);
+  assert.deepEqual(changedSourceDependencies(["crates/vize_carton_other/src/path.rs"]), []);
+  const artifacts = dependencies.map((name) => ({ target: { name }, fresh: false }));
+  assert.doesNotThrow(() => assertChangedDependenciesBuilt(dependencies, artifacts));
+  assert.throws(
+    () => assertChangedDependenciesBuilt(dependencies, artifacts.slice(0, 1)),
+    /changed vize_carton must supply an actual linked artifact/u,
+  );
+  assert.throws(
+    () =>
+      assertChangedDependenciesBuilt(
+        dependencies,
+        artifacts.map((artifact) => ({
+          ...artifact,
+          fresh: artifact.target.name === "vize_carton",
+        })),
+      ),
+    /changed vize_carton must actually compile/u,
+  );
+});

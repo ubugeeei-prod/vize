@@ -49,7 +49,7 @@ impl ServerState {
                         .iter()
                         .any(|suffix| path.ends_with(suffix))
                 })
-                && !vize_l0::path::is_git_metadata_path(&path)
+                && !vize_carton::path::is_git_metadata_path(&path)
             {
                 paths.push(path);
             }

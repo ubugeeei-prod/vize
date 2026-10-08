@@ -178,7 +178,7 @@ fn physical_path(path: &Path) -> Option<PathBuf> {
             _ => return None,
         },
     };
-    Some(vize_l0::path::normalize_windows_verbatim_path(physical))
+    Some(vize_carton::path::normalize_windows_verbatim_path(physical))
 }
 
 fn is_dependency_path(path: &Path) -> bool {

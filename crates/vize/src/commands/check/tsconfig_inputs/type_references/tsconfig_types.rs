@@ -25,7 +25,7 @@ fn load_tsconfig_type_packages(
     tsconfig_path: &Path,
     chain: &mut ConfigChain<Option<Vec<std::string::String>>>,
 ) -> io::Result<Option<Vec<std::string::String>>> {
-    let resolved = vize_l0::path::canonicalize_non_verbatim(tsconfig_path);
+    let resolved = vize_carton::path::canonicalize_non_verbatim(tsconfig_path);
     chain.load(&resolved, |chain| {
         let content = tracked_read_to_string(&resolved)?;
         let value = parse_jsonc_value(&content).map_err(io::Error::other)?;

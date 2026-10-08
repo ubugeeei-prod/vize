@@ -45,6 +45,10 @@ fn normalize_windows_verbatim_path_impl(path: PathBuf) -> PathBuf {
 }
 
 #[cfg(any(windows, test))]
+#[expect(
+    clippy::disallowed_types,
+    reason = "Preserve Windows path prefix normalization and its existing owned string"
+)]
 fn strip_windows_verbatim_prefix(value: &str) -> Option<std::string::String> {
     if let Some(rest) = value.strip_prefix("\\\\?\\UNC\\") {
         let mut normalized = std::string::String::with_capacity(rest.len() + 2);

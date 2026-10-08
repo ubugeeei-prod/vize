@@ -24,13 +24,13 @@ pub(super) fn collect_supported_files_with_options(
     // expensive per-entry canonicalization without making CLI output unstable.
     let skip_generated = should_skip_generated_for_root(root);
     let normalized_root = normalize_input_path(root);
-    if vize_l0::path::is_git_metadata_path(&normalized_root) {
+    if vize_carton::path::is_git_metadata_path(&normalized_root) {
         return Vec::new();
     }
     let walker = WalkBuilder::new(root)
         .standard_filters(true)
         .hidden(!options.include_hidden)
-        .filter_entry(|entry| !vize_l0::path::is_git_metadata_path(entry.path()))
+        .filter_entry(|entry| !vize_carton::path::is_git_metadata_path(entry.path()))
         .build_parallel();
 
     let collected = std::sync::Mutex::new(Vec::<PathBuf>::new());

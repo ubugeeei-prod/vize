@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { finiteCut } from "./warm-type-backed-cut.ts";
+import { gitBodyDigest, qualifyPathHostMove } from "./warm-type-backed-path-host.ts";
 
 import {
   driverRoot,
@@ -177,6 +178,12 @@ if (process.argv[2] === "prepare") {
     "crates/vize_maestro/src/ide/corsa_support/canonical/component_project.rs",
     "crates/vize_maestro/src/ide/diagnostics/editor_event_partial_diagnostics_tests.rs",
     "crates/vize_maestro/src/ide/diagnostics/editor_event_partial_diagnostics_tests/fixture.rs",
+    // Reviewed dependent bound-call casing and authored event-key geometry.
+    "crates/vize_canon/src/virtual_ts/generator/authored_events.rs",
+    "crates/vize_maestro/src/ide/rename/canonical/event_rename.rs",
+    "crates/vize/tests/lsp_bound_event_casing_cli.rs",
+    "crates/vize/tests/lsp_bound_event_casing_cli/application.rs",
+    "crates/vize/tests/lsp_bound_event_casing_cli/session.rs",
   ]);
   const harnessOnly = !cut && production.length === 0;
   if (harnessOnly) {
@@ -215,9 +222,17 @@ if (process.argv[2] === "prepare") {
       );
     }
   } else assert.ok(production.length > 0);
+  const pathHostMove = !cut
+    ? qualifyPathHostMove(production, allowed, (side, file) =>
+        gitBodyDigest(driverRoot, side === "before" ? baseline : head, file),
+      )
+    : null;
   if (!cut) {
     for (const file of production)
-      assert.ok(allowed.has(file), `unqualified production delta: ${file}`);
+      assert.ok(
+        allowed.has(file) || pathHostMove?.files.includes(file),
+        `unqualified production delta: ${file}`,
+      );
   }
   const result = spawnSync("git", ["worktree", "add", "--detach", before, baseline], {
     cwd: driverRoot,
@@ -256,6 +271,7 @@ if (process.argv[2] === "prepare") {
         base,
         baseline,
         production,
+        pathHostMove,
         afterRoot,
         driverSource: driver,
         authority: cut
@@ -296,7 +312,7 @@ if (process.argv[2] === "prepare") {
           ? "Literal published v0.433 and root-frozen release cut; complete changed Git-entry manifest, independent driver, identical fresh ci builds, original400 and one recorded runtime"
           : harnessOnly
             ? "Same production source; closed reviewed harness-only delta and unchanged original inputs/locks. Qualification only, no performance or source-effect gain."
-            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options, document-batch transfer or event navigation/rename ownership delta; one worker, identical release recipe, original400 inputs and current locked runtime",
+            : "Actual common ancestor and current source, only owned prepared-surface, readiness-ack, shared editor reference-options, document-batch transfer, event navigation/rename ownership or exact authenticated path-host move delta; one worker, identical release recipe, original400 inputs and current locked runtime",
       },
       null,
       2,

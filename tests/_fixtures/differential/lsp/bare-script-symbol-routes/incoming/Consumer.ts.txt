@@ -1,0 +1,2 @@
+import { exportValue } from './Source';
+export const result = exportValue;

@@ -63,7 +63,6 @@ pub mod general;
 pub mod hash;
 pub mod interner;
 pub mod line_index;
-pub mod path;
 pub mod pool;
 pub mod profiler;
 pub mod recursion;

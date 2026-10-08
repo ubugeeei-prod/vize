@@ -196,7 +196,7 @@ impl ServerState {
 }
 
 fn is_project_source(path: &Path) -> bool {
-    !vize_l0::path::is_git_metadata_path(path)
+    !vize_carton::path::is_git_metadata_path(path)
         && matches!(
             path.extension().and_then(|ext| ext.to_str()),
             Some("vue" | "ts" | "tsx" | "mts" | "cts" | "js" | "jsx" | "mjs" | "cjs")
@@ -217,7 +217,7 @@ fn discover_paths(roots: &[PathBuf]) -> (Vec<Url>, bool) {
             .parents(false)
             .follow_links(false)
             .filter_entry(|entry| {
-                !vize_l0::path::is_git_metadata_path(entry.path())
+                !vize_carton::path::is_git_metadata_path(entry.path())
                     && (!entry.file_type().is_some_and(|kind| kind.is_dir())
                         || !is_excluded_directory(entry.file_name()))
             });

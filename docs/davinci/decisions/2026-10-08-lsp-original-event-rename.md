@@ -240,3 +240,18 @@ paragraphs, all incoming other349 rows, and require fresh exact-source Actions
 without target omission, rerun waiver or historical runtime transfer.
 
 Paired genuine-main union decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6051055191) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6051055613).
+
+Genuinely merge signed actual main `b41811e3b3` after #8242 delivery, retaining
+the incoming Carton finite-60 path-host qualification, dependency custody and
+all original400 inputs. Resolve the actual workflow conflict by keeping the
+entire incoming file and adding only the two reviewed common fixture/native-probe
+entries; the event16 and dependent casing5 registrations remain exact. Preserve
+all104 inputs, independent goldens, ordered publications and editor witnesses.
+The prior source's complete matching observations do not qualify this union.
+The22 sessions execute the mandatory invalid TS2322 guard body, but successful
+guard wire packets were not retained. The82 sessions supply complete configured
+CLI observations without per-request native-entry proof; separate editor native
+packets grant no cross-family credit. Fresh exact-source Actions and native
+qualification remain required, with protected delivery and release replay pending.
+
+Paired Carton/main union observations: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6051544531) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6051544729).
