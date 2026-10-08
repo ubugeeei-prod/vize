@@ -206,26 +206,7 @@ noRestrictedMembersOptionsDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
-componentNameInTemplateCasingOptionsDef: JsonSchema = new JsonSchema {
-  type = "object"
-  properties {
-    ["casing"] = new JsonSchema {
-      type = "string"
-      enum = new Listing { "PascalCase"; "kebab-case" }
-      default = "PascalCase"
-    }
-    ["registeredComponentsOnly"] = new JsonSchema {
-      type = "boolean"
-      default = true
-    }
-    ["globals"] = new JsonSchema {
-      type = "array"
-      items = new JsonSchema { type = "string" }
-      default = new Listing {}
-    }
-  }
-  additionalProperties = false
-}
+componentNameInTemplateCasingOptionsDef: JsonSchema = LintRuleOptionsSchemaDefinitions.componentNameInTemplateCasingOptionsDef
 
 customEventNameCasingOptionsDef: JsonSchema = new JsonSchema {
   type = "object"

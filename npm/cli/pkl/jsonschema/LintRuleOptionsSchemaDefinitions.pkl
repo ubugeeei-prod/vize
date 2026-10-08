@@ -33,7 +33,7 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["type/strict-boolean-expressions"] = strictBooleanExpressionsOptionsDef
     ["script/no-restricted-globals"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedGlobalsOptions" }
     ["script/no-restricted-members"] = new JsonSchema { `$ref` = "#/definitions/NoRestrictedMembersOptions" }
-    ["vue/component-name-in-template-casing"] = ConfigArtifactDefinitions.componentNameInTemplateCasingOptionsDef
+    ["vue/component-name-in-template-casing"] = componentNameInTemplateCasingOptionsDef
     ["script/custom-event-name-casing"] = ConfigArtifactDefinitions.customEventNameCasingOptionsDef
     ["vue/no-mutating-props"] = ConfigArtifactDefinitions.noMutatingPropsOptionsDef
     ["vue/require-component-registration"] = new JsonSchema {
@@ -66,6 +66,27 @@ strictBooleanExpressionsOptionsDef: JsonSchema = new JsonSchema {
     ["allowNullableNumber"] = new JsonSchema { type = "boolean"; default = false }
     ["allowNullableEnum"] = new JsonSchema { type = "boolean"; default = false }
     ["allowAny"] = new JsonSchema { type = "boolean"; default = false }
+  }
+  additionalProperties = false
+}
+
+componentNameInTemplateCasingOptionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["casing"] = new JsonSchema {
+      type = "string"
+      enum = new Listing { "PascalCase"; "kebab-case" }
+      default = "PascalCase"
+    }
+    ["registeredComponentsOnly"] = new JsonSchema {
+      type = "boolean"
+      default = true
+    }
+    ["globals"] = new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+      default = new Listing {}
+    }
   }
   additionalProperties = false
 }

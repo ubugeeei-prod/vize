@@ -1,11 +1,15 @@
+mod bindings;
 mod emits;
 mod inherit_attrs;
 mod inheritance;
+mod template_casing;
 
 use super::class_component::{class_from_export, collect_class_component_metadata};
+use bindings::collect_object_bindings;
 use emits::collect_options_api_emits_from_options as collect_emits;
 use inherit_attrs::option_bool_property;
 use inheritance::{collect_extends_bindings, collect_mixins_bindings};
+use template_casing::{authored_casing_options, collect_direct_component_names};
 
 use oxc_ast::ast::{
     Argument, ArrayExpression, ArrayExpressionElement, BindingPattern, CallExpression,
@@ -82,93 +86,6 @@ pub(in crate::script_parser) fn collect_options_api_component_metadata(
 
     if legacy_vue2 {
         add_nuxt2_template_globals(result);
-    }
-}
-
-fn authored_casing_options<'a>(
-    declaration: &'a ExportDefaultDeclarationKind<'a>,
-) -> Option<&'a ObjectExpression<'a>> {
-    match declaration {
-        ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object),
-        ExportDefaultDeclarationKind::CallExpression(call)
-            if is_component_options_callee(&call.callee) =>
-        {
-            match call.arguments.first()? {
-                Argument::ObjectExpression(object) => Some(object),
-                _ => None,
-            }
-        }
-        _ => None,
-    }
-}
-
-/// Casing checks authored keys, regardless of the component value. Unlike
-/// identity resolution, this does not follow local objects or spreads.
-fn collect_direct_component_names(result: &mut ScriptParseResult, options: &ObjectExpression<'_>) {
-    if result.skip_diagnostics {
-        return;
-    }
-    let components = options.properties.iter().find_map(|property| {
-        let ObjectPropertyKind::ObjectProperty(property) = property else {
-            return None;
-        };
-        if static_key_name(&property.key) != Some("components") {
-            return None;
-        }
-        let Expression::ObjectExpression(object) = &property.value else {
-            return None;
-        };
-        Some(object)
-    });
-    let Some(components) = components else {
-        return;
-    };
-    for property in &components.properties {
-        let ObjectPropertyKind::ObjectProperty(property) = property else {
-            continue;
-        };
-        if let Some(name) = static_key_name(&property.key) {
-            result
-                .template_component_registrations
-                .option_names
-                .insert(CompactString::new(name));
-        }
-    }
-}
-
-fn static_key_name<'a>(key: &'a PropertyKey<'a>) -> Option<&'a str> {
-    if let PropertyKey::TemplateLiteral(template) = key {
-        return template
-            .expressions
-            .is_empty()
-            .then(|| template.quasis.first())
-            .flatten()
-            .and_then(|quasi| quasi.value.cooked.as_ref().map(|value| value.as_str()));
-    }
-    property_key_name(key)
-}
-
-fn collect_object_bindings<'a>(
-    program: &'a Program<'a>,
-    object_bindings: &mut FxHashMap<&'a str, &'a ObjectExpression<'a>>,
-) {
-    for statement in program.body.iter() {
-        let Statement::VariableDeclaration(declaration) = statement else {
-            continue;
-        };
-
-        for declarator in declaration.declarations.iter() {
-            let BindingPattern::BindingIdentifier(id) = &declarator.id else {
-                continue;
-            };
-            let Some(init) = declarator.init.as_ref() else {
-                continue;
-            };
-            let Some(object) = object_expression_from_expression(init) else {
-                continue;
-            };
-            object_bindings.insert(id.name.as_str(), object);
-        }
     }
 }
 
