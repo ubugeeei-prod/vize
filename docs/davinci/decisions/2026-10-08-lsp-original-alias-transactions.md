@@ -179,3 +179,29 @@ input digest check, the original400 workload, provider selection, native/build
 recipes, process budgets and numeric ceilings. The new helper only permits the
 real paired workload to run on this source pair; fresh exact-source measured
 execution and all original provider/result requirements remain necessary.
+
+## Native delivered-prefix refresh and unchanged source laws
+
+#8233 actually merged at `2026-10-08T06:30:27Z` as verified signed commit
+`68e0dc38973a8690bac8ce1c0d6b6349eb4a491a`. Protected Check `37735947314`,
+n8n, both Nuxt and Musea merge-group runs completed successfully on that exact
+candidate. GitHub natively rebased the remaining child to
+`5dcedf3ad4ad07b62b69c023e6af2b3c0a3605af`, retargeted it to `main`, and
+retained native Stack #8271 position 2 after its merged parent at position 1.
+Authenticate the actual remote before aligning local: all 97 owned
+non-inventory blobs and the whole diagnostic clause remain byte-exact, and all
+350 incoming canonical rows are preserved. Archive the prior 419 head; no forced
+mutation, temporary close or individual auto-merge is needed for this valid
+native refresh. Fresh exact-head Actions remain mandatory.
+
+The 419 source builder succeeded, but tooling job `113179951835` failed the
+unchanged consumer-migration inventory check and 350-line growth law. Preserve
+its complete authentic log under `supplemental/historical-419-tooling/`. Extract
+the unchanged generated-coordinate methods and final binding publication into
+small modules in a separate move-only commit; the generator remains 851 lines,
+matching actual main, and the mapping model falls to 295 lines. Regenerate all
+three authoritative consumer/Croquis/source inventories without editing the
+generators or length law. Add only these two exact reviewed extraction paths to
+the original400 closed qualifier, now 36 literal paths. Every original input,
+golden, count-one oracle, native guard, provider recipe/selector and performance
+ceiling remains unchanged; the corrected source requires new complete execution.

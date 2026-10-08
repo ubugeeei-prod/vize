@@ -51,3 +51,9 @@ failure: the existing closed path qualifier refused this new reviewed source
 delta before measurement. Its successor admits only the exact reviewed literal
 paths, with every original workload and ceiling unchanged. No performance pass
 is inferred from qualification or from the aborted run.
+
+`historical-419-tooling/` preserves the complete authentic source tooling job
+failure for stale generated consumer inventories and the unchanged 350-line
+growth law. The successor extracts unchanged coordinate/publication bodies and
+regenerates inventories. Original oracles and performance caps remain unchanged;
+new source proof is required.

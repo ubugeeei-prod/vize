@@ -1,0 +1,15 @@
+{
+  "kind": "historical-source-tooling-job-failure",
+  "prHead": "4191689c1c1b305938d4005180cb341e9f7c2a33",
+  "runId": 37737122521,
+  "jobId": 113179951835,
+  "jobConclusion": "failure",
+  "log": "tooling-shard2-job.log.gz",
+  "rawLogSha256": "f34552fe7fecb6d2ca2a2f013a62e1eff8ffc8205ccb7ba789e2eb03d34933ec",
+  "gzipSha256": "0ebcbf26b6de5dcd3c64cd65d456748ab32354190f7bfe39250e69f56fbbf9b9",
+  "failures": [
+    "consumer-migration-surfaces/typechecker/vize_canon.tsv and lsp/vize_maestro.tsv stale after private carrier controls",
+    "Original350line growth law: generator852/base851 and model408/base402"
+  ],
+  "correction": "Pure extraction preserves coordinate method and final publication bodies, generator851<=actualmain851 and model295<350. Regenerate unmodified authoritative inventory generators; keep every growth law and provider fixture/expectation unchanged."
+}
