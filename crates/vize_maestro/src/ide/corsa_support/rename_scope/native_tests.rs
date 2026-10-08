@@ -4,7 +4,6 @@
 use tower_lsp::lsp_types::{
     CreateFile, DeleteFile, DocumentChangeOperation, DocumentChanges,
     OptionalVersionedTextDocumentIdentifier, RenameFile, ResourceOp, TextDocumentEdit, Url,
-    WorkspaceEdit,
 };
 
 use super::{
@@ -14,7 +13,7 @@ use super::{
 use crate::ide::{
     IdeContext,
     corsa_support::{
-        CanonicalMaterializedSource,
+        canonical::CanonicalMaterializedSource,
         canonical_dependency_tests::{host_document, mapped_document},
     },
 };
@@ -45,7 +44,7 @@ fn native_scope_retains_closed_sfc_owners_through_the_final_packet() {
     let original = raw.clone();
     let mut scope = RenameScope::native(&ctx);
     assert!(scope.admits_native(&document, &raw));
-    let mut final_edit = entry(uri);
+    let mut final_edit = entry(uri.clone());
     final_edit
         .changes
         .as_mut()
@@ -118,7 +117,6 @@ fn native_scope_refuses_unknown_in_root_members_in_every_raw_and_final_container
         DocumentChangeOperation::Op(ResourceOp::Delete(DeleteFile {
             uri: asset_uri.clone(),
             options: None,
-            annotation_id: None,
         })),
         DocumentChangeOperation::Op(ResourceOp::Rename(RenameFile {
             old_uri: uri.clone(),
@@ -217,7 +215,7 @@ fn vue_named_physical_alias_cannot_authorize_a_runtime_declaration() {
         &document,
         &entry(Url::parse(&document.request_uri).unwrap())
     ));
-    assert!(!scope.admits_authored(&entry(uri)));
+    assert!(!scope.admits_authored(&entry(uri.clone())));
     assert_eq!(
         std::fs::read_to_string(asset).unwrap(),
         "interface Events { change: Event }"
@@ -246,7 +244,7 @@ fn vue_named_hardlink_cannot_turn_a_native_asset_into_an_authored_source() {
         &document,
         &entry(Url::parse(&document.request_uri).unwrap())
     ));
-    assert!(!scope.admits_authored(&entry(uri)));
+    assert!(!scope.admits_authored(&entry(uri.clone())));
 }
 
 #[cfg(unix)]
@@ -321,6 +319,6 @@ fn retargeted_authored_alias_cannot_reuse_the_final_path_memo() {
     assert!(scope.admits_authored(&entry(uri.clone())));
     std::fs::remove_file(&alias).unwrap();
     std::os::unix::fs::symlink(&foreign, &alias).unwrap();
-    assert!(!scope.admits_authored(&entry(uri)));
+    assert!(!scope.admits_authored(&entry(uri.clone())));
     assert_eq!(std::fs::read_to_string(foreign).unwrap(), SOURCE);
 }

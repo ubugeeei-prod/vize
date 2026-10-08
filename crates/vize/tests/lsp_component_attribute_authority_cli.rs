@@ -110,6 +110,9 @@ impl Fixture {
         )
         .unwrap();
         let mut lsp = LspProcess::spawn(project.path());
+        if copy_distribution {
+            lsp.retain_protocol();
+        }
         lsp.send(
             json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{
                 "processId":null,"rootUri":file_uri(project.path()),"capabilities":{},
@@ -234,6 +237,10 @@ impl Fixture {
         assert!(self.lsp.wait_for_exit().success());
         if let Some(distribution) = &self.runtime_distribution {
             distribution.assert_unchanged();
+            println!(
+                "copied native distribution terminal: {}",
+                self.lsp.terminal_evidence()
+            );
         }
         assert!(
             self.mismatches.is_empty(),

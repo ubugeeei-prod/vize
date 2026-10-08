@@ -1,6 +1,16 @@
 # CI uses the same pinned nextest on the archive builder and every shard.
 nextest-version = "0.9.146"
 
+# Keep complete copied-runtime packets and immutable asset hashes in the same
+# PR/full JUnit receipt; only these three exact source laws retain stdout.
+[[profile.default.overrides]]
+filter = '''package(=vize) & binary(=lsp_component_attribute_authority_cli) & (
+  test(=runtime_distribution::physically_copied_native_distribution_refuses_whole_mutable_emit_transaction) |
+  test(=runtime_distribution::outside_root_native_relay_cannot_authorize_its_inside_root_distribution) |
+  test(=runtime_distribution::copied_distribution_preserves_complete_sfc_and_imported_alias_packets)
+)'''
+junit.store-success-output = true
+
 # Keep the seven exact allocation vectors for this one case in both PR/full
 # JUnit receipts; all other output policies and runtime settings stay unchanged.
 [[profile.default.overrides]]
