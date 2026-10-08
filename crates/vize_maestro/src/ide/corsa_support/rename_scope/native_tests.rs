@@ -1,5 +1,4 @@
 //! Request-local projection ownership across the complete transaction.
-#![expect(clippy::disallowed_macros, reason = "adversarial fixture construction")]
 
 use tower_lsp::lsp_types::{
     CreateFile, DeleteFile, DocumentChangeOperation, DocumentChanges,
