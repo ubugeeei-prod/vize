@@ -54,7 +54,44 @@ void test("literal original ignore reproduction preserves VCS, config and CLI ex
     assert.equal(bytes.length, pin.bytes, pin.file);
     assert.equal(sha256(bytes), pin.sha256, pin.file);
   }
-  fs.mkdirSync(path.join(root, ".git"));
+  const capture: {
+    schema: string;
+    complete: boolean;
+    pins: unknown;
+    setup: unknown;
+    observations: unknown[];
+  } = {
+    schema: "vize.oxlint.original-ignore-7903.v1",
+    complete: false,
+    pins,
+    setup: null,
+    observations: [],
+  };
+  const persist = () => {
+    fs.mkdirSync(path.dirname(capturePath), { recursive: true });
+    fs.writeFileSync(capturePath, JSON.stringify(capture, null, 2) + "\n");
+  };
+  const initialized = spawnSync("git", ["init", "-q"], {
+    cwd: root,
+    encoding: "utf8",
+    timeout: 30_000,
+  });
+  capture.setup = {
+    command: "git",
+    args: ["init", "-q"],
+    cwd: root,
+    status: initialized.status,
+    signal: initialized.signal,
+    error: initialized.error?.message ?? null,
+    stdout: initialized.stdout,
+    stderr: initialized.stderr,
+  };
+  persist();
+  assert.equal(initialized.error, undefined);
+  assert.equal(initialized.signal, null);
+  assert.equal(initialized.status, 0, initialized.stdout + initialized.stderr);
+  assert.equal(initialized.stdout, "");
+  assert.equal(initialized.stderr, "");
   fs.mkdirSync(path.join(root, "node_modules/oxlint/bin"), { recursive: true });
   fs.symlinkSync(engine, path.join(root, "node_modules/oxlint/bin/oxlint"));
   fs.symlinkSync(packageDir, path.join(root, "node_modules/oxlint-plugin-vize"));
@@ -79,16 +116,9 @@ void test("literal original ignore reproduction preserves VCS, config and CLI ex
     );
   const before = custody();
   const directory = tree();
-  const capture: { schema: string; complete: boolean; pins: unknown; observations: unknown[] } = {
-    schema: "vize.oxlint.original-ignore-7903.v1",
-    complete: false,
-    pins,
-    observations: [],
-  };
   const save = (row: unknown) => {
     capture.observations.push(row);
-    fs.mkdirSync(path.dirname(capturePath), { recursive: true });
-    fs.writeFileSync(capturePath, JSON.stringify(capture, null, 2) + "\n");
+    persist();
   };
   const run = (entrypoint: string, args: string[]) => {
     const prior = custody();

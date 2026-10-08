@@ -53,3 +53,18 @@ Exact-head source Actions, protected full qualification and actual merge are
 required before crediting this new original reproduction replay. Root owns
 queue admission and installed publication; stale green #8167 checks do not
 qualify the new observer.
+
+## Original Git setup fidelity
+
+The first exact source `a4c493dd` passes
+[Check 37729794119](https://github.com/ubugeeei-prod/vize/actions/runs/37729794119).
+Its [raw artifact](https://github.com/ubugeeei-prod/vize/actions/runs/37729794119/artifacts/11529669159)
+authenticates all 12 process/12 custody pairs on each real host, full authored
+wrapper packets, original input bytes and unchanged batching controls. That
+observer creates only a synthetic `.git` directory, so its successful selection
+does not execute the original setup command. Replace it with actual
+`git init -q` and preserve the complete raw setup packet before any assertion.
+The same-PR refinement changes no source/config/ignore/oracle bytes, original
+lint arguments or observation counts. Fresh successor source, protected and
+actual delivery evidence remain mandatory; the earlier source green is retained
+without transferring current readiness or HTML/publication credit.
