@@ -103,6 +103,39 @@ and authenticated snapshot prerequisite, so the original source reader runs
 without this additional pre-read. No historical success substitutes for fresh
 qualification of the final order and receipt metadata.
 
+## Final order and source/workflow ownership
+
+Source `42f4a6cc228d27e61db6a03293f6fb8b097da879`, Check `37748486257`,
+tested union `95ff4b9c30ea3aad30ec9e4095eb27de48d2ca38`. Original SSR/pug ran
+first and passed; the subsequent diagnostic passed in seven seconds. Artifact
+`11537710576` is 26,477,279 bytes, SHA-256
+`0950a342698df697e8b68b214bee3af28d9f0ad5c726486762f617294439b162`,
+with all 53 ZIP member CRCs verified. Its typed diagnostic receipt preserves
+the actual run/tree custody. Both complete roots retain 44,367 inputs and
+177,468 successful Rust operations each, complete byte matches and every
+literal prefix; both minimal roots retain all 41 aliases. The original vector,
+per-file byte identities, collector source, toolchain and 148 selected gitlinks
+are byte-identical to the original failed artifact. DOM and production reach
+also passed, with independently authenticated complete artifacts.
+
+The separate Type checker native phases run `37748484518`, job `113215612669`,
+failed its required native project-retirement law. Its workflow union included
+the new observer, but runtime explicitly checked out the older source `42f4`,
+where that law was absent. Cargo selected zero tests and the observer correctly
+rejected the missing execution. The original outside-import CLI, reuse and
+editor-retirement controls passed. This is demonstrated source/workflow
+ownership divergence, not an outside-import semantic mismatch or evidence of
+the old ELOOP cause.
+
+The required law and observer were delivered together by protected commit
+`91699ec9cd636436c476c69d7d3f3cbf55922182` in [#8276](https://github.com/ubugeeei-prod/vize/pull/8276).
+Refresh the complete source ancestry onto actual main
+`e8a00fbb629d3e092e08fd474a58a01d1aeadc47`, preserving that original delivery
+and all incoming canonical rows. Do not copy one test or weaken missing-law
+rejection. Fresh complete exact-source and protected checks remain required.
+The older failing and successful artifacts stay historical evidence; the old
+ELOOP cause remains unknown.
+
 ## Remaining work
 
 Use fresh Linux evidence to distinguish root-prefix topology from actual
