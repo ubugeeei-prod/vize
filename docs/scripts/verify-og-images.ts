@@ -8,17 +8,10 @@ import { chromium } from "playwright";
 import { DEFAULT_MARKDOWN_EXTENSIONS } from "@ox-content/vite-plugin";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
 import { CATALOGUE_SOURCES } from "./materialize-content.ts";
-import {
-  assertPngDimensions,
-  docsSiteUrl,
-  ogHeight,
-  ogWidth,
-  pageRoute,
-  isPageMetadata,
-} from "../theme/open-graph.ts";
-import type { PageMetadata } from "../theme/open-graph.ts";
+import { docsSiteUrl, ogHeight, ogWidth, pageRoute, isPageMetadata } from "../theme/open-graph.ts";
+import { verifyImageIdentity, verifyImageIdentityControls } from "./og-image-identity.ts";
+import type { RenderedPageMetadata } from "./og-image-identity.ts";
 
-type RenderedPageMetadata = PageMetadata & { imageSha256: string };
 type OgManifest = {
   version: number;
   width: number;
@@ -121,14 +114,6 @@ assert.equal(
   manifest.pages.length,
   "Duplicate image identities",
 );
-const locales: Record<string, string> = {
-  en: "en_US",
-  ja: "ja_JP",
-  "zh-CN": "zh_CN",
-  "pt-BR": "pt_BR",
-  fr: "fr_FR",
-};
-const homeRoutes = new Set(["/", ...Object.keys(locales).map((locale) => `/${locale}/`)]);
 const representativeRoutes = new Set([
   "/",
   "/ja/",
@@ -152,6 +137,7 @@ const browser = await chromium.launch({
 });
 const checked = [];
 const representativeHashes = new Map<string, string>();
+let identityControls: { route: string; foreignRoute: string; rejected: string[] } | undefined;
 try {
   const parser = await browser.newPage();
   for (const entry of manifest.pages) {
@@ -159,24 +145,6 @@ try {
     const imagePath = new URL(entry.image).pathname.slice(1);
     assert.equal(new URL(entry.image).origin, docsSiteUrl, entry.route);
     const png = await readAsset(imagePath);
-    assertPngDimensions(png, entry.route);
-    assert.equal(
-      createHash("sha256").update(png).digest("hex"),
-      entry.imageSha256,
-      `${entry.route}: actual provider PNG byte custody`,
-    );
-    const routeLocale = entry.route.split("/")[1];
-    const locale = Object.hasOwn(locales, routeLocale) ? routeLocale : "en";
-    assert.equal(entry.props.locale, locale, `${entry.route}: route-derived language`);
-    assert.equal(entry.locale, locales[locale], `${entry.route}: route-derived Open Graph locale`);
-    assert.equal(
-      entry.props.isHome,
-      homeRoutes.has(entry.route),
-      `${entry.route}: homepage layout authority`,
-    );
-    assert.equal(entry.props.description, entry.description, `${entry.route}: image description`);
-    assert.equal(entry.props.siteName, "Vize", `${entry.route}: image site identity`);
-    assert(entry.props.category.trim(), `${entry.route}: image category`);
     const actual = await parser.evaluate(
       async ({ html, image }) => {
         const document = new DOMParser().parseFromString(html, "text/html");
@@ -201,28 +169,23 @@ try {
       },
       { html, image: png.toString("base64") },
     );
-    assert.equal(
-      actual.title,
-      entry.title,
-      `${entry.route}: social title must retain the rendered page title`,
-    );
-    assert.equal(
-      actual.title.replace(/ - Vize$/u, ""),
-      entry.props.title,
-      `${entry.route}: image must retain the rendered page title`,
-    );
-    assert.equal(
-      entry.url,
-      new URL(entry.route, docsSiteUrl).href,
-      `${entry.route}: canonical page URL`,
-    );
-    assert.equal(entry.props.route, entry.route, `${entry.route}: image route identity`);
-    assert.equal(
-      entry.props.assetFingerprint,
-      manifest.assetFingerprint,
-      `${entry.route}: actual template identity`,
-    );
-    assert.equal(actual.language, entry.props.locale, entry.route);
+    verifyImageIdentity(entry, actual, png, manifest.assetFingerprint);
+    if (!identityControls) {
+      const foreign = manifest.pages.find((page) => page.imageSha256 !== entry.imageSha256);
+      assert(foreign, "Identity controls require a distinct actually generated page PNG");
+      const otherPng = await readAsset(new URL(foreign.image).pathname.slice(1));
+      identityControls = {
+        route: entry.route,
+        foreignRoute: foreign.route,
+        rejected: verifyImageIdentityControls(
+          entry,
+          actual,
+          png,
+          otherPng,
+          manifest.assetFingerprint,
+        ),
+      };
+    }
     assert.deepEqual(actual.size, { width: ogWidth, height: ogHeight }, entry.route);
     const expected = {
       "og:title": entry.title,
@@ -267,6 +230,7 @@ try {
       descriptionOrigin: entry.descriptionOrigin,
       language: actual.language,
       image: entry.image,
+      imageSha256: entry.imageSha256,
       ...actual.size,
     });
   }
@@ -311,7 +275,7 @@ if (values.site) {
 }
 await writeFile(
   path.join(output, "metadata.json"),
-  `${JSON.stringify({ source: values.site ?? dist, sourceSha: manifest.sourceSha, assetFingerprint: manifest.assetFingerprint, checked }, null, 2)}\n`,
+  `${JSON.stringify({ source: values.site ?? dist, sourceSha: manifest.sourceSha, assetFingerprint: manifest.assetFingerprint, identityControls, checked }, null, 2)}\n`,
 );
 console.log(
   `Verified ${checked.length} actual page metadata frames and decoded 1200×630 PNGs; retained ${representativeRoutes.size} representative images`,

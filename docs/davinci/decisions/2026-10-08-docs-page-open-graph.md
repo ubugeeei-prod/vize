@@ -82,7 +82,10 @@ layout, and keep image descriptions equal to page descriptions. Recompute every
 PNG digest when accepting hosted artifacts or public responses; distinct images
 permuted after generation must fail custody checks. This establishes byte custody;
 image content remains supported by the actual Vue/provider path and representative
-visual review. Retain English, Japanese, long-rule and
+visual review. The existing whole-site verification runs eight deliberate
+contradiction/permutation controls against an actual native document and two
+distinct valid generated PNGs, alongside every unchanged page assertion. Retain
+English, Japanese, long-rule and
 homepage examples for visual review; their PNG bytes must differ. Authored CLI
 and Chinese homepage titles are checked independently where visible headings
 differ. Bypass task-result caching for this source-SHA-bearing build. Publication is
