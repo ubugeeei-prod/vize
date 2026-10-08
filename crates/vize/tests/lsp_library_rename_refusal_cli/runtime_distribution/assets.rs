@@ -146,7 +146,10 @@ fn snapshot(root: &Path, names: &[OsString]) -> BTreeMap<String, String> {
             assert!(!path.symlink_metadata().unwrap().file_type().is_symlink());
             (
                 name.to_str().unwrap().to_owned(),
-                format!("{:x}", Sha256::digest(std::fs::read(path).unwrap())),
+                Sha256::digest(std::fs::read(path).unwrap())
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect(),
             )
         })
         .collect()
