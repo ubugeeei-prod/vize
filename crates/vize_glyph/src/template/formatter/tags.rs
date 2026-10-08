@@ -182,19 +182,13 @@ impl TemplateFormatter<'_> {
         };
 
         // Normalize directives and determine priority
-        let value_indent = (depth + self.base_depth + 2) * self.options.tab_width as usize;
-        let available_width = self
-            .options
-            .print_width
-            .saturating_sub(value_indent as u32)
-            .max(1);
         let (name, value, priority, indent_multiline_value, owns_value_lines) =
             normalize_attribute_with_vue_version(
                 &raw_name,
                 value,
                 self.options,
                 self.vue_version,
-                available_width,
+                depth + self.base_depth,
             );
 
         (

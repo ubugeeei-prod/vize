@@ -32,7 +32,7 @@ pub(super) fn format_directive_value(
     value: &str,
     options: &FormatOptions,
     vue_version: crate::VueVersion,
-    available_width: u32,
+    attribute_depth: usize,
 ) -> (String, bool, bool) {
     let trimmed = value.trim();
     if trimmed.is_empty() {
@@ -72,7 +72,7 @@ pub(super) fn format_directive_value(
     match script::format_js_expression_in_attribute_with_layout(
         expression,
         options,
-        available_width,
+        attribute_depth,
     ) {
         Some(formatted) if formatted.retained_bare_sequence => {
             // These authored bytes retain absolute source indentation. Rebase

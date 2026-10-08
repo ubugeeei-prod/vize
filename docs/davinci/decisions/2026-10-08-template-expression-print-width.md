@@ -73,3 +73,19 @@ The canonical SSR sweep has zero differences but its observer rejects 44366
 files against the required 44367; keep that requirement and investigate the
 missing witness. These partial source results grant no whole-head, protected
 or installed acceptance; the corrected successor requires fresh Actions.
+
+The corrected source head `6721ec0c7f4873a42039b29534e950bc9d7c0e6a`
+passes all required PR checks, sixteen whole references, API fixed points,
+CLI80/stock160, the original history and all 44367 canonical inputs. The old
+SSR omission does not recur; its I/O cause remains unproven. Protected candidate
+`59bb0e5467e711e7a4c7fc489c7b3748dd4d5093` is removed after its complex
+formatter benchmark measures 245269 against the unchanged 244347 ceiling in
+three identical runs; all 100 level ceilings hold. The original complex input
+has no direct call in a directive value, yet attribute parsing computes an
+unused expression budget for every attribute. Pass the existing physical
+attribute depth and defer the multiplication, subtraction and clamp until the
+retained direct-call AST branch. Preserve the exact value-indent formula,
+single parse, real ancestors, all outputs, original inputs and every ceiling.
+Independent review finds no semantic or depth blocker. Performance success
+requires a fresh three-run hosted measurement of all 104 original ceilings,
+fresh source controls and a new protected candidate before actual delivery.

@@ -40,13 +40,13 @@ pub(crate) fn format_js_expression_in_attribute(
 pub(crate) fn format_js_expression_in_attribute_with_layout(
     expr: &str,
     options: &FormatOptions,
-    available_width: u32,
+    attribute_depth: usize,
 ) -> Option<FormattedExpression> {
-    format_expression_with_width(
+    format_expression_with_layout(
         expr,
         options,
         Some(QuoteStyle::Single),
-        Some(available_width),
+        Some(attribute_depth),
     )
 }
 
@@ -55,14 +55,14 @@ pub(crate) fn format_js_expression_with_quote_style(
     options: &FormatOptions,
     quote_style: Option<QuoteStyle>,
 ) -> Option<FormattedExpression> {
-    format_expression_with_width(expr, options, quote_style, None)
+    format_expression_with_layout(expr, options, quote_style, None)
 }
 
-fn format_expression_with_width(
+fn format_expression_with_layout(
     expr: &str,
     options: &FormatOptions,
     quote_style: Option<QuoteStyle>,
-    available_width: Option<u32>,
+    attribute_depth: Option<usize>,
 ) -> Option<FormattedExpression> {
     let trimmed = expr.trim();
     if trimmed.is_empty() {
@@ -97,11 +97,18 @@ fn format_expression_with_width(
         if let Some(quote_style) = quote_style {
             oxc_options.quote_style = quote_style;
         }
-        if let Some(width) = available_width
+        if let Some(depth) = attribute_depth
             && let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice()
             && let Expression::UnaryExpression(unary) = &statement.expression
             && matches!(&unary.argument, Expression::CallExpression(_))
         {
+            // Only retained direct calls consume the attribute-value budget.
+            // Other expression shapes keep the existing program formatter.
+            let value_indent = (depth + 2) * options.tab_width as usize;
+            let width = options
+                .print_width
+                .saturating_sub(value_indent as u32)
+                .max(1);
             oxc_options.line_width = LineWidth::try_from(width as u16).unwrap_or_default();
             let code = oxc_formatter::format_unary_call_argument(
                 oxc_allocator,

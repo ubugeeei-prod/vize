@@ -10,7 +10,7 @@ pub(crate) fn normalize_attribute_with_vue_version(
     value: Option<String>,
     options: &FormatOptions,
     vue_version: crate::VueVersion,
-    available_width: u32,
+    attribute_depth: usize,
 ) -> (String, Option<String>, u8, bool, bool) {
     // Normalize directive shorthands (only if enabled)
     let normalized_name: String = if options.normalize_directive_shorthands {
@@ -33,7 +33,7 @@ pub(crate) fn normalize_attribute_with_vue_version(
     let formatted_value = value.map(|v| {
         if should_format_expression(&normalized_name) {
             let (formatted, should_indent, owns_lines) =
-                format_directive_value(&normalized_name, &v, options, vue_version, available_width);
+                format_directive_value(&normalized_name, &v, options, vue_version, attribute_depth);
             indent_multiline_value = should_indent;
             owns_value_lines = owns_lines;
             formatted
