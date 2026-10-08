@@ -17,11 +17,11 @@
 #![expect(clippy::expect_used, reason = "tests assert by panicking")]
 
 use davinci_harness::alloc::{CountingAllocator, mark_installed, measure};
+use vize_carton::timing_observer::TimingObserver;
 use vize_l0::Span;
 use vize_l0::pass::{
     BudgetObserver, Fusability, NoObserver, Pair, PassDesc, PassEvent, PassKind, PassObserver,
-    Pipeline, Preserved, Remark, RemarkArg, RemarkCounter, RemarkSink, TimingObserver,
-    run_pipeline_remarked,
+    Pipeline, Preserved, Remark, RemarkArg, RemarkCounter, RemarkSink, run_pipeline_remarked,
 };
 
 #[global_allocator]

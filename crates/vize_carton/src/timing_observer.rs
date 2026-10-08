@@ -13,11 +13,11 @@
 //! A timer per pass would report three walks' worth of enter/exit overhead
 //! that was never paid, and — worse — would be believed, because the numbers
 //! would look plausible. So the span opens at
-//! [`PassEvent::is_group_entry`](super::PassEvent::is_group_entry) and closes
-//! at [`is_group_exit`](super::PassEvent::is_group_exit), and its attribution
+//! [`PassEvent::is_group_entry`](vize_l0::pass::PassEvent::is_group_entry) and closes
+//! at [`is_group_exit`](vize_l0::pass::PassEvent::is_group_exit), and its attribution
 //! names the pass that **leads** the group. Which passes shared the walk is
 //! recoverable from the pipeline itself
-//! ([`PassEvent::group_members`](super::PassEvent::group_members)); what is not
+//! ([`PassEvent::group_members`](vize_l0::pass::PassEvent::group_members)); what is not
 //! recoverable, once thrown away, is the fact that they shared it.
 //!
 //! # Cost when profiling is off
@@ -27,13 +27,8 @@
 //! the observer with profiling disabled therefore costs one atomic load per
 //! walk — not per node, and not per pass.
 
-mod walk;
-
-pub use walk::WalkTiming;
-
+use vize_l0::pass::{FailEvent, PassEvent, PassObserver, Pipeline, WalkTiming};
 use vize_l0::profiler::global_profiler;
-
-use super::{FailEvent, PassEvent, PassObserver, Pipeline};
 
 /// Records one profile span per fused walk.
 #[derive(Debug)]

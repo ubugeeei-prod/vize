@@ -50,3 +50,5 @@ pub mod corsa_resolver;
 pub mod lsp;
 
 pub mod path;
+
+pub mod timing_observer;

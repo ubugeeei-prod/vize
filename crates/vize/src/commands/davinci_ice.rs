@@ -33,13 +33,14 @@
 
 use std::path::{Path, PathBuf};
 use std::sync::Once;
+use vize_carton::timing_observer::TimingObserver;
 
 use vize_curator::legacy_plan;
 use vize_curator::repro::{Page as ReproPage, failure_text};
 use vize_l0::dump::{Dump, Mode as DumpMode};
 use vize_l0::pass::{
     BudgetObserver, Fusability, Pair, PassDesc, PassFailure, PassKind, Pipeline, Preserved,
-    TimingObserver, parse_pipelines, pipeline::PipelineSpec, run_pipeline,
+    parse_pipelines, pipeline::PipelineSpec, run_pipeline,
 };
 use vize_l0::{FxHashMap, String, cstr};
 
