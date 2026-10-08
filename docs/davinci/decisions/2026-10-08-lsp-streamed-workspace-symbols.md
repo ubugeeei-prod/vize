@@ -37,7 +37,9 @@ inventory. Membership/root generation changes and any open/change/close/rename
 source-set mutation during the worker scan force a fresh complete attempt.
 No document shard guard crosses parsing or an await. Closed text is reread on
 request; no source-text or symbol-result cache is added. Reference queries retain
-the existing whole-source API.
+the existing whole-source API and its complete original discovery function,
+including the single cold discover/read worker. The paths helper serves only the
+new symbol route while sharing the existing paths-only inventory.
 
 The corpus retains unchanged original Vue and authored Unicode/CRLF script
 controls and complete independently authored empty-query symbol objects.
@@ -66,6 +68,10 @@ an exhaustive mutation-case enum preserves all seven race cases and assertions.
 Its separate native bare-script law timed out waiting for an LSP response after
 `lib.dom.d.ts` initial diagnostics. That failed observation remains retained;
 this producer decision supplies no success or unrelated-failure claim for it.
+The [paired reference-scope correction](https://github.com/ubugeeei-prod/vize/issues/3952#issuecomment-6053604702)
+records that bare-script references can also consume the inventory. Restoring their
+original complete function narrows this producer change and keeps its former
+cold discover/read scheduling; it does not establish the timeout's root cause.
 
 TODO: qualify this exact source on Actions and the protected queue; the root
 owner coordinates any separately authorized current-source campaign. This source
