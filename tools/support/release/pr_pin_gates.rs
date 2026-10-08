@@ -66,6 +66,7 @@ pub(super) fn verify(
             return Err("Protected check pagination exceeded its bound.".into());
         }
     }
+    let checks = protected_checks(group_runs, &checks, repository, gate, integration, parent)?;
     let selected:Vec<Value>=checks.iter().map(|check|json!({"name":check["name"],"link":check["details_url"],"bucket":if check.get("status").and_then(Value::as_str)==Some("completed") && check.get("conclusion").and_then(Value::as_str)==Some("success") {"pass"} else {"fail"}})).collect();
     let rules = github::api(repository, "rules/branches/main", root)?;
     pr_checks::required_checks(&rules, &checks, &selected, gate)
@@ -78,6 +79,34 @@ pub(crate) fn full_workflows(
     integration: u64,
     parent: &str,
 ) -> Result<bool, String> {
+    let latest = latest_group_runs(runs, repository, gate, integration, parent)?;
+    let mut complete = true;
+    for file in WORKFLOWS {
+        let path = format!(".github/workflows/{file}");
+        let Some(run) = latest.get(path.as_str()) else {
+            complete = false;
+            continue;
+        };
+        if run.get("status").and_then(Value::as_str) != Some("completed") {
+            complete = false;
+            continue;
+        }
+        if run.get("conclusion").and_then(Value::as_str) != Some("success") {
+            return Err(format!(
+                "Protected {file} did not succeed at exact G=V={gate}."
+            ));
+        }
+    }
+    Ok(complete)
+}
+
+fn latest_group_runs<'a>(
+    runs: &'a [Value],
+    repository: &str,
+    gate: &str,
+    integration: u64,
+    parent: &str,
+) -> Result<BTreeMap<&'a str, &'a Value>, String> {
     let branch = format!("gh-readonly-queue/main/pr-{integration}-{parent}");
     let mut latest: BTreeMap<&str, &Value> = BTreeMap::new();
     for run in runs {
@@ -113,22 +142,44 @@ pub(crate) fn full_workflows(
             latest.insert(path, run);
         }
     }
-    let mut complete = true;
-    for file in WORKFLOWS {
-        let path = format!(".github/workflows/{file}");
-        let Some(run) = latest.get(path.as_str()) else {
-            complete = false;
-            continue;
-        };
-        if run.get("status").and_then(Value::as_str) != Some("completed") {
-            complete = false;
-            continue;
-        }
-        if run.get("conclusion").and_then(Value::as_str) != Some("success") {
-            return Err(format!(
-                "Protected {file} did not succeed at exact G=V={gate}."
-            ));
+    Ok(latest)
+}
+
+/// Main-push and protected runs can share G; only the authenticated queue
+/// suites supply its required checks. Missing or ambiguous queue checks still
+/// fail the unchanged name, app, exact-head, link and terminal-success laws.
+pub(crate) fn protected_checks(
+    runs: &[Value],
+    checks: &[Value],
+    repository: &str,
+    gate: &str,
+    integration: u64,
+    parent: &str,
+) -> Result<Vec<Value>, String> {
+    if !full_workflows(runs, repository, gate, integration, parent)? {
+        return Err("Protected workflow qualification is incomplete.".into());
+    }
+    let latest = latest_group_runs(runs, repository, gate, integration, parent)?;
+    let mut suites = std::collections::BTreeSet::new();
+    for run in latest.values() {
+        let suite = run
+            .get("check_suite_id")
+            .and_then(Value::as_u64)
+            .filter(|id| *id > 0)
+            .ok_or("Protected workflow lacks its check suite ID")?;
+        if !suites.insert(suite) {
+            return Err("Protected workflows share an ambiguous check suite ID.".into());
         }
     }
-    Ok(complete)
+    Ok(checks
+        .iter()
+        .filter(|check| {
+            check.get("head_sha").and_then(Value::as_str) == Some(gate)
+                && check
+                    .pointer("/check_suite/id")
+                    .and_then(Value::as_u64)
+                    .is_some_and(|id| suites.contains(&id))
+        })
+        .cloned()
+        .collect())
 }
