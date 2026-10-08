@@ -259,3 +259,25 @@ composed cleanly with archived `40a`; that fact does not qualify the later
 Docs composition. Fresh successor source Actions and protected/actual signed
 delivery remain required. Full main/manual parity and publication stay
 unfinished; this repair adds no selector, gate, oracle or performance claim.
+
+Both Docs PRs actually merged at 12:19:27 UTC. GitHub verified their actual
+`bd409f71772b27f43bdc551e6a7f6d4355b4fa77` and
+`2f9fe178ab7ce2d66a17c9e7fe84570cc86cfbb5` commits as signed/valid, and
+fresh remote main was exactly the latter. Replay only the eight owned commits
+from `8816` onto that now-actual Docs main. The sole reproduced workflow
+conflict keeps both whole incoming native TypeScript Docs compiler command
+prefixes and the same reviewed main/full versus fast predicates. No other
+conflict occurred. The canonical record retains all 350 rows, the complete
+incoming text on each owned row and exact incoming row 225; only owned rows
+41, 187, 262 and 286 differ. The old `40a` source success remains historical.
+Fresh natural successor Actions, protected candidate and actual signed
+parity delivery are still required; this routine composition repair adds no
+selector, gate, source oracle or release qualifier.
+
+The actual-Docs refresh passes the unchanged 29 focused workflow, release and
+scope controls on Node 22.18.0 and 24.14.0; all three existing strict native
+TypeScript projects also pass. All eleven other owned action/test/producer
+and resource-companion blobs remain byte-exact to archived `40a`. The merged
+workflow remains 690 lines and the canonical record 350, without ratcheting
+any cap. Local composition checks do not transfer historical source success;
+the published successor must obtain its own natural Actions.
