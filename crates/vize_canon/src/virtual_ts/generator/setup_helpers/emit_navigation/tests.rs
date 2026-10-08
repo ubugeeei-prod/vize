@@ -83,7 +83,10 @@ fn mutable_unbound_and_shadowed_macro_calls_have_no_event_projection() {
 #[test]
 fn tsx_and_generic_events_keep_the_complete_authored_content_range() {
     let source = "const view = <span />; const emit = defineEmits<{ change: [value: T] }>(); emit('change', value);";
-    let (plan, summary) = plan(source);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup_with_generic_jsx(source, Some("T"));
+    let summary = analyzer.finish();
+    let plan = SetupHelperPlan::collect(&summary, Some(source), true);
     let mut generated = String::default();
     let mut mappings = Vec::new();
     plan.emit_event_navigation(
@@ -104,5 +107,53 @@ fn tsx_and_generic_events_keep_the_complete_authored_content_range() {
                 source_start..source_start + 6,
             )],
         )
+    );
+}
+
+#[test]
+fn shared_program_event_roles_keep_exact_ranges_and_exclude_value_and_shadow_calls() {
+    let source = "const emit = defineEmits<{ change: [value: boolean] }>(); const change = true; emit(\"change\", change); function shadow(emit: (name: string, value: boolean) => void) { emit(\"change\", change); }";
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::ts()).parse();
+    assert!(parsed.diagnostics.is_empty());
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup_program(&parsed.program, source, None);
+    let summary = analyzer.finish();
+    let built = oxc_semantic::SemanticBuilder::new().build(&parsed.program);
+    assert!(built.diagnostics.is_empty());
+    let declaration = source.find("change:").unwrap();
+    let literal = source.find("change\", change").unwrap();
+    assert_eq!(
+        super::owned_emit_navigation_source_ranges(
+            &parsed.program,
+            built.semantic.scoping(),
+            source,
+            &summary,
+        ),
+        vec![declaration..declaration + 6, literal..literal + 6]
+    );
+}
+
+#[test]
+fn shared_tsx_generic_program_keeps_exact_public_event_roles() {
+    let source = "const view = <span />; const emit = defineEmits<{ change: [value: T] }>(); emit('change', value);";
+    let allocator = oxc_allocator::Allocator::default();
+    let parsed = oxc_parser::Parser::new(&allocator, source, oxc_span::SourceType::tsx()).parse();
+    assert!(parsed.diagnostics.is_empty());
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup_program(&parsed.program, source, Some("T"));
+    let summary = analyzer.finish();
+    let built = oxc_semantic::SemanticBuilder::new().build(&parsed.program);
+    assert!(built.diagnostics.is_empty());
+    let declaration = source.find("change:").unwrap();
+    let literal = source.find("change', value").unwrap();
+    assert_eq!(
+        super::owned_emit_navigation_source_ranges(
+            &parsed.program,
+            built.semantic.scoping(),
+            source,
+            &summary,
+        ),
+        vec![declaration..declaration + 6, literal..literal + 6]
     );
 }

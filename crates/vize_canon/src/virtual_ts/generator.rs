@@ -22,7 +22,7 @@ mod preamble;
 mod root_element;
 mod script_blocks;
 mod script_module;
-mod setup_helpers;
+pub(super) mod setup_helpers;
 mod setup_imports;
 mod setup_lines;
 mod setup_props;

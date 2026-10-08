@@ -10,10 +10,10 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product                        | kind  | module              | files | sites |
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
-| `Analyzer`                     | type  | `analyzer`          |    46 |   171 |
-| `AnalyzerOptions`              | type  | `analyzer`          |    46 |   167 |
+| `Analyzer`                     | type  | `analyzer`          |    47 |   175 |
+| `AnalyzerOptions`              | type  | `analyzer`          |    47 |   171 |
 | `ComponentUsage`               | type  | `croquis::template` |    22 |    48 |
-| `Croquis`                      | type  | `croquis`           |    92 |   219 |
+| `Croquis`                      | type  | `croquis`           |    94 |   225 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |
 | `EventListener`                | type  | `croquis::template` |     2 |     3 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     1 |
@@ -36,7 +36,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `VSlotScopeData`               | type  | `scope`             |     1 |     4 |
 | `Croquis.import_statements`    | field | `croquis`           |     4 |     5 |
 | `Croquis.invalid_exports`      | field | `croquis`           |     1 |     1 |
-| `Croquis.macros`               | field | `croquis`           |    28 |    77 |
+| `Croquis.macros`               | field | `croquis`           |    29 |    82 |
 | `Croquis.options_descriptor`   | field | `croquis`           |     2 |     2 |
 | `Croquis.pattern_diagnostics`  | field | `croquis`           |     2 |     4 |
 | `Croquis.re_exports`           | field | `croquis`           |     1 |     1 |
@@ -45,7 +45,7 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `Croquis.setup_context`        | field | `croquis`           |     1 |     1 |
 | `Croquis.template_expressions` | field | `croquis`           |    12 |    14 |
 | `Croquis.template_info`        | field | `croquis`           |     2 |     4 |
-| `Croquis.type_exports`         | field | `croquis`           |    10 |    20 |
+| `Croquis.type_exports`         | field | `croquis`           |    11 |    21 |
 | `Croquis.types`                | field | `croquis`           |     5 |     9 |
 
 ## Non-product `vize_croquis` imports

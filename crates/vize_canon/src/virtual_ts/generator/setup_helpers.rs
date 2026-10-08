@@ -13,6 +13,7 @@ use vize_relief::RootNode;
 mod boolean_keys;
 mod declarations;
 mod emit_navigation;
+pub use emit_navigation::owned_emit_navigation_source_ranges;
 mod macro_results;
 pub(super) use declarations::SetupHelperPlan;
 mod template_ref_registry;

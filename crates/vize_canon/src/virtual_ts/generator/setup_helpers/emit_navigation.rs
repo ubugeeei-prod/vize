@@ -20,6 +20,42 @@ pub(super) struct OwnedEmitCall {
     content: Range<usize>,
 }
 
+/// Public event source roles from the same parsed program and resolved symbols
+/// used by generation. The caller must supply the exact program/source pair.
+/// This only chooses configured-project extent; it does not authorize edits.
+pub fn owned_emit_navigation_source_ranges(
+    program: &Program<'_>,
+    scoping: &Scoping,
+    source: &str,
+    summary: &Croquis,
+) -> Vec<Range<usize>> {
+    if summary.macros.define_emits().is_none()
+        || scoping.symbol_ids().any(|symbol| {
+            scoping.symbol_scope_id(symbol) == scoping.root_scope_id()
+                && scoping.symbol_flags(symbol).is_value()
+                && scoping.symbol_name(symbol) == "defineEmits"
+        })
+    {
+        return Vec::new();
+    }
+    let mut ranges = summary
+        .macros
+        .emits()
+        .iter()
+        .filter_map(|event| {
+            let (start, end) = summary.macros.emit_declaration(event.name.as_str())?;
+            let range = start as usize..end as usize;
+            (source.get(range.clone()) == Some(event.name.as_str())).then_some(range)
+        })
+        .collect::<Vec<_>>();
+    ranges.extend(
+        collect(program, scoping, source, &FxHashSet::default(), summary)
+            .into_iter()
+            .map(|call| call.content),
+    );
+    ranges
+}
+
 pub(super) fn collect(
     program: &Program<'_>,
     scoping: &Scoping,

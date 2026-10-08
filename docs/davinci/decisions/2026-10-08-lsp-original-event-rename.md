@@ -64,3 +64,71 @@ Vize bridge success must not be presented as stock protocol acceptance.
 
 Paired issue decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6048738541)
 and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6048738745).
+
+The corrected source `3a9ea2c895` supplies complete genuine mandatory CLI
+observations for the exact compiled PR checkout in
+[Check37701094992](https://github.com/ubugeeei-prod/vize/actions/runs/37701094992):
+all 70 preauthored original-report packets match, comprising the original 16,
+48 named-type sessions, and six event sessions. Each whole packet includes
+references, edits, actual returned-edit application, both disk files, complete
+version-2 diagnostics, and independent version-3 repaired-file diagnostics.
+The optional unit-helper disable environment remains explicit and grants no
+native unit execution credit. The workflow aggregate is red: honest source
+census metadata is stale, the new JSX unit used a TS-only summary constructor,
+and the original valid-update null expectation now encounters authored edits.
+No aggregate, full-native, protected, signed-delivery, or release credit follows
+from the finite successful packets.
+
+The original unopened-parent request performs rename before references and
+reveals another real defect: it returns only the two Toggle edits, omitting the
+closed App listener. The six earlier sessions genuinely pass but open both files
+and ask references first, so they do not qualify that cold workspace route.
+Preserve the original 48 request orders, versions, names, and source bytes.
+Require the exact safe three-site response for valid `update`; the three invalid
+replacement spellings still refuse the whole transaction. Extend only the
+existing configured-project eligibility predicate to declared events, reusing
+its cached workspace materializer and native semantic/scope authority. Ordinary
+local and parameter-shadow extent guards remain unchanged. Twelve additional
+strict original-config sessions rename first, apply actual complete edits to
+both files, observe both version-2 diagnostics, independently install literal
+goldens, and observe both version-3 diagnostics. A separate LF/CRLF cold control
+retains a same-name `change` value binding and requires event-only references
+and edits; it is authored before querying and remains unqualified until actual
+execution. This selector does not authorize edits merely by spelling.
+
+Keep the original null packets as historical evidence. Supplemental mutable
+emitters continue to require whole refusal and unchanged authored/native asset
+bytes. Two deliberately incomplete editor applications use actual returned
+edits and must produce the complete preauthored TS2345 diagnostic before a
+literal independent repair removes it. Their provider response remains whole
+and unfiltered. A distinct `event-library-authority-transactions` capture family
+retains these 22 new full observations; the existing original-report namespace
+and all 70 inputs/oracles remain unchanged. The JSX/generic unit correction uses
+the existing `analyze_script_setup_with_generic_jsx` API so its summary matches
+the source language; it adds no production parsing stage and preserves the
+complete emitted-code and mapping assertion. Regenerate only metadata selected
+by the unchanged census and migration inventory generators. Fresh hosted source,
+required native units, protected runtime, signed actual merge, and release replay
+remain mandatory; in-root runtime assets, bare-script exporters, slots, and stock
+unequal-atom mapping are separate unfinished acceptance boundaries.
+
+The selector's old visible-binding guard necessarily mistakes a same-name public
+key or emit string for the independent value binding. Preserve that guard for
+ordinary values, and establish event roles before it with one caller-owned OXC
+Program using the actual setup TS/TSX language and generic metadata. Feed that
+same Program to the existing parse-free Drawer API and, only for declared event
+candidates, the existing Canon constant-macro SymbolId call collector. Retain
+exact original event member spans from the same summary and literal-content
+ranges from that collector. A narrow public AST-taking adapter exposes only
+those source roles; it grants configured-project coverage, not edit authority.
+Parser or semantic diagnostics cannot establish a new event role. Root/parameter
+values, shadowed emitters, mutable emitters, escaped calls and fake shadowed
+macros gain no owned-call bypass. The original generation collector and emitted
+bytes remain unchanged. This incurs bounded candidate-only semantic work while
+replacing the current selector parse; it adds no second parse, native open, RPC,
+or pipeline stage. Existing instruction ceilings and all original local/shadow
+controls remain mandatory. Exact shared-Program range and TSX/generic controls
+plus the independent cold collision transactions must execute on the fresh
+source before success is claimed.
+
+Paired cold-workspace and atomic-update decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6049466010) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6049466333).
