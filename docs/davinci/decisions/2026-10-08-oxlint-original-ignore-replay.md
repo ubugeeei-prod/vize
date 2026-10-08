@@ -24,6 +24,13 @@ and CLI exclusions must stay absent. Retain every complete default and JSON
 process packet before asserting, plus source/config/ignore bytes before and
 after each process and cleanup of all owned temporary paths.
 
+Independent review strengthens failure custody: save each whole raw process
+before reading post-call inputs, so deletion cannot discard the failed packet.
+Give each child a private temporary directory beside the original project,
+outside its lint/config roots, and compare the complete recursive owned tree
+before and after every call. Global temporary-directory activity from concurrent
+work never supplies or invalidates this cleanup proof.
+
 Run the literal original command and its JSON report three times on stock and
 wrapper paths, for 12 complete observations per host. Reuse the existing
 source-built Actions qualification and actual Oxlint 1.78/1.86 host installations;

@@ -25,8 +25,24 @@ const capturePath =
 const sha256 = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
 
 void test("literal original ignore reproduction preserves VCS, config and CLI exclusions", (t) => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-original-ignore-"));
-  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-original-ignore-"));
+  t.after(() => fs.rmSync(workspace, { recursive: true, force: true }));
+  const root = path.join(workspace, "project");
+  const temporary = path.join(workspace, "transport");
+  fs.mkdirSync(root);
+  fs.mkdirSync(temporary);
+  const tree = (directory = workspace): string[] =>
+    fs
+      .readdirSync(directory, { withFileTypes: true })
+      .flatMap((entry) => {
+        const file = path.join(directory, entry.name);
+        const relative = path.relative(workspace, file);
+        if (entry.isSymbolicLink()) return [`link:${relative}:${fs.readlinkSync(file)}`];
+        return entry.isDirectory()
+          ? [`directory:${relative}`, ...tree(file)]
+          : [`file:${relative}`];
+      })
+      .sort();
   const source = fs.readFileSync(path.join(corpus, "AppPanel.vue.txt"), "utf8");
   const config = fs.readFileSync(path.join(corpus, ".oxlintrc.json"), "utf8");
   const vcs = fs.readFileSync(path.join(corpus, ".gitignore"), "utf8");
@@ -62,7 +78,7 @@ void test("literal original ignore reproduction preserves VCS, config and CLI ex
       ]),
     );
   const before = custody();
-  const directory = fs.readdirSync(root).sort();
+  const directory = tree();
   const capture: { schema: string; complete: boolean; pins: unknown; observations: unknown[] } = {
     schema: "vize.oxlint.original-ignore-7903.v1",
     complete: false,
@@ -76,30 +92,37 @@ void test("literal original ignore reproduction preserves VCS, config and CLI ex
   };
   const run = (entrypoint: string, args: string[]) => {
     const prior = custody();
+    const priorTree = tree();
+    const engineSha256 = sha256(fs.readFileSync(engine));
     const result = spawnSync(process.execPath, [entrypoint, ...args], {
       cwd: root,
-      env: environment,
+      env: { ...environment, TMPDIR: temporary },
       encoding: "utf8",
       timeout: 30_000,
     });
     save({
+      kind: "process",
       entrypoint,
       args,
-      engineSha256: sha256(fs.readFileSync(engine)),
+      engineSha256,
       before: prior,
+      treeBefore: priorTree,
       status: result.status,
       signal: result.signal,
       error: result.error?.message ?? null,
       stdout: result.stdout,
       stderr: result.stderr,
-      after: custody(),
     });
+    // Persist the entire raw process before reading possibly damaged inputs.
+    const after = custody();
+    const afterTree = tree();
+    save({ kind: "custody", entrypoint, args, after, treeAfter: afterTree });
     assert.equal(result.error, undefined);
     assert.equal(result.signal, null);
     assert.equal(result.status, 0, result.stdout + result.stderr);
     assert.equal(result.stderr, "");
-    assert.deepEqual(custody(), before);
-    assert.deepEqual(fs.readdirSync(root).sort(), directory);
+    assert.deepEqual(after, before);
+    assert.deepEqual(afterTree, directory);
     return result.stdout;
   };
   const originalArgs = ["--ignore-pattern", "src/SkippedPanel.vue", "."];
