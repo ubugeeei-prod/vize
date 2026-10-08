@@ -36,6 +36,42 @@ Stack #8267→child before root admission; source greens and protected delivery
 are distinct. Composite, other expressions, native/default admission and
 actual registry-installed original replay stay open.
 
+The fixture-only heads `b5555c0b246e086b0bba8aefe96ebb2fedfee39d`
+then `d8d62031d542b672ae7500c552ac9dea4858fcf5` retain actual
+Rust1.99 source failure before any production edit. Run
+`cargo test --locked -p vize_glyph --test template_closing_print_width`.
+The latter whole stdout855B/SHA
+`7d89b3096159339d1eec7ffd477e9cd639d52a68ce013f3d7bee8be91394cf45`
+and stderr1051B/SHA
+`2eff27ad7a6d6f2f51869af790eb41a5690443a34b4d2efd6649271aaa87828e`
+are retained under the fixture's `history/`. The first41-column law returns
+the whole original SFC with `abcdefghijklmnopqrstuvwxyzabcd</span>`
+on one physical line and `changed:false`; the sealed expected SFC inserts
+only the closing-grammar newline before `>` and requires `changed:true`.
+The earlier changed-flag-only failure stays separate, without claiming it
+contains the later whole diagnostic.
+
+The subsequent actual focused API run passes all39 closing calls and the
+unchanged sole-child, Vue2 filter, hugged interpolation and eight suppression
+laws. Whole stdout1538B/SHA
+`0ab2504943673fd19fd2828202af65073ea71e4e6eb78c44781cb41a3a742296`
+and stderr1791B/SHA
+`f79b37aab36b420b5f62a1d83c7bfd7123853825ddd48fe3d43041f49a7abcb5`
+record local source progress only. A preceding nonexistent test-target
+selection error is retained separately and grants no formatter judgment.
+
+The new observer is handwritten strict TypeScript. Hosted current source
+must execute all65 whole CLI calls,91 complete compiler packets and364
+stock runtime states, capturing whole process/file/config bytes before
+judgment. It compares the independently sealed complete template content,
+including firstLF/CRLF, without the sole-child author's separate trimming
+recipe. Actual current build/stock provider path/hash and binary/source
+receipt are recorded independently of immutable historical MJS owner
+custody; provider migration cannot rewrite the sealed originals. Node22.18
+and Node24 private TS runtimes do not change the public Node22 CLI contract.
+Fresh hosted source/native/full/all104 results remain required for this
+child, with no transferred parent green or local performance claim.
+
 The original public replay helpers retain complete bytes. A new external
 owner precondition SHA535a86b167dbe9033ee51069e3d60ef4660349a2ebd0821b510b32fdeb2277f7
 binds raw FIX→C ancestry and distinct H sole-parent C, rejects replacement,
