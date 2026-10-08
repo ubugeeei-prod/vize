@@ -44,8 +44,8 @@ struct Fixture {
     id: i64,
     publications: std::collections::HashMap<(String, i64), Value>,
     mismatches: Vec<Value>,
-    runtime: std::path::PathBuf,
     publication_sequences: Vec<Value>,
+    runtime: std::path::PathBuf,
 }
 
 impl Fixture {
@@ -106,8 +106,8 @@ impl Fixture {
             id: 2,
             publications: Default::default(),
             mismatches: Vec::new(),
-            runtime,
             publication_sequences: Vec::new(),
+            runtime,
         };
         native_probe::prove(&mut fixture);
         fixture

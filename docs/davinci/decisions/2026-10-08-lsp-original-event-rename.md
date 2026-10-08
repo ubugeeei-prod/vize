@@ -255,3 +255,17 @@ packets grant no cross-family credit. Fresh exact-source Actions and native
 qualification remain required, with protected delivery and release replay pending.
 
 Paired Carton/main union observations: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6051544531) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6051544729).
+
+The read-only cumulative composition identifies a concrete adjacent-field
+conflict with the independent runtime-ownership fixture. Move only the private
+publication-sequence field and its identical empty-vector initializer before
+the existing runtime field and initializer. The inverse move restores the
+entire prior fixture bytes; types, values, runtime/configuration, protocol
+bodies, all104 inputs/goldens and ordered publications remain unchanged.
+This adds no asset source, API, product correction or synthetic prefix.
+Source `a3168310f3` has complete matching observations and successful native
+execution, but those results remain historical for this layout successor.
+Fresh exact-source checks and native qualification remain required; root owns
+the actual Stack/queue order and signed delivery.
+
+Paired shared-fixture layout decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6051811721) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6051811924).
