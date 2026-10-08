@@ -20,8 +20,8 @@ use crate::walk::{NodeEvent, NodeLimit, NodeRef, PageWalk};
 
 mod builder;
 mod check;
+pub(crate) use builder::ElementAllocation;
 pub use builder::{Builder, ComponentBody, ComponentFactory, RegionBuilder};
-pub(crate) use builder::{ElementAllocation, TextAllocation};
 #[cfg(test)]
 mod tests;
 

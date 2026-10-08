@@ -149,3 +149,15 @@ envelope packets remain unchanged. The separate 120 earlier-outcome baseline
 capture and full native DOM module/map/runtime qualification are prerequisites
 for a later explicit output consumer. SSR/Vapor and default replacement remain
 closed, and this provider earns no native output or release credit.
+
+## First hosted source correction
+
+The first source head `4c0430b7508fad6f3947ae526c2d3564af9b1f83` failed
+deny-warnings compilation in [Check 37729788842](https://github.com/ubugeeei-prod/vize/actions/runs/37729788842),
+builder job `113156174702`: the original artifact-level `TextAllocation`
+re-export has no consumer. Remove that redundant re-export, restoring
+`artifact.rs` to actual main; the builder-owned type and real region consumer
+remain unchanged. Every production function, allocation/identity guard,
+original and added law, fixture and numeric ceiling stays unchanged. The failed
+head retains no native execution credit. Fresh exact-head Actions and protected
+acceptance remain required before Ready or queue admission.
