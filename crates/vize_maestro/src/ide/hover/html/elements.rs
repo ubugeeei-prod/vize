@@ -150,7 +150,7 @@ pub(super) fn lookup(tag: &str) -> Option<&'static ElementDocs> {
         "span" => 88,
         _ => return lookup_cold(tag),
     };
-    Some(&ELEMENTS[index])
+    ELEMENTS.get(index)
 }
 
 fn lookup_cold(tag: &str) -> Option<&'static ElementDocs> {
@@ -158,7 +158,7 @@ fn lookup_cold(tag: &str) -> Option<&'static ElementDocs> {
     let mut end = ELEMENTS.len();
     while start < end {
         let middle = start + (end - start) / 2;
-        let entry = &ELEMENTS[middle];
+        let entry = ELEMENTS.get(middle)?;
         match entry.tag.cmp(tag) {
             std::cmp::Ordering::Equal => return Some(entry),
             std::cmp::Ordering::Less => start = middle + 1,
