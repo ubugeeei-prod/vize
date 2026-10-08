@@ -132,3 +132,29 @@ plus the independent cold collision transactions must execute on the fresh
 source before success is claimed.
 
 Paired cold-workspace and atomic-update decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6049466010) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6049466333).
+
+Exact source `4744aec87f` in
+[Check37707096553](https://github.com/ubugeeei-prod/vize/actions/runs/37707096553)
+proves all 70 whole original-report packets and 18 complete safe, mutable-refusal
+and cold-collision observations. Its two failed Rust bodies remain failures.
+The exact role-selection unit admits ordinary same-name values through the new
+coarse event-name fallback; remove only that fallback, preserving the actual
+AST-owned key/call roles and previous prop/value guard. The first MissingCall
+negative retains the correct whole transaction and partial disk bytes, but its
+version-2 diagnostics are unexpectedly empty instead of the independently
+authored complete TS2345. Its independent version-3 repair is clean. Three later
+negative sessions did not execute, and the source aggregate remains unqualified.
+
+Keep that same negative source, query order, provider response, actual edit
+application, complete TS2345 oracle and version-2/version-3 editor observations.
+After preserving the actual partial editor observation, run the actual public
+CLI `check --show-virtual-ts --format json --corsa-path <configured runtime>`
+against those identical on-disk files. Capture its full argv, status, stdout and
+stderr bytes beside the unchanged editor packet. The public batch output
+includes generated TypeScript and rendered diagnostics; it is separate from raw
+native RPC and supplies no editor-diagnostic qualification. The witness can
+distinguish batch producer output from editor synchronization. No diagnostic
+source correction or oracle change is authorized by an empty diagnostic alone.
+Fresh source execution must determine the cause and still satisfy all 92 bodies.
+
+Paired selector and diagnostic-witness decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6049857114) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6049857287).

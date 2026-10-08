@@ -154,6 +154,9 @@ fn missing_emit_and_partial_transaction_application_produce_complete_ts2345_befo
                 {"file":"src/Toggle.vue","text":applied_toggle,"disk":std::fs::read_to_string(fixture.project.path().join("src/Toggle.vue")).unwrap(),"diagnostics":child_diagnostics},
                 {"file":"src/App.vue","text":applied_app,"disk":std::fs::read_to_string(fixture.project.path().join("src/App.vue")).unwrap(),"diagnostics":app_diagnostics},
             ]);
+            // Retain the complete version2 editor observation first. This
+            // separate public CLI route sees these exact partial disk bytes.
+            let diagnostic_witness = super::diagnostic_witness::capture(&fixture);
             for (name, text) in [
                 ("src/Toggle.vue", &golden_toggle),
                 ("src/App.vue", &golden_app),
@@ -181,12 +184,13 @@ fn missing_emit_and_partial_transaction_application_produce_complete_ts2345_befo
                 {"file":"src/App.vue","text":golden_app,"disk":std::fs::read_to_string(fixture.project.path().join("src/App.vue")).unwrap(),"version":3,"diagnostics":app_diagnostics},
             ]});
             let context = format!("incomplete event application {kind}, newline={newline:?}");
-            safe_update::capture(
+            safe_update::capture_with_witness(
                 &fixture,
                 &context,
                 &json!({"toggle":toggle,"app":app}),
                 &expected,
                 &actual,
+                Some(diagnostic_witness),
             );
             assert_eq!(actual, expected, "{context}");
             assert_eq!(std::fs::read(&asset).unwrap(), asset_bytes);

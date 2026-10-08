@@ -229,6 +229,17 @@ pub(super) fn capture(
     expected: &Value,
     actual: &Value,
 ) {
+    capture_with_witness(fixture, context, inputs, expected, actual, None);
+}
+
+pub(super) fn capture_with_witness(
+    fixture: &Fixture,
+    context: &str,
+    inputs: &Value,
+    expected: &Value,
+    actual: &Value,
+    diagnostic_witness: Option<Value>,
+) {
     let root = std::env::var_os("VIZE_TEST_FIX_HISTORY_CAPTURE_DIR")
         .map(std::path::PathBuf::from)
         .or_else(|| {
@@ -245,6 +256,7 @@ pub(super) fn capture(
         let root = root.join("event-library-authority-transactions");
         std::fs::create_dir_all(&root).unwrap();
         let packet = json!({"context":context,"sourceSha":std::env::var("SOURCE_SHA").ok(),"inputs":inputs,"expected":expected,"actual":actual,
+            "diagnosticWitness":diagnostic_witness,
             "cliBinary":env!("CARGO_BIN_EXE_vize"),"requireTsgo":std::env::var("VIZE_TEST_REQUIRE_TSGO").ok(),"disableTsgo":std::env::var("VIZE_TEST_DISABLE_TSGO").ok(),
             "runtime":fixture.runtime,"tsconfig":std::fs::read_to_string(fixture.project.path().join("tsconfig.json")).unwrap(),
             "vizeConfig":std::fs::read_to_string(fixture.project.path().join("vize.config.json")).unwrap()});

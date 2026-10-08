@@ -6,6 +6,8 @@ use super::{Fixture, range};
 
 #[path = "cold_collision.rs"]
 mod cold_collision;
+#[path = "diagnostic_witness.rs"]
+mod diagnostic_witness;
 #[path = "safe_update.rs"]
 mod safe_update;
 #[path = "safety_controls.rs"]

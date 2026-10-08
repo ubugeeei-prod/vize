@@ -98,7 +98,7 @@ fn may_query_component_prop(ctx: &IdeContext<'_>) -> bool {
     {
         return false;
     }
-    croquis.get_props().any(|(prop, _)| prop == name) || event_candidate
+    croquis.get_props().any(|(prop, _)| prop == name)
 }
 
 impl ComponentPropNavigationMatches {
