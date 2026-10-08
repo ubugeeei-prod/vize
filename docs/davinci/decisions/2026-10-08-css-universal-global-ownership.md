@@ -66,15 +66,15 @@ Forty-three independently authored new packets cover 11 zero and 32 finding
 cases. Their full diagnostic fields, counts, JSON, plain output and CSS offsets
 come from authored expectations, rather than captured product output.
 
-| Obligation | Required result |
-| --- | --- |
-| Absent leading-universal class/ID subjects; outer universal; both universals; decoded escapes; selector lists containing only exempt subjects | Complete zero SFC result, with standalone CSS findings retained |
-| Owned class/ID, bare universal, outer-absent/inner-local subject and mixed selector list | Complete SFC finding |
-| Namespaces, attributes, filters/pseudos, combinators, comments, internal whitespace, repeated/nonleading star, comma inside global and multiple globals | Complete conservative SFC finding |
-| Single root, dynamic/component/foreign-namespace roots, external or non-HTML template | Complete conservative SFC finding |
-| Foreign global parent with a nested local rule | Only the local child is reported; standalone CSS reports both declarations |
-| Scripted and scriptless query-free sources with a type rule enabled | Same complete native result without needing Corsa |
-| CSS disabled | Complete empty result with zero error/warning counts |
+| Obligation                                                                                                                                              | Required result                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Absent leading-universal class/ID subjects; outer universal; both universals; decoded escapes; selector lists containing only exempt subjects           | Complete zero SFC result, with standalone CSS findings retained            |
+| Owned class/ID, bare universal, outer-absent/inner-local subject and mixed selector list                                                                | Complete SFC finding                                                       |
+| Namespaces, attributes, filters/pseudos, combinators, comments, internal whitespace, repeated/nonleading star, comma inside global and multiple globals | Complete conservative SFC finding                                          |
+| Single root, dynamic/component/foreign-namespace roots, external or non-HTML template                                                                   | Complete conservative SFC finding                                          |
+| Foreign global parent with a nested local rule                                                                                                          | Only the local child is reported; standalone CSS reports both declarations |
+| Scripted and scriptless query-free sources with a type rule enabled                                                                                     | Same complete native result without needing Corsa                          |
+| CSS disabled                                                                                                                                            | Complete empty result with zero error/warning counts                       |
 
 The new source API test executes all 43 packets on normal and genuine native
 routes, yielding 86 distinct case/route contracts. Enabling
@@ -140,3 +140,13 @@ no Croquis delta. This child begins at actual #8266 head
 `807970136d3c0b45d173a525b0bdc8c86b7df291`. Fresh exact-head
 whole-history/API/CLI Actions, protected native Stack acceptance, actual merge
 and installed-release replay remain required; #7976 stays open.
+
+## First source formatting correction
+
+Exact child `1d8c5ca0` fails
+[Check 37735137821](https://github.com/ubugeeei-prod/vize/actions/runs/37735137821/job/113172866282):
+the configured JavaScript gate rejects formatting in this late companion record.
+Run the actual Markdown formatter on the companion and paired canonical record.
+The source grammar, every original and new fixture, full expectations, observer
+IDs/counts and all gates remain unchanged. Preserve this real failed source;
+fresh successor Actions and protected native Stack qualification are required.
