@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false
+  },
+  "include": [],
+  "files": [
+    "tools/benchmarks/scripts/check-gate-report.ts",
+    "tools/benchmarks/scripts/check-gate-report.test.ts"
+  ]
+}

@@ -10,7 +10,7 @@ test("check-bench keeps optional scheduled and manual fail-closed measurements",
   assert.match(workflow, /^  workflow_dispatch:$/mu);
   assert.match(workflow, /^  schedule:$/mu);
   assert.doesNotMatch(workflow, /^  pull_request:$/mu);
-  assert.match(workflow, /node --test tools\/benchmarks\/scripts\/check-gate-report\.test\.mjs/u);
+  assert.match(workflow, /node --test tools\/benchmarks\/scripts\/check-gate-report\.test\.ts/u);
   assert.match(workflow, /node tools\/benchmarks\/scripts\/generate\.mjs/u);
   assert.match(workflow, /node tools\/benchmarks\/scripts\/check-gate\.mjs/u);
   assert.match(workflow, /--require-vue-tsc/u);

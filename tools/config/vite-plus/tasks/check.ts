@@ -42,6 +42,7 @@ const rustClippyCommand = [
 const strictRepoCheckCommand = [
   rustTool("ci/check-warning-budget", "--", localVp, "check"),
   "node tools/support/typescript/check-project.ts",
+  "node tools/support/typescript/check-project.ts tsconfig.benchmark-reports.json",
 ].join(" && ");
 const ciVizeAppCheckCommand = [
   runInDirectory(

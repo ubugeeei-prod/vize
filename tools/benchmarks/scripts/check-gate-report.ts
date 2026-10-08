@@ -13,24 +13,84 @@ export const ENGINE_CLASSES = {
   "tsgo-native": "native TypeScript engine (tsgo)",
 };
 
-export function median(values) {
+export type EngineClass = keyof typeof ENGINE_CLASSES;
+type TimedOutput = { ms: number };
+export type MeasurementVariant<Output extends TimedOutput> = {
+  id: string;
+  label: string;
+  engineClass: EngineClass;
+  expectedDiagnostics: number;
+  notes?: string;
+  measure: () => Output;
+  countDiagnostics: (output: Output) => number;
+  coldMs?: number;
+  runs?: number[];
+};
+type InitializedVariant<Output extends TimedOutput> = MeasurementVariant<Output> & {
+  coldMs: number;
+  runs: number[];
+};
+export type MeasuredRow = {
+  id: string;
+  label: string;
+  engineClass: EngineClass;
+  status: "ok";
+  coldMs: number;
+  runs: number[];
+  medianMs: number;
+  diagnosticCount: number;
+  warmupPasses: number;
+  notes?: string;
+};
+type BudgetBaseline = { rows?: Array<{ id: string; medianMs?: number | null }> };
+export type BudgetResult =
+  | { status: "invalid-head-median"; headMedianMs: number; thresholdPercent: number }
+  | { status: "no-baseline" | "invalid-baseline"; thresholdPercent: number }
+  | {
+      status: "passed" | "failed";
+      baseMedianMs: number;
+      headMedianMs: number;
+      changePercent: number;
+      thresholdPercent: number;
+    };
+export type CheckBenchmarkReport = {
+  generatedAt: string;
+  versions: {
+    vize: string;
+    tsgo: string;
+    vueTsc?: string | null;
+    typescript?: string | null;
+    vue: string;
+  };
+  binaries: Record<string, { sha256?: string | null }>;
+  entry: { tsconfigPath: string; fileCount: number; totalBytes: number };
+  backend: { vize: Record<string, boolean> };
+  budget: BudgetResult;
+  rows: MeasuredRow[];
+  skipped: Record<string, string | null | undefined>;
+};
+
+export function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b);
   const mid = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 1 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
-export function formatMs(ms) {
+export function formatMs(ms: number): string {
   if (!Number.isFinite(ms)) return "n/a";
   return ms >= 1000 ? `${(ms / 1000).toFixed(2)}s` : `${ms.toFixed(1)}ms`;
 }
 
-export function rotate(list, by) {
+export function rotate<Value>(list: Value[], by: number): Value[] {
   if (list.length === 0) return list;
   const k = ((by % list.length) + list.length) % list.length;
   return [...list.slice(k), ...list.slice(0, k)];
 }
 
-function checkedRun(variant, phase) {
+function checkedRun<Output extends TimedOutput>(
+  variant: MeasurementVariant<Output>,
+  phase: string,
+): Output {
   const out = variant.measure();
   const count = variant.countDiagnostics(out);
   if (count !== variant.expectedDiagnostics) {
@@ -41,15 +101,24 @@ function checkedRun(variant, phase) {
   return out;
 }
 
-/**
- * Cold run first, then >=1 rotated warmup passes, then rotated measured runs.
- * Throws (fail closed) when any run's diagnostic count drifts.
- */
-export function measureRows(variants, { runs, warmups }) {
+function recordColdRows<Output extends TimedOutput>(
+  variants: MeasurementVariant<Output>[],
+): asserts variants is InitializedVariant<Output>[] {
   for (const variant of variants) {
     variant.coldMs = Number(checkedRun(variant, "cold startup").ms.toFixed(3));
     variant.runs = [];
   }
+}
+
+/**
+ * Cold run first, then >=1 rotated warmup passes, then rotated measured runs.
+ * Throws (fail closed) when any run's diagnostic count drifts.
+ */
+export function measureRows<Output extends TimedOutput>(
+  variants: MeasurementVariant<Output>[],
+  { runs, warmups }: { runs: number; warmups: number },
+): MeasuredRow[] {
+  recordColdRows(variants);
   const warmupPasses = Math.max(1, warmups);
   for (let pass = 0; pass < warmupPasses; pass++) {
     for (const variant of rotate(variants, pass + 1)) checkedRun(variant, `warmup ${pass}`);
@@ -74,13 +143,17 @@ export function measureRows(variants, { runs, warmups }) {
 }
 
 /** Pure budget rule so tests can exercise it without re-measuring. */
-export function evaluateBudget(headMedianMs, baseline, thresholdPercent) {
+export function evaluateBudget(
+  headMedianMs: number,
+  baseline: BudgetBaseline | null | undefined,
+  thresholdPercent: number,
+): BudgetResult {
   if (!Number.isFinite(headMedianMs) || headMedianMs <= 0) {
     return { status: "invalid-head-median", headMedianMs, thresholdPercent };
   }
   if (baseline == null) return { status: "no-baseline", thresholdPercent };
   const baseMedianMs = baseline?.rows?.find((row) => row.id === "vize-check-max")?.medianMs;
-  if (!Number.isFinite(baseMedianMs) || baseMedianMs <= 0) {
+  if (typeof baseMedianMs !== "number" || !Number.isFinite(baseMedianMs) || baseMedianMs <= 0) {
     return { status: "invalid-baseline", thresholdPercent };
   }
   const changePercent = Number((((headMedianMs - baseMedianMs) / baseMedianMs) * 100).toFixed(2));
@@ -93,7 +166,7 @@ export function evaluateBudget(headMedianMs, baseline, thresholdPercent) {
   };
 }
 
-export function renderMarkdown(data) {
+export function renderMarkdown(data: CheckBenchmarkReport): string {
   const lines = ["## Vize Check Benchmark Gate", ""];
   lines.push(`Measured: ${data.generatedAt}`);
   lines.push(

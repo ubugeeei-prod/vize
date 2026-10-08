@@ -20,7 +20,7 @@
  * (`speedupStatus: "unavailable"`).
  */
 
-import { ENGINE_CLASSES } from "./check-gate-report.mjs";
+import { ENGINE_CLASSES } from "./check-gate-report.ts";
 import { OPTIONAL_TYPECHECK_VARIANTS } from "./typecheck-readiness.mjs";
 
 /**

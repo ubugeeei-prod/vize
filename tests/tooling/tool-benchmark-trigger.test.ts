@@ -59,7 +59,7 @@ test("Tool Benchmark ignores only known non-runtime pull request paths", () => {
     "!tools/benchmarks/scripts/check-gate.mjs",
     "!tools/benchmarks/scripts/check-gate-env.mjs",
     "!tools/benchmarks/scripts/check-gate-plants.mjs",
-    "!tools/benchmarks/scripts/check-gate-report.mjs",
+    "!tools/benchmarks/scripts/check-gate-report.ts",
     "!editors/**",
     "!tests/**",
     "!tools/commands/ci/github/**",
