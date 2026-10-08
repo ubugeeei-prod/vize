@@ -174,3 +174,15 @@ needs-input/environment binding normalized. The original growth exclusions
 are unchanged, and every changed/new included file retains its original cap.
 Root's closure update changes only canonical rows 187 and 286; the other
 348 rows remain exact. These local checks do not qualify the new source head.
+
+The corrected `ccfd3f69cf05c36377de7e2bf6cd7924c8ea2695` source exposed
+one authentic Advanced Security refusal in the new package-setup composite:
+the copied old dtolnay stable pin resolves but no longer belongs to reachable
+upstream history. Replace only that new action pin with the repository's
+existing current stable `89b12181fb390509a0842a86cc55eeb8eb928c1d`.
+Read-only official action comparison retains the default stable toolchain and
+install options, with upstream checksum-update retry and non-host handling.
+No upstream write, version promotion, gate or budget change is made. The
+whole-expansion proof above remains historical for the prior pin; the final
+source differs only by this explicit reachable-pin correction and still
+requires fresh exact-head Actions.
