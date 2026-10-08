@@ -1,0 +1,12 @@
+{
+  "id": "custom-different-ordered-modifiers",
+  "source": "<div v-custom:arg.stop.prevent=\"a\" v-custom:arg.prevent.stop=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "custom-different-ordered-modifiers.vue",
+    "errorCount": 0,
+    "warningCount": 0,
+    "diagnostics": []
+  }
+}

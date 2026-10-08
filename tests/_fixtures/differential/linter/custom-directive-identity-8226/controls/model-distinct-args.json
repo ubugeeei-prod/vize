@@ -1,0 +1,12 @@
+{
+  "id": "model-distinct-args",
+  "source": "<Comp v-model:first=\"a\" v-model:second=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "model-distinct-args.vue",
+    "errorCount": 0,
+    "warningCount": 0,
+    "diagnostics": []
+  }
+}

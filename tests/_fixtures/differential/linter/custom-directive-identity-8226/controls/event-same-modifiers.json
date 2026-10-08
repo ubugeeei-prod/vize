@@ -1,0 +1,23 @@
+{
+  "id": "event-same-modifiers",
+  "source": "<div @click.stop=\"a\" @click.stop=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "event-same-modifiers.vue",
+    "errorCount": 1,
+    "warningCount": 0,
+    "diagnostics": [
+      {
+        "rule": "vue/no-duplicate-attributes",
+        "severity": "Error",
+        "message": "Duplicate attribute 'v-on:click.stop'",
+        "start": 21,
+        "end": 36,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  }
+}

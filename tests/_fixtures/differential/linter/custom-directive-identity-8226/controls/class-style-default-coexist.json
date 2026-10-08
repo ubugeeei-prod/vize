@@ -1,0 +1,12 @@
+{
+  "id": "class-style-default-coexist",
+  "source": "<div class=\"a\" :class=\"b\" style=\"a\" :style=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "class-style-default-coexist.vue",
+    "errorCount": 0,
+    "warningCount": 0,
+    "diagnostics": []
+  }
+}

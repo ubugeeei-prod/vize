@@ -1,0 +1,33 @@
+{
+  "id": "static-duplicate",
+  "source": "<div id=\"a\" id=\"b\"/>",
+  "allowClass": true,
+  "allowStyle": true,
+  "expected": {
+    "filename": "static-duplicate.vue",
+    "errorCount": 1,
+    "warningCount": 1,
+    "diagnostics": [
+      {
+        "rule": "parser/template",
+        "severity": "Warning",
+        "message": "Duplicate attribute `id`. Keeping the repeated attribute so parsing can continue.",
+        "start": 12,
+        "end": 14,
+        "help": null,
+        "labels": [],
+        "fix": null
+      },
+      {
+        "rule": "vue/no-duplicate-attributes",
+        "severity": "Error",
+        "message": "Duplicate attribute 'id'",
+        "start": 12,
+        "end": 18,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  }
+}
