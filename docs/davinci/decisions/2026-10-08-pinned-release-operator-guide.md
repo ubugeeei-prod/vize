@@ -37,3 +37,8 @@ The stale source run was cancelled; its failure receipt remains preserved.
 Publication stays pending until the fresh source and public requirements pass.
 The [paired lifecycle receipt](https://github.com/ubugeeei-prod/vize/issues/6239#issuecomment-6052770394)
 retains the complete identities. This changes no release source or tag.
+
+The subsequent [catalog failure and terminal retirement](./2026-10-08-release-436-catalog-retirement.md)
+records why v0.436.0 remained unpublished despite successful source and protected
+checks. Preserve the strict full-manifest comparator; a fresh minor source and
+build run follow actual delivery of the required integration guard.
