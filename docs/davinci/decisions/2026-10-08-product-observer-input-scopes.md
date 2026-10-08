@@ -226,3 +226,36 @@ projects. The unchanged authoritative growth rules accept the complete
 14-path own delta against actual main, retaining 690/423/350 lines. These
 bounded local controls permit publication of the successor source; fresh
 natural hosted qualification remains pending.
+
+### Source qualification and queue composition conflict
+
+The genuine `8816` refresh produced exact source
+`40a23f0e7911f37345cd3394de10b7074c2cec17`.
+[Check 37771111524](https://github.com/ubugeeei-prod/vize/actions/runs/37771111524)
+completed successfully at 2026-10-08 11:59:46 UTC, and
+[Native 37771110368](https://github.com/ubugeeei-prod/vize/actions/runs/37771110368)
+at 11:51:20 UTC. The four tooling workers, genuine 18-case release refusal
+callback, strict reports and fresh security checks succeeded. Archive this
+qualified source as `archive/ci-full-js-40a-20261008`; its source success stays
+bound to that head and its actual `8816` comparison cut.
+
+The maintainer admitted #8309 through the native Stack at 12:06:01 UTC,
+then removed it after the queue could not form a candidate. A read-only
+`git merge-tree` against the preceding genuine Docs top
+`2f9fe178ab7ce2d66a17c9e7fe84570cc86cfbb5` reproduced exactly one content
+conflict in `check.yml`: Docs prefixes both JS check commands with its direct
+pinned native TypeScript Docs project check, while this slice adds main-push
+to the full `check:ci` predicate and removes main-push from the fast
+`check:repo` predicate. Canonical prose composed cleanly. This was a concrete
+composition conflict, not a failing workflow; no protected candidate existed.
+The removed queue entry was independently verified absent.
+
+Wait for #8295/#8296 to actually merge, then replay only these owned commits
+onto freshly verified actual main. Preserve both complete Docs command
+prefixes, the reviewed full/fast event predicates, all required jobs and
+incoming canonical clauses. Never base on the speculative queue composition
+`2f9fe178`. The observed actual-main `04ec4c43d9c84c46892fc33f013917d2561bfe78`
+composed cleanly with archived `40a`; that fact does not qualify the later
+Docs composition. Fresh successor source Actions and protected/actual signed
+delivery remain required. Full main/manual parity and publication stay
+unfinished; this repair adds no selector, gate, oracle or performance claim.
