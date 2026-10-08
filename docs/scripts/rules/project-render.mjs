@@ -13,6 +13,7 @@ import { reactiveCycleExample } from "./reactive-cycle-project.mjs";
 const examples = { ...original0, ...original1, ...original2, ...extra };
 const slug = (id) => id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
 export function generateProjectPages(root, checking) {
+  const pages = new Map();
   const metadata = crossMetadata(root);
   const contracts = metadata
     .filter((rule) => rule.status === "contract")
@@ -22,6 +23,8 @@ export function generateProjectPages(root, checking) {
     throw new Error("Contract examples must match all published producer-free contracts");
   for (const locale of ["", "ja/"]) {
     const ja = Boolean(locale);
+    const details = [];
+    pages.set(locale, details);
     const directory = resolve(root, `docs/content/${locale}rules`);
     if (!checking) mkdirSync(resolve(directory, "project"), { recursive: true });
     const label = (en, jp) => (ja ? jp : en);
@@ -64,11 +67,9 @@ export function generateProjectPages(root, checking) {
       lines.push(
         `| [\`${id}\`](./project/${slug(id)}.md) | ${exampleLinks(`./project/${slug(id)}.md`, ja)} | ${severity} |`,
       );
-      output(
-        resolve(directory, `project/${slug(id)}.md`),
-        projectDetail(id, example, ja, severity),
-        checking,
-      );
+      const text = projectDetail(id, example, ja, severity);
+      output(resolve(directory, `project/${slug(id)}.md`), text, checking);
+      details.push({ id, text });
     }
     lines.push(
       "",
@@ -90,14 +91,13 @@ export function generateProjectPages(root, checking) {
       lines.push(
         `| [\`${rule.code}\`](./project/${slug(rule.code)}.md) | ${exampleLinks(`./project/${slug(rule.code)}.md`, ja)} | ${status} |`,
       );
-      output(
-        resolve(directory, `project/${slug(rule.code)}.md`),
-        crossDetail(root, rule, ja),
-        checking,
-      );
+      const text = crossDetail(root, rule, ja);
+      output(resolve(directory, `project/${slug(rule.code)}.md`), text, checking);
+      details.push({ id: rule.code, text });
     }
     output(resolve(directory, "cross-file.md"), `${lines.join("\n")}\n`, checking);
   }
+  return pages;
 }
 function config(id, _ja) {
   return [

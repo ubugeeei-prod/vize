@@ -8,6 +8,7 @@ import { migrationPage } from "./migration.mjs";
 import { purposeJa } from "./purpose-ja.mjs";
 import { exampleLinks } from "./example-links.mjs";
 import { projectIndex } from "./project-index.mjs";
+import { inlineReference } from "./inline-reference.mjs";
 
 export const configurableRules = new Set([
   "html/no-empty-palpable-content",
@@ -35,12 +36,13 @@ export function generateRulePages({
 }) {
   const checking = process.argv.includes("--check");
   validateExampleExplanations(rules);
-  generateProjectPages(workspaceRoot, checking);
+  const projectPages = generateProjectPages(workspaceRoot, checking);
   generateCategoryPages(workspaceRoot, rules, checking);
   for (const locale of ["", "ja/"]) {
     const directory = resolve(workspaceRoot, `docs/content/${locale}rules`);
     if (!checking) mkdirSync(resolve(directory, "reference"), { recursive: true });
     const ja = locale === "ja/";
+    const examples = [];
     output(
       resolve(directory, "migration.md"),
       migrationPage(workspaceRoot, new Set(rules.map((rule) => rule.name)), ja),
@@ -54,8 +56,8 @@ export function generateRulePages({
       `# ${ja ? "全 lint ルール" : "All lint rules"}`,
       "",
       ja
-        ? `現在のソース カタログにある ${rules.length} 項目の一覧です。未対応の範囲は個別ページに明記しています。ルール名から、目的・適用範囲・設定・悪い例・良い例を確認できます。`
-        : `All ${rules.length} source catalog entries, including explicitly marked support gaps. Follow a rule name for its purpose, scope, configuration, and Bad/Good examples.`,
+        ? `現在のソース カタログにある ${rules.length} 項目の一覧です。このページに、目的・適用範囲・設定・悪い例・良い例と理由をまとめています。未対応の範囲も各例の前に明記しています。`
+        : `All ${rules.length} source catalog entries with purpose, scope, configuration, and Bad/Good examples on this page. Each example explains the finding and repair, with current support gaps stated explicitly.`,
       "",
       ja
         ? "Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lint.vize.rules` に指定します。`vp run lint` で Vize と Oxlint の lint を実行します。"
@@ -88,13 +90,31 @@ export function generateRulePages({
         const example = ruleExamples(workspaceRoot, rule);
         if (!purposeJa[rule.name]) throw new Error(`Missing Japanese purpose for ${rule.name}`);
         lines.push(
-          `| [\`${rule.name}\`](./reference/${path}) | ${exampleLinks(`./reference/${path}`, ja)} | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? (ja ? "あり" : "Yes") : ja ? "なし" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : ja ? "なし" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} | ${cell(label)} |`,
+          `| [\`${rule.name}\`](#${slug(rule.name)}) | ${exampleLinks("", ja, slug(rule.name))} | \`${rule.defaultSeverity}\` | ${presets(rule.presets)} | ${rule.fixable ? (ja ? "あり" : "Yes") : ja ? "なし" : "No"} | ${configurableRules.has(rule.name) ? "[`ruleOptions`](./options.md)" : ja ? "なし" : "No"} | ${implementation(rule)} | ${cell(ja ? purposeJa[rule.name] : rule.description)} | ${cell(label)} |`,
         );
-        output(resolve(directory, "reference", path), detail(rule, example, ja), checking);
+        const reference = detail(rule, example, ja);
+        output(resolve(directory, "reference", path), reference, checking);
+        examples.push(inlineReference(reference, rule.name));
       }
     }
-    lines.push(...projectIndex(workspaceRoot, ja));
-    output(resolve(directory, "all.md"), `${lines.join("\n")}\n`, checking);
+    lines.push(...projectIndex(workspaceRoot, ja, true));
+    const publicRoute = `https://vizejs.dev/${ja ? "ja/" : ""}rules/all.html`;
+    const sourceIndex = lines.map((line) => line.replaceAll("](#", `](${publicRoute}#`));
+    output(resolve(directory, "all.md"), `${sourceIndex.join("\n")}\n`, checking);
+    const catalogue = [
+      ...lines,
+      "",
+      `## ${ja ? "単一ファイルの例" : "Single-file examples"}`,
+      "",
+      ...examples,
+      "",
+      `## ${ja ? "プロジェクトの例" : "Project examples"}`,
+      "",
+      ...projectPages.get(locale).map(({ id, text }) => inlineReference(text, id)),
+    ];
+    const generated = resolve(workspaceRoot, `docs/content/generated/rules/${ja ? "ja" : "en"}`);
+    if (!checking) mkdirSync(generated, { recursive: true });
+    output(resolve(generated, "all.md"), `${catalogue.join("\n").trimEnd()}\n`, checking);
   }
 }
 

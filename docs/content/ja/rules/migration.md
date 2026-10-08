@@ -8,13 +8,13 @@ title: ESLint ルール移行対応表
 
 Vite+ の設定では Vize のルールを `lint.vize.rules` に指定します。Oxlint の JS / TS ルールは `lint.rules` に残します。ESLint の配列形式をそのまま移さず、重大度と型付き `ruleOptions` を分けて指定します。
 
-```diff
-- import vue from "eslint-plugin-vue";
-- export default [{ plugins: { vue }, rules: { "vue/attributes-order": "warn" } }];
-+ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-+ export default defineConfig({
-+   lint: { vize: { rules: { "vue/attribute-order": "warn" } } },
-+ });
+```ts annotate="remove:1,2;add:3,4,5,6"
+ import vue from "eslint-plugin-vue";
+ export default [{ plugins: { vue }, rules: { "vue/attributes-order": "warn" } }];
+ import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+ export default defineConfig({
+   lint: { vize: { rules: { "vue/attribute-order": "warn" } } },
+ });
 ```
 
 リンク先の悪い例・良い例を確認してから、重複する Vue ルールだけを取り除きます。`vp run lint` で検査します。既存の package script と名前が衝突する場合は `vp run vize:lint` です。明示した task 設定が優先されます。

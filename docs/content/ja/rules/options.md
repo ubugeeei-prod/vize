@@ -608,10 +608,10 @@ const { size = "md" } = defineProps<{ size?: string }>();
 ESLint からの移行では、ルール名とオプションの指定位置を変更します。
 追加する `rules` と `ruleOptions` は、上記の `lint.vize` に指定してください。
 
-```diff
-- rules: { "vue/define-props-destructuring": ["warn", "always"] }
-+ rules: { "script/define-props-destructuring": "warn" },
-+ ruleOptions: { "script/define-props-destructuring": { mode: "always" } }
+```ts annotate="remove:1;add:2,3"
+ rules: { "vue/define-props-destructuring": ["warn", "always"] }
+ rules: { "script/define-props-destructuring": "warn" },
+ ruleOptions: { "script/define-props-destructuring": { mode: "always" } }
 ```
 
 ## `vue/require-component-registration`

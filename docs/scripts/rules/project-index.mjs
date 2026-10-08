@@ -3,7 +3,7 @@ import { exampleLinks } from "./example-links.mjs";
 import { crossMetadata } from "./project-metadata.mjs";
 import { routerExamples } from "./router-project.mjs";
 
-export function projectIndex(root, ja) {
+export function projectIndex(root, ja, inline = false) {
   const label = (en, jp) => (ja ? jp : en);
   const entries = [
     ...Object.keys({ ...routerExamples, ...composed }).map((id) => ({ id, status: "cli" })),
@@ -21,7 +21,8 @@ export function projectIndex(root, ja) {
     `| ${label("Rule / code", "ルール / コード")} | ${label("Examples", "例")} | ${label("Current support", "現在の対応")} |`,
     "| --- | --- | --- |",
     ...entries.map(({ id, status }) => {
-      const path = `./project/${id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}.md`;
+      const slug = id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+      const path = inline ? `#${slug}` : `./project/${slug}.md`;
       const support =
         status === "cli"
           ? id.endsWith("circular-reactive-dependency")
@@ -38,7 +39,7 @@ export function projectIndex(root, ja) {
                   "実験的な library の生成元。CLI の個別コードでは未生成",
                 )
             : label("Contract only; no producer", "契約のみ。生成元なし");
-      return `| [\`${id}\`](${path}) | ${exampleLinks(path, ja)} | ${support} |`;
+      return `| [\`${id}\`](${path}) | ${exampleLinks(inline ? "" : path, ja, inline ? slug : undefined)} | ${support} |`;
     }),
   ];
 }

@@ -56,8 +56,8 @@ export function generateCategoryPages(root, rules, checking) {
         `# ${title}`,
         "",
         ja
-          ? "ルール名から、目的・重大度・適用範囲・設定・悪い例・良い例を確認できます。個別ページが現在の対応範囲を示す参照先です。"
-          : "Follow each rule for purpose, severity, scope, configuration, and Bad/Good examples. Individual pages are the reference for current support boundaries.",
+          ? "ルール名から、目的・重大度・適用範囲・設定・悪い例・良い例を確認できます。全ルールの一覧に例と現在の対応範囲を同じページでまとめています。"
+          : "Follow each rule for purpose, severity, scope, configuration, and Bad/Good examples. The complete catalogue keeps all examples and current support boundaries on one page.",
         "",
         ja
           ? "Vite+ では `lint.vize.rules` に設定し、`vp run lint` を実行します。型が必要なルールや、専用ファイル・追加設定が必要なルールは個別ページの前提を確認してください。"
@@ -70,7 +70,7 @@ export function generateCategoryPages(root, rules, checking) {
         .filter((rule) => select(rule.name))
         .sort((a, b) => a.name.localeCompare(b.name))) {
         lines.push(
-          `| [\`${rule.name}\`](./reference/${rule.name.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}.md) | ${exampleLinks(`./reference/${rule.name.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}.md`, ja)} | ${(ja ? purposeJa[rule.name] : rule.description).replaceAll("|", "\\|").replaceAll("<", "&lt;").replaceAll(">", "&gt;")} |`,
+          `| [\`${rule.name}\`](./all.md#${rule.name.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase()}) | ${exampleLinks("./all.md", ja, rule.name.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase())} | ${(ja ? purposeJa[rule.name] : rule.description).replaceAll("|", "\\|").replaceAll("<", "&lt;").replaceAll(">", "&gt;")} |`,
         );
       }
       lines.push(

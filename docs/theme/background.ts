@@ -19,6 +19,7 @@ export const SCRIPT_BASENAMES = [
   "i18n/locales/pt-BR",
   "i18n/locales/fr",
   "i18n/navigation",
+  "syntax-highlight-core",
   "syntax-highlight",
 ];
 const VERTEX_SHADER_PLACEHOLDER = "__VERT_SRC__";

@@ -181,10 +181,10 @@ const { size = "md" } = defineProps<{ size?: string }>();
 
 When migrating from ESLint, use the Vize rule ID and typed options separately:
 
-```diff
-- rules: { "vue/define-props-destructuring": ["warn", "always"] }
-+ rules: { "script/define-props-destructuring": "warn" },
-+ ruleOptions: { "script/define-props-destructuring": { mode: "always" } }
+```ts annotate="remove:1;add:2,3"
+ rules: { "vue/define-props-destructuring": ["warn", "always"] }
+ rules: { "script/define-props-destructuring": "warn" },
+ ruleOptions: { "script/define-props-destructuring": { mode: "always" } }
 ```
 
 Place the added entries inside `lint.vize` in the Vite+ config above.

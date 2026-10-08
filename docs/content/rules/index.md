@@ -4,9 +4,9 @@ title: Rules
 
 # Rules
 
-Vize diagnostics are documented as rules, not as one large matrix. Each rule page keeps the
-detection behavior close to the Bad/Good examples so the reference can be read like an ESLint rule
-manual.
+[All lint rules](./all.md) lists every rule with its purpose, scope, configuration, and Bad/Good
+examples on the same page. Each pair explains why the Bad example triggers a finding and how the
+Good example changes it. Use the index to jump to a rule without opening another page.
 
 With Vite+, use `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `lint.vize`,
 and run `vp run lint` for Vize and Oxlint. Existing script-name collisions use `vp run vize:lint`.
@@ -14,8 +14,8 @@ Built-in `vp lint` uses its own upstream checker.
 
 ## Pages
 
-- [All lint rules](./all.md): searchable index linking every implementation to its full
-  reference with purpose, scope, configuration, and Bad/Good examples.
+- [All lint rules](./all.md): searchable catalogue with every purpose, scope, configuration,
+  and full Bad/Good example pair inline.
 - [Rule Options](./options.md): typed `lint.vize.ruleOptions` shapes, defaults, replacement
   behavior, and examples for every configurable rule.
 - [ESLint migration map](./migration.md): mapped names, differences, unsupported rules, and

@@ -120,7 +120,7 @@ test("all rules reference shows which rules accept lint rule options", () => {
   for (const ruleId of configurableRuleOptions) {
     const row = allRules
       .split("\n")
-      .find((line) => line.startsWith(`| [\`${ruleId}\`](./reference/`));
+      .find((line) => line.startsWith(`| [\`${ruleId}\`](https://vizejs.dev/rules/all.html#`));
     assert.ok(row, `${ruleId} must appear in all rules`);
     assert.match(
       row,
@@ -131,7 +131,7 @@ test("all rules reference shows which rules accept lint rule options", () => {
 
   const a11yRow = allRules
     .split("\n")
-    .find((line) => line.startsWith("| [`a11y/img-alt`](./reference/"));
+    .find((line) => line.startsWith("| [`a11y/img-alt`](https://vizejs.dev/rules/all.html#"));
   assert.ok(a11yRow, "a sample non-configurable rule must appear in all rules");
   assert.match(a11yRow, /\| No \| \[source\]/);
 });

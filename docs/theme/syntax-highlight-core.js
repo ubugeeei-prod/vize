@@ -1,4 +1,4 @@
-const vizeDocsSyntax = (() => {
+const vizeDocsSyntaxCore = (() => {
   const TOKEN_BASE = 0xe000;
 
   const languageAliases = new Map([
@@ -163,7 +163,7 @@ const vizeDocsSyntax = (() => {
       finalize(source) {
         let result = escapeHtml(source);
 
-        for (const token of tokens) {
+        for (const token of tokens.toReversed()) {
           result = result.split(token.marker).join(token.html);
         }
 
@@ -173,7 +173,10 @@ const vizeDocsSyntax = (() => {
   }
 
   function wrapToken(className, content) {
-    return `<span class="v-code__token ${className}">${escapeHtml(content)}</span>`;
+    return content
+      .split("\n")
+      .map((line) => `<span class="v-code__token ${className}">${escapeHtml(line)}</span>`)
+      .join("\n");
   }
 
   function replaceWithClass(source, pattern, className, store) {
@@ -524,113 +527,9 @@ const vizeDocsSyntax = (() => {
     return store.finalize(result);
   }
 
-  function detectLanguage(codeElement, preElement) {
-    const candidates = [
-      codeElement.getAttribute("data-language"),
-      preElement?.getAttribute("data-language"),
-      ...(codeElement.className || "").split(/\s+/),
-      ...((preElement?.className || "").split(/\s+/) ?? []),
-    ];
-
-    for (const candidate of candidates) {
-      if (!candidate) {
-        continue;
-      }
-      const match = candidate.match(/^(?:language-|lang-)?([\w-]+)$/);
-      const normalized = normalizeLanguage(match?.[1] ?? candidate);
-      if (normalized !== "text") {
-        return normalized;
-      }
-    }
-
-    return "text";
-  }
-
-  function highlightCodeElement(codeElement) {
-    const preElement = codeElement.closest("pre");
-    if (!preElement) {
-      return;
-    }
-
-    const language = detectLanguage(codeElement, preElement);
-    const rawSource = codeElement.textContent ?? "";
-    const signature = `${language}:${rawSource}`;
-
-    if (preElement.dataset.vizeSyntaxSignature === signature) {
-      return;
-    }
-
-    preElement.dataset.language = displayLanguage(language);
-    preElement.dataset.vizeSyntaxSignature = signature;
-
-    if (language === "mermaid" || codeElement.classList.contains("mermaid")) {
-      return;
-    }
-
-    codeElement.innerHTML = createHighlightedHtml(rawSource, language);
-  }
-
-  function highlightAll(root = document) {
-    if (!root?.querySelectorAll) {
-      return;
-    }
-
-    const codeBlocks = root.querySelectorAll("pre > code");
-    for (const codeElement of codeBlocks) {
-      highlightCodeElement(codeElement);
-    }
-  }
-
-  return {
-    createHighlightedHtml,
-    detectLanguage,
-    displayLanguage,
-    highlightAll,
-    highlightCodeElement,
-    normalizeLanguage,
-  };
+  return { createHighlightedHtml, displayLanguage, normalizeLanguage };
 })();
 
 if (typeof globalThis !== "undefined") {
-  globalThis.__vizeDocsSyntax = vizeDocsSyntax;
+  globalThis.__vizeDocsSyntaxCore = vizeDocsSyntaxCore;
 }
-
-(() => {
-  if (typeof document === "undefined") {
-    return;
-  }
-
-  let scheduled = false;
-  const scheduleHighlight = () => {
-    if (scheduled) {
-      return;
-    }
-
-    scheduled = true;
-    requestAnimationFrame(() => {
-      scheduled = false;
-      vizeDocsSyntax.highlightAll(document);
-    });
-  };
-
-  const observer = new MutationObserver((mutations) => {
-    if (mutations.some((mutation) => mutation.addedNodes.length > 0)) {
-      scheduleHighlight();
-    }
-  });
-
-  const start = () => {
-    vizeDocsSyntax.highlightAll(document);
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-  };
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start, { once: true });
-    return;
-  }
-
-  start();
-})();

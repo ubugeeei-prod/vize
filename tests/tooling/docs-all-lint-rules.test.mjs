@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
@@ -34,17 +34,21 @@ await test("the generated bilingual reference covers every implemented rule with
   assert.equal(names.length, 251);
   for (const locale of ["", "ja/"]) {
     const index = read(`docs/content/${locale}rules/all.md`);
-    const links = [...index.matchAll(/^\| \[`([^`]+)`\]\(\.\/reference\/([^)]*)\)/gm)];
+    const links = [
+      ...index.matchAll(
+        /^\| \[`([^`]+)`\]\(https:\/\/vizejs\.dev\/(?:ja\/)?rules\/all\.html#([^)]*)\)/gm,
+      ),
+    ].filter((match) => names.includes(match[1]));
     assert.deepEqual(
       links.map((match) => match[1]).sort((a, b) => a.localeCompare(b)),
       names,
     );
-    for (const [, name, file] of links) {
+    for (const [, name, slug] of links) {
+      const file = `${slug}.md`;
       const page = read(`docs/content/${locale}rules/reference/${file}`);
       assert.ok(page.includes(`# \`${name}\``), name);
-      const [bad, good] = locale ? ["悪い", "良い"] : ["bad", "good"];
-      assert.ok(index.includes(`./reference/${file}#${bad}`), `${name}: direct Bad link`);
-      assert.ok(index.includes(`./reference/${file}#${good}`), `${name}: direct Good link`);
+      assert.ok(index.includes(`#${slug}-bad`), `${name}: same-page Bad link`);
+      assert.ok(index.includes(`#${slug}-good`), `${name}: same-page Good link`);
       for (const heading of locale ? ["悪い", "良い"] : ["Bad", "Good"]) {
         const rationale = page.split(`## ${heading}\n`)[1].split("```")[0].trim();
         assert.ok(rationale.length > 25, `${name}: explain the authored ${heading} example`);
@@ -150,8 +154,9 @@ await test("migration retains all mapped, divergent and unsupported ESLint ident
     assert.match(page, /123/);
     assert.match(page, /127/);
     assert.match(page, /component-definition-name-casing/);
-    assert.match(page, /^- import vue/m);
-    assert.match(page, /^\+ import \{ defineConfig \}/m);
+    assert.match(page, /```ts annotate="remove:1,2;add:3,4,5,6"/);
+    assert.match(page, /^ import vue/m);
+    assert.match(page, /^ import \{ defineConfig \}/m);
   }
 });
 
@@ -177,10 +182,11 @@ await test("project references retain every code and distinguish actual CLI prod
       const page = read(`docs/content/${locale}rules/project/${path}`);
       assert.ok(page.includes(`# \`${id}\``), id);
       const [bad, good] = locale ? ["悪い", "良い"] : ["bad", "good"];
-      for (const source of [index, all]) {
-        assert.ok(source.includes(`./project/${path}#${bad}`), `${id}: direct Bad link`);
-        assert.ok(source.includes(`./project/${path}#${good}`), `${id}: direct Good link`);
-      }
+      assert.ok(index.includes(`./project/${path}#${bad}`), `${id}: direct Bad link`);
+      assert.ok(index.includes(`./project/${path}#${good}`), `${id}: direct Good link`);
+      const slug = path.slice(0, -3);
+      assert.ok(all.includes(`#${slug}-bad`), `${id}: same-page Bad link`);
+      assert.ok(all.includes(`#${slug}-good`), `${id}: same-page Good link`);
       for (const label of locale
         ? ["既定の重大度:", "適用範囲:", "オプション:", "## 悪い", "## 良い"]
         : ["Default severity:", "Applies to:", "Options:", "## Bad", "## Good"])
@@ -197,5 +203,48 @@ await test("project references retain every code and distinguish actual CLI prod
         id,
       );
     }
+  }
+});
+
+await test("both catalogue pages retain all 317 complete reference examples and same-page targets", () => {
+  for (const [locale, generated] of [
+    ["", "en"],
+    ["ja/", "ja"],
+  ]) {
+    const catalogue = read(`docs/content/generated/rules/${generated}/all.md`);
+    const targets = [...catalogue.matchAll(/<span id="([^"\n]+)"><\/span>\n\n### `([^`]+)`/g)];
+    assert.equal(targets.length, 317);
+    assert.equal(new Set(targets.map((match) => match[1])).size, 317);
+    for (let index = 0; index < targets.length; index += 1) {
+      const [_, slug, id] = targets[index];
+      const section = catalogue.slice(targets[index].index, targets[index + 1]?.index);
+      const directories = ["reference", "project"].filter((directory) =>
+        existsSync(resolve(root, `docs/content/${locale}rules/${directory}/${slug}.md`)),
+      );
+      assert.equal(directories.length, 1, `${id}: one source reference`);
+      const directory = directories[0];
+      const reference = read(`docs/content/${locale}rules/${directory}/${slug}.md`);
+      assert.deepEqual(
+        codeBlocks(section),
+        codeBlocks(reference),
+        `${locale}${id}: every complete fenced byte preserved`,
+      );
+      for (const [kind, label] of [
+        ["bad", locale ? "悪い" : "Bad"],
+        ["good", locale ? "良い" : "Good"],
+      ]) {
+        assert.ok(
+          section.includes(`<span id="${slug}-${kind}"></span>`),
+          `${id}: unique ${kind} target`,
+        );
+        const rationale = reference.split(`## ${label}\n`)[1].split("```")[0].trim();
+        assert.ok(section.includes(rationale), `${id}: whole authored ${kind} explanation/context`);
+      }
+    }
+    const anchors = new Set(
+      [...catalogue.matchAll(/<span id="([^"\n]+)"><\/span>/g)].map((match) => match[1]),
+    );
+    for (const [, anchor] of catalogue.matchAll(/\]\(#([^)]*)\)/g))
+      assert.ok(anchors.has(anchor), `${locale}: missing same-page ${anchor}`);
   }
 });
