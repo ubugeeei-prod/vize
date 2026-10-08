@@ -51,13 +51,14 @@ impl<'a> IdeContext<'a> {
         Self::assemble(state, uri, offset, content, false)
     }
 
-    /// Completion context for an open document. Script-body ends stay insertion points.
-    pub(crate) fn at_completion(
+    /// Consume the request's cursor snapshot, retaining completion insertion boundaries.
+    pub(crate) fn completion_with_content(
         state: &'a ServerState,
         uri: &'a Url,
         offset: usize,
-    ) -> Option<Self> {
-        Self::read(state, uri, offset, true)
+        content: String,
+    ) -> Self {
+        Self::assemble(state, uri, offset, content, true)
     }
 
     /// A buffer that is not an open document (another file's text, or a test
@@ -246,6 +247,18 @@ fn root_match_subject_at(
                 || (completion
                     && offset == template.loc.tag_start + expression.loc.span.end as usize))
     })
+}
+
+#[cfg(test)]
+impl<'a> IdeContext<'a> {
+    /// Completion context for an open document. Script-body ends stay insertion points.
+    pub(crate) fn at_completion(
+        state: &'a ServerState,
+        uri: &'a Url,
+        offset: usize,
+    ) -> Option<Self> {
+        Self::read(state, uri, offset, true)
+    }
 }
 
 #[cfg(test)]

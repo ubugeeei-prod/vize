@@ -5,6 +5,53 @@ use tower_lsp::lsp_types::Url;
 
 const CONTEXT_SFC: &str = "<script setup>\r\nconst count = 1\r\n</script>\r\n<template><div title=\"雪😀\"  class=\"a\">{{ count }}</div></template>";
 
+#[test]
+fn completion_request_consumes_its_snapshot_and_keeps_every_cursor_boundary() {
+    let state = ServerState::new();
+    for path in ["App.vue", "Example.art.vue", "plain.html"] {
+        let uri = Url::parse(&["file:///workspace/", path].concat()).unwrap();
+        for source in [
+            CONTEXT_SFC,
+            "<script></script><script setup>雪😀</script>",
+            "<script lang=\"ts\"/><template>x</template><style>.a { col }</style>",
+            "<template>\r\n<div>😀</div>\r\n</template>",
+        ] {
+            state
+                .documents
+                .open(uri.clone(), source.into(), 1, "vue".into());
+            for offset in (0..=source.len()).filter(|&at| source.is_char_boundary(at)) {
+                let original = IdeContext::at_completion(&state, &uri, offset).unwrap();
+                let snapshot = state.documents.text(&uri).unwrap();
+                let pointer = snapshot.as_ptr();
+                let consumed = IdeContext::completion_with_content(&state, &uri, offset, snapshot);
+                assert_eq!(consumed.content.as_ptr(), pointer, "consume, do not copy");
+                assert_eq!(consumed.content, original.content);
+                assert_eq!(consumed.offset, original.offset);
+                assert_eq!(consumed.block_type, original.block_type, "{path}: {offset}");
+            }
+        }
+    }
+    let uri = Url::parse("file:///workspace/Snapshot.vue").unwrap();
+    let source = "<script setup>const label = 'old';</script>";
+    state
+        .documents
+        .open(uri.clone(), source.into(), 1, "vue".into());
+    let snapshot = state.documents.text(&uri).unwrap();
+    let offset = source.find("</script>").unwrap();
+    state.documents.open(
+        uri.clone(),
+        "<template>new</template>".into(),
+        2,
+        "vue".into(),
+    );
+    let consumed = IdeContext::completion_with_content(&state, &uri, offset, snapshot);
+    assert_eq!(
+        consumed.content, source,
+        "offset and content share one revision"
+    );
+    assert_eq!(consumed.block_type, Some(BlockType::ScriptSetup));
+}
+
 fn context_responses(ctx: &IdeContext<'_>) -> serde_json::Value {
     use crate::ide::{CodeActionService, TypeService, ecosystem, offset_to_position};
     use tower_lsp::lsp_types::{Position, Range};

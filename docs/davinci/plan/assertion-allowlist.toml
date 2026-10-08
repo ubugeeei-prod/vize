@@ -219,7 +219,6 @@ paths = [
   "crates/vize_maestro/src/ide/completion/template/component_docs.rs",
   "crates/vize_maestro/src/ide/corsa_support/html_tag.rs",
   "crates/vize_maestro/src/ide/diagnostics/corsa/message.rs",
-  "crates/vize_maestro/src/ide/hover.rs",
   "crates/vize_maestro/src/ide/hover/component_prop.rs",
   "crates/vize_maestro/src/ide/jsx/scoped_style.rs",
   "crates/vize_maestro/src/ide/markup.rs",
