@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, join, sep } from "node:path";
 import { after, test } from "node:test";
 import {
   localImportInputs,
@@ -89,7 +89,11 @@ test("incomplete or nonliteral observer imports retain conservative docs qualifi
     writeFileSync(file, 'import { value } from "./support/dependency.mjs";\n');
     const closure = localImportInputs(observers[0], fixtureRoot);
     assert.ok(closure.complete);
-    assert.ok(closure.files.includes("tests/tooling/support/transitive.mjs"));
+    assert.ok(
+      closure.files.some(
+        (file) => file.split(sep).join("/") === "tests/tooling/support/transitive.mjs",
+      ),
+    );
     assert.ok(sourcePlan("tests/tooling/support/transitive.mjs").tests.includes(observers[0]));
   } finally {
     writeFileSync(file, "export {};\n");
