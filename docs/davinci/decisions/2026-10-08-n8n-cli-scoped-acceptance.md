@@ -50,3 +50,10 @@ plugins, retired/type-aware rules, full monorepo lint/typecheck, direct SDK
 scriptless coverage, and installed/public-release qualification. Actual
 exact-head Actions, protected merge, and publication remain separate terminal
 states; attach their immutable evidence to the issue when they finish.
+
+PR #8270 opened with #8260 as its base after the parent entered the protected
+queue. GitHub refused native Stack registration for that queued parent. Do
+not cancel its running candidate to manufacture Stack membership: keep the
+child explicitly unlinked, then rebase and retarget it onto genuinely fresh
+main after the parent actually merges, and rerun source Actions. Future
+dependent children must be registered before parent queue admission.
