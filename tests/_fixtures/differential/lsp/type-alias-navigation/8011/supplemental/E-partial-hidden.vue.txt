@@ -1,0 +1,12 @@
+<script setup lang="ts">
+type Props = {
+  concealed?: boolean;
+  tone?: "dark" | "light";
+  html?: string;
+};
+const { html = "" } = defineProps<Props>();
+</script>
+
+<template>
+  <span v-if="!concealed" :class="tone">x</span>
+</template>
