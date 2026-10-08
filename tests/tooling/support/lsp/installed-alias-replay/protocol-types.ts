@@ -38,3 +38,18 @@ export class InstalledAliasError extends Error {
     this.packet = packet;
   }
 }
+import path from "node:path";
+
+export function validateInstalledLaunch(launch: InstalledAliasLaunch): void {
+  for (const name of [
+    "nodePath",
+    "cliPath",
+    "custodyHookPath",
+    "projectRoot",
+    "outputRoot",
+  ] as const) {
+    if (!path.isAbsolute(launch[name])) throw new Error(`${name} must be absolute`);
+  }
+  if (!Number.isSafeInteger(launch.timeoutMs) || launch.timeoutMs <= 0)
+    throw new Error("invalid deadline");
+}

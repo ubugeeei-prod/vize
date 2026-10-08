@@ -6,6 +6,7 @@ import { pathToFileURL } from "node:url";
 import { FrameDecoder } from "./frames.ts";
 import {
   InstalledAliasError,
+  validateInstalledLaunch,
   type Packet,
   type InstalledAliasLaunch,
   type Outcome,
@@ -36,17 +37,7 @@ export class InstalledAliasSession {
   private finishing: Promise<ReturnType<InstalledAliasSession["receipt"]>> | undefined;
 
   private constructor(launch: InstalledAliasLaunch) {
-    for (const name of [
-      "nodePath",
-      "cliPath",
-      "custodyHookPath",
-      "projectRoot",
-      "outputRoot",
-    ] as const) {
-      if (!path.isAbsolute(launch[name])) throw new Error(`${name} must be absolute`);
-    }
-    if (!Number.isSafeInteger(launch.timeoutMs) || launch.timeoutMs <= 0)
-      throw new Error("invalid deadline");
+    validateInstalledLaunch(launch);
     this.launch = launch;
     mkdirSync(launch.outputRoot, { recursive: true });
     this.directory = mkdtempSync(path.join(launch.outputRoot, "session-"));
