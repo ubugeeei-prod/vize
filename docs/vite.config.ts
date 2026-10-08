@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { defineConfig } from "vite-plus";
 import { oxContent, defineTheme, defaultTheme } from "@ox-content/vite-plugin";
 import { resolvePuppeteerExecutablePath } from "./browser-path.js";
-import { materializeContent } from "./scripts/materialize-content.mjs";
+import { materializeContent } from "./scripts/materialize-content.ts";
 import { buildDocsBackgroundScript, createDocsBackgroundHtml } from "./theme/background";
 
 const puppeteerExecutablePath = resolvePuppeteerExecutablePath();
@@ -17,6 +17,7 @@ const themeCss = [
   "navigation.css",
   "entry-layout.css",
   "features.css",
+  "code-annotations.css",
   "i18n/locale-selector.css",
 ]
   .map((file) => readFileSync(resolve(themeDir, file), "utf-8"))

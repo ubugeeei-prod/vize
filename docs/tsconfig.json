@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["node"],
     "strict": true,
     "noEmit": true,
@@ -13,16 +13,12 @@
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
-    "composite": true,
-    "tsBuildInfoFile": "./node_modules/.cache/tsconfig.node.tsbuildinfo"
+    "allowJs": true
   },
   "include": [
-    "tests/tooling/**/*.ts",
-    "tools/config/vite-plus/**/*.ts",
-    "vite.config.ts",
-    "docs/scripts/rules/**/*.ts",
-    "docs/scripts/generate-patina-rules-page.ts",
-    "docs/scripts/materialize-content.ts",
-    "docs/scripts/i18n/*.ts"
+    "scripts/**/*.ts",
+    "previews/ui/capture.ts",
+    "previews/ui/check-site.ts",
+    "theme/open-graph.ts"
   ]
 }

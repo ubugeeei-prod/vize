@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "generate:i18n": "node ./scripts/i18n/generate.ts --accept-machine-translation",
-    "generate:rules": "node ./scripts/generate-patina-rules-page.mjs",
+    "generate:rules": "node ./scripts/generate-patina-rules-page.ts",
     "generate:reference": "node ../npm/ui/scripts/generate-reference-docs.ts",
     "generate:ui-previews": "node ./scripts/build-ui-previews.ts",
     "check:ui-docs": "node ./previews/ui/check-site.ts",

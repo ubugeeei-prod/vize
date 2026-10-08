@@ -72,7 +72,7 @@ jobs:
         run: vp run --filter './docs' build
 
       - name: Verify rendered navigation and adoption guides
-        run: vp node docs/scripts/verify-navigation-render.mjs
+        run: vp node docs/scripts/verify-navigation-render.ts
 
       - name: Upload rendered docs screenshots
         if: ${{ always() }}

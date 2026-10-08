@@ -53,6 +53,61 @@ context; balanced per-line token fragments populate the existing native wrappers
 The provider supplies line backgrounds/borders and unselectable line numbers.
 The old engine moves in a move-only commit before its bounded DOM adapter changes.
 
+## Complete capture and native line layout
+
+The full catalogue exceeds 500,000 CSS pixels. Chromium's single full-page PNG
+capture times out for that page. Capture every vertical pixel using overlapping
+viewport PNGs, retaining dimensions, offsets and complete PNG hashes. Short pages
+keep their existing full-page capture. No route, theme, authored packet, screenshot
+region, timeout or acceptance requirement is removed.
+
+The capture helper may enlarge the viewport height to 8,192 pixels only after
+proving the complete content tree retains the same node identities, source bytes,
+element bounds and every element/text Range rectangle, plus document dimensions.
+Keep the before/after comparison in Chromium and retain complete packet hashes.
+On any change, restore the original viewport and prove its layout restored before
+capturing at the original height. Always restore the original viewport and scroll.
+A hosted control uses fixed element boxes and viewport-relative text: its boxes
+stay equal while text rectangles change, requiring the original-height fallback.
+This control runs inside the existing rendered-navigation verifier and browser.
+
+Retain native annotation wrappers and newline nodes. Setting the native wrappers
+to inline-block avoids an extra visual row between each preserved newline while
+keeping the provider's add/remove colors and borders. Local Chromium checks of
+14 real annotated blocks and 107 wrappers retain source bytes and exact adjacent
+line-height spacing in desktop/mobile light/dark; whole deployed flows remain
+required. Each catalogue rule also has its own complete inline code packet checked
+against the existing authored reference, including both Bad/Good anchors.
+
+## TypeScript ownership
+
+All handwritten executable Docs `.mjs` modules migrate to erasable `.ts`, with
+byte-identical move-only commits before type/import changes. The native Node
+runtime executes those sources directly. Keep explicit strict compiler checks in
+the existing Actions gate; renaming files alone does not establish type safety.
+Preserve complete generated reference/catalogue bytes, original law bodies and
+browser/provider invocation boundaries. The initial 51-module rule generator
+migration passes strict compilation and 22 surrounding laws; all 680 generated
+files and their path set retain exact SHA256 bytes. The integrated entrypoint,
+materializer, render verifier and capture graph also pass native strict TypeScript
+7.0.2 and 26 surrounding document laws. Actions invokes that already-pinned
+compiler directly inside the existing Linux x64 Check job on every event; the
+bounded Docs project excludes unrelated unfinished root-composite package graphs.
+Existing JavaScript imports remain supported without claiming they were migrated.
+
+All handwritten Docs `.mjs` sources are removed from the integrated tree.
+The original 666-line translation entrypoint is divided into bounded typed
+provider, concurrency, Markdown and translation modules. Native Node 22.18 and
+24.14 retain exact normalization for all 1,015 authored content files and whole
+ten-file scratch results for every provider; no actual HTTP request or authored
+translation write occurs. Four offline regression laws retain complete fences,
+YAML, links and provider behavior. Real Vite/Vue builds and Chromium interaction
+capture for eight UI preview families retain all 258 asset/PNG/evidence bytes on
+both Node versions. The typed render verifier also passes all four existing
+EN/JA Getting Started desktop/mobile controls. Complete hosted catalogue, queue
+and public acceptance remain required. This applies the maintainer's repository-wide
+`.mjs` removal direction without changing upstream or historical artifact sources.
+
 ## Acceptance and unfinished work
 
 Require exact-head Actions, protected queue delivery and actual merge. Inspect the

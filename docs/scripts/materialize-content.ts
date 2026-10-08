@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 export const CATALOGUE_SOURCES = ["generated/rules/en/all.md", "generated/rules/ja/all.md"];
 
 /** Keep native Ox Content routing while composing generated catalogue pages. */
-export function materializeContent(docsRoot) {
+export function materializeContent(docsRoot: string) {
   const directory = resolve(docsRoot, ".generated/content");
   rmSync(directory, { recursive: true, force: true });
   mkdirSync(directory, { recursive: true });

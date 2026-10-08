@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
+import type { Page } from "playwright";
 
 export const ruleRenderRoutes = [
   "/rules/all",
@@ -15,7 +16,7 @@ export const ruleRenderRoutes = [
 ];
 const root = resolve(import.meta.dirname, "../..");
 
-export async function verifyRenderedRulePackets(page, route) {
+export async function verifyRenderedRulePackets(page: Page, route: string) {
   if (!/^\/(?:ja\/)?rules\/all$/.test(route)) return null;
   const ja = route.startsWith("/ja/");
   const locale = ja ? "ja/" : "";
@@ -34,9 +35,11 @@ export async function verifyRenderedRulePackets(page, route) {
         assert.equal(graphs.length, 2, "both retained Bad/Good graph packets are rendered");
         assert.match(source, /Example qualification: `illustrative-source-pair`/);
       }
+      const id = source.match(/^# `([^`]+)`/m)?.[1];
+      assert.ok(id, `${file}: authored rule heading`);
       return {
         route: `/${locale}rules/${section}/${file.replace(/\.md$/, "")}`,
-        id: source.match(/^# `([^`]+)`/m)?.[1],
+        id,
         code: [...source.matchAll(/```\w+\n([\s\S]*?)\n```/g)].map((match) => match[1]),
         sourceSha256: createHash("sha256").update(source).digest("hex"),
         graphBlocks: graphs.length,
@@ -44,6 +47,41 @@ export async function verifyRenderedRulePackets(page, route) {
     }),
   );
   assert.equal(expected.length, 317, "251 source rules plus 66 project entries per locale");
+  const inline = await page.evaluate(
+    (expected) => {
+      const ids = new Map(
+        expected.map(({ id }) => [id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase(), id]),
+      );
+      const packets: Record<string, { code: string[]; bad: boolean; good: boolean }> = {};
+      let current: string | undefined;
+      const content = document.querySelector(".content");
+      if (!content) throw new Error("Inline rule catalogue requires its content authority");
+      for (const element of content.querySelectorAll("span[id], pre code")) {
+        const id = ids.get(element.id);
+        if (id !== undefined) {
+          current = id;
+          if (packets[current]) throw new Error(`Duplicate inline rule ${current}`);
+          packets[current] = {
+            code: [],
+            bad: Boolean(document.getElementById(`${element.id}-bad`)),
+            good: Boolean(document.getElementById(`${element.id}-good`)),
+          };
+        } else if (element.parentElement?.tagName === "PRE" && current) {
+          const text = element.textContent;
+          if (text === null) throw new Error(`Missing inline rule code ${current}`);
+          packets[current].code.push(text.replace(/\n$/, ""));
+        }
+      }
+      return packets;
+    },
+    expected.map(({ id }) => ({ id })),
+  );
+  assert.equal(Object.keys(inline).length, expected.length, "every rule is on the same page");
+  for (const authored of expected) {
+    assert.equal(inline[authored.id]?.bad, true, `${authored.id}: inline Bad anchor`);
+    assert.equal(inline[authored.id]?.good, true, `${authored.id}: inline Good anchor`);
+    assert.deepEqual(inline[authored.id]?.code, authored.code, `${authored.id}: whole inline code`);
+  }
   const receipts = [];
   for (let offset = 0; offset < expected.length; offset += 12) {
     const packet = expected.slice(offset, offset + 12);
@@ -56,12 +94,14 @@ export async function verifyRenderedRulePackets(page, route) {
             return {
               route,
               status: response.status,
-              id: document.querySelector("h1")?.textContent.trim(),
+              id: document.querySelector("h1")?.textContent?.trim(),
               bad: Boolean(document.getElementById(ja ? "悪い" : "bad")),
               good: Boolean(document.getElementById(ja ? "良い" : "good")),
-              code: [...document.querySelectorAll(".content pre code")].map((element) =>
-                element.textContent.replace(/\n$/, ""),
-              ),
+              code: [...document.querySelectorAll(".content pre code")].map((element) => {
+                const text = element.textContent;
+                if (text === null) throw new Error(`Missing rendered rule code ${route}`);
+                return text.replace(/\n$/, "");
+              }),
             };
           }),
         );

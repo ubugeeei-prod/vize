@@ -4,8 +4,65 @@ import { createServer } from "node:http";
 import path from "node:path";
 import { parseArgs } from "node:util";
 import { chromium } from "playwright";
+import type { Browser } from "playwright";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
-import { ruleRenderRoutes, verifyRenderedRulePackets } from "./rule-render-assertions.mjs";
+import { ruleRenderRoutes, verifyRenderedRulePackets } from "./rule-render-assertions.ts";
+import { capturePageRender } from "./capture-page-render.ts";
+import type { PageCapture } from "./capture-page-render.ts";
+import { verifyCaptureRenderControls } from "./capture-render-controls.ts";
+
+type FontUsage = { familyName: string; glyphCount: number };
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function isFontUsage(value: unknown): value is FontUsage {
+  return (
+    isRecord(value) && typeof value.familyName === "string" && typeof value.glyphCount === "number"
+  );
+}
+function readPageMetrics() {
+  return {
+    title: document.title,
+    viewport: innerWidth,
+    bodyWidth: document.documentElement.scrollWidth,
+    images: [...document.images]
+      .filter((image) => new URL(image.src).origin === location.origin)
+      .map((image) => ({ src: image.src, naturalWidth: image.naturalWidth })),
+    goals: [...document.querySelectorAll(".feature-title")].map((element) => element.textContent),
+    groups: [...document.querySelectorAll(".sidebar .nav-section")].map((element) => {
+      if (!(element instanceof HTMLDetailsElement))
+        throw new Error("Navigation section is not details");
+      return { title: element.querySelector("summary")?.textContent, open: element.open };
+    }),
+    tables: [...document.querySelectorAll(".content table")].map((element) => ({
+      width: element.clientWidth,
+      scrollWidth: element.scrollWidth,
+      overflow: getComputedStyle(element).overflowX,
+    })),
+    links: [...document.querySelectorAll(".content a[href], .feature-card[href]")].map(
+      (element) => {
+        if (!(element instanceof HTMLAnchorElement))
+          throw new Error("Navigation target is not an anchor");
+        return element.href;
+      },
+    ),
+  };
+}
+type RouteReceipt = ReturnType<typeof readPageMetrics> & {
+  route: string;
+  device: string;
+  screenshot: string;
+  capture: PageCapture;
+  themeScreenshots: {
+    theme: string;
+    screenshot: string;
+    capture: PageCapture;
+    controlSelector: string;
+  }[];
+  pageErrors: string[];
+  japaneseFonts: FontUsage[];
+  rulePackets: Awaited<ReturnType<typeof verifyRenderedRulePackets>>;
+};
 
 const { values } = parseArgs({
   options: {
@@ -28,7 +85,7 @@ const pages = [
   ...ruleRenderRoutes,
 ];
 const routes = values.routes?.split(",") ?? pages.flatMap((route) => [route, `/ja${route}`]);
-const types = {
+const types: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",
   ".css": "text/css",
@@ -37,6 +94,7 @@ const types = {
 };
 const server = createServer(async (request, response) => {
   try {
+    assert(request.url !== undefined, "Static request has no URL");
     const pathname = decodeURIComponent(new URL(request.url, "http://localhost").pathname);
     let file = path.resolve(dist, `.${pathname}`);
     if (!file.startsWith(`${dist}${path.sep}`) && file !== dist) throw new Error("Outside site");
@@ -51,26 +109,30 @@ const server = createServer(async (request, response) => {
   }
 });
 await mkdir(output, { recursive: true });
-await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-const origin = `http://127.0.0.1:${server.address().port}`;
-const reports = [];
-const linkedPages = new Map();
-let browser;
+await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+const address = server.address();
+assert(address && typeof address !== "string", "Static server has no TCP address");
+const origin = `http://127.0.0.1:${address.port}`;
+const reports: RouteReceipt[] = [];
+const linkedPages = new Map<string, string>();
+let browser: Browser | undefined;
 try {
   browser = await chromium.launch({
     executablePath: resolvePuppeteerExecutablePath(),
     headless: true,
   });
+  await verifyCaptureRenderControls(browser, origin, output);
   for (const { name: device, viewport } of [
     { name: "desktop", viewport: { width: 1440, height: 960 } },
     { name: "mobile", viewport: { width: 390, height: 844 } },
   ]) {
     for (const route of routes) {
       const page = await browser.newPage({ viewport, reducedMotion: "reduce" });
-      const pageErrors = [];
+      const pageErrors: string[] = [];
       page.on("pageerror", (error) => pageErrors.push(String(error)));
       const url = `${origin}${route.replace(/\/$/, "")}/index.html`;
       const response = await page.goto(url, { waitUntil: "networkidle" });
+      assert(response, `${route}: navigation returned no response`);
       assert.equal(response.status(), 200, route);
       await page.locator("h1").first().waitFor();
       await page.evaluate(() => document.fonts.ready);
@@ -81,7 +143,7 @@ try {
             (image.complete && image.naturalWidth > 0),
         ),
       );
-      let japaneseFonts = [];
+      let japaneseFonts: FontUsage[] = [];
       if (route === "/ja/" || route.startsWith("/ja/")) {
         const sample = await page.evaluate(() => {
           const walker = document.createTreeWalker(
@@ -89,9 +151,11 @@ try {
             NodeFilter.SHOW_TEXT,
           );
           for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-            if (/[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}]/u.test(node.textContent)) {
+            if (
+              /[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}]/u.test(node.textContent ?? "")
+            ) {
               const element = node.parentElement;
-              if (element.checkVisibility()) {
+              if (element?.checkVisibility()) {
                 element.setAttribute("data-render-japanese-font", "");
                 return node.textContent;
               }
@@ -108,7 +172,14 @@ try {
           nodeId: root.nodeId,
           selector: "[data-render-japanese-font]",
         });
-        ({ fonts: japaneseFonts } = await session.send("CSS.getPlatformFontsForNode", { nodeId }));
+        const fontPacket: unknown = await session.send("CSS.getPlatformFontsForNode", { nodeId });
+        assert(
+          isRecord(fontPacket) &&
+            Array.isArray(fontPacket.fonts) &&
+            fontPacket.fonts.every(isFontUsage),
+          "Complete typed platform font packet",
+        );
+        japaneseFonts = fontPacket.fonts;
         assert(
           japaneseFonts.some((font) => font.glyphCount > 0),
           `${route}: no rendered glyphs`,
@@ -123,29 +194,7 @@ try {
         }
         await session.detach();
       }
-      const metrics = await page.evaluate(() => ({
-        title: document.title,
-        viewport: innerWidth,
-        bodyWidth: document.documentElement.scrollWidth,
-        images: [...document.images]
-          .filter((image) => new URL(image.src).origin === location.origin)
-          .map((image) => ({ src: image.src, naturalWidth: image.naturalWidth })),
-        goals: [...document.querySelectorAll(".feature-title")].map(
-          (element) => element.textContent,
-        ),
-        groups: [...document.querySelectorAll(".sidebar .nav-section")].map((element) => ({
-          title: element.querySelector("summary")?.textContent,
-          open: element.open,
-        })),
-        tables: [...document.querySelectorAll(".content table")].map((element) => ({
-          width: element.clientWidth,
-          scrollWidth: element.scrollWidth,
-          overflow: getComputedStyle(element).overflowX,
-        })),
-        links: [...document.querySelectorAll(".content a[href], .feature-card[href]")].map(
-          (element) => element.href,
-        ),
-      }));
+      const metrics = await page.evaluate(readPageMetrics);
       const rulePackets = await verifyRenderedRulePackets(page, route);
       assert(metrics.bodyWidth <= viewport.width + 1, `${route}: page overflows viewport`);
       assert.equal(pageErrors.length, 0, pageErrors.join("\n"));
@@ -172,13 +221,36 @@ try {
           const collapsed = page.locator(".sidebar details:not([open]) > summary").first();
           if (await collapsed.count()) {
             const summary = await collapsed.elementHandle();
+            assert(summary, "Collapsed navigation summary disappeared");
             await collapsed.focus();
             await page.keyboard.press("Enter");
-            await page.waitForFunction((element) => element.parentElement.open, summary);
-            assert.equal(await summary.evaluate((element) => element.parentElement.open), true);
+            await page.waitForFunction(
+              (element) =>
+                element.parentElement instanceof HTMLDetailsElement && element.parentElement.open,
+              summary,
+            );
+            assert.equal(
+              await summary.evaluate((element) =>
+                element.parentElement instanceof HTMLDetailsElement
+                  ? element.parentElement.open
+                  : undefined,
+              ),
+              true,
+            );
             await page.keyboard.press("Enter");
-            await page.waitForFunction((element) => !element.parentElement.open, summary);
-            assert.equal(await summary.evaluate((element) => element.parentElement.open), false);
+            await page.waitForFunction(
+              (element) =>
+                element.parentElement instanceof HTMLDetailsElement && !element.parentElement.open,
+              summary,
+            );
+            assert.equal(
+              await summary.evaluate((element) =>
+                element.parentElement instanceof HTMLDetailsElement
+                  ? element.parentElement.open
+                  : undefined,
+              ),
+              false,
+            );
           }
         }
       }
@@ -193,6 +265,7 @@ try {
         }
         if (target.hash) {
           const html = linkedPages.get(linkedUrl);
+          assert(html !== undefined, `${route}: missing captured linked page ${linkedUrl}`);
           const id = decodeURIComponent(target.hash.slice(1));
           assert(
             html.includes(`id="${id}"`) || html.includes(`name="${id}"`),
@@ -202,8 +275,9 @@ try {
       }
       const name = route.replace(/^\//, "").replaceAll("/", "-") || "home";
       const screenshot = `${name}-${device}.png`;
-      await page.screenshot({ path: path.join(output, screenshot), fullPage: true });
-      const themeScreenshots = [];
+      const initialTheme = await page.locator("html").getAttribute("data-theme");
+      const capture = await capturePageRender(page, output, screenshot);
+      const themeScreenshots: RouteReceipt["themeScreenshots"] = [];
       if (/^\/(?:ja\/)?rules\//.test(route)) {
         const controlSelector = device === "mobile" ? "[data-mobile-theme]" : ".theme-toggle";
         for (const theme of ["light", "dark"]) {
@@ -212,14 +286,21 @@ try {
           assert.equal(await page.locator("html").getAttribute("data-theme"), theme);
           assert.equal(await page.evaluate(() => localStorage.getItem("theme")), theme);
           const file = `${name}-${device}-${theme}.png`;
-          await page.screenshot({ path: path.join(output, file), fullPage: true });
-          themeScreenshots.push({ theme, screenshot: file, controlSelector });
+          const themeCapture =
+            theme === initialTheme ? capture : await capturePageRender(page, output, file);
+          themeScreenshots.push({
+            theme,
+            screenshot: theme === initialTheme ? screenshot : file,
+            capture: themeCapture,
+            controlSelector,
+          });
         }
       }
       reports.push({
         route,
         device,
         screenshot,
+        capture,
         themeScreenshots,
         pageErrors,
         japaneseFonts,
@@ -238,5 +319,7 @@ try {
     JSON.stringify({ dist, reports }, null, 2) + "\n",
   );
   await browser?.close();
-  await new Promise((resolve) => server.close(resolve));
+  await new Promise<void>((resolve, reject) =>
+    server.close((error) => (error ? reject(error) : resolve())),
+  );
 }

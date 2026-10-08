@@ -1,6 +1,10 @@
-import { generateRulePages } from "./rules/render.mjs";
+import type { RuleMetadata } from "./rules/types.ts";
+import { generateRulePages } from "./rules/render.ts";
 import { readdirSync, readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
+type SourceRule = Omit<RuleMetadata, "presets" | "category"> & { category: string | null };
+type ScriptRegistry = Pick<RuleMetadata, "category" | "fixable" | "presets">;
+
 const workspaceRoot = resolve(import.meta.dirname, "../..");
 const rulesRoot = resolve(workspaceRoot, "crates/vize_patina/src/rules");
 const categoryOrder =
@@ -34,7 +38,7 @@ const rules = [...sourceRulesByName.values()]
     return categoryDelta || a.name.localeCompare(b.name);
   });
 
-const groupedRules = new Map();
+const groupedRules = new Map<string, RuleMetadata[]>();
 for (const rule of rules) {
   const group = groupedRules.get(rule.category) ?? [];
   group.push(rule);
@@ -51,7 +55,7 @@ const sortedCategories = [
 generateRulePages({ workspaceRoot, rules, groupedRules, sortedCategories, categoryLabels });
 
 function readPatinaSourceRules() {
-  const rulesByName = new Map();
+  const rulesByName = new Map<string, SourceRule>();
   const metaPattern =
     /static\s+[A-Z_]*META[A-Z_]*\s*:\s*(RuleMeta|ScriptRuleMeta|CssRuleMeta|MuseaRuleMeta)\s*=\s*\w+\s*\{([\s\S]*?)\n\};/g;
 
@@ -97,9 +101,9 @@ function readScriptRegistry() {
     "utf8",
   );
   const presetSource = `${registrySource}\n${rulesSource}`;
-  const constantToName = new Map();
-  const presetConstants = new Map();
-  const registryByName = new Map();
+  const constantToName = new Map<string, string>();
+  const presetConstants = new Map<string, string[]>();
+  const registryByName = new Map<string, ScriptRegistry>();
 
   for (const match of namesSource.matchAll(/const\s+(RULE_[A-Z0-9_]+):\s*&str\s*=\s*"([^"]+)"/g)) {
     constantToName.set(match[1], match[2]);
@@ -141,13 +145,13 @@ function readOpinionatedCssRules() {
     /const\s+OPINIONATED_CSS_RULE_NAMES:\s*&\[&str\]\s*=\s*&\[([\s\S]*?)\];/,
   );
   if (!match) {
-    return new Set();
+    return new Set<string>();
   }
 
   return new Set([...match[1].matchAll(/"([^"]+)"/g)].map((ruleName) => ruleName[1]));
 }
 
-function mergeRuleMetadata(sourceRule) {
+function mergeRuleMetadata(sourceRule: SourceRule): RuleMetadata {
   const scriptRegistry = scriptRegistryByName.get(sourceRule.name);
   const cssPresets = cssPresetRules.has(sourceRule.name) ? ["opinionated", "nuxt"] : null;
   const existingPresets = existingRulePresetsByName.get(sourceRule.name);
@@ -164,10 +168,10 @@ function mergeRuleMetadata(sourceRule) {
 
 function readExistingRulePresets() {
   try {
-    return new Map(
+    return new Map<string, string[]>(
       readFileSync(resolve(import.meta.dirname, "../content/rules/all.md"), "utf8")
         .split("\n")
-        .flatMap((line) => {
+        .flatMap((line): [string, string[]][] => {
           const name = line.match(/^\| (?:\[)?`([^`]+)`(?:\]\([^)]*\))? \| /)?.[1];
           const cells = line.split(" | ");
           const severity = cells.findIndex((cell) => /^`(?:error|warning)`$/.test(cell));
@@ -177,12 +181,12 @@ function readExistingRulePresets() {
         }),
     );
   } catch {
-    return new Map();
+    return new Map<string, string[]>();
   }
 }
 
-function walkRustFiles(directory) {
-  const files = [];
+function walkRustFiles(directory: string): string[] {
+  const files: string[] = [];
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const fullPath = resolve(directory, entry.name);
     if (entry.isDirectory()) {
@@ -198,27 +202,30 @@ function walkRustFiles(directory) {
   return files;
 }
 
-function parseQuotedField(block, field) {
+function parseQuotedField(block: string, field: string): string | null {
   const match = block.match(new RegExp(`${field}:\\s*"((?:\\\\.|[^"\\\\])*)"`));
-  return match ? JSON.parse(`"${match[1]}"`) : null;
+  if (!match) return null;
+  const value: unknown = JSON.parse(`"${match[1]}"`);
+  if (typeof value !== "string") throw new Error(`Invalid quoted source field: ${field}`);
+  return value;
 }
 
-function parseBoolField(block, field) {
+function parseBoolField(block: string, field: string) {
   const match = block.match(new RegExp(`${field}:\\s*(true|false)`));
   return match ? match[1] === "true" : null;
 }
 
-function parseSeverity(block) {
+function parseSeverity(block: string) {
   const match = block.match(/default_severity:\s*Severity::(Error|Warning)/);
   return match ? match[1].toLowerCase() : null;
 }
 
-function parseCategory(block) {
+function parseCategory(block: string) {
   const match = block.match(/category:\s*RuleCategory::([A-Za-z]+)/);
   return match ? match[1] : null;
 }
 
-function inferCategory(metaType) {
+function inferCategory(metaType: string) {
   if (metaType === "CssRuleMeta") {
     return "CSS";
   }
@@ -231,7 +238,7 @@ function inferCategory(metaType) {
   return null;
 }
 
-function categorySortIndex(category) {
+function categorySortIndex(category: string) {
   const index = categoryOrder.indexOf(category);
   return index === -1 ? categoryOrder.length : index;
 }
