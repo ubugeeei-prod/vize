@@ -91,7 +91,7 @@ builds for repeated real stdio CSS observations with lazy and eager clients.
 Eager clients request completion and hover; only clients advertising resolve
 support request and measure completion resolve.
 Keep the original eight scenarios and also measure an empty prefix with all
-candidates and 48 KiB unterminated comments/strings with bounded fallback.
+candidates and 48,000-byte unterminated comments/strings with bounded fallback.
 Malformed observation cursors remain inside the style body; the original
 strict style-end boundary is preserved.
 Raw latency samples, response sizes and exact binary hashes distinguish the previous four-item behavior
@@ -102,7 +102,7 @@ The [initial ordinary Benchmark run](https://github.com/ubugeeei-prod/vize/actio
 passed for base `2f9fe178ab7ce2d66a17c9e7fe84570cc86cfbb5` and
 head `e774474f5c46c2f02b15c4c77045f3d2f679b217`, using five warmups and
 80 samples per operation. The head's completion p95 was 0.0943 ms for the
-48 KiB closed comment, 0.0932 ms for the closed string and 0.0869 ms for
+48,000-byte closed comment, 0.0932 ms for the closed string and 0.0869 ms for
 700 rules. Corresponding response sizes were 5,256/5,346/5,316 bytes,
 versus the baseline's 1,302-byte four-feature response. Ordinary CSS hover
 was absent in that baseline, so these are observed product costs, not an
@@ -119,10 +119,15 @@ frozen unrelated TypeScript migration are outside this change.
 
 ## Stack delivery
 
-The CSS child follows HTML documentation PR [#8316](https://github.com/ubugeeei-prod/vize/pull/8316),
-rebased onto its actual `e21cf419fab928c8538e0b5f2ac1acd3d9e06e2c` source
-after its earlier queue conflict was removed. That genuine parent descends
-from actual signed main `81aa0c449cdeb2daf2959d3c9a272ff880bf4765`.
+The CSS child remains in native Stack #8320 after HTML documentation PR
+[#8316](https://github.com/ubugeeei-prod/vize/pull/8316) actually merged at
+14:50:50 UTC as signed `7d645dbca9d3be2e0c96feae7cd826f0f49b02fa`.
+Its protected workflows passed for the complete candidate; that actual main
+has parent `9d974d27b6823772d36a6855557cbbc27b3c1cd1`.
+The CSS commits were genuinely replayed from their earlier
+`e21cf419fab928c8538e0b5f2ac1acd3d9e06e2c` parent onto this actual main.
+GitHub retargeted the remaining child's base to main; no hypothetical queue
+candidate or previous source supplies qualification for the new CSS head.
 The earlier `85f0240debf14ea810782045840a3f26a84ec59d` CSS source is retained
 with its real test-macro, empty-prefix and malformed-observation failures;
 it supplies no qualification credit to this refresh.

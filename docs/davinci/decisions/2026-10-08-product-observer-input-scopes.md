@@ -298,7 +298,7 @@ delivered by [#8266](https://github.com/ubugeeei-prod/vize/pull/8266) and
 
 [Protected Check 37738180532](https://github.com/ubugeeei-prod/vize/actions/runs/37738180532)
 is terminal successful on exact `26e56ac6`. Its protected n8n, Musea and both
-Nuxt workflows also pass on that exact candidate. Current signed main
+Nuxt workflows also pass on that exact candidate. Historical comparison revision
 `8816b0d594ce9a5322ab33f60be5ccb6839fa774` retains the owning CSS production
 modules, original54 integration test and original fixture tree byte-exact to
 that delivered commit. The original ScheduleView packet expects complete zero
