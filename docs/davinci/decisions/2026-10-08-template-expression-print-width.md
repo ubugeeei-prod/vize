@@ -53,11 +53,17 @@ then supported installed release verification. Inline-child/closing-tag width,
 other expression shapes, native formatter admission and the full #7876 scope
 remain open. Preserve every original fixture and failed observation.
 
-Source head `4fa2eb7c14fdffd7af1ebf9df18c62f71ca76fcb` actually passes all
-80 CLI processes and 160 stock runtime observations in
+The PR run for head `4fa2eb7c14fdffd7af1ebf9df18c62f71ca76fcb` actually
+executes synthetic producer `bfe69ba4f749fd359958c5a6858dc8e34423c9c8`.
+The primary API verifies its parents are actual main `a5384b78c94ff8b11c111dcfce00721a9b60711b`
+and that PR head, with their complete producer/head tree identical at
+`bd6aa03bc708e2acf221597dc8f81285285df688`. This retained PR-tree producer
+passes all 80 CLI processes and 160 stock runtime observations in
 [job 113123610247](https://github.com/ubugeeei-prod/vize/actions/runs/37719454793/job/113123610247),
 including both original Edit cases and all comment controls; all four affected
-Rust workers pass. Its tooling failures identify source-witness custody after
+Rust workers pass. Its CLI build receipt binds the synthetic producer, so the
+result supplies no direct public-head or actual-main execution credit. Its
+tooling failures identify source-witness custody after
 the extraction and the required attribute field. Retain the complete original
 2281-byte attribute test owner under its original SHA, verify all five complete
 law bodies while allowing exactly one new false field in each of the two
