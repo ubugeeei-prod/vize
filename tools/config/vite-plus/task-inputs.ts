@@ -100,6 +100,28 @@ export const testedPackages = [
 export const floatingPromiseTestPatterns = ["tests/**/*.ts"];
 
 const taskConfigInputs = ["vite.config.ts", "tools/config/vite-plus/**"];
+const toolingInputs = [
+  "package.json",
+  ...taskConfigInputs,
+  "pnpm-lock.yaml",
+  "pnpm-workspace.yaml",
+  ".github/**",
+  ".cargo/**",
+  "Cargo.toml",
+  "Cargo.lock",
+  "rust-toolchain.toml",
+  "crates/**",
+  "davinci/**",
+  "tools/**",
+  "tests/**",
+  "npm/**",
+  "editors/**",
+  "docs/**",
+  "examples/**",
+  "playground/**",
+  "README.md",
+  "AGENTS.md",
+] satisfies TaskInput[];
 
 /**
  * Cache inputs for the root task catalog.
@@ -131,27 +153,13 @@ export const cacheInputs = {
     "playground/src/**",
     "playground/e2e/**",
   ],
-  tooling: [
-    "package.json",
-    ...taskConfigInputs,
-    "pnpm-lock.yaml",
-    "pnpm-workspace.yaml",
-    ".github/**",
-    ".cargo/**",
-    "Cargo.toml",
-    "Cargo.lock",
-    "rust-toolchain.toml",
-    "crates/**",
-    "davinci/**",
-    "tools/**",
-    "tests/**",
-    "npm/**",
-    "editors/**",
-    "docs/**",
-    "examples/**",
-    "playground/**",
-    "README.md",
-    "AGENTS.md",
+  tooling: toolingInputs,
+  // These two original product observers consume source-built CLI/NAPI,
+  // owned fixtures and runtime packages. Plan docs remain compile-time inputs;
+  // release prose and decision records are not read by their producers.
+  toolingProductObservers: [
+    ...toolingInputs.filter((input) => input !== "docs/**"),
+    "docs/davinci/plan/**",
   ],
   toolingPlans: ["docs/**", "tests/tooling/**"],
   toolingLedgers: ["docs/**", "tests/**", "tools/support/compat/fixtures/**"],

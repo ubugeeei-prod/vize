@@ -121,6 +121,13 @@ export const mergeOnlyToolingTests = [
 // Unlisted tests retain the broad tooling inputs until separately audited.
 export const toolingTestScopes = [
   {
+    input: "toolingProductObservers",
+    tests: [
+      "tests/tooling/art-lint-public-boundaries.test.mjs",
+      "tests/tooling/cli-build-enum-bindings-7893.test.mjs",
+    ],
+  },
+  {
     input: "toolingRustCorpus",
     tests: [
       "tests/tooling/davinci-fact-spec-corpus.test.ts",
