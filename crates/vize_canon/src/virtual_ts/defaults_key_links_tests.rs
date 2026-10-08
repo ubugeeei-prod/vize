@@ -14,7 +14,7 @@ fn defaults_key_bridge_projects_only_its_exact_ast_owner_with_script_offsets() {
         let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
         analyzer.analyze_script_setup(&script);
         let summary = analyzer.finish();
-        let offset = 37;
+        let offset = 37_u32;
         let output = generate_virtual_ts_with_offsets(
             &summary,
             Some(&script),
@@ -23,8 +23,8 @@ fn defaults_key_bridge_projects_only_its_exact_ast_owner_with_script_offsets() {
             0,
             &VirtualTsOptions::default(),
         );
-        let key_start = script.rfind("tone:").unwrap() + offset;
-        let unrelated_start = script.find("tone:").unwrap() + offset;
+        let key_start = script.rfind("tone:").unwrap() + offset as usize;
+        let unrelated_start = script.find("tone:").unwrap() + offset as usize;
         let binding_links: Vec<_> = output
             .mapping
             .semantic_links()

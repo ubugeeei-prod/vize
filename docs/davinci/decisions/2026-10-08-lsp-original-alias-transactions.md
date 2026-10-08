@@ -109,3 +109,12 @@ runtime, merge or release credit.
 
 Paired issue decision: #8011. The canonical decision record receives the same
 clause in this change through the root coordinator; no upstream write is made.
+
+The first producer head `7109d9047bdeb14e7fcf27271a74e72bef151fd4`
+failed builder job `113166139855` in Check `37732955626`: the new copied-mapping
+control mixed the generator's `u32` offset with `usize` string positions
+(E0308/E0277). Preserve its complete authentic job log and hash receipt under
+`supplemental/historical-7109/`. Correct only the explicit coordinate conversion;
+offset 37, all exact span assertions, source/golden bytes and provider contracts
+are unchanged. The failed build grants no runtime execution credit, and the
+successor requires fresh complete hosted qualification.
