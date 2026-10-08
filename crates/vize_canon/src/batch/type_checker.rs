@@ -77,6 +77,8 @@ pub struct BatchTypeChecker {
     server_count: Option<usize>,
     /// Source membership carried across incremental checks.
     incremental_paths: IncrementalPaths,
+    // Dropped after the executor, so live sessions cannot outlast their files.
+    owned_storage: Option<tempfile::TempDir>,
 }
 
 impl BatchTypeChecker {
@@ -179,6 +181,7 @@ impl BatchTypeChecker {
     /// and virtual-TS generation CPU-bound instead of serializing every file on
     /// the batch checker.
     pub fn scan_paths(&mut self, paths: &[PathBuf]) -> CorsaResult<()> {
+        self.scope_initial_installed_sources(paths)?;
         let previous_sources = self.project.registered_original_paths_sorted();
         self.project.set_declaration_roots(paths);
         self.project.register_paths(paths)?;
@@ -198,6 +201,7 @@ impl BatchTypeChecker {
     /// Scan the project for source files.
     pub fn scan_project(&mut self) -> CorsaResult<()> {
         let paths = collect_project_paths(&self.project, self.project.source_file_policy())?;
+        self.scope_initial_installed_sources(&paths)?;
         self.project.set_declaration_roots(&paths);
         self.project.register_paths(&paths)?;
         self.project.register_package_route_targets()?;

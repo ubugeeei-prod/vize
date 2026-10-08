@@ -21,6 +21,18 @@ impl VirtualProject {
         );
     }
 
+    /// Initial batch bindings carry source authority but no virtual artifacts.
+    pub(crate) fn scope_batch_namespace(&mut self, storage_root: &Path) {
+        debug_assert!(self.virtual_files.is_empty());
+        debug_assert!(self.package_shadow_files.is_empty());
+        debug_assert!(self.materialized_package_links.is_empty());
+        self.virtual_root = super::super::identity::project_virtual_root_with_identity(
+            storage_root,
+            &self.project_root,
+            0,
+        );
+    }
+
     pub(crate) fn use_effective_tsconfig_for_source(&mut self, source_path: &Path) {
         let Some(shell) = self.resolved_tsconfig_path() else {
             return;

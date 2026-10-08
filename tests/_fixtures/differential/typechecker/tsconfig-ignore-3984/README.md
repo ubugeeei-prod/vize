@@ -23,8 +23,10 @@ drawn from the current response. They execute the
 direct and inherited six-root projects. The third `literal-dependency` corpus
 also exposes a separate explicit-run package-ownership failure in the older
 artifact. Its complete failed packets and original seven-root expectation stay
-intact; only collector selection is asserted by this change. Whole CLI graph
-qualification remains an explicit TODO under #3984.
+intact; the configured-ignore parent qualified collector selection and the direct/
+inherited whole CLI laws. The successor below qualifies the original literal
+case without changing any input or gold. Broad project-graph acceptance remains
+an explicit TODO under #3984.
 
 `generated-boundaries.json` freezes the existing generated/codegen selection
 policy for an ordinary project root and explicit target/codegen roots. The
@@ -33,8 +35,8 @@ vector in `generated-before-after-helper-receipts.json`. Those bounded compiled
 helpers use path/extension test adapters; they supply no whole CLI/native credit
 and do not claim complete stock authority for the existing generated policy.
 
-The test-only literal-package replay layer now requires all original seven-root
-public packets, fresh-explicit runs and six-to-seven-root cache transitions.
+The literal-package replay layer requires all original seven-root public
+packets, fresh-explicit runs and six-to-seven-root authored-project transitions.
 Its separate POSIX boundary file adds one unrelated raw endpoint and symlink;
 selected remains manifestless. Whole raw package/path/link receipts are retained
 before assertions. Authentic current native execution and protected delivery
@@ -49,3 +51,15 @@ remained byte-exact. This authentic same-namespace failure is retained before
 a successor changes execution namespace; it grants no successor or release
 credit. Cross-CLI materialization reuse for selected installed sources and
 durable completed-plan custody remain separate follow-up work.
+
+The bounded producer successor gives only an initially selected installed-source
+batch program private temporary execution storage; ordinary persistent roots
+remain unchanged. The six-to-seven-root command control now changes execution
+namespace, explicitly sacrificing cross-CLI materialization reuse for selected
+installed roots. A separate same-owner native control uses the original seven
+roots and full diagnostic vectors through clean/broken/repair: six actual API
+calls, one session start/five reuses, raw package conservation and owner cleanup.
+It measures scan, cold/warm API and unchanged original command durations without
+claiming a speed improvement. Later expansion of an already scanned ordinary
+owner and durable cross-CLI completed-plan custody remain documented follow-ups.
+All new runtime qualification and protected delivery remain pending.

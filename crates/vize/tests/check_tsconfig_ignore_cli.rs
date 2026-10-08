@@ -7,6 +7,8 @@ mod corsa_requirement;
 
 #[path = "check_tsconfig_ignore_cli/literal_package.rs"]
 mod literal_package;
+#[path = "check_tsconfig_ignore_cli/warm_owner.rs"]
+mod warm_owner;
 
 use serde_json::{Value, json};
 use std::{

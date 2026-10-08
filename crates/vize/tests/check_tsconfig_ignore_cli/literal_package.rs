@@ -2,7 +2,7 @@
 
 use super::*;
 
-fn receipt(path: &Path) -> Value {
+pub(super) fn receipt(path: &Path) -> Value {
     fn visit(root: &Path, path: &Path, rows: &mut Vec<Value>) {
         let relative = path.strip_prefix(root).unwrap().as_os_str();
         let metadata = match std::fs::symlink_metadata(path) {
@@ -51,7 +51,9 @@ pub(super) fn guarded_packet(
     let raw_before = std::fs::symlink_metadata(&sentinel)
         .is_ok()
         .then(|| receipt(&sentinel));
+    let started = std::time::Instant::now();
     let whole = packet(command);
+    let elapsed_ns = started.elapsed().as_nanos();
     let after = receipt(&package);
     let raw_after = (raw_before.is_some() || std::fs::symlink_metadata(&sentinel).is_ok())
         .then(|| receipt(&sentinel));
@@ -64,7 +66,7 @@ pub(super) fn guarded_packet(
                 &json!({"wholeInput":serde_json::from_str::<Value>(INPUT).unwrap(),
             "sourceSha":std::env::var("SOURCE_SHA").ok(),"projectRoot":root,
             "program":command.get_program(),"args":command.get_args().collect::<Vec<_>>(),
-            "wholePacket":whole,"packageBefore":before,"packageAfter":after,
+            "wholePacket":whole,"elapsedNs":elapsed_ns,"packageBefore":before,"packageAfter":after,
             "rawSentinelBefore":raw_before,"rawSentinelAfter":raw_after}),
             )
             .unwrap(),
@@ -82,7 +84,7 @@ pub(super) fn guarded_packet(
     whole
 }
 
-fn project(name: &str, corpus: &Value) -> PathBuf {
+pub(super) fn project(name: &str, corpus: &Value) -> PathBuf {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .unwrap()
@@ -96,7 +98,7 @@ fn project(name: &str, corpus: &Value) -> PathBuf {
     std::fs::canonicalize(root).unwrap()
 }
 
-fn stock(name: &str, phase: &str, root: &Path, native: &Path, case: &Value) {
+pub(super) fn stock(name: &str, phase: &str, root: &Path, native: &Path, case: &Value) {
     let config = guarded_packet(
         name,
         phase,
