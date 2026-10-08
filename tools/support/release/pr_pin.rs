@@ -22,6 +22,9 @@ pub use candidate::{check_candidate, verify_candidate};
 mod delivery;
 #[path = "pr_pin_dispatch.rs"]
 pub(super) mod dispatch;
+#[cfg(test)]
+#[path = "pr_pin_gates_tests.rs"]
+mod gates_tests;
 #[path = "pr_pin_integration.rs"]
 mod integration;
 #[path = "pr_pin_lock.rs"]

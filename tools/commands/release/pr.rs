@@ -6,7 +6,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: pr-synthetic-merge-refresh-v5.
+//! Driver source pin: protected-check-suites-v6.
 
 #[path = "../../support/release/pr_checks.rs"]
 mod pr_checks;
