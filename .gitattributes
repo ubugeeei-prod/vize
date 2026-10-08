@@ -103,3 +103,4 @@ tests/_fixtures/differential/lsp/data-aria-attributes-8015/** -text whitespace=c
 # Whole malformed and Unicode #7903 carriers retain the authored source bytes.
 tests/_fixtures/differential/lint/oxlint-script-safe-carrier-7903/** -text whitespace=cr-at-eol
 tests/_fixtures/differential/formatter-regressions/sole-child-width-7876/** -text
+tests/_fixtures/differential/formatter-regressions/closing-child-width-7876/** -text

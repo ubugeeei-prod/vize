@@ -1,0 +1,2701 @@
+{
+  "schema": "vize.independent-closing-child-investigation",
+  "version": 1,
+  "sourceHead": "59d826ba25187bc71c605a4edb20d91888842979",
+  "actualMain": "d0d0c7db0db537c3cbc6735aa0d8f25296e26166",
+  "qualification": "Independent complete references and stock execution only, authored before reading the current closing production path. No Vize execution, source PR, native or release qualification.",
+  "provider": {
+    "node": "v24.14.0",
+    "oxfmt": "0.63.0",
+    "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/oxfmt@0.63.0_vite-plus@0.1.24_@tsdown+css@0.22.14_@types+node@25.9.2_@voidzero-dev+vite_a56c86dae1e156599e16bbcccee984e8/node_modules/oxfmt/dist/index.js",
+    "entrySha256": "a601ee08f9ad479ee1ec8eac8f34e51880626c8be6bdfed04c75b086caeb055c",
+    "stock": {
+      "vue": {
+        "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/index.js",
+        "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/index.js",
+        "version": "3.5.35",
+        "entrySha256": "a5287f6056bc5c2c569d318063ee043f55a0d323fa7262f64456d58fd574f928"
+      },
+      "compilerDom": {
+        "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/index.js",
+        "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-dom@3.5.35/node_modules/@vue/compiler-dom/index.js",
+        "version": "3.5.35",
+        "entrySha256": "21407fc5cebe255208627dd039f2284156be88abbd9123281a79581d349b48c1"
+      },
+      "compilerSfc": {
+        "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/compiler-sfc/index.js",
+        "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/compiler-sfc/index.js",
+        "version": "3.5.35",
+        "entrySha256": "a2226c3eedb827ce90fabd18413c8b6d4008a99269f403f86f160b733c546970"
+      },
+      "compilerSsr": {
+        "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-ssr@3.5.35/node_modules/@vue/compiler-ssr/dist/compiler-ssr.cjs.js",
+        "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/@vue+compiler-ssr@3.5.35/node_modules/@vue/compiler-ssr/dist/compiler-ssr.cjs.js",
+        "version": "3.5.35",
+        "entrySha256": "b43751e2c5171bdeda85fed83d4d236849dccbfe4f13de4e62adf6b895d70baa"
+      },
+      "renderer": {
+        "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/server-renderer/index.js",
+        "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/vue@3.5.35_typescript@6.0.3/node_modules/vue/server-renderer/index.js",
+        "version": "3.5.35",
+        "entrySha256": "0e7735be4e65399d20d9ea65840a0cd0eef7f935fd1b224e6c45b576be12ac13"
+      },
+      "happyDom": {
+        "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/lib/index.js",
+        "realEntry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize/node_modules/.pnpm/happy-dom@20.11.2/node_modules/happy-dom/lib/index.js",
+        "version": "20.11.2",
+        "entrySha256": "d38c1614c3184c41b04199fe84d0e1406633414ff07f1003e675faae5628475a"
+      }
+    }
+  },
+  "rawPins": {
+    "issue": {
+      "file": "/private/tmp/vize-formatter-audit-20261008/closing-child-investigation-20261008-issue7876.json",
+      "sha256": "b170cf5d5724546f0b7d77bfa034a205a8bad835378200e0aaae9b500ccf287f",
+      "bodySha256": "ff3d561f742518af58f81c953f33e4f237a8b03fee5e0b22d8c44186809765ca",
+      "body": "### Area\n\n`vize fmt` (glyph), Vue templates\n\n### Version\n\n`vize` 0.432.0\n\n### Summary\n\n`printWidth` is not honoured inside templates in two places that Prettier / Oxfmt break:\n\n1. an attribute value that does not fit is kept on one line (Prettier moves the expression inside the quotes onto its own line);\n2. whitespace-sensitive inline content (text + interpolation + an inline `<template v-if>`) stays on one line (Prettier breaks inside the tags, so the rendered whitespace is unchanged).\n\nDifferent from #7236 (single-attribute start tags): here the tag already wraps one attribute per line.\n\nOn a real-world app (291 SFCs, `printWidth: 90`) switching from Oxfmt to `vize fmt` raises the number of lines over 90 columns from 1,050 to 1,457.\n\n### Minimal reproduction\n\n`vize.config.ts`\n\n```ts\nexport default {\n  formatter: { printWidth: 80, semi: true, singleQuote: false, trailingComma: \"none\", arrowParens: \"avoid\", sortAttributes: false }\n};\n```\n\n`Example.vue`\n\n```vue\n<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport MyList from \"./MyList.vue\";\n\nconst settingsPanelState = ref({ pagination: { pages: [1, 2, 3] }, selectedPageIndex: { value: 0 } });\nfunction openSettingsDialogForTheCurrentlySelectedItem(): void {}\n</script>\n\n<template>\n  <div>\n    <MyList\n      :items-grouped-by-page-for-the-current-view=\"settingsPanelState.pagination.pages\"\n      :selected-index=\"settingsPanelState.selectedPageIndex.value\"\n      @click=\"() => openSettingsDialogForTheCurrentlySelectedItem()\"\n    />\n    <p>\n      Total {{ settingsPanelState.pagination.pages.length }} items<template v-if=\"settingsPanelState.selectedPageIndex.value > 0\"> (page {{ settingsPanelState.selectedPageIndex.value }})</template>\n    </p>\n  </div>\n</template>\n```\n\n```sh\nvize fmt --write Example.vue\n```\n\n### Actual (`vize fmt`)\n\nThe template is unchanged: the `:items-grouped-by-page-for-the-current-view` line is 87 columns and the `<p>` content line is 197 columns.\n\n### Expected (Prettier 3.9.9, same options)\n\n```vue\n<template>\n  <div>\n    <MyList\n      :items-grouped-by-page-for-the-current-view=\"\n        settingsPanelState.pagination.pages\n      \"\n      :selected-index=\"settingsPanelState.selectedPageIndex.value\"\n      @click=\"() => openSettingsDialogForTheCurrentlySelectedItem()\"\n    />\n    <p>\n      Total {{ settingsPanelState.pagination.pages.length }} items<template\n        v-if=\"settingsPanelState.selectedPageIndex.value > 0\"\n      >\n        (page {{ settingsPanelState.selectedPageIndex.value }})</template\n      >\n    </p>\n  </div>\n</template>\n```\n",
+      "codeBlocks": [
+        {
+          "index": 0,
+          "language": "ts",
+          "code": "export default {\n  formatter: { printWidth: 80, semi: true, singleQuote: false, trailingComma: \"none\", arrowParens: \"avoid\", sortAttributes: false }\n};\n",
+          "sha256": "7f877b7d4e19c930cb35ba081beffae553c5245606bf2790c85627bd84a1ea0e"
+        },
+        {
+          "index": 1,
+          "language": "vue",
+          "code": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport MyList from \"./MyList.vue\";\n\nconst settingsPanelState = ref({ pagination: { pages: [1, 2, 3] }, selectedPageIndex: { value: 0 } });\nfunction openSettingsDialogForTheCurrentlySelectedItem(): void {}\n</script>\n\n<template>\n  <div>\n    <MyList\n      :items-grouped-by-page-for-the-current-view=\"settingsPanelState.pagination.pages\"\n      :selected-index=\"settingsPanelState.selectedPageIndex.value\"\n      @click=\"() => openSettingsDialogForTheCurrentlySelectedItem()\"\n    />\n    <p>\n      Total {{ settingsPanelState.pagination.pages.length }} items<template v-if=\"settingsPanelState.selectedPageIndex.value > 0\"> (page {{ settingsPanelState.selectedPageIndex.value }})</template>\n    </p>\n  </div>\n</template>\n",
+          "sha256": "cda86e54a1e3f15b9c45652171e664c8fad2aa8e57064dfa6ee6998940e633fb"
+        },
+        {
+          "index": 2,
+          "language": "sh",
+          "code": "vize fmt --write Example.vue\n",
+          "sha256": "1e08a169d2b48b558b4a97fcb2a6c1ecd53ee1c270990c162e26a87abf081394"
+        },
+        {
+          "index": 3,
+          "language": "vue",
+          "code": "<template>\n  <div>\n    <MyList\n      :items-grouped-by-page-for-the-current-view=\"\n        settingsPanelState.pagination.pages\n      \"\n      :selected-index=\"settingsPanelState.selectedPageIndex.value\"\n      @click=\"() => openSettingsDialogForTheCurrentlySelectedItem()\"\n    />\n    <p>\n      Total {{ settingsPanelState.pagination.pages.length }} items<template\n        v-if=\"settingsPanelState.selectedPageIndex.value > 0\"\n      >\n        (page {{ settingsPanelState.selectedPageIndex.value }})</template\n      >\n    </p>\n  </div>\n</template>\n",
+          "sha256": "eed9a7fd1c84cab8e016798e0e1a7cd722cbf66180ff050db97685f08095bad9"
+        }
+      ]
+    },
+    "comments": {
+      "file": "/private/tmp/vize-formatter-audit-20261008/closing-child-investigation-20261008-comments7876.json",
+      "sha256": "94e7f57bd288f7e673515ebe9382206e7a875a525cc151eba374f864fabe3fef",
+      "entries": [
+        {
+          "id": 5987414404,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-5987414404",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-05T03:08:57Z",
+          "body": "Three more template shapes where `printWidth` is not honoured (vize 0.432.0, `vize fmt --write --no-config`, default `printWidth: 100`). In the first two cases vize also joins input that was already broken the Prettier/Oxfmt way, so a Prettier-formatted file gets longer lines.\n\n**1. A pre-broken attribute value is joined without accounting for the indent / attribute prefix**\n\n```vue\n<template>\n  <section>\n    <ul>\n      <li>\n        <span\n          class=\"label\"\n          :title=\"\n            buildTooltipText(currentItem.primaryValue, currentItem.secondaryValue, currentItem.extra)\n          \"\n        />\n      </li>\n    </ul>\n  </section>\n</template>\n```\n\nbecomes a single 108-column line:\n\n```vue\n          :title=\"buildTooltipText(currentItem.primaryValue, currentItem.secondaryValue, currentItem.extra)\"\n```\n\nThe expression seems to be formatted standalone with the full `print_width` (`script.rs`, `format_js_expression_with_quote_style`) and no column offset.\n\n**2. A start tag that fits is put on one line together with its inline children**\n\n```vue\n<template>\n  <div>\n    <div>\n      <MyButton\n        v-if=\"visible\"\n        data-testid=\"submit-button\"\n        @click=\"$emit('submit')\"\n        >{{ $t(\"actions.submitTheCurrentForm\") }}</MyButton\n      >\n    </div>\n  </div>\n</template>\n```\n\nbecomes one 135-column line:\n\n```vue\n      <MyButton v-if=\"visible\" data-testid=\"submit-button\" @click=\"$emit('submit')\">{{ $t(\"actions.submitTheCurrentForm\") }}</MyButton>\n```\n\n`should_use_multiline_attrs` (`template/attributes.rs`) measures indent + tag + attributes + `>`, but not the children that are appended to the same line.\n\n**3. A hugged multi-line `{{ }}` is indented one level too deep**\n\nOxfmt's output for case 2:\n\n```vue\n      <MyButton v-if=\"visible\" data-testid=\"submit-button\" @click=\"$emit('submit')\">{{\n        $t(\"actions.submitTheCurrentForm\")\n      }}</MyButton>\n```\n\nis re-indented by vize to\n\n```vue\n      <MyButton v-if=\"visible\" data-testid=\"submit-button\" @click=\"$emit('submit')\">{{\n          $t(\"actions.submitTheCurrentForm\")\n        }}</MyButton>\n```\n\n(stable, but `}}` ends up deeper than the opening tag; vize's own breaks inside `<p>{{ … }}</p>` come out the same way). `write_multiline_interpolation` appears to get the child depth even when the interpolation is hugged to the start tag.\n",
+          "bodySha256": "4518db4880762d6bebfbf2f04e943d1cd786d9174589e1f034c5084e6ae68f64",
+          "codeBlocks": [
+            {
+              "index": 0,
+              "language": "vue",
+              "code": "<template>\n  <section>\n    <ul>\n      <li>\n        <span\n          class=\"label\"\n          :title=\"\n            buildTooltipText(currentItem.primaryValue, currentItem.secondaryValue, currentItem.extra)\n          \"\n        />\n      </li>\n    </ul>\n  </section>\n</template>\n",
+              "sha256": "851c54f3ec30d67d54dc5b6369b06303f3222583da08d873c1144cf3a1a8cb52"
+            },
+            {
+              "index": 1,
+              "language": "vue",
+              "code": "          :title=\"buildTooltipText(currentItem.primaryValue, currentItem.secondaryValue, currentItem.extra)\"\n",
+              "sha256": "34579107a682b3f3c0236c263850a4686f7112886bd4b125886326328f49bb7b"
+            },
+            {
+              "index": 2,
+              "language": "vue",
+              "code": "<template>\n  <div>\n    <div>\n      <MyButton\n        v-if=\"visible\"\n        data-testid=\"submit-button\"\n        @click=\"$emit('submit')\"\n        >{{ $t(\"actions.submitTheCurrentForm\") }}</MyButton\n      >\n    </div>\n  </div>\n</template>\n",
+              "sha256": "c7cc9a8cf4c8a1d0150aa28ecadf644f5182bf89e1e314d96d18a5f3bbac7903"
+            },
+            {
+              "index": 3,
+              "language": "vue",
+              "code": "      <MyButton v-if=\"visible\" data-testid=\"submit-button\" @click=\"$emit('submit')\">{{ $t(\"actions.submitTheCurrentForm\") }}</MyButton>\n",
+              "sha256": "e1350799e9c339da20215556428f2e128215d7f91affdd295c80655a1f98beeb"
+            },
+            {
+              "index": 4,
+              "language": "vue",
+              "code": "      <MyButton v-if=\"visible\" data-testid=\"submit-button\" @click=\"$emit('submit')\">{{\n        $t(\"actions.submitTheCurrentForm\")\n      }}</MyButton>\n",
+              "sha256": "2860ead735eaf334277419b0ea66c9af45952adefdbd83df92da2da81d78c7bc"
+            },
+            {
+              "index": 5,
+              "language": "vue",
+              "code": "      <MyButton v-if=\"visible\" data-testid=\"submit-button\" @click=\"$emit('submit')\">{{\n          $t(\"actions.submitTheCurrentForm\")\n        }}</MyButton>\n",
+              "sha256": "23864cfd76c6594d6a49aefef0c3c0e215a42665d72f55d388c7ce7a00763cc1"
+            }
+          ]
+        },
+        {
+          "id": 5987682784,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-5987682784",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-05T03:39:30Z",
+          "body": "One more case of the same gap, the other way round: when the attribute value is already in Prettier's \"expression on its own lines inside the quotes\" layout, `vize fmt` (0.432.0) rewrites it into a hugged form instead of keeping it.\n\n`vize.config.json`: `{ \"formatter\": { \"printWidth\": 80, \"semi\": true, \"singleQuote\": false, \"trailingComma\": \"none\", \"arrowParens\": \"avoid\", \"sortAttributes\": false } }`\n\n`Edit.vue` (Oxfmt 0.60.0 with the same options leaves it unchanged)\n\n```vue\n<script setup lang=\"ts\">\nconst guard = (allowed: () => void, denied: () => void): void =>\n  Math.random() > 0.5 ? allowed() : denied();\nconst openEditor = (): void => {};\nconst openNotice = (): void => {};\n</script>\n\n<template>\n  <button\n    type=\"button\"\n    @click=\"\n      guard(\n        () => openEditor(),\n        () => openNotice()\n      )\n    \"\n  >\n    Edit\n  </button>\n</template>\n```\n\n`vize fmt --write Edit.vue`:\n\n```diff\n-    @click=\"\n-      guard(\n-        () => openEditor(),\n-        () => openNotice()\n-      )\n-    \"\n+    @click=\"guard(\n+      () => openEditor(),\n+      () => openNotice()\n+    )\"\n```\n\nIn a ~450-SFC app formatted with Oxfmt this accounts for 121 of the template hunks `vize fmt --check` reports. Expected: the Prettier layout is kept (and produced, as in the expected output above).\n",
+          "bodySha256": "88781ff137ead311210dd4a6058e52026b086cb6b7483ec6fa480ed49c5d8375",
+          "codeBlocks": [
+            {
+              "index": 0,
+              "language": "vue",
+              "code": "<script setup lang=\"ts\">\nconst guard = (allowed: () => void, denied: () => void): void =>\n  Math.random() > 0.5 ? allowed() : denied();\nconst openEditor = (): void => {};\nconst openNotice = (): void => {};\n</script>\n\n<template>\n  <button\n    type=\"button\"\n    @click=\"\n      guard(\n        () => openEditor(),\n        () => openNotice()\n      )\n    \"\n  >\n    Edit\n  </button>\n</template>\n",
+              "sha256": "775f58e087d8eed8db0f4ad6e9717fb4e1cbff3242063552458d9a046b3bc83a"
+            },
+            {
+              "index": 1,
+              "language": "diff",
+              "code": "-    @click=\"\n-      guard(\n-        () => openEditor(),\n-        () => openNotice()\n-      )\n-    \"\n+    @click=\"guard(\n+      () => openEditor(),\n+      () => openNotice()\n+    )\"\n",
+              "sha256": "20173c7adc80c33351c830e2a63e2b11a53ec6203167e5f776afc01ec5e76a82"
+            }
+          ]
+        },
+        {
+          "id": 6042321656,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6042321656",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-07T16:34:53Z",
+          "body": "Decision for a bounded #7876 slice: on an already broken start tag, put a single-line directive value and its closing quote on their own lines when the complete rendered attribute prefix and actual indentation exceed `printWidth`. Carry private SFC base-depth context into the existing attribute writer so its current raw-line mask preserves final continuation indentation. Measure display columns with the existing pinned `unicode-width` dependency; retain `v-for`, literal attributes, already multiline expressions, and the existing start-tag break policy.\n\nThe complete original Example.vue/configuration and deep prebroken report are retained. Sixteen full reference vectors cover boundaries, event values, tabs, Unicode, LF/CRLF/Auto, bracket placement, literals, `v-for` and standalone templates; three public-API passes and fifteen configured CLI check/write/check vectors must match complete bytes. The default deep report is also an active shared formatter input with a three-pass CLI contract and unsupported native route. Eleven whole outputs use independently run Oxfmt 0.63.0 (Auto maps to explicit CRLF); the issue-authored prefix expectation and unresolved inline content remain separately declared. Vue compiler-dom 3.5.41 preserves compiled render semantics across all sixteen original/reference templates after generated-JS whitespace normalization.\n\nThe deep call is 89 columns before twelve columns of indentation, so its own value line remains 101 columns at width 100. Internal expression reflow, whitespace-sensitive inline children and the Edit.vue multiline guard layout remain TODOs here. This slice does not close #7876.\n\nThe paired record is `docs/davinci/decisions/2026-10-08-directive-attribute-print-width.md`, linked from canonical physical paragraph 195 with the 350-line limit preserved. Two preceding move-only commits extract the existing writer and tag parser. Existing historical inputs/captures/expectations and all 104 ceilings remain unchanged. Source validators load all 300 historical API plans; shared registration, inventory, locked metadata and source-length checks pass locally. Those checks are not source-built API/CLI proof: fresh exact-head Actions, protected qualification and actual root-owned merge remain required. No native/history/performance-completion credit is claimed.\n",
+          "bodySha256": "1c20eaffa367e9578edfea180ead3d2ebccefd0c2fbfe9a8e036278fcf5ca875",
+          "codeBlocks": []
+        },
+        {
+          "id": 6042350191,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6042350191",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-07T16:36:19Z",
+          "body": "Paired shared-corpus accounting correction: the manifest now has fourteen explicit formatter cases. The validator assertion admits only the new named formatter/sfc/directive-prefix-print-width pending authored reference beside the existing named pending reference; historical captured baselines retain their captured state. No broad pending exception is added. The dated decision record records the same correction, and all twelve pure byte-custody/process-identity validators pass locally. Source-built API/CLI/shared execution remains required on fresh exact-head Actions; no earlier-head execution transfers to this successor.",
+          "bodySha256": "10a699652e5a17dfa939773bac49e5d4e314829e6824ad10b76f1896cbbbebd7",
+          "codeBlocks": []
+        },
+        {
+          "id": 6042697192,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6042697192",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-07T17:02:10Z",
+          "body": "Paired audit-authority correction for #7876: actual source run 37653339749 on 9a2656 passed the four Rust workers, source report/build and historical/shared formatter replay, but tooling shard 3 rejected the unchanged audit's frozen thirteen-case CLI manifest pin. Preserve the raw failed receipt.\n\nThe exact original thirteen-case manifest is retained as the complete `40acde7c` source artifact. A separately reviewed closed `10f2e78e` current fourteen-case authority proves the old envelope and complete thirteen-case prefix are unchanged, with only the named new case appended. The historical audit still consumes only its original thirteen obligations and original pin/count. It rejects metadata rebasing and redirects; negative controls also reject original/current byte drift, row/options/native changes and escaping symlinks. The new case receives no historical or native execution credit. All seventeen pure validators and the unchanged 350-line source gate pass locally.\n\nThe dated decision record contains this correction under the existing canonical paragraph-195 link. Original audit metadata, historical API/source manifest pins, old captures, inputs, expected bytes and all 104 ceilings remain unchanged. Fresh exact-head Actions are required on successor ebcac2cf057f7f092916793d012ca9ec7e2752ec; prior-head execution remains historical, and root owns protected qualification and actual delivery.\n",
+          "bodySha256": "2c1dbc6535fdc0dbb1a98e57d97d42ea3379ca9f6916f48669e5a50984ce349e",
+          "codeBlocks": []
+        },
+        {
+          "id": 6042798500,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6042798500",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-07T17:06:24Z",
+          "body": "Paired routine correction: ebcac2 source check rejected two tooling line wraps. The pinned cached formatter changed only those assertion line breaks; production, complete reference bytes and all historical/current authority hashes remain unchanged. Both targeted authority controls pass locally. The dated decision record retains the failure and requires fresh successor Actions; earlier source execution does not transfer.",
+          "bodySha256": "2e979ba9342e69c005ace6eadd44b5d1d082ba95044402c45137a079bed3bf53",
+          "codeBlocks": []
+        },
+        {
+          "id": 6043595796,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6043595796",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-07T17:50:08Z",
+          "body": "The attribute-prefix slice in #8203 passed its complete source campaign at `7baf12e598`, including the new whole-output API/CLI laws, shared formatter replay and canonical corpus. The current-main composition now rebases that same production behavior onto actual `b1b9895e21`; the earlier green execution grants no successor credit.\n\nPreserve all fifteen incoming shared CLI cases, including the trailing-comment and typed-arrow controls, then append the unchanged directive case as case sixteen. The complete incoming manifest is retained as exact `cb09a449` bytes beside the exact original thirteen-case `40acde7c` asset. A closed `6ab3a71c` current qualification verifies both complete prefixes, envelope equality, fixed added IDs and both snapshot hashes. It does not accept arbitrary future additions.\n\nIncoming main had advanced the historical audit pin to fifteen. Restore only that pin to its exact original thirteen-case authority; all original audit bytes are now identical to the prior source. The two later controls remain fully registered in the live sixteen-case corpus and complete incoming snapshot. The audit consumes only its original thirteen cases; no extra historical or native credit is granted.\n\nRead-only peer review found no blockers. Seventeen pure custody/manifest tests pass; all incoming declarations, original corpus bytes and expectations are unchanged. Current-source inventory is regenerated and source-length checks pass without changing any of the 104 ceilings. Fresh Actions at `1de6e4957177bf891b1b9c248075735da22e6a13` and root-owned protected qualification/actual merge remain required. Internal expression reflow, inline children and multiline guards remain open in #7876.\n\nThe same change records this decision in [the directive-width record](https://github.com/ubugeeei-prod/vize/blob/fix/template-attribute-print-width-7876-20261008/docs/davinci/decisions/2026-10-08-directive-attribute-print-width.md) and the canonical decision paragraph.\n",
+          "bodySha256": "967fad4e499fc14824ae4a278a60fdc115215ace6418a2d187c9b43671159a3b",
+          "codeBlocks": []
+        },
+        {
+          "id": 6044675433,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6044675433",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-07T18:54:39Z",
+          "body": "PR #8203 merged at 2026-10-07 18:46:12 UTC as verified signed commit `f3ed2ee49cd50619830b3db6a2ae2d946f18ec5e`; fresh main matches that commit. [Protected Actions](https://github.com/ubugeeei-prod/vize/actions/runs/37666315326) passed, including all 104 instruction cases across three identical repeats with unchanged ceilings. Raw receipts confirm the complete 16-vector three-pass API law, 15 configured CLI check/write/second-check cases, all 48 current shared CLI output buffers, historical CLI 5/5, and all 300 historical API reports with their separately qualified current references.\n\nThis completes the overflowing directive attribute-prefix slice. Internal expression reflow, whitespace-sensitive inline children and the multiline Edit.vue guard remain open, so #7876 remains open. The complete original reports and remaining scope are retained in the merged [decision record](https://github.com/ubugeeei-prod/vize/blob/f3ed2ee49cd50619830b3db6a2ae2d946f18ec5e/docs/davinci/decisions/2026-10-08-directive-attribute-print-width.md). Native handling remains unsupported.\n",
+          "bodySha256": "ecd56597c80582db14443fa34ccc091db1045d825668f822ff0af215f95e1ead",
+          "codeBlocks": []
+        },
+        {
+          "id": 6048049613,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6048049613",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-07T22:21:35Z",
+          "body": "Continuation-prefix source decision for #7876: [PR #8214](https://github.com/ubugeeei-prod/vize/pull/8214) measures the actual emitted text/tag prefix and compact closing suffix before using the existing attribute layout. Added line breaks remain inside opening-tag syntax; source-owned text/interpolation gaps, suppression locks, closing tags, and the preserve-text writer route remain unchanged.\n\nThe complete original Example and original configurations are preserved. Eleven whole independently authored vectors cover the original paragraph, exact40/over41, Unicode, tabs, Auto CRLF, bracket placement, suppression, one-line text adjacency, and self-closing42/40. Ten sealed whole stock Vue3.5.35 DOM/text/SSR/event contracts cover seven mounted states; the unavailable MyList module uses a declared deterministic prop/event observer. Source/reference semantics pass140 observations before any Vize execution.\n\nAll old16 assets and the old partial Example remain byte-exact. One closed current-reference adapter accepts only that original Example after verifying the complete old corpus, input, old expected, and separately authored current expected hashes. Original13/shared16, all300 historical API assets and all104 ceilings remain exact. The only source-custody change is the complete current suppression-owner hash; its original source/law pins and whole placement body are retained.\n\nThe paired [dated decision](https://github.com/ubugeeei-prod/vize/blob/a5f508c3945e360a779587012e4905997e43ccd5/docs/davinci/decisions/2026-10-08-template-continuation-prefix-width.md) and canonical paragraph195 are in the same change, preserving the complete prior195, other349 lines and footer. This branch incorporates genuine signed f8b4d88b6a main and has independent source/custody peer clearance. Local14 custody controls, isolated actual-helper/adapter4-law compilation, stock140 observations, rustfmt, inventories and350 check pass; these grant no full source-built API/CLI credit. Fresh exact-head Actions must execute API11×3, seventy whole configured CLI processes, complete mounted contracts and original/shared corpus; root owns protected104 and actual merge.\n\nInternal expression reflow, child-inclusive headers/mustaches, closing-tag reflow and the whole Edit.vue multiline guard remain TODOs. Native width handling remains Unsupported with zero handled/equivalent credit. #7876 stays open; source qualification, protected cost/full checks, actual signed merge and future installed-public delivery remain pending.\n",
+          "bodySha256": "d2f2c4d81c76142c739b3d41fe767aff771147f402c51b40336dadaed71ad7b7",
+          "codeBlocks": []
+        },
+        {
+          "id": 6048148212,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6048148212",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-07T22:27:51Z",
+          "body": "[PR #8214](https://github.com/ubugeeei-prod/vize/pull/8214) now has successor343910d34f after the initial [a5 check-js](https://github.com/ubugeeei-prod/vize/actions/runs/37695619438/job/113046506112) correctly rejected five new test-helper warnings. Only explicit void tests, named provider descriptors and node:vm compileFunction change. The complete formatter production diff, original/all current inputs and expected outputs, sealed11/stock10 hashes, current-reference authority and all ceilings remain unchanged.\n\nThe same140 independently authored stock DOM/text/SSR/event states and14 original-history/current-reference/custody controls pass again. The paired dated decision records this qualification correction. All source-built API/CLI/full acceptance requires fresh successor Actions; the failed/unfinished initial run grants no successor credit. Auto-merge and queue remain disabled here; root owns admission after actual qualification. The incomplete #7876 scope and Unsupported native width remain explicit.\n",
+          "bodySha256": "200c6b4dbf69422a2b96cd6e8905c8b614a44ffe22e166dde11441d98050e18e",
+          "codeBlocks": []
+        },
+        {
+          "id": 6049038000,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6049038000",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-07T23:38:04Z",
+          "body": "PR #8214 merged at `2026-10-07T23:35:11Z` as [verified signed commit `7ceb8747e12b5d8c14f2a274cb06e9808cd7b89e`](https://github.com/ubugeeei-prod/vize/commit/7ceb8747e12b5d8c14f2a274cb06e9808cd7b89e). Fresh `main` points to that exact commit. The [fresh protected Check run](https://github.com/ubugeeei-prod/vize/actions/runs/37700255999) passed on its first attempt; all four accompanying integration workflows passed.\n\nThe actual candidate's retained evidence was authenticated against complete pinned inputs and expectations: 33 new API comparisons, 70 configured Rust CLI invocations, 70 raw CLI observations with unchanged configurations, 350 DOM/text/SSR/event observations after formatting, the original shared 16-case corpus through all 48 passes, and all 300 historical cases through 852 output/error observations. The original 87-commit denominator and 150 semantic obligations remain intact. All 104 instruction ceilings held across three identical measurements, with every numeric cap, input identity and window preserved.\n\nThis completes the continuation-prefix slice. Internal expression reflow, child-inclusive and closing-tag width handling, and the remaining `Edit.vue` cases stay open in #7876. Native formatter width remains unsupported, with handled/equivalent counts of zero.\n",
+          "bodySha256": "8d9a38c8146fcd9ee84ce98d811356a2fea5f6bf7d5d021c6fa1871c7e7deef3",
+          "codeBlocks": []
+        },
+        {
+          "id": 6051117804,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6051117804",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-08T02:45:43Z",
+          "body": "The next bounded slice formats direct directive calls using their actual emitted indentation. It keeps the existing single parse, formatter/parser/core revisions, real Program → ExpressionStatement → UnaryExpression → CallExpression ancestry for comment spans, and the existing literal state for raw template continuation bytes. The original Edit guard and deep call are retained whole in LF/CRLF form.\n\nThe [paired decision](https://github.com/ubugeeei-prod/vize/blob/fix/template-expression-print-width-7876-20261008/docs/davinci/decisions/2026-10-08-template-expression-print-width.md) records sixteen independently authored whole references, three API passes, 80 complete CLI check/write processes and stock DOM/SSR/call/click contracts. All 64 original/reference stock observations and 18 local authority/validator controls pass; modified-source runtime verification is pending in Actions.\n\nThe original sixteen-case width corpus, shared sixteen-case manifest, original thirteen-case audit, historical 300 references and instruction ceilings stay byte-exact. One hash-qualified current deep-call comparison retains its old mismatch separately. Native remains Unsupported for 16/16 planned shared cases, with handled 0/16 and equivalent 0/16. Inline-child/closing-tag width, other expression shapes and supported installed release verification remain unfinished, so this issue stays open.\n",
+          "bodySha256": "68312f5315f3c0ba0e07db4056ca3d740e430f03fe75abeecb2323b4584f9827",
+          "codeBlocks": []
+        },
+        {
+          "id": 6051312490,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6051312490",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-08T03:04:09Z",
+          "body": "PR #8252's first source head `4fa2eb7c14fdffd7af1ebf9df18c62f71ca76fcb` actually passed all 80 configured CLI processes and 160 stock DOM/SSR/call/click observations, including the complete original Edit/deep LF/CRLF inputs and leading/trailing comments. [Complete source job](https://github.com/ubugeeei-prod/vize/actions/runs/37719454793/job/113123610247). All four affected Rust test shards passed.\n\nThe tooling failures identified historical source custody after the extraction and required attribute field. The successor `411d3907f69574582d65f8e7deb0dcc14780b534` retains the full original 2281-byte attribute test owner and all five original law bodies, allowing only one required false field in each of two literals. It keeps all ten original script law hashes, original 300 references, audit/manifest pins and ceilings. All 26 local authority/validator controls pass. Production and all expected outputs are unchanged from the executed head. The [paired decision](https://github.com/ubugeeei-prod/vize/blob/411d3907f69574582d65f8e7deb0dcc14780b534/docs/davinci/decisions/2026-10-08-template-expression-print-width.md) records the exact scope.\n\nFresh source/full Actions are running. The canonical SSR observer separately rejects 44,366 files against its required 44,367 despite zero output differences; that required count stays intact. Whole-head/protected/actual merge and installed release acceptance remain pending, and the broader #7876 scope stays open.\n",
+          "bodySha256": "85f10c201191ef4be3ec5a58360a73f031b3bfcb08532646afcc315bc3a6ec69",
+          "codeBlocks": []
+        },
+        {
+          "id": 6051359406,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6051359406",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-08T03:08:39Z",
+          "body": "Producer clarification for the recorded first PR result: run 37719454793 reports public PR head `4fa2eb7c14fdffd7af1ebf9df18c62f71ca76fcb`, but its actual source CLI/build receipt and Rust workers bind synthetic producer `bfe69ba4f749fd359958c5a6858dc8e34423c9c8`. The primary API independently verifies its parents `[a5384b78c94ff8b11c111dcfce00721a9b60711b, 4fa2eb7c14fdffd7af1ebf9df18c62f71ca76fcb]` and complete producer/head tree equality at `bd6aa03bc708e2acf221597dc8f81285285df688`.\n\nThe 80 CLI processes, 160 stock observations and four Rust workers are authentic PR-tree results. They grant no direct public-head or actual-main execution credit. The [decision now records that distinction](https://github.com/ubugeeei-prod/vize/blob/6721ec0c7f4873a42039b29534e950bc9d7c0e6a/docs/davinci/decisions/2026-10-08-template-expression-print-width.md); exact latest-head full [run 37721246623](https://github.com/ubugeeei-prod/vize/actions/runs/37721246623) is pending. Two superseded, solely owned full runs were cancelled to leave the final producer active; no release/queue/other-head gates were cancelled. Production and all whole output/stock authorities remain unchanged.\n",
+          "bodySha256": "4ae44d06a552b3d433ee024cac3cf87226f0fb325e4744e5a032e7dce5de166f",
+          "codeBlocks": []
+        },
+        {
+          "id": 6051837811,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6051837811",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-08T03:55:00Z",
+          "body": "Protected candidate `59bb0e5467e711e7a4c7fc489c7b3748dd4d5093` failed the original complex-template ceiling deterministically: 245,269 instructions against the unchanged 244,347 cap in three identical runs. The root removed #8252 from the queue. All 100 level ceilings held; no input or ceiling is changed.\n\nSuccessor `844834c2af59d4e6f67e284ccca23e9e16880c79` is rebased onto actual main `b41811e3b33676f68a0843a693c9ed4898f2e86a`. Pass physical attribute depth and calculate its width budget only inside the retained direct CallExpression branch, so other attributes do not compute unused multiplication/subtraction/clamping. Preserve the exact `(depth + base_depth + 2) * tabWidth` formula, existing single parse, real AST ancestors and output ownership.\n\nIndependent review found no semantic or depth blocker; all 26 local authority controls pass. Original sixteen-case inputs, independent whole outputs, 80 CLI commands/160 stock observations, history300/audit13, shared16, canonical other349/footer350 and all104 ceilings stay exact. Fresh exact-source Actions and real three-run hosted measurements are pending; neither this refinement nor prior green runs provide successor performance or merge credit.\n\n[Decision record](https://github.com/ubugeeei-prod/vize/blob/844834c2af59d4e6f67e284ccca23e9e16880c79/docs/davinci/decisions/2026-10-08-template-expression-print-width.md). #7876 remains open for the retained broader scope and installed/native proof.\n",
+          "bodySha256": "70bce7bdcf683d24034ed27b4321f9bab4eb27e5e5d879243e0b3a9814e018c9",
+          "codeBlocks": []
+        },
+        {
+          "id": 6052058402,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6052058402",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-08T04:13:30Z",
+          "body": "The deferred-budget successor `844834c2af59d4e6f67e284ccca23e9e16880c79` saved 97 instructions but still measures 245172 against the unchanged 244347 complex-template ceiling in three identical [hosted measurements](https://github.com/ubugeeei-prod/vize/actions/runs/37724975483). All 100 level ceilings hold. PR #8252 remains out of the queue.\n\nSuccessor `2713475eefd6482c687fd731c3c4208925120bd4` skips Unicode trimming at three expression sites only when both edge bytes are graphic ASCII (33–126), where the original trim is provably a no-op. Empty inputs, whitespace, every control including DEL, and non-ASCII edges keep the original predicate. Internal raw literal bytes, retained sequence ownership, the single parse and all original budgets/fixtures remain exact. Independent read-only review found no semantic blocker; all 26 authority controls pass.\n\nFresh [three-run all104 measurement](https://github.com/ubugeeei-prod/vize/actions/runs/37726395188) and [PR source checks](https://github.com/ubugeeei-prod/vize/actions/runs/37726400290) are pending. No performance, protected-queue, merge or installed-release success is claimed. Native accounting stays Unsupported16/16, handled0/16 and equivalent0/16; the other expression shapes and remaining width requirements stay open.\n\nThe same decision is committed in [the dated record](https://github.com/ubugeeei-prod/vize/blob/2713475eefd6482c687fd731c3c4208925120bd4/docs/davinci/decisions/2026-10-08-template-expression-print-width.md) and appended only to canonical row195.",
+          "bodySha256": "a841fb51ffc4bfc4c158a631625f746be4a15175f918378f033de519edfd0837",
+          "codeBlocks": []
+        },
+        {
+          "id": 6052902757,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6052902757",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-08T05:19:21Z",
+          "body": "The next bounded #7876 slice retains the complete original case2 and includes the actual emitted header, mustache and matching closing suffix in the width decision. A sole hugged child breaks only inside `{{ }}` at the existing parent anchor, after honoring its current suppression lock. Reuse the once-formatted expression and existing literal renderer; no extra JS parse, pipeline stage or serialization is introduced.\n\nSixteen whole independent Oxfmt 0.63.0 references were authored before modified production was read. They retain original/compact, exact100/over99, close-only overflow, spaces/tabs4, Unicode, CRLF/Auto, suppression, literals, owned comments and unchanged #7969. The original main probe is authentically red; all16 public API outputs/flags pass through three passes, and unchanged #7969/continuation/history controls pass locally. Source CLI80 and stock DOM/text/SSR/event execution, all104 unchanged ceilings and exact protected/actual merge/installed delivery still require fresh qualification. Earlier #8252 counts do not qualify this composed source.\n\nThe paired dated decision and canonical formatter index preserve every original fixture, historical reference, law/denominator and instruction cap. Composite children, independent closing-tag reflow, other expression shapes and native admission remain unfinished. Native shared accounting stays Unsupported16/16, handled0/16 and equivalent0/16; this slice does not close #7876.\n\nImplemented in [#8267](https://github.com/ubugeeei-prod/vize/pull/8267) at exact source `f8aad639f2e08df66f059addca05e80dca8676b6`; [paired dated record](https://github.com/ubugeeei-prod/vize/blob/f8aad639f2e08df66f059addca05e80dca8676b6/docs/davinci/decisions/2026-10-08-template-sole-child-width.md) and the canonical formatter byte-snapshot row travel in that same change. The full-content stock observer checks the immutable author's recipe separately without using it for execution. Fresh hosted qualification is pending; no source measurement or release credit is claimed yet.\n",
+          "bodySha256": "5f138db981d48fa11ec8158062550ff64ab6c763ad0ca33d7af5d74e8d97daf6",
+          "codeBlocks": []
+        },
+        {
+          "id": 6052932053,
+          "url": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-6052932053",
+          "user": "ubugeeei",
+          "createdAt": "2026-10-08T05:21:37Z",
+          "body": "The independent sole-child slice [#8267](https://github.com/ubugeeei-prod/vize/pull/8267) now uses exact source `59d826ba25187bc71c605a4edb20d91888842979` on actual main `d0d0c7db0db537c3cbc6735aa0d8f25296e26166`. The real #8252 merge `09e40bd8ecf5b29f570651f57af1370b8c9ad12b` is an ancestor. The rebase preserves all 16 original/reference bytes, all current/historical authorities and the incoming canonical decision rows.\n\nOn that composed source, the whole original #7876 child/prefix laws, the unchanged #7969 hugged law, the new 16-reference three-pass public API law and #8252's expression-width law pass locally. The public CLI/runtime campaign is still pending fresh [full Check](https://github.com/ubugeeei-prod/vize/actions/runs/37731911247); the unchanged all104 gates are pending [the composed measurement](https://github.com/ubugeeei-prod/vize/actions/runs/37731869349). The superseded `f8aad639` measurement was cancelled and grants no composed acceptance. [Paired dated record](https://github.com/ubugeeei-prod/vize/blob/59d826ba25187bc71c605a4edb20d91888842979/docs/davinci/decisions/2026-10-08-template-sole-child-width.md) remains in the same source change. Protected admission, actual merge and installed replay remain required; #7876 remains open.\n",
+          "bodySha256": "5b29a0a50ead00dd73c235bdfdbceb40737a1d2660af0db725ca111304034717",
+          "codeBlocks": []
+        }
+      ]
+    }
+  },
+  "originalCases": [
+    {
+      "id": "original-whole-Example",
+      "input": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport MyList from \"./MyList.vue\";\n\nconst settingsPanelState = ref({ pagination: { pages: [1, 2, 3] }, selectedPageIndex: { value: 0 } });\nfunction openSettingsDialogForTheCurrentlySelectedItem(): void {}\n</script>\n\n<template>\n  <div>\n    <MyList\n      :items-grouped-by-page-for-the-current-view=\"settingsPanelState.pagination.pages\"\n      :selected-index=\"settingsPanelState.selectedPageIndex.value\"\n      @click=\"() => openSettingsDialogForTheCurrentlySelectedItem()\"\n    />\n    <p>\n      Total {{ settingsPanelState.pagination.pages.length }} items<template v-if=\"settingsPanelState.selectedPageIndex.value > 0\"> (page {{ settingsPanelState.selectedPageIndex.value }})</template>\n    </p>\n  </div>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "source": "https://github.com/ubugeeei-prod/vize/issues/7876",
+      "inputSha256": "cda86e54a1e3f15b9c45652171e664c8fad2aa8e57064dfa6ee6998940e633fb",
+      "probe": {
+        "output": "<script setup lang=\"ts\">\nimport { ref } from \"vue\";\nimport MyList from \"./MyList.vue\";\n\nconst settingsPanelState = ref({\n  pagination: { pages: [1, 2, 3] },\n  selectedPageIndex: { value: 0 }\n});\nfunction openSettingsDialogForTheCurrentlySelectedItem(): void {}\n</script>\n\n<template>\n  <div>\n    <MyList\n      :items-grouped-by-page-for-the-current-view=\"\n        settingsPanelState.pagination.pages\n      \"\n      :selected-index=\"settingsPanelState.selectedPageIndex.value\"\n      @click=\"() => openSettingsDialogForTheCurrentlySelectedItem()\"\n    />\n    <p>\n      Total {{ settingsPanelState.pagination.pages.length }} items<template\n        v-if=\"settingsPanelState.selectedPageIndex.value > 0\"\n      >\n        (page {{ settingsPanelState.selectedPageIndex.value }})</template\n      >\n    </p>\n  </div>\n</template>\n",
+        "outputSha256": "c3ffb9d885576319dd553da7e09260ca97e69bb5cfa710267b2662abdaa7adbe",
+        "errors": []
+      },
+      "stockCompile": {
+        "original": {
+          "template": "\n  <div>\n    <MyList\n      :items-grouped-by-page-for-the-current-view=\"settingsPanelState.pagination.pages\"\n      :selected-index=\"settingsPanelState.selectedPageIndex.value\"\n      @click=\"() => openSettingsDialogForTheCurrentlySelectedItem()\"\n    />\n    <p>\n      Total {{ settingsPanelState.pagination.pages.length }} items<template v-if=\"settingsPanelState.selectedPageIndex.value > 0\"> (page {{ settingsPanelState.selectedPageIndex.value }})</template>\n    </p>\n  </div>\n",
+          "templateSha256": "77a9a04ea846f83a7e84d6d21f83b3e50d5b504a19797cd8e6567c6119d2a733",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { resolveComponent: _resolveComponent, createVNode: _createVNode, toDisplayString: _toDisplayString, createTextVNode: _createTextVNode, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode, createElementVNode: _createElementVNode } = _Vue\n\n    const _component_MyList = _resolveComponent(\"MyList\")\n\n    return (_openBlock(), _createElementBlock(\"div\", null, [\n      _createVNode(_component_MyList, {\n        \"items-grouped-by-page-for-the-current-view\": settingsPanelState.pagination.pages,\n        \"selected-index\": settingsPanelState.selectedPageIndex.value,\n        onClick: () => openSettingsDialogForTheCurrentlySelectedItem()\n      }, null, 8 /* PROPS */, [\"items-grouped-by-page-for-the-current-view\", \"selected-index\", \"onClick\"]),\n      _createElementVNode(\"p\", null, [\n        _createTextVNode(\" Total \" + _toDisplayString(settingsPanelState.pagination.pages.length) + \" items\", 1 /* TEXT */),\n        (settingsPanelState.selectedPageIndex.value > 0)\n          ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [\n              _createTextVNode(\" (page \" + _toDisplayString(settingsPanelState.selectedPageIndex.value) + \")\", 1 /* TEXT */)\n            ], 64 /* STABLE_FRAGMENT */))\n          : _createCommentVNode(\"v-if\", true)\n      ])\n    ]))\n  }\n}",
+            "codeSha256": "1dd0443342e0bc9edc6335d3869e8218db1822ca12f6d788287bb69d4e4c8920"
+          },
+          "ssr": {
+            "code": "const { resolveComponent: _resolveComponent } = require(\"vue\")\nconst { ssrRenderComponent: _ssrRenderComponent, ssrRenderAttrs: _ssrRenderAttrs, ssrInterpolate: _ssrInterpolate } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  const _component_MyList = _resolveComponent(\"MyList\")\n\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  _push(_ssrRenderComponent(_component_MyList, {\n    \"items-grouped-by-page-for-the-current-view\": _ctx.settingsPanelState.pagination.pages,\n    \"selected-index\": _ctx.settingsPanelState.selectedPageIndex.value,\n    onClick: () => _ctx.openSettingsDialogForTheCurrentlySelectedItem()\n  }, null, _parent))\n  _push(`<p> Total ${_ssrInterpolate(_ctx.settingsPanelState.pagination.pages.length)} items`)\n  if (_ctx.settingsPanelState.selectedPageIndex.value > 0) {\n    _push(`<!--[--> (page ${_ssrInterpolate(_ctx.settingsPanelState.selectedPageIndex.value)})<!--]-->`)\n  } else {\n    _push(`<!---->`)\n  }\n  _push(`</p></div>`)\n}",
+            "codeSha256": "509dd4483ae6e81c8dd75e9a22acce0f1e21220e3f3b9fcaccdef299fcfb47b8"
+          }
+        },
+        "expected": {
+          "template": "\n  <div>\n    <MyList\n      :items-grouped-by-page-for-the-current-view=\"\n        settingsPanelState.pagination.pages\n      \"\n      :selected-index=\"settingsPanelState.selectedPageIndex.value\"\n      @click=\"() => openSettingsDialogForTheCurrentlySelectedItem()\"\n    />\n    <p>\n      Total {{ settingsPanelState.pagination.pages.length }} items<template\n        v-if=\"settingsPanelState.selectedPageIndex.value > 0\"\n      >\n        (page {{ settingsPanelState.selectedPageIndex.value }})</template\n      >\n    </p>\n  </div>\n",
+          "templateSha256": "6e309a9b150c5dc73bcf958ef44da37b5c993ba0d7fd70ca38f0fc043e0a4da9",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { resolveComponent: _resolveComponent, createVNode: _createVNode, toDisplayString: _toDisplayString, createTextVNode: _createTextVNode, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode, createElementVNode: _createElementVNode } = _Vue\n\n    const _component_MyList = _resolveComponent(\"MyList\")\n\n    return (_openBlock(), _createElementBlock(\"div\", null, [\n      _createVNode(_component_MyList, {\n        \"items-grouped-by-page-for-the-current-view\": \n        settingsPanelState.pagination.pages\n      ,\n        \"selected-index\": settingsPanelState.selectedPageIndex.value,\n        onClick: () => openSettingsDialogForTheCurrentlySelectedItem()\n      }, null, 8 /* PROPS */, [\"items-grouped-by-page-for-the-current-view\", \"selected-index\", \"onClick\"]),\n      _createElementVNode(\"p\", null, [\n        _createTextVNode(\" Total \" + _toDisplayString(settingsPanelState.pagination.pages.length) + \" items\", 1 /* TEXT */),\n        (settingsPanelState.selectedPageIndex.value > 0)\n          ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [\n              _createTextVNode(\" (page \" + _toDisplayString(settingsPanelState.selectedPageIndex.value) + \")\", 1 /* TEXT */)\n            ], 64 /* STABLE_FRAGMENT */))\n          : _createCommentVNode(\"v-if\", true)\n      ])\n    ]))\n  }\n}",
+            "codeSha256": "9c390975cc8470095b308e0b502a9e95aeb4d5f4610b85102eca7dd6379be7ed"
+          },
+          "ssr": {
+            "code": "const { resolveComponent: _resolveComponent } = require(\"vue\")\nconst { ssrRenderComponent: _ssrRenderComponent, ssrRenderAttrs: _ssrRenderAttrs, ssrInterpolate: _ssrInterpolate } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  const _component_MyList = _resolveComponent(\"MyList\")\n\n  _push(`<div${_ssrRenderAttrs(_attrs)}>`)\n  _push(_ssrRenderComponent(_component_MyList, {\n    \"items-grouped-by-page-for-the-current-view\": \n        _ctx.settingsPanelState.pagination.pages\n      ,\n    \"selected-index\": _ctx.settingsPanelState.selectedPageIndex.value,\n    onClick: () => _ctx.openSettingsDialogForTheCurrentlySelectedItem()\n  }, null, _parent))\n  _push(`<p> Total ${_ssrInterpolate(_ctx.settingsPanelState.pagination.pages.length)} items`)\n  if (_ctx.settingsPanelState.selectedPageIndex.value > 0) {\n    _push(`<!--[--> (page ${_ssrInterpolate(_ctx.settingsPanelState.selectedPageIndex.value)})<!--]-->`)\n  } else {\n    _push(`<!---->`)\n  }\n  _push(`</p></div>`)\n}",
+            "codeSha256": "2fbf1a941931b7094f3d9e31fe45ebb40e66cb838ca3104daee43c50d189f817"
+          }
+        }
+      }
+    },
+    {
+      "id": "original-deep",
+      "input": "<template>\n  <section>\n    <ul>\n      <li>\n        <span\n          class=\"label\"\n          :title=\"\n            buildTooltipText(currentItem.primaryValue, currentItem.secondaryValue, currentItem.extra)\n          \"\n        />\n      </li>\n    </ul>\n  </section>\n</template>\n",
+      "options": {
+        "printWidth": 100,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "source": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-5987414404",
+      "inputSha256": "851c54f3ec30d67d54dc5b6369b06303f3222583da08d873c1144cf3a1a8cb52",
+      "probe": {
+        "output": "<template>\n  <section>\n    <ul>\n      <li>\n        <span\n          class=\"label\"\n          :title=\"\n            buildTooltipText(\n              currentItem.primaryValue,\n              currentItem.secondaryValue,\n              currentItem.extra\n            )\n          \"\n        />\n      </li>\n    </ul>\n  </section>\n</template>\n",
+        "outputSha256": "8c751b7275887fe2ad6efcbe1917a071f352b64bbba2012279b3e18c25b4eed2",
+        "errors": []
+      },
+      "stockCompile": {
+        "original": {
+          "template": "\n  <section>\n    <ul>\n      <li>\n        <span\n          class=\"label\"\n          :title=\"\n            buildTooltipText(currentItem.primaryValue, currentItem.secondaryValue, currentItem.extra)\n          \"\n        />\n      </li>\n    </ul>\n  </section>\n",
+          "templateSha256": "9530ca22ab419253fe463fdc555d2019016157d90eabd613aa8ea6194aa9f51a",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"section\", null, [\n      _createElementVNode(\"ul\", null, [\n        _createElementVNode(\"li\", null, [\n          _createElementVNode(\"span\", {\n            class: \"label\",\n            title: \n            buildTooltipText(currentItem.primaryValue, currentItem.secondaryValue, currentItem.extra)\n          \n          }, null, 8 /* PROPS */, [\"title\"])\n        ])\n      ])\n    ]))\n  }\n}",
+            "codeSha256": "8e969e5648914fa42221c78865eec9e5763eceec36ac1e683f65993aeaeecdf0"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttr: _ssrRenderAttr, ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<section${\n    _ssrRenderAttrs(_attrs)\n  }><ul><li><span class=\"label\"${\n    _ssrRenderAttr(\"title\", \n            _ctx.buildTooltipText(_ctx.currentItem.primaryValue, _ctx.currentItem.secondaryValue, _ctx.currentItem.extra)\n          )\n  }></span></li></ul></section>`)\n}",
+            "codeSha256": "5bdada348c3d9e600cb8cce5b6b5afecb85af3a74a7a9e9845f78d33cf86c03a"
+          }
+        },
+        "expected": {
+          "template": "\n  <section>\n    <ul>\n      <li>\n        <span\n          class=\"label\"\n          :title=\"\n            buildTooltipText(\n              currentItem.primaryValue,\n              currentItem.secondaryValue,\n              currentItem.extra\n            )\n          \"\n        />\n      </li>\n    </ul>\n  </section>\n",
+          "templateSha256": "4b4d5ff889c550408c52fcbff7370616009643fa215d33a4fbf672f6131014d7",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"section\", null, [\n      _createElementVNode(\"ul\", null, [\n        _createElementVNode(\"li\", null, [\n          _createElementVNode(\"span\", {\n            class: \"label\",\n            title: \n            buildTooltipText(\n              currentItem.primaryValue,\n              currentItem.secondaryValue,\n              currentItem.extra\n            )\n          \n          }, null, 8 /* PROPS */, [\"title\"])\n        ])\n      ])\n    ]))\n  }\n}",
+            "codeSha256": "5e8628f98b5828beae23065b302a744d532303fbed21a18982139706bb83bf9f"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttr: _ssrRenderAttr, ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<section${\n    _ssrRenderAttrs(_attrs)\n  }><ul><li><span class=\"label\"${\n    _ssrRenderAttr(\"title\", \n            _ctx.buildTooltipText(\n              _ctx.currentItem.primaryValue,\n              _ctx.currentItem.secondaryValue,\n              _ctx.currentItem.extra\n            )\n          )\n  }></span></li></ul></section>`)\n}",
+            "codeSha256": "1e7664293332803647b160438fdef9f417b3757f48697e39cbedc5103cdb0592"
+          }
+        }
+      }
+    },
+    {
+      "id": "original-case2",
+      "input": "<template>\n  <div>\n    <div>\n      <MyButton\n        v-if=\"visible\"\n        data-testid=\"submit-button\"\n        @click=\"$emit('submit')\"\n        >{{ $t(\"actions.submitTheCurrentForm\") }}</MyButton\n      >\n    </div>\n  </div>\n</template>\n",
+      "options": {
+        "printWidth": 100,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "source": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-5987414404",
+      "inputSha256": "c7cc9a8cf4c8a1d0150aa28ecadf644f5182bf89e1e314d96d18a5f3bbac7903",
+      "probe": {
+        "output": "<template>\n  <div>\n    <div>\n      <MyButton v-if=\"visible\" data-testid=\"submit-button\" @click=\"$emit('submit')\">{{\n        $t(\"actions.submitTheCurrentForm\")\n      }}</MyButton>\n    </div>\n  </div>\n</template>\n",
+        "outputSha256": "2fc2e0073d52211983b83df0241da646d70b4ca7b0f672ed36c6ca7c68697e38",
+        "errors": []
+      },
+      "stockCompile": {
+        "original": {
+          "template": "\n  <div>\n    <div>\n      <MyButton\n        v-if=\"visible\"\n        data-testid=\"submit-button\"\n        @click=\"$emit('submit')\"\n        >{{ $t(\"actions.submitTheCurrentForm\") }}</MyButton\n      >\n    </div>\n  </div>\n",
+          "templateSha256": "f55766dadcf61ca5a35b7d0a12f7f49cea675e022db6a578cf6461d9f92c0acc",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { toDisplayString: _toDisplayString, createTextVNode: _createTextVNode, resolveComponent: _resolveComponent, withCtx: _withCtx, openBlock: _openBlock, createBlock: _createBlock, createCommentVNode: _createCommentVNode, createElementVNode: _createElementVNode, createElementBlock: _createElementBlock } = _Vue\n\n    const _component_MyButton = _resolveComponent(\"MyButton\")\n\n    return (_openBlock(), _createElementBlock(\"div\", null, [\n      _createElementVNode(\"div\", null, [\n        visible\n          ? (_openBlock(), _createBlock(_component_MyButton, {\n              key: 0,\n              \"data-testid\": \"submit-button\",\n              onClick: $event => ($emit('submit'))\n            }, {\n              default: _withCtx(() => [\n                _createTextVNode(_toDisplayString($t(\"actions.submitTheCurrentForm\")), 1 /* TEXT */)\n              ]),\n              _: 1 /* STABLE */\n            }, 8 /* PROPS */, [\"onClick\"]))\n          : _createCommentVNode(\"v-if\", true)\n      ])\n    ]))\n  }\n}",
+            "codeSha256": "aea1aba711f8c5f8c65db1a51c861737772d14dcd9142222a7ccd79b2ecc6827"
+          },
+          "ssr": {
+            "code": "const { resolveComponent: _resolveComponent, withCtx: _withCtx, toDisplayString: _toDisplayString, createTextVNode: _createTextVNode } = require(\"vue\")\nconst { ssrRenderComponent: _ssrRenderComponent, ssrRenderAttrs: _ssrRenderAttrs, ssrInterpolate: _ssrInterpolate } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  const _component_MyButton = _resolveComponent(\"MyButton\")\n\n  _push(`<div${_ssrRenderAttrs(_attrs)}><div>`)\n  if (_ctx.visible) {\n    _push(_ssrRenderComponent(_component_MyButton, {\n      \"data-testid\": \"submit-button\",\n      onClick: $event => (_ctx.$emit('submit'))\n    }, {\n      default: _withCtx((_, _push, _parent, _scopeId) => {\n        if (_push) {\n          _push(`${_ssrInterpolate(_ctx.$t(\"actions.submitTheCurrentForm\"))}`)\n        } else {\n          return [\n            _createTextVNode(_toDisplayString(_ctx.$t(\"actions.submitTheCurrentForm\")), 1 /* TEXT */)\n          ]\n        }\n      }),\n      _: 1 /* STABLE */\n    }, _parent))\n  } else {\n    _push(`<!---->`)\n  }\n  _push(`</div></div>`)\n}",
+            "codeSha256": "b200fae748500b164da592f2ea0078ffdb6f9a666c4e34a8483c43aaebf29f57"
+          }
+        },
+        "expected": {
+          "template": "\n  <div>\n    <div>\n      <MyButton v-if=\"visible\" data-testid=\"submit-button\" @click=\"$emit('submit')\">{{\n        $t(\"actions.submitTheCurrentForm\")\n      }}</MyButton>\n    </div>\n  </div>\n",
+          "templateSha256": "d281b5d8d56c37ffba96b20f1d2156be18b11898a286db4d5972eb31b4c2b0ee",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { toDisplayString: _toDisplayString, createTextVNode: _createTextVNode, resolveComponent: _resolveComponent, withCtx: _withCtx, openBlock: _openBlock, createBlock: _createBlock, createCommentVNode: _createCommentVNode, createElementVNode: _createElementVNode, createElementBlock: _createElementBlock } = _Vue\n\n    const _component_MyButton = _resolveComponent(\"MyButton\")\n\n    return (_openBlock(), _createElementBlock(\"div\", null, [\n      _createElementVNode(\"div\", null, [\n        visible\n          ? (_openBlock(), _createBlock(_component_MyButton, {\n              key: 0,\n              \"data-testid\": \"submit-button\",\n              onClick: $event => ($emit('submit'))\n            }, {\n              default: _withCtx(() => [\n                _createTextVNode(_toDisplayString($t(\"actions.submitTheCurrentForm\")), 1 /* TEXT */)\n              ]),\n              _: 1 /* STABLE */\n            }, 8 /* PROPS */, [\"onClick\"]))\n          : _createCommentVNode(\"v-if\", true)\n      ])\n    ]))\n  }\n}",
+            "codeSha256": "aea1aba711f8c5f8c65db1a51c861737772d14dcd9142222a7ccd79b2ecc6827"
+          },
+          "ssr": {
+            "code": "const { resolveComponent: _resolveComponent, withCtx: _withCtx, toDisplayString: _toDisplayString, createTextVNode: _createTextVNode } = require(\"vue\")\nconst { ssrRenderComponent: _ssrRenderComponent, ssrRenderAttrs: _ssrRenderAttrs, ssrInterpolate: _ssrInterpolate } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  const _component_MyButton = _resolveComponent(\"MyButton\")\n\n  _push(`<div${_ssrRenderAttrs(_attrs)}><div>`)\n  if (_ctx.visible) {\n    _push(_ssrRenderComponent(_component_MyButton, {\n      \"data-testid\": \"submit-button\",\n      onClick: $event => (_ctx.$emit('submit'))\n    }, {\n      default: _withCtx((_, _push, _parent, _scopeId) => {\n        if (_push) {\n          _push(`${_ssrInterpolate(_ctx.$t(\"actions.submitTheCurrentForm\"))}`)\n        } else {\n          return [\n            _createTextVNode(_toDisplayString(_ctx.$t(\"actions.submitTheCurrentForm\")), 1 /* TEXT */)\n          ]\n        }\n      }),\n      _: 1 /* STABLE */\n    }, _parent))\n  } else {\n    _push(`<!---->`)\n  }\n  _push(`</div></div>`)\n}",
+            "codeSha256": "b200fae748500b164da592f2ea0078ffdb6f9a666c4e34a8483c43aaebf29f57"
+          }
+        }
+      }
+    },
+    {
+      "id": "original-whole-Edit",
+      "input": "<script setup lang=\"ts\">\nconst guard = (allowed: () => void, denied: () => void): void =>\n  Math.random() > 0.5 ? allowed() : denied();\nconst openEditor = (): void => {};\nconst openNotice = (): void => {};\n</script>\n\n<template>\n  <button\n    type=\"button\"\n    @click=\"\n      guard(\n        () => openEditor(),\n        () => openNotice()\n      )\n    \"\n  >\n    Edit\n  </button>\n</template>\n",
+      "options": {
+        "printWidth": 80,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "source": "https://github.com/ubugeeei-prod/vize/issues/7876#issuecomment-5987682784",
+      "inputSha256": "775f58e087d8eed8db0f4ad6e9717fb4e1cbff3242063552458d9a046b3bc83a",
+      "probe": {
+        "output": "<script setup lang=\"ts\">\nconst guard = (allowed: () => void, denied: () => void): void =>\n  Math.random() > 0.5 ? allowed() : denied();\nconst openEditor = (): void => {};\nconst openNotice = (): void => {};\n</script>\n\n<template>\n  <button\n    type=\"button\"\n    @click=\"\n      guard(\n        () => openEditor(),\n        () => openNotice()\n      )\n    \"\n  >\n    Edit\n  </button>\n</template>\n",
+        "outputSha256": "775f58e087d8eed8db0f4ad6e9717fb4e1cbff3242063552458d9a046b3bc83a",
+        "errors": []
+      },
+      "stockCompile": {
+        "original": {
+          "template": "\n  <button\n    type=\"button\"\n    @click=\"\n      guard(\n        () => openEditor(),\n        () => openNotice()\n      )\n    \"\n  >\n    Edit\n  </button>\n",
+          "templateSha256": "bd2f5faad88f721782f3045da85ce82644b7eee96c6753c1ae45264ee603f11d",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"button\", {\n      type: \"button\",\n      onClick: $event => (\n      guard(\n        () => openEditor(),\n        () => openNotice()\n      )\n    )\n    }, \" Edit \", 8 /* PROPS */, [\"onClick\"]))\n  }\n}",
+            "codeSha256": "98a90cf42297aa2c58156e6c304ec920949a1b6d096400b7139dc791c9bb5fb8"
+          },
+          "ssr": {
+            "code": "const { mergeProps: _mergeProps } = require(\"vue\")\nconst { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<button${_ssrRenderAttrs(_mergeProps({ type: \"button\" }, _attrs))}> Edit </button>`)\n}",
+            "codeSha256": "b01e64c86c88374b6e12041e1f5e020e3b9d9f7acc8165ae8fcb5766544187a5"
+          }
+        },
+        "expected": {
+          "template": "\n  <button\n    type=\"button\"\n    @click=\"\n      guard(\n        () => openEditor(),\n        () => openNotice()\n      )\n    \"\n  >\n    Edit\n  </button>\n",
+          "templateSha256": "bd2f5faad88f721782f3045da85ce82644b7eee96c6753c1ae45264ee603f11d",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"button\", {\n      type: \"button\",\n      onClick: $event => (\n      guard(\n        () => openEditor(),\n        () => openNotice()\n      )\n    )\n    }, \" Edit \", 8 /* PROPS */, [\"onClick\"]))\n  }\n}",
+            "codeSha256": "98a90cf42297aa2c58156e6c304ec920949a1b6d096400b7139dc791c9bb5fb8"
+          },
+          "ssr": {
+            "code": "const { mergeProps: _mergeProps } = require(\"vue\")\nconst { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<button${_ssrRenderAttrs(_mergeProps({ type: \"button\" }, _attrs))}> Edit </button>`)\n}",
+            "codeSha256": "b01e64c86c88374b6e12041e1f5e020e3b9d9f7acc8165ae8fcb5766544187a5"
+          }
+        }
+      }
+    }
+  ],
+  "classification": {
+    "originalExample": "First directive-prefix and continuation-prefix slices already produce a whole maximum75 atwidth80, with closing/content74. It supplies no independent remaining closing-width RED. Full pinned Oxfmt layout also reflows content, so replacing existing authority with it would conflate composite/closing scope.",
+    "originalCase2": "Sole-child slice8267 addresses its whole pinned Oxfmt shape; its current full/protected and delivery acceptance is pending. No independent closing-only credit.",
+    "deepAndEdit": "Actual8252 implements direct-call expression/deep/guard scope; other expression shapes and installed qualification remain open. No closing-only credit.",
+    "remainingComposite": "Source-adjacent text/multiple interpolation/inline nested-child layout needs complete source ownership and independent whole runtime controls. Pinned Oxfmt exact40 template control itself rewrites an interpolation and child boundary, so not a closing-only expected authority.",
+    "eligibleClosing": "Normal unlocked closing chunk where complete emitted prefix plus </Name> is one column over width and prefix plus </Name fits. Insert only newline+parent indent before >. Preserve source adjacency to following text/comments, locked/preserve/raw owners, LF/CRLF/Auto and fit boundaries. No original report rewrites or blanket Oxfmt layout replacement."
+  },
+  "cases": [
+    {
+      "id": "close-only-oneover41",
+      "input": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span>\n</template>\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "expectedAuthority": "Whole pinned Oxfmt0.63.0 output; only closing-tag internal whitespace differs from complete input",
+      "inputSha256": "c1897f4be2c9ccebeae7bfc8e878c880d27247be9f83d5f0c9300737fcfd3174",
+      "expected": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n</template>\n",
+      "expectedSha256": "9057ef9bb32df77b2f1ba97eedb742c2dad8f02a97a770f0c7cf392173f92d53",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false
+        },
+        "output": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n</template>\n",
+        "outputSha256": "9057ef9bb32df77b2f1ba97eedb742c2dad8f02a97a770f0c7cf392173f92d53",
+        "again": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n</template>\n",
+        "againSha256": "9057ef9bb32df77b2f1ba97eedb742c2dad8f02a97a770f0c7cf392173f92d53",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span>\n",
+          "templateSha256": "ee12b464db47f82aa28282a43741a2e2d0e3335de31f7364807f8a5b91d9c664",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcd\"))\n  }\n}",
+            "codeSha256": "23bbed49c70606e5932cb77c60788ccc1454b3da5349a4bcc92ee44ae9cd6f1e"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabcd</span>`)\n}",
+            "codeSha256": "3065b8b217e35d7b7098ca49a5ea09bf67f87d01126f8206466abbfbf3fa252b"
+          }
+        },
+        "expected": {
+          "template": "\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n",
+          "templateSha256": "4a2c53bc717d42819569dbe38da0a9205ea44b8a525d3c47b8efaa32dba258db",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcd\"))\n  }\n}",
+            "codeSha256": "23bbed49c70606e5932cb77c60788ccc1454b3da5349a4bcc92ee44ae9cd6f1e"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabcd</span>`)\n}",
+            "codeSha256": "3065b8b217e35d7b7098ca49a5ea09bf67f87d01126f8206466abbfbf3fa252b"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "independent closing-only positive; no child/interpolation/provider/attribute changes"
+    },
+    {
+      "id": "close-only-unicode41",
+      "input": "<template>\n  <span>\n    状状状状状状状状状状状状状状状</span>\n</template>\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "expectedAuthority": "Whole pinned Oxfmt0.63.0 output; only closing-tag internal whitespace differs from complete input",
+      "inputSha256": "451af8dae31bb7fec7de9b53d6b4a3080680132b7b65d9b09b6267920e9d87c7",
+      "expected": "<template>\n  <span>\n    状状状状状状状状状状状状状状状</span\n  >\n</template>\n",
+      "expectedSha256": "ac2881574ba2cadb3305f7f314d2dac3fad4634f0627380bbd2efee39ac4d22e",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false
+        },
+        "output": "<template>\n  <span>\n    状状状状状状状状状状状状状状状</span\n  >\n</template>\n",
+        "outputSha256": "ac2881574ba2cadb3305f7f314d2dac3fad4634f0627380bbd2efee39ac4d22e",
+        "again": "<template>\n  <span>\n    状状状状状状状状状状状状状状状</span\n  >\n</template>\n",
+        "againSha256": "ac2881574ba2cadb3305f7f314d2dac3fad4634f0627380bbd2efee39ac4d22e",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n  <span>\n    状状状状状状状状状状状状状状状</span>\n",
+          "templateSha256": "61a74aa384e0410554ec24cc4e5f61aa1ca17da2208b9b4d200f66c697debdf4",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" 状状状状状状状状状状状状状状状\"))\n  }\n}",
+            "codeSha256": "d1559bc11bfe305d7a4a57e891d7fb31788b165a83aa885a85e207d9dac49d23"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> 状状状状状状状状状状状状状状状</span>`)\n}",
+            "codeSha256": "8089b1c082f88b1a0fd71d59951ca3cae2b3b9c31d9cc0879530ac1e3c3a002b"
+          }
+        },
+        "expected": {
+          "template": "\n  <span>\n    状状状状状状状状状状状状状状状</span\n  >\n",
+          "templateSha256": "c52c03ed2ebb9f4c7e74b949f2889a8dcbf3129c2d068e73a794d3f36b74df6f",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" 状状状状状状状状状状状状状状状\"))\n  }\n}",
+            "codeSha256": "d1559bc11bfe305d7a4a57e891d7fb31788b165a83aa885a85e207d9dac49d23"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> 状状状状状状状状状状状状状状状</span>`)\n}",
+            "codeSha256": "8089b1c082f88b1a0fd71d59951ca3cae2b3b9c31d9cc0879530ac1e3c3a002b"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "textContent": " 状状状状状状状状状状状状状状状",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "textContent": " 状状状状状状状状状状状状状状状",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "textContent": " 状状状状状状状状状状状状状状状",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "textContent": " 状状状状状状状状状状状状状状状",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "textContent": " 状状状状状状状状状状状状状状状",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "textContent": " 状状状状状状状状状状状状状状状",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "textContent": " 状状状状状状状状状状状状状状状",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "textContent": " 状状状状状状状状状状状状状状状",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> 状状状状状状状状状状状状状状状</span>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "independent closing-only positive; no child/interpolation/provider/attribute changes"
+    },
+    {
+      "id": "close-only-tabs4",
+      "input": "<template>\n\t<span>\n\t\tabcdefghijklmnopqrstuvwxyz</span>\n</template>\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false,
+        "useTabs": true,
+        "tabWidth": 4
+      },
+      "expectedAuthority": "Whole pinned Oxfmt0.63.0 output; only closing-tag internal whitespace differs from complete input",
+      "inputSha256": "26af78bce042f93606e4ba684201560a65d604d25d0e0d1180f66e3a84cc4e26",
+      "expected": "<template>\n\t<span>\n\t\tabcdefghijklmnopqrstuvwxyz</span\n\t>\n</template>\n",
+      "expectedSha256": "26e6d34dc13d5a1ad6019109268e8983ebae4bcc1f0a3ee36d40a52845326d3e",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false,
+          "useTabs": true,
+          "tabWidth": 4
+        },
+        "output": "<template>\n\t<span>\n\t\tabcdefghijklmnopqrstuvwxyz</span\n\t>\n</template>\n",
+        "outputSha256": "26e6d34dc13d5a1ad6019109268e8983ebae4bcc1f0a3ee36d40a52845326d3e",
+        "again": "<template>\n\t<span>\n\t\tabcdefghijklmnopqrstuvwxyz</span\n\t>\n</template>\n",
+        "againSha256": "26e6d34dc13d5a1ad6019109268e8983ebae4bcc1f0a3ee36d40a52845326d3e",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n\t<span>\n\t\tabcdefghijklmnopqrstuvwxyz</span>\n",
+          "templateSha256": "b0e4021680961d6bda43b87c75073ecf471630d5f31ac0a542ffb8e06488a647",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyz\"))\n  }\n}",
+            "codeSha256": "90a72232849233b4882b654905c2ab02250f4d6809f716d7e13e5382b8cbc3c5"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyz</span>`)\n}",
+            "codeSha256": "ae8e8261b56bc98c7c68ff63a0b146aedcc4321e08838d6d7b42231fc8bbd940"
+          }
+        },
+        "expected": {
+          "template": "\n\t<span>\n\t\tabcdefghijklmnopqrstuvwxyz</span\n\t>\n",
+          "templateSha256": "90ebe110139e3463fedacec4c0826085426625e3d42916f8607f3f37c9bdf7fb",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyz\"))\n  }\n}",
+            "codeSha256": "90a72232849233b4882b654905c2ab02250f4d6809f716d7e13e5382b8cbc3c5"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyz</span>`)\n}",
+            "codeSha256": "ae8e8261b56bc98c7c68ff63a0b146aedcc4321e08838d6d7b42231fc8bbd940"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "independent closing-only positive; no child/interpolation/provider/attribute changes"
+    },
+    {
+      "id": "close-adjacent-tail",
+      "input": "<template>\n  <p>\n    <span>\n      abcdefghijklmnopqrstuvwxyzab</span>tail\n  </p>\n</template>\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "expectedAuthority": "Whole pinned Oxfmt0.63.0 output; only closing-tag internal whitespace differs from complete input",
+      "inputSha256": "303a3dbe60fc86cda5d929bde5476797c55951adce2a0499c9302c64ba3ccb22",
+      "expected": "<template>\n  <p>\n    <span>\n      abcdefghijklmnopqrstuvwxyzab</span\n    >tail\n  </p>\n</template>\n",
+      "expectedSha256": "b6f874dfc67dcc4a89bf5a9528a5a51dc180b7ff294beabf505d6e6e4afa4778",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false
+        },
+        "output": "<template>\n  <p>\n    <span>\n      abcdefghijklmnopqrstuvwxyzab</span\n    >tail\n  </p>\n</template>\n",
+        "outputSha256": "b6f874dfc67dcc4a89bf5a9528a5a51dc180b7ff294beabf505d6e6e4afa4778",
+        "again": "<template>\n  <p>\n    <span>\n      abcdefghijklmnopqrstuvwxyzab</span\n    >tail\n  </p>\n</template>\n",
+        "againSha256": "b6f874dfc67dcc4a89bf5a9528a5a51dc180b7ff294beabf505d6e6e4afa4778",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n  <p>\n    <span>\n      abcdefghijklmnopqrstuvwxyzab</span>tail\n  </p>\n",
+          "templateSha256": "082aa9953c2efbee6778323b63bdd704dc0f3e53d6ef685fefe85b89104e49b9",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createElementVNode: _createElementVNode, createTextVNode: _createTextVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"p\", null, [\n      _createElementVNode(\"span\", null, \" abcdefghijklmnopqrstuvwxyzab\"),\n      _createTextVNode(\"tail \")\n    ]))\n  }\n}",
+            "codeSha256": "8dac9ccb667d0116514c7f814f9ae103b67af229d8f4e3dfc665f072b8eda512"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_attrs)}><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>`)\n}",
+            "codeSha256": "7b371d59a520b034576b28b51958aae51301f51072157a930021d3b6e08d7d7d"
+          }
+        },
+        "expected": {
+          "template": "\n  <p>\n    <span>\n      abcdefghijklmnopqrstuvwxyzab</span\n    >tail\n  </p>\n",
+          "templateSha256": "047c86e09edc74169bdd3914d98923998cbfcf5d61b6a03586a8b8557a834c28",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createElementVNode: _createElementVNode, createTextVNode: _createTextVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"p\", null, [\n      _createElementVNode(\"span\", null, \" abcdefghijklmnopqrstuvwxyzab\"),\n      _createTextVNode(\"tail \")\n    ]))\n  }\n}",
+            "codeSha256": "8dac9ccb667d0116514c7f814f9ae103b67af229d8f4e3dfc665f072b8eda512"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_attrs)}><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>`)\n}",
+            "codeSha256": "7b371d59a520b034576b28b51958aae51301f51072157a930021d3b6e08d7d7d"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabtail ",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabtail ",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabtail ",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabtail ",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabtail ",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabtail ",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabtail ",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabtail ",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<p><span> abcdefghijklmnopqrstuvwxyzab</span>tail </p>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "independent closing-only positive; no child/interpolation/provider/attribute changes"
+    },
+    {
+      "id": "close-adjacent-comment",
+      "input": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker -->\n</template>\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "expectedAuthority": "Whole pinned Oxfmt0.63.0 output; only closing-tag internal whitespace differs from complete input",
+      "inputSha256": "ba22b0df32c99de6a5834cf0985d933b147077c392b115ea198760ae904c8c74",
+      "expected": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  ><!-- marker -->\n</template>\n",
+      "expectedSha256": "b210f09679c5df4b60e67c8de5ef41b13f8472cb31df4ce510ed83276a90ddba",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false
+        },
+        "output": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  ><!-- marker -->\n</template>\n",
+        "outputSha256": "b210f09679c5df4b60e67c8de5ef41b13f8472cb31df4ce510ed83276a90ddba",
+        "again": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  ><!-- marker -->\n</template>\n",
+        "againSha256": "b210f09679c5df4b60e67c8de5ef41b13f8472cb31df4ce510ed83276a90ddba",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker -->\n",
+          "templateSha256": "c2827f4533716c603c91c5e9cd5c474787d9cc35aab7e8af151dec726bf648cd",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createElementVNode: _createElementVNode, createCommentVNode: _createCommentVNode, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(_Fragment, null, [\n      _createElementVNode(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcd\"),\n      _createCommentVNode(\" marker \")\n    ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n  }\n}",
+            "codeSha256": "da2e4704ec883609462531fc7027db731b987fa362ad81d2fee4baf2ced33694"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker --><!--]-->`)\n}",
+            "codeSha256": "11c4c1528919fb00828dd1bdfe1883869e8f427dc045e8656cef16efa8c9c079"
+          }
+        },
+        "expected": {
+          "template": "\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  ><!-- marker -->\n",
+          "templateSha256": "d9de02b06d5e00d68cb61513ca90ead8b6f8b49ea63a7958764164cd5b15d780",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createElementVNode: _createElementVNode, createCommentVNode: _createCommentVNode, Fragment: _Fragment, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(_Fragment, null, [\n      _createElementVNode(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcd\"),\n      _createCommentVNode(\" marker \")\n    ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n  }\n}",
+            "codeSha256": "da2e4704ec883609462531fc7027db731b987fa362ad81d2fee4baf2ced33694"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker --><!--]-->`)\n}",
+            "codeSha256": "11c4c1528919fb00828dd1bdfe1883869e8f427dc045e8656cef16efa8c9c079"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker -->",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<!--[--><span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker --><!--]-->",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker -->",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<!--[--><span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker --><!--]-->",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker -->",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<!--[--><span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker --><!--]-->",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker -->",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<!--[--><span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker --><!--]-->",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker -->",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<!--[--><span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker --><!--]-->",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker -->",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<!--[--><span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker --><!--]-->",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker -->",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<!--[--><span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker --><!--]-->",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker -->",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<!--[--><span> abcdefghijklmnopqrstuvwxyzabcd</span><!-- marker --><!--]-->",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "independent closing-only positive; no child/interpolation/provider/attribute changes"
+    },
+    {
+      "id": "close-source-bracket-line",
+      "input": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n</template>\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "expectedAuthority": "Whole pinned Oxfmt0.63.0 output; only closing-tag internal whitespace differs from complete input",
+      "inputSha256": "9057ef9bb32df77b2f1ba97eedb742c2dad8f02a97a770f0c7cf392173f92d53",
+      "expected": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n</template>\n",
+      "expectedSha256": "9057ef9bb32df77b2f1ba97eedb742c2dad8f02a97a770f0c7cf392173f92d53",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false
+        },
+        "output": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n</template>\n",
+        "outputSha256": "9057ef9bb32df77b2f1ba97eedb742c2dad8f02a97a770f0c7cf392173f92d53",
+        "again": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n</template>\n",
+        "againSha256": "9057ef9bb32df77b2f1ba97eedb742c2dad8f02a97a770f0c7cf392173f92d53",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n",
+          "templateSha256": "4a2c53bc717d42819569dbe38da0a9205ea44b8a525d3c47b8efaa32dba258db",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcd\"))\n  }\n}",
+            "codeSha256": "23bbed49c70606e5932cb77c60788ccc1454b3da5349a4bcc92ee44ae9cd6f1e"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabcd</span>`)\n}",
+            "codeSha256": "3065b8b217e35d7b7098ca49a5ea09bf67f87d01126f8206466abbfbf3fa252b"
+          }
+        },
+        "expected": {
+          "template": "\n  <span>\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n",
+          "templateSha256": "4a2c53bc717d42819569dbe38da0a9205ea44b8a525d3c47b8efaa32dba258db",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcd\"))\n  }\n}",
+            "codeSha256": "23bbed49c70606e5932cb77c60788ccc1454b3da5349a4bcc92ee44ae9cd6f1e"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabcd</span>`)\n}",
+            "codeSha256": "3065b8b217e35d7b7098ca49a5ea09bf67f87d01126f8206466abbfbf3fa252b"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "independent closing-only positive; no child/interpolation/provider/attribute changes"
+    },
+    {
+      "id": "close-only-spaces4",
+      "input": "<template>\n    <span>\n        abcdefghijklmnopqrstuvwxyz</span>\n</template>\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false,
+        "tabWidth": 4
+      },
+      "expectedAuthority": "Whole Oxfmt output; four-space carrier complete line41, closing-name partial40",
+      "inputSha256": "2820a99481e7e1fc7aa733eb97596ae02ce6f5419489e0c501c3512a367e5933",
+      "expected": "<template>\n    <span>\n        abcdefghijklmnopqrstuvwxyz</span\n    >\n</template>\n",
+      "expectedSha256": "a82a6cae170623285b7dd2b1e5737f9c90634eb0aaf4e65223d9922a10e79f81",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false,
+          "tabWidth": 4
+        },
+        "output": "<template>\n    <span>\n        abcdefghijklmnopqrstuvwxyz</span\n    >\n</template>\n",
+        "outputSha256": "a82a6cae170623285b7dd2b1e5737f9c90634eb0aaf4e65223d9922a10e79f81",
+        "again": "<template>\n    <span>\n        abcdefghijklmnopqrstuvwxyz</span\n    >\n</template>\n",
+        "againSha256": "a82a6cae170623285b7dd2b1e5737f9c90634eb0aaf4e65223d9922a10e79f81",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n    <span>\n        abcdefghijklmnopqrstuvwxyz</span>\n",
+          "templateSha256": "fd33f823889b13fbb119b973620a99ca736ba6af903fde83edf634a7091a2603",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyz\"))\n  }\n}",
+            "codeSha256": "90a72232849233b4882b654905c2ab02250f4d6809f716d7e13e5382b8cbc3c5"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyz</span>`)\n}",
+            "codeSha256": "ae8e8261b56bc98c7c68ff63a0b146aedcc4321e08838d6d7b42231fc8bbd940"
+          }
+        },
+        "expected": {
+          "template": "\n    <span>\n        abcdefghijklmnopqrstuvwxyz</span\n    >\n",
+          "templateSha256": "fd3b5d50cf44ce1c61b658622c59afa746caca5380861c58b38ab9bd5aeb611f",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyz\"))\n  }\n}",
+            "codeSha256": "90a72232849233b4882b654905c2ab02250f4d6809f716d7e13e5382b8cbc3c5"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyz</span>`)\n}",
+            "codeSha256": "ae8e8261b56bc98c7c68ff63a0b146aedcc4321e08838d6d7b42231fc8bbd940"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyz",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyz</span>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "independent closing-only positive; no child/interpolation/provider/attribute changes"
+    },
+    {
+      "id": "close-only-crlf",
+      "input": "<template>\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span>\r\n</template>\r\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false,
+        "endOfLine": "crlf"
+      },
+      "probeOptions": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false,
+        "endOfLine": "crlf"
+      },
+      "expectedAuthority": "Whole Oxfmt explicitCRLF output; Auto retains complete source CRLF convention",
+      "inputSha256": "102d9b2b98027279b0af822ce20aa2c9099f84beb97a936ce46519b29c3e8e77",
+      "expected": "<template>\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span\r\n  >\r\n</template>\r\n",
+      "expectedSha256": "233fc8c93f353ad4c36e3fa59df9e567c960475f947e82fa19eb861f22bf32a6",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false,
+          "endOfLine": "crlf"
+        },
+        "output": "<template>\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span\r\n  >\r\n</template>\r\n",
+        "outputSha256": "233fc8c93f353ad4c36e3fa59df9e567c960475f947e82fa19eb861f22bf32a6",
+        "again": "<template>\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span\r\n  >\r\n</template>\r\n",
+        "againSha256": "233fc8c93f353ad4c36e3fa59df9e567c960475f947e82fa19eb861f22bf32a6",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span>\r\n",
+          "templateSha256": "a9a336c24673c8c8c71c3f6d48ba160b0e9325d78ba258b0e22d4429cba463d9",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcd\"))\n  }\n}",
+            "codeSha256": "23bbed49c70606e5932cb77c60788ccc1454b3da5349a4bcc92ee44ae9cd6f1e"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabcd</span>`)\n}",
+            "codeSha256": "3065b8b217e35d7b7098ca49a5ea09bf67f87d01126f8206466abbfbf3fa252b"
+          }
+        },
+        "expected": {
+          "template": "\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span\r\n  >\r\n",
+          "templateSha256": "69e976d2e920b9165efe657599ec0f15246136fbd3b146eb2c483e8512f32dfe",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcd\"))\n  }\n}",
+            "codeSha256": "23bbed49c70606e5932cb77c60788ccc1454b3da5349a4bcc92ee44ae9cd6f1e"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabcd</span>`)\n}",
+            "codeSha256": "3065b8b217e35d7b7098ca49a5ea09bf67f87d01126f8206466abbfbf3fa252b"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "independent closing-only positive; no child/interpolation/provider/attribute changes"
+    },
+    {
+      "id": "close-only-crlf-auto",
+      "input": "<template>\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span>\r\n</template>\r\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false,
+        "endOfLine": "auto"
+      },
+      "probeOptions": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false,
+        "endOfLine": "crlf"
+      },
+      "expectedAuthority": "Whole Oxfmt explicitCRLF output; Auto retains complete source CRLF convention",
+      "inputSha256": "102d9b2b98027279b0af822ce20aa2c9099f84beb97a936ce46519b29c3e8e77",
+      "expected": "<template>\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span\r\n  >\r\n</template>\r\n",
+      "expectedSha256": "233fc8c93f353ad4c36e3fa59df9e567c960475f947e82fa19eb861f22bf32a6",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false,
+          "endOfLine": "crlf"
+        },
+        "output": "<template>\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span\r\n  >\r\n</template>\r\n",
+        "outputSha256": "233fc8c93f353ad4c36e3fa59df9e567c960475f947e82fa19eb861f22bf32a6",
+        "again": "<template>\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span\r\n  >\r\n</template>\r\n",
+        "againSha256": "233fc8c93f353ad4c36e3fa59df9e567c960475f947e82fa19eb861f22bf32a6",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span>\r\n",
+          "templateSha256": "a9a336c24673c8c8c71c3f6d48ba160b0e9325d78ba258b0e22d4429cba463d9",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcd\"))\n  }\n}",
+            "codeSha256": "23bbed49c70606e5932cb77c60788ccc1454b3da5349a4bcc92ee44ae9cd6f1e"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabcd</span>`)\n}",
+            "codeSha256": "3065b8b217e35d7b7098ca49a5ea09bf67f87d01126f8206466abbfbf3fa252b"
+          }
+        },
+        "expected": {
+          "template": "\r\n  <span>\r\n    abcdefghijklmnopqrstuvwxyzabcd</span\r\n  >\r\n",
+          "templateSha256": "69e976d2e920b9165efe657599ec0f15246136fbd3b146eb2c483e8512f32dfe",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcd\"))\n  }\n}",
+            "codeSha256": "23bbed49c70606e5932cb77c60788ccc1454b3da5349a4bcc92ee44ae9cd6f1e"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabcd</span>`)\n}",
+            "codeSha256": "3065b8b217e35d7b7098ca49a5ea09bf67f87d01126f8206466abbfbf3fa252b"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "independent closing-only positive; no child/interpolation/provider/attribute changes"
+    },
+    {
+      "id": "close-only-exact40",
+      "input": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabc</span>\n</template>\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "expected": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabc</span>\n</template>\n",
+      "expectedAuthority": "Independently declared bounded width/suppression policy retains complete input. Full Oxfmt probe is separately retained negative broader-layout evidence.",
+      "inputSha256": "3516a6c48a556e75463db2997b4f9e915e609efa1b2ed51d45d94a2d19ead430",
+      "expectedSha256": "3516a6c48a556e75463db2997b4f9e915e609efa1b2ed51d45d94a2d19ead430",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false
+        },
+        "output": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabc</span\n  >\n</template>\n",
+        "outputSha256": "167eb752f73876aeec6fd806459a78b4d861c2776b3cd076d10f49142e51034e",
+        "again": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzabc</span\n  >\n</template>\n",
+        "againSha256": "167eb752f73876aeec6fd806459a78b4d861c2776b3cd076d10f49142e51034e",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n  <span>\n    abcdefghijklmnopqrstuvwxyzabc</span>\n",
+          "templateSha256": "d669ea9366b6afec1e04246752a24b8de4a55030701f0e519b0fd8a4b29ee420",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabc\"))\n  }\n}",
+            "codeSha256": "f4e56daa75ce8efa6f05211cb92b43f10dfa710686acffba0da61928da29c7b5"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabc</span>`)\n}",
+            "codeSha256": "29730174704dd611b1fb3840f58a4bbd408265e8396211cd5a197f75f618bd68"
+          }
+        },
+        "expected": {
+          "template": "\n  <span>\n    abcdefghijklmnopqrstuvwxyzabc</span>\n",
+          "templateSha256": "d669ea9366b6afec1e04246752a24b8de4a55030701f0e519b0fd8a4b29ee420",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabc\"))\n  }\n}",
+            "codeSha256": "f4e56daa75ce8efa6f05211cb92b43f10dfa710686acffba0da61928da29c7b5"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzabc</span>`)\n}",
+            "codeSha256": "29730174704dd611b1fb3840f58a4bbd408265e8396211cd5a197f75f618bd68"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabc",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabc",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabc",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabc",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabc",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabc",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabc",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabc",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzabc</span>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "unchanged policy control; Oxfmt full layout is not expected-output authority"
+    },
+    {
+      "id": "close-only-under39",
+      "input": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzab</span>\n</template>\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "expected": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzab</span>\n</template>\n",
+      "expectedAuthority": "Independently declared bounded width/suppression policy retains complete input. Full Oxfmt probe is separately retained negative broader-layout evidence.",
+      "inputSha256": "9d0faf3f152a2eac58e8ca019ba4df4259d51048c36cd368cf8bf09557100793",
+      "expectedSha256": "9d0faf3f152a2eac58e8ca019ba4df4259d51048c36cd368cf8bf09557100793",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false
+        },
+        "output": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzab</span\n  >\n</template>\n",
+        "outputSha256": "de02858571530680cd0e074bb1039082c1c86a6e08438cd9fe48428c61f24f06",
+        "again": "<template>\n  <span>\n    abcdefghijklmnopqrstuvwxyzab</span\n  >\n</template>\n",
+        "againSha256": "de02858571530680cd0e074bb1039082c1c86a6e08438cd9fe48428c61f24f06",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n  <span>\n    abcdefghijklmnopqrstuvwxyzab</span>\n",
+          "templateSha256": "4e8f19f4f01602744c37315a88ff00632b83c18778c96bdd2b8fc793b23216ca",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzab\"))\n  }\n}",
+            "codeSha256": "39fd617bcd5f7ad70eb123e7a1a7a5df4fc7d96d40f22cdfbde8b950b55fa20e"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzab</span>`)\n}",
+            "codeSha256": "fcc60980405bcb194dd80811963fde463b13fe03e4cdaffe02af780509361091"
+          }
+        },
+        "expected": {
+          "template": "\n  <span>\n    abcdefghijklmnopqrstuvwxyzab</span>\n",
+          "templateSha256": "4e8f19f4f01602744c37315a88ff00632b83c18778c96bdd2b8fc793b23216ca",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, \" abcdefghijklmnopqrstuvwxyzab\"))\n  }\n}",
+            "codeSha256": "39fd617bcd5f7ad70eb123e7a1a7a5df4fc7d96d40f22cdfbde8b950b55fa20e"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}> abcdefghijklmnopqrstuvwxyzab</span>`)\n}",
+            "codeSha256": "fcc60980405bcb194dd80811963fde463b13fe03e4cdaffe02af780509361091"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzab",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzab",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzab",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzab",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzab",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzab",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzab",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzab",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span> abcdefghijklmnopqrstuvwxyzab</span>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "unchanged policy control; Oxfmt full layout is not expected-output authority"
+    },
+    {
+      "id": "closing-lock",
+      "input": "<template>\n  <span>\n    <!-- eslint-disable-next-line -->\n    abcdefghijklmnopqrstuvwxyzabcd</span>\n</template>\n",
+      "options": {
+        "printWidth": 40,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "expected": "<template>\n  <span>\n    <!-- eslint-disable-next-line -->\n    abcdefghijklmnopqrstuvwxyzabcd</span>\n</template>\n",
+      "expectedAuthority": "Independently declared bounded width/suppression policy retains complete input. Full Oxfmt probe is separately retained negative broader-layout evidence.",
+      "inputSha256": "ab03a23567680cf589d2ea6dc44c5bef8cdb8249d07aa3304469763f2b4dcf9e",
+      "expectedSha256": "ab03a23567680cf589d2ea6dc44c5bef8cdb8249d07aa3304469763f2b4dcf9e",
+      "probe": {
+        "options": {
+          "printWidth": 40,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false
+        },
+        "output": "<template>\n  <span>\n    <!-- eslint-disable-next-line -->\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n</template>\n",
+        "outputSha256": "bfa41d1d5fcf6062d63aa15bc0953880061cca4a6729b61409a5bbe9c618544d",
+        "again": "<template>\n  <span>\n    <!-- eslint-disable-next-line -->\n    abcdefghijklmnopqrstuvwxyzabcd</span\n  >\n</template>\n",
+        "againSha256": "bfa41d1d5fcf6062d63aa15bc0953880061cca4a6729b61409a5bbe9c618544d",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n  <span>\n    <!-- eslint-disable-next-line -->\n    abcdefghijklmnopqrstuvwxyzabcd</span>\n",
+          "templateSha256": "293a04738563a94307e31fbcd4e1423504b089f816fe13cda1546e551e912aac",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createCommentVNode: _createCommentVNode, createTextVNode: _createTextVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, [\n      _createCommentVNode(\" eslint-disable-next-line \"),\n      _createTextVNode(\" abcdefghijklmnopqrstuvwxyzabcd\")\n    ]))\n  }\n}",
+            "codeSha256": "68300542523e5c65bfd77d5fdbfeaa4ad52c84827a549c111d467509179938e6"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>`)\n}",
+            "codeSha256": "610aa799a4539c4e8bd75e49688620e460775a491da9d81100e48aa85305a54a"
+          }
+        },
+        "expected": {
+          "template": "\n  <span>\n    <!-- eslint-disable-next-line -->\n    abcdefghijklmnopqrstuvwxyzabcd</span>\n",
+          "templateSha256": "293a04738563a94307e31fbcd4e1423504b089f816fe13cda1546e551e912aac",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createCommentVNode: _createCommentVNode, createTextVNode: _createTextVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"span\", null, [\n      _createCommentVNode(\" eslint-disable-next-line \"),\n      _createTextVNode(\" abcdefghijklmnopqrstuvwxyzabcd\")\n    ]))\n  }\n}",
+            "codeSha256": "68300542523e5c65bfd77d5fdbfeaa4ad52c84827a549c111d467509179938e6"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<span${_ssrRenderAttrs(_attrs)}><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>`)\n}",
+            "codeSha256": "610aa799a4539c4e8bd75e49688620e460775a491da9d81100e48aa85305a54a"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "textContent": " abcdefghijklmnopqrstuvwxyzabcd",
+              "submitsBefore": 0,
+              "submitsAfter": 0,
+              "ssrHtml": "<span><!-- eslint-disable-next-line --> abcdefghijklmnopqrstuvwxyzabcd</span>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "unchanged policy control; Oxfmt full layout is not expected-output authority"
+    },
+    {
+      "id": "close-only-with-independent-click60",
+      "input": "<template>\n  <div>\n    <button @click=\"$emit('submit')\">Go</button>\n    <span>\n      abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span>\n  </div>\n</template>\n",
+      "options": {
+        "printWidth": 60,
+        "semi": true,
+        "singleQuote": false,
+        "trailingComma": "none",
+        "arrowParens": "avoid",
+        "sortAttributes": false
+      },
+      "expectedAuthority": "Whole Oxfmt output; closing-tag-only61/60 witness includes unchanged independent native-button submit observer",
+      "inputSha256": "a298ffb61025957ba4235b7f2d530947ef5547fb5f977a75e8c5155c37a5a8e3",
+      "expected": "<template>\n  <div>\n    <button @click=\"$emit('submit')\">Go</button>\n    <span>\n      abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span\n    >\n  </div>\n</template>\n",
+      "expectedSha256": "890317375d6d882d716ad04a9cc008cc8c5587402ffa3978e3efa3dc0f9247cc",
+      "probe": {
+        "options": {
+          "printWidth": 60,
+          "semi": true,
+          "singleQuote": false,
+          "trailingComma": "none",
+          "arrowParens": "avoid",
+          "sortAttributes": false
+        },
+        "output": "<template>\n  <div>\n    <button @click=\"$emit('submit')\">Go</button>\n    <span>\n      abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span\n    >\n  </div>\n</template>\n",
+        "outputSha256": "890317375d6d882d716ad04a9cc008cc8c5587402ffa3978e3efa3dc0f9247cc",
+        "again": "<template>\n  <div>\n    <button @click=\"$emit('submit')\">Go</button>\n    <span>\n      abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span\n    >\n  </div>\n</template>\n",
+        "againSha256": "890317375d6d882d716ad04a9cc008cc8c5587402ffa3978e3efa3dc0f9247cc",
+        "errors": []
+      },
+      "stock": {
+        "original": {
+          "template": "\n  <div>\n    <button @click=\"$emit('submit')\">Go</button>\n    <span>\n      abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span>\n  </div>\n",
+          "templateSha256": "5bfd40400caac2488eab4b40231f3e310579ae51c10092dd1ff46afdb51be04e",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"div\", null, [\n      _createElementVNode(\"button\", {\n        onClick: $event => ($emit('submit'))\n      }, \"Go\", 8 /* PROPS */, [\"onClick\"]),\n      _createElementVNode(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv\")\n    ]))\n  }\n}",
+            "codeSha256": "4c09d4800889fb46d147cc0b5fa50a14dc9ea07129551484ae76704ddc6362d3"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>`)\n}",
+            "codeSha256": "b578fc3462bc7b48dcd9812eb5c510b5a82ef7cf4ad6c7c89880663acbfd48e5"
+          }
+        },
+        "expected": {
+          "template": "\n  <div>\n    <button @click=\"$emit('submit')\">Go</button>\n    <span>\n      abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span\n    >\n  </div>\n",
+          "templateSha256": "c6d0c1ecd523030833a28d0949de8c19a2a8d0407587061fcc1d232b42dcbf49",
+          "parseErrors": [],
+          "dom": {
+            "code": "const _Vue = Vue\n\nreturn function render(_ctx, _cache) {\n  with (_ctx) {\n    const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = _Vue\n\n    return (_openBlock(), _createElementBlock(\"div\", null, [\n      _createElementVNode(\"button\", {\n        onClick: $event => ($emit('submit'))\n      }, \"Go\", 8 /* PROPS */, [\"onClick\"]),\n      _createElementVNode(\"span\", null, \" abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv\")\n    ]))\n  }\n}",
+            "codeSha256": "4c09d4800889fb46d147cc0b5fa50a14dc9ea07129551484ae76704ddc6362d3"
+          },
+          "ssr": {
+            "code": "const { ssrRenderAttrs: _ssrRenderAttrs } = require(\"vue/server-renderer\")\n\nreturn function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>`)\n}",
+            "codeSha256": "b578fc3462bc7b48dcd9812eb5c510b5a82ef7cf4ad6c7c89880663acbfd48e5"
+          }
+        },
+        "runtime": [
+          {
+            "id": "hidden",
+            "state": {
+              "visible": false,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "textContent": "Go abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv",
+              "submitsBefore": 0,
+              "submitsAfter": 1,
+              "ssrHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "textContent": "Go abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv",
+              "submitsBefore": 0,
+              "submitsAfter": 1,
+              "ssrHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "shown",
+            "state": {
+              "visible": true,
+              "value": "A&<",
+              "selectedItems": [
+                "a",
+                "b"
+              ]
+            },
+            "original": {
+              "domHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "textContent": "Go abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv",
+              "submitsBefore": 0,
+              "submitsAfter": 1,
+              "ssrHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "textContent": "Go abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv",
+              "submitsBefore": 0,
+              "submitsAfter": 1,
+              "ssrHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "unicode",
+            "state": {
+              "visible": true,
+              "value": "状態",
+              "selectedItems": [
+                "状態",
+                "β"
+              ]
+            },
+            "original": {
+              "domHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "textContent": "Go abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv",
+              "submitsBefore": 0,
+              "submitsAfter": 1,
+              "ssrHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "textContent": "Go abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv",
+              "submitsBefore": 0,
+              "submitsAfter": 1,
+              "ssrHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "warnings": []
+            }
+          },
+          {
+            "id": "empty",
+            "state": {
+              "visible": true,
+              "value": "",
+              "selectedItems": []
+            },
+            "original": {
+              "domHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "textContent": "Go abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv",
+              "submitsBefore": 0,
+              "submitsAfter": 1,
+              "ssrHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "warnings": []
+            },
+            "expected": {
+              "domHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "textContent": "Go abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv",
+              "submitsBefore": 0,
+              "submitsAfter": 1,
+              "ssrHtml": "<div><button>Go</button><span> abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuv</span></div>",
+              "warnings": []
+            }
+          }
+        ]
+      },
+      "eligibility": "independent closing-only positive; no child/interpolation/provider/attribute changes"
+    }
+  ]
+}
