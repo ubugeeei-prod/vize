@@ -73,6 +73,17 @@ records that bare-script references can also consume the inventory. Restoring th
 original complete function narrows this producer change and keeps its former
 cold discover/read scheduling; it does not establish the timeout's root cause.
 
+The [paired inventory correction](https://github.com/ubugeeei-prod/vize/issues/3952#issuecomment-6053931403)
+records that the tooling gate rejects the stale owned LSP consumer inventory after
+this extraction. Regenerate only the changed `lsp/vize_maestro.tsv` artifact
+with the unchanged generator: retain existing dependency classifications and
+counts, update line coordinates and record the two actual new L0 imports.
+The complete generated-set freshness check passes; no scanner exemption or
+migration-stage/legacy-consumer credit is introduced. All five stream laws, four Rust
+shards, whole native symbol/reference qualification and the original400 pair
+passed on the preceding source;
+a metadata correction still requires fresh exact-head hosted qualification.
+
 TODO: qualify this exact source on Actions and the protected queue; the root
 owner coordinates any separately authorized current-source campaign. This source
 change does not measure an RSS improvement, close #3952 or #6883, qualify all
