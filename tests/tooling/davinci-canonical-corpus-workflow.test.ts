@@ -9,7 +9,7 @@ import {
   canonicalCorpusRequired,
   canonicalSourceReport,
 } from "../../tools/support/compat/github/canonical-corpus-selection.mjs";
-import { changedPaths } from "../../tools/support/compat/github/plan-source-checks.mjs";
+import { changedPaths } from "../../tools/support/compat/github/plan-source-checks.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 await test("actual input edits, removals and renames select the full canonical corpus", () => {
@@ -59,6 +59,8 @@ await test("selection covers pinned inputs, drivers and real producers in both c
     "tests/tooling/support/canonical-corpus-worker-inventory.mjs",
     "tests/tooling/fixtures/canonical-observer-logs/dom.log",
     "tools/support/compat/github/comparison-base.mjs",
+    "tools/support/compat/github/comparison-base.ts",
+    "tools/support/compat/github/plan-source-checks.ts",
     "tools/benchmarks/scripts/vue-benchmarks-current-typecheck.mjs",
     ".github/workflows/davinci-canonical-corpus.yml",
     ".github/workflows/pr-source-checks.yml",

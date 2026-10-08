@@ -4,8 +4,8 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
-import { comparisonBase } from "../../tools/support/compat/github/comparison-base.mjs";
-import { changedPaths } from "../../tools/support/compat/github/plan-source-checks.mjs";
+import { comparisonBase } from "../../tools/support/compat/github/comparison-base.ts";
+import { changedPaths } from "../../tools/support/compat/github/plan-source-checks.ts";
 
 const eventBase = "1".repeat(40);
 const newBase = "2".repeat(40);
@@ -56,7 +56,7 @@ void test("a real shallow merge checkout excludes newer main changes from the te
   const directory = mkdtempSync(join(tmpdir(), "vize-comparison-base-"));
   const origin = join(directory, "origin");
   const shallow = join(directory, "shallow");
-  const git = (cwd, ...args) =>
+  const git = (cwd: string, ...args: string[]) =>
     execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
   try {
     git(directory, "init", "-q", "-b", "main", origin);
@@ -84,7 +84,7 @@ void test("a real shallow merge checkout excludes newer main changes from the te
     });
     assert.notEqual(missingParent.status, 0, "parent must not exist in the shallow checkout");
     const output = join(directory, "outputs.txt");
-    const script = resolve("tools/support/compat/github/comparison-base.mjs");
+    const script = resolve("tools/support/compat/github/comparison-base.ts");
     const result = execFileSync(process.execPath, [script], {
       cwd: shallow,
       encoding: "utf8",

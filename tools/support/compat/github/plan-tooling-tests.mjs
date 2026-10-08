@@ -13,7 +13,7 @@ import {
   mergeOnlyToolingTests,
   toolingTestScopes,
 } from "../../../config/vite-plus/tooling-test-scopes.ts";
-import { changedPaths } from "./plan-source-checks.mjs";
+import { changedPaths } from "./plan-source-checks.ts";
 import { toolingShardMatrix } from "./tooling-test-shards.ts";
 import { nativeSetupCaptureRequired, toolingChecksRequired } from "./native-setup-capture.mjs";
 import { nativeSsrCaptureRequired } from "./native-ssr-capture.mjs";

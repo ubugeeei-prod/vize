@@ -37,14 +37,14 @@ jobs:
           EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          comparison_base="$(node tools/support/compat/github/comparison-base.mjs)"
+          comparison_base="$(node tools/support/compat/github/comparison-base.ts)"
           if [[ ! "$comparison_base" =~ ^0+$ ]]; then
             git fetch --no-tags --depth=1 origin "$comparison_base"
           fi
       - name: Plan source checks
         id: plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
-        run: node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
+        run: node tools/support/compat/github/plan-source-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
       - name: Report legacy fix differential inputs
         if: ${{ github.event_name == 'pull_request' }}
         continue-on-error: true

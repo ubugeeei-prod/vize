@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false
+  },
+  "include": [],
+  "files": [
+    "tools/support/typescript/check-project.ts",
+    "tools/support/compat/github/comparison-base.ts",
+    "tools/support/compat/github/plan-source-checks.ts",
+    "tests/tooling/comparison-base.test.ts",
+    "tests/tooling/plan-source-checks.test.ts",
+    "tests/tooling/typescript-tooling-project.test.ts"
+  ]
+}

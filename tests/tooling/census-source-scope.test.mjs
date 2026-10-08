@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { planSourceChecks } from "../../tools/support/compat/github/plan-source-checks.mjs";
+import { planSourceChecks } from "../../tools/support/compat/github/plan-source-checks.ts";
 import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.mjs";
 import { fixture } from "./_helpers/rust-workspace-fixture.mjs";
 

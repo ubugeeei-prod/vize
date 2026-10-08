@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 import {
   changedPaths,
   planSourceChecks,
-} from "../../tools/support/compat/github/plan-source-checks.mjs";
+} from "../../tools/support/compat/github/plan-source-checks.ts";
 import { planAffectedRust } from "../../tools/support/compat/github/plan-affected-rust.mjs";
 import { planToolingTests } from "../../tools/support/compat/github/plan-tooling-tests.mjs";
 

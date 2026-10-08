@@ -4,7 +4,7 @@ import { appendFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { changedPaths } from "./plan-source-checks.mjs";
+import { changedPaths } from "./plan-source-checks.ts";
 
 const manifestPath = (product) => `tests/_fixtures/differential/${product}/manifest.json`;
 

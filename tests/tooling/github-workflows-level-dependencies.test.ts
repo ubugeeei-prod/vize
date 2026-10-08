@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
-import { planSourceChecks } from "../../tools/support/compat/github/plan-source-checks.mjs";
+import { planSourceChecks } from "../../tools/support/compat/github/plan-source-checks.ts";
 import { readRepoFile } from "./support/github-workflows.ts";
 
 type Job = {

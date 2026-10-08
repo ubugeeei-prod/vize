@@ -72,7 +72,7 @@ const commands = (job: Job) =>
 test("queue scope reaches the planner and every full source lane remains required", () => {
   assert.equal(
     source.jobs["pr-source-plan"].steps?.find((step) => step.name === "Plan source checks")?.run,
-    'node tools/support/compat/github/plan-source-checks.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"',
+    'node tools/support/compat/github/plan-source-checks.ts "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"',
   );
   assert.deepEqual(source.jobs["source-report"].needs, [
     ...lanes,

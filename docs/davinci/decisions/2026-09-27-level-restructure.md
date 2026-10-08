@@ -222,7 +222,7 @@ Required T1 captures reuse actual production checks with atomic packs and four-w
 
 ## Legacy deletion criteria
 
-See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria), [fail-closed corpus IO diagnostics](./2026-10-08-corpus-io-fail-closed.md),
+See the [legacy deletion criteria decisions](./2026-09-27-level-restructure-history.md#legacy-deletion-criteria), [fail-closed corpus IO diagnostics](./2026-10-08-corpus-io-fail-closed.md), Repository-owned executable tooling migrates to erasable TypeScript through the [owned TypeScript migration](./2026-10-08-owned-typescript-migration.md): move-only commits and exact provider/caller graphs preserve every original corpus, whole output, public Node 22 contract and performance cap. Explicit strict Actions checks and actual protected delivery are required; bootstrap Node identity and immutable/public artifact exceptions need exact ownership evidence, while residual handwritten `.mjs` remains unfinished.
 [native-only accounting](./2026-09-27-native-selection-accounting.md), [#6891's exact-stage shared result contract](./2026-09-28-differential-harness.md),
 and the [LSP fix-history response-fixture installment](./2026-09-27-lsp-fix-history.md)
 for the pinned review ledger, complete document-link and CRLF on-type response contracts and
