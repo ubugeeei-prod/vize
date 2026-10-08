@@ -30,6 +30,12 @@ vp install -D oxlint oxlint-plugin-vize
 
 ## 基本的な使い方
 
+> [!WARNING]
+> `vp lint` は Oxlint の JS プラグインを直接実行します。Oxlint 1.78 と 1.86 では、
+> `<script>` も `<script setup>` もない `.vue` に対して Vize のルールは呼び出されません。
+> `lint` ブロックでルールを有効にしても変わらず、同じ lint 経路を使う `vp check` にもこの制約があります。
+> テンプレートのみの SFC には、以下のネイティブ Vize タスクか `oxlint-vize` を使ってください。
+
 ```json
 {
   "plugins": ["vue"],
@@ -80,6 +86,21 @@ export default {
 
 ## 推奨されるコマンド
 
+Vite+ でテンプレートのみの SFC も検査するには、`vize` と `@vizejs/vite-plugin` を追加し、
+ネイティブ Vize タスクを設定します。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: { vize: { preset: "happy-path" } },
+});
+```
+
+生成されたタスクは `vp run lint` で実行します。既存の package script が `lint` を使う場合は
+`vp run vize:lint` になり、明示したタスク名が優先されます。ルール設定は [Rules](../rules/index.md) を参照してください。
+`vp lint` を直接呼ぶと、引き続き Oxlint の JS プラグイン経路が選ばれます。
+
 ```bash
 vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
@@ -115,8 +136,9 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 
 ## 現在の制限事項
 
-- `<script>` または `<script setup>` がない生の `oxlint` では、依然として一部の `.vue` ファイルが欠落する可能性があります。使用する
-  プロジェクトにテンプレートのみの SFC が含まれている場合は、`oxlint-vize`。
+- Oxlint 1.78 と 1.86 の直接の `oxlint`、`vp lint`、対応する `vp check` の lint 経路では、
+  scriptless `.vue` の Vize callback が呼び出されません。テンプレートのみの SFC には、
+  ネイティブの `vp run lint` タスクか `oxlint-vize` を使ってください。
 - Oxlint JS プラグインは抽出されたスクリプト プログラムに範囲を固定するため、テンプレートとスタイル
   診断では、すべてのフォーマッタで元の SFC 範囲がまだ保持されていません。
 - `stylish` は、現在、Oxlint と Vize の混合出力に最適な人間が判読できるフォーマッタです。 JSONと
@@ -124,6 +146,10 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
   ポジション。
 - タイプ認識ルールのエクスポートは実験的なものです。 `*WithTypeAware` 構成を使用して設定します
   `settings.vize.typeAware: true` 共有フルファイル パスでこれらのルールを積極的に実行する場合。
+
+source-built n8n fixture replay は、ライセンス対象の 1,369 SFC、51 Vize ルールと options、
+6 ファイルのルール override をネイティブ bridge と `oxlint-vize` で検証しています。19 の scriptless 入力も含みますが、
+それらの直接の SDK callback を検証したことにはなりません。n8n 固有の 2 プラグインと workspace 全体の設定は検証対象外です。
 
 ## 地域開発
 

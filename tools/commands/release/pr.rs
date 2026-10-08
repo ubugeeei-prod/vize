@@ -6,6 +6,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
+//! Driver source pin: shipping-target-catalog-v2.
 
 #[path = "../../support/release/pr_checks.rs"]
 mod pr_checks;

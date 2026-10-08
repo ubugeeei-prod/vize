@@ -228,3 +228,15 @@ event-latency claim. Fresh exact-source execution remains required; previous
 source results do not qualify this corrected receiver.
 
 Paired publication-contract decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6050924773) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6050925035).
+
+Actual source `3e05ccdc16` native phase stops before acceptance because the
+current-base workflow requires `check_tsconfig_types_extends_cli`, absent from
+that source package. Preserve the whole missing-target raw log and genuinely
+merge signed actual main `a5384b78c9` into the same branch. The automatic union
+retains every authored104 input/golden, editor witness, ordered receiver and
+complete event product byte; the authentic incoming check target and its main
+changes align source with workflow. Keep the entire incoming and owned canonical
+paragraphs, all incoming other349 rows, and require fresh exact-source Actions
+without target omission, rerun waiver or historical runtime transfer.
+
+Paired genuine-main union decisions: [#8010](https://github.com/ubugeeei-prod/vize/issues/8010#issuecomment-6051055191) and [#8011](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6051055613).
