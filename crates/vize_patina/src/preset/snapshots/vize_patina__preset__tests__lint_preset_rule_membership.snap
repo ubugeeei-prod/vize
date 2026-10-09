@@ -636,6 +636,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "script/no-get-current-instance",
     "script/no-async-in-computed",
     "script/prefer-import-from-vue",
+    "script/no-with-defaults",
     "script/no-internal-imports",
     "script/no-import-compiler-macros",
     "script/no-reserved-identifiers",

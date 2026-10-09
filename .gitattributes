@@ -3,6 +3,8 @@ tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 *.snap linguist-generated=true
 docs/content/generated/rules/en/all.md linguist-generated=true -text whitespace=-blank-at-eol
 docs/content/generated/rules/ja/all.md linguist-generated=true -text whitespace=-blank-at-eol
+docs/content/rules/reference/script-no-with-defaults.md whitespace=-blank-at-eol
+docs/content/ja/rules/reference/script-no-with-defaults.md whitespace=-blank-at-eol
 **/__snapshots__/** linguist-generated=true
 npm/fresco-native/index.d.ts linguist-generated=true text eol=lf
 
