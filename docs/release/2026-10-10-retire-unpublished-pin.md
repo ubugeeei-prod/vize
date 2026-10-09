@@ -35,11 +35,27 @@ Any original tag or GitHub Release, including a draft Release, prohibits retirem
 exact npm/crates/editor version is derived from raw H and checked anonymously against the public
 registries. Network/authentication/rate-limit errors, redirects, malformed responses and ambiguous
 Marketplace fallbacks are refusals. Unknown provider payloads need a primary-response correction;
-they never count as version absence. Marketplace requests the complete unversioned `IncludeVersions`
-inventory, as [the official publishing client does](https://github.com/microsoft/vscode-vsce/blob/main/src/publish.ts),
-and rejects the requested version on every platform. That inventory is bounded to 2 MiB and 10,000
+they never count as version absence. Marketplace reads the anonymous public Gallery query used by
+[the official VS Code client](https://github.com/microsoft/vscode/blob/main/src/vs/platform/extensionManagement/common/extensionGalleryService.ts).
+The fixed POST names one exact extension with filter 7 and `IncludeVersions` flag 1; no latest-only,
+platform or publication-state filter is added. Retained method/query custody rejects flag 512 even
+though that limited response has the same schema. Require one exact publisher/extension, total
+result count 1, no continuation and complete version/platform rows; null paging tokens are normal.
+Retain the whole response envelope and reject the requested version on every platform. This same
+bounded anonymous query verifies that the exact published version exists after release. The
+inventory is bounded to 2 MiB and 10,000
 version/platform rows; missing-response bodies are bounded to 64 KiB. Truncation or partial inventory
 is a refusal. Each anonymous read has one 30-second deadline covering the body.
+
+The [primary response fixtures](../../tests/_fixtures/release/registry-provider-responses.json)
+preserve the original anonymous response bytes and their digests: npm exact-version absence is a
+JSON string `"version not found: VERSION"`; Open VSX also returns false `deprecated` and
+`downloadable` metadata beside its exact missing-version error. Accept only those supported
+shapes, retain their original JSON types, and reject foreign versions, truthy metadata or extra
+fields. Parse and schema failures report the URL, HTTP status, original-byte digest/count and an
+escaped body. This corrects the pre-lease refusal in
+[operator 37986834551](https://github.com/ubugeeei-prod/vize/actions/runs/37986834551);
+fresh Actions, protected merge and actual official retirement/publication remain required.
 
 ## Preservation and partial recovery
 

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type { TestContext } from "node:test";
@@ -11,11 +12,24 @@ import { sourceFixture, tag } from "./release-public-acceptance-fixtures.ts";
 import {
   marketplaceControls,
   marketplaceInventory,
+  marketplaceEnvelope,
 } from "./release-retirement-marketplace-fixtures.ts";
+import {
+  marketplaceQuery,
+  marketplaceQueryUrl,
+  marketplaceQueryAccept,
+  marketplaceExtension,
+} from "../../../tools/support/release/marketplace_query.ts";
 
-type Reply = { status: number; body: unknown; headers?: Record<string, string>; url?: string };
+type Reply = {
+  status: number;
+  body: unknown;
+  rawBody?: string | Uint8Array;
+  headers?: Record<string, string>;
+  url?: string;
+};
 function response(url: string, reply: Reply) {
-  const body = typeof reply.body === "string" ? reply.body : JSON.stringify(reply.body);
+  const body = reply.rawBody ?? JSON.stringify(reply.body);
   const result = new Response(body, {
     status: reply.status,
     headers: { "content-type": "application/json", ...reply.headers },
@@ -31,7 +45,10 @@ export async function retirementAbsenceLaw(t: TestContext) {
   for (const [index, target] of s.plan.npm.entries()) {
     replies.set(`https://registry.npmjs.org/${encodeURIComponent(target.name)}/${target.version}`, {
       status: 404,
-      body: { error: index ? `version not found: ${target.version}` : "Not found" },
+      body:
+        index === 0
+          ? `version not found: ${target.version}`
+          : { error: index === 1 ? "Not found" : `version not found: ${target.version}` },
     });
   }
   for (const [index, target] of s.plan.crates.entries()) {
@@ -49,12 +66,19 @@ export async function retirementAbsenceLaw(t: TestContext) {
     });
   }
   const { publisher, name, version } = s.plan.editor;
-  const marketplace = `https://marketplace.visualstudio.com/_apis/gallery/publishers/${publisher}/extensions/${name}?flags=1&api-version=7.2-preview.2`;
+  const marketplace = marketplaceQueryUrl;
   const openvsx = `https://open-vsx.org/api/${publisher}/${name}/${version}`;
-  replies.set(marketplace, { status: 200, body: marketplaceInventory(publisher, name) });
+  replies.set(marketplace, {
+    status: 200,
+    body: marketplaceEnvelope(marketplaceInventory(publisher, name)),
+  });
   replies.set(openvsx, {
     status: 404,
-    body: { error: `Extension not found: ${publisher}.${name} ${version}` },
+    body: {
+      deprecated: false,
+      downloadable: false,
+      error: `Extension not found: ${publisher}.${name} ${version}`,
+    },
   });
   const calls: { url: string; init: RequestInit | undefined }[] = [];
   const fetch: typeof globalThis.fetch = async (input, init) => {
@@ -74,8 +98,70 @@ export async function retirementAbsenceLaw(t: TestContext) {
         row.status === replies.get(row.url)?.status && /^[a-f0-9]{64}$/.test(row.responseSha256),
     ),
   );
+  for (const row of receipt.observations) {
+    const reply = replies.get(row.url)!;
+    const bytes = Buffer.from(JSON.stringify(reply.body));
+    assert.deepEqual(row.response, reply.body, "retain the provider JSON type without wrapping");
+    assert.equal(row.responseBytes, bytes.length);
+    assert.equal(row.responseSha256, createHash("sha256").update(bytes).digest("hex"));
+  }
+  assert.equal(typeof receipt.observations[0].response, "string");
+  const primary = JSON.parse(
+    fs.readFileSync(
+      new URL("../../_fixtures/release/registry-provider-responses.json", import.meta.url),
+      "utf8",
+    ),
+  ) as {
+    npm: { raw: string; sha256: string; bytes: number };
+    openvsx: { raw: string; sha256: string; bytes: number };
+    marketplace: { raw: string; sha256: string; bytes: number };
+    latestOnlyControl: { raw: string; sha256: string; bytes: number };
+  };
+  const primaryTargets = [receipt.observations[0].url, openvsx, marketplace];
+  const originalReplies = primaryTargets.map((url) => replies.get(url)!);
+  for (const [index, row] of [primary.npm, primary.openvsx, primary.marketplace].entries()) {
+    assert.equal(Buffer.byteLength(row.raw), row.bytes);
+    assert.equal(createHash("sha256").update(row.raw).digest("hex"), row.sha256);
+    replies.set(primaryTargets[index], {
+      status: index === 2 ? 200 : 404,
+      body: JSON.parse(row.raw) as unknown,
+      rawBody: row.raw,
+    });
+  }
+  try {
+    const replay = await verifyRetirementAbsence(s.plan, { fetch });
+    for (const [index, row] of [primary.npm, primary.openvsx, primary.marketplace].entries()) {
+      const observation = replay.observations.find((value) => value.url === primaryTargets[index])!;
+      assert.deepEqual(observation.response, JSON.parse(row.raw));
+      assert.equal(observation.responseSha256, row.sha256);
+      assert.equal(observation.responseBytes, row.bytes);
+    }
+    assert.equal(Buffer.byteLength(primary.latestOnlyControl.raw), primary.latestOnlyControl.bytes);
+    assert.equal(
+      createHash("sha256").update(primary.latestOnlyControl.raw).digest("hex"),
+      primary.latestOnlyControl.sha256,
+    );
+    const extension = marketplaceExtension(
+      `${publisher}.${name}`,
+      JSON.parse(primary.latestOnlyControl.raw) as unknown,
+    );
+    assert.equal(
+      (extension.versions as unknown[]).length,
+      1,
+      "unmarked latest-only response alone cannot prove the request flags; exact query custody is required",
+    );
+  } finally {
+    for (const [index, url] of primaryTargets.entries()) replies.set(url, originalReplies[index]);
+  }
   for (const call of calls) {
-    assert.equal(call.init?.method, "GET");
+    assert.equal(call.init?.method, call.url === marketplace ? "POST" : "GET");
+    if (call.url === marketplace) {
+      assert.equal(typeof call.init?.body, "string");
+      assert.ok(typeof call.init?.body === "string");
+      assert.deepEqual(JSON.parse(call.init.body), marketplaceQuery(`${publisher}.${name}`));
+      assert.equal(new Headers(call.init?.headers).get("accept"), marketplaceQueryAccept);
+      assert.equal(new Headers(call.init?.headers).get("content-type"), "application/json");
+    } else assert.equal(call.init?.body, undefined);
     assert.equal(call.init?.redirect, "manual");
     assert.equal(call.init?.credentials, "omit");
     assert.equal(call.init?.cache, "no-store");
@@ -92,34 +178,67 @@ export async function retirementAbsenceLaw(t: TestContext) {
   };
   const npm = [...replies.keys()][0],
     crate = [...replies.keys()][s.plan.npm.length];
+  // Original parse/shape failures escaped contextual diagnostics entirely.
+  for (const rawBody of ["not JSON\n::error::untrusted", "null", new Uint8Array([0xff, 0xfe])]) {
+    const previous = replies.get(npm)!;
+    replies.set(npm, { status: 404, body: null, rawBody });
+    try {
+      await assert.rejects(verifyRetirementAbsence(s.plan, { fetch }), (error: unknown) => {
+        assert.ok(error instanceof Error);
+        const bytes = typeof rawBody === "string" ? Buffer.from(rawBody) : Buffer.from(rawBody);
+        assert.ok(error.message.includes(`HTTP 404 at ${npm}`));
+        assert.ok(
+          error.message.includes(
+            `response sha256=${createHash("sha256").update(bytes).digest("hex")}`,
+          ),
+        );
+        assert.ok(error.message.includes(`bytes=${bytes.length}`));
+        assert.ok(error.message.includes(`body=${JSON.stringify(bytes.toString("utf8"))}`));
+        assert.ok(!error.message.includes("\n::error::"), "untrusted body cannot inject log lines");
+        return true;
+      });
+    } finally {
+      replies.set(npm, previous);
+    }
+  }
   for (const url of [npm, crate, marketplace, openvsx]) {
     for (const status of [200, 301, 302, 307, 401, 403, 429, 500, 503]) {
       await reject(
         url,
         { status, body: { error: "Not found" } },
-        /requires HTTP 404|missing response/,
+        /requires HTTP 404|missing response|Marketplace/,
       );
     }
     for (const body of [{}, [], null, { error: "upstream unavailable" }, "not JSON"]) {
-      await reject(url, { status: 404, body }, /missing|JSON|Unexpected/);
+      await reject(url, { status: 404, body }, /missing|JSON|Unexpected|HTTP 200/);
     }
     await reject(
       url,
       { status: 404, body: {}, headers: { "content-type": "text/html" } },
-      /JSON content type/,
+      /JSON content type|HTTP 200/,
     );
     await reject(
       url,
       { status: 404, body: {}, url: "https://example.invalid/redirect" },
-      /URL changed/,
+      /URL changed|HTTP 200/,
     );
     await reject(
       url,
       { status: 404, body: {}, headers: { location: "https://example.invalid/" } },
-      /redirects refused/,
+      /redirects refused|HTTP 200/,
     );
   }
   await reject(npm, { status: 404, body: { error: "version not found: 9.9.9" } }, /npm missing/);
+  for (const body of ["Not found", "version not found: 9.9.9", `version not found: ${version}\n`]) {
+    await reject(npm, { status: 404, body }, /npm missing/);
+  }
+  for (const url of [crate, marketplace, openvsx]) {
+    await reject(
+      url,
+      { status: 404, body: `version not found: ${version}` },
+      /missing response|HTTP 200/,
+    );
+  }
   await reject(
     crate,
     { status: 404, body: { errors: [{ detail: "crate `other` does not exist" }] } },
@@ -130,6 +249,24 @@ export async function retirementAbsenceLaw(t: TestContext) {
     { status: 404, body: { error: `Extension not found: ${publisher}.${name} 9.9.9` } },
     /Open VSX/,
   );
+  const openvsxBody = replies.get(openvsx)!.body as Record<string, unknown>;
+  for (const body of [
+    { ...openvsxBody, deprecated: true },
+    { ...openvsxBody, downloadable: true },
+    { ...openvsxBody, deprecated: null },
+    { ...openvsxBody, downloadable: "false" },
+    { ...openvsxBody, extra: false },
+    { error: openvsxBody.error, deprecated: false },
+  ]) {
+    await reject(openvsx, { status: 404, body }, /Open VSX/);
+  }
+  const originalOpenvsx = replies.get(openvsx)!;
+  replies.set(openvsx, { status: 404, body: { error: openvsxBody.error } });
+  try {
+    await verifyRetirementAbsence(s.plan, { fetch });
+  } finally {
+    replies.set(openvsx, originalOpenvsx);
+  }
   await reject(
     marketplace,
     {
@@ -152,7 +289,7 @@ export async function retirementAbsenceLaw(t: TestContext) {
       replies.set(marketplace, previous);
     }
   });
-  await reject(npm, { status: 404, body: "x".repeat(65_537) }, /65536 bytes/);
+  await reject(npm, { status: 404, body: null, rawBody: "x".repeat(65_537) }, /65536 bytes/);
   await reject(
     npm,
     { status: 404, body: {}, headers: { "content-length": "65537" } },
@@ -193,39 +330,45 @@ export async function retirementAbsenceLaw(t: TestContext) {
     retirementAbsenceMain([...args.slice(0, 6), "--fetch", output], { fetch }),
     /invalid/,
   );
-  let bodyEntered!: () => void;
-  const entered = new Promise<void>((done) => {
-    bodyEntered = done;
-  });
-  let aborted = false;
   t.mock.timers.enable({ apis: ["setTimeout"] });
-  const pending = verifyRetirementAbsence(s.plan, {
-    fetch: async (input, init) => {
-      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-      if (url !== npm) return fetch(input, init);
-      const result = new Response(
-        new ReadableStream<Uint8Array>({
-          pull(controller) {
-            bodyEntered();
-            init?.signal?.addEventListener(
-              "abort",
-              () => {
-                aborted = true;
-                controller.error(new Error("aborted"));
-              },
-              { once: true },
-            );
-            return new Promise(() => {});
+  for (const stalled of [npm, marketplace]) {
+    let bodyEntered!: () => void;
+    const entered = new Promise<void>((done) => {
+      bodyEntered = done;
+    });
+    let aborted = false;
+    const pending = verifyRetirementAbsence(s.plan, {
+      fetch: async (input, init) => {
+        const url =
+          typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+        if (url !== stalled) return fetch(input, init);
+        const result = new Response(
+          new ReadableStream<Uint8Array>({
+            pull(controller) {
+              bodyEntered();
+              init?.signal?.addEventListener(
+                "abort",
+                () => {
+                  aborted = true;
+                  controller.error(new Error("aborted"));
+                },
+                { once: true },
+              );
+              return new Promise(() => {});
+            },
+          }),
+          {
+            status: stalled === marketplace ? 200 : 404,
+            headers: { "content-type": "application/json" },
           },
-        }),
-        { status: 404, headers: { "content-type": "application/json" } },
-      );
-      Object.defineProperty(result, "url", { value: npm });
-      return result;
-    },
-  });
-  await entered;
-  t.mock.timers.tick(30_000);
-  await assert.rejects(pending, /timed out/);
-  assert.equal(aborted, true, "timeout covers the stalled response body");
+        );
+        Object.defineProperty(result, "url", { value: stalled });
+        return result;
+      },
+    });
+    await entered;
+    t.mock.timers.tick(30_000);
+    await assert.rejects(pending, /timed out/);
+    assert.equal(aborted, true, "timeout covers each stalled provider response body");
+  }
 }

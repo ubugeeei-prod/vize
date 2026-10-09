@@ -1,6 +1,7 @@
 import { publicReader } from "./http.ts";
 import { verifyGithub } from "./github.ts";
 import type { PublicationPlan, PublicationTarget } from "./plan.ts";
+import { readMarketplace } from "../marketplace_query.ts";
 
 export interface PublicationOptions {
   tag: string;
@@ -164,10 +165,10 @@ export async function verifyPublication(plan: PublicationPlan, options: Publicat
   const crates = await collect(plan.crates, crateTarget);
 
   const editor = plan.editor;
-  // getExtension uses 7.2-preview.2 with explicit version and IncludeVersions=1:
-  // https://github.com/microsoft/azure-devops-extension-api/blob/master/src/Gallery/GalleryClient.ts
-  const marketplaceUrl = `https://marketplace.visualstudio.com/_apis/gallery/publishers/${editor.publisher}/extensions/${editor.name}?version=${editor.version}&flags=1&api-version=7.2-preview.2`;
-  const marketplace = await json(marketplaceUrl);
+  const { extension: marketplace, ...marketplaceObservation } = await readMarketplace(
+    `${editor.publisher}.${editor.name}`,
+    options.fetch,
+  );
   requireValue(
     object(marketplace.publisher).publisherName === editor.publisher &&
       marketplace.extensionName === editor.name &&
@@ -254,7 +255,12 @@ export async function verifyPublication(plan: PublicationPlan, options: Publicat
     npm,
     crates,
     githubAssets,
-    marketplace: { ...editor, metadataUrl: marketplaceUrl, exactVersionAvailable: true },
+    marketplace: {
+      ...editor,
+      metadataUrl: marketplaceObservation.url,
+      ...marketplaceObservation,
+      exactVersionAvailable: true,
+    },
     openVsx: { ...editor, metadataUrl: openVsxUrl, ...openVsx },
     evidence:
       "Public metadata and downloaded npm/crate digest verification; no signature or installed-product execution claim.",

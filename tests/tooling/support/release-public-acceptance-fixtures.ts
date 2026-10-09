@@ -8,6 +8,11 @@ import os from "node:os";
 import path from "node:path";
 import { verifyPublication as verify } from "../../../tools/support/release/public_acceptance/registry.ts";
 import { derivePublicationPlan } from "../../../tools/support/release/public_acceptance/plan.ts";
+import { marketplaceQueryUrl } from "../../../tools/support/release/marketplace_query.ts";
+import {
+  marketplaceEnvelope,
+  marketplaceInventory,
+} from "./release-retirement-marketplace-fixtures.ts";
 
 /** Inert registry responses and temporary Git objects; never public execution evidence. */
 export const version = "0.438.0";
@@ -158,13 +163,15 @@ export function publicFixture(context: Parameters<typeof sourceFixture>[0]) {
   responses.set(assetUrl, asset);
   responses.set(assetUrl + ".sha256", `${sha256(asset)}  ${assetName}\n`);
   const editor = plan.editor;
-  const marketplaceUrl = `https://marketplace.visualstudio.com/_apis/gallery/publishers/${editor.publisher}/extensions/${editor.name}?version=${version}&flags=1&api-version=7.2-preview.2`;
+  const marketplaceUrl = marketplaceQueryUrl;
   const openVsxUrl = `https://open-vsx.org/api/${editor.publisher}/${editor.name}/${version}`;
-  responses.set(marketplaceUrl, {
-    publisher: { publisherName: editor.publisher },
-    extensionName: editor.name,
-    versions: [{ version }],
-  });
+  responses.set(
+    marketplaceUrl,
+    marketplaceEnvelope({
+      ...marketplaceInventory(editor.publisher, editor.name),
+      versions: [{ version }],
+    }),
+  );
   responses.set(openVsxUrl, {
     namespace: editor.publisher,
     name: editor.name,
@@ -179,7 +186,7 @@ export function publicFixture(context: Parameters<typeof sourceFixture>[0]) {
     assert.ok(responses.has(url), `unplanned fixture request: ${url}`);
     const value = responses.get(url);
     if (value instanceof Response) return value.clone();
-    return new Response(
+    const response = new Response(
       Buffer.isBuffer(value)
         ? new Uint8Array(value)
         : typeof value === "string"
@@ -187,8 +194,11 @@ export function publicFixture(context: Parameters<typeof sourceFixture>[0]) {
           : JSON.stringify(value),
       {
         status: 200,
+        headers: { "content-type": "application/json" },
       },
     );
+    Object.defineProperty(response, "url", { value: url });
+    return response;
   };
   return {
     ...source,
