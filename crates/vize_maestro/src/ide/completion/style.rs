@@ -12,6 +12,7 @@ pub(crate) fn complete_style(ctx: &IdeContext, index: usize) -> Vec<CompletionIt
 }
 
 /// Vue CSS feature completions.
+#[cfg(any(test, feature = "native"))]
 pub(crate) fn vue_css_completions() -> Vec<CompletionItem> {
     crate::ide::style::vue_completions(false)
 }

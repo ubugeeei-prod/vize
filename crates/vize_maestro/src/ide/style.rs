@@ -12,7 +12,9 @@ mod vue;
 #[cfg(test)]
 mod tests;
 
-pub(crate) use completion::{complete, vue_completions};
+pub(crate) use completion::complete;
+#[cfg(any(test, feature = "native"))]
+pub(crate) use completion::vue_completions;
 pub(crate) use hover::hover;
 #[cfg(feature = "native")]
 pub(crate) use resolve::resolve;
