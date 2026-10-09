@@ -1,42 +1,86 @@
-name: Registry Response Probe
+name: Release Log Escape Contract Probe
 on:
   push:
     branches: [ci-release-registry-response-probe]
-permissions: { contents: read }
+    paths: [.github/workflows/registry-response-probe.yml]
+  workflow_dispatch:
+permissions:
+  actions: read
 jobs:
   probe:
-    if: github.repository == 'ubugeeei-prod/vize'
+    if: github.repository == 'ubugeeei-prod/vize' && github.ref == 'refs/heads/ci-release-registry-response-probe'
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 5
     steps:
-      - name: Read exact anonymous provider responses
+      - name: Verify exact failed-log capture with installed GitHub CLI
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          node --input-type=module <<'NODE'
-          import { createHash } from 'node:crypto';
-          import { writeFileSync } from 'node:fs';
-          const targets = [{"channel":"marketplace","name":"ubugeeei.vize","version":"0.438.0","url":"https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery","method":"POST","query":{"filters":[{"criteria":[{"filterType":7,"value":"ubugeeei.vize"}],"pageNumber":1,"pageSize":1}],"flags":1}},{"channel":"marketplace","name":"ubugeeei.vize","version":"0.438.0","url":"https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery","method":"POST","query":{"filters":[{"criteria":[{"filterType":7,"value":"ubugeeei.vize"}],"pageNumber":1,"pageSize":1}],"flags":512}}];
-          const observations = [];
-          async function observe(target) {
-            const began = new Date().toISOString();
-            try {
-              const response = await fetch(target.url, { method: target.method ?? 'GET', body: target.query ? JSON.stringify(target.query) : undefined, credentials: 'omit', redirect: 'manual', cache: 'no-store', signal: AbortSignal.timeout(30000), headers: { Accept: target.channel === 'marketplace' ? 'application/json;api-version=3.0-preview.1' : 'application/json', ...(target.query ? { 'Content-Type': 'application/json' } : {}), 'Cache-Control': 'no-cache', Pragma: 'no-cache', 'User-Agent': 'vize-registry-response-probe' } });
-              const chunks = []; let size = 0;
-              for await (const chunk of response.body) { size += chunk.length; if (size > 2097152) throw new Error('diagnostic response exceeds 2 MiB; completeness not claimed'); chunks.push(chunk); }
-              const bytes = Buffer.concat(chunks); const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
-              let parsed, parseError; try { parsed = JSON.parse(text); } catch (error) { parseError = String(error); }
-              const row = { ...target, began, observedAt: new Date().toISOString(), status: response.status, finalUrl: response.url, redirected: response.redirected, contentType: response.headers.get('content-type'), date: response.headers.get('date'), bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex'), bodyShape: parsed === null ? 'null' : Array.isArray(parsed) ? 'array' : typeof parsed, parseError, rawBase64: bytes.toString('base64') };
-              observations.push(row);
-              if (bytes.length <= 65536) console.log('VIZE_PRIMARY_BYTES ' + JSON.stringify(row));
-              console.log(JSON.stringify({ ...row, rawBase64: undefined, raw: text.length <= 2048 ? text : text.slice(0, 350), summary: target.channel === 'marketplace' && parsed && typeof parsed === 'object' ? { keys: Object.keys(parsed), results: parsed.results?.length, extensions: parsed.results?.[0]?.extensions?.length, resultMetadata: parsed.results?.[0]?.resultMetadata, extension: parsed.results?.[0]?.extensions?.[0] ? { keys: Object.keys(parsed.results[0].extensions[0]), extensionName: parsed.results[0].extensions[0].extensionName, publisher: parsed.results[0].extensions[0].publisher, flags: parsed.results[0].extensions[0].flags, versions: parsed.results[0].extensions[0].versions?.length, firstVersion: parsed.results[0].extensions[0].versions?.[0], lastVersion: parsed.results[0].extensions[0].versions?.at(-1) } : undefined } : undefined }));
-            } catch (error) { const row = { ...target, began, observedAt: new Date().toISOString(), error: String(error), completeness: false }; observations.push(row); console.log(JSON.stringify(row)); }
+          node <<'NODE'
+          const { spawnSync } = require('node:child_process');
+          const { createHash } = require('node:crypto');
+          const repo = 'ubugeeei-prod/vize';
+          const job = 113945842593;
+          const run = 37967620221;
+          const head = 'f58ba3592f378a6a40eea75b3d8040c6ad26ea0f';
+          const expectedBytes = 175686;
+          const expectedSha256 = '904e2082d84d53b83abd294161615c30aaa4ca674b64ef02b57419f2f57e95ba';
+          const knownRefusal = 'the response contains terminal escape sequences; pass --allow-escape-sequences to output it anyway';
+          const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
+          const escapes = (bytes) => bytes.reduce((count, byte) => count + Number(byte === 27), 0);
+          const ensure = (ok, label) => { if (!ok) throw new Error(label); };
+          function invoke(label, args) {
+            const result = spawnSync('gh', args, {
+              timeout: 30000,
+              maxBuffer: 8 * 1024 * 1024,
+              encoding: 'buffer',
+              env: { ...process.env, GH_PROMPT_DISABLED: '1' },
+            });
+            const stdout = Buffer.isBuffer(result.stdout) ? result.stdout : Buffer.alloc(0);
+            const stderr = Buffer.isBuffer(result.stderr) ? result.stderr : Buffer.alloc(0);
+            const classification = result.error || result.signal ? 'subprocess-failure'
+              : result.status === 0 ? 'success'
+              : stderr.includes(Buffer.from(knownRefusal)) ? 'known-escape-refusal' : 'unknown-failure';
+            console.log(JSON.stringify({
+              command: label, exit: result.status, classification,
+              stdoutBytes: stdout.length, stdoutSha256: hash(stdout), stdoutEscCount: escapes(stdout),
+              stderrBytes: stderr.length, stderrSha256: hash(stderr), stderrEscCount: escapes(stderr),
+            }));
+            return { ...result, stdout, stderr, classification };
           }
-          for (let i = 0; i < targets.length; i += 3) await Promise.all(targets.slice(i, i + 3).map(observe));
-          writeFileSync(process.env.RUNNER_TEMP + '/vize-registry-response-probe.json', JSON.stringify({ schema: 'vize-anonymous-provider-response-diagnostic-v1', sourceH: 'f58ba3592f378a6a40eea75b3d8040c6ad26ea0f', run: process.env.GITHUB_RUN_ID, workflowSource: process.env.GITHUB_SHA, node: process.version, observations, claim: 'Primary response data only; no release, retirement, absence qualification or publication claim.' }, null, 2));
+          function jsonCall(label, path) {
+            const result = invoke(label, ['api', path]);
+            ensure(result.status === 0 && !result.error && !result.signal, label + ' failed');
+            let parsed;
+            try { parsed = JSON.parse(result.stdout.toString('utf8')); }
+            catch { throw new Error(label + ' invalid JSON'); }
+            return parsed;
+          }
+          const version = invoke('gh-version', ['version']);
+          ensure(version.status === 0 && !version.error && !version.signal, 'gh version failed');
+          const match = version.stdout.toString('utf8').match(/^gh version (\d+\.\d+\.\d+)/);
+          ensure(Boolean(match), 'gh version unrecognized');
+          console.log(JSON.stringify({ ghVersion: match[1] }));
+          const jobMetadata = jsonCall('exact-job-metadata', 'repos/' + repo + '/actions/jobs/' + job);
+          ensure(jobMetadata.id === job && jobMetadata.run_id === run && jobMetadata.head_sha === head
+            && jobMetadata.status === 'completed' && jobMetadata.conclusion === 'failure', 'job identity mismatch');
+          const runMetadata = jsonCall('exact-run-metadata', 'repos/' + repo + '/actions/runs/' + run);
+          ensure(runMetadata.id === run && runMetadata.head_sha === head && runMetadata.run_attempt === 1
+            && runMetadata.status === 'completed' && runMetadata.conclusion === 'failure'
+            && runMetadata.head_repository?.full_name === repo, 'run identity mismatch');
+          const path = 'repos/' + repo + '/actions/jobs/' + job + '/logs';
+          const withoutFlag = invoke('raw-log-without-escape-flag', ['api', path]);
+          const withFlag = invoke('raw-log-with-escape-flag', ['api', path, '--allow-escape-sequences']);
+          ensure(withFlag.status === 0 && !withFlag.error && !withFlag.signal, 'escape flag fetch failed');
+          ensure(withFlag.stdout.length === expectedBytes && hash(withFlag.stdout) === expectedSha256
+            && escapes(withFlag.stdout) === 4097, 'flag raw log identity mismatch');
+          const unflaggedMatch = withoutFlag.status === 0 && !withoutFlag.error && !withoutFlag.signal
+            && withoutFlag.stdout.length === expectedBytes && hash(withoutFlag.stdout) === expectedSha256;
+          const knownUnflaggedRefusal = withoutFlag.status !== 0 && !withoutFlag.error && !withoutFlag.signal
+            && withoutFlag.classification === 'known-escape-refusal' && withoutFlag.stdout.length === 0;
+          ensure(unflaggedMatch || knownUnflaggedRefusal, 'unflagged gh behavior unrecognized');
+          console.log(JSON.stringify({ classification: unflaggedMatch ? 'unflagged-raw-match' : 'unflagged-known-escape-refusal',
+            stdoutBytes: withFlag.stdout.length, stdoutSha256: hash(withFlag.stdout),
+            stdoutEscCount: escapes(withFlag.stdout) }));
           NODE
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: registry-response-probe
-          path: ${{ runner.temp }}/vize-registry-response-probe.json
-          retention-days: 7
-          if-no-files-found: error
