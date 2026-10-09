@@ -10,6 +10,10 @@ import {
 } from "../../../tools/support/release/retirement_absence.ts";
 import { sourceFixture, tag } from "./release-public-acceptance-fixtures.ts";
 import {
+  retirementPrimaryResponseLaw,
+  type Reply,
+} from "./release-retirement-primary-response-law.ts";
+import {
   marketplaceControls,
   marketplaceInventory,
   marketplaceEnvelope,
@@ -18,16 +22,8 @@ import {
   marketplaceQuery,
   marketplaceQueryUrl,
   marketplaceQueryAccept,
-  marketplaceExtension,
 } from "../../../tools/support/release/marketplace_query.ts";
 
-type Reply = {
-  status: number;
-  body: unknown;
-  rawBody?: string | Uint8Array;
-  headers?: Record<string, string>;
-  url?: string;
-};
 function response(url: string, reply: Reply) {
   const body = reply.rawBody ?? JSON.stringify(reply.body);
   const result = new Response(body, {
@@ -106,53 +102,12 @@ export async function retirementAbsenceLaw(t: TestContext) {
     assert.equal(row.responseSha256, createHash("sha256").update(bytes).digest("hex"));
   }
   assert.equal(typeof receipt.observations[0].response, "string");
-  const primary = JSON.parse(
-    fs.readFileSync(
-      new URL("../../_fixtures/release/registry-provider-responses.json", import.meta.url),
-      "utf8",
-    ),
-  ) as {
-    npm: { raw: string; sha256: string; bytes: number };
-    openvsx: { raw: string; sha256: string; bytes: number };
-    marketplace: { raw: string; sha256: string; bytes: number };
-    latestOnlyControl: { raw: string; sha256: string; bytes: number };
-  };
-  const primaryTargets = [receipt.observations[0].url, openvsx, marketplace];
-  const originalReplies = primaryTargets.map((url) => replies.get(url)!);
-  for (const [index, row] of [primary.npm, primary.openvsx, primary.marketplace].entries()) {
-    assert.equal(Buffer.byteLength(row.raw), row.bytes);
-    assert.equal(createHash("sha256").update(row.raw).digest("hex"), row.sha256);
-    replies.set(primaryTargets[index], {
-      status: index === 2 ? 200 : 404,
-      body: JSON.parse(row.raw) as unknown,
-      rawBody: row.raw,
-    });
-  }
-  try {
-    const replay = await verifyRetirementAbsence(s.plan, { fetch });
-    for (const [index, row] of [primary.npm, primary.openvsx, primary.marketplace].entries()) {
-      const observation = replay.observations.find((value) => value.url === primaryTargets[index])!;
-      assert.deepEqual(observation.response, JSON.parse(row.raw));
-      assert.equal(observation.responseSha256, row.sha256);
-      assert.equal(observation.responseBytes, row.bytes);
-    }
-    assert.equal(Buffer.byteLength(primary.latestOnlyControl.raw), primary.latestOnlyControl.bytes);
-    assert.equal(
-      createHash("sha256").update(primary.latestOnlyControl.raw).digest("hex"),
-      primary.latestOnlyControl.sha256,
-    );
-    const extension = marketplaceExtension(
-      `${publisher}.${name}`,
-      JSON.parse(primary.latestOnlyControl.raw) as unknown,
-    );
-    assert.equal(
-      (extension.versions as unknown[]).length,
-      1,
-      "unmarked latest-only response alone cannot prove the request flags; exact query custody is required",
-    );
-  } finally {
-    for (const [index, url] of primaryTargets.entries()) replies.set(url, originalReplies[index]);
-  }
+  await retirementPrimaryResponseLaw(
+    s.plan,
+    replies,
+    [receipt.observations[0].url, openvsx, marketplace],
+    fetch,
+  );
   for (const call of calls) {
     assert.equal(call.init?.method, call.url === marketplace ? "POST" : "GET");
     if (call.url === marketplace) {
