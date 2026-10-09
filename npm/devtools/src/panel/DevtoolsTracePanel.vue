@@ -3,22 +3,17 @@ import { computed, useId } from "vue";
 
 import type { DevtoolsSnapshot } from "../types.ts";
 
-const props = withDefaults(
-  defineProps<{
-    readonly emptyLabel?: string;
-    readonly snapshot: DevtoolsSnapshot;
-  }>(),
-  {
-    emptyLabel: "No trace events",
-  },
-);
+const { emptyLabel = "No trace events", snapshot } = defineProps<{
+  readonly emptyLabel?: string;
+  readonly snapshot: DevtoolsSnapshot;
+}>();
 
-const eventCount = computed(() => props.snapshot.events.length);
-const renderNodes = computed(() => props.snapshot.renderTree.slice(0, 8));
-const provideNodes = computed(() => props.snapshot.provideTree.slice(0, 8));
-const suspenseNodes = computed(() => props.snapshot.suspenseTree.slice(0, 8));
-const graphNodes = computed(() => props.snapshot.reactiveGraph.nodes.slice(0, 10));
-const graphEdges = computed(() => props.snapshot.reactiveGraph.edges.slice(0, 16));
+const eventCount = computed(() => snapshot.events.length);
+const renderNodes = computed(() => snapshot.renderTree.slice(0, 8));
+const provideNodes = computed(() => snapshot.provideTree.slice(0, 8));
+const suspenseNodes = computed(() => snapshot.suspenseTree.slice(0, 8));
+const graphNodes = computed(() => snapshot.reactiveGraph.nodes.slice(0, 10));
+const graphEdges = computed(() => snapshot.reactiveGraph.edges.slice(0, 16));
 const renderHeadingId = useId();
 const reactivityHeadingId = useId();
 const provideHeadingId = useId();

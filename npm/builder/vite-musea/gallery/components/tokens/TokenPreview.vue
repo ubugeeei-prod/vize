@@ -5,16 +5,15 @@ import { resolveTokenPreview, type MuseaTokenPreviewConfig } from "../../../src/
 import SpacingPreview from "./SpacingPreview.vue";
 import TypographyPreview from "./TypographyPreview.vue";
 
-const props = withDefaults(
-  defineProps<{
-    tokenPath: string;
-    token: DesignToken;
-    tokenMap?: Record<string, DesignToken>;
-  }>(),
-  {
-    tokenMap: () => ({}),
-  },
-);
+const {
+  tokenPath,
+  token,
+  tokenMap = {},
+} = defineProps<{
+  tokenPath: string;
+  token: DesignToken;
+  tokenMap?: Record<string, DesignToken>;
+}>();
 
 const tokenPreviewConfig =
   typeof window === "undefined"
@@ -24,9 +23,9 @@ const tokenPreviewConfig =
 
 const preview = computed(() =>
   resolveTokenPreview({
-    tokenPath: props.tokenPath,
-    token: props.token,
-    tokenMap: props.tokenMap,
+    tokenPath,
+    token,
+    tokenMap,
     config: tokenPreviewConfig,
   }),
 );

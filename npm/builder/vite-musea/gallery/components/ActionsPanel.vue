@@ -5,14 +5,9 @@ import { useActions, type ActionEvent } from "../composables/useActions";
 import HighlightedCode from "./HighlightedCode.vue";
 import MdiIcon from "./MdiIcon.vue";
 
-const props = withDefaults(
-  defineProps<{
-    captureEvents?: string[];
-  }>(),
-  {
-    captureEvents: () => [],
-  },
-);
+const { captureEvents = [] } = defineProps<{
+  captureEvents?: string[];
+}>();
 
 const { events, clear } = useActions();
 const expandedId = ref<number | null>(null);
@@ -30,7 +25,7 @@ const reversedEvents = computed(() =>
   }),
 );
 const tracksMousemove = computed(() =>
-  props.captureEvents.some((eventName) => eventName === "mousemove"),
+  captureEvents.some((eventName) => eventName === "mousemove"),
 );
 const captureLabel = computed(() =>
   tracksMousemove.value ? "mousemove enabled" : "standard capture",

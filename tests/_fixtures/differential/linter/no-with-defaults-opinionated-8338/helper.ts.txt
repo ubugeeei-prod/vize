@@ -1,0 +1,3 @@
+// withDefaults(defineProps<{ count?: number }>(), { count: 0 });
+export function withDefaults(value: string): string { return value; }
+export const label = withDefaults("withDefaults(defineProps(), {})");

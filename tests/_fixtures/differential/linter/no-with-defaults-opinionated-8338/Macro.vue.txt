@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const props = withDefaults(defineProps<{ count?: number }>(), { count: 0 });
+</script>
+
+<template>
+  <span class="count">{{ props.count }}</span>
+</template>
+
+<style scoped>
+.count { color: inherit; }
+</style>

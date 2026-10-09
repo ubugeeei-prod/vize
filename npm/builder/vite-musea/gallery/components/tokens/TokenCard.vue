@@ -3,19 +3,19 @@ import { computed } from "vue";
 import type { DesignToken } from "../../api";
 import TokenPreview from "./TokenPreview.vue";
 
-const props = withDefaults(
-  defineProps<{
-    name: string;
-    token: DesignToken;
-    tokenPath: string;
-    tokenMap?: Record<string, DesignToken>;
-    usageCount?: number;
-  }>(),
-  {
-    tokenMap: () => ({}),
-    usageCount: 0,
-  },
-);
+const {
+  name,
+  token,
+  tokenPath,
+  tokenMap = {},
+  usageCount = 0,
+} = defineProps<{
+  name: string;
+  token: DesignToken;
+  tokenPath: string;
+  tokenMap?: Record<string, DesignToken>;
+  usageCount?: number;
+}>();
 
 const emit = defineEmits<{
   edit: [];
@@ -24,8 +24,8 @@ const emit = defineEmits<{
 }>();
 
 const tierLabel = computed(() => {
-  if (props.token.$tier === "semantic") return "Semantic";
-  if (props.token.$tier === "primitive") return "Primitive";
+  if (token.$tier === "semantic") return "Semantic";
+  if (token.$tier === "primitive") return "Primitive";
   return null;
 });
 </script>

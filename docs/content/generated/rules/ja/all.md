@@ -240,7 +240,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`script/no-unstable-nested-components`](#script-no-unstable-nested-components) | [悪い例](#script-no-unstable-nested-components-bad) · [良い例](#script-no-unstable-nested-components-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) | setup / render 内で毎回コンポーネントを定義する箇所を検出します。 | Script |
 | [`script/no-unused-emit-declarations`](#script-no-unused-emit-declarations) | [悪い例](#script-no-unused-emit-declarations-bad) · [良い例](#script-no-unused-emit-declarations-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs#L74) | 宣言したまま emit していないイベントを検出します。 | Script |
 | [`script/no-use-computed-property-like-method`](#script-no-use-computed-property-like-method) | [悪い例](#script-no-use-computed-property-like-method-bad) · [良い例](#script-no-use-computed-property-like-method-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) | Options API の computed プロパティをメソッドとして呼ぶ箇所を検出します。 | Script |
-| [`script/no-with-defaults`](#script-no-with-defaults) | [悪い例](#script-no-with-defaults-bad) · [良い例](#script-no-with-defaults-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) | Vue 3.5 以降の props 分割代入の既定値を勧めます。 | Script |
+| [`script/no-with-defaults`](#script-no-with-defaults) | [悪い例](#script-no-with-defaults-bad) · [良い例](#script-no-with-defaults-good) | `warning` | `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) | Vue 3.5 以降の props 分割代入の既定値を勧めます。 | Script |
 | [`script/prefer-computed`](#script-prefer-computed) | [悪い例](#script-prefer-computed-bad) · [良い例](#script-prefer-computed-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) | 他の状態から導ける値を watcher で同期する代わりに computed で表現します。 | Script |
 | [`script/prefer-define-options`](#script-prefer-define-options) | [悪い例](#script-prefer-define-options-bad) · [良い例](#script-prefer-define-options-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) | name / inheritAttrs だけの通常 script を defineOptions() にまとめます。 | Script |
 | [`script/prefer-import-from-vue`](#script-prefer-import-from-vue) | [悪い例](#script-prefer-import-from-vue-bad) · [良い例](#script-prefer-import-from-vue-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) | 内部パッケージではなく vue から import します。 | Script |
@@ -15222,7 +15222,7 @@ Vue 3.5 以降の props 分割代入の既定値を勧めます。
 [悪い例](#script-no-with-defaults-bad) · [良い例](#script-no-with-defaults-good)
 
 既定の重大度: `warning`  
-プリセット: _none_  
+プリセット: `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。

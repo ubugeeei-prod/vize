@@ -9,7 +9,7 @@ Discourage withDefaults in favor of destructuring defaults (Vue 3.5+)
 [Bad](#bad) · [Good](#good)
 
 Default severity: `warning`  
-Presets: _none_  
+Presets: `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form  
 Options: No rule-specific options. Severity and preset selection are configurable.

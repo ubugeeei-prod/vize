@@ -3,19 +3,19 @@ import { computed } from "vue";
 import type { TokenCategory, DesignToken, TokenUsageMap } from "../../api";
 import TokenCard from "./TokenCard.vue";
 
-const props = withDefaults(
-  defineProps<{
-    category: TokenCategory;
-    level?: number;
-    parentPath?: string;
-    usageMap?: TokenUsageMap;
-    tokenMap?: Record<string, DesignToken>;
-  }>(),
-  {
-    usageMap: () => ({}),
-    tokenMap: () => ({}),
-  },
-);
+const {
+  category,
+  level,
+  parentPath,
+  usageMap = {},
+  tokenMap = {},
+} = defineProps<{
+  category: TokenCategory;
+  level?: number;
+  parentPath?: string;
+  usageMap?: TokenUsageMap;
+  tokenMap?: Record<string, DesignToken>;
+}>();
 
 const emit = defineEmits<{
   edit: [path: string, token: DesignToken];
@@ -23,14 +23,14 @@ const emit = defineEmits<{
   showUsage: [tokenPath: string];
 }>();
 
-const headingLevel = computed(() => Math.min(props.level ?? 2, 6));
+const headingLevel = computed(() => Math.min(level ?? 2, 6));
 const tokenEntries = computed(() =>
-  Object.entries(props.category.tokens).map(([name, token]) => ({ name, token })),
+  Object.entries(category.tokens).map(([name, token]) => ({ name, token })),
 );
 
 function getCategoryPath(): string {
-  const catKey = props.category.name.toLowerCase().replace(/\s+/g, "-");
-  return props.parentPath ? `${props.parentPath}.${catKey}` : catKey;
+  const catKey = category.name.toLowerCase().replace(/\s+/g, "-");
+  return parentPath ? `${parentPath}.${catKey}` : catKey;
 }
 
 function getTokenPath(name: string): string {
@@ -39,7 +39,7 @@ function getTokenPath(name: string): string {
 
 function getUsageCount(name: string): number {
   const tokenPath = getTokenPath(name);
-  const entries = props.usageMap[tokenPath];
+  const entries = usageMap[tokenPath];
   if (!entries) return 0;
   return entries.reduce((sum, entry) => sum + entry.matches.length, 0);
 }

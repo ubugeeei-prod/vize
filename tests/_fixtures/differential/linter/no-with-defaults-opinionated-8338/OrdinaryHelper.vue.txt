@@ -1,0 +1,13 @@
+<script setup lang="ts">
+// withDefaults(defineProps<{ count?: number }>(), { count: 0 });
+function withDefaults(value: string): string { return value; }
+const label = withDefaults("withDefaults(defineProps(), {})");
+</script>
+
+<template>
+  <span class="label">{{ label }}</span>
+</template>
+
+<style scoped>
+.label { color: inherit; }
+</style>

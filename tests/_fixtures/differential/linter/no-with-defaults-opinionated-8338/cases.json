@@ -1,0 +1,128 @@
+{
+  "schema": "vize.lint.no-with-defaults-opinionated",
+  "version": 1,
+  "issue": 8338,
+  "baseline": "f46c40071c78b191f382956a88aef1bef7380b16",
+  "sources": {
+    "Macro.vue.txt": {
+      "filename": "MacroCounter.vue",
+      "bytes": 235,
+      "sha256": "bc9ab7a80975f3cd1a6fe5e9f08497cc8a7039cfa710e9a145dc3e0b73b96d8c"
+    },
+    "Destructured.vue.txt": {
+      "filename": "DestructuredCounter.vue",
+      "bytes": 209,
+      "sha256": "8e4b04276e3abac7bfe6a2c3818f429bb15359e8638d1d8345e930a3d5ff576e"
+    },
+    "OrdinaryHelper.vue.txt": {
+      "filename": "OrdinaryHelper.vue",
+      "bytes": 344,
+      "sha256": "fd67a6339be972a728c4b670568ccc03531f3703b7ded1895fc3155025cb016a"
+    },
+    "helper.ts.txt": {
+      "filename": "helper.ts",
+      "bytes": 206,
+      "sha256": "cf2963f548eb4036eb8bff0e502aa329a1c0a2fc449dccc368391bf318f4a604"
+    }
+  },
+  "cases": [
+    {
+      "id": "macro-default",
+      "input": "Macro.vue.txt",
+      "spans": []
+    },
+    {
+      "id": "macro-happy-path",
+      "input": "Macro.vue.txt",
+      "preset": "happy-path",
+      "spans": []
+    },
+    {
+      "id": "macro-essential",
+      "input": "Macro.vue.txt",
+      "preset": "essential",
+      "spans": []
+    },
+    {
+      "id": "macro-incremental",
+      "input": "Macro.vue.txt",
+      "preset": "incremental",
+      "spans": []
+    },
+    {
+      "id": "macro-ecosystem",
+      "input": "Macro.vue.txt",
+      "preset": "ecosystem",
+      "spans": []
+    },
+    {
+      "id": "macro-nuxt",
+      "input": "Macro.vue.txt",
+      "preset": "nuxt",
+      "spans": []
+    },
+    {
+      "id": "macro-opinionated",
+      "input": "Macro.vue.txt",
+      "preset": "opinionated",
+      "spans": [
+        [
+          39,
+          51
+        ]
+      ]
+    },
+    {
+      "id": "macro-strict",
+      "input": "Macro.vue.txt",
+      "preset": "strict",
+      "spans": [
+        [
+          39,
+          51
+        ]
+      ]
+    },
+    {
+      "id": "macro-all",
+      "input": "Macro.vue.txt",
+      "preset": "all",
+      "spans": [
+        [
+          39,
+          51
+        ]
+      ]
+    },
+    {
+      "id": "macro-opinionated-warning-gate",
+      "input": "Macro.vue.txt",
+      "preset": "opinionated",
+      "maxWarnings": 0,
+      "spans": [
+        [
+          39,
+          51
+        ]
+      ]
+    },
+    {
+      "id": "accepted-Destructured.vue.txt",
+      "input": "Destructured.vue.txt",
+      "preset": "opinionated",
+      "spans": []
+    },
+    {
+      "id": "accepted-OrdinaryHelper.vue.txt",
+      "input": "OrdinaryHelper.vue.txt",
+      "preset": "opinionated",
+      "spans": []
+    },
+    {
+      "id": "accepted-helper.ts.txt",
+      "input": "helper.ts.txt",
+      "preset": "opinionated",
+      "spans": []
+    }
+  ]
+}
