@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { retirementAbsenceLaw } from "../support/release-retirement-absence-fixtures.ts";
 import {
   derivePublicationPlan,
   readRawBlob,
@@ -25,6 +26,7 @@ import {
   fixtureUrl,
 } from "../support/release-public-acceptance-fixtures.ts";
 
+test("retirement refuses incomplete or ambiguous public absence", retirementAbsenceLaw);
 test("raw H plan derives fixture counts and retained authority, ignoring dirty working files", (t) => {
   const s = sourceFixture(t);
   const manifestPath = "npm/mcp-musea/package.json";

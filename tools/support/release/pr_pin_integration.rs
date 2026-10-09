@@ -113,7 +113,7 @@ pub(super) fn integration_pr(
             return Err("Another version owns main; no new integration is allowed.".into());
         }
         pr_budget::check(budget)?;
-        pr_start::prepare(bump, &path)?;
+        super::retire::prepare(bump, &candidate.tag, budget, &path)?;
         pr_budget::check(budget)?;
         let head = github::git(&["rev-parse", "HEAD"], &path)?;
         metadata::verify_delta(

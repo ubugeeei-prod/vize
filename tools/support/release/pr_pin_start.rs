@@ -62,7 +62,14 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
     let result = (|| {
         let base_version = github::version(&work)?;
         pr_budget::check(budget.as_ref())?;
-        pr_start::prepare(bump, &work)?;
+        if bump == "minor" {
+            let target =
+                super::retire::next_minor(&repository, &base_version, budget.as_ref(), &work)?;
+            pr_budget::check(budget.as_ref())?;
+            super::retire::prepare(bump, &format!("v{target}"), budget.as_ref(), &work)?;
+        } else {
+            pr_start::prepare(bump, &work)?;
+        }
         let head = github::git(&["rev-parse", "HEAD"], &work)?;
         let tag = format!("v{}", github::version(&work)?);
         supports_pin(&head, &work)?;
@@ -141,6 +148,7 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
         .strip_prefix("release/")
         .ok_or("Not a release source PR")?
         .to_string();
+    super::retire::reject_resume(&tag, root)?;
     super::dispatch::version_owner(&repository, &tag, root)?;
     github::git(&["fetch", "--no-tags", "origin", &head], root)?;
     // Old workflow bytecode cannot acquire new promotion semantics through a
