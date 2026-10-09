@@ -3,6 +3,8 @@ use super::{Repo, github};
 use serde_json::{Value, json};
 #[path = "pr_pin_retire_absence_fixtures.rs"]
 mod absence;
+#[path = "pr_pin_retire_attempt_fixtures.rs"]
+mod attempts;
 #[path = "pr_pin_retire_guard_fixtures.rs"]
 mod guards;
 pub(super) fn guard_controls(
@@ -11,6 +13,7 @@ pub(super) fn guard_controls(
     repo: &Repo,
 ) {
     guards::guard_controls(receipt, logs, repo);
+    attempts::controls(receipt, logs, repo);
 }
 
 const WORKFLOW: &str = "jobs:\n  release-npm-law:\n    name: Release law to npm\n  create-github-release:\n    name: Create GitHub Release\n";
@@ -22,7 +25,7 @@ fn run(id: u64, sha: &str, branch: &str, workflow: &str, title: &str) -> Value {
         "actor":{"login":"maintainer"},"triggering_actor":{"login":"maintainer"}})
 }
 fn job(id: u64, run: &Value, name: &str, status: &str, conclusion: Value) -> Value {
-    json!({"id":id,"run_id":run["id"],"run_attempt":1,"head_sha":run["head_sha"],
+    json!({"id":id,"run_id":run["id"],"run_attempt":run["run_attempt"],"head_sha":run["head_sha"],
         "name":name,"status":status,"conclusion":conclusion,"steps":[]})
 }
 fn observation(run: &Value, jobs: Vec<Value>, artifacts: Vec<Value>) -> Value {
@@ -136,16 +139,25 @@ pub(super) fn fixture(repo: &Repo) -> (Value, String, String, String) {
             json!("skipped"),
         ),
     ];
+    let operator_jobs = vec![job(
+        127,
+        &operator,
+        "Original operator",
+        "completed",
+        json!("cancelled"),
+    )];
     let receipt = json!({"schema":"vize-unpublished-retirement-v1","identity":identity,
     "guards":{"identity":identity,"sourcePr":source_pr,"integrationPr":integration_pr,"releaseRun":release,"operatorRun":operator,
         "publicationJobs":jobs,"mainAtGuard":cut,"tagAbsent":true,"githubReleaseAbsent":true,
+        "originalFailureJobPages":{"release":[{"total_count":jobs.len(),"jobs":jobs}],
+            "operator":[{"total_count":operator_jobs.len(),"jobs":operator_jobs}]},
         "githubReleaseInventory":{"publishedTagLookup":"authenticated typed HTTP 404","pages":[[]]},
         "operatorInventory":{"pages":[{"total_count":1,"workflow_runs":[operator]}],"currentOperatorContext":null}},
     "originalEvidence":{"HRunPages":[{"total_count":2,"workflow_runs":[release,pending]}],
         "observations":[
             observation(&release,jobs,vec![artifact]),
             observation(&pending,vec![job(126,&pending,"Pending Check","in_progress",Value::Null)],vec![]),
-            observation(&operator,vec![job(127,&operator,"Original operator","completed",json!("cancelled"))],vec![])
+            observation(&operator,operator_jobs,vec![])
         ]}});
     let mut receipt = receipt;
     receipt["registryAbsence"] = absence::fixture(repo, &head, &cut);

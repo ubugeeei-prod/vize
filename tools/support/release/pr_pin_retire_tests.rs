@@ -121,8 +121,8 @@ fn retirement_requires_original_terminal_failure_and_source_bound_unstarted_publ
     );
     let workflow = "jobs:\n  release-npm-law:\n    name: Release law to npm\n  create-github-release:\n    name: Create GitHub Release\n";
     let jobs = vec![
-        json!({"name":"Release law to npm","status":"completed","conclusion":"cancelled","steps":[]}),
-        json!({"name":"Create GitHub Release","status":"completed","conclusion":"skipped","steps":[]}),
+        json!({"name":"Release law to npm","run_attempt":1,"status":"completed","conclusion":"cancelled","steps":[]}),
+        json!({"name":"Create GitHub Release","run_attempt":1,"status":"completed","conclusion":"skipped","steps":[]}),
     ];
     assert!(evidence::publication_jobs(&jobs, workflow).is_ok());
     for (pointer, value) in [
@@ -130,6 +130,7 @@ fn retirement_requires_original_terminal_failure_and_source_bound_unstarted_publ
         ("/conclusion", json!("success")),
         ("/steps", json!([{"conclusion":"cancelled"}])),
         ("/name", json!("foreign")),
+        ("/run_attempt", json!(0)),
     ] {
         let mut mutated = jobs.clone();
         *mutated[0].pointer_mut(pointer).unwrap() = value;

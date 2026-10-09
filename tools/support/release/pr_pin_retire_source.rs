@@ -123,6 +123,50 @@ fn operators(guards: &Value, source: &Source, identity: &Value) -> Result<(), St
     Ok(())
 }
 
+fn failure_jobs(receipt: &Value, workflow: &str) -> Result<(), String> {
+    let guards = &receipt["guards"];
+    let observations = receipt["originalEvidence"]["observations"]
+        .as_array()
+        .ok_or("Missing original run observations")?;
+    let mut inventories = Vec::new();
+    for (key, run) in [
+        ("release", &guards["releaseRun"]),
+        ("operator", &guards["operatorRun"]),
+    ] {
+        own(run, text(&receipt["identity"], "/repository")?)?;
+        let jobs = inventory(&guards["originalFailureJobPages"][key], "jobs")?;
+        let id = positive(run, "/id")?;
+        let mut matching = observations
+            .iter()
+            .filter(|row| row["run"]["id"].as_u64() == Some(id));
+        let observation = matching.next().ok_or("Missing original run observation")?;
+        if matching.next().is_some() || observation["run"] != *run {
+            return Err("Original guard/observation run identity differs".into());
+        }
+        let actual = inventory(&observation["jobPages"], "jobs")?;
+        if jobs.len() != actual.len() || jobs.iter().any(|row| !actual.contains(row)) {
+            return Err("Original failure guard jobs differ from complete run evidence".into());
+        }
+        inventories.push(jobs.into_iter().cloned().collect::<Vec<_>>());
+    }
+    let publication = guards["publicationJobs"]
+        .as_array()
+        .ok_or("Missing original guard publication jobs")?;
+    if publication.len() != inventories[0].len()
+        || publication.iter().any(|row| !inventories[0].contains(row))
+        || inventories[0].iter().any(|row| !publication.contains(row))
+    {
+        return Err("Guard publication jobs differ from all-attempt R inventory".into());
+    }
+    evidence::original_failure_jobs(
+        &guards["releaseRun"],
+        &inventories[0],
+        &guards["operatorRun"],
+        &inventories[1],
+    )?;
+    evidence::publication_jobs(publication, workflow)
+}
+
 pub(super) fn validate(receipt: &Value, root: &Path) -> Result<Source, String> {
     guard::no_replacements(root)?;
     let identity = archive::identity(receipt)?;
@@ -235,27 +279,7 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<Source, String> {
     {
         return Err("Original operator title does not match its raw C workflow".into());
     }
-    let jobs = guards["publicationJobs"]
-        .as_array()
-        .ok_or("Missing original guard publication jobs")?;
-    evidence::publication_jobs(jobs, &ledger::workflow(head, root)?)?;
-    let observation = receipt["originalEvidence"]["observations"]
-        .as_array()
-        .and_then(|rows| {
-            rows.iter()
-                .find(|row| row["run"]["id"].as_u64() == Some(release))
-        })
-        .ok_or("Missing original R observation")?;
-    let actual_jobs = inventory(&observation["jobPages"], "jobs")?;
-    let mut job_ids = BTreeSet::new();
-    if jobs.iter().any(|row| {
-        row["id"]
-            .as_u64()
-            .is_none_or(|id| id == 0 || !job_ids.insert(id))
-            || !actual_jobs.contains(&row)
-    }) {
-        return Err("Original guard jobs differ from complete R evidence".into());
-    }
+    failure_jobs(receipt, &ledger::workflow(head, root)?)?;
     operators(guards, &source, identity)?;
     releases(guards, repository, tag)?;
     super::retire_absence::validate(receipt)?;

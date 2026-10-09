@@ -261,7 +261,21 @@ pub(super) fn capture(
     )?;
     evidence::original_operator(&entry, &source, request.operator)?;
     pr_budget::check(budget)?;
-    let jobs = github::jobs(repository, request.run, root)?;
+    let (release_pages, jobs) = evidence::inventory(
+        repository,
+        &format!("actions/runs/{}/jobs?filter=all", request.run),
+        "jobs",
+        budget,
+        root,
+    )?;
+    let (operator_pages, operator_jobs) = evidence::inventory(
+        repository,
+        &format!("actions/runs/{}/jobs?filter=all", request.operator),
+        "jobs",
+        budget,
+        root,
+    )?;
+    evidence::original_failure_jobs(&run, &jobs, &entry, &operator_jobs)?;
     evidence::publication_jobs(
         &jobs,
         &metadata::text(
@@ -274,6 +288,6 @@ pub(super) fn capture(
     let identity = json!({"repository":repository,"tag":request.tag,"sourcePr":request.source,"head":request.head,"cut":source.cut,"baseVersion":source.base_version,"pin":pin,"integrationPr":source.integration,"integrationHead":integration_head,"releaseRun":request.run,"releaseAttempt":run["run_attempt"],"operatorRun":request.operator,"operatorAttempt":entry["run_attempt"]});
     Ok((
         source,
-        json!({"identity":identity,"sourcePr":source_pr,"integrationPr":integration,"releaseRun":run,"operatorRun":entry,"publicationJobs":jobs,"operatorInventory":operators,"mainAtGuard":main,"tagAbsent":true,"githubReleaseAbsent":true,"githubReleaseInventory":releases}),
+        json!({"identity":identity,"sourcePr":source_pr,"integrationPr":integration,"releaseRun":run,"operatorRun":entry,"publicationJobs":jobs,"originalFailureJobPages":{"release":release_pages,"operator":operator_pages},"operatorInventory":operators,"mainAtGuard":main,"tagAbsent":true,"githubReleaseAbsent":true,"githubReleaseInventory":releases}),
     ))
 }

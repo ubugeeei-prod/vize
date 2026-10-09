@@ -102,7 +102,7 @@ pub(super) fn own(run: &Value, repository: &str) -> Result<(), String> {
     state(run)?;
     Ok(())
 }
-fn job(job: &Value, run: &Value) -> Result<(), String> {
+pub(super) fn job(job: &Value, run: &Value) -> Result<(), String> {
     if positive(job, "/run_id")? != positive(run, "/id")?
         || text(job, "/head_sha")? != text(run, "/head_sha")?
         || positive(job, "/run_attempt")? > positive(run, "/run_attempt")?
@@ -118,6 +118,33 @@ fn job(job: &Value, run: &Value) -> Result<(), String> {
     }
     if !job["steps"].is_array() {
         return Err("Retirement job steps missing".into());
+    }
+    Ok(())
+}
+pub(super) fn original_failure_jobs(
+    release: &Value,
+    release_jobs: &[Value],
+    operator: &Value,
+    operator_jobs: &[Value],
+) -> Result<(), String> {
+    evidence::terminal_failed(release)?;
+    evidence::terminal_failed(operator)?;
+    if positive(release, "/id")? == positive(operator, "/id")? {
+        return Err("Original failure runs must differ".into());
+    }
+    let mut ids = BTreeSet::new();
+    let mut failed = false;
+    for (run, jobs) in [(release, release_jobs), (operator, operator_jobs)] {
+        for row in jobs {
+            job(row, run)?;
+            if !ids.insert(positive(row, "/id")?) {
+                return Err("Original failure job IDs collide".into());
+            }
+            failed |= matches!(row["conclusion"].as_str(), Some("failure" | "timed_out"));
+        }
+    }
+    if !failed {
+        return Err("Original R/operator actual failed or timed-out job required".into());
     }
     Ok(())
 }
@@ -253,7 +280,6 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<(), String> {
     let mut jobs_seen = BTreeSet::new();
     let mut artifacts_seen = BTreeSet::new();
     let mut failures = BTreeSet::new();
-    let mut original_failure = false;
     for observation in observations {
         let run = &observation["run"];
         let id = positive(run, "/id")?;
@@ -295,7 +321,6 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<(), String> {
             }
             if matches!(row["conclusion"].as_str(), Some("failure" | "timed_out")) {
                 failures.insert(format!("failure/{job_id}.log"));
-                original_failure |= id == release || id == operator;
             }
         }
         if id == release {
@@ -311,11 +336,8 @@ pub(super) fn validate(receipt: &Value, root: &Path) -> Result<(), String> {
             }
         }
     }
-    if !seen.contains(&operator)
-        || !expected.keys().all(|id| seen.contains(id))
-        || !original_failure
-    {
-        return Err("Original terminal failure with actual failed-job evidence required".into());
+    if !seen.contains(&operator) || !expected.keys().all(|id| seen.contains(id)) {
+        return Err("Original complete H/operator observations required".into());
     }
     failure_objects(receipt, &failures, root)
 }

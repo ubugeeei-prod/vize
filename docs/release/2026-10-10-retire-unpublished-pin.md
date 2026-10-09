@@ -21,6 +21,11 @@ vp run release --retire <source-PR> --head <H> --tag <tag> --run <R> --operator-
 
 The original publication R and operator entry must be terminal failed/cancelled. Allow the original
 operator to return and release its own exact lease; an active or ambiguous lease is never stolen.
+At least one completed failed/timed-out job in the original R or operator is required, with its
+complete failure log. A wholly cancelled/skipped cut without that evidence is refused before
+retirement acquires a lease. Publication phases are checked across every original attempt; every
+phase must be cancelled/skipped with zero steps. Retries retain all earlier evidence and cannot
+hide an earlier publication attempt.
 The unchanged source must remain a maintainer-authored, unmerged draft with its exact C/H/body/pin.
 The original integration must retain its source markers and version-only bytes, remain unmerged,
 and have neither a queue entry nor auto-merge. Main may advance ordinary source changes while its

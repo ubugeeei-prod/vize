@@ -22,6 +22,15 @@ pub(super) fn terminal_failed(run: &Value) -> Result<(), String> {
     Ok(())
 }
 
+pub(super) fn original_failure_jobs(
+    release: &Value,
+    release_jobs: &[Value],
+    operator: &Value,
+    operator_jobs: &[Value],
+) -> Result<(), String> {
+    super::retire_ledger::original_failure_jobs(release, release_jobs, operator, operator_jobs)
+}
+
 pub(super) fn original_operator(run: &Value, source: &Source, id: u64) -> Result<(), String> {
     terminal_failed(run)?;
     if run["id"].as_u64() != Some(id)
@@ -189,19 +198,26 @@ pub(super) fn publication_jobs(jobs: &[Value], workflow: &str) -> Result<(), Str
             .iter()
             .filter(|job| job["name"].as_str() == Some(name))
             .collect();
-        if publication.len() != 1 {
+        if publication.is_empty() {
             return Err("Original run publication-phase inventory is incomplete/ambiguous".into());
         }
-        let job = publication[0];
-        if job["status"] != "completed"
-            || !matches!(job["conclusion"].as_str(), Some("cancelled" | "skipped"))
-            || job["steps"]
-                .as_array()
-                .is_none_or(|steps| !steps.is_empty())
-        {
-            return Err(
-                "An original publication-phase job started or has ambiguous evidence".into(),
-            );
+        let mut attempts = std::collections::BTreeSet::new();
+        for job in publication {
+            let attempt = job["run_attempt"]
+                .as_u64()
+                .filter(|n| *n > 0)
+                .ok_or("Original publication attempt missing")?;
+            if !attempts.insert(attempt)
+                || job["status"] != "completed"
+                || !matches!(job["conclusion"].as_str(), Some("cancelled" | "skipped"))
+                || job["steps"]
+                    .as_array()
+                    .is_none_or(|steps| !steps.is_empty())
+            {
+                return Err(
+                    "An original publication attempt started or has ambiguous evidence".into(),
+                );
+            }
         }
     }
     Ok(())
@@ -266,9 +282,7 @@ pub(super) fn collect(
             )?;
         }
         for job in &jobs {
-            if job["run_id"].as_u64() != Some(id) {
-                return Err("Diagnostic job/run identity differs".into());
-            }
+            super::retire_ledger::job(job, &run)?;
             if job["conclusion"] == "failure" || job["conclusion"] == "timed_out" {
                 let job_id = job["id"].as_u64().ok_or("Missing failure job ID")?;
                 pr_budget::check(budget)?;
