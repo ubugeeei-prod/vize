@@ -20,6 +20,7 @@ import {
 import { compareCliFixes } from "./support/lsp/bind-style/cli.ts";
 import { prepareProviders } from "./support/lsp/bind-style/provider.ts";
 import { closePublication } from "./support/lsp/bind-style/close.ts";
+import { createCaptureOutput } from "./support/lsp/bind-style/capture-output.ts";
 
 const fixture = path.join(root, "tests/_fixtures/differential/lsp/bind-style-code-actions");
 const observer = fileURLToPath(new URL("./support/lsp/bind-style/observe.mjs", import.meta.url));
@@ -58,10 +59,7 @@ await test("whole original bind-style diagnostics have configured fixes and supp
     authority = JSON.parse(fs.readFileSync(`${binary}.differential-build.json`, "utf8"));
     validateBuildReceipt(authority, build);
   }
-  const output =
-    process.env.VIZE_BIND_STYLE_OUTPUT ??
-    path.join(root, "target/differential/lsp-bind-style-code-actions");
-  fs.mkdirSync(output, { recursive: true });
+  const output = createCaptureOutput(root, process.env.VIZE_BIND_STYLE_OUTPUT);
   const workspace = fs.realpathSync(fs.mkdtempSync(path.join(output, "original-project-")));
   for (const name of ["vize.config.json", "tsconfig.json"])
     fs.copyFileSync(path.join(fixture, name), path.join(workspace, name));
