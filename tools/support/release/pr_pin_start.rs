@@ -1,11 +1,22 @@
 use super::super::{
+    pr_budget,
     pr_contract::{self, Candidate},
     pr_github as github, pr_start,
 };
 use super::integration::{integration_pr, open_pr};
-use super::{Source, delivery, marker, metadata, run_identity, source, watch};
+use super::{Source, marker, metadata, source, watch};
 use serde_json::Value;
-use std::{fs, path::Path};
+use std::{env, fs, path::Path};
+
+pub(super) fn expected_cut(expected: Option<&str>, cut: &str) -> Result<(), String> {
+    if let Some(expected) = expected {
+        pr_contract::sha(expected)?;
+        if cut != expected {
+            return Err("The expected release cut differs from current main; redispatch from current main before preparation or source mutation.".into());
+        }
+    }
+    Ok(())
+}
 
 fn authorize(root: &Path) -> Result<String, String> {
     let repository = github::repository(root)?;
@@ -35,20 +46,29 @@ fn supports_pin(head: &str, root: &Path) -> Result<(), String> {
 }
 
 pub fn start(bump: &str, root: &Path) -> Result<(), String> {
+    let budget = pr_budget::configured()?;
     if !["patch", "minor", "major", "alpha", "beta", "rc", "release"].contains(&bump) {
         return Err("Unknown release bump".into());
     }
     let repository = authorize(root)?;
     let cut = github::fetch_main(root)?;
-    let work = pr_start::worktree(&cut, root)?;
+    let expected = match env::var("VIZE_RELEASE_EXPECTED_CUT_SHA") {
+        Ok(value) => Some(value),
+        Err(env::VarError::NotPresent) => None,
+        Err(_) => return Err("VIZE_RELEASE_EXPECTED_CUT_SHA is not valid Unicode.".into()),
+    };
+    expected_cut(expected.as_deref(), &cut)?;
+    let work = pr_start::pinned_worktree(&cut, root)?;
     let result = (|| {
         let base_version = github::version(&work)?;
+        pr_budget::check(budget.as_ref())?;
         pr_start::prepare(bump, &work)?;
         let head = github::git(&["rev-parse", "HEAD"], &work)?;
         let tag = format!("v{}", github::version(&work)?);
         supports_pin(&head, &work)?;
         let branch = format!("release/{tag}");
         super::dispatch::version_owner(&repository, &tag, &work)?;
+        pr_budget::check(budget.as_ref())?;
         let operator = super::lock::acquire(&tag, &head, &work)?;
         if !github::git(
             &[
@@ -63,6 +83,7 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
         {
             return Err("Release branch already exists; resume its PR with --pin.".into());
         }
+        pr_budget::check(budget.as_ref())?;
         github::git(
             &["push", "origin", &format!("HEAD:refs/heads/{branch}")],
             &work,
@@ -92,15 +113,26 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
             integration: 0,
             closed: false,
         };
-        source.integration = integration_pr(&source, bump, &work)?;
+        source.integration = integration_pr(&source, bump, budget.as_ref(), &work)?;
+        pr_budget::check(budget.as_ref())?;
         super::lock::install_pin(&source, &operator, &work)?;
         set_body(&source, bump, &work)?;
-        watch(&repository, number, &head, &tag, false, &operator, &work)
+        watch(
+            &repository,
+            number,
+            &head,
+            &tag,
+            false,
+            &operator,
+            budget.as_ref(),
+            &work,
+        )
     })();
     pr_start::finish(result, &work, root)
 }
 
 pub fn resume(number: u64, root: &Path) -> Result<(), String> {
+    let budget = pr_budget::configured()?;
     let repository = authorize(root)?;
     let pr = github::api(&repository, &format!("pulls/{number}"), root)?;
     let head = pr_contract::field(&pr, "/head/sha")?.to_string();
@@ -114,7 +146,7 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
     // Old workflow bytecode cannot acquire new promotion semantics through a
     // CLI flag. A cut must already contain the reviewed opt-in implementation.
     supports_pin(&head, root)?;
-    let work = pr_start::worktree(&head, root)?;
+    let work = pr_start::pinned_worktree(&head, root)?;
     let result = (|| {
         let body = pr.get("body").and_then(Value::as_str).unwrap_or("");
         let complete = body
@@ -126,6 +158,7 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
         } else {
             authenticate_partial(&pr, &repository, &head, &tag, &work)?;
         }
+        pr_budget::check(budget.as_ref())?;
         let operator = super::lock::acquire(&tag, &head, &work)?;
         if !complete {
             if github::tag_target(&tag, &work)?.is_some() {
@@ -159,11 +192,21 @@ pub fn resume(number: u64, root: &Path) -> Result<(), String> {
                 integration: 0,
                 closed: false,
             };
-            source.integration = integration_pr(&source, &bump, &work)?;
+            source.integration = integration_pr(&source, &bump, budget.as_ref(), &work)?;
+            pr_budget::check(budget.as_ref())?;
             super::lock::install_pin(&source, &operator, &work)?;
             set_body(&source, &bump, &work)?;
         }
-        watch(&repository, number, &head, &tag, true, &operator, &work)
+        watch(
+            &repository,
+            number,
+            &head,
+            &tag,
+            true,
+            &operator,
+            budget.as_ref(),
+            &work,
+        )
     })();
     pr_start::finish(result, &work, root)
 }
@@ -255,72 +298,4 @@ fn set_body(source: &Source, bump: &str, root: &Path) -> Result<(), String> {
     );
     let _ = fs::remove_file(path);
     result.map(|_| ())
-}
-
-pub(super) fn find_or_dispatch(source: &Source, root: &Path) -> Result<u64, String> {
-    let candidate = &source.candidate;
-    if github::tag_target(&candidate.tag, root)?.is_some() {
-        let (id, _) = delivery::tag_receipt(source, root)?;
-        delivery::published_identity(source, id, root)?;
-        return Ok(id);
-    }
-    if source.closed {
-        return Err("A closed source receipt cannot dispatch publication.".into());
-    }
-    let find = || -> Result<Option<u64>, String> {
-        let response = github::api(
-            &candidate.repository,
-            &format!(
-                "actions/workflows/release.yml/runs?event=workflow_dispatch&head_sha={}&per_page=100",
-                candidate.head
-            ),
-            root,
-        )?;
-        let runs = response
-            .get("workflow_runs")
-            .and_then(Value::as_array)
-            .ok_or("Missing pinned release runs")?;
-        Ok(runs
-            .iter()
-            .filter_map(|run| {
-                run.get("id")
-                    .and_then(Value::as_u64)
-                    .filter(|id| run_identity(run, source, *id).is_ok())
-            })
-            .max())
-    };
-    if let Some(id) = find()? {
-        return Ok(id);
-    }
-    github::output(
-        "gh",
-        &[
-            "workflow",
-            "run",
-            "release.yml",
-            "--repo",
-            &candidate.repository,
-            "--ref",
-            &candidate.branch,
-            "--field",
-            &format!("tag_name={}", candidate.tag),
-            "--field",
-            &format!("release_pr={}", candidate.number),
-            "--field",
-            &format!("expected_sha={}", candidate.head),
-            "--field",
-            "pinned=true",
-        ],
-        root,
-    )?;
-    for _ in 0..30 {
-        std::thread::sleep(std::time::Duration::from_secs(2));
-        if let Some(id) = find()? {
-            return Ok(id);
-        }
-    }
-    Err(
-        "No identifiable pinned R appeared; preserve H and inspect dispatch before retrying."
-            .into(),
-    )
 }

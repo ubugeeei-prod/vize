@@ -20,8 +20,27 @@ pub fn start(bump: &str, root: &Path) -> Result<(), String> {
 }
 
 pub(super) fn worktree(revision: &str, root: &Path) -> Result<PathBuf, String> {
+    worktree_with_graph(revision, root, true, "vize-release")
+}
+
+pub(super) fn pinned_worktree(revision: &str, root: &Path) -> Result<PathBuf, String> {
+    // Installed providers have no durable source receipt. Qualify the exact
+    // requested frozen graph instead of borrowing root's node_modules.
+    worktree_with_graph(revision, root, false, "vize-release")
+}
+
+pub(super) fn pinned_integration_worktree(revision: &str, root: &Path) -> Result<PathBuf, String> {
+    worktree_with_graph(revision, root, false, "vize-release-integration")
+}
+
+fn worktree_with_graph(
+    revision: &str,
+    root: &Path,
+    reuse: bool,
+    prefix: &str,
+) -> Result<PathBuf, String> {
     let path = env::temp_dir().join(format!(
-        "vize-release-{}-{}",
+        "{prefix}-{}-{}",
         process::id(),
         revision.get(..12).unwrap_or("resume")
     ));
@@ -35,7 +54,7 @@ pub(super) fn worktree(revision: &str, root: &Path) -> Result<PathBuf, String> {
         ],
         root,
     )?;
-    if root.join("node_modules").is_dir() {
+    if reuse && root.join("node_modules").is_dir() {
         // The preparation checks read the workspace's installed JS tools.
         // Build and publication still run in clean Actions checkouts.
         #[cfg(unix)]

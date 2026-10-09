@@ -6,7 +6,10 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: protected-check-suites-v6.
+//! Driver source pin: hosted-operator-budget-v7.
+
+#[path = "../../support/release/pr_budget.rs"]
+mod pr_budget;
 
 #[path = "../../support/release/pr_checks.rs"]
 mod pr_checks;

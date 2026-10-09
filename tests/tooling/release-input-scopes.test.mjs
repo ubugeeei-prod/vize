@@ -15,8 +15,8 @@ const selected = (path) =>
   planToolingTests([path]).tests.filter((file) => file.startsWith("tests/tooling/release/"));
 
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
-  assert.equal(releaseFiles.length, 32);
-  assert.equal(scoped.length, 27);
+  assert.equal(releaseFiles.length, 33);
+  assert.equal(scoped.length, 28);
   assert.deepEqual(unscoped, [
     "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/release/release-integration-catalog.test.ts",
@@ -38,6 +38,20 @@ void test("Matrix attempt selectors select the new audited evidence contract", (
     "tools/support/release/preflight_matrix_selection.rs",
     "tools/support/compat/github/release-preflight-matrix-selection.mjs",
     "tests/tooling/support/release-matrix-attempt-fixture.ts",
+  ]) {
+    assert.ok(selected(input).includes(contract), input);
+  }
+});
+
+void test("hosted operator source and authority inputs select its audited contract", () => {
+  const contract = "tests/tooling/release/release-operator.test.ts";
+  assert.ok(scoped.includes(contract));
+  for (const input of [
+    ".github/workflows/release-operator.yml",
+    "tools/commands/release/pr.rs",
+    "tools/support/release/pr_start.rs",
+    "tools/support/release/pr_pin_watch.rs",
+    "tests/tooling/support/fake-command.ts",
   ]) {
     assert.ok(selected(input).includes(contract), input);
   }

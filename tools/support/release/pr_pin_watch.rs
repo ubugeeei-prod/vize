@@ -1,11 +1,10 @@
-use super::super::{pr_contract, pr_github as github, pr_promote};
-use super::{delivery, dispatch, lock, run_identity, source, start};
-use serde_json::Value;
-use std::{
-    path::Path,
-    thread::sleep,
-    time::{Duration, Instant},
+use super::super::{
+    pr_budget::{self, Budget},
+    pr_contract, pr_github as github, pr_promote,
 };
+use super::{delivery, dispatch, lock, run_identity, runs, source};
+use serde_json::Value;
+use std::{path::Path, time::Duration};
 
 pub(super) fn watch(
     repository: &str,
@@ -14,13 +13,15 @@ pub(super) fn watch(
     tag: &str,
     resume: bool,
     operator: &lock::Operator,
+    budget: Option<&Budget>,
     root: &Path,
 ) -> Result<(), String> {
+    pr_budget::check(budget)?;
     let initial = source(repository, number, head, tag, true, root)?;
     if github::tag_target(tag, root)?.is_none() {
         dispatch::retire_legacy(&initial, operator, root)?;
     }
-    let id = start::find_or_dispatch(&initial, root)?;
+    let id = runs::find_or_dispatch(&initial, budget, root)?;
     let initial_run = github::api(repository, &format!("actions/runs/{id}"), root)?;
     run_identity(&initial_run, &initial, id)?;
     // Only an explicit resume of an already failed immutable R retries it.
@@ -30,6 +31,7 @@ pub(super) fn watch(
         && initial_run.get("status").and_then(Value::as_str) == Some("completed")
         && initial_run.get("conclusion").and_then(Value::as_str) != Some("success")
     {
+        pr_budget::check(budget)?;
         operator.verify()?;
         github::output(
             "gh",
@@ -43,10 +45,16 @@ pub(super) fn watch(
             ],
             root,
         )?;
-        sleep(Duration::from_secs(10));
+        if let Some(budget) = budget {
+            budget.sleep(Duration::from_secs(10))?;
+        } else {
+            std::thread::sleep(Duration::from_secs(10));
+        }
     }
-    let started = Instant::now();
+    let default = Budget::new(Duration::from_secs(28_800));
+    let budget = budget.unwrap_or(&default);
     loop {
+        budget.check()?;
         operator.verify()?;
         let source = source(repository, number, head, tag, true, root)?;
         let run = github::api(repository, &format!("actions/runs/{id}"), root)?;
@@ -83,17 +91,13 @@ pub(super) fn watch(
             && pr_promote::checks_pass(&source.candidate, root)?
         {
             if let Some(receipt) = delivery::integration(&source, None, root)? {
-                delivery::promote(&source, id, &receipt, operator, root)?;
+                budget.check()?;
+                delivery::promote(&source, id, &receipt, operator, budget, root)?;
             }
-        }
-        if started.elapsed() > Duration::from_secs(28_800) {
-            return Err(format!(
-                "Pinned release remains running; resume with vp run release --resume {number} --pin"
-            ));
         }
         println!(
             "Pinned source PR #{number}, H={head}, R={id}: qualification/publication continues. Root may admit integration only after all required H checks, five full H gates, every build, and full preflight are terminal green."
         );
-        sleep(Duration::from_secs(20));
+        budget.sleep(Duration::from_secs(20))?;
     }
 }

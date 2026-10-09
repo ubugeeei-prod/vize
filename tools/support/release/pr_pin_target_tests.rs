@@ -110,7 +110,7 @@ fn normal_cached_driver_module_changes_require_new_entry_source_pin() {
         .lines()
         .find(|line| line.starts_with("//! Driver source pin:"))
         .unwrap();
-    assert_eq!(pin, "//! Driver source pin: protected-check-suites-v6.");
+    assert_eq!(pin, "//! Driver source pin: hosted-operator-budget-v7.");
     let repo = Repo::new();
     let body = "#[path = \"dependency.rs\"] mod dependency;\nfn main() { println!(\"{}\", dependency::catalog_contract()); }\n";
     let original = format!("//! Driver source pin: original-catalog.\n{body}");

@@ -1,4 +1,4 @@
-use super::super::{pr_contract, pr_github as github, pr_promote};
+use super::super::{pr_budget::Budget, pr_contract, pr_github as github, pr_promote};
 use super::{Source, first_parent, marker, metadata, run_identity};
 use serde_json::Value;
 use std::path::Path;
@@ -189,6 +189,7 @@ pub(super) fn promote(
     id: u64,
     receipt: &Receipt,
     operator: &super::lock::Operator,
+    budget: &Budget,
     root: &Path,
 ) -> Result<(), String> {
     github::clean(root)?;
@@ -224,10 +225,12 @@ pub(super) fn promote(
     }
     let tag_ref = format!("refs/tags/{}", fresh.candidate.tag);
     operator.verify()?;
+    budget.check()?;
     tags::ensure_local_tag(&fresh, id, &actual, root)?;
     // Only the new tag is written. No main ref appears in this transaction.
     // A race/network ambiguity is resolved by authenticating the complete
     // receipt, never by replacing/deleting a remote immutable tag.
+    budget.check()?;
     if let Err(error) = push_tag(root, &tag_ref) {
         if github::tag_target(&fresh.candidate.tag, root)?.is_none() {
             return Err(error);
