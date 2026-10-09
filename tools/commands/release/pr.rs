@@ -6,7 +6,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: unpublished-retirement-v10.
+//! Driver source pin: unpublished-retirement-v11.
 
 #[path = "../../support/release/pr_budget.rs"]
 mod pr_budget;

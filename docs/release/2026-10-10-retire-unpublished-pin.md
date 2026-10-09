@@ -57,6 +57,15 @@ escaped body. This corrects the pre-lease refusal in
 [operator 37986834551](https://github.com/ubugeeei-prod/vize/actions/runs/37986834551);
 fresh Actions, protected merge and actual official retirement/publication remain required.
 
+GitHub CLI 2.98 refuses raw job logs containing terminal escape sequences by default. The
+[complete CLI regression fixture](../../tests/_fixtures/release/github-cli-log-escape.json)
+retains all 175,686 original bytes, including 4,097 escape bytes, from failed H Check job 113945842593. Its documented `--allow-escape-sequences` option restores exact capture into the
+archive without terminal rendering, filtering or decoloring. Nonzero exits, empty logs, original
+job identities and archive size limits still refuse retirement. Public failures show only bounded
+static classifications, exit status and byte counts; raw stderr, credentials and signed URLs are
+withheld. The next driver pin and genuine cached golden advance together; fresh Actions, protected
+merge and a successful official retirement remain required.
+
 ## Preservation and partial recovery
 
 The command first creates an immutable `release-retired/<tag>` archive/reservation with an exact
