@@ -5,7 +5,9 @@ use super::super::{
 };
 use super::{Source, run_identity};
 use serde_json::{Value, json};
-use std::{collections::BTreeMap, path::Path, process::Command};
+use std::{collections::BTreeMap, path::Path};
+#[path = "pr_pin_retire_logs.rs"]
+mod logs;
 
 pub(super) fn terminal_failed(run: &Value) -> Result<(), String> {
     if run["status"] != "completed"
@@ -286,25 +288,15 @@ pub(super) fn collect(
             if job["conclusion"] == "failure" || job["conclusion"] == "timed_out" {
                 let job_id = job["id"].as_u64().ok_or("Missing failure job ID")?;
                 pr_budget::check(budget)?;
-                let output = Command::new("gh")
-                    .args([
-                        "api",
-                        &format!("repos/{repository}/actions/jobs/{job_id}/logs"),
-                    ])
-                    .current_dir(root)
-                    .output()
-                    .map_err(|e| e.to_string())?;
+                let bytes = logs::capture(repository, job_id, root)?;
                 pr_budget::check(budget)?;
-                if !output.status.success() || output.stdout.is_empty() {
-                    return Err(format!("Could not preserve complete failure log {job_id}"));
-                }
                 total_log_bytes = total_log_bytes
-                    .checked_add(output.stdout.len())
+                    .checked_add(bytes.len())
                     .ok_or("Failure log size overflow")?;
                 if total_log_bytes > super::retire_archive::MAX_BYTES / 2 {
                     return Err("Complete failure logs exceed bounded retirement archive; preserve originals and stop".into());
                 }
-                logs.insert(format!("failure/{job_id}.log"), output.stdout);
+                logs.insert(format!("failure/{job_id}.log"), bytes);
             }
         }
         let (artifact_pages, artifacts) = inventory(
