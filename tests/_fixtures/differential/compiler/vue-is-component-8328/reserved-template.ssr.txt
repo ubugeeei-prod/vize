@@ -1,0 +1,12 @@
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("template"), _mergeProps({ title: "cast" }, _attrs), {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`x`)
+      } else {
+        return [_createTextVNode("x")]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

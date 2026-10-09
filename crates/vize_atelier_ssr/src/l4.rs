@@ -132,6 +132,7 @@ const ADMITTED_RULES: &[&str] = &[
     "normalize.bind.same-name",
     "condense.whitespace",
     "condense.drop-whitespace",
+    "drop.vue-is",
     "drop.comment",
     "drop.branch-gap",
     "lower.comment",

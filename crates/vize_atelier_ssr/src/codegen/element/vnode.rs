@@ -170,11 +170,11 @@ impl<'a> SsrCodegenContext<'a> {
 
     fn vnode_component_expression(&mut self, el: &ElementNode<'a>) -> String {
         self.use_core_helper(RuntimeHelper::CreateVNode);
-
         let mut out = String::from("_createVNode(");
         out.push_str(&self.vnode_component_callee(el));
         out.push_str(", ");
-        out.push_str(&self.build_component_props(el, false, is_dynamic_component_tag(el.tag)));
+        let dynamic = is_dynamic_component_tag(el, self.source);
+        out.push_str(&self.build_component_props(el, false, dynamic));
         out.push_str(", ");
         out.push_str(&self.vnode_component_slots_expression(el));
         out.push(')');
@@ -182,7 +182,7 @@ impl<'a> SsrCodegenContext<'a> {
     }
 
     fn vnode_component_callee(&mut self, el: &ElementNode) -> String {
-        if is_dynamic_component_tag(el.tag) {
+        if is_dynamic_component_tag(el, self.source) {
             return self.dynamic_component_callee(el);
         }
 

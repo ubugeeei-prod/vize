@@ -7,6 +7,7 @@ mod component_binding;
 mod context;
 pub mod document;
 mod element;
+pub(crate) use element::helpers::is_dynamic_component;
 mod emit;
 mod entry;
 mod expression;

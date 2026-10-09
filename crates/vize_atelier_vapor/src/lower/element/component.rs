@@ -34,7 +34,17 @@ pub(super) fn transform_component<'a>(
         "Suspense" => ComponentKind::Suspense,
         "Transition" => ComponentKind::Transition,
         "TransitionGroup" => ComponentKind::TransitionGroup,
-        "component" => ComponentKind::Dynamic,
+        "component"
+            if vize_l0::general::is_authored_tag(ctx.source, el.loc.span, tag)
+                || el.props.iter().any(|prop| {
+                    matches!(prop, PropNode::Directive(dir)
+                        if dir.name == "bind"
+                            && matches!(&dir.arg, Some(ExpressionNode::Simple(arg)) if arg.is_static && arg.content == "is")
+                            && dir.loc.span.start == el.loc.span.start.saturating_add(1))
+                }) =>
+        {
+            ComponentKind::Dynamic
+        }
         _ => ComponentKind::Regular,
     };
 

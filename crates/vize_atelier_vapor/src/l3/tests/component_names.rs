@@ -96,3 +96,51 @@ fn checked_component_name_payload_owns_generated_keys() {
     );
     insta::assert_snapshot!("component_name_payload", code);
 }
+
+#[test]
+fn native_static_vue_casts_admit_reserved_component_names() {
+    for source in [
+        "<div is=\"vue:component\" title=\"cast\">x</div>",
+        "<div is=\"vue:Component\" title=\"cast\">x</div>",
+        "<div is=\"vue:slot\" title=\"cast\">x</div>",
+        "<div is=\"vue:template\" title=\"cast\">x</div>",
+        "<componentFoo is=\"vue:component\">x</componentFoo>",
+    ] {
+        let allocator = Allocator::new();
+        let status = lower_source_for_vapor(&allocator, source, options());
+        let VaporL3BridgeStatus::Accepted(artifact) = status else {
+            panic!("native static cast {source}: {status:?}")
+        };
+        let ir = artifact.into_ir(&allocator, source, None).unwrap();
+        let [crate::ir::OperationNode::CreateComponent(component)] = ir.block.operation.as_slice()
+        else {
+            panic!("one static component operation")
+        };
+        assert_eq!(component.kind, crate::ir::ComponentKind::Regular);
+        assert!(component.asset);
+        assert!(component.is_expr.is_none());
+        assert_eq!(component.slots.len(), 1);
+        let native = compile_vapor(&allocator, source, VaporCompilerOptions::default());
+        let retained = compile_vapor(
+            &allocator,
+            source,
+            VaporCompilerOptions {
+                davinci_retained_lane: true,
+                ..Default::default()
+            },
+        );
+        assert!(
+            native.error_messages.is_empty(),
+            "{:?}",
+            native.error_messages
+        );
+        assert!(
+            retained.error_messages.is_empty(),
+            "{:?}",
+            retained.error_messages
+        );
+        assert_eq!(native.code, retained.code);
+        assert_eq!(native.templates, retained.templates);
+        assert_eq!(native.map, retained.map);
+    }
+}

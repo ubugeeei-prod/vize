@@ -27,19 +27,34 @@ pub(super) fn helper(name: &str) -> Option<Helper> {
     }
 }
 
-pub(super) fn is_reserved_name(name: &str) -> bool {
-    helper(name).is_some() || matches!(name, "component" | "Component")
+pub(super) fn is_reserved_name(component: &ComponentOp<'_>, source: &str) -> bool {
+    helper(component.name).is_some()
+        || matches!(component.name, "component" | "Component")
+            && has_dynamic_tag_source(component, source)
 }
 
-pub(super) fn forces_block(component: &ComponentOp<'_>) -> bool {
+pub(super) fn forces_block(component: &ComponentOp<'_>, source: &str) -> bool {
     matches!(
         component.name,
         "Teleport" | "teleport" | "Suspense" | "suspense" | "KeepAlive" | "keep-alive"
     ) || matches!(component.name, "component" | "Component")
+        && has_dynamic_tag_source(component, source)
 }
 
-pub(super) fn is_dynamic_component(component: &ComponentOp<'_>) -> bool {
-    matches!(component.name, "component" | "Component") && has_is(component)
+pub(super) fn is_dynamic_component(component: &ComponentOp<'_>, source: &str) -> bool {
+    matches!(component.name, "component" | "Component")
+        && has_is(component)
+        && has_dynamic_tag_source(component, source)
+}
+
+fn has_dynamic_tag_source(component: &ComponentOp<'_>, source: &str) -> bool {
+    vize_l0::general::is_authored_tag(source, component.span, component.name)
+        || component.bindings.iter().any(|binding| {
+            // JSX keeps its value-tag name span on the synthesized is binding.
+            matches!(binding, BindingOp::Bind(bind)
+                if is_is_bind(binding)
+                    && bind.span.start == component.span.start.saturating_add(1))
+        })
 }
 
 fn has_is(component: &ComponentOp<'_>) -> bool {
@@ -58,7 +73,7 @@ pub(super) fn emit_dynamic_tag(
     cx: &mut EmitCx<'_>,
     component: &ComponentOp<'_>,
 ) -> Result<bool, EmitError> {
-    if !is_dynamic_component(component) {
+    if !is_dynamic_component(component, cx.source) {
         return Ok(false);
     }
     cx.buf.use_helper(Helper::ResolveDynamicComponent);

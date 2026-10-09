@@ -19,6 +19,16 @@ use crate::l4::string_plan::{
 };
 use crate::l4::{AdmissionFailure, LegacyReason};
 
+/// Authored and JSX-synthesized selectors retain their existing source roles.
+pub(super) fn has_dynamic_tag_source(component: &l2::ComponentOp<'_>, source: &str) -> bool {
+    vize_l0::general::is_authored_tag(source, component.span, component.name)
+        || component.bindings.iter().any(|binding| {
+            matches!(binding, l2::BindingOp::Bind(bind)
+                if matches!(bind.name, Some(DynamicName::Static("is")))
+                    && bind.span.start == component.span.start.saturating_add(1))
+        })
+}
+
 /// A dynamic component's props leave out the static-name `is` spellings.
 pub(super) fn without_is<'r, 'a>(
     attached: &Attached<'r, 'a>,
@@ -139,7 +149,7 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
                 inherit_attrs: inherit,
                 ..no_inherit
             })?,
-            "component" | "Component" => {
+            "component" | "Component" if has_dynamic_tag_source(component, self.ctx.source) => {
                 self.dynamic_component(component, attached, inherit, css_vars)?
             }
             _ => self.render_component(name, component, attached, inherit, css_vars)?,

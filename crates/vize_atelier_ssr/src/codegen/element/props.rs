@@ -1,6 +1,8 @@
 //! Shared JavaScript expression and prop-object builders for SSR element codegen.
 
-use super::{DirectiveNode, ExpressionNode, PropNode, String, ToCompactString, VNodePropEntry};
+use super::{
+    DirectiveNode, ElementNode, ExpressionNode, PropNode, String, ToCompactString, VNodePropEntry,
+};
 use vize_l0::{FxHashMap, FxHashSet, SmallVec, is_on};
 
 /// Build an object literal from normalized prop entries.
@@ -239,8 +241,13 @@ pub(crate) fn is_simple_identifier(value: &str) -> bool {
     is_valid_js_identifier(value) && !matches!(value, "true" | "false" | "null" | "undefined")
 }
 
-pub(super) fn is_dynamic_component_tag(tag: &str) -> bool {
-    matches!(tag, "component" | "Component")
+pub(super) fn is_dynamic_component_tag(el: &ElementNode<'_>, source: &str) -> bool {
+    matches!(el.tag, "component" | "Component")
+        && (vize_l0::general::is_authored_tag(source, el.loc.span, el.tag)
+            || el.props.iter().any(|prop| {
+                is_static_named_prop(prop, "is")
+                    && prop.loc().span.start == el.loc.span.start.saturating_add(1)
+            }))
 }
 
 pub(super) fn is_static_named_prop(prop: &PropNode, name: &str) -> bool {

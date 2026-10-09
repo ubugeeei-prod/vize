@@ -182,8 +182,9 @@ impl<'a> NativeArtifact<'a> {
         s3: &Lowered<'a>,
         retained: &Retained<'_, 'a>,
         loops: &[super::templates::TemplateLoop<'a>],
+        source: &str,
     ) -> Result<Self, AdmissionFailure> {
-        validate::admit(&s3.program, retained, loops)
+        validate::admit(&s3.program, retained, loops, source)
     }
 
     /// Consuming the checked projection is the only production generation path

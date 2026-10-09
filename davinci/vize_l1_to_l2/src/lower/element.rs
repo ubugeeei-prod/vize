@@ -12,12 +12,14 @@
 use super::features::OpFamily;
 use alloc::vec::Vec as StdVec;
 
-use vize_l0::{Box, String, Vec, cstr, is_math_ml_tag, is_native_tag, is_svg_tag};
+use vize_l0::{Box, String, Vec, cstr, is_native_tag};
 use vize_l1::Element;
 
 use vize_l2::op::{Attribute, BindingOp, ComponentOp, ElementOp, Namespace, Op, Region};
 
+pub(super) mod identity;
 mod v_pre;
+use identity::{children_ns, enter_ns};
 pub use v_pre::frozen_attribute_name;
 
 use super::binding::{Owner, lower_attr};
@@ -44,6 +46,8 @@ pub(crate) struct Analyzed<'a> {
     pub branch: Option<(usize, BranchKind)>,
     /// The first `v-for` (attr index), when present.
     pub vfor: Option<usize>,
+    /// First authored static component selector, inspected during this analysis.
+    pub static_is: Option<usize>,
     /// The `v-pre` spelling's attr index, when the element carries one.
     /// Vue drops the attribute itself from the output while keeping every
     /// other directive on the element as a literal attribute.
@@ -68,6 +72,7 @@ pub(crate) fn analyze<'a>(element: &Element<'a>, in_v_pre: bool) -> Analyzed<'a>
     let mut forms = StdVec::with_capacity(element.open.attrs.len());
     let mut branch = None;
     let mut vfor = None;
+    let mut static_is = None;
     for (index, attr) in element.open.attrs.iter().enumerate() {
         let form = classify(attr.name.text);
         if let AttrForm::Directive(directive) = &form {
@@ -86,12 +91,16 @@ pub(crate) fn analyze<'a>(element: &Element<'a>, in_v_pre: bool) -> Analyzed<'a>
                 vfor = Some(index);
             }
         }
+        if static_is.is_none() && attr.name.text == "is" && matches!(form, AttrForm::Static) {
+            static_is = Some(index);
+        }
         forms.push(form);
     }
     let mut analyzed = Analyzed {
         forms,
         branch,
         vfor,
+        static_is,
         v_pre: None,
         opens_v_pre: false,
     };
@@ -169,31 +178,6 @@ pub(crate) fn attr_text<'a>(attr: &vize_l1::Attribute<'a>) -> Option<&'a str> {
     attr.value.as_ref().map(|value| value.content.text)
 }
 
-/// An element's own namespace, entered by tag.
-fn enter_ns(parent: Namespace, tag: &str) -> Namespace {
-    if is_svg_tag(tag) {
-        Namespace::Svg
-    } else if is_math_ml_tag(tag) {
-        Namespace::MathMl
-    } else {
-        parent
-    }
-}
-
-/// The namespace an element's children live in (the integration points
-/// return to HTML).
-fn children_ns(own: Namespace, tag: &str) -> Namespace {
-    match own {
-        Namespace::Svg if matches!(tag, "foreignObject" | "desc" | "title") => Namespace::Html,
-        Namespace::MathMl
-            if matches!(tag, "annotation-xml" | "mi" | "mo" | "mn" | "ms" | "mtext") =>
-        {
-            Namespace::Html
-        }
-        other => other,
-    }
-}
-
 /// Lower one element (its structural directives already consumed by the
 /// caller): `<slot>` outlet, component, or native element.
 pub(crate) fn element_core<'a>(
@@ -203,15 +187,17 @@ pub(crate) fn element_core<'a>(
     ns: Namespace,
 ) -> Op<'a> {
     cx.report_missing_close(element);
-    let tag = element.tag();
-    if tag == "slot" {
+    let authored_tag = element.tag();
+    let cast = identity::vue_is(cx, element, analyzed);
+    let tag = cast.map_or(authored_tag, |(_, name)| name);
+    if authored_tag == "slot" {
         return lower_slot(cx, element, analyzed, ns);
     }
-    let own_ns = enter_ns(ns, tag);
-    let child_ns = children_ns(own_ns, tag);
+    let own_ns = enter_ns(ns, authored_tag);
+    let child_ns = children_ns(own_ns, authored_tag);
     let span = element_span(cx, element);
     let node = cx.mint_op();
-    let component = !is_native_tag(tag) && !cx.is_custom_element(tag);
+    let component = cast.is_some() || (!is_native_tag(tag) && !cx.is_custom_element(tag));
 
     let open_end = cx.token_span(&element.open.gt).end;
     let open_slice = cx
@@ -248,6 +234,10 @@ pub(crate) fn element_core<'a>(
     let mut bindings: Vec<'a, BindingOp<'a>> = Vec::new_in(&cx.allocator);
     for (index, (attr, form)) in element.open.attrs.iter().zip(&analyzed.forms).enumerate() {
         if Some(index) == analyzed.branch.map(|(idx, _)| idx) || Some(index) == analyzed.vfor {
+            continue;
+        }
+        if cast.is_some_and(|(ordinal, _)| ordinal == index) {
+            identity::consume(cx, attr);
             continue;
         }
         if Some(index) == companion_slot {
@@ -296,7 +286,7 @@ pub(crate) fn element_core<'a>(
 
     // `<pre>` keeps its bytes: condensing is suppressed for the whole
     // subtree (`lower::text`, the shipped `is_pre_tag` configuration).
-    let suppress = super::text::suppresses_condense(tag);
+    let suppress = super::text::suppresses_condense(authored_tag);
     // `analyze` has already rewritten the forms, so ask the recorded
     // spelling rather than the (now empty) directive list.
     let suppress_v_pre = analyzed.v_pre.is_some();
@@ -306,7 +296,8 @@ pub(crate) fn element_core<'a>(
     if suppress_v_pre {
         cx.push_v_pre_suppression();
     }
-    let previous_text_parent = cx.enter_text_parent(element, tag, own_ns == Namespace::Html);
+    let previous_text_parent =
+        cx.enter_text_parent(element, authored_tag, own_ns == Namespace::Html);
     let children = Region {
         ops: if component || own_ns != Namespace::Html {
             lower_children(cx, &element.children, child_ns)

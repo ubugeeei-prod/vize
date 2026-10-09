@@ -6,7 +6,6 @@
 use crate::{RootNode, RuntimeHelper, TemplateChildNode};
 
 use super::context::CodegenContext;
-use super::element::helpers::is_dynamic_component_tag;
 use super::helpers::{escape_js_string, to_valid_asset_identifier};
 use vize_l0::{String, camelize, capitalize};
 
@@ -141,12 +140,6 @@ pub(super) fn generate_assets(ctx: &mut CodegenContext, root: &RootNode<'_>) {
 
         // Skip built-in components - they are imported directly, not resolved
         if super::helpers::is_builtin_component(component).is_some() {
-            continue;
-        }
-
-        // Skip dynamic component (<component :is="...">) -
-        // it uses resolveDynamicComponent
-        if is_dynamic_component_tag(component) {
             continue;
         }
 

@@ -2,7 +2,7 @@
 
 use vize_l0::{Box, String, Vec, capitalize, is_builtin_directive, is_native_tag};
 
-use crate::codegen::{escape_js_string, is_valid_js_identifier};
+use crate::codegen::{escape_js_string, is_dynamic_component, is_valid_js_identifier};
 use crate::errors::ErrorCode;
 use crate::steps::expression::process_inline_handler;
 use crate::steps::v_model::{
@@ -17,21 +17,16 @@ use crate::{
 use super::{ExitFns, TransformContext};
 
 mod directive_expressions;
-
+mod vue_is;
 use directive_expressions::process_directive_expressions;
-
-fn is_dynamic_component(el: &ElementNode<'_>) -> bool {
-    el.tag == "component" || (el.tag == "Component" && has_is_attribute(el))
-}
-
 /// Transform element node
 pub fn transform_element<'a>(
     ctx: &mut TransformContext<'a>,
     el: &mut Box<'a, ElementNode<'a>>,
 ) -> Option<ExitFns<'a>> {
     maybe_promote_element_to_component(ctx, el);
+    vue_is::resolve(el);
     validate_v_slot_usage(ctx, el);
-
     // Process props and directives
     process_element_props(ctx, el);
 
@@ -41,7 +36,7 @@ pub fn transform_element<'a>(
             ctx.helper(RuntimeHelper::CreateElementVNode);
         }
         ElementType::Component => {
-            if is_dynamic_component(el) {
+            if is_dynamic_component(el, ctx.source) {
                 return None;
             }
 

@@ -87,7 +87,7 @@ pub(super) fn emit_call(
         cx.buf
             .push(asset_ident("component", component.name).as_str());
     }
-    let skip_is = builtin::is_dynamic_component(component);
+    let skip_is = builtin::is_dynamic_component(component, cx.source);
     let has_binds = has_rendered_binds(component, skip_is);
     let has_attrs = has_rendered_attrs(component, skip_is);
     let has_custom = directive::has_custom(&component.bindings);

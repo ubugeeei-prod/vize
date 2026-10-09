@@ -1,0 +1,3 @@
+<div>
+  <div is="vue:my-thing">x</div>
+</div>

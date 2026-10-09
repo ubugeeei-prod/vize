@@ -45,6 +45,7 @@ pub(super) fn admit<'a>(
     program: &Program<'a>,
     retained: &Retained<'_, 'a>,
     loops: &[TemplateLoop<'a>],
+    source: &str,
 ) -> Result<NativeArtifact<'a>> {
     if program.phase != Phase::Built {
         return Err(LegacyReason::Operation.into());
@@ -135,7 +136,7 @@ pub(super) fn admit<'a>(
                     .map(|(_, key)| *key);
                 control::for_loop(values, retained, carrier, op.span)?
             }
-            OpKind::CreateComponent => component::component(values, alloc)?,
+            OpKind::CreateComponent => component::component(values, alloc, source)?,
             OpKind::SlotOutlet => component::outlet(values, retained)?,
             _ => return Err(LegacyReason::Operation.into()),
         };

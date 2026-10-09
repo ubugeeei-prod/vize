@@ -33,7 +33,7 @@ impl<'a> SsrCodegenContext<'a> {
         self.use_ssr_helper(RuntimeHelper::SsrRenderComponent);
 
         let tag = &el.tag;
-        let is_dynamic_component = is_dynamic_component_tag(tag);
+        let is_dynamic_component = is_dynamic_component_tag(el, self.source);
         let setup_binding = if is_dynamic_component {
             None
         } else {

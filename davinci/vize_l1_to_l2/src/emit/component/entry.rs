@@ -111,7 +111,7 @@ fn emit_at(
             emit_vnode(cx, component, None, false, id, position)
         });
     }
-    if builtin::forces_block(component) {
+    if builtin::forces_block(component, cx.source) {
         return emit_top(cx, component, id, position);
     }
     if has_dynamic_key_binding(component) {

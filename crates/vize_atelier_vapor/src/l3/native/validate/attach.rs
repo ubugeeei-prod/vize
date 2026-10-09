@@ -90,7 +90,7 @@ pub(super) fn bindings<'a>(
             Content::Element { .. } => {}
             // A `<component>` takes its `:is` once; everything else is a prop.
             Content::Component {
-                tag: "component",
+                kind: crate::ir::ComponentKind::Dynamic,
                 is,
                 ..
             } if binding.kind == BindingKind::Prop
@@ -209,7 +209,7 @@ pub(super) fn bindings<'a>(
     }
     for node in nodes.iter_mut() {
         if let Content::Component {
-            tag: "component",
+            kind: crate::ir::ComponentKind::Dynamic,
             is: None,
             ..
         } = node.content

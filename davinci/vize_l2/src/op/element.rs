@@ -64,7 +64,8 @@ pub struct ElementOp<'a> {
 /// the name resolves to is a lowering concern, never L2's.
 #[derive(Debug)]
 pub struct ComponentOp<'a> {
-    /// Component name exactly as authored, a slice of the source.
+    /// Semantic component name: an authored tag or decoded `vue:` selector.
+    /// The original element identity remains in `span`.
     pub name: &'a str,
     /// Static attributes, in authored order.
     pub attributes: Vec<'a, Attribute<'a>>,

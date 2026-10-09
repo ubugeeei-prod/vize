@@ -41,6 +41,25 @@ pub fn is_builtin_tag(tag: &str) -> bool {
     BUILTIN_TAGS.contains(tag)
 }
 
+/// Whether an element's original opening tag has this semantic name.
+///
+/// Semantic casts retain their full authored span. Inspect at most the name
+/// and its delimiter, without parsing or allocating. Empty synthetic spans
+/// keep their existing tag-based behavior.
+#[inline]
+pub fn is_authored_tag(source: &str, span: crate::Span, tag: &str) -> bool {
+    if span.is_empty() {
+        return true;
+    }
+    let start = span.start as usize;
+    let bytes = source.as_bytes();
+    bytes.get(start) == Some(&b'<')
+        && bytes.get(start + 1..start + 1 + tag.len()) == Some(tag.as_bytes())
+        && bytes
+            .get(start + 1 + tag.len())
+            .is_some_and(|byte| byte.is_ascii_whitespace() || matches!(byte, b'/' | b'>'))
+}
+
 /// Check if a directive is a built-in directive
 #[inline]
 pub fn is_builtin_directive(name: &str) -> bool {

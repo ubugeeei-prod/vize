@@ -1,0 +1,1 @@
+<div is="vue:slot" title="cast">x</div>

@@ -187,6 +187,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
             || s2.provenance.iter().any(|record| {
                 !record.rule.starts_with("lower.")
                     && !record.rule.starts_with("condense.")
+                    && record.rule != "drop.vue-is"
                     && record.rule != "drop.comment"
                     && record.rule != "drop.branch-gap"
                     // HTML content CDATA is a legacy parser diagnostic.
@@ -246,19 +247,20 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         capture.page(Level::L3, "values", || {
             vize_l2::dump::render_full_page(&vize_l3::values_dump::Page::of(&s3.program))
         });
-        admit_with(s3, &retained, &loops)
+        admit_with(s3, &retained, &loops, source)
     })
 }
 
 #[cfg(test)]
 fn admit<'a>(s3: Lowered<'a>, retained: &retained::Retained<'_, 'a>) -> VaporL3BridgeStatus<'a> {
-    admit_with(s3, retained, &[])
+    admit_with(s3, retained, &[], "")
 }
 
 fn admit_with<'a>(
     s3: Lowered<'a>,
     retained: &retained::Retained<'_, 'a>,
     loops: &[templates::TemplateLoop<'a>],
+    source: &str,
 ) -> VaporL3BridgeStatus<'a> {
     let violations = bridge_profile!("atelier.vapor.bridge.generic_verify", verify(&s3.program));
     if !violations.is_empty() {
@@ -289,7 +291,7 @@ fn admit_with<'a>(
     }
     match bridge_profile!(
         "atelier.vapor.bridge.native_admission",
-        NativeArtifact::admit(&s3, retained, loops)
+        NativeArtifact::admit(&s3, retained, loops, source)
     ) {
         Ok(artifact) => VaporL3BridgeStatus::Accepted(VaporL3Artifact(artifact)),
         Err(AdmissionFailure::Unsupported(reason)) => VaporL3BridgeStatus::Legacy(reason),

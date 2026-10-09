@@ -163,7 +163,7 @@ fn generate_if_branch_component(
     branch: &IfBranchNode<'_>,
     branch_index: usize,
 ) {
-    let is_dynamic = is_dynamic_component(el);
+    let is_dynamic = is_dynamic_component(el, ctx.source.as_str());
     let has_custom_dirs = has_custom_directives(el);
     if has_custom_dirs {
         ctx.use_helper(RuntimeHelper::WithDirectives);

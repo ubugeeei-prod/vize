@@ -119,14 +119,15 @@ pub(crate) fn is_is_prop(p: &PropNode<'_>) -> bool {
     }
 }
 
-/// Check if a tag is Vue's lowercase dynamic component special tag.
-pub(crate) fn is_dynamic_component_tag(tag: &str) -> bool {
-    tag == "component"
-}
-
 /// Check if an element should compile through resolveDynamicComponent().
-pub(crate) fn is_dynamic_component(el: &ElementNode<'_>) -> bool {
-    is_dynamic_component_tag(el.tag) || (el.tag == "Component" && el.props.iter().any(is_is_prop))
+pub(crate) fn is_dynamic_component(el: &ElementNode<'_>, source: &str) -> bool {
+    (el.tag == "component" || (el.tag == "Component" && el.props.iter().any(is_is_prop)))
+        && (vize_l0::general::is_authored_tag(source, el.loc.span, el.tag)
+            || el.props.iter().any(|prop| {
+                // JSX value tags retain the original name span for bind:is.
+                // A cast's real attributes begin after that opening name.
+                is_is_prop(prop) && prop.loc().span.start == el.loc.span.start.saturating_add(1)
+            }))
 }
 
 /// Check if a single prop is renderable (not v-show or unsupported directive)

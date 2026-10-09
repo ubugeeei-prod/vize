@@ -196,7 +196,8 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         let attached = self.take_attached(component.attributes.len() + component.bindings.len())?;
         let attached = attached.as_slice();
         self.ctx.use_core_helper(RuntimeHelper::CreateVNode);
-        let dynamic = matches!(name, "component" | "Component");
+        let dynamic = matches!(name, "component" | "Component")
+            && super::component::has_dynamic_tag_source(component, self.ctx.source);
         let callee = if dynamic {
             self.dynamic_callee(attached)?
         } else {

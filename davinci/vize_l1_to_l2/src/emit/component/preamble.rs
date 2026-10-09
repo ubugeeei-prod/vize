@@ -7,9 +7,9 @@ use vize_l2::op::{Op, Region};
 
 use super::{Buf, EmitCx, asset_ident, builtin};
 
-pub(in crate::emit) fn collect_names<'a>(root: &Region<'a>) -> StdVec<&'a str> {
+pub(in crate::emit) fn collect_names<'a>(root: &Region<'a>, source: &str) -> StdVec<&'a str> {
     let mut names = StdVec::new();
-    collect_from(root, &mut names);
+    collect_from(root, source, &mut names);
     names
 }
 
@@ -54,31 +54,31 @@ fn is_self_reference(component: &str, own: &str) -> bool {
     vize_l0::capitalize(&vize_l0::camelize(component)).as_str() == own
 }
 
-fn collect_from<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
-    ensure_sufficient_stack(|| collect_from_guarded(region, names));
+fn collect_from<'a>(region: &Region<'a>, source: &str, names: &mut StdVec<&'a str>) {
+    ensure_sufficient_stack(|| collect_from_guarded(region, source, names));
 }
 
-fn collect_from_guarded<'a>(region: &Region<'a>, names: &mut StdVec<&'a str>) {
+fn collect_from_guarded<'a>(region: &Region<'a>, source: &str, names: &mut StdVec<&'a str>) {
     for op in region.ops.iter() {
         match op {
-            Op::Element(element) => collect_from(&element.children, names),
+            Op::Element(element) => collect_from(&element.children, source, names),
             Op::Component(component) => {
-                collect_from(&component.children, names);
-                if !builtin::is_reserved_name(component.name)
-                    && !builtin::is_dynamic_component(component)
+                collect_from(&component.children, source, names);
+                if !builtin::is_reserved_name(component, source)
+                    && !builtin::is_dynamic_component(component, source)
                     && !names.contains(&component.name)
                 {
                     names.push(component.name);
                 }
             }
-            Op::Slot(slot) => collect_from(&slot.fallback, names),
+            Op::Slot(slot) => collect_from(&slot.fallback, source, names),
             Op::If(if_op) => {
                 for branch in if_op.branches.iter() {
-                    collect_from(&branch.region, names);
+                    collect_from(&branch.region, source, names);
                 }
             }
-            Op::For(for_op) => collect_from(&for_op.region, names),
-            Op::OriginalFor(for_op) => collect_from(&for_op.region, names),
+            Op::For(for_op) => collect_from(&for_op.region, source, names),
+            Op::OriginalFor(for_op) => collect_from(&for_op.region, source, names),
             _ => {}
         }
     }
