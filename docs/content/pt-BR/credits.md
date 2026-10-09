@@ -12,7 +12,8 @@ adjacentes e experimentos em ecossistemas. Em particular, obrigado a:
 
 - [Blacksmith](https://www.blacksmith.sh/) por patrocinar runners CI/CD de alto desempenho e infraestrutura Testbox, dando ao Vize o processamento necessário para rodar benchmarks frequentes e verificações de compatibilidade em projetos reais.
 - [Mates Inc.](https://eng.mates.education/) por permitir que a ubugeeei, sua funcionária, dedicasse tempo de trabalho discricionário ao OSS e por adotar o Vize na versão do site de engenharia da empresa.
-- [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/) por apoiar mantenedores de código aberto por meio de um programa que ajuda a manter o desenvolvimento crítico de OSS em andamento.
+- Anthropic, por meio do [Claude for Open Source](https://claude.com/contact-sales/claude-for-oss), pelo apoio ao desenvolvimento contínuo de código aberto do Vize.
+- [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/) pelo apoio anterior ao desenvolvimento de código aberto do Vize. Esse apoio terminou em setembro de 2026.
 - [かっこかり](https://github.com/kakkokari-gtyih) para testar continuamente o compilador e o plugin Vite do Vize no [Misskey](https://github.com/misskey-dev/misskey) — um aplicativo Vue com ~103 mil linhas de Vue em 586 SFCs — e enviar relatórios oportunamente conforme a implementação mudava ([report](https://github.com/ubugeeei-prod/vize/discussions/71)).
 - [ushironoko](https://github.com/ushironoko) para relatórios de correção dos lados do compilador, linter e CLI do projeto, além de implementações de referência para correções e repositórios de reprodução para casos difíceis.
 - [dannote](https://github.com/dannote) por trazer o Vize para a comunidade Elixir por meio do [Volt](https://hexdocs.pm/volt/readme.html), uma cadeia de ferramentas nativa Elixir construída sobre o Vize, e por reportar peças faltantes e enviar PRs enquanto a Volt adotava o Vize como base.

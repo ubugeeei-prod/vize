@@ -12,7 +12,8 @@ Vize是基于实际应用者的实际反馈而形成的
 
 - [Blacksmith](https://www.blacksmith.sh/)赞助高性能CI/CD运行器和测试盒基础设施，为Vize提供频繁运行基准测试和兼容性检查所需的计算能力。
 - [Mates Inc.](https://eng.mates.education/)允许其员工ubugeeei将非工作时间投入到OSS上，并在公司工程网站构建中采用了Vize。
-- [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/)通过一个程序支持开源维护者，帮助关键的开源软件开发持续推进。
+- 感谢 Anthropic 通过 [Claude for Open Source](https://claude.com/contact-sales/claude-for-oss) 支持 Vize 持续的开源开发。
+- 也感谢 [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/) 过去对 Vize 开源开发的支持。该支持已于 2026 年 9 月结束。
 - [かっこかり](https://github.com/kakkokari-gtyih)用于在[Misskey](https://github.com/misskey-dev/misskey)上持续测试Vize编译器和Vite插件——这是一个Vue应用，拥有586个SFC中~103k行Vue——并在实现变化时及时发送报告（[report](https://github.com/ubugeeei-prod/vize/discussions/71)）。
 - [ushironoko](https://github.com/ushironoko) 用于编写器、LINTER 和 CLI 端的修复报告，以及用于修复的参考实现和针对复杂情况的复制仓库。
 - [dannote](https://github.com/dannote) 通过 [Volt](https://hexdocs.pm/volt/readme.html) 将 Vize 带入 Elixir 社区，该工具链是基于 Vize 构建的 Elixir 原生前端工具链，并在 Volt 采用 Vize 作为基础时报告缺失部分并发送 PR。
