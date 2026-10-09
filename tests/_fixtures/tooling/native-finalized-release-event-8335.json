@@ -1,0 +1,17 @@
+{
+  "opened": {
+    "action": "opened",
+    "body": "<!-- vize-release-pin: immutable-v1 -->\n<!-- vize-release-pin-head: SOURCE -->\n<!-- vize-release-pin-cut: CUT -->\n<!-- vize-release-base-version: 0.435.1 -->"
+  },
+  "finalized": {
+    "action": "edited",
+    "body": "<!-- vize-release-pin: immutable-v1 -->\n<!-- vize-release-pin-head: SOURCE -->\n<!-- vize-release-pin-cut: CUT -->\n<!-- vize-release-base-version: 0.435.1 -->\n<!-- vize-release-integration: 8250 -->"
+  },
+  "observed": {
+    "sourcePullRequest": 8341,
+    "integrationPullRequest": 8342,
+    "workflowRun": 37967292545,
+    "attempts": [1, 2],
+    "failure": "Missing/ambiguous vize-release-integration"
+  }
+}

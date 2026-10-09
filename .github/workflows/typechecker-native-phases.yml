@@ -7,6 +7,7 @@ on:
         required: true
         type: string
   pull_request:
+    types: [opened, synchronize, reopened, edited]
     paths:
       - ".github/workflows/typechecker-native-phases.yml"
       - "tools/benchmarks/scripts/typechecker-native-*.mjs"
