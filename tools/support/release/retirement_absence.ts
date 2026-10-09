@@ -3,6 +3,7 @@ import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { derivePublicationPlan, type PublicationPlan } from "./public_acceptance/plan.ts";
+import { marketplaceQuery, marketplaceQueryUrl, readMarketplace } from "./marketplace_query.ts";
 
 import {
   absenceEvidence,
@@ -17,21 +18,13 @@ export type AbsenceObservation = Target & {
   observedAt: string;
   responseSha256: string;
   responseBytes: number;
-  response: Record<string, unknown>;
+  response: unknown;
   date: string | null;
 };
 
 function requireValue(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
 }
-function object(value: unknown): Record<string, unknown> {
-  requireValue(
-    value && typeof value === "object" && !Array.isArray(value),
-    "missing-response object required",
-  );
-  return value as Record<string, unknown>;
-}
-
 function targets(plan: PublicationPlan): Target[] {
   requireValue(/^[a-f0-9]{40}$/.test(plan.head), "full source H required");
   requireValue(/^[a-f0-9]{40}$/.test(plan.parentCut), "full source C required");
@@ -56,6 +49,7 @@ function targets(plan: PublicationPlan): Target[] {
       names.add(target.name);
       result.push({
         channel,
+        method: "GET",
         ...target,
         url:
           channel === "npm"
@@ -79,13 +73,16 @@ function targets(plan: PublicationPlan): Target[] {
       channel: "marketplace",
       name,
       version: editor.version,
-      url: `https://marketplace.visualstudio.com/_apis/gallery/publishers/${editor.publisher}/extensions/${editor.name}?flags=1&api-version=7.2-preview.2`,
+      url: marketplaceQueryUrl,
+      method: "POST",
+      query: marketplaceQuery(name),
     },
     {
       channel: "openvsx",
       name,
       version: editor.version,
       url: `https://open-vsx.org/api/${editor.publisher}/${editor.name}/${editor.version}`,
+      method: "GET",
     },
   );
   return result;
@@ -121,6 +118,14 @@ async function observe(
   target: Target,
   fetchImpl: typeof globalThis.fetch,
 ): Promise<AbsenceObservation> {
+  if (target.channel === "marketplace") {
+    const { extension: _extension, ...observation } = await readMarketplace(target.name, fetchImpl);
+    return {
+      ...target,
+      ...observation,
+      evidence: absenceEvidence(target, observation.status, observation.response, new Headers()),
+    };
+  }
   const controller = new AbortController();
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
@@ -162,13 +167,15 @@ async function observe(
           "absence JSON content type required",
         );
         const bytes = await responseBytes(response, absenceResponseLimit(target, response.status));
-        const body = object(JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)));
+        const responseSha256 = createHash("sha256").update(bytes).digest("hex");
+        let body: unknown;
         let evidence: AbsenceEvidence;
         try {
+          body = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as unknown;
           evidence = absenceEvidence(target, response.status, body, response.headers);
         } catch (error) {
           throw new Error(
-            `${String(error)}; HTTP ${response.status} at ${target.url}; response sha256=${createHash("sha256").update(bytes).digest("hex")}; bytes=${bytes.length}; body=${bytes.toString("utf8")}`,
+            `${JSON.stringify(String(error))}; HTTP ${response.status} at ${target.url}; response sha256=${responseSha256}; bytes=${bytes.length}; body=${JSON.stringify(bytes.toString("utf8"))}`,
           );
         }
         return {
@@ -176,7 +183,7 @@ async function observe(
           status: response.status as 200 | 404,
           evidence,
           observedAt: new Date().toISOString(),
-          responseSha256: createHash("sha256").update(bytes).digest("hex"),
+          responseSha256,
           responseBytes: bytes.length,
           response: body,
           date: response.headers.get("date"),

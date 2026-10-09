@@ -69,7 +69,10 @@ fn targets(plan: &Value, identity: &Value) -> Result<BTreeMap<(String, String), 
         return Err("Retained editor plan differs".into());
     }
     let name = format!("{publisher}.{extension}");
-    result.insert(("marketplace".into(), name.clone()), format!("https://marketplace.visualstudio.com/_apis/gallery/publishers/{publisher}/extensions/{extension}?flags=1&api-version=7.2-preview.2"));
+    result.insert(
+        ("marketplace".into(), name.clone()),
+        "https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery".into(),
+    );
     result.insert(
         ("openvsx".into(), name),
         format!("https://open-vsx.org/api/{publisher}/{extension}/{version}"),
@@ -112,6 +115,15 @@ fn targets(plan: &Value, identity: &Value) -> Result<BTreeMap<(String, String), 
 }
 
 fn missing(channel: &str, name: &str, version: &str, body: &Value) -> Result<(), String> {
+    if channel == "npm"
+        && let Some(message) = body.as_str()
+    {
+        return if message == format!("version not found: {version}") {
+            Ok(())
+        } else {
+            Err("Unsupported retained npm missing response".into())
+        };
+    }
     let object = body.as_object().ok_or("Missing retained response object")?;
     let valid = match channel {
         "npm" => {
@@ -132,27 +144,11 @@ fn missing(channel: &str, name: &str, version: &str, body: &Value) -> Result<(),
                 })
         }
         "openvsx" => {
-            object.len() == 1 && body["error"] == format!("Extension not found: {name} {version}")
-        }
-        "marketplace" => {
-            let kind = text(body, "/typeKey")?;
-            let message = text(body, "/message")?;
-            let lower = message.to_lowercase();
-            matches!(
-                kind,
-                "ExtensionNotFoundException"
-                    | "ExtensionVersionNotFoundException"
-                    | "ExtensionDoesNotExistException"
-                    | "ExtensionVersionDoesNotExistException"
-                    | "VersionNotFoundException"
-            ) && message.contains(name)
-                && (!kind.contains("Version") || message.contains(version))
-                && (lower.contains("not found")
-                    || lower.contains("does not exist")
-                    || (lower.contains("does not have") && lower.contains("version")))
-                && !["publisher", "extensionName", "version", "versions"]
-                    .iter()
-                    .any(|key| object.contains_key(*key))
+            (object.len() == 1
+                || (object.len() == 3
+                    && body["deprecated"] == false
+                    && body["downloadable"] == false))
+                && body["error"] == format!("Extension not found: {name} {version}")
         }
         _ => false,
     };
@@ -163,6 +159,71 @@ fn missing(channel: &str, name: &str, version: &str, body: &Value) -> Result<(),
     }
 }
 fn marketplace(name: &str, version: &str, body: &Value) -> Result<(), String> {
+    fn complete(value: &Value) -> Result<(), String> {
+        if !value.is_object() {
+            return Err("Retained Marketplace response object required".into());
+        }
+        for key in [
+            "pagingToken",
+            "continuationToken",
+            "nextLink",
+            "@odata.nextLink",
+        ] {
+            if value
+                .get(key)
+                .is_some_and(|v| !v.is_null() && v.as_str() != Some(""))
+            {
+                return Err("Retained Marketplace continuation is partial".into());
+            }
+        }
+        for key in [
+            "truncated",
+            "hasMore",
+            "latestOnly",
+            "includeLatestVersionOnly",
+        ] {
+            if value.get(key).is_some() {
+                return Err("Retained Marketplace inventory is partial".into());
+            }
+        }
+        Ok(())
+    }
+    complete(body)?;
+    let results = body["results"]
+        .as_array()
+        .filter(|r| r.len() == 1)
+        .ok_or("Retained Marketplace one query result required")?;
+    let result = &results[0];
+    complete(result)?;
+    let extensions = result["extensions"]
+        .as_array()
+        .filter(|r| r.len() == 1)
+        .ok_or("Retained Marketplace one exact extension required")?;
+    let metadata = result["resultMetadata"]
+        .as_array()
+        .ok_or("Retained Marketplace complete result count required")?;
+    if metadata.iter().any(|v| !v.is_object()) {
+        return Err("Retained Marketplace malformed result metadata".into());
+    }
+    let counts: Vec<_> = metadata
+        .iter()
+        .filter(|v| v["metadataType"] == "ResultCount")
+        .collect();
+    if counts.len() != 1 {
+        return Err("Retained Marketplace ambiguous result count".into());
+    }
+    let items = counts[0]["metadataItems"]
+        .as_array()
+        .ok_or("Retained Marketplace total count missing")?;
+    if items.iter().any(|v| !v.is_object()) {
+        return Err("Retained Marketplace malformed total metadata".into());
+    }
+    let totals: Vec<_> = items.iter().filter(|v| v["name"] == "TotalCount").collect();
+    if totals.len() != 1 || totals[0]["count"] != 1 {
+        return Err("Retained Marketplace total count differs".into());
+    }
+    let body = &extensions[0];
+    complete(body)?;
     let (publisher, extension) = name.split_once('.').ok_or("Invalid retained editor name")?;
     if text(body, "/publisher/publisherName")? != publisher
         || text(body, "/extensionName")? != extension
@@ -175,20 +236,6 @@ fn marketplace(name: &str, version: &str, body: &Value) -> Result<(), String> {
         .as_array()
         .filter(|r| !r.is_empty() && r.len() <= 10_000)
         .ok_or("Missing bounded complete Marketplace versions")?;
-    for key in [
-        "pagingToken",
-        "continuationToken",
-        "nextLink",
-        "@odata.nextLink",
-        "truncated",
-        "hasMore",
-        "latestOnly",
-        "includeLatestVersionOnly",
-    ] {
-        if body.get(key).is_some() {
-            return Err("Retained Marketplace inventory is partial".into());
-        }
-    }
     for key in ["versionCount", "totalVersions", "totalCount", "count"] {
         if body
             .get(key)
@@ -234,6 +281,10 @@ fn marketplace(name: &str, version: &str, body: &Value) -> Result<(), String> {
     Ok(())
 }
 
+fn json_query(name: &str) -> Value {
+    serde_json::json!({"filters":[{"criteria":[{"filterType":7,"value":name}],"pageNumber":1,"pageSize":1}],"flags":1})
+}
+
 pub(super) fn validate(receipt: &Value) -> Result<(), String> {
     let identity = archive::identity(receipt)?;
     let absence = &receipt["registryAbsence"];
@@ -266,6 +317,13 @@ pub(super) fn validate(receipt: &Value) -> Result<(), String> {
         {
             return Err("Retained registry observation identity/metadata differs".into());
         }
+        if channel == "marketplace" {
+            if observation["method"] != "POST" || observation["query"] != json_query(name) {
+                return Err("Retained Marketplace complete public query differs".into());
+            }
+        } else if observation["method"] != "GET" || observation.get("query").is_some() {
+            return Err("Retained registry anonymous GET differs".into());
+        }
         stamp(observation, "/observedAt")?;
         let status = observation["status"]
             .as_u64()
@@ -282,7 +340,10 @@ pub(super) fn validate(receipt: &Value) -> Result<(), String> {
             return Err("Retained HTTP body byte metadata out of bounds".into());
         }
         let body = &observation["response"];
-        if status == 404 && observation["evidence"] == "typed-exact-version-missing" {
+        if channel != "marketplace"
+            && status == 404
+            && observation["evidence"] == "typed-exact-version-missing"
+        {
             missing(channel, name, version, body)?;
         } else if channel == "marketplace"
             && status == 200

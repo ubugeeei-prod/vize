@@ -25,6 +25,11 @@ fn unpublished_retirement_archive_keeps_real_original_refs_parents_and_exact_fai
         archive::identity(&saved).unwrap(),
         archive::identity(&receipt).unwrap()
     );
+    assert_eq!(saved["registryAbsence"], receipt["registryAbsence"]);
+    assert_eq!(
+        saved["registryAbsence"]["observations"][1]["response"].as_str(),
+        Some("version not found: 0.8.0")
+    );
     assert_eq!(
         github::git(&["rev-list", "--parents", "-n", "1", &archived], &repo.work).unwrap(),
         format!("{archived} {pin} {integration}")

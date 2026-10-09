@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { retirementAbsenceLaw } from "../support/release-retirement-absence-fixtures.ts";
+import { publicArchiveReceiptLaw } from "../support/release-public-archive-receipt-law.ts";
 import {
   derivePublicationPlan,
   readRawBlob,
@@ -82,30 +83,10 @@ test("raw authority refuses commit/blob replacements, symlinks and unsupported c
   );
 });
 
-test("public fixture receipt checks every archive and separate channels without tokens or execution claims", async (t) => {
-  const f = publicFixture(t);
-  const result = await verify(f.plan, f.options);
-  assert.equal(result.success, true);
-  assert.equal(result.source.cut, f.cut);
-  assert.equal(result.source.head, f.head);
-  assert.equal(result.npm.length, f.plan.npm.length);
-  assert.equal(result.crates.length, f.plan.crates.length);
-  for (const item of [...result.npm, ...result.crates])
-    assert.equal(item.sha256, sha256(f.responses.get(item.url) as Buffer));
-  assert.equal(result.marketplace.exactVersionAvailable, true);
-  assert.equal(result.openVsx.status, "available");
-  assert.equal(
-    result.githubAssets[0].sha256,
-    sha256(f.responses.get(result.githubAssets[0].url) as Buffer),
-  );
-  assert.match(result.evidence, /no signature or installed-product execution claim/);
-  for (const call of f.calls) {
-    assert.equal(call.init?.credentials, "omit");
-    assert.equal(new Headers(call.init?.headers).has("authorization"), false);
-    assert.ok(!call.init?.method || call.init.method === "GET");
-    assert.doesNotMatch(call.url, /\/latest(?:[/?]|$)/);
-  }
-});
+test(
+  "public fixture receipt checks every archive and separate channels without tokens or execution claims",
+  publicArchiveReceiptLaw,
+);
 
 test("wrong C/H/tag/source PR/R inputs refuse before public reads", async (t) => {
   const f = publicFixture(t);
@@ -190,7 +171,12 @@ test("non-yanked exact crates and checksum bytes are mandatory; Marketplace and 
     },
     /crate .*mismatch/,
   );
-  await refuse(f, f.marketplaceUrl, { versions: [{ version: "0.439.0" }] }, /Marketplace/);
+  await refuse(
+    f,
+    f.marketplaceUrl,
+    { "results.0.extensions.0.versions": [{ version: "0.439.0" }] },
+    /Marketplace/,
+  );
   (f.responses.get(f.openVsxUrl) as { version: string }).version = "0.439.0";
   const result = await verify(f.plan, f.options);
   assert.equal(result.success, true);
