@@ -1,0 +1,37 @@
+{
+  "schema": "vize-retirement-archive-primary-accounting-v1",
+  "failedOperatorRun": 38005471093,
+  "failedJob": 114073141257,
+  "operatorSource": "ce66936cec42da5e3b0b00459c66de8ec4c7c1c1",
+  "historicalReleases": {
+    "pageCompactUtf8Bytes": [13545282, 8437010, 5218739, 1163177],
+    "compactUtf8Bytes": 28364208,
+    "rows": 392,
+    "assets": 16126,
+    "assetsCompactUtf8Bytes": 26974244,
+    "bodyUtf8Bytes": 616230,
+    "prettyLayoutAccounting": {
+      "pageRootBytes": 34788624,
+      "conservativeDepthEightBytes": 44361296,
+      "primaryReceiptSha256": "61bbb322b27d6a05be1d091af3135a4a465bf7a9268c964490f669b6285754f5",
+      "qualification": "Exact two-space layout accounting over complete gojq scalar bytes; actual full-page serde serialization and the failed in-memory receipt were not captured."
+    }
+  },
+  "originalEvidence": {
+    "runs": 21,
+    "jobs": 189,
+    "artifacts": 117,
+    "hRunPagesCompactUtf8Bytes": 261035,
+    "repeatedHRunRowsCompactUtf8Bytes": 260979,
+    "originalOperatorCompactUtf8Bytes": 12461,
+    "allJobPagesCompactUtf8Bytes": 673729,
+    "allArtifactPagesCompactUtf8Bytes": 84344,
+    "componentsCompactUtf8Bytes": 1292548
+  },
+  "rawFailureLogs": {
+    "jobs": 4,
+    "bytes": 764449
+  },
+  "exactFailedEncodedReceiptBytes": null,
+  "scope": "Complete authenticated provider component measurements; exact failed in-memory receipt and current Marketplace response were not emitted. The regression receipt is an inert accounting model, not a reconstructed public archive."
+}

@@ -228,18 +228,12 @@ fn failure_objects(
         total = total
             .checked_add(bytes)
             .ok_or("Failure blob total overflow")?;
-        if total > archive::MAX_BYTES / 2 {
-            return Err("Failure logs exceed bounded archive".into());
+        if total > archive::MAX_LOG_BYTES {
+            return Err("Failure logs exceed bounded 8 MiB aggregate".into());
         }
     }
     let encoded = serde_json::to_vec_pretty(receipt).map_err(|e| e.to_string())?;
-    if encoded
-        .len()
-        .checked_add(total)
-        .is_none_or(|size| size > archive::MAX_BYTES)
-    {
-        return Err("Complete retirement archive exceeds 16 MiB".into());
-    }
+    archive::check_size(encoded.len(), total)?;
     Ok(())
 }
 

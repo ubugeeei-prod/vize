@@ -74,7 +74,10 @@ fn retirement_archive_ref_collision_unsafe_log_paths_and_bounds_fail_without_ori
     let before = github::git(&["ls-remote", "--refs", "origin"], &repo.work).unwrap();
     for logs in [
         BTreeMap::from([("failure/../escape.log".into(), b"failure".to_vec())]),
-        BTreeMap::from([("failure/123.log".into(), vec![b'x'; archive::MAX_BYTES + 1])]),
+        BTreeMap::from([(
+            "failure/123.log".into(),
+            vec![b'x'; archive::MAX_LOG_BYTES + 1],
+        )]),
     ] {
         assert!(archive::install(receipt.clone(), &logs, &repo.work).is_err());
         assert_eq!(

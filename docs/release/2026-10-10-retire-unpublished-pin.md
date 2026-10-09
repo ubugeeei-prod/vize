@@ -70,11 +70,28 @@ merge and a successful official retirement remain required.
 
 The command first creates an immutable `release-retired/<tag>` archive/reservation with an exact
 absent lease. Archive parents retain the original pin/H/C and integration commit. The bounded
-16 MiB tree preserves complete provider run/job/artifact metadata and relevant complete failure
+64 MiB tree preserves complete provider run/job/artifact metadata and relevant complete failure
 logs. Artifact IDs, provider digests, sizes and expiry are retained; binary artifact bodies remain
 in their original Actions runs with that expiry. There is no permanent artifact-byte custody or
 replacement qualification claim. Pending old diagnostic rows are recorded honestly and can finish
 independently.
+
+[Operator 38005471093](https://github.com/ubugeeei-prod/vize/actions/runs/38005471093)
+reached the archive size check and refused the former 16 MiB storage limit. The authenticated historical
+GitHub Release inventory alone occupies 28,364,208 compact UTF-8 bytes across 392 releases and
+16,126 historical assets; compact serialization cannot fit the former limit. The
+[primary accounting fixture](../../tests/_fixtures/release/retirement-archive-accounting.json)
+also reconciles 21 original runs, 189 jobs, 117 artifact metadata rows and four complete failure
+logs totaling 764,449 bytes. The exact failed in-memory receipt was not emitted, so these component
+measurements are not its exact encoded total.
+
+The finite stored receipt/tree limit is now 64 MiB, preserving complete original fields, pages,
+attempts and raw logs. The independent aggregate failure-log limit remains 8 MiB at capture, ledger
+validation and installation; it does not scale with storage capacity. Read/write limits, checked
+addition, identity/parent/lease guards and artifact custody remain enforced. Size refusals report
+metadata/log byte counts without printing provider bodies. Exact boundary laws and a complete
+inert accounting model cover the larger storage footprint; fresh v12 driver/source/protected and
+actual official retirement qualification remain required.
 
 Only an identical, complete archive can resume partial recovery. Under a newly acquired cooperative
 lease, each PR is rechecked immediately before closure and all original identities are checked
