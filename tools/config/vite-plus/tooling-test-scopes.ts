@@ -154,6 +154,7 @@ export const toolingTestScopes = [
       "tests/tooling/release/release-package-versions.test.ts",
       "tests/tooling/release/release-platforms.test.ts",
       "tests/tooling/release/release-pr.test.ts",
+      "tests/tooling/release/release-public-acceptance.test.ts",
       "tests/tooling/release/release-preflight-artifact-download.test.ts",
       "tests/tooling/release/release-preflight-bootstrap-budget.test.ts",
       "tests/tooling/release/release-preflight-bootstrap.test.ts",

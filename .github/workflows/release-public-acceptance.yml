@@ -1,0 +1,73 @@
+name: Public release acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      cut: { description: Official source before versioning C, required: true, type: string }
+      head: { description: Frozen versioned source H, required: true, type: string }
+      tag: { description: Published stable minor tag, required: true, type: string }
+      source_pr: { description: Official frozen source PR, required: true, type: string }
+      release_run: { description: Successful official Release run R, required: true, type: string }
+permissions: { contents: read }
+concurrency:
+  group: public-release-acceptance-${{ inputs.release_run }}
+  cancel-in-progress: false
+jobs:
+  public-consumer:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    env:
+      PUBLIC_CUT: ${{ inputs.cut }}
+      PUBLIC_HEAD: ${{ inputs.head }}
+      PUBLIC_TAG: ${{ inputs.tag }}
+      PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
+      PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
+      PUBLIC_OUTPUT: ${{ github.workspace }}/artifacts/public-release/${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Require reviewed main and absent runtime overrides
+        env: { DISPATCH_REF: "${{ github.ref }}" }
+        shell: bash
+        run: |
+          test "$DISPATCH_REF" = refs/heads/main
+          for key in NODE_OPTIONS VIZE_PREFER_WORKSPACE_BINDING NAPI_RS_NATIVE_LIBRARY_PATH NAPI_RS_FORCE_WASI VIZE_ALLOW_NATIVE_VERSION_MISMATCH CORSA_PATH CORSA_EXECUTABLE TSGO_PATH TSGO_EXECUTABLE VIZE_PUBLIC_NATIVE_CUSTODY VIZE_OXLINT_NATIVE_CUSTODY; do
+            if [ -n "${!key:-}" ]; then
+              echo "::error::Runtime override must be absent: $key"
+              exit 1
+            fi
+          done
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0, persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, run-install: false }
+      - name: Authenticate public release and prepare a fresh consumer
+        shell: bash
+        run: |
+          mkdir -p "$PUBLIC_OUTPUT"
+          node tools/support/release/public_acceptance/accept.ts prepare 2>&1 | tee "$PUBLIC_OUTPUT/prepare.log"
+      - name: Install exact public versions
+        working-directory: ${{ env.PUBLIC_CONSUMER }}
+        shell: bash
+        run: npm install --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org 2>&1 | tee "$PUBLIC_OUTPUT/install.log"
+      - uses: ./.github/actions/setup-ubuntu-archive
+      - name: Install real Chromium
+        working-directory: ${{ env.PUBLIC_CONSUMER }}
+        shell: bash
+        run: npx --no-install playwright install --with-deps chromium 2>&1 | tee "$PUBLIC_OUTPUT/chromium.log"
+      - name: Replay original native DOM and SSR cases
+        working-directory: ${{ env.PUBLIC_CONSUMER }}
+        shell: bash
+        run: node native.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/native.json" 2>&1 | tee "$PUBLIC_OUTPUT/native.log"
+      - name: Replay public Musea gallery and globals
+        working-directory: ${{ env.PUBLIC_CONSUMER }}
+        shell: bash
+        run: node browser.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/musea.json" 2>&1 | tee "$PUBLIC_OUTPUT/musea.log"
+      - name: Seal installed public acceptance
+        shell: bash
+        run: node tools/support/release/public_acceptance/accept.ts finish 2>&1 | tee "$PUBLIC_OUTPUT/finish.log"
+      - name: Retain actual public observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: public-release-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/public-release
+          if-no-files-found: error
+          retention-days: 30
