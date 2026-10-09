@@ -2,7 +2,7 @@
 import { computed, ref, watch } from "vue";
 import { mdiContentCopy, mdiCheck, mdiCodeTags, mdiFullscreen, mdiOpenInNew } from "@mdi/js";
 import type { ArtVariant } from "../../src/types/index.js";
-import { getPreviewUrl } from "../api";
+import { getPreviewUrl, vMuseaGlobals, withGlobalsQuery } from "../api";
 import { safeUrl } from "../utils/safeUrl";
 import { useAddons } from "../composables/useAddons";
 import { sendMessage } from "../composables/usePostMessage";
@@ -49,7 +49,7 @@ function toggleSource() {
 }
 
 function openInNewTab() {
-  const url = safeUrl(previewUrl.value);
+  const url = safeUrl(withGlobalsQuery(previewUrl.value));
   if (url) window.open(url, "_blank", "noopener,noreferrer");
 }
 
@@ -136,6 +136,7 @@ watch(measureEnabled, (enabled) => {
     <div class="variant-preview" :class="{ 'viewport-mode': isCustomViewport }">
       <iframe
         ref="iframeRef"
+        v-musea-globals
         :src="safeUrl(previewUrl)"
         loading="lazy"
         :title="variant.name"

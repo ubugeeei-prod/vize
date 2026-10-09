@@ -1,12 +1,7 @@
-/**
- * Preview module and HTML generation for Musea component previews.
- *
- * Generates the JavaScript modules that mount Vue components in preview iframes,
- * as well as the HTML wrapper pages for those previews.
- */
-
 import type { ArtFileInfo } from "../types/index.js";
 import type { MuseaVueVersion } from "../types/plugin.js";
+import type { ResolvedMuseaToolbarControl } from "../toolbar.js";
+import { generatePreviewGlobals } from "./globals.js";
 import { MUSEA_ADDONS_INIT_CODE } from "./addons.js";
 
 export { generatePreviewHtml } from "./html.js";
@@ -18,6 +13,7 @@ export function generatePreviewModule(
   cssImports: string[] = [],
   previewSetup: string | null = null,
   vueVersion: MuseaVueVersion = 3,
+  toolbar: ResolvedMuseaToolbarControl[] = [],
 ): string {
   const artModuleId = `virtual:musea-art:${art.path}`;
   const artModuleIdLiteral = JSON.stringify(artModuleId);
@@ -29,14 +25,17 @@ export function generatePreviewModule(
   const setupImport = previewSetup
     ? `import __museaPreviewSetup from ${JSON.stringify(previewSetup)};`
     : "";
-  const setupCall = previewSetup ? "await __museaPreviewSetup(app);" : "";
+  const globals = toolbar.length > 0;
+  const setupCall = previewSetup
+    ? `await __museaPreviewSetup(app${globals ? ", { globals: __museaGlobals }" : ""});`
+    : "";
   const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
   const artStyleId = `musea-art-styles-${art.path.replace(/[^\w-]+/g, "_")}`;
   const artStyleIdLiteral = JSON.stringify(artStyleId);
   const legacyVue = isLegacyVueVersion(vueVersion);
   const vueImport = legacyVue
-    ? "import Vue, { reactive } from 'vue';"
-    : "import { createApp, reactive, h } from 'vue';";
+    ? `import Vue, { reactive${globals ? ", ref as __museaCreateGlobalsRef" : ""} } from 'vue';`
+    : `import { createApp, reactive, h${globals ? ", ref as __museaCreateGlobalsRef" : ""} } from 'vue';`;
   const destroyCurrentApp = legacyVue ? "currentApp.$destroy();" : "currentApp.unmount();";
   const mountInitialApp = legacyVue
     ? "const app = new Vue({ render: (h) => h(VariantComponent) });"
@@ -55,7 +54,7 @@ import * as artModule from ${artModuleIdLiteral};
 
 const container = document.getElementById('app');
 
-${MUSEA_ADDONS_INIT_CODE}
+${MUSEA_ADDONS_INIT_CODE}${generatePreviewGlobals(toolbar)}
 
 let currentApp = null;
 const propsOverride = reactive({});
@@ -232,6 +231,7 @@ export function generatePreviewModuleWithProps(
   cssImports: string[] = [],
   previewSetup: string | null = null,
   vueVersion: MuseaVueVersion = 3,
+  toolbar: ResolvedMuseaToolbarControl[] = [],
 ): string {
   const artModuleId = `virtual:musea-art:${art.path}`;
   const artModuleIdLiteral = JSON.stringify(artModuleId);
@@ -244,12 +244,17 @@ export function generatePreviewModuleWithProps(
   const setupImport = previewSetup
     ? `import __museaPreviewSetup from ${JSON.stringify(previewSetup)};`
     : "";
-  const setupCall = previewSetup ? "await __museaPreviewSetup(app);" : "";
+  const globals = toolbar.length > 0;
+  const setupCall = previewSetup
+    ? `await __museaPreviewSetup(app${globals ? ", { globals: __museaGlobals }" : ""});`
+    : "";
   const actionEvents = JSON.stringify(art.metadata.actionEvents ?? []);
   const artStyleId = `musea-art-styles-${art.path.replace(/[^\w-]+/g, "_")}`;
   const artStyleIdLiteral = JSON.stringify(artStyleId);
   const legacyVue = isLegacyVueVersion(vueVersion);
-  const vueImport = legacyVue ? "import Vue from 'vue';" : "import { createApp, h } from 'vue';";
+  const vueImport = legacyVue
+    ? `import Vue${globals ? ", { ref as __museaCreateGlobalsRef }" : ""} from 'vue';`
+    : `import { createApp, h${globals ? ", ref as __museaCreateGlobalsRef" : ""} } from 'vue';`;
   const wrappedComponent = legacyVue
     ? `const WrappedComponent = {
       render(h) {
@@ -277,7 +282,7 @@ import * as artModule from ${artModuleIdLiteral};
 const container = document.getElementById('app');
 const propsOverride = ${propsJson};
 
-${MUSEA_ADDONS_INIT_CODE}
+${MUSEA_ADDONS_INIT_CODE}${generatePreviewGlobals(toolbar)}
 
 function ensureArtStyles(styles) {
   const styleId = ${artStyleIdLiteral};

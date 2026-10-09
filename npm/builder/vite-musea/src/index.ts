@@ -17,6 +17,11 @@ export { musea } from "./plugin/index.js";
 
 export type {
   MuseaOptions,
+  MuseaPreviewContext,
+  MuseaToolbarControl,
+  MuseaToolbarOption,
+  MuseaGlobals,
+  MuseaGlobalValue,
   MuseaVrtOptions,
   MuseaTokenPreviewConfig,
   MuseaTokenPreviewKind,

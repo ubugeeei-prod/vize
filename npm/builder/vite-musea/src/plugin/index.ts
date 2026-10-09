@@ -1,3 +1,4 @@
+import { normalizeToolbar } from "../toolbar.js";
 import type { Plugin, ViteDevServer, ResolvedConfig } from "vite";
 import fs from "node:fs";
 import path from "node:path";
@@ -53,6 +54,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
   const themeConfig = buildThemeConfig(options.theme);
   const previewCss = options.previewCss ?? [];
   const previewSetup = options.previewSetup;
+  const toolbar = normalizeToolbar(options.toolbar);
   let vueVersion = options.vueVersion;
   const devSessionToken = createDevSessionToken();
 
@@ -72,6 +74,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
     artFiles,
     resolvedPreviewCss,
     resolvedPreviewSetup,
+    toolbar,
     getConfigRoot: () => config.root,
     getScanRoots: () => scanRoots,
     getVueVersion: () => vueVersion,
@@ -125,6 +128,9 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           tokenPreviewConfig = mc.tokenPreviews;
       }
       vueVersion = resolveStaticPreviewVueVersion(vueVersion, resolvedConfig.plugins);
+      if (toolbar.length > 0 && vueVersion !== 3 && vueVersion !== "2.7") {
+        throw new Error("[musea] Global toolbar controls require Vue 3 or Vue 2.7");
+      }
       staticBuildEnabled = shouldEmitMuseaStaticGallery(resolvedConfig.command, storybookCompat);
 
       virtualState.basePath = basePath;
@@ -156,6 +162,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         scanRoots,
         resolvedPreviewCss,
         resolvedPreviewSetup,
+        toolbar,
       });
 
       devServer.middlewares.use(
@@ -169,6 +176,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           basePath,
           resolvedPreviewCss,
           resolvedPreviewSetup,
+          toolbar,
           devSessionToken,
           processArtFile,
           getDevServerPort: () => devServer.config.server.port || 5173,
@@ -273,6 +281,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         basePath,
         resolvedPreviewCss,
         resolvedPreviewSetup,
+        toolbar,
         devSessionToken,
         themeConfig,
         tokenPreviewConfig,

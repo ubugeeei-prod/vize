@@ -1,10 +1,4 @@
-/**
- * Musea dev server middleware handlers.
- *
- * Extracted from the main plugin to keep file sizes manageable.
- * Provides middleware for the gallery SPA, static assets, preview rendering,
- * and art module serving.
- */
+import type { ResolvedMuseaToolbarControl } from "./toolbar.js";
 
 import type { ViteDevServer } from "vite";
 import { createRequire } from "node:module";
@@ -52,6 +46,7 @@ async function tryLoadSourceGalleryHtml(
   devSessionToken: string,
   themeConfig?: { default: string; custom?: Record<string, unknown> },
   tokenPreviewConfig?: MuseaTokenPreviewConfig,
+  toolbar?: ResolvedMuseaToolbarControl[],
 ): Promise<string | null> {
   const gallerySourceDir = resolveGallerySourceDir();
   const indexHtmlPath = path.join(gallerySourceDir, "index.html");
@@ -68,7 +63,7 @@ async function tryLoadSourceGalleryHtml(
   html = html.replace('src="./main.ts"', `src="${sourceEntryPath}"`);
   html = html.replace(
     "</head>",
-    `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig, tokenPreviewConfig)}</script></head>`,
+    `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig, tokenPreviewConfig, toolbar)}</script></head>`,
   );
 
   return devServer.transformIndexHtml(url, html);
@@ -79,9 +74,10 @@ async function generateFallbackGalleryHtml(
   devSessionToken: string,
   themeConfig?: { default: string; custom?: Record<string, unknown> },
   tokenPreviewConfig?: MuseaTokenPreviewConfig,
+  toolbar?: ResolvedMuseaToolbarControl[],
 ): Promise<string> {
   const { generateGalleryHtml } = await import("./gallery/index.js");
-  return generateGalleryHtml(basePath, devSessionToken, themeConfig, tokenPreviewConfig);
+  return generateGalleryHtml(basePath, devSessionToken, themeConfig, tokenPreviewConfig, toolbar);
 }
 
 export async function serveGalleryAsset(
@@ -118,25 +114,15 @@ export interface MiddlewareContext {
   devSessionToken: string;
   themeConfig: { default: string; custom?: Record<string, unknown> } | undefined;
   tokenPreviewConfig?: MuseaTokenPreviewConfig;
+  toolbar?: ResolvedMuseaToolbarControl[];
   artFiles: Map<string, ArtFileInfo>;
   scanRoots: string[];
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
 }
 
-/**
- * Register all Musea middleware on the given dev server.
- *
- * This sets up:
- * - Gallery SPA route (serves built SPA or inline HTML fallback)
- * - Gallery static assets (/assets/)
- * - axe-core vendor script
- * - Preview module route
- * - VRT preview route
- * - Art module route
- */
 export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareContext): void {
-  const { basePath, devSessionToken, themeConfig, tokenPreviewConfig, artFiles } = ctx;
+  const { basePath, devSessionToken, themeConfig, tokenPreviewConfig, toolbar, artFiles } = ctx;
 
   // --- Gallery SPA route ---
   devServer.middlewares.use(basePath, async (req, res, next) => {
@@ -157,7 +143,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
         let html = await fs.promises.readFile(indexHtmlPath, "utf-8");
         html = html.replace(
           "</head>",
-          `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig, tokenPreviewConfig)}</script></head>`,
+          `<script>${generateDevGlobalsScript(basePath, devSessionToken, themeConfig, tokenPreviewConfig, toolbar)}</script></head>`,
         );
         res.setHeader("Content-Type", "text/html");
         res.end(html);
@@ -170,6 +156,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
           devSessionToken,
           themeConfig,
           tokenPreviewConfig,
+          toolbar,
         );
         if (sourceHtml) {
           res.setHeader("Content-Type", "text/html");
@@ -182,6 +169,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
           devSessionToken,
           themeConfig,
           tokenPreviewConfig,
+          toolbar,
         );
         res.setHeader("Content-Type", "text/html");
         res.end(html);
@@ -247,6 +235,8 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
       variant.name,
       ctx.resolvedPreviewCss,
       ctx.resolvedPreviewSetup,
+      3,
+      ctx.toolbar,
     );
 
     try {

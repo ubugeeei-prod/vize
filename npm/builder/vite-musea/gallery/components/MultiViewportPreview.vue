@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MULTI_VIEWPORT_PRESETS } from "../composables/useAddons";
-import { getPreviewUrl } from "../api";
+import { getPreviewUrl, vMuseaGlobals } from "../api";
 import { safeUrl } from "../utils/safeUrl";
 
 defineProps<{
@@ -18,6 +18,7 @@ defineProps<{
       </div>
       <div class="multi-viewport-frame" :style="{ width: preset.width }">
         <iframe
+          v-musea-globals
           :src="safeUrl(getPreviewUrl(artPath, variantName))"
           :title="`${variantName} - ${preset.name}`"
           :style="{ width: preset.width, height: preset.height }"

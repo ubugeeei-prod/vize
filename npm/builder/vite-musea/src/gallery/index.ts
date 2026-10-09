@@ -1,3 +1,4 @@
+import type { ResolvedMuseaToolbarControl } from "../toolbar.js";
 /**
  * Gallery HTML generation for the Musea component gallery.
  *
@@ -20,12 +21,14 @@ export function generateGalleryHtml(
   devSessionToken: string,
   themeConfig?: { default: string; custom?: Record<string, unknown> },
   tokenPreviewConfig?: MuseaTokenPreviewConfig,
+  toolbar?: ResolvedMuseaToolbarControl[],
 ): string {
   const globalsScript = generateGalleryGlobalsScript({
     basePath,
     devSessionToken,
     themeConfig,
     tokenPreviewConfig,
+    toolbar,
   });
   return `<!DOCTYPE html>
 <html lang="en">

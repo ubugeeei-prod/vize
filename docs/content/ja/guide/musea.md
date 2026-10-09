@@ -283,7 +283,7 @@ musea({
 });
 ```
 
-これは、プレビュー iframe に `vue-i18n` や `vue-router` などのプラグインをインストールする場合に便利です。
+`vue-i18n` や `vue-router` の導入に加え、[ブランド・テーマ・言語のグローバルコントロール](./musea-globals.md)も設定できます。
 
 ```ts
 // musea.preview.ts

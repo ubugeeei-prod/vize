@@ -2,7 +2,7 @@
 import { ref, watch, computed, onMounted, onUnmounted, defineAsyncComponent } from "vue";
 import { usePalette } from "../composables/usePalette";
 import { useArts } from "../composables/useArts";
-import { getPreviewUrl } from "../api";
+import { getPreviewUrl, vMuseaGlobals } from "../api";
 import { sendMessage } from "../composables/usePostMessage";
 import { indentUsage, usageScript } from "../utils/usageCode";
 import { safeUrl } from "../utils/safeUrl";
@@ -50,7 +50,6 @@ const slotContent = ref<Record<string, string>>({});
 const copiedUsage = ref(false);
 const art = computed(() => getArt(props.artPath));
 
-// Mode toggle
 const controlsMode = ref<"controls" | "code">("controls");
 const saveStatus = ref<"idle" | "saved">("idle");
 
@@ -341,6 +340,7 @@ const controlKindOptions = [
             <div class="props-preview-frame">
               <iframe
                 ref="iframeRef"
+                v-musea-globals
                 :src="safeUrl(previewUrl)"
                 title="Live component preview"
                 sandbox="allow-scripts allow-same-origin"

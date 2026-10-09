@@ -59,6 +59,7 @@ export function injectStaticGlobals(
     staticPreviews: payload.previews,
     themeConfig: ctx.themeConfig,
     tokenPreviewConfig: ctx.tokenPreviewConfig,
+    toolbar: ctx.toolbar,
   })}</script>`;
   return html.includes("</head>")
     ? html.replace("</head>", `${script}</head>`)

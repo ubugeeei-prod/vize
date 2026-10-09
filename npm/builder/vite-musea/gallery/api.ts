@@ -1,3 +1,5 @@
+import { withGlobalsQuery } from "./composables/useGlobals";
+export { globalsDirective as vMuseaGlobals, withGlobalsQuery } from "./composables/useGlobals";
 import type { ArtFileInfo } from "../src/types/index.js";
 import {
   emptyDocs,
@@ -111,11 +113,11 @@ export async function fetchDocs(artPath: string): Promise<DocApiResponse> {
 export function getPreviewUrl(artPath: string, variantName: string): string {
   if (isStaticGallery) {
     const preview = getStaticPreviewUrl(artPath, variantName);
-    if (preview) return preview;
+    if (preview) return withGlobalsQuery(preview);
   }
   const art = encodeURIComponent(artPath);
   const variant = encodeURIComponent(variantName);
-  return `${joinBasePath("/preview")}?art=${art}&variant=${variant}`;
+  return withGlobalsQuery(`${joinBasePath("/preview")}?art=${art}&variant=${variant}`);
 }
 
 export function getBasePath(): string {

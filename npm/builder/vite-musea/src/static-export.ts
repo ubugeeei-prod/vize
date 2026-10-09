@@ -1,3 +1,4 @@
+import type { ResolvedMuseaToolbarControl } from "./toolbar.js";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
@@ -34,6 +35,7 @@ type OutputChunk = {
 export interface StaticEmitContext extends StaticGalleryDataContext {
   themeConfig: { default: string; custom?: Record<string, unknown> } | undefined;
   tokenPreviewConfig?: MuseaTokenPreviewConfig;
+  toolbar?: ResolvedMuseaToolbarControl[];
 }
 
 export function isMuseaStaticBuild(): boolean {

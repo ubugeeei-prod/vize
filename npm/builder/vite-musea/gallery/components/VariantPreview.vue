@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import type { ArtVariant } from "../../src/types/index.js";
-import { getPreviewUrl } from "../api";
+import { getPreviewUrl, vMuseaGlobals, withGlobalsQuery } from "../api";
 import { safeUrl } from "../utils/safeUrl";
 import { useAddons } from "../composables/useAddons";
 import { sendMessage } from "../composables/usePostMessage";
@@ -86,6 +86,8 @@ onMounted(() => {
   window.addEventListener("message", handleIframeMessage);
 });
 
+onUnmounted(() => window.removeEventListener("message", handleIframeMessage));
+
 watch(
   () => getEffectiveBackground(),
   (bg) => {
@@ -140,7 +142,7 @@ async function copyTemplate() {
 }
 
 function openInNewTab() {
-  const url = safeUrl(previewUrl.value);
+  const url = safeUrl(withGlobalsQuery(previewUrl.value));
   if (url) window.open(url, "_blank", "noopener,noreferrer");
 }
 </script>
@@ -150,6 +152,7 @@ function openInNewTab() {
     <div class="preview-area" :class="{ 'viewport-mode': isCustomViewport }">
       <iframe
         ref="iframeRef"
+        v-musea-globals
         :src="safeUrl(previewUrl)"
         :title="variant.name"
         :style="viewportStyle"

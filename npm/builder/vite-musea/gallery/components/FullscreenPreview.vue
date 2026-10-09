@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted } from "vue";
 import { mdiOpenInNew, mdiClose } from "@mdi/js";
 import { useAddons } from "../composables/useAddons";
-import { getPreviewUrl } from "../api";
+import { getPreviewUrl, vMuseaGlobals, withGlobalsQuery } from "../api";
 import { safeUrl } from "../utils/safeUrl";
 import MdiIcon from "./MdiIcon.vue";
 
@@ -18,7 +18,7 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 function openInNewTab() {
-  const url = safeUrl(previewUrl.value);
+  const url = safeUrl(withGlobalsQuery(previewUrl.value));
   if (url) window.open(url, "_blank", "noopener,noreferrer");
 }
 
@@ -58,6 +58,7 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
           </div>
         </div>
         <iframe
+          v-musea-globals
           class="fullscreen-iframe"
           :src="safeUrl(previewUrl)"
           :title="fullscreenVariant.variantName"

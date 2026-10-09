@@ -12,7 +12,7 @@ import {
 } from "@mdi/js";
 import { useArts } from "../composables/useArts";
 import { useA11y, type A11yResult } from "../composables/useA11y";
-import { getPreviewUrl } from "../api";
+import { getPreviewUrl, vMuseaGlobals } from "../api";
 import MdiIcon from "../components/MdiIcon.vue";
 import { getVariantSectionId } from "../utils/variantSections";
 import { safeUrl } from "../utils/safeUrl";
@@ -38,7 +38,6 @@ const completedCount = ref(0);
 const poolIframes = ref<(HTMLIFrameElement | null)[]>(Array(POOL_SIZE).fill(null));
 const poolSrcs = ref<string[]>(Array(POOL_SIZE).fill(""));
 
-// Flatten all variants into test queue
 const buildTestQueue = () => {
   const queue: TestStatus[] = [];
   for (const art of arts.value) {
@@ -399,6 +398,7 @@ watch(
         v-for="(src, i) in poolSrcs"
         :key="`pool-${i}`"
         :ref="(el) => setPoolIframeRef(i, el as HTMLIFrameElement)"
+        v-musea-globals
         :src="safeUrl(src)"
         :title="`Accessibility test worker ${i + 1}`"
         sandbox="allow-scripts allow-same-origin"
