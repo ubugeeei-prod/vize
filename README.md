@@ -173,8 +173,10 @@ Special thanks to:
 - [Mates Inc.](https://eng.mates.education/) for allowing ubugeeei, its employee, to dedicate
   discretionary work time to OSS and for adopting Vize in the build for the company's engineering
   website.
-- [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/) for supporting
-  open-source maintainers through a program that helps keep critical OSS development moving.
+- Anthropic, through [Claude for Open Source](https://claude.com/contact-sales/claude-for-oss),
+  for supporting Vize's ongoing open-source development.
+- [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/) for past support of
+  Vize's open-source development. That support ended in September 2026.
 - [かっこかり](https://github.com/kakkokari-gtyih) for continuously testing Vize's compiler and
   Vite Plugin on [Misskey](https://github.com/misskey-dev/misskey) (~103k lines of Vue across 586
   SFCs), with timely reports as the implementation changed

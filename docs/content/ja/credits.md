@@ -12,7 +12,8 @@ Vize は、実際のアプリケーションに対して使用している人々
 
 - [Blacksmith](https://www.blacksmith.sh/) は、高性能 CI/CD ランナーとテストボックス インフラストラクチャのスポンサーとなり、実際のプロジェクト間で頻繁にベンチマークと互換性チェックを実行するために必要なコンピューティングを Vize に提供します。
 - [Mates Inc.](https://eng.mates.education/) 従業員の ubugeeei に裁量労働時間を OSS に充てることを許可し、同社のエンジニアリング Web サイトのビルドに Vize を採用したことに対して感謝します。
-- [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/) は、重要な OSS 開発の継続を支援するプログラムを通じてオープンソースのメンテナをサポートします。
+- Anthropic は、[Claude for Open Source](https://claude.com/contact-sales/claude-for-oss) を通じて、Vize の継続的なオープンソース開発を支援してくれています。
+- [OpenAI Codex for Open Source](https://openai.com/form/codex-for-oss/) による、Vize のオープンソース開発への過去の支援にも感謝します。この支援は 2026 年 9 月に終了しました。
 - [かっこかり](https://github.com/kakkokari-gtyih) は、[Misskey](https://github.com/misskey-dev/misskey) (586 SFC 全体で約 103,000 行の Vue を含む Vue アプリケーション) で Vize のコンパイラーと Vite プラグインを継続的にテストし、実装の変更に応じてタイムリーなレポートを送信します ([レポート](https://github.com/ubugeeei-prod/vize/discussions/71))。
 - [ushironoko](https://github.com/ushironoko) プロジェクトのコンパイラ、リンター、CLI 側からの修正レポート、および困難なケースの修正および再現リポジトリのリファレンス実装。
 - [dannote](https://github.com/dannote)、Vize 上に構築された Elixir ネイティブ フロントエンド ツールチェーンである [Volt](https://hexdocs.pm/volt/readme.html) を通じて Elixir コミュニティに Vize を導入し、Volt が基盤として Vize を採用した際に欠落部分を報告し、PR を送信してくれました。
