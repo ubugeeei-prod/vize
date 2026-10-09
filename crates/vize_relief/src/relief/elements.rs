@@ -15,8 +15,8 @@ use super::{
 #[derive(Debug)]
 pub struct ElementNode<'a> {
     pub ns: Namespace,
-    /// Tag text exactly as authored: a slice of the template source, so the
-    /// common case allocates nothing (Davinci P1-10).
+    /// Authored tag, or the decoded component name after a static Vue cast.
+    /// The original tag remains in `loc`; ordinary tags allocate nothing.
     pub tag: &'a str,
     pub tag_type: ElementType,
     pub props: Vec<'a, PropNode<'a>>,

@@ -142,6 +142,7 @@ pub(super) fn emit_dom_observed<'f>(
     }
     let mut helper_walk = PageWalk::new();
     let prefer_cx = helper_preference::PreferCx {
+        source: lowered.source,
         facts,
         for_wrappers: &lowered.for_wrappers,
         bindings: options.bindings,
@@ -162,7 +163,7 @@ pub(super) fn emit_dom_observed<'f>(
     cx.buf.indent();
     cx.buf.newline();
     let assets_start = cx.buf.code.len();
-    let names = component::collect_names(&lowered.root);
+    let names = component::collect_names(&lowered.root, lowered.source);
     let dirs = directive::collect_names(&lowered.root);
     let mut resolved_assets = false;
     if !names.is_empty() {

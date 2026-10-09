@@ -1,0 +1,10 @@
+function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_component = _resolveComponent("component")
+  
+  return (_openBlock(), _createBlock(_component_component, { title: "cast" }, {
+    default: _withCtx(() => [
+      _createTextVNode("x")
+    ]),
+    _: 1 /* STABLE */
+  }))
+}

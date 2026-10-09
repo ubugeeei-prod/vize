@@ -14,14 +14,30 @@ use super::{
 use crate::l3::{LegacyReason, retained::Retained};
 
 /// A resolved component: its tag and static attributes (as literal props).
-pub(super) fn component<'a>(values: &[Operand<'a>], alloc: &'a Allocator) -> Result<Content<'a>> {
+pub(super) fn component<'a>(
+    values: &[Operand<'a>],
+    alloc: &'a Allocator,
+    source: &str,
+) -> Result<Content<'a>> {
     let tag = one(values, Role::Tag)?;
-    if tag.value.kind != ValueKind::Literal || !component_tag(tag.value.text) {
+    if tag.value.kind != ValueKind::Literal
+        || !component_tag(tag.value.text, tag.value.span, source)
+    {
         return Err(LegacyReason::Component.into());
     }
     let props = static_props(values, Role::Tag, alloc)?;
     Ok(Content::Component {
         kind: match tag.value.text {
+            "component"
+                if source.is_empty()
+                    || vize_l0::general::is_authored_tag(
+                        source,
+                        tag.value.span,
+                        tag.value.text,
+                    ) =>
+            {
+                crate::ir::ComponentKind::Dynamic
+            }
             "Teleport" => crate::ir::ComponentKind::Teleport,
             "KeepAlive" => crate::ir::ComponentKind::KeepAlive,
             "Suspense" => crate::ir::ComponentKind::Suspense,
@@ -103,7 +119,10 @@ fn static_props<'a>(
 /// Ordinary user components and `<component :is>` (its `:is` checked once
 /// bindings attach). Teleport has a separate checked runtime contract;
 /// other built-ins and self references stay on the legacy lane.
-fn component_tag(tag: &str) -> bool {
+fn component_tag(tag: &str, span: vize_l0::Span, source: &str) -> bool {
+    if tag == "Component" && !vize_l0::general::is_authored_tag(source, span, tag) {
+        return true;
+    }
     if matches!(
         tag,
         "Teleport" | "KeepAlive" | "Suspense" | "Transition" | "TransitionGroup"

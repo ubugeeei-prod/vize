@@ -68,10 +68,29 @@ impl<'a> Context<'_, 'a> {
         let mut attributes = vize_l0::Vec::new_in(&self.allocator);
         let mut directives = vize_l0::Vec::new_in(&self.allocator);
         let pre = carrier.open.is_verbatim();
+        let mut component_name = None;
+        let mut selector = None;
+        let mut is_seen = false;
         if !pre {
             for (ordinal, attribute) in carrier.open.attrs.iter().enumerate() {
                 match self.attribute(region, ordinal, attribute) {
-                    Some(PreparedAttribute::Static(attribute)) => attributes.push(attribute),
+                    Some(PreparedAttribute::Static(attribute)) => {
+                        if attribute.name == "is"
+                            && !is_seen
+                            && !matches!(carrier.tag(), "component" | "Component" | "slot")
+                        {
+                            is_seen = true;
+                            component_name =
+                                attribute.value.and_then(|value| value.strip_prefix("vue:"));
+                            if component_name.is_some() {
+                                if carrier.tag() != "template" {
+                                    continue;
+                                }
+                                selector = Some(attributes.len());
+                            }
+                        }
+                        attributes.push(attribute);
+                    }
                     Some(PreparedAttribute::Directive(directive)) => {
                         directives.push(directive);
                     }
@@ -80,10 +99,28 @@ impl<'a> Context<'_, 'a> {
             }
         }
         let tag = carrier.tag();
-        let unsupported = matches!(
-            tag,
-            "template" | "slot" | "component" | "script" | "style" | "annotation-xml"
-        );
+        if tag == "template"
+            && directives.iter().any(|directive| {
+                directive.head.prefix == DirectivePrefix::Slot
+                    || directive.head.prefix == DirectivePrefix::Full
+                        && matches!(
+                            directive.head.name.slice(self.block().root_source()),
+                            "if" | "else-if" | "else" | "for" | "slot"
+                        )
+            })
+        {
+            component_name = None;
+        }
+        if component_name.is_some()
+            && let Some(ordinal) = selector
+        {
+            attributes.remove(ordinal);
+        }
+        let unsupported = (tag != "template" || component_name.is_none())
+            && matches!(
+                tag,
+                "template" | "slot" | "component" | "script" | "style" | "annotation-xml"
+            );
         let admission = if pre {
             // The actual native mode was checked before ignored attribute work.
             // Retained raw descendants must never be re-admitted.
@@ -111,12 +148,13 @@ impl<'a> Context<'_, 'a> {
             carrier,
             span,
             admission,
-            tag,
+            tag: component_name.unwrap_or(tag),
             namespace,
             children_namespace,
-            native: vize_l0::is_html_tag(tag)
-                || vize_l0::is_svg_tag(tag)
-                || vize_l0::is_math_ml_tag(tag),
+            native: component_name.is_none()
+                && (vize_l0::is_html_tag(tag)
+                    || vize_l0::is_svg_tag(tag)
+                    || vize_l0::is_math_ml_tag(tag)),
             attributes,
             directives,
         }

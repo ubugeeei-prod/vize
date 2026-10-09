@@ -50,7 +50,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
     }
 
     if el.tag_type == ElementType::Component
-        && (is_dynamic_component(el)
+        && (is_dynamic_component(el, ctx.source.as_str())
             || matches!(
                 el.tag,
                 "Teleport" | "teleport" | "Suspense" | "suspense" | "KeepAlive" | "keep-alive"
@@ -220,7 +220,7 @@ pub fn generate_element(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
             ctx.push("(");
 
             // Check for dynamic component (<component :is="..."> or <Component is="...">)
-            let is_dynamic = is_dynamic_component(el);
+            let is_dynamic = is_dynamic_component(el, ctx.source.as_str());
             let (dynamic_is, static_is) = if is_dynamic {
                 let dynamic = el.props.iter().find_map(|p| {
                     if let PropNode::Directive(dir) = p

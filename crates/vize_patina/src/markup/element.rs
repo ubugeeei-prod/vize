@@ -104,6 +104,7 @@ impl<'a> MarkupElement<'a> {
     }
 
     /// Tag name.
+    #[inline]
     pub fn tag(&self) -> &str {
         match self.inner {
             MarkupElementInner::Relief(node) => node.tag,
@@ -112,12 +113,17 @@ impl<'a> MarkupElement<'a> {
                 jsx_element_name(&jsx_element_ref(node).opening_element.name)
             }
             MarkupElementInner::JsxFragment { .. } => "",
+            MarkupElementInner::L2 {
+                surface: Some(element),
+                ..
+            } => element.tag(),
             MarkupElementInner::L2 { op, .. } => op.tag(),
             MarkupElementInner::L2Carrier { element, .. } => element.tag(),
         }
     }
 
     /// Element classification.
+    #[inline]
     pub fn kind(&self) -> MarkupElementKind {
         match self.inner {
             MarkupElementInner::Authored {
@@ -133,26 +139,36 @@ impl<'a> MarkupElement<'a> {
                 jsx_element_kind(&jsx_element_ref(node).opening_element.name)
             }
             MarkupElementInner::JsxFragment { .. } => MarkupElementKind::Template,
-            MarkupElementInner::L2 { op, surface, .. } => match op {
-                L2ElementOp::Slot(_) => MarkupElementKind::Slot,
-                _ if op.tag() == "template" && l2_template_is_special(op, surface) => {
-                    MarkupElementKind::Template
-                }
-                // A template classifies the way the lint-mode parse does: a
-                // component is a core built-in or a capitalized tag. L2's
-                // element/component split is DOM resolution (`is_native_tag`),
-                // which the lint lane's rules and snapshots are not written
-                // against.
-                _ if surface.is_some() => {
-                    if is_lint_component(op.tag()) {
-                        MarkupElementKind::Component
-                    } else {
-                        MarkupElementKind::Element
+            MarkupElementInner::L2 {
+                op: L2ElementOp::Slot(_),
+                ..
+            } => MarkupElementKind::Slot,
+            MarkupElementInner::L2 { op, surface, .. } => {
+                let tag = match surface {
+                    Some(element) => element.tag(),
+                    None => op.tag(),
+                };
+                match op {
+                    L2ElementOp::Slot(_) => MarkupElementKind::Slot,
+                    _ if tag == "template" && l2_template_is_special(op, surface) => {
+                        MarkupElementKind::Template
                     }
+                    // A template classifies the way the lint-mode parse does: a
+                    // component is a core built-in or a capitalized tag. L2's
+                    // element/component split is DOM resolution (`is_native_tag`),
+                    // which the lint lane's rules and snapshots are not written
+                    // against.
+                    _ if surface.is_some() => {
+                        if is_lint_component(tag) {
+                            MarkupElementKind::Component
+                        } else {
+                            MarkupElementKind::Element
+                        }
+                    }
+                    L2ElementOp::Component(_) => MarkupElementKind::Component,
+                    L2ElementOp::Element(_) => MarkupElementKind::Element,
                 }
-                L2ElementOp::Component(_) => MarkupElementKind::Component,
-                L2ElementOp::Element(_) => MarkupElementKind::Element,
-            },
+            }
             MarkupElementInner::L2Carrier { .. } => MarkupElementKind::Template,
         }
     }

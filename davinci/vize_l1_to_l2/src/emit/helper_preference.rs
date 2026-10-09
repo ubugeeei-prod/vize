@@ -23,6 +23,7 @@ use slot_order::{
 
 /// What the preference walk reads besides the region it is walking.
 pub(super) struct PreferCx<'a> {
+    pub(super) source: &'a str,
     pub(super) facts: &'a L2Facts,
     pub(super) for_wrappers: &'a SideTable<ForWrapper>,
     /// The script bindings, when the emit carries them: a component tag
@@ -148,7 +149,9 @@ fn prefer_op_helpers(
                 buf.prefer(Helper::RenderSlot);
             }
             directive::prefer_helpers(buf, bindings);
-            if !builtin::is_dynamic_component(component) && !cx.tag_is_binding(component.name) {
+            if !builtin::is_dynamic_component(component, cx.source)
+                && !cx.tag_is_binding(component.name)
+            {
                 buf.prefer(Helper::ResolveComponent);
             }
             walk.skip(bindings.len());

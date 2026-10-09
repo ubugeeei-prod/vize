@@ -35,7 +35,7 @@ pub(super) fn check(nodes: &[Node<'_>]) -> Result<()> {
         if !matches!(
             child.content,
             Content::Component {
-                kind: ComponentKind::Regular,
+                kind: ComponentKind::Regular | ComponentKind::Dynamic,
                 ..
             }
         ) {

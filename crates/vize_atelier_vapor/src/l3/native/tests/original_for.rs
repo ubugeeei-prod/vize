@@ -67,7 +67,7 @@ fn actual_original_for_generic_graph_does_not_mint_native_vapor_admission() {
             .all(|operand| operand.op != lowered.program.ops[0].id)
     );
     let retained = Retained::collect(&arena, file.artifact().root());
-    let result = super::super::NativeArtifact::admit(&lowered, &retained, &[]);
+    let result = super::super::NativeArtifact::admit(&lowered, &retained, &[], source);
     assert!(matches!(
         result,
         Err(AdmissionFailure::Invalid("missing required native operand"))

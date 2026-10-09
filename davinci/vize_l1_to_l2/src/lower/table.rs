@@ -53,20 +53,20 @@ fn lower_grouped_children<'a>(
     cx: &mut Cx<'a>,
     children: &[SurfaceChild<'a>],
     ns: Namespace,
-    starts_group: fn(&SurfaceChild<'_>) -> bool,
+    starts_group: fn(&Cx<'_>, &SurfaceChild<'_>) -> bool,
     mut lower_group: impl FnMut(&mut Cx<'a>, &[SurfaceChild<'a>]) -> Op<'a>,
 ) -> Vec<'a, Op<'a>> {
     let mut out: Vec<'a, Op<'a>> = Vec::new_in(&cx.allocator);
     let mut rest = children;
     while let Some(first) = rest.first() {
-        let grouped = starts_group(first);
+        let grouped = starts_group(cx, first);
         let len = if grouped {
-            group_len(rest, starts_group)
+            group_len(cx, rest, starts_group)
         } else {
             1 + rest
                 .iter()
                 .skip(1)
-                .take_while(|child| !starts_group(child))
+                .take_while(|child| !starts_group(cx, child))
                 .count()
         };
         let (segment, tail) = rest.split_at_checked(len).unwrap_or((rest, &[]));
@@ -82,10 +82,14 @@ fn lower_grouped_children<'a>(
 
 /// The length of the group opening `children`: through the last child
 /// that starts the group, across table gaps between them.
-fn group_len(children: &[SurfaceChild<'_>], starts_group: fn(&SurfaceChild<'_>) -> bool) -> usize {
+fn group_len(
+    cx: &Cx<'_>,
+    children: &[SurfaceChild<'_>],
+    starts_group: fn(&Cx<'_>, &SurfaceChild<'_>) -> bool,
+) -> usize {
     let mut end = 1;
     for (index, child) in children.iter().enumerate().skip(1) {
-        if starts_group(child) {
+        if starts_group(cx, child) {
             end = index + 1;
         } else if !is_table_gap(child) {
             break;
@@ -125,16 +129,22 @@ fn push_all<'a>(out: &mut Vec<'a, Op<'a>>, ops: Vec<'a, Op<'a>>) {
     }
 }
 
-fn starts_implicit_tbody(child: &SurfaceChild<'_>) -> bool {
+fn starts_implicit_tbody(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> bool {
     match child {
-        SurfaceChild::Element(element) => matches!(element.tag(), "tr" | "td" | "th"),
+        SurfaceChild::Element(element) => {
+            matches!(element.tag(), "tr" | "td" | "th")
+                && !super::element::identity::casts_component(cx, element)
+        }
         _ => false,
     }
 }
 
-fn starts_implicit_tr(child: &SurfaceChild<'_>) -> bool {
+fn starts_implicit_tr(cx: &Cx<'_>, child: &SurfaceChild<'_>) -> bool {
     match child {
-        SurfaceChild::Element(element) => matches!(element.tag(), "td" | "th"),
+        SurfaceChild::Element(element) => {
+            matches!(element.tag(), "td" | "th")
+                && !super::element::identity::casts_component(cx, element)
+        }
         _ => false,
     }
 }

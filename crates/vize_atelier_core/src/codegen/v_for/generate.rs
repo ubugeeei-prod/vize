@@ -41,7 +41,7 @@ pub fn generate_for_item(ctx: &mut CodegenContext, node: &TemplateChildNode<'_>,
             let key_exp = get_element_key(el);
             let is_template = el.tag_type == ElementType::Template;
             let is_component = el.tag_type == ElementType::Component;
-            let is_dynamic = is_component && is_dynamic_component(el);
+            let is_dynamic = is_component && is_dynamic_component(el, ctx.source.as_str());
             let prev_skip_scope_id = ctx.skip_scope_id;
             let unwrapped_child = unwrap_template_single_element(el);
             let gen_is_template = is_template && unwrapped_child.is_none();

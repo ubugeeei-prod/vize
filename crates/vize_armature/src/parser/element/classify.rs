@@ -36,7 +36,7 @@ impl<'a> Parser<'a> {
         }
 
         // Check if it's a component
-        if self.is_component(tag) {
+        if self.is_component(element) {
             return ElementType::Component;
         }
 
@@ -44,7 +44,8 @@ impl<'a> Parser<'a> {
     }
 
     /// Check if tag is a component
-    pub(in crate::parser) fn is_component(&self, tag: &str) -> bool {
+    pub(in crate::parser) fn is_component(&self, element: &ElementNode<'_>) -> bool {
+        let tag = element.tag;
         // Core built-in components
         if matches!(
             tag,
@@ -69,22 +70,23 @@ impl<'a> Parser<'a> {
         }
 
         if self.options.custom_renderer {
-            return tag.chars().next().is_some_and(|c| c.is_uppercase()) || tag.contains('-');
-        }
-
-        // Native tag check
-        if let Some(is_native) = self.options.is_native_tag {
+            if tag.chars().next().is_some_and(|c| c.is_uppercase()) || tag.contains('-') {
+                return true;
+            }
+        } else if let Some(is_native) = self.options.is_native_tag {
             if !is_native(tag) {
                 return true;
             }
-        } else {
-            // Default: check if starts with uppercase
-            if tag.chars().next().is_some_and(|c| c.is_uppercase()) {
-                return true;
-            }
+        } else if tag.chars().next().is_some_and(|c| c.is_uppercase()) {
+            return true;
         }
 
-        false
+        // Compiler policies resolve static casts; default lint parsing keeps
+        // the authored tag classification used by its existing rule corpus.
+        self.options.is_native_tag.is_some()
+            && !self.in_v_pre
+            && !element.props.iter().any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre"))
+            && element.props.iter().any(|prop| matches!(prop, PropNode::Attribute(attr) if attr.name == "is" && attr.value.as_ref().is_some_and(|value| value.content.starts_with("vue:"))))
     }
 
     /// Resolve the foreign (SVG/MathML) namespace for a start tag whose
