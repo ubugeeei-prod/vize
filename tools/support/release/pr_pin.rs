@@ -17,6 +17,9 @@ mod catalog;
 #[cfg(test)]
 #[path = "pr_pin_catalog_tests.rs"]
 mod catalog_tests;
+#[cfg(test)]
+#[path = "pr_pin_budget_tests.rs"]
+mod budget_tests;
 pub use candidate::{check_candidate, verify_candidate};
 #[path = "pr_pin_delivery.rs"]
 mod delivery;
@@ -35,6 +38,8 @@ pub use metadata::rewrite_guest_lock;
 #[cfg(test)]
 #[path = "pr_pin_recovery_tests.rs"]
 mod recovery_tests;
+#[path = "pr_pin_runs.rs"]
+mod runs;
 #[path = "pr_pin_start.rs"]
 mod start;
 #[path = "pr_pin_tags.rs"]

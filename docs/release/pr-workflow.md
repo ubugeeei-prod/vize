@@ -57,6 +57,26 @@ Resume the same source PR with its protocol:
 vp run release --resume SOURCE_PR --pin
 ```
 
+When the local execution environment cannot reach the genuine registry or
+GitHub, dispatch **Release Operator** on `main`. Choose `start` for the same
+official minor command or `resume` with the original source PR number. Its
+protected `release-operator` environment requires the dispatching maintainer's
+existing user credential as `RELEASE_OPERATOR_TOKEN`, with an exact `main`
+deployment branch policy. The entry installs the frozen dependency graph and
+refreshes the real Moon registry before invoking the public command.
+If main advanced after the runner installed its graph, the official starter
+refuses that cut before preparation; redispatch from fresh main. A hosted resume
+installs the original H dependency graph in its isolated worktree.
+
+The hosted operator has a four-hour cooperative watch budget inside its
+six-hour runner limit. It returns normally on expiration so the original exact
+operator lease cleanup runs; preserve the same source, pin and Release run and
+resume that source PR. Do not cancel a live operator to bypass its ownership
+receipt. Blocking child operations and ambiguous cleanup retain their existing
+recovery semantics. All original qualification, protected metadata admission,
+tag custody and public verification remain required. See the
+[hosted operator decision](./2026-10-09-hosted-release-operator.md).
+
 Resume reuses the authenticated source run and its artifacts and requests
 failed-job reruns on that same run. When recovering a cancelled run, verify that
 its cancelled promotion and dependent jobs resume successfully. Registry recovery

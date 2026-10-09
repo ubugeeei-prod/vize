@@ -150,6 +150,7 @@ export const toolingTestScopes = [
       "tests/tooling/release/release-fuzz-gate.test.ts",
       "tests/tooling/release/release-gate-concurrency.test.ts",
       "tests/tooling/release/release-local-guard.test.ts",
+      "tests/tooling/release/release-operator.test.ts",
       "tests/tooling/release/release-package-versions.test.ts",
       "tests/tooling/release/release-platforms.test.ts",
       "tests/tooling/release/release-pr.test.ts",

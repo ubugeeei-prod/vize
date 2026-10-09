@@ -1,4 +1,7 @@
-use super::super::{pr_github as github, pr_start};
+use super::super::{
+    pr_budget::{self, Budget},
+    pr_github as github, pr_start,
+};
 use super::{Source, first_parent, marker, metadata};
 use serde_json::Value;
 use std::{fs, path::Path};
@@ -40,7 +43,13 @@ pub(super) fn open_pr(
         .ok_or("Invalid created PR URL".into())
 }
 
-pub(super) fn integration_pr(source: &Source, bump: &str, root: &Path) -> Result<u64, String> {
+pub(super) fn integration_pr(
+    source: &Source,
+    bump: &str,
+    budget: Option<&Budget>,
+    root: &Path,
+) -> Result<u64, String> {
+    pr_budget::check(budget)?;
     let candidate = &source.candidate;
     let branch = format!("release-integration/{}", candidate.tag);
     let found = github::output(
@@ -97,31 +106,15 @@ pub(super) fn integration_pr(source: &Source, bump: &str, root: &Path) -> Result
     }
     let main = github::fetch_main(root)?;
     first_parent(&source.cut, &main, root)?;
-    let path = std::env::temp_dir().join(format!(
-        "vize-release-integration-{}-{}",
-        std::process::id(),
-        &main[..12]
-    ));
-    github::git(
-        &[
-            "worktree",
-            "add",
-            "--detach",
-            path.to_str().ok_or("Invalid integration path")?,
-            &main,
-        ],
-        root,
-    )?;
-    #[cfg(unix)]
-    if root.join("node_modules").is_dir() {
-        std::os::unix::fs::symlink(root.join("node_modules"), path.join("node_modules"))
-            .map_err(|e| e.to_string())?;
-    }
+    pr_budget::check(budget)?;
+    let path = pr_start::pinned_integration_worktree(&main, root)?;
     let result = (|| {
         if github::version(&path)? != source.base_version {
             return Err("Another version owns main; no new integration is allowed.".into());
         }
+        pr_budget::check(budget)?;
         pr_start::prepare(bump, &path)?;
+        pr_budget::check(budget)?;
         let head = github::git(&["rev-parse", "HEAD"], &path)?;
         metadata::verify_delta(
             &main,
@@ -130,6 +123,7 @@ pub(super) fn integration_pr(source: &Source, bump: &str, root: &Path) -> Result
             candidate.tag.trim_start_matches('v'),
             &path,
         )?;
+        pr_budget::check(budget)?;
         github::git(
             &["push", "origin", &format!("HEAD:refs/heads/{branch}")],
             &path,
