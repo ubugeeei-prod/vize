@@ -164,7 +164,7 @@ await test("a trusted GitHub-hosted miss seeds Actions without mounting a provid
 
 await test("a trusted seed includes the fresh artifact and is saved before unmount", () => {
   cacheFixture((fixture) => {
-    const result = executeCacheAction(fixture, fixture.context());
+    const result = executeCacheAction(fixture, { ...fixture.context(), role: "docs-example" });
     assert.equal(result.status, 0);
     const seeds = result.trace.filter((row) => row.kind === "cache-post");
     assert.equal(seeds.length, 3);
@@ -183,7 +183,11 @@ await test("a trusted seed includes the fresh artifact and is saved before unmou
 
 await test("a compatible prior target lookup saves the new exact seed without restoring over its clone", () => {
   cacheFixture((fixture) => {
-    const result = executeCacheAction(fixture, fixture.context(), { hit: "partial" });
+    const result = executeCacheAction(
+      fixture,
+      { ...fixture.context(), role: "docs-example" },
+      { hit: "partial" },
+    );
     assert.equal(result.status, 0);
     assert.ok(
       result.trace.filter((row) => row.kind === "cache").every((row) => row.lookup === true),
@@ -310,4 +314,19 @@ await test("target metadata cannot alias or escape the checkout", () => {
         rustCachePolicy({ ...fixture.context(), ...change }, { cwd: fixture.cwd }),
       );
   });
+});
+
+await test("fixture conditions reject unsupported atoms and unbalanced groups", () => {
+  for (const condition of [
+    "${{ inputs.key == 'test-scripts' || unsupported() }}",
+    "${{ inputs.key != 'test-scripts' && unsupported() }}",
+    "${{ (inputs.key == 'test-scripts' }}",
+    "${{ inputs.key == 'test-scripts') }}",
+  ])
+    cacheFixture((fixture) => {
+      assert.throws(
+        () => executeCacheAction(fixture, fixture.context(), { steps: [{ if: condition }] }),
+        /Unsupported fixture expression|Unbalanced fixture expression/,
+      );
+    });
 });

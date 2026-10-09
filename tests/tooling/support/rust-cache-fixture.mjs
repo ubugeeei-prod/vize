@@ -163,12 +163,30 @@ export function cacheFixture(callback) {
   }
 }
 
-function value(expression, inputs, outputs) {
+function value(expression, inputs, outputs, inner = false) {
+  if (!inner && !expression.includes("${{")) return expression;
   const expr = expression.replace(/^\s*\$\{\{\s*|\s*\}\}\s*$/g, "").trim();
-  if (expr.includes(" && "))
-    return expr.split(" && ").every((part) => value(part, inputs, outputs));
-  const equality = expr.match(/^(.*) == '(true|false)'$/);
-  if (equality) return value(equality[1], inputs, outputs) === equality[2];
+  for (const operator of [" || ", " && "]) {
+    let depth = 0;
+    for (let index = 0; index < expr.length; index++) {
+      if (expr[index] === "(") depth++;
+      if (expr[index] === ")") depth--;
+      if (depth < 0) throw new Error("Unbalanced fixture expression");
+      if (depth !== 0 || !expr.startsWith(operator, index)) continue;
+      const left = value(expr.slice(0, index), inputs, outputs, true);
+      const right = value(expr.slice(index + operator.length), inputs, outputs, true);
+      return operator === " || " ? left || right : left && right;
+    }
+    if (depth !== 0) throw new Error("Unbalanced fixture expression");
+  }
+  if (expr.startsWith("(") && expr.endsWith(")"))
+    return value(expr.slice(1, -1), inputs, outputs, true);
+  const equality = expr.match(/^(.*) (==|!=) '([A-Za-z0-9._-]+)'$/);
+  if (equality) {
+    const equal =
+      String(value(equality[1], inputs, outputs, true)).toLowerCase() === equality[3].toLowerCase();
+    return equality[2] === "==" ? equal : !equal;
+  }
   const step = expr.match(/^steps\.([\w-]+)\.outputs\.([\w-]+)$/);
   if (step) return outputs[step[1]]?.[step[2]] ?? "";
   const input = expr.match(/^inputs\.([\w-]+)$/);
@@ -176,7 +194,6 @@ function value(expression, inputs, outputs) {
   if (expr === "runner.environment") return inputs.runner;
   if (expr === "runner.os") return inputs.os;
   if (expr === "runner.arch") return inputs.arch;
-  if (!expression.includes("${{")) return expression;
   throw new Error(`Unsupported fixture expression: ${expr}`);
 }
 

@@ -102,7 +102,9 @@ runs:
         key: ${{ steps.cache-policy.outputs.git-key }}
         lookup-only: ${{ steps.cache-mounts.outputs.git == 'true' }}
     - name: Cache Rust target or seed it from the trusted sticky clone
-      if: ${{ steps.cache-policy.outputs.target-save == 'true' }}
+      # The mounted tooling target uses its existing provider post.
+      # Its repeated full archive exceeded the job deadline after tests passed.
+      if: ${{ steps.cache-policy.outputs.target-save == 'true' && (inputs.key != 'test-scripts' || steps.cache-mounts.outputs.target != 'true') }}
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         # Nested post steps retain inputs, but not this action's step outputs.
@@ -133,7 +135,7 @@ runs:
         path: ~/.cargo/git
         key: ${{ steps.cache-policy.outputs.git-key }}
     - name: Restore a Rust target without registering a save
-      if: ${{ steps.cache-policy.outputs.target-save == 'false' }}
+      if: ${{ steps.cache-policy.outputs.target-save == 'false' || (inputs.key == 'test-scripts' && steps.cache-mounts.outputs.target == 'true') }}
       uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ${{ inputs.target-path }}
