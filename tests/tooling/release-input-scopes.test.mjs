@@ -51,7 +51,28 @@ void test("hosted operator source and authority inputs select its audited contra
     "tools/commands/release/pr.rs",
     "tools/support/release/pr_start.rs",
     "tools/support/release/pr_pin_watch.rs",
+    "tools/support/release/pr_pin_retire.rs",
+    "tools/support/release/pr_pin_retire_archive.rs",
+    "tools/support/release/pr_pin_retire_ledger.rs",
+    "tools/support/release/pr_pin_retire_absence.rs",
+    "tools/support/release/pr_pin_retire_release.rs",
+    "tools/support/release/pr_budget.rs",
+    "tools/support/release/pr_pin_retire_guard.rs",
+    "tools/support/release/pr_pin_retire_attempt_fixtures.rs",
+    "tools/moon/cmd/release/main.mbt",
     "tests/tooling/support/fake-command.ts",
+  ]) {
+    assert.ok(selected(input).includes(contract), input);
+  }
+});
+
+void test("public absence source and copied fixtures select the existing audited contract", () => {
+  const contract = "tests/tooling/release/release-public-acceptance.test.ts";
+  for (const input of [
+    "tools/support/release/retirement_absence.ts",
+    "tools/support/release/retirement_evidence.ts",
+    "tests/tooling/support/release-retirement-absence-fixtures.ts",
+    "tests/tooling/support/release-retirement-marketplace-fixtures.ts",
   ]) {
     assert.ok(selected(input).includes(contract), input);
   }

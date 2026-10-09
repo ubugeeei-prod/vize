@@ -34,6 +34,23 @@ test("hosted operator keeps user authority on protected main and does not deadlo
   assert.equal(invocation.env.GITHUB_ACTOR, undefined);
   assert.equal(invocation.env.GITHUB_TRIGGERING_ACTOR, undefined);
   assert.equal(invocation.env.GITHUB_SHA, undefined);
+  assert.deepEqual(workflow.on.workflow_dispatch.inputs.operation.options, [
+    "start",
+    "resume",
+    "retire",
+  ]);
+  assert.equal(workflow.on.workflow_dispatch.inputs.operation.default, "start");
+  for (const [input, variable] of [
+    ["source_head", "RELEASE_SOURCE_HEAD"],
+    ["source_tag", "RELEASE_SOURCE_TAG"],
+    ["release_run", "RELEASE_RUN"],
+    ["operator_run", "RELEASE_ORIGINAL_OPERATOR_RUN"],
+  ]) {
+    assert.equal(workflow.on.workflow_dispatch.inputs[input].type, "string");
+    assert.equal(workflow.on.workflow_dispatch.inputs[input].default, "");
+    assert.equal(workflow.on.workflow_dispatch.inputs[input].required, false);
+    assert.equal(invocation.env[variable], `\${{ inputs.${input} }}`);
+  }
   assert.ok(
     operator.steps.some((step: { run?: string }) =>
       step.run?.includes("vp install --frozen-lockfile\nmoon update"),
@@ -192,6 +209,7 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
     role = "maintain",
     token = "test-user-token",
     triggeringActor = "maintainer",
+    retirement: { head?: string; tag?: string; run?: string; entry?: string } = {},
   ) =>
     spawnSync("bash", ["-c", invocation.run], {
       cwd: root,
@@ -205,6 +223,10 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
         GITHUB_REPOSITORY: "ubugeeei-prod/vize",
         RELEASE_OPERATION: operation,
         RELEASE_SOURCE_PR: source,
+        RELEASE_SOURCE_HEAD: retirement.head ?? "",
+        RELEASE_SOURCE_TAG: retirement.tag ?? "",
+        RELEASE_RUN: retirement.run ?? "",
+        RELEASE_ORIGINAL_OPERATOR_RUN: retirement.entry ?? "",
         TEST_OPERATOR_LOGIN: login,
         TEST_OPERATOR_ROLE: role,
       },
@@ -236,6 +258,63 @@ test("hosted entry invokes the unchanged public protocol only for its actual mai
       assert.notEqual(result.status, 0, JSON.stringify(input));
       assert.equal(fs.existsSync(capture), false);
       assert.equal(fs.existsSync(path.join(root, "injected")), false);
+    }
+    const retirement = { head: "a".repeat(40), tag: "v0.440.0", run: "43", entry: "44" };
+    const retire = (source = "42", fields = retirement, role = "maintain", actor = "maintainer") =>
+      invoke("retire", source, "maintainer", role, "test-user-token", actor, fields);
+    const accepted = retire();
+    assert.equal(accepted.status, 0, accepted.stderr);
+    assert.deepEqual(JSON.parse(fs.readFileSync(capture, "utf8")), [
+      "run",
+      "release",
+      "--retire",
+      "42",
+      "--head",
+      retirement.head,
+      "--tag",
+      retirement.tag,
+      "--run",
+      retirement.run,
+      "--operator-run",
+      retirement.entry,
+    ]);
+    fs.rmSync(capture);
+    const rejected = [
+      ...["", "0", "-1", "042", "42; touch injected"].map((source) => retire(source)),
+      ...["", "0", "-1", "043", "43; touch injected"].map((run) =>
+        retire("42", { ...retirement, run }),
+      ),
+      ...["", "0", "-1", "044", "44; touch injected"].map((entry) =>
+        retire("42", { ...retirement, entry }),
+      ),
+      ...["", "main", "a".repeat(39), "a".repeat(41), "g".repeat(40), `${retirement.head}\n`].map(
+        (head) => retire("42", { ...retirement, head }),
+      ),
+      ...["", "v1.440.0", "v0.0.0", "v0.0440.0", "v0.440.1", "v0.440.0-rc.1", "v0.440.0\n"].map(
+        (tag) => retire("42", { ...retirement, tag }),
+      ),
+      retire("42", retirement, "write"),
+      retire("42", retirement, "admin", "write-only-rerun-actor"),
+    ];
+    for (const result of rejected) {
+      assert.notEqual(result.status, 0, `${result.stdout}\n${result.stderr}`);
+      assert.equal(fs.existsSync(capture), false);
+      assert.equal(fs.existsSync(path.join(root, "injected")), false);
+    }
+    for (const operation of ["start", "resume"]) {
+      for (const [field, value] of Object.entries(retirement)) {
+        const result = invoke(
+          operation,
+          operation === "resume" ? "42" : "",
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          { [field]: value },
+        );
+        assert.notEqual(result.status, 0, `${operation}: ${field}`);
+        assert.equal(fs.existsSync(capture), false);
+      }
     }
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

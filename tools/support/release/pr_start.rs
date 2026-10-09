@@ -70,23 +70,44 @@ fn worktree_with_graph(
 }
 
 pub fn prepare(bump: &str, work: &Path) -> Result<(), String> {
+    prepare_with_target(bump, None, None, work)
+}
+
+pub(super) fn prepare_pinned_minor(
+    target: &str,
+    budget: Option<&super::pr_budget::Budget>,
+    work: &Path,
+) -> Result<(), String> {
+    prepare_with_target("minor", Some(target), budget, work)
+}
+
+fn prepare_with_target(
+    bump: &str,
+    target: Option<&str>,
+    budget: Option<&super::pr_budget::Budget>,
+    work: &Path,
+) -> Result<(), String> {
     // The task wrapper can provide workspace-relative MoonBit paths. Resolve
     // them before changing the child's directory to the isolated worktree.
     let original = env::current_dir().map_err(|error| error.to_string())?;
     let bin = env::var("MOON_BIN").ok();
     let home = env::var("MOON_HOME").ok();
     let mut command = preparation_command(&original, bin.as_deref(), home.as_deref());
+    command.args([
+        "run",
+        "--target",
+        "native",
+        "tools/moon/cmd/release",
+        "--",
+        bump,
+        "-y",
+        "--prepare-only",
+    ]);
+    if let Some(target) = target {
+        command.args(["--pinned-target", target]);
+    }
+    super::pr_budget::child_command(&mut command, budget)?;
     let status = command
-        .args([
-            "run",
-            "--target",
-            "native",
-            "tools/moon/cmd/release",
-            "--",
-            bump,
-            "-y",
-            "--prepare-only",
-        ])
         .current_dir(work)
         .stdin(std::process::Stdio::null())
         .status()

@@ -12,7 +12,7 @@ import { readRepoFile } from "../support/github-workflows.ts";
 
 const script = path.join(repoRoot, "tools/commands/release/pr.rs");
 
-test("public release CLI forwards pinned start and resume without bypassing its Rust protocol", () => {
+test("public release CLI forwards pinned start, resume and retirement through its Rust protocol", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-pinned-cli-"));
   const bin = path.join(root, "bin");
   const capture = path.join(root, "capture.json");
@@ -23,10 +23,23 @@ test("public release CLI forwards pinned start and resume without bypassing its 
     `require('node:fs').writeFileSync(${JSON.stringify(capture)}, JSON.stringify(process.argv.slice(2)));`,
   );
   try {
+    const retire = [
+      "--retire",
+      "42",
+      "--head",
+      "a".repeat(40),
+      "--tag",
+      "v0.440.0",
+      "--run",
+      "43",
+      "--operator-run",
+      "44",
+    ];
     const cases = [
       { args: ["--resume", "42"], protocol: ["resume", "42"] },
       { args: ["--resume", "42", "--pin"], protocol: ["resume", "42", "--pin"] },
       { args: ["patch", "-y", "--pin"], protocol: ["start", "patch", "--pin"] },
+      { args: retire, protocol: ["retire", "42", "a".repeat(40), "v0.440.0", "43", "44"] },
     ];
     for (const { args, protocol } of cases) {
       const result = runMoonScript("release", args, {
@@ -43,6 +56,79 @@ test("public release CLI forwards pinned start and resume without bypassing its 
     assert.notEqual(rejected.status, 0);
     assert.match(rejected.stderr, /--pin requires the release PR protocol/);
     assert.equal(fs.existsSync(capture), false);
+    const invalid = [
+      retire.slice(0, -1),
+      [...retire, "--pin"],
+      [...retire, "-y"],
+      ["--retire", "42"],
+      ...[1, 7, 9].flatMap((index) =>
+        ["0", "-1", "042", "42; touch injected"].map((value) =>
+          retire.map((arg, position) => (position === index ? value : arg)),
+        ),
+      ),
+      ...["", "main", "a".repeat(39), "a".repeat(41), "g".repeat(40)].map((head) =>
+        retire.map((arg, index) => (index === 3 ? head : arg)),
+      ),
+      ...["v1.440.0", "v0.0440.0", "v0.440.1", "v0.440.0-rc.1"].map((tag) =>
+        retire.map((arg, index) => (index === 5 ? tag : arg)),
+      ),
+      retire.map((arg, index) => (index === 2 ? "--run" : arg)),
+    ];
+    for (const args of invalid) {
+      const result = runMoonScript("release", args, {
+        env: { PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}` },
+      });
+      assert.notEqual(result.status, 0, JSON.stringify(args));
+      assert.equal(fs.existsSync(capture), false);
+      assert.equal(fs.existsSync(path.join(root, "injected")), false);
+    }
+    const inputs = ["Cargo.toml", "Cargo.lock", "package.json", "pnpm-lock.yaml"];
+    const before = inputs.map((file) => fs.readFileSync(path.join(repoRoot, file)));
+    const target = "0.440.0";
+    for (const args of [
+      ["minor", "-y", "--pinned-target", target],
+      ["patch", "-y", "--prepare-only", "--pinned-target", target],
+      ["minor", "-y", "--prepare-only", "--pinned-target"],
+      ["minor", "-y", "--prepare-only", "--pinned-target", target, "--pinned-target", target],
+    ]) {
+      const result = runMoonScript("release", args, {
+        env: { PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}` },
+      });
+      assert.notEqual(result.status, 0, JSON.stringify(args));
+      assert.equal(fs.existsSync(capture), false);
+      assert.deepEqual(
+        inputs.map((file) => fs.readFileSync(path.join(repoRoot, file))),
+        before,
+      );
+    }
+    writeFakeCommand(
+      bin,
+      "rust-script",
+      `
+      require('node:fs').writeFileSync(${JSON.stringify(capture)}, JSON.stringify(process.argv.slice(2)));
+      process.exit(1);
+    `,
+    );
+    const prepared = runMoonScript(
+      "release",
+      ["minor", "-y", "--prepare-only", "--pinned-target", target],
+      { env: { PATH: `${bin}${path.delimiter}${process.env.PATH ?? ""}` } },
+    );
+    assert.equal(prepared.status, 1, `${prepared.stdout}\n${prepared.stderr}`);
+    const current = /^version = "([^"]+)"$/m.exec(before[0].toString())?.[1];
+    assert.notEqual(current, undefined);
+    assert.deepEqual(JSON.parse(fs.readFileSync(capture, "utf8")), [
+      "tools/commands/release/pr.rs",
+      "validate-preparation-target",
+      "minor",
+      current,
+      target,
+    ]);
+    assert.match(prepared.stderr, /Pinned target was not authenticated; no release files changed/);
+    assert.deepEqual(
+      inputs.map((file) => fs.readFileSync(path.join(repoRoot, file))),
+      before,
+    );
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

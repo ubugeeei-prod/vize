@@ -6,7 +6,7 @@
 //! [package]
 //! edition = "2024"
 //! ```
-//! Driver source pin: hosted-operator-budget-v7.
+//! Driver source pin: unpublished-retirement-v9.
 
 #[path = "../../support/release/pr_budget.rs"]
 mod pr_budget;
@@ -53,6 +53,11 @@ fn run() -> Result<(), String> {
         ["rewrite-guest-lock", path, old, new] => pr_pin::rewrite_guest_lock(path, old, new, &root),
         ["start", bump] => pr_start::start(bump, &root),
         ["start", bump, "--pin"] => pr_start::start_pinned(bump, &root),
+        ["retire", number, head, tag, run, operator] => pr_pin::retire(
+            number.parse().map_err(|_| "Invalid original source PR number")?, head, tag,
+            run.parse().map_err(|_| "Invalid original Release run number")?,
+            operator.parse().map_err(|_| "Invalid original operator run number")?, &root),
+        ["validate-preparation-target", bump, base, target] => pr_pin::validate_preparation_target(bump, base, target, &root),
         ["resume", number] => {
             pr_start::resume(number.parse().map_err(|_| "Invalid PR number")?, &root)
         }
@@ -89,7 +94,7 @@ fn run() -> Result<(), String> {
             }
         }
         _ => Err(
-            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR>"
+            "Usage: pr.rs start <bump> [--pin] | resume <PR> [--pin] | retire <source PR> <H> <tag> <R> <original operator run> | validate|wait-promotion|validate-pinned|wait-promotion-pinned <PR> <SHA> <tag> | verify-pinned <PR> <SHA> <tag> <run> | verify-integration-candidate <integration PR> <candidate SHA> <base SHA> <integration head SHA> | check-integration-candidate <integration PR>"
                 .into(),
         ),
     }

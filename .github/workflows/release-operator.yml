@@ -4,13 +4,33 @@ on:
   workflow_dispatch:
     inputs:
       operation:
-        description: Start a fresh immutable minor cut or resume its original source PR
+        description: Start, resume, or retire an immutable minor cut
         type: choice
-        options: [start, resume]
+        options: [start, resume, retire]
         default: start
         required: true
       source_pr:
-        description: Original source PR number; required only for resume
+        description: Original source PR number; required for resume and retire
+        type: string
+        default: ""
+        required: false
+      source_head:
+        description: Exact original 40-hex source head; required only for retire
+        type: string
+        default: ""
+        required: false
+      source_tag:
+        description: Exact original v0.minor.0 tag; required only for retire
+        type: string
+        default: ""
+        required: false
+      release_run:
+        description: Original Release workflow run ID; required only for retire
+        type: string
+        default: ""
+        required: false
+      operator_run:
+        description: Original Release Operator entry run ID; required only for retire
         type: string
         default: ""
         required: false
@@ -61,6 +81,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.RELEASE_OPERATOR_TOKEN }}
           RELEASE_OPERATION: ${{ inputs.operation }}
           RELEASE_SOURCE_PR: ${{ inputs.source_pr }}
+          RELEASE_SOURCE_HEAD: ${{ inputs.source_head }}
+          RELEASE_SOURCE_TAG: ${{ inputs.source_tag }}
+          RELEASE_RUN: ${{ inputs.release_run }}
+          RELEASE_ORIGINAL_OPERATOR_RUN: ${{ inputs.operator_run }}
           VIZE_RELEASE_OPERATOR_TIMEOUT_SECONDS: "14400"
           VIZE_RELEASE_EXPECTED_CUT_SHA: ${{ inputs.operation == 'start' && github.sha || '' }}
         run: |
@@ -77,6 +101,11 @@ jobs:
           git config user.email "$id+$login@users.noreply.github.com"
           gh auth setup-git --hostname github.com
           case "$RELEASE_OPERATION" in
+            start|resume)
+              [[ -z "$RELEASE_SOURCE_HEAD" && -z "$RELEASE_SOURCE_TAG" && -z "$RELEASE_RUN" && -z "$RELEASE_ORIGINAL_OPERATOR_RUN" ]] || { echo "::error::Only retire accepts source head, tag, Release run and original operator run inputs"; exit 1; }
+              ;;
+          esac
+          case "$RELEASE_OPERATION" in
             start)
               test -z "$RELEASE_SOURCE_PR" || { echo "::error::A fresh cut cannot reuse a source PR input"; exit 1; }
               vp run release minor -y --pin
@@ -84,6 +113,12 @@ jobs:
             resume)
               [[ "$RELEASE_SOURCE_PR" =~ ^[1-9][0-9]*$ ]] || { echo "::error::Resume requires the original positive source PR number"; exit 1; }
               vp run release --resume "$RELEASE_SOURCE_PR" --pin
+              ;;
+            retire)
+              [[ "$RELEASE_SOURCE_PR" =~ ^[1-9][0-9]*$ && "$RELEASE_RUN" =~ ^[1-9][0-9]*$ && "$RELEASE_ORIGINAL_OPERATOR_RUN" =~ ^[1-9][0-9]*$ ]] || { echo "::error::Retire requires positive source PR, Release run and original operator run IDs"; exit 1; }
+              [[ "$RELEASE_SOURCE_HEAD" =~ ^[0-9a-fA-F]{40}$ ]] || { echo "::error::Retire requires the exact 40-hex source head"; exit 1; }
+              [[ "$RELEASE_SOURCE_TAG" =~ ^v0\.[1-9][0-9]*\.0$ ]] || { echo "::error::Retire requires the original v0.minor.0 tag"; exit 1; }
+              vp run release --retire "$RELEASE_SOURCE_PR" --head "$RELEASE_SOURCE_HEAD" --tag "$RELEASE_SOURCE_TAG" --run "$RELEASE_RUN" --operator-run "$RELEASE_ORIGINAL_OPERATOR_RUN"
               ;;
             *) echo "::error::Unknown release operation"; exit 1 ;;
           esac

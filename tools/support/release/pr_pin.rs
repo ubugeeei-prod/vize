@@ -35,6 +35,29 @@ pub(super) mod lock;
 #[path = "pr_pin_metadata.rs"]
 mod metadata;
 pub use metadata::rewrite_guest_lock;
+#[path = "pr_pin_retire.rs"]
+mod retire;
+#[path = "pr_pin_retire_absence.rs"]
+mod retire_absence;
+#[path = "pr_pin_retire_archive.rs"]
+mod retire_archive;
+#[path = "pr_pin_retire_evidence.rs"]
+mod retire_evidence;
+#[path = "pr_pin_retire_guard.rs"]
+mod retire_guard;
+#[path = "pr_pin_retire_release.rs"]
+mod retire_release;
+#[path = "pr_pin_retire_ledger.rs"]
+mod retire_ledger;
+#[path = "pr_pin_retire_source.rs"]
+mod retire_source;
+#[cfg(test)]
+#[path = "pr_pin_retire_lifecycle_tests.rs"]
+mod retire_lifecycle_tests;
+#[cfg(test)]
+#[path = "pr_pin_retire_tests.rs"]
+mod retire_tests;
+pub use retire::{retire, validate_preparation_target};
 #[cfg(test)]
 #[path = "pr_pin_recovery_tests.rs"]
 mod recovery_tests;
@@ -209,6 +232,7 @@ pub(super) fn run_identity(run: &Value, source: &Source, id: u64) -> Result<(), 
 }
 
 pub fn validate(number: u64, head: &str, tag: &str, root: &Path) -> Result<(), String> {
+    retire::reject_resume(tag, root)?;
     let repository = github::repository(root)?;
     let source = source(&repository, number, head, tag, false, root)?;
     if github::git(&["rev-parse", "HEAD"], root)? != head
