@@ -1,3 +1,4 @@
+import type { ResolvedMuseaToolbarControl } from "../toolbar.js";
 /**
  * Musea gallery API route handlers.
  *
@@ -51,6 +52,7 @@ export interface ApiRoutesContext {
   basePath: string;
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
+  toolbar?: ResolvedMuseaToolbarControl[];
   devSessionToken: string;
   apiBodyLimit?: number;
   processArtFile: (filePath: string) => Promise<void>;

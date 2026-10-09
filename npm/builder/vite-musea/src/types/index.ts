@@ -1,4 +1,10 @@
-export type { MuseaThemeColors, MuseaTheme, MuseaOptions, MuseaVrtOptions } from "./plugin.js";
+export type {
+  MuseaThemeColors,
+  MuseaTheme,
+  MuseaOptions,
+  MuseaVrtOptions,
+  MuseaPreviewContext,
+} from "./plugin.js";
 
 export type {
   MuseaTokenPreviewConfig,
@@ -28,3 +34,10 @@ export type {
   A11yNode,
   A11yCheck,
 } from "./api.js";
+
+export type {
+  MuseaToolbarControl,
+  MuseaToolbarOption,
+  MuseaGlobals,
+  MuseaGlobalValue,
+} from "../toolbar.js";

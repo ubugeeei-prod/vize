@@ -4,6 +4,8 @@ import { mdiSquareOutline, mdiRulerSquare } from "@mdi/js";
 import { useAddons } from "../composables/useAddons";
 import ViewportSelector from "./ViewportSelector.vue";
 import BackgroundPicker from "./BackgroundPicker.vue";
+import GlobalToolbar from "./GlobalToolbar.vue";
+import { toolbar } from "../composables/useGlobals";
 import MdiIcon from "./MdiIcon.vue";
 
 const { outlineEnabled, measureEnabled, toggleOutline, toggleMeasure } = useAddons();
@@ -64,6 +66,8 @@ onUnmounted(() => document.removeEventListener("keydown", onKeydown));
         <kbd class="toolbar-kbd">Alt+M</kbd>
       </button>
     </div>
+    <div v-if="toolbar.length" class="toolbar-separator" />
+    <GlobalToolbar />
   </div>
 </template>
 

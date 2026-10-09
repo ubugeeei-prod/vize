@@ -1,3 +1,4 @@
+import type { ResolvedMuseaToolbarControl } from "../toolbar.js";
 /**
  * Virtual module handling for the Musea Vite plugin.
  *
@@ -36,6 +37,7 @@ export interface VirtualModuleState {
   artFiles: Map<string, ArtFileInfo>;
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
+  toolbar?: ResolvedMuseaToolbarControl[];
   getConfigRoot: () => string;
   getScanRoots: () => string[];
   getVueVersion: () => MuseaVueVersion | undefined;
@@ -136,6 +138,7 @@ export function createLoad(state: VirtualModuleState) {
             state.resolvedPreviewCss,
             state.resolvedPreviewSetup,
             state.getVueVersion(),
+            state.toolbar,
           );
         }
       }

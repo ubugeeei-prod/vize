@@ -257,7 +257,7 @@ musea({
 });
 ```
 
-This is useful for installing plugins such as `vue-i18n` or `vue-router` in the preview iframe.
+Install preview plugins or add [global brand, theme and locale controls](./musea-globals.md).
 
 ```ts
 // musea.preview.ts

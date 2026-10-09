@@ -1,6 +1,13 @@
+import type { Ref } from "vue";
+import type { MuseaGlobals, MuseaToolbarControl } from "../toolbar.js";
 import type { CaptureConfig, CiConfig, ComparisonConfig, VrtOptions } from "./vrt.js";
 import type { A11yOptions } from "./api.js";
 import type { MuseaTokenPreviewConfig } from "../tokens/preview.js";
+
+export interface MuseaPreviewContext {
+  /** Replaced whenever a project toolbar value changes. Watch this ref directly. */
+  globals: Readonly<Ref<MuseaGlobals>>;
+}
 
 export type MuseaVueVersion = 0.11 | 1 | 2 | "2.7" | 3 | "legacy";
 
@@ -155,12 +162,18 @@ export interface MuseaOptions {
    * The function receives the Vue `App` instance and can install plugins
    * (e.g. vue-i18n, vue-router) before the component is mounted.
    *
-   * Signature: `(app: App) => void | Promise<void>`
+   * Signature: `(app: App, context?: MuseaPreviewContext) => void | Promise<void>`
+   * Context is provided only with nonempty toolbar controls; otherwise it is omitted.
+   * Configured globals are available before mount and update in place.
+   * Existing one-argument setup functions remain supported.
    *
    * Path is resolved relative to the project root.
    * @example 'musea.preview.ts'
    */
   previewSetup?: string;
+
+  /** Global preview controls. Toggles require exactly two options. Vue 3 / 2.7 only. */
+  toolbar?: MuseaToolbarControl[];
 
   /**
    * Host Vue version for preview runtime compatibility checks.

@@ -1,8 +1,10 @@
+import type { ResolvedMuseaToolbarControl } from "../toolbar.js";
 import { serializeScriptValue } from "../security.js";
 import type { MuseaTokenPreviewConfig } from "../tokens/preview.js";
 
 export interface MuseaGalleryGlobals {
   basePath: string;
+  toolbar?: ResolvedMuseaToolbarControl[];
   devSessionToken?: string;
   staticPreviews?: Record<string, Record<string, string>>;
   themeConfig?: { default: string; custom?: Record<string, unknown> };
@@ -26,6 +28,9 @@ export function generateGalleryGlobalsScript(globals: MuseaGalleryGlobals): stri
       `window.__MUSEA_TOKEN_PREVIEWS__=${serializeScriptValue(globals.tokenPreviewConfig)};`,
     );
   }
+  if (globals.toolbar?.length) {
+    parts.push(`window.__MUSEA_TOOLBAR__=${serializeScriptValue(globals.toolbar)};`);
+  }
   return parts.join("");
 }
 
@@ -34,11 +39,13 @@ export function generateDevGlobalsScript(
   devSessionToken: string,
   themeConfig?: MuseaGalleryGlobals["themeConfig"],
   tokenPreviewConfig?: MuseaTokenPreviewConfig,
+  toolbar?: ResolvedMuseaToolbarControl[],
 ): string {
   return generateGalleryGlobalsScript({
     basePath,
     devSessionToken,
     themeConfig,
     tokenPreviewConfig,
+    toolbar,
   });
 }

@@ -9,7 +9,7 @@ import {
   mdiChevronUp,
 } from "@mdi/js";
 import { useA11y, type A11yResult } from "../composables/useA11y";
-import { getPreviewUrl } from "../api";
+import { getPreviewUrl, vMuseaGlobals } from "../api";
 import { safeUrl } from "../utils/safeUrl";
 import MdiIcon from "./MdiIcon.vue";
 
@@ -41,7 +41,6 @@ onMounted(() => {
 function onIframeLoad() {
   iframeReady.value = true;
 }
-
 function runTest() {
   if (!iframeRef.value || !iframeReady.value) return;
   hasRun.value = true;
@@ -102,6 +101,7 @@ watch(result, (nextResult) => {
     <iframe
       v-if="safeUrl(previewUrl, 'preview')"
       ref="iframeRef"
+      v-musea-globals
       :src="safeUrl(previewUrl, 'preview')"
       class="a11y-iframe"
       title="Accessibility test preview"

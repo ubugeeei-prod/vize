@@ -51,6 +51,8 @@ export function handlePreviewWithProps(
       propsOverride,
       ctx.resolvedPreviewCss,
       ctx.resolvedPreviewSetup,
+      3,
+      ctx.toolbar,
     );
     res.setHeader("Content-Type", "application/javascript");
     res.end(moduleCode);
