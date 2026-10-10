@@ -9,7 +9,7 @@ import {
   mdiChevronUp,
 } from "@mdi/js";
 import { useA11y, type A11yResult } from "../composables/useA11y";
-import { useMessageListener } from "../composables/usePostMessage";
+import { usePreviewReady } from "../composables/previewReady";
 import { getPreviewUrl, vMuseaGlobals } from "../api";
 import { safeUrl } from "../utils/safeUrl";
 import MdiIcon from "./MdiIcon.vue";
@@ -22,7 +22,6 @@ const props = defineProps<{
 const { isKeyRunning, init, runA11y, getResult } = useA11y();
 
 const iframeRef = ref<HTMLIFrameElement | null>(null);
-const iframeReady = ref(false);
 const hasRun = ref(false);
 const expandedViolation = ref<string | null>(null);
 
@@ -39,13 +38,7 @@ onMounted(() => {
   init();
 });
 
-useMessageListener("musea:ready", (_payload, event) => {
-  if (event.source === iframeRef.value?.contentWindow) iframeReady.value = true;
-});
-
-watch(previewUrl, () => {
-  iframeReady.value = false;
-});
+const iframeReady = usePreviewReady(iframeRef, previewUrl);
 function runTest() {
   if (!iframeRef.value || !iframeReady.value) return;
   hasRun.value = true;

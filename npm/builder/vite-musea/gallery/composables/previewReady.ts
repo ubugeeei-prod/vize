@@ -1,3 +1,6 @@
+import { ref, watch, type Ref } from "vue";
+import { useMessageListener } from "./usePostMessage";
+
 /** Register before navigation: HTML load can precede the dynamic preview and async setup. */
 export function waitForPreviewReady(
   iframe: HTMLIFrameElement,
@@ -28,4 +31,16 @@ export function waitForPreviewReady(
       reject(error);
     });
   });
+}
+
+/** Track the same readiness signal for an iframe mounted by Vue. */
+export function usePreviewReady(iframe: Ref<HTMLIFrameElement | null>, previewUrl: Ref<string>) {
+  const ready = ref(false);
+  useMessageListener("musea:ready", (_payload, event) => {
+    if (event.source === iframe.value?.contentWindow) ready.value = true;
+  });
+  watch(previewUrl, () => {
+    ready.value = false;
+  });
+  return ready;
 }
