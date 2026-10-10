@@ -93,3 +93,16 @@ Explicit CLI missing files retain the historical `config file not found` message
 The first-layer formatting process fixture explicitly disables editor type checking. Its JSX routing capability therefore remains false even when the stored fresh JSX feature is true. Preserve both original formatting inputs and outputs; an additive active-typecheck process control advertises the native JSX route. The independent fresh-project whole diagnostic cases retain their original positive and TS2322 packets.
 
 The same preserved formatting packet exposed that the editor omitted Vite compiler whitespace. Carry this value from the single checked evaluation with formatter options and use the existing native Glyph builder for document, range and on-type formatting. Vite `preserve` now matches the CLI; dedicated formatter behavior remains unchanged.
+
+## Packed initializer plan successor
+
+The original #3956 TypeScript, JavaScript/checkJs and Vite+ shape modules remain
+unchanged as the named dedicated-config baseline. The release driver selects
+`CONFIG_FREE_PROJECT_SHAPES` for the current #8371 initializer: omit only the
+generated `vize.config.ts` and replace the complete feature/discovery plan with
+the project-settings/defaults outcome. Retain every other complete generated
+file, authored source, dependency plan, manager invocation and clean/broken/
+repaired diagnostic vector. Both initialization passes must leave every
+`vize.config.*` absent. Existing dedicated-user compatibility controls remain.
+Pure projection controls do not qualify a packed installation; fresh Actions
+and the actual generated-project runtime remain required before release credit.
