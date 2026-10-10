@@ -61,7 +61,7 @@ export const pathHostCallers: Record<string, readonly [number, number, number]> 
   "crates/vize_maestro/src/ide/diagnostics/corsa/relative_import_tests.rs": [0, 2, 0],
   "crates/vize_maestro/src/ide/file_rename/manual.rs": [1, 0, 0],
   "crates/vize_maestro/src/server/state/global_components.rs": [1, 0, 0],
-  "crates/vize_maestro/src/server/state/global_tag_names.rs": [1, 0, 0],
+  "crates/vize_maestro/src/server/state/global_tag_names.rs": [1, 1, 0],
   "crates/vize_maestro/src/server/state/workspace_project_files.rs": [2, 0, 0],
   "crates/vize_maestro/src/server/state/workspace_vue_files.rs": [4, 0, 0],
 };

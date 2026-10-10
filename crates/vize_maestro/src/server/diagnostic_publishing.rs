@@ -40,6 +40,7 @@ impl MaestroServer {
     pub(super) async fn publish_initial_sync_diagnostics(&self, uri: &Url, expected: i32) {
         let diagnostic_lock = self.state.diagnostic_lock(uri);
         let diagnostic_guard = diagnostic_lock.lock().await;
+        let stamp = self.state.corsa_request_stamp();
 
         let diagnostics = if self.state.documents.version(uri) == Some(expected) {
             if self.state.lsp_features().has_diagnostics() {
@@ -55,6 +56,7 @@ impl MaestroServer {
 
         if let Some(diagnostics) = diagnostics
             && self.state.documents.version(uri) == Some(expected)
+            && stamp.is_current(&self.state)
         {
             self.state
                 .cache_lint_hover_diagnostics(uri, expected, &diagnostics);
@@ -90,6 +92,10 @@ impl MaestroServer {
         expected: Option<i32>,
         #[cfg(feature = "native")] prepared: Option<SyncDiagnostics>,
     ) -> Option<CollectedDiagnostics> {
+        #[cfg(feature = "native")]
+        if self.state.project_context_retired() {
+            return None;
+        }
         #[cfg(feature = "native")]
         let scope = if self.state.is_lsp_typecheck_enabled() {
             Some(self.state.corsa_request_scope().await)
@@ -196,7 +202,9 @@ impl MaestroServer {
             stamp,
         } = collected;
         #[cfg(feature = "native")]
-        if stamp.is_some_and(|stamp| !stamp.is_current(&self.state)) {
+        if self.state.project_context_retired()
+            || stamp.is_some_and(|stamp| !stamp.is_current(&self.state))
+        {
             self.retry_current_diagnostics(uri);
             return;
         }

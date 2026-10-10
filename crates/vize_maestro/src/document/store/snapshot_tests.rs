@@ -1,4 +1,10 @@
 use super::DocumentStore;
+
+impl DocumentStore {
+    pub(crate) fn source_mutation_for_test(&self) -> impl Drop + '_ {
+        self.source_set_mutation()
+    }
+}
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 
 fn full_change(text: impl Into<String>) -> TextDocumentContentChangeEvent {

@@ -7,13 +7,18 @@ use crate::config::{
     VizeConfig,
 };
 
-use super::{LoadedRawConfig, checked::load_raw_editor_config_checked};
+use super::{
+    LoadedProjectConfig, LoadedRawConfig, checked::load_raw_editor_config_checked,
+    project_config_snapshot,
+};
 
 /// All LSP config values derived from one raw config evaluation.
 #[derive(Debug, Clone)]
 pub struct LoadedLspConfig {
     /// Configuration was absent or successfully parsed in this one evaluation.
     pub valid: bool,
+    /// The same raw evaluation retains ordered lint scopes and selected root.
+    pub project: LoadedProjectConfig,
     pub config: VizeConfig,
     pub source_path: Option<PathBuf>,
     pub features: ConfigFeatureFlags,
@@ -41,22 +46,32 @@ pub fn load_lsp_config_snapshot(path: Option<&Path>) -> LoadedLspConfig {
             )
         }
     };
-    let compiler_whitespace = loaded.config.compiler_whitespace();
-    let linter = loaded.config.linter();
-    let lint_rule_options = loaded.config.lint_rule_options().clone();
-    let language_server_unstable_flags = loaded.config.language_server_unstable_flags();
-    let request_timeout_ms = loaded.config.lsp_request_timeout_ms();
-    let (config, features) = loaded.config.into_config_and_features();
+    let mut snapshot = LoadedLspConfig::from_project(project_config_snapshot(loaded));
+    snapshot.valid = valid;
+    snapshot
+}
 
-    LoadedLspConfig {
-        valid,
-        config,
-        source_path: loaded.source_path,
-        features,
-        linter,
-        lint_rule_options,
-        language_server_unstable_flags,
-        request_timeout_ms,
-        compiler_whitespace,
+impl LoadedLspConfig {
+    fn from_project(project: LoadedProjectConfig) -> Self {
+        let document = &project.document;
+        let compiler_whitespace = document.compiler_whitespace();
+        let linter = document.linter();
+        let lint_rule_options = document.lint_rule_options().clone();
+        let language_server_unstable_flags = document.language_server_unstable_flags();
+        let request_timeout_ms = document.lsp_request_timeout_ms();
+        let (config, features) = document.clone().into_config_and_features();
+        let source_path = project.source_path.clone();
+        Self {
+            valid: true,
+            project,
+            config,
+            source_path,
+            features,
+            linter,
+            lint_rule_options,
+            language_server_unstable_flags,
+            request_timeout_ms,
+            compiler_whitespace,
+        }
     }
 }

@@ -2,11 +2,11 @@
 #![expect(
     clippy::disallowed_types,
     clippy::disallowed_methods,
-    reason = "documents arrive from lsp_types as std String and are handed back to std String consumers"
+    reason = "project owners share buffers and protocol consumers require std String"
 )]
 
-use std::sync::OnceLock;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::{Arc, OnceLock};
 
 use dashmap::DashMap;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
@@ -133,10 +133,11 @@ impl Document {
 }
 
 /// Thread-safe document store.
+#[derive(Clone)]
 pub struct DocumentStore {
-    documents: DashMap<Url, Document>,
-    revision: AtomicU64,
-    mutations: AtomicUsize,
+    documents: Arc<DashMap<Url, Document>>,
+    revision: Arc<AtomicU64>,
+    mutations: Arc<AtomicUsize>,
 }
 
 impl Default for DocumentStore {
@@ -149,9 +150,9 @@ impl DocumentStore {
     /// Create a new document store.
     pub fn new() -> Self {
         Self {
-            documents: DashMap::new(),
-            revision: AtomicU64::new(0),
-            mutations: AtomicUsize::new(0),
+            documents: Arc::new(DashMap::new()),
+            revision: Arc::new(AtomicU64::new(0)),
+            mutations: Arc::new(AtomicUsize::new(0)),
         }
     }
 

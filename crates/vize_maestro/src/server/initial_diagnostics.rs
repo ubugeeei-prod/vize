@@ -105,6 +105,7 @@ impl PendingInitialDiagnostics {
     }
 }
 
+#[derive(Clone)]
 pub(super) struct InitialDiagnosticsScheduler {
     sender: Option<mpsc::SyncSender<()>>,
     /// The active worker inserts into its queue without retaining a sender.
@@ -219,7 +220,12 @@ fn run_worker(
             // non-empty feedback before the delayed native type pass.
             let sync_job = { pending.lock().take_sync() };
             if let Some((uri, version)) = sync_job {
-                crate::runtime::block_on(worker.publish_initial_sync_diagnostics(&uri, version));
+                crate::runtime::block_on(async {
+                    let project = worker.for_document(&uri).await;
+                    project
+                        .publish_initial_sync_diagnostics(&uri, version)
+                        .await;
+                });
                 continue;
             }
             let Some(not_before) = pending.lock().next_not_before() else {
@@ -242,7 +248,8 @@ fn run_worker(
                 job.version
             );
             crate::runtime::block_on(async {
-                worker
+                let project = worker.for_document(&uri).await;
+                project
                     .publish_diagnostics_if_version(&uri, job.version)
                     .await;
                 tracing::info!(
@@ -251,7 +258,7 @@ fn run_worker(
                     job.version
                 );
                 // Opening an unsaved dependency changes its importers too.
-                worker
+                project
                     .publish_importer_diagnostics(&uri, Some(job.version))
                     .await;
             });

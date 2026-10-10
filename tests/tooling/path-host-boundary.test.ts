@@ -67,6 +67,9 @@ test("Maestro path and source IO compose without admitting extra source IO", () 
   assert.doesNotMatch(withoutHostRuntimeReferences(actual, file), forbidden);
   for (const extra of [
     "vize_carton::source_io::read_to_string(path);",
+    "vize_carton::path::canonicalize_non_verbatim(path);",
+    "vize_carton :: path :: canonicalize_non_verbatim(path);",
+    "vize_carton::path::normalize_windows_verbatim_path(path);",
     "use vize_carton::{source_io};",
     "use vize_carton::source_io::*;",
   ])

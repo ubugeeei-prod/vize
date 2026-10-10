@@ -37,8 +37,10 @@ impl MaestroServer {
         &self,
         params: DocumentHighlightParams,
     ) -> Result<Vec<DocumentHighlight>> {
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
-        self.navigation
+        server
+            .navigation
             .as_ref()
             .ok_or_else(Error::internal_error)?
             .highlights(&request.text_document.uri, request.position)
@@ -50,8 +52,10 @@ impl MaestroServer {
         &self,
         params: DocumentHighlightParams,
     ) -> Result<Vec<DocumentHighlight>> {
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
-        self.navigation
+        server
+            .navigation
             .as_ref()
             .ok_or_else(Error::internal_error)?
             .template_highlights(&request.text_document.uri, request.position)
@@ -62,8 +66,10 @@ impl MaestroServer {
         &self,
         params: GotoDefinitionParams,
     ) -> Result<Vec<Location>> {
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
-        self.navigation
+        server
+            .navigation
             .as_ref()
             .ok_or_else(Error::internal_error)?
             .template_definition(&request.text_document.uri, request.position)
@@ -75,8 +81,10 @@ impl MaestroServer {
         &self,
         params: ReferenceParams,
     ) -> Result<Vec<Location>> {
+        let server = self.for_pos(&params.text_document_position).await;
         let request = params.text_document_position;
-        self.navigation
+        server
+            .navigation
             .as_ref()
             .ok_or_else(Error::internal_error)?
             .template_references(
@@ -98,8 +106,10 @@ impl MaestroServer {
         &self,
         params: GotoDefinitionParams,
     ) -> Result<Option<Location>> {
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
-        self.navigation
+        server
+            .navigation
             .as_ref()
             .ok_or_else(Error::internal_error)?
             .definition(&request.text_document.uri, request.position)
@@ -108,8 +118,10 @@ impl MaestroServer {
     }
 
     pub(super) async fn native_references(&self, params: ReferenceParams) -> Result<Vec<Location>> {
+        let server = self.for_pos(&params.text_document_position).await;
         let request = params.text_document_position;
-        self.navigation
+        server
+            .navigation
             .as_ref()
             .ok_or_else(Error::internal_error)?
             .references(

@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { count } from "@shared/contracts";
+const value: VALUE_TYPE = count;
+const message="hello";
+</script>
+<template><p>{{ value }} {{ message }}</p></template>
+<style>p { color: red }</style>

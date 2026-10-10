@@ -15,6 +15,7 @@ pub(crate) struct CorsaRequestStamp {
 impl CorsaRequestStamp {
     pub(crate) fn is_current(self, state: &ServerState) -> bool {
         self.stable
+            && !state.project_context_retired()
             && state.corsa_environment_changes.load(Ordering::Acquire) == 0
             && self.documents.is_some()
             && self.documents == state.documents.stable_revision()

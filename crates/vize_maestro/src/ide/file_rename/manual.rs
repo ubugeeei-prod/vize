@@ -5,6 +5,7 @@
     reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
 )]
 
+mod documents;
 mod path;
 mod script;
 
@@ -12,11 +13,15 @@ use std::{
     collections::{HashMap, HashSet},
     fs,
     path::{Path, PathBuf},
-    sync::Mutex,
+    sync::{Arc, Mutex},
 };
 
 use ignore::{WalkBuilder, WalkState};
 use tower_lsp::lsp_types::{FileRename, Range, TextEdit, Url, WorkspaceEdit};
+
+pub(super) use documents::rename_open_documents;
+#[cfg(feature = "native")]
+pub(super) use documents::rename_project_open_documents;
 
 pub(super) use self::path::{
     RESOLVABLE_SCRIPT_EXTENSIONS, RenderStyle, apply_all_path_renames, candidate_exists,
@@ -51,17 +56,44 @@ pub(super) fn collect_import_rename_edits(
     renames: &[FileRename],
     only_vue_importers: bool,
 ) -> Option<WorkspaceEdit> {
+    collect_import_rename_edits_inner(state, None, renames, only_vue_importers)
+}
+
+#[cfg(feature = "native")]
+pub(super) fn collect_project_import_rename_edits(
+    owner: &Arc<ServerState>,
+    renames: &[FileRename],
+) -> Option<WorkspaceEdit> {
+    collect_import_rename_edits_inner(owner, Some(owner), renames, false)
+}
+
+fn collect_import_rename_edits_inner(
+    state: &ServerState,
+    owner: Option<&Arc<ServerState>>,
+    renames: &[FileRename],
+    only_vue_importers: bool,
+) -> Option<WorkspaceEdit> {
     let rename_targets = rename_targets(renames);
     if rename_targets.is_empty() {
         return None;
     }
 
     let workspace_root = workspace_root(state);
+    #[cfg(feature = "native")]
+    let roots = owner
+        .map(|owner| owner.workspace_root_paths())
+        .unwrap_or_default();
+    #[cfg(not(feature = "native"))]
+    let roots = Vec::<PathBuf>::new();
     let open_documents = snapshot_open_documents(state);
     let changes = Mutex::new(HashMap::new());
     let seen_paths = Mutex::new(HashSet::new());
 
-    WalkBuilder::new(&workspace_root)
+    let mut walker = WalkBuilder::new(roots.first().unwrap_or(&workspace_root));
+    for root in roots.iter().skip(1) {
+        walker.add(root);
+    }
+    walker
         .standard_filters(true)
         .hidden(true)
         .filter_entry(|entry| !vize_carton::path::is_git_metadata_path(entry.path()))
@@ -87,7 +119,7 @@ pub(super) fn collect_import_rename_edits(
                 }
 
                 if let Some((uri, edits)) =
-                    process_importer_path(state, path, kind, rename_targets, open_documents)
+                    process_importer_path(state, owner, path, kind, rename_targets, open_documents)
                     && let Ok(mut changes) = changes.lock()
                 {
                     changes.insert(uri, edits);
@@ -108,6 +140,7 @@ pub(super) fn collect_import_rename_edits(
 
         if let Some((uri, edits)) = process_source(
             state,
+            owner,
             document.uri,
             &path,
             &document.source,
@@ -131,45 +164,9 @@ pub(super) fn collect_import_rename_edits(
     }
 }
 
-pub(super) fn rename_open_documents(
-    state: &ServerState,
-    renames: &[FileRename],
-) -> Vec<(Url, Url)> {
-    let rename_targets = rename_targets(renames);
-    if rename_targets.is_empty() {
-        return Vec::new();
-    }
-
-    let mut renamed_documents = Vec::new();
-    let open_uris = state.documents.uris();
-
-    for old_uri in open_uris {
-        let Some(new_uri) = apply_all_uri_renames(&old_uri, &rename_targets) else {
-            continue;
-        };
-
-        if new_uri == old_uri {
-            continue;
-        }
-
-        if state.rename_document(&old_uri, new_uri.clone()) {
-            state.remove_virtual_docs(&old_uri);
-
-            if let Some(document) = state.documents.get(&new_uri) {
-                let content = document.text();
-                drop(document);
-                state.update_virtual_docs(&new_uri, &content);
-            }
-
-            renamed_documents.push((old_uri, new_uri));
-        }
-    }
-
-    renamed_documents
-}
-
 fn process_importer_path(
     state: &ServerState,
+    owner: Option<&Arc<ServerState>>,
     path: &Path,
     kind: ImporterKind,
     rename_targets: &[RenameTarget],
@@ -179,6 +176,7 @@ fn process_importer_path(
     if let Some(document) = open_documents.get(&normalized_path) {
         return process_source(
             state,
+            owner,
             document.uri.clone(),
             &normalized_path,
             &document.source,
@@ -189,17 +187,40 @@ fn process_importer_path(
 
     let uri = Url::from_file_path(&normalized_path).ok()?;
     let source = fs::read_to_string(&normalized_path).ok()?;
-    process_source(state, uri, &normalized_path, &source, kind, rename_targets)
+    process_source(
+        state,
+        owner,
+        uri,
+        &normalized_path,
+        &source,
+        kind,
+        rename_targets,
+    )
 }
 
 fn process_source(
     state: &ServerState,
+    owner: Option<&Arc<ServerState>>,
     uri: Url,
     path: &Path,
     source: &str,
     kind: ImporterKind,
     rename_targets: &[RenameTarget],
 ) -> Option<(Url, Vec<TextEdit>)> {
+    #[cfg(feature = "native")]
+    let routed = owner.map(|owner| {
+        owner
+            .document_project_state(&uri)
+            .unwrap_or_else(|| owner.current_primary_project_state())
+    });
+    #[cfg(feature = "native")]
+    let state = routed.as_deref().unwrap_or(state);
+    #[cfg(feature = "native")]
+    if owner.is_some() && !state.lsp_features().file_rename {
+        return None;
+    }
+    #[cfg(not(feature = "native"))]
+    let _ = owner;
     let future_path =
         apply_all_path_renames(path, rename_targets).unwrap_or_else(|| normalize_path_buf(path));
 

@@ -11,7 +11,9 @@ impl MaestroServer {
         &self,
         params: DocumentLinkParams,
     ) -> Result<Vec<DocumentLink>> {
-        self.navigation
+        let server = self.for_document(&params.text_document.uri).await;
+        server
+            .navigation
             .as_ref()
             .ok_or_else(Error::internal_error)?
             .module_document_links(&params.text_document.uri)

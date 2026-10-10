@@ -8,10 +8,44 @@ use tower_lsp::jsonrpc::Result;
 use super::MaestroServer;
 
 impl MaestroServer {
+    /// Bulk requests do not borrow the retired primary's Corsa transaction.
+    /// Each native owner acquires its own scope; the aggregate also refuses
+    /// results if any routing policy or shared authored buffer changed.
+    #[cfg(feature = "native")]
+    pub(super) async fn project_request<T>(
+        &self,
+        request: impl Future<Output = Result<T>>,
+    ) -> Result<T> {
+        if self.state.project_routing_shutting_down() {
+            return Err(Error::content_modified());
+        }
+        let generation = self
+            .state
+            .stable_project_routing_generation()
+            .ok_or_else(Error::content_modified)?;
+        let documents = self
+            .state
+            .documents
+            .stable_revision()
+            .ok_or_else(Error::content_modified)?;
+        let result = request.await;
+        if self.state.project_routing_shutting_down()
+            || self.state.stable_project_routing_generation() != Some(generation)
+            || self.state.documents.stable_revision() != Some(documents)
+        {
+            return Err(Error::content_modified());
+        }
+        result
+    }
+
     pub(super) async fn native_request<T>(
         &self,
         request: impl Future<Output = Result<T>>,
     ) -> Result<T> {
+        #[cfg(feature = "native")]
+        if self.state.project_context_retired() {
+            return Err(Error::content_modified());
+        }
         #[cfg(feature = "native")]
         let scope = if self.state.is_lsp_typecheck_enabled() {
             Some(self.state.corsa_request_scope().await)
@@ -19,6 +53,10 @@ impl MaestroServer {
             None
         };
         let reply = request.await;
+        #[cfg(feature = "native")]
+        if self.state.project_context_retired() {
+            return Err(Error::content_modified());
+        }
         #[cfg(feature = "native")]
         if let Some(scope) = scope
             && !scope.is_current()

@@ -1,7 +1,51 @@
 //! Actual configuration read helpers, with unchanged public visibility.
 use super::super::{LspFeatureConfig, ServerState};
 
+#[cfg(all(test, feature = "native"))]
+mod tests;
+
 impl ServerState {
+    /// Effective project Vue version used by type checking and formatting.
+    #[cfg(any(
+        feature = "native",
+        feature = "glyph",
+        feature = "experimental-source-navigation"
+    ))]
+    pub(crate) fn type_checker_vue_version(&self) -> vize_l0::config::VueVersion {
+        *self.type_checker_vue_version.read()
+    }
+
+    pub(super) fn install_type_checker_snapshot(
+        &self,
+        config: vize_l0::config::TypeCheckerConfig,
+        timeout_ms: u64,
+        source: &std::path::Path,
+    ) {
+        let mut settings = self.type_checker_config.write();
+        #[cfg(feature = "native")]
+        let mut origin = self.type_checker_config_origin.write();
+        *settings = (config, timeout_ms);
+        #[cfg(feature = "native")]
+        {
+            *origin = Some(source.to_path_buf());
+        }
+        #[cfg(not(feature = "native"))]
+        let _ = source;
+    }
+
+    #[cfg(feature = "native")]
+    pub(in crate::server::state) fn native_checker_settings(
+        &self,
+    ) -> (
+        vize_l0::config::TypeCheckerConfig,
+        u64,
+        Option<std::path::PathBuf>,
+    ) {
+        let settings = self.type_checker_config.read();
+        let origin = self.type_checker_config_origin.read();
+        (settings.0.clone(), settings.1, origin.clone())
+    }
+
     pub(super) fn apply_linter_features(&self, features: vize_l0::config::ConfigFeatureFlags) {
         self.linter_config.write().1 =
             vize_l0::config::LinterFeatureFlags::from_config_features(features, None, None);

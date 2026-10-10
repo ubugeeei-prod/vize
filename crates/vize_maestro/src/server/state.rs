@@ -15,6 +15,8 @@ mod lint_hover;
 mod module_links;
 #[cfg(feature = "experimental-source-navigation")]
 mod native_names;
+#[cfg(feature = "native")]
+mod project_contexts;
 mod resident;
 mod virtual_docs;
 mod workspace_folders;
@@ -89,6 +91,8 @@ pub use batch_cache::BatchTypeCheckCache;
 pub struct ServerState {
     /// Document store for managing open documents
     pub documents: DocumentStore,
+    #[cfg(feature = "native")]
+    project_contexts: project_contexts::ProjectContexts,
     #[cfg(feature = "experimental-source-navigation")]
     native_linked_editing: AtomicBool,
     #[cfg(feature = "experimental-source-navigation")]
@@ -139,6 +143,9 @@ pub struct ServerState {
     /// Type checker options shared by LSP diagnostics.
     /// Corsa options and timeout belong to the same config snapshot.
     type_checker_config: RwLock<(TypeCheckerConfig, u64)>,
+    /// Authored config origin; resolved paths never replace the applied values.
+    #[cfg(feature = "native")]
+    type_checker_config_origin: RwLock<Option<PathBuf>>,
     /// User-declared template globals shared by every virtual TypeScript path.
     global_types: RwLock<GlobalTypesConfig>,
     /// Vue 3 Options API binding-resolution opt-in from config.
@@ -146,9 +153,9 @@ pub struct ServerState {
     /// Vue 2.7 / Nuxt 2 type checker compatibility flag from config.
     type_checker_legacy_vue2: RwLock<bool>,
     type_checker_vue_version: RwLock<vize_l0::config::VueVersion>,
-    /// Opt-in type-aware LSP features for `.jsx`/`.tsx` Vue components (#1498).
-    /// Default off: a repository may contain React `.tsx` files that must not
-    /// be type-checked as Vue JSX. Set via `typeChecker.jsxTypecheck`.
+    /// Type-aware LSP features for `.jsx`/`.tsx` Vue components (#1498).
+    /// Fresh projects enable these; dedicated config retains its opt-in default.
+    /// Mixed React projects can disable them with `typeChecker.jsxTypecheck`.
     type_checker_jsx_typecheck: RwLock<bool>,
     experimental_patterned_template: AtomicBool,
     /// Linter options shared by LSP diagnostics.
@@ -223,8 +230,13 @@ pub struct ServerState {
 
 impl ServerState {
     /// Close a document and release any cached Corsa overlay immediately.
+    #[cfg(test)]
     pub(crate) fn close_document(&self, uri: &Url) {
         self.documents.close(uri);
+        self.forget_closed_document(uri);
+    }
+
+    pub(crate) fn forget_closed_document(&self, uri: &Url) {
         self.lint_hover_cache.remove(uri);
         self.resident.close_document(uri);
         #[cfg(feature = "native")]

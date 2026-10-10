@@ -14,6 +14,10 @@ impl ServerState {
         version: i32,
         diagnostics: &[Diagnostic],
     ) {
+        #[cfg(feature = "native")]
+        if self.project_context_retired() {
+            return;
+        }
         if self.documents.version(uri) != Some(version) {
             return;
         }

@@ -1,0 +1,84 @@
+name: Project configuration native editor
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - ".github/workflows/project-config-native.yml"
+      - "crates/vize/tests/project_config_cli**"
+      - "crates/vize/tests/support/lsp_process**"
+      - "tests/differential/project-config-native-receipt.ts"
+      - "tests/differential/project-config-native-run.ts"
+      - "crates/vize_carton/src/config/**"
+      - "crates/vize_maestro/src/server/**"
+      - "tests/_fixtures/differential/config/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "pnpm-lock.yaml"
+permissions:
+  contents: read
+concurrency:
+  group: project-config-native-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  VIZE_TEST_REQUIRE_TSGO: "1"
+  VIZE_INLAY_HINT_CAPTURE: ${{ github.workspace }}/target/project-config-native/processes
+jobs:
+  native-editor:
+    name: Required native config-free CLI and editor contracts
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: ${{ env.SOURCE_SHA }}
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
+        with: { toolchain: "1.99.0" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: project-config-native
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: true
+      - name: Pin complete source and build the actual production CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          rm -rf target/project-config-native
+          mkdir -p target/project-config-native
+          cargo test --locked --profile ci -p vize --test project_config_cli --no-run --message-format=json | tee target/project-config-native/prepare-tests.jsonl
+          cargo build --locked --profile ci -p vize
+          vp node tests/differential/build-receipt.ts
+          cp target/ci/vize.differential-build.json target/project-config-native/build.json
+      - name: Run all original project contracts with required native diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          vp node tests/differential/project-config-native-run.ts
+      - name: Authenticate every lifecycle case against the post-test production executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          vp node tests/differential/project-config-native-receipt.ts
+      - name: Upload complete source identity, decoded RPC and process terminal custody
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: project-config-native-${{ github.run_id }}-${{ github.run_attempt }}-${{ env.SOURCE_SHA }}
+          path: target/project-config-native/
+          if-no-files-found: error
+          retention-days: 7

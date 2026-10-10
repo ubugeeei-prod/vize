@@ -122,3 +122,12 @@ plans and the omitted dedicated config file, retaining the original archive.
 The current release audit is exactly 40/31: all original 37 contracts, the two
 genuine delivered broad contracts, and the named config-free broad contract.
 Packed execution across all eight manager cells remains an Actions obligation.
+
+## Nested project follow-up
+
+[Document project ownership](./2026-10-10-lsp-project-contexts.md) adds automatic
+nested-package settings without switching a shared request profile. The
+[Vite root decision](./2026-10-10-vite-cli-project-root.md) records standalone
+source selection and custom-root controls. Both require complete current-source
+and protected qualification, actual merge, and release replay before #8371
+receives complete acceptance.
