@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { preparePackage } from "../../../tools/support/release/jsr/prepare.mjs";
+import { preparePackage } from "../../tools/support/release/jsr/prepare.mjs";
 
-const root = fileURLToPath(new URL("../../../", import.meta.url));
+const root = fileURLToPath(new URL("../../", import.meta.url));
 await test("JSR publication pins every facade to the same exact release", (t) => {
   const output = mkdtempSync(resolve(tmpdir(), "vize-jsr-package-"));
   t.after(() => rmSync(output, { recursive: true, force: true }));

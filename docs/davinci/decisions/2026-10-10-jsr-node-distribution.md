@@ -15,6 +15,10 @@ the actual JSR CLI in fresh Node consumers on Linux, macOS and Windows. Retain
 registry source checksums, exact installed package versions, type checks,
 configuration/native compiler output and Vite bundle evidence.
 
+JSR package guards live in `tests/tooling/jsr-package.test.mjs`, preserving the
+existing audited 34-file release-contract inventory. Unknown JSR inputs retain
+the existing conservative full source gates; no selector or budget is narrowed.
+
 Normal releases use an opt-in `VIZE_JSR_ENABLED` variable so missing registry
 ownership cannot block urgent existing-product delivery. When enabled, JSR
 publication and published consumers form an additional Release run requirement.
