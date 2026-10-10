@@ -89,3 +89,7 @@ snapshot records validity after the same single checked evaluation; malformed
 dedicated/Vite files retain the historical editor fallback without applying new
 fresh defaults. Original invalid-JSON whole feature expectations remain unchanged.
 Explicit CLI missing files retain the historical `config file not found` message.
+
+The first-layer formatting process fixture explicitly disables editor type checking. Its JSX routing capability therefore remains false even when the stored fresh JSX feature is true. Preserve both original formatting inputs and outputs; an additive active-typecheck process control advertises the native JSX route. The independent fresh-project whole diagnostic cases retain their original positive and TS2322 packets.
+
+The same preserved formatting packet exposed that the editor omitted Vite compiler whitespace. Carry this value from the single checked evaluation with formatter options and use the existing native Glyph builder for document, range and on-type formatting. Vite `preserve` now matches the CLI; dedicated formatter behavior remains unchanged.
