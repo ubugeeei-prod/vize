@@ -84,6 +84,7 @@ impl Owned {
                 "host_profile":host,
                 "host_source":match host {
                     profile::HostProfile::Oxlint178=>"c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd",
+                    profile::HostProfile::Oxlint181=>"0b4e2e67f4193e7ebfcc64982275eb583ae82c83",
                     profile::HostProfile::Oxlint186=>"2ae2939bb2fd98796393658b21556b2a2467e047",
                 },
                 "compiled_archive_receipt_path":archive,
