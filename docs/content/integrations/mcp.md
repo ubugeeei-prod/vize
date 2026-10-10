@@ -5,139 +5,173 @@ title: MCP Server
 # MCP Server
 
 The Musea MCP server lets an MCP-compatible assistant read your project's component metadata:
-props, events, slots, variants, and design tokens. Use it when you have Musea art files and want
-help discovering components or writing examples from their actual APIs.
+props, emitted events, variants, and design tokens. Use it to discover components or draft
+examples from their actual APIs. It can also analyze props and emits directly from a Vue SFC.
 
 [Install the package](#installation), [connect your MCP client](#setup), then try a concrete
-request such as “List the variants for our Button component.” If you do not have art files yet,
-start with the [Musea guide](../guide/musea.md). The server is experimental; check the
+request such as “List the variants for our Button component.” For a component registry, start
+with the [Musea guide](../guide/musea.md) and add art files. The server is experimental; check the
 [package support tiers](../stability.md#package-support-tiers) before relying on its API.
 
 ## Installation
 
-Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then add the server to your project:
+Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/install), then run
+this command in the project that contains your components:
 
 ```bash
 vp install -D @vizejs/musea-mcp-server
 ```
 
+The installed binary is `musea-mcp`. It accepts the project root as a positional argument:
+
+```bash
+vp exec musea-mcp /absolute/path/to/project
+```
+
+The process waits for an MCP client over stdio; startup messages go to stderr. Stop this manual
+run before connecting your client. If you omit the root, the server uses `MUSEA_PROJECT_ROOT`,
+then its working directory. The client examples below set the root explicitly.
+
 ## Setup
 
 ### With Claude Code
 
-Add the MCP server to your Claude Code configuration:
+From your project directory, register the installed server:
+
+```bash
+claude mcp add --transport stdio --scope project vize-musea -- \
+  vp -C "$PWD" exec musea-mcp "$PWD"
+claude mcp get vize-musea
+```
+
+Project scope writes `.mcp.json` in your project root. Open Claude Code and use `/mcp` to
+check the connection and approve the project server when prompted. See the
+[official Claude Code MCP instructions](https://code.claude.com/docs/en/mcp#project-scope)
+for scopes and connection status.
+
+You can also add this entry to `.mcp.json` manually. Replace both project paths with your
+absolute project directory; preserve any existing entries in `mcpServers`:
 
 ```json
-// .claude/settings.json
 {
   "mcpServers": {
     "vize-musea": {
+      "type": "stdio",
       "command": "vp",
-      "args": ["dlx", "@vizejs/musea-mcp-server"]
+      "args": ["-C", "/absolute/path/to/project", "exec", "musea-mcp", "/absolute/path/to/project"]
     }
   }
 }
 ```
+
+The `-C` argument lets `vp exec` find your installed dependency, while the final argument
+selects the files Musea reads. If team members use different directories, adapt the paths
+using the [documented environment-variable expansion](https://code.claude.com/docs/en/mcp#environment-variable-expansion-in-mcp-json).
 
 ### With Claude Desktop
 
-Add to your Claude Desktop MCP configuration:
+Open Developer settings, choose **Edit Config**, and add an entry to
+`claude_desktop_config.json`. Replace `command` with the absolute path to your `vp` executable
+and both project paths with your project directory. Preserve other server entries:
 
 ```json
 {
   "mcpServers": {
     "vize-musea": {
-      "command": "vp",
-      "args": ["dlx", "@vizejs/musea-mcp-server"]
+      "command": "/absolute/path/to/vp",
+      "args": ["-C", "/absolute/path/to/project", "exec", "musea-mcp", "/absolute/path/to/project"]
     }
   }
 }
 ```
 
+Fully quit and restart Claude Desktop, then inspect the server connection and tools in Developer
+settings. The [official local-server guide](https://modelcontextprotocol.io/docs/develop/connect-local-servers)
+covers config locations and logs. An absolute executable path also avoids depending on the
+desktop application's shell `PATH`.
+
 ### With Other AI Assistants
 
-Any MCP-compatible AI assistant can use the server. The configuration pattern is the same — point the assistant to `vp dlx @vizejs/musea-mcp-server`.
+Configure a local stdio server using your client's configuration format. Use the same executable
+and arguments as the Desktop example, including both absolute project paths.
 
 ## Use Cases
 
+Replace the component names in these requests with names from your own project.
+
 ### Component Discovery
 
-Ask your AI assistant to find the right component:
+> “What button components do we have? Show me the variants for VFButton.”
 
-> "What button components do we have? Show me the variants for VFButton."
-
-The AI can query the MCP server to find all button-related components, their props, and available variants — then suggest the correct usage.
+Use `search_components` to find candidates, then `get_component` to inspect their metadata,
+props, and variants before choosing one.
 
 ### Code Generation
 
-Generate component usage with correct props:
+> “Create a form with our VFInput and VFTextarea components, including validation error states.”
 
-> "Create a form with our VFInput and VFTextarea components, including validation error states."
-
-The AI knows the exact prop names, types, and available variants from the MCP server, generating accurate code without hallucinating prop names.
+Ask the assistant to read the component details first and use the returned prop names and
+variant templates. Review the draft and run your project's checks before using it.
 
 ### API Reference
 
-Query component APIs programmatically:
+> “What props does VFNameBadgePreview accept? What are the valid values for user-role?”
 
-> "What props does VFNameBadgePreview accept? What are the valid values for user-role?"
-
-The AI returns the real prop definitions from your codebase, not generic guesses.
+`analyze_component` returns statically extracted props and emits from the resolved Vue source.
+When metadata is missing, inspect that source rather than inventing an API.
 
 ### Documentation Assistance
 
-> "Write documentation for our SponsorGrid component based on its props and variants."
+> “Write documentation for our SponsorGrid component based on its props and variants.”
 
-The AI can generate accurate documentation by inspecting the actual component metadata through MCP.
+`generate_docs` produces a Markdown draft for a component; `generate_catalog` covers the
+registry. Review the draft against the component source and intended usage.
 
 ## Capabilities
 
-The MCP server provides the following tools to AI assistants:
-
 ### Component Discovery
 
-- **List all components** — Browse all registered components with their categories, tags, and status
-- **Search components** — Find components by name, tag, or description
-- **Get component metadata** — Retrieve detailed information about a specific component
+- `list_components` lists registered art files with category, tags, status, and variant names.
+- `search_components` finds matches by title, description, category, tags, or component name.
+- `get_component` returns metadata, variants, source analysis, palette data, and resource links.
+- `recommend_components` ranks candidates for a described UI task.
 
 ### Component API
 
-- **Props** — Complete prop definitions with types, defaults, and required status
-- **Events** — Emitted events with payload types
-- **Slots** — Named slots with slot prop types
-- **Expose** — Publicly exposed methods and properties
+- `analyze_component` reports props, defaults, required status, and emitted events.
+- `get_palette` infers prop controls, options, and available defaults.
+- Component source resources let the assistant inspect APIs beyond the analysis response.
 
 ### Story Information
 
-- **Variant listing** — All variants defined in art files
-- **Variant source** — Template code for each variant
-- **Default variant** — Which variant is shown by default
+- `get_variant` returns a variant's template, metadata, and default status.
+- `generate_variants` returns an art-file draft from a Vue component.
+- `generate_csf` returns a Storybook CSF draft from an art file.
 
 ### Design Tokens
 
-- **Token listing** — All design tokens from the tokens file
-- **Token categories** — Colors, typography, spacing, breakpoints
-- **Token resolution** — Semantic tokens resolved to their primitive values
+- `get_tokens` reads configured design tokens as JSON or Markdown.
+- `search_tokens` searches names, category paths, values, and descriptions.
+- Set `--tokens-path tokens.json` or `MUSEA_TOKENS_PATH` to select a file or directory inside
+  your project. Otherwise the server searches `tokens/`, `design-tokens/`, and `style-dictionary/`.
 
 ## What is MCP?
 
-The Model Context Protocol is an open standard for connecting AI assistants (like Claude, ChatGPT, and others) to development tools. Instead of AI assistants guessing about your codebase, MCP provides structured access to real component data — props, events, slots, variants, and documentation.
-
-Vize's MCP server exposes component information from the Musea gallery, so your AI assistant has the same understanding of your components that a developer browsing the gallery would have.
+The Model Context Protocol connects AI assistants to tools and data. Musea exposes component
+metadata and source resources through that protocol, so an assistant can inspect your project's
+actual components before answering.
 
 ## How It Works
 
-```
+```text
 AI Assistant
-  ↕ MCP Protocol (JSON-RPC over stdio)
+  ↕ MCP (JSON-RPC over stdio)
 @vizejs/musea-mcp-server
   ↕ Reads art files and component sources
 Your Project (*.art.vue files + components)
 ```
 
-The MCP server:
-
-1. Discovers all `*.art.vue` files in your project
-2. Parses them using `vize_musea` to extract component metadata
-3. Exposes the metadata through MCP tools
-4. Responds to AI assistant queries in real-time
+The server scans the selected root for `*.art.vue` files, excluding `node_modules/` and `dist/`,
+and parses them through the native binding. Tools and resources expose their metadata and linked
+component sources on request. Nonempty scan results are cached for five seconds, so a newly
+added art file may appear on the next scan.

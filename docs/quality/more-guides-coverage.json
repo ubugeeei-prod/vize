@@ -213,7 +213,7 @@
       "route": "/integrations/mcp",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Client setup and full English/Japanese body reviewed against current primary client docs and server implementation; fresh browser and deployed acceptance remain pending."
     },
     {
       "route": "/philosophy",
