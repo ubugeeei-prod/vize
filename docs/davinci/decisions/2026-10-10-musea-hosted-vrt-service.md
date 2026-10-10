@@ -1,0 +1,17 @@
+# Hosted gallery VRT sessions
+
+Issue: [#8482](https://github.com/ubugeeei-prod/vize/issues/8482).
+
+The built VRT pane keeps its current CLI workflow and gains an explicit connection to a local `musea-vrt serve --gallery-url <fixed-gallery>` session. The companion reads the existing versioned manifest on every capture, uses its portable snapshot identities and exact preview URLs, and calls the existing real runner and report generators. It accepts only a known Art and a boolean update; concurrent captures are refused.
+
+The HTTP listener binds only an ephemeral `127.0.0.1` port. Application requests require the fixed gallery Origin and a random bearer printed by the CLI. Standard CORS preflight checks the exact Origin, method and requested headers; preflight cannot carry a bearer. Session credentials live in volatile memory and never enter a URL, manifest, browser storage, report or artifact. Artifact URLs are opaque session registrations, with authenticated whole PNG/JSON/HTML bytes; the gallery uses revocable Blob URLs for images and downloads.
+
+Chrome connections originate in a secure public gallery and use `targetAddressSpace: 'loopback'` following the [Chrome LNA guide](https://github.com/GoogleChrome/modern-web-guidance/blob/main/skills/modern-web-guidance/guides/security/local-network-access.md). Query only the granular `loopback-network` permission; never query the legacy combined permission, whose older implementation can crash the renderer. Unsupported granular queries fall back to an explicit connection attempt. Denied connections show a concise site-settings/CLI fallback.
+
+The service reloads the same manifest with redirects refused. An optional service-only runner hook prevents main-frame navigation outside the exact gallery origin and path before screenshots. Ordinary assets retain their existing behavior. A refused browser navigation may initialize snapshot ownership/reservations, but must produce no new baseline/report PNG or successful receipt.
+
+The VRT panel's complete existing scoped CSS is extracted unchanged before UI work. Each new source stays within 350 lines; the previously oversized panel shrinks. Existing capture deadlines, native rendering, test oracles and publisher authority remain intact.
+
+Required proof: source-native build, plain HTTPS static bytes after authored sources are deleted, test-only public address-space classification, real Chromium permission allow and deny, connection/new/match/physical color rebuild/diff/update/match, authenticated whole artifacts and malformed/foreign/redirect controls. Two local HTTP origins cannot prove public-to-loopback access. No web-security or LNA bypass is permitted.
+
+This branch is preparation on unmerged report/API/snapshot predecessors. Exact composed Actions, native Stack/protected delivery and later installed-release verification remain unfinished. The frozen 0.441 release does not wait for this service.
