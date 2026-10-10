@@ -20,13 +20,18 @@ on:
         required: false
         default: false
         type: boolean
+      level_memory_only:
+        description: Compare all104 original normal-mode allocation and RSS reports
+        required: false
+        default: false
+        type: boolean
       production_only:
         description: Measure whole-SFC shipping shapes on three independent reference runners
         required: false
         default: false
         type: boolean
 concurrency:
-  group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.production_only || false }}-${{ inputs.historical_sfc_parse || false }}
+  group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.production_only || false }}-${{ inputs.historical_sfc_parse || false }}-${{ inputs.level_memory_only || false }}
   cancel-in-progress: true
 env:
   CARGO_TERM_COLOR: always
@@ -37,7 +42,7 @@ env:
   DIALECT_GUARD_THRESHOLD_PERCENT: 2
 jobs:
   criterion-ab:
-    if: ${{ !inputs.production_only && !inputs.historical_sfc_parse }}
+    if: ${{ !inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only }}
     name: criterion-ab
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 120
@@ -160,7 +165,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
   dialect-guard:
-    if: ${{ !inputs.production_only && !inputs.historical_sfc_parse }}
+    if: ${{ !inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only }}
     name: dialect-guard
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 45
@@ -204,7 +209,7 @@ jobs:
             --out-dir "$GITHUB_WORKSPACE/dialect-guard-out" \
             --threshold "$DIALECT_GUARD_THRESHOLD_PERCENT"
   production-pairs:
-    if: ${{ inputs.production_only && !inputs.historical_sfc_parse }}
+    if: ${{ inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only }}
     name: production-pairs (${{ matrix.repetition }})
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
@@ -281,7 +286,7 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
   production-summary:
-    if: ${{ inputs.production_only && !inputs.historical_sfc_parse }}
+    if: ${{ inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only }}
     needs: production-pairs
     runs-on: ubuntu-latest
     permissions:
@@ -308,7 +313,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   sfc-parse-replay:
-    if: ${{ inputs.historical_sfc_parse }}
+    if: ${{ inputs.historical_sfc_parse && !inputs.level_memory_only }}
     strategy:
       fail-fast: false
       matrix: { repetition: [1, 2, 3] }
@@ -318,3 +323,10 @@ jobs:
       head_sha: ${{ inputs.head_sha }}
       repetition: ${{ matrix.repetition }}
       conflicting_modes: ${{ inputs.production_only || inputs.vapor_only }}
+  level-memory:
+    if: ${{ inputs.level_memory_only }}
+    uses: ./.github/workflows/level-memory-bench.yml
+    with:
+      base_sha: ${{ inputs.base_sha }}
+      head_sha: ${{ inputs.head_sha }}
+      conflicting_modes: ${{ inputs.production_only || inputs.vapor_only || inputs.historical_sfc_parse }}
