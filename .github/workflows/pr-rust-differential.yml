@@ -64,6 +64,8 @@ jobs:
         uses: ./.github/actions/test-rust-workspace-differential
         with:
           workspace-already-tested: "true"
+      - uses: ./.github/actions/retain-sfc-runtime
+        if: ${{ always() }}
       - name: Check fixture coverage
         if: ${{ inputs.run-rust }}
         run: rust-script tools/commands/ci/github/write-coverage-summary.rs
