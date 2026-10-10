@@ -65,3 +65,17 @@ complete Musea's separate hosted test runner, VRT quality, props editor, or
 remaining Devtools/unplugin experimental product work. Those surfaces already
 accept options without a dedicated configuration file and keep their current
 support boundaries.
+
+## Editor activation
+
+VS Code recognizes existing Vite, TypeScript, JavaScript, and dedicated Vize
+configuration markers in workspace folders and nested packages. It preserves
+the published enabled default and an explicit `vize.enable: false`. For a
+configured workspace it forwards only explicitly configured feature switches,
+so native project settings remain authoritative. Creating or deleting a marker
+restarts the client. The packaged real extension-host test exercises activation,
+formatting, a dedicated feature opt-out, and the editor's explicit override.
+
+Automatic per-document settings within one monorepo workspace and standalone
+CLI Vite-root parity remain separate acceptance work; these changes do not close
+#8371 until those behaviors and the full public Actions proofs are delivered.
