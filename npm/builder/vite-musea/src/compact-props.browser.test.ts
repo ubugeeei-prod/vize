@@ -94,6 +94,7 @@ void test(
         const fields = vector.names
           .map((name) => `  ${name === "scope.name" ? '"scope.name"' : name}?: string;`)
           .join("\n");
+        const unsupported = vector.names.includes("__proto__");
         assert.deepEqual(palette, {
           title: vector.title,
           componentTagName: "CompactProbe",
@@ -101,6 +102,7 @@ void test(
           groups: [],
           json: JSON.stringify({ title: vector.title, controls }, null, 2),
           typescript: `export interface ${title}Props {\n${fields}\n}\n`,
+          ...(unsupported ? { unsupportedProps: ["__proto__"] } : {}),
         });
         observed.analysis = await (
           await context.request.get(response.url().replace(/\/palette$/, "/analysis"))
@@ -128,10 +130,25 @@ void test(
               );
             });
           });
+        const initialValues = JSON.parse(
+          (await page.locator(".props-json-code code").textContent())!,
+        );
+        observed.initialValues = initialValues;
+        if (unsupported) {
+          assert.equal(
+            await page.getByRole("textbox", { name: "__proto__", exact: true }).isDisabled(),
+            true,
+          );
+          assert.match((await page.getByRole("note").textContent())!, /__proto__ is retained only/);
+        }
         const values = Object.fromEntries(
-          vector.names.map((name) => [name, fixture.editedValues[name]]),
+          vector.names.map((name) => [
+            name,
+            unsupported && name === "__proto__" ? initialValues[name] : fixture.editedValues[name],
+          ]),
         );
         for (const [name, value] of Object.entries(values)) {
+          if (unsupported && name === "__proto__") continue;
           await page.getByRole("textbox", { name, exact: true }).fill(value);
         }
         const view = (current: Record<string, string>) => ({
@@ -153,10 +170,13 @@ void test(
           .locator("body")
           .evaluate(() => Reflect.get(window, "__compactPropsMessage"));
         observed.message = JSON.parse(observed.messageRaw as string);
+        const applied = Object.fromEntries(
+          Object.entries(values).filter(([name]) => !unsupported || name !== "__proto__"),
+        );
         assert.deepEqual(observed.message, {
-          props: values,
-          keys: vector.names,
-          ownProto: vector.names.includes("__proto__"),
+          props: applied,
+          keys: vector.names.filter((name) => !unsupported || name !== "__proto__"),
+          ownProto: false,
           prototypeUnchanged: true,
         });
         await page.locator(".props-copy-btn").click();
@@ -164,6 +184,7 @@ void test(
         observed.copied = copied;
         assert.equal(copied, await page.locator(".props-usage-code code").textContent());
         assert.ok(copied.startsWith('<script setup lang="ts">'));
+        if (unsupported) assert.equal(copied.includes("__proto__"), false);
         const prefix = path.parse(vector.filename).name;
         const copiedFilename = `${prefix}Copied.vue`;
         await writeFile(path.join(root, "src", copiedFilename), copied);

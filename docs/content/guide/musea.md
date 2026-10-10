@@ -228,6 +228,11 @@ Musea can surface:
 
 The palette pipeline can infer interactive controls from component metadata and art definitions.
 
+Vue 3.5.41 does not apply a component prop literally named `__proto__`. Preserving that raw key in
+editor data does not prove that a preview applies it. Avoid this prop name;
+[#8533](https://github.com/ubugeeei-prod/vize/issues/8533) tracks explicit editor refusal and release
+acceptance.
+
 ## Design Tokens
 
 ![Musea Design Tokens](/musea-tokens.png)
