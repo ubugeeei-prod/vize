@@ -53,9 +53,33 @@ the extension auto-detects/downloads.
 
 ## Configuration
 
-Opening a Vue file now prompts you to apply a recommended workspace setup if the extension is still disabled or if no Vize capabilities are enabled yet.
-That quick setup writes `vize.enable`, `vize.lint.enable`, `vize.typecheck.enable`, `vize.editor.enable`, and `vize.ecosystem.enable` for the current workspace so diagnostics, hover, jump, and Vue ecosystem helpers work immediately.
-If you manually set only `vize.enable: true`, the extension uses that same recommended diagnostics, editor, and ecosystem profile instead of starting an empty language server.
+Open a Vue file in an existing Vite or TypeScript project to start Vize automatically.
+`vite.config.*` or `tsconfig.json` is sufficient; no separate Vize config or editor feature switches
+are required. The project defaults enable lint diagnostics, type checking, editor assistance,
+ecosystem helpers, and formatting. Explicit `vize.enable: false` always keeps the extension disabled.
+
+Configure project features through the top-level `vize` settings in your Vite config, for example:
+
+```ts
+export default {
+  vize: {
+    lsp: {
+      hover: false,
+      formatting: false,
+    },
+  },
+};
+```
+
+Explicit VS Code feature settings override project settings. Settings left unset preserve the
+project configuration and its defaults. Existing dedicated Vize configs retain their precedence
+and feature behavior, including opt-in formatting. The extension also detects project config
+files inside monorepo packages; open packages as separate workspace folders when they need
+different language-server configurations.
+
+For workspaces without a project config, setting only `vize.enable: true` uses the recommended
+diagnostics, editor, and ecosystem profile. The setup commands apply that profile to the workspace
+by writing explicit editor settings.
 
 The status bar item opens `Vize: Show Status`, a small command hub for switching profiles, selecting the `vize` executable, restarting the server, opening settings, and showing logs. If the server cannot be found, the same flow lets you pick a local binary instead of hunting through settings.
 
@@ -118,6 +142,11 @@ setup without changing the whole profile:
 | `vize.inlayHints.enable`       | `true`  | Inlay hints provider.                                                       |
 | `vize.fileRename.enable`       | `true`  | File rename edits for Vue imports.                                          |
 | `vize.autoInsert.enable`       | `false` | Experimental automatic insertion for refs, interpolation, tags, and quotes. |
+
+The table shows VS Code setting defaults. Unset settings defer to the project profile; in
+Vite/TypeScript projects, formatting is enabled unless a project setting or explicit
+`vize.formatting.enable: false` disables it. Choose `ubugeeei.vize` as your Vue default formatter
+to use Vize for format-on-save.
 
 `vize.ecosystem.enable` adds Vue Router route-name and file-route param completions, route-param
 diagnostics for `useRoute()`, Vue I18n key completions, workspace key validation, inlay previews,

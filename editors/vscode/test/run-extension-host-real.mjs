@@ -17,6 +17,7 @@ import { withPinnedFixtureWorkspace } from "../../../tests/_helpers/realworld-pa
 import { createRealHostEnvironment, runPackagedExtensionHost } from "./packaged-host-contract.mjs";
 import { readPinnedCreateVueHostResult } from "./pinned-create-vue-host-result.mjs";
 import { runTsxHostScenarios } from "./run-tsx-host-scenarios.mjs";
+import { runExistingConfigHostScenarios } from "./run-existing-config-host-real.mjs";
 import { retainRealHostFailure } from "./real-host-failure.mjs";
 import { prepareScenarioContracts } from "./prepare-scenario-contracts.mjs";
 
@@ -33,6 +34,13 @@ const vsixPath = path.join(sourceExtensionPath, "dist", "vize.vsix");
 const vscodeVersion = process.env.VIZE_TEST_VSCODE_VERSION ?? "1.107.1";
 
 const serverPath = resolveRealServerPath();
+await runExistingConfigHostScenarios(runVSCodeCommand, {
+  onOutput: writeCommandOutput,
+  serverPath,
+  sourceExtensionPath,
+  vscodeVersion,
+  vsixPath,
+});
 await runTsxHostScenarios(runVSCodeCommand, {
   onOutput: writeCommandOutput,
   serverPath,
