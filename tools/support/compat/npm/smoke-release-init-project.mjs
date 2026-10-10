@@ -12,6 +12,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { normalizeReportedFile } from "./smoke-release-init-paths.mjs";
+import { machineCheckReport } from "./smoke-release-init-outcome.mjs";
 import { satisfiesVersionRange } from "./smoke-release-semver.mjs";
 import { renderOutput, run, runResult } from "./smoke-process.mjs";
 
@@ -282,33 +283,13 @@ export function runProjectLocalCheck(projectRoot, extra, env = {}) {
   });
 }
 
-function renderInvocation(command, args, cwd, result) {
-  const rendered = renderOutput(result);
-  return [
-    `command: ${JSON.stringify([command, ...args])}`,
-    `cwd: ${cwd}`,
-    `status: ${result.status ?? "<null>"}`,
-    `signal: ${result.signal ?? "<none>"}`,
-    rendered === "" ? "stdout/stderr: <empty>" : rendered,
-  ].join("\n");
-}
-
 export function checkReport(projectRoot) {
   const args = [projectLocalVizeBin(projectRoot), "check", "--format", "json", "--quiet"];
   const result = runResult(process.execPath, args, {
     cwd: projectRoot,
     env: projectEnv(),
   });
-  const rendered = renderInvocation(process.execPath, args, projectRoot, result);
-  let report;
-  try {
-    report = JSON.parse(result.stdout);
-  } catch (error) {
-    throw new Error(`project-local vize check did not produce JSON\n${rendered}`, {
-      cause: error,
-    });
-  }
-  return { rendered, report, status: result.status };
+  return machineCheckReport(process.execPath, args, projectRoot, result);
 }
 
 export function reportedDiagnostics(report, projectRoot) {

@@ -77,7 +77,7 @@ watch(selectedVariantName, (name) => {
 });
 
 const variantSectionIds = computed<Record<string, string>>(() => {
-  const ids: Record<string, string> = {};
+  const ids: Record<string, string> = Object.create(null);
   const usedIds = new Map<string, number>();
 
   for (const [index, variant] of (art.value?.variants ?? []).entries()) {

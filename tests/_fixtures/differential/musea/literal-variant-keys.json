@@ -1,0 +1,45 @@
+{
+  "scope": "Authored literal variant own-data keys in source-native static gallery and dev Run VRT",
+  "variants": {
+    "Controls": [
+      "Default",
+      "Custom theme"
+    ],
+    "Keys": [
+      "__proto__",
+      "constructor",
+      "hasOwnProperty"
+    ]
+  },
+  "sources": [
+    {
+      "path": "tests/tooling/fixtures/musea/literal-variant-keys/Controls.art.vue",
+      "sha256": "d4bb54f6be66646f344026afa72addfef86f237ef703c9b1f024fd815de1fb57"
+    },
+    {
+      "path": "tests/tooling/fixtures/musea/literal-variant-keys/Keys.art.vue",
+      "sha256": "3f121d5b7e959bf18c368eb060656db8cbe61cb4b45ccd003c1d9e583206001e"
+    }
+  ],
+  "laws": [
+    "Every authored variant retains its own static preview URL through manifest and browser embedding",
+    "Every physical static preview renders the corresponding native authored button",
+    "Real dev API captures distinct PNG ownership and zero-diff repeats; actual VRT UI retains literal groups without prototype inheritance"
+  ],
+  "before": {
+    "head": "7854bab7739ab93303de2a5210d03b95bc0323f9",
+    "run": 38042404142,
+    "artifact": "musea-native-inline-7854bab7739ab93303de2a5210d03b95bc0323f9",
+    "static": [
+      "All five direct physical native previews and ordinary/custom gallery controls render",
+      "Own __proto__ URL absent in physical static JSON and actual browser globals",
+      "Proto iframe renders gallery index instead of authored button",
+      "Actual __proto__ section id and nav aria-controls are [object Object]"
+    ],
+    "dev": [
+      "Ordinary2new -> repeat2passed0diff, correct own groups",
+      "Literal3new -> repeat3passed0diff, distinct physical PNGs but empty groups",
+      "Two actual source console TypeErrors: groups[key].push is not a function; pageerror[]"
+    ]
+  }
+}

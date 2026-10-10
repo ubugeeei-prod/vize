@@ -1,0 +1,194 @@
+{
+  "purpose": "Public npm 0.440.0 macOS product diagnostic only; not official Linux acceptance or source-current proof",
+  "platform": "darwin",
+  "arch": "arm64",
+  "publicConsumer": "/tmp/vize-public-0440-browser-_wmzf31m",
+  "publicConsumerUnchanged": true,
+  "fixtures": [
+    {
+      "case": "ordinary",
+      "variantName": "State enabled",
+      "files": [
+        {
+          "file": "src/Host.vue",
+          "sha256": "3087f1c9c435eccf08fedd48050fd124ab5574ac5c85f508b6b561ea5a0e599c"
+        },
+        {
+          "file": "src/Host.art.vue",
+          "sha256": "29b14c1956a20cf9dd22b74161d97b304bbb4cb9944ed6edc494c6b4a68d85fc"
+        }
+      ]
+    },
+    {
+      "case": "colon",
+      "variantName": "State: enabled",
+      "files": [
+        {
+          "file": "src/Host.vue",
+          "sha256": "3087f1c9c435eccf08fedd48050fd124ab5574ac5c85f508b6b561ea5a0e599c"
+        },
+        {
+          "file": "src/Host.art.vue",
+          "sha256": "b13eb1f8d2379b0f91a9f2435f6c4305ee53945560d2bcb607ec90a201845dc0"
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "file": "custody.json",
+      "sha256": "ec007d2cbb7de10a3a6fe16fa175c1356f8d33b4480e885952620ee9a8f73285"
+    },
+    {
+      "file": "node_modules/@oxc-parser/binding-darwin-arm64/parser.darwin-arm64.node",
+      "sha256": "44f36100b4369d0c6e3c1498a81e4749f33df46a0e395114bf0229d301400251"
+    },
+    {
+      "file": "node_modules/@oxc-transform/binding-darwin-arm64/transform.darwin-arm64.node",
+      "sha256": "41d2f6c14386336afb54195c7bff3df563a7b16eb1c43c0b115fd840e5a6a886"
+    },
+    {
+      "file": "node_modules/@rolldown/binding-darwin-arm64/rolldown-binding.darwin-arm64.node",
+      "sha256": "df10a7e5dee35120b87ae2f0ea8b4e73e95d39a12601e50736a4f6bf1a407b1e"
+    },
+    {
+      "file": "node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "sha256": "e159f541bc865ac0295f6207b277be240bb4a551028e3f03729e352a42f9900b"
+    },
+    {
+      "file": "node_modules/@vizejs/native/index.js",
+      "sha256": "7e753facee0ac03a5e0cd913a4e502562c3ca74600df016346761d7beca51e87"
+    },
+    {
+      "file": "node_modules/@vizejs/native/native-binding.js",
+      "sha256": "13a15d0eaf0dd2e15f0aede8a17ae8c601fb9606d1b11903ce148428b8ef466e"
+    },
+    {
+      "file": "node_modules/@vizejs/vite-plugin-musea/dist/index.mjs",
+      "sha256": "405e92c9c1c149fc15248e5f01a8637cf01968a5e8858b48f8e32ecfcd7faa2c"
+    },
+    {
+      "file": "node_modules/@vizejs/vite-plugin/dist/index.mjs",
+      "sha256": "75ff71c5ed3fa1e99a824d4e12b2f447278cc7da5a125299f6c098214ecbd33c"
+    },
+    {
+      "file": "node_modules/fsevents/fsevents.node",
+      "sha256": "8e6e4ac89bec65903c90bc6ed7f17f45ecb2464d56fe4bf203620f75b6224292"
+    },
+    {
+      "file": "node_modules/lightningcss-darwin-arm64/lightningcss.darwin-arm64.node",
+      "sha256": "aee1601d7145d89f262d4c777f308ef06ed53046ee49b780d31a98f02db2e253"
+    },
+    {
+      "file": "node_modules/vite/dist/node/index.js",
+      "sha256": "66a3b711d9ec51d6feae35d7896831df78c7edf7dadaa3facab78324bb7f4a8a"
+    },
+    {
+      "file": "node_modules/vite/node_modules/fsevents/fsevents.node",
+      "sha256": "40f2f51199e4f5fc46fa6b985fb3461bb63e6cd86c62bfa9bcee45ed4438d5fb"
+    },
+    {
+      "file": "package-lock.json",
+      "sha256": "ae98d59cb066a5437574823658b917ef97525c6ad476e8d58814c6307f364cda"
+    },
+    {
+      "file": "package.json",
+      "sha256": "7f2e40d85fe11f0e305f0e1d91a07bc5e78e29a4bacf1e688ab907e3f7e1f60d"
+    }
+  ],
+  "results": [
+    {
+      "case": "ordinary",
+      "success": true,
+      "arts": [
+        {
+          "path": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary/src/Host.art.vue",
+          "title": "Native static variants",
+          "variants": [
+            "Default",
+            "State enabled"
+          ]
+        }
+      ],
+      "previews": {
+        "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary/src/Host.art.vue": {
+          "Default": "/__musea__/preview/7e5fc375de4cee2de6e9.html",
+          "State enabled": "/__musea__/preview/c4c10a86cd56ca9f9e95.html"
+        }
+      },
+      "emittedFiles": 114
+    },
+    {
+      "case": "colon",
+      "success": false,
+      "error": {
+        "name": "Error",
+        "message": "Build failed with 1 error:\n\n\u001b[31m[UNLOADABLE_DEPENDENCY] Error:\u001b[0m Could not load \\0musea-preview:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/colon/src/Host.art.vue:State: enabled\n   \u001b[38;5;246m\u256d\u001b[0m\u001b[38;5;246m\u2500\u001b[0m\u001b[38;5;246m[\u001b[0m \\0musea-static-runtime:3:38 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m\u2502\u001b[0m\n \u001b[38;5;246m3 \u2502\u001b[0m \u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m6\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m8\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m1\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m3\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m2\u001b[0m\u001b[38;5;249m0\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m0\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m1\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m>\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m(\u001b[0m\"virtual:musea-preview:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/colon/src/Host.art.vue:State: enabled\"\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                                      \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                                                                                                    \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 file name contained an unexpected NUL byte\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n",
+        "stack": "Build failed with 1 error:\n\n\u001b[31m[UNLOADABLE_DEPENDENCY] Error:\u001b[0m Could not load \\0musea-preview:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/colon/src/Host.art.vue:State: enabled\n   \u001b[38;5;246m\u256d\u001b[0m\u001b[38;5;246m\u2500\u001b[0m\u001b[38;5;246m[\u001b[0m \\0musea-static-runtime:3:38 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m\u2502\u001b[0m\n \u001b[38;5;246m3 \u2502\u001b[0m \u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m6\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m8\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m1\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m3\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m2\u001b[0m\u001b[38;5;249m0\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m0\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m1\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m>\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m(\u001b[0m\"virtual:musea-preview:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/colon/src/Host.art.vue:State: enabled\"\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  \u2502\u001b[0m                                      \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u252c\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500  \n \u001b[38;5;240m  \u2502\u001b[0m                                                                                                                    \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 file name contained an unexpected NUL byte\n\u001b[38;5;246m\u2500\u2500\u2500\u256f\u001b[0m\n\n    at aggregateBindingErrorsIntoJsError (file:///private/tmp/vize-public-0440-browser-_wmzf31m/node_modules/rolldown/dist/shared/error-CP8smW_P.mjs:48:18)\n    at unwrapBindingResult (file:///private/tmp/vize-public-0440-browser-_wmzf31m/node_modules/rolldown/dist/shared/error-CP8smW_P.mjs:18:128)\n    at #build (file:///private/tmp/vize-public-0440-browser-_wmzf31m/node_modules/rolldown/dist/shared/rolldown-build-4YnQkA76.mjs:3311:34)\n    at async buildEnvironment (file:///private/tmp/vize-public-0440-browser-_wmzf31m/node_modules/vite/dist/node/chunks/node.js:32794:64)\n    at async Object.build (file:///private/tmp/vize-public-0440-browser-_wmzf31m/node_modules/vite/dist/node/chunks/node.js:33216:19)\n    at async file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/build.mjs:38:20"
+      }
+    }
+  ],
+  "nodeVersion": "v25.8.1",
+  "nodeExecutable": "/opt/homebrew/bin/node",
+  "browser": {
+    "driver": "Playwright CLI separate named session",
+    "default": {
+      "url": "http://127.0.0.1:61832/__musea__/preview/7e5fc375de4cee2de6e9.html",
+      "html": "<html lang=\"en\"><head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Native static variants - Default</title>\n  <script>window.__MUSEA_BASE_PATH__=\"/__musea__\";</script>\n  <style>html,body{width:100%;height:100%;margin:0}body{font-family:system-ui,sans-serif;background:#fff;padding:1rem;overflow:auto;box-sizing:border-box}.musea-variant{min-height:calc(100vh - 2rem)}.musea-error{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:1rem;font-size:.875rem}.musea-loading{color:#6b7280;font-size:.875rem}.musea-bg-checkerboard{background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)!important;background-size:20px 20px!important;background-position:0 0,0 10px,10px -10px,-10px 0!important}</style>\n<link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Host.art-DCEUZCxE.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Host.art-CSe3a5Yv.js\"><link rel=\"stylesheet\" crossorigin=\"\" href=\"/assets/Host-BBpUd5Oi.css\"></head>\n<body>\n  <div id=\"app\" class=\"musea-variant\" data-art=\"/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary/src/Host.art.vue\" data-variant=\"Default\" data-v-app=\"\"><div data-variant=\"Default\"><button data-v-2491dc57=\"\" class=\"native-host\">Native host</button></div></div>\n  <script type=\"module\">\n    import \"../../assets/musea-static-runtime-Dzwxkkub.js\";\n    Promise.resolve().then(() => {\n      const loadMuseaPreview = window.__MUSEA_LOAD_PREVIEW__;\n      if (typeof loadMuseaPreview !== \"function\") {\n        throw new Error(\"Musea preview runtime failed to load\");\n      }\n      return loadMuseaPreview(\"7e5fc375de4cee2de6e9\");\n    }).catch((error) => {\n      const el = document.getElementById(\"app\");\n      if (el) el.textContent = error instanceof Error ? error.message : String(error);\n    });\n  </script>\n\n</body></html>",
+      "buttons": [
+        {
+          "text": "Native host",
+          "color": "rgb(12, 34, 56)",
+          "attributes": [
+            [
+              "data-v-2491dc57",
+              ""
+            ],
+            [
+              "class",
+              "native-host"
+            ]
+          ]
+        }
+      ],
+      "unresolved": 0,
+      "resources": [
+        "http://127.0.0.1:61832/assets/musea-static-runtime-Dzwxkkub.js",
+        "http://127.0.0.1:61832/assets/Host.art-DCEUZCxE.js",
+        "http://127.0.0.1:61832/assets/Host.art-CSe3a5Yv.js",
+        "http://127.0.0.1:61832/assets/Host-BBpUd5Oi.css",
+        "http://127.0.0.1:61832/favicon.ico"
+      ]
+    },
+    "ordinary": {
+      "url": "http://127.0.0.1:61832/__musea__/preview/c4c10a86cd56ca9f9e95.html",
+      "html": "<html lang=\"en\"><head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>Native static variants - State enabled</title>\n  <script>window.__MUSEA_BASE_PATH__=\"/__musea__\";</script>\n  <style>html,body{width:100%;height:100%;margin:0}body{font-family:system-ui,sans-serif;background:#fff;padding:1rem;overflow:auto;box-sizing:border-box}.musea-variant{min-height:calc(100vh - 2rem)}.musea-error{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:1rem;font-size:.875rem}.musea-loading{color:#6b7280;font-size:.875rem}.musea-bg-checkerboard{background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)!important;background-size:20px 20px!important;background-position:0 0,0 10px,10px -10px,-10px 0!important}</style>\n<link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Host.art-lk1f8EBh.js\"><link rel=\"modulepreload\" as=\"script\" crossorigin=\"\" href=\"/assets/Host.art-CSe3a5Yv.js\"><link rel=\"stylesheet\" crossorigin=\"\" href=\"/assets/Host-BBpUd5Oi.css\"></head>\n<body>\n  <div id=\"app\" class=\"musea-variant\" data-art=\"/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary/src/Host.art.vue\" data-variant=\"State enabled\" data-v-app=\"\"><div data-variant=\"State enabled\"><button data-v-2491dc57=\"\" class=\"native-host\">Native host</button></div></div>\n  <script type=\"module\">\n    import \"../../assets/musea-static-runtime-Dzwxkkub.js\";\n    Promise.resolve().then(() => {\n      const loadMuseaPreview = window.__MUSEA_LOAD_PREVIEW__;\n      if (typeof loadMuseaPreview !== \"function\") {\n        throw new Error(\"Musea preview runtime failed to load\");\n      }\n      return loadMuseaPreview(\"c4c10a86cd56ca9f9e95\");\n    }).catch((error) => {\n      const el = document.getElementById(\"app\");\n      if (el) el.textContent = error instanceof Error ? error.message : String(error);\n    });\n  </script>\n\n</body></html>",
+      "buttons": [
+        {
+          "text": "Native host",
+          "color": "rgb(12, 34, 56)",
+          "attributes": [
+            [
+              "data-v-2491dc57",
+              ""
+            ],
+            [
+              "class",
+              "native-host"
+            ]
+          ]
+        }
+      ],
+      "unresolved": 0,
+      "resources": [
+        "http://127.0.0.1:61832/assets/musea-static-runtime-Dzwxkkub.js",
+        "http://127.0.0.1:61832/assets/Host.art-lk1f8EBh.js",
+        "http://127.0.0.1:61832/assets/Host-BBpUd5Oi.css",
+        "http://127.0.0.1:61832/assets/Host.art-CSe3a5Yv.js"
+      ]
+    },
+    "note": "Both emitted native previews render one button, native scoped CSS rgb(12,34,56), no unresolved host. Only first favicon.ico is404. No official collector executed."
+  },
+  "originalConsumerFilesChecked": 2061,
+  "publicConsumerUnchangedAfterBrowser": true
+}

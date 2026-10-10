@@ -59,7 +59,11 @@ export async function fetchStaticDetail(
 }
 
 export function getStaticPreviewUrl(artPath: string, variantName: string): string | undefined {
-  return staticPreviews[artPath]?.[variantName];
+  if (!Object.hasOwn(staticPreviews, artPath)) return undefined;
+  const urls = staticPreviews[artPath];
+  if (!urls || !Object.hasOwn(urls, variantName)) return undefined;
+  const value = urls[variantName];
+  return typeof value === "string" ? value : undefined;
 }
 
 export function staticMutationError(): Error {
