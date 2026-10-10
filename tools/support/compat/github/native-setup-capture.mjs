@@ -1,6 +1,8 @@
 // Actual native setup inputs qualify a source-built affected-PR capture.
 // Prose/ledger replays do not. Protected merge groups remain unconditional.
 export function nativeSetupCaptureRequired(paths) {
+  const staticClassInput =
+    /^(?:davinci\/vize_l4\/(?:src\/targets(?:\.rs$|\/static_class\.rs$)|tests\/(?:native_dom_static_class\.rs$|fixtures\/native-dom-static-class-))|tests\/tooling\/native-dom-static-class-reference\.test\.ts$)/;
   const selectedSfcInput =
     /^(?:crates\/vize_atelier_sfc\/src\/native_selected(?:\.rs$|\/)|crates\/vize_atelier_sfc\/tests\/fixtures\/native_selected_sfc_click_vue_3_5_35\.json$|tests\/tooling\/native-selected-sfc-dom-(?:reference|capture-workflow)\.test\.ts$|tests\/tooling\/support\/native-selected-sfc-dom-runtime\.ts$|\.github\/actions\/test-native-selected-sfc-dom\/action\.yml$)/;
   const localHandlerInput =
@@ -12,6 +14,7 @@ export function nativeSetupCaptureRequired(paths) {
   return paths.some(
     (path) =>
       selectedSfcInput.test(path) ||
+      staticClassInput.test(path) ||
       selectedSetupInput.test(path) ||
       nativeDomInput.test(path) ||
       localHandlerInput.test(path) ||
