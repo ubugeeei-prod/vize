@@ -60,6 +60,24 @@ reported only after that unchanged workload's own gates; no 10x improvement
 is claimed. Fresh Actions, protected full native/corpus/instruction gates,
 actual signed merge and released installed replay remain required.
 
+Every case also requires a literal complete CLI report schema, program root,
+config/options and file membership, plus stock TypeScript AST confirmation of
+the generated import's exact physical target or unchanged authored `@x`.
+The stock TypeScript package payload is hashed before execution and checked
+unchanged afterwards. The CLI's existing auxiliary collection still lists
+the wildcard decoys in the two missing-selected-target cases; this corpus
+freezes that collector membership as compatibility, while the native import
+must remain authored and produce TS2307. That collection policy is not repaired.
+
+Local Rust 1.99.0 passes all eleven selector/suffix resolver laws and eight
+existing alias rewrite laws. The local source CLI passes all eight authored
+cases through both product routes, with 48 retained original/base/head process
+reports and successful server shutdowns. A separately pinned public Corsa
+7.0.2 execution of the old App-only suffix Rust law adds TS5102 for its retired
+`baseUrl` fixture option. That local law is unfinished; no diagnostic is hidden
+and the frozen suffix fixture is unchanged. Its native fixture/toolchain
+alignment remains a separate TODO.
+
 ## Remaining scope
 
 #3984 remains open for full project/build/watch/reference/declaration/LSP

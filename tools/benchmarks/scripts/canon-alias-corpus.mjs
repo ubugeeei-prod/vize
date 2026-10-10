@@ -1,7 +1,7 @@
 /** Authored #3984 inputs and independent complete diagnostic expectations. */
 import assert from "node:assert/strict";
 import { mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { corpusManifest } from "./type-snapshot-cli-corpus.mjs";
 
@@ -88,6 +88,38 @@ export function expectedCliDiagnostics(code) {
   return [
     ["App.tsx", `error:${expected.line}:${expected.column} [${expected.code}] ${expected.message}`],
   ];
+}
+
+export function expectedCliReport(item, root, code) {
+  const compilerOptions = JSON.parse(
+    readFileSync(join(root, "tsconfig.json"), "utf8"),
+  ).compilerOptions;
+  return {
+    files: item.cliFiles.map((file) => ({
+      file,
+      diagnostics:
+        file === "App.tsx" ? expectedCliDiagnostics(code).map(([, message]) => message) : [],
+    })),
+    programs: [
+      {
+        root: ".",
+        tsconfig: "tsconfig.json",
+        compilerOptions: {
+          ...compilerOptions,
+          paths: Object.fromEntries(
+            Object.entries(item.paths).map(([pattern, targets]) => [
+              pattern,
+              targets.map((target) => resolve(root, target)),
+            ]),
+          ),
+        },
+        files: ["App.tsx"],
+      },
+    ],
+    errorCount: code == null ? 0 : 1,
+    warningCount: 0,
+    fileCount: item.cliFiles.length,
+  };
 }
 
 export function expectedOriginalDiagnostics(code) {

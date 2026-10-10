@@ -24,6 +24,11 @@ TypeScript; the opt-in TSX CLI reports the complete project result. The same
 TSX project also runs through stock TypeScript and the actual native compiler.
 The driver retains every command, input hash, full reply, stdout, stderr,
 process status, executable hash and source SHA in the Actions artifact.
+Each case requires the complete literal CLI schema, program options/root and
+file membership; stock TypeScript's AST also checks the generated import's
+literal physical target or authored missing `@x`. The two missing-target
+cases retain the CLI collector's existing auxiliary decoy membership as a
+compatibility control; repairing that collection policy is separate scope.
 
 The baseline manifest preserves the observed six wrong results from public
 v0.439.0. Correct expectations come from the authored type contract and both

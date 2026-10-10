@@ -3,7 +3,8 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { performance } from "node:perf_hooks";
 import { assertBinariesUnchanged, fileSha256, hashInPlace } from "./benchmark-binary.mjs";
@@ -14,7 +15,7 @@ import {
   cases,
   fixtureRoot,
   prepareAliasCase,
-  expectedCliDiagnostics,
+  expectedCliReport,
   expectedOriginalDiagnostics,
   expectedServerPacket,
 } from "./canon-alias-corpus.mjs";
@@ -32,6 +33,7 @@ export function captureAliasCorpus({
 }) {
   let sequence = 0;
   const samples = [];
+  const ts = createRequire(import.meta.url)(join(dirname(typescriptPath), "../lib/typescript.js"));
   mkdirSync(join(directory, "raw"), { recursive: true });
   const fixture = corpusManifest(fixtureRoot);
   function execute(command, args, cwd, label, input) {
@@ -70,9 +72,9 @@ export function captureAliasCorpus({
   for (const item of cases) {
     const project = prepareAliasCase(join(directory, "inputs"), item, "tsx", vuePackageDir);
     writeJson(join(directory, "inputs", item.id, "tsx.manifest.json"), project.manifest);
-    for (const [name, command] of [
-      ["ts6", [process.execPath, typescriptPath]],
-      ["native7", [runtimePath]],
+    for (const { name, command } of [
+      { name: "ts6", command: [process.execPath, typescriptPath] },
+      { name: "native7", command: [runtimePath] },
     ]) {
       const original = execute(
         command,
@@ -100,22 +102,11 @@ export function captureAliasCorpus({
       );
       assert.equal(result.stderr, "", `${item.id}/${side}: unexpected check stderr`);
       const report = JSON.parse(result.stdout);
-      assert(Array.isArray(report.files));
-      assert(Array.isArray(report.programs));
-      assert.equal(report.warningCount, 0);
-      assert.equal(report.fileCount, report.files.length);
-      const diagnostics = report.files.flatMap((file) =>
-        file.diagnostics.map((message) => [
-          relative(project.root, resolve(project.root, file.file)).replaceAll("\\", "/"),
-          message,
-        ]),
-      );
       assert.deepEqual(
-        diagnostics,
-        expectedCliDiagnostics(expected),
-        `${item.id}/${side}: whole diagnostic packet`,
+        report,
+        expectedCliReport(item, project.root, expected),
+        `${item.id}/${side}: complete authored CLI report`,
       );
-      assert.equal(report.errorCount, diagnostics.length);
       assert.equal(result.status, expected == null ? 0 : 1);
       reports[side] = report;
     }
@@ -162,6 +153,32 @@ export function captureAliasCorpus({
       const { virtualTs, ...packet } = replies[0].result;
       assert.equal(typeof virtualTs, "string");
       assert(virtualTs.length > 0, "native project producer must execute");
+      const parsed = ts.createSourceFile("App.vue.ts", virtualTs, ts.ScriptTarget.Latest);
+      const imports = parsed.statements.filter(
+        (statement) =>
+          ts.isImportDeclaration(statement) &&
+          statement.importClause?.namedBindings != null &&
+          ts.isNamedImports(statement.importClause?.namedBindings) &&
+          statement.importClause.namedBindings.elements.some(
+            (element) => element.name.text === "value",
+          ),
+      );
+      assert.equal(imports.length, 1, "one authored value import must survive the producer");
+      assert(ts.isStringLiteral(imports[0].moduleSpecifier));
+      const module = imports[0].moduleSpecifier.text;
+      const mirror =
+        side === "base" && baseMode === "observed-regression"
+          ? item.beforeMirror
+          : item.afterMirror;
+      if (mirror == null) assert.equal(module, "@x", "missing selected route must remain authored");
+      else {
+        assert(isAbsolute(module), "a resolved alias must name its physical native mirror");
+        assert.equal(basename(module), mirror, "literal authored alias target");
+        assert.match(
+          module.replaceAll("\\", "/"),
+          /\/vize-canon\/editor\/sessions\/session-[^/]+\/projects\/[a-f0-9]{64}\//u,
+        );
+      }
       assert.deepEqual(
         packet,
         expectedServerPacket(expectedCode(item, side)),
@@ -200,12 +217,18 @@ export function main(argv = process.argv.slice(2)) {
   let metadata;
   try {
     const prepared = prepareRun(argv[0], argv[1], directory, ROOT);
-    const typescriptPath = realpathSync(join(ROOT, "node_modules/typescript/bin/tsc"));
+    const typescriptPath = realpathSync(
+      createRequire(realpathSync(join(ROOT, "node_modules/vite-plus/package.json"))).resolve(
+        "typescript/bin/tsc",
+      ),
+    );
     const typescriptPackage = JSON.parse(
       readFileSync(join(dirname(typescriptPath), "../package.json"), "utf8"),
     );
     assert.equal(typescriptPackage.version, "6.0.3");
     assert.equal(prepared.metadata.dependencies.runtimePackageVersion, "7.0.2");
+    const typescriptRoot = resolve(dirname(typescriptPath), "..");
+    const typescriptPayload = corpusManifest(typescriptRoot);
     const originals = {
       node: hashInPlace(realpathSync(process.execPath)),
       typescript: hashInPlace(typescriptPath),
@@ -229,6 +252,7 @@ export function main(argv = process.argv.slice(2)) {
       baseResolverSha256,
       baseMode,
       originals,
+      stockTypeScript: { root: typescriptRoot, version: "6.0.3", payload: typescriptPayload },
       driverSha256: fileSha256(fileURLToPath(import.meta.url)),
       corpusDriverSha256: fileSha256(join(ROOT, "tools/benchmarks/scripts/canon-alias-corpus.mjs")),
     };
@@ -247,6 +271,11 @@ export function main(argv = process.argv.slice(2)) {
     });
     assertBinariesUnchanged(prepared.binaries);
     assertBinariesUnchanged(originals);
+    assert.deepEqual(
+      corpusManifest(typescriptRoot),
+      typescriptPayload,
+      "stock TypeScript payload changed",
+    );
     writeJson(output, { ...metadata, ...results });
   } catch (error) {
     writeJson(join(directory, "failure.json"), {
