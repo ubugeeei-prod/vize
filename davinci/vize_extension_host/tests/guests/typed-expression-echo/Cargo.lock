@@ -208,7 +208,7 @@ dependencies = [
 
 [[package]]
 name = "vize_guest"
-version = "0.437.0"
+version = "0.439.0"
 dependencies = [
  "dlmalloc",
  "wit-bindgen",
