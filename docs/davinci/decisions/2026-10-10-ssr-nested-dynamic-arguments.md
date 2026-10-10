@@ -327,3 +327,14 @@ have the same fifteen complete snapshots and five whole ASTs as that baseline.
 These scoped local debug observations establish neither universal zero cost nor
 fresh Actions, measured 104/624, protected admission or actual delivery. The
 compile/feature-gate failures preceding this pass remain separate raw evidence.
+
+Exact aa89 source Check 38078001865 exposes a missing storage-ledger row and
+stale migration/v-on shards; full Check 38078037213 repeats the migration failure.
+Register only finish.rs's two existing arena-Vec type paths with no allocation
+category, and regenerate the two affected shards with the unchanged Node tools.
+The reviewed diff adds two stage rows and the existing @b.stop/v-on:click.stop
+spellings; source, fixture, policy and budget bytes are unchanged. Both generator
+checks and twelve tests across the three existing Node source-law targets pass.
+No Rust product build or Rust-wrapper suite ran. Original aa89 failures and
+source-bound local/runtime/f44-104 proof remain retained; fresh source/full/native,
+measured 104 and protected completion must qualify the corrected successor.
