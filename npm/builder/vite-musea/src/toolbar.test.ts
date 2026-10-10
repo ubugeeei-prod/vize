@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { runInNewContext } from "node:vm";
 import { normalizeToolbar, parseToolbarGlobals, resolveToolbarGlobals } from "./toolbar.ts";
 import { generatePreviewGlobals } from "./preview/globals.ts";
@@ -105,7 +106,7 @@ void test("preview initializes before setup, accepts only parent commands and cl
   assert.equal(handlers.has("message"), false);
 });
 
-void test("dev/static gallery config safely serializes controls and default previews are unchanged", () => {
+void test("dev/static config safely serializes controls and preview snapshots retain original custody", () => {
   const dangerous = normalizeToolbar([
     { ...toolbar[0], title: "</script><script>alert(1)</script>" },
   ]);
@@ -126,15 +127,28 @@ void test("dev/static gallery config safely serializes controls and default prev
   for (const [name, code] of [
     ["default", generatePreviewModule(art, "Default", "default", [], "/setup.ts")],
     ["props", generatePreviewModuleWithProps(art, "Default", "default", {}, [], "/setup.ts")],
-  ])
+  ]) {
+    const original = readFileSync(
+      new URL(
+        `../../../../tests/_fixtures/differential/musea/global-toolbar-${name}.js.txt`,
+        import.meta.url,
+      ),
+    );
+    assert.equal(
+      createHash("sha256").update(original).digest("hex"),
+      name === "default"
+        ? "47b45a7c2659270ef91292d5c9f8fd6d0e03eaffbbcf434631ff28291c036dfc"
+        : "1f58dcc03ceecfa048520564027c72b163a58aaec673eb17a89a5e0ba9d86ab0",
+    );
     assert.equal(
       code,
       readFileSync(
         new URL(
-          `../../../../tests/_fixtures/differential/musea/global-toolbar-${name}.js.txt`,
+          `../../../../tests/_fixtures/differential/musea/preview-prop-snapshots-${name}.js.txt`,
           import.meta.url,
         ),
         "utf8",
       ),
     );
+  }
 });

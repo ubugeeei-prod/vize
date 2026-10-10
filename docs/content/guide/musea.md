@@ -59,7 +59,7 @@ vp dev
 
 Open `http://localhost:5173/__musea__`.
 
-See [Musea Hosting](./musea-hosting) for the CLI wrapper, static deployment, and test requirements.
+See [Musea Hosting](./musea-hosting.md) for the CLI wrapper, static deployment, and test requirements.
 
 ## Shared Config
 

@@ -164,6 +164,7 @@ export default class Vue {
 }
 export const defineComponent = (options) => options;
 export const reactive = (value) => value;
+export const shallowRef = (value) => ({ value });
 export const h = (...args) => ({ args });
 `;
 }
