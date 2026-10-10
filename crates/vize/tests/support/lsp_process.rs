@@ -28,6 +28,10 @@ use capture::Capture;
 mod evidence;
 use evidence::Evidence;
 
+#[path = "lsp_process/passive.rs"]
+mod passive;
+use passive::Passive;
+
 #[path = "lsp_process/protocol.rs"]
 mod protocol;
 use protocol::read_message;
@@ -44,6 +48,7 @@ pub struct LspProcess {
     stderr: Arc<Mutex<Vec<u8>>>,
     status: Option<ExitStatus>,
     capture: Option<Capture>,
+    passive: Option<Passive>,
     evidence: Evidence,
     stdout_joined: Option<bool>,
     stderr_joined: Option<bool>,
@@ -93,11 +98,16 @@ impl LspProcess {
             stderr: Arc::clone(&stderr),
             status: None,
             capture: None,
+            passive: None,
             evidence: Evidence::default(),
             stdout_joined: None,
             stderr_joined: None,
         };
         process.capture = Capture::new(process.child.as_ref().unwrap().id(), &command);
+        process.passive = Passive::new(process.child.as_ref().unwrap().id(), &command);
+        if process.passive.is_some() {
+            process.retain_protocol();
+        }
 
         let capture = process.capture.clone();
         let evidence = process.evidence.clone();
@@ -304,6 +314,15 @@ impl LspProcess {
 impl Drop for LspProcess {
     fn drop(&mut self) {
         self.shutdown();
+        if let Some(passive) = self.passive.take()
+            && let Err(error) = passive.persist(self.terminal_evidence())
+        {
+            // Observation errors must not replace an original assertion panic.
+            let _ = writeln!(
+                std::io::stderr().lock(),
+                "passive LSP evidence could not be persisted: {error}"
+            );
+        }
     }
 }
 
