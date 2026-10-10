@@ -124,14 +124,14 @@ function normalizeEmphasisBoundaries(markdown: string) {
   const prose = protectedText.replace(
     /(?<![\\*_])(\*\*|__|\*|_)(?![*_\s])([^\n]+?)\1(?![*_])/g,
     (whole: string, _marker: string, content: string, offset: number) => {
-      const before = [...protectedText.slice(0, offset)].at(-1) ?? " ";
-      const after = [...protectedText.slice(offset + whole.length)][0] ?? " ";
+      const before = protectedText.slice(0, offset).match(/.$/u)?.[0] ?? " ";
+      const after = protectedText.slice(offset + whole.length).match(/^./u)?.[0] ?? " ";
       const restoredContent = content.replace(
         /VIZEINLINECODE(\d+)Z/g,
         (_token, index: string) => code[Number(index)],
       );
-      const first = [...restoredContent][0] ?? " ";
-      const last = [...restoredContent].at(-1) ?? " ";
+      const first = restoredContent.match(/^./u)?.[0] ?? " ";
+      const last = restoredContent.match(/.$/u)?.[0] ?? " ";
       const needsBefore =
         !whitespace.test(before) && !punctuation.test(before) && punctuation.test(first);
       const needsAfter =
