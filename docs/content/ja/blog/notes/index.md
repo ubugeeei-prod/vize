@@ -1,74 +1,78 @@
 ---
-title: 注意事項
-description: 開発ブログ、アーキテクチャ ノート、および広範なプロジェクトの更新に関する不定期の投稿。
+title: ノート
+description: 開発の記録、アーキテクチャの考察、プロジェクト全体の動きを伝える不定期の記事。
 ---
 
-<!-- Generated translation; source: blog/notes/index.md -->
+<!-- Reviewed translation; source: blog/notes/index.md -->
 
-# 注記
+<span id="注記" aria-hidden="true"></span>
 
-このセクションは、アーキテクチャの決定、実験、進捗レポート、エッセイ、プロジェクトの舞台裏のメモなど、リリースの発表にふさわしくない文章を書く場合に使用してください。
+# ノート
 
-## チェックリストの作成
+リリースの告知だけでは伝えきれない、アーキテクチャの判断、実験、進捗、考察、プロジェクトの舞台裏などを書くための場所です。
 
-- 新しい投稿を `docs/content/blog/notes/` に置きます。
-- 変更ログの詳細だけでなく、コンテキストを考慮して書きます。
-- これらの投稿を使用して、意図、トレードオフ、実験、および将来の方向性を説明します。
-- メモで既存の機能が紹介されたり、再構成されたりする場合は、より安定したリファレンス ドキュメントにリンクします。
+<span id="チェックリストの作成" aria-hidden="true"></span>
+
+## 執筆時のチェックリスト
+
+- 新しい記事は `docs/content/blog/notes/` に置きます。
+- 変更履歴の細部だけでなく、背景も伝えます。
+- 意図、トレードオフ、実験、これからの方向性を説明します。
+- 既存の機能を紹介したり、別の視点から捉え直したりする場合は、安定したリファレンスへのリンクも添えます。
 
 ## 投稿
 
 <div class="blog-post-list">
   <a class="blog-post-list-item" href="./2026-06-07-real-world-testing/">
-    <strong>現実世界のテスト</strong>
-    <span>Vize は現実世界のテスト段階に入ります — 実際のプロジェクトは現在テストスイートであり、v1.0.0.</span> への明確なロードマップがあります。
+    <strong>実際のプロジェクトでの検証</strong>
+    <span>実際のプロジェクトをテストの中心に据え、v1.0.0 へのロードマップを示した、Vize の実プロジェクト検証段階への移行。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint/">
-    <strong>ツーリングの比較</strong>
-    <span>A 公式 Vue ツール、Oxc、Golar、Verter、Flint、TSSLint にわたる Vize と近隣プロジェクトの実用的な比較。</span>
+    <strong>ツールの比較</strong>
+    <span>公式 Vue ツール、Oxc、Golar、Verter、Flint、TSSLint と Vize を、実用面から比較します。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-05-16-performance-tuning-notes-for-a-vue-toolchain/">
-    <strong>パフォーマンスチューニング</strong>
-    <span>解析、割り当て、並列処理、フィードバック ループがすべて重要となる Vue ツールチェーンの構築から得られる実践的なパフォーマンスのレッスン。</span>
+    <strong>性能を高めるための工夫</strong>
+    <span>解析、メモリ割り当て、並列処理、フィードバックの速さが重要な Vue ツールチェーンで、性能改善から得た知見。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-05-16-testing-agentic-coding-and-trust/">
     <strong>テストとエージェント</strong>
-    <span>エージェントが開発ループの一部である場合、スナップショットを多用するテスト、現実世界のフィクスチャ、決定論的チェックがより重要になる理由。</span>
+    <span>エージェントが開発に加わるほど、スナップショット、実プロジェクトのフィクスチャ、決定的な検証が重要になる理由。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-05-16-vapor-mode-and-the-next-vue-compiler-surface/">
-    <strong>蒸気モード</strong>
-    <span>Vize にとって Vapor モードが重要な理由、および直接の詳細なコンパイラー パスが実行時のパフォーマンスよりも大きく変化する理由。</span>
+    <strong>Vapor Mode</strong>
+    <span>Vapor Mode が Vize にとって重要な理由と、DOM を直接扱うきめ細かなコンパイル方式が、実行時の性能以外にもたらす変化。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment/">
-    <strong>言語としてのVue</strong>
-    <span>このノートは、Vue は UI 用の言語であるという考えに基づいて、フロントエンド開発に分散したツールではなく一貫した環境が必要な理由を説明します。</span>
+    <strong>UI の言語としての Vue</strong>
+    <span>Vue を UI の言語と捉え、フロントエンド開発に、ばらばらのツールではなく一貫した環境が必要な理由を考えます。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era/">
-    <strong>美術館 & AI</strong>
-    <span>AI は UI を迅速に生成できますが、Musea とデザイン システムにより、意図、制約、アクセシビリティ、レビュー ワークフローが永続的になります。</span>
+    <strong>Musea と AI</strong>
+    <span>AI が UI を素早く生成する時代に、意図、制約、アクセシビリティ、レビューの仕組みを保つための Musea とデザインシステムの役割。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-05-16-real-world-feedback-and-the-road-to-production-ready/">
-    <strong>本番準備完了</strong>
-    <span>実験的なプロジェクトから運用準備が整ったツールチェーンへの道には、なぜ徹底的な現実世界の検証とコミュニティからのフィードバックが必要なのか。</span>
+    <strong>本番運用への道</strong>
+    <span>実験的なプロジェクトを本番で使えるツールチェーンに育てるために、実プロジェクトの徹底した検証とコミュニティの声が必要な理由。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-05-16-personal-tooling-and-development-speed/">
-    <strong>パーソナルスピード</strong>
-    <span>なぜ Vize が独立していて個人的なものであることが、探索、スピード、野心的なツールチェーン設計にとって利点となるのか。</span>
+    <strong>個人開発とスピード</strong>
+    <span>Vize が独立した個人のプロジェクトであることが、探求、速さ、意欲的なツールチェーンの設計にもたらす利点。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration/">
-    <strong>垂直ツールチェーン</strong>
-    <span>より多くのスタックを所有すると、開発者ツールの速度、一貫性、さらには美的品質が向上する理由。</span>
+    <strong>ツールチェーンの垂直統合</strong>
+    <span>スタックを広く自分で扱うことが、開発ツールの速さ、一貫性、美しさを高める理由。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-03-26-why-ai-needs-deterministic-fast-static-analysis/">
-    <strong>AI</strong> の静的解析
-    <span>A AI はより多くのコードを記述します。より高速で信頼性の高い静的フィードバックが必要です。</span>
+    <strong>AI のための静的解析</strong>
+    <span>AI が書くコードが増えるほど、速く信頼できる静的なフィードバックが必要になります。</span>
   </a>
   <a class="blog-post-list-item" href="./2026-03-26-where-vize-fits-in-the-vue-tooling-landscape/">
-    <strong>Vue ツール マップ</strong>
-    <span>A 現在の Vue ツール環境における Vize の位置と、隣接するプロジェクトとの違いを示すマップ。</span>
+    <strong>Vue ツールの中での Vize の位置</strong>
+    <span>Vue のツール環境における Vize の位置付けと、周辺のプロジェクトとの違いを示す地図。</span>
   </a>
-<a class="blog-post-list-item" href="./2026-03-26-why-vize-needs-notes/">
-    <strong>ノートレーン</strong>
-    <span>一部のプロジェクトの更新には、単なる変更ログ エントリではなく、コンテキストのためのスペースが必要です。</span>
+  <a class="blog-post-list-item" href="./2026-03-26-why-vize-needs-notes/">
+    <strong>ノートを書く理由</strong>
+    <span>変更履歴だけでは伝えきれない、プロジェクトの背景や判断を説明するための場所。</span>
   </a>
 </div>
