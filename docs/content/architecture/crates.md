@@ -4,13 +4,15 @@ title: Crates
 
 # Crate Reference
 
-> **⚠️ Work in Progress:** Vize is under active development. See the canonical
-> [Rust crate support tiers](../stability.md#rust-crate-support-tiers) before depending on a public
-> API.
+Use this reference to find the Rust crate that owns a compiler or tooling feature.
+For example, SFC compilation starts with `vize_atelier_sfc`, while a formatter change starts with
+`vize_glyph`. The [package mapping](#package-mapping) connects CLI commands and JavaScript packages
+to their Rust implementation.
 
-Vize's Rust workspace is organized around 20 primary crates. Each crate owns one reusable lane so
-parsing, semantic analysis, code generation, linting, formatting, type checking, and
-editor tooling can share the same syntax model.
+These tables describe the existing product crates under `crates/`; experimental level crates live
+under `davinci/`. Before depending on a public Rust API, check its
+[Rust crate support tier](../stability.md#rust-crate-support-tiers). To change an implementation,
+continue to the [Source Guide](./source-guide.md).
 
 ## Foundation
 
