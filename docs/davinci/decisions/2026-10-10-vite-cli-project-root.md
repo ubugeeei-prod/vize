@@ -28,7 +28,9 @@ Ignore strings remain authored strings, including ordered `!` negation and
 escaped glob metacharacters. Global ignore projections carry the trusted Vite
 root as their separate `base_path`; they are never made absolute with
 `path.resolve`. CLI project collectors and editor scopes evaluate ordered
-sequences within each base path. Dedicated native files discard the reserved
+sequences within each base path, even when an absolute pattern outside the
+project occurs between a positive pattern and its subsequent negation.
+Dedicated native files discard the reserved
 host identity before projection, so previously ignored extension values cannot
 change their invocation/config-directory behavior. Existing dedicated collectors
 retain their established matching rules. Authored absolute patterns are rebased
