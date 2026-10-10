@@ -8,8 +8,8 @@ definition and an ordinary input object containing its own data key. The
 official compiler output was inspected separately. This does not establish a
 Vize compiler defect.
 
-The actual native compact-props browser fixture retains that own key in the
-editor, messages and persistence, but explicitly excludes it from rendered
+The actual native compact-props browser fixture retains that own key in editor
+state and persistence, but excludes it from preview messages and rendered
 props. Successful transport therefore does not prove successful application.
 
 For a resolved `.vue` component declaring this key, the palette exposes an

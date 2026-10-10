@@ -82,10 +82,14 @@ export async function unsupportedMessage(page: Page, expected: Record<string, st
 /** Keyboard input goes through the actual loaded Monaco editor and its change listener. */
 export async function editUnsupportedJson(page: Page, values: Record<string, string>) {
   await page.locator(".props-mode-btn").filter({ hasText: "Code" }).click();
-  const input = page.locator(".props-code-editor .monaco-editor textarea").first();
-  await input.click();
-  await input.press("ControlOrMeta+A");
-  await page.keyboard.insertText(JSON.stringify(values, null, 2));
+  const editor = page.locator(".props-code-editor .monaco-editor");
+  await editor.click();
+  await page.keyboard.press("ControlOrMeta+A");
+  await page.evaluate(
+    (content) => navigator.clipboard.writeText(content),
+    JSON.stringify(values, null, 2),
+  );
+  await page.keyboard.press("ControlOrMeta+V");
 }
 
 export async function addRawProp(page: Page, name: string, value: string) {
