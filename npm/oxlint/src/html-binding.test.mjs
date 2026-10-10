@@ -153,6 +153,7 @@ for (const fixture of corpus.cases)
           customIgnoreFilename: ".eslintignore",
           format,
           presentation: {
+            stylishRelative: false,
             cwd,
             graphicalTheme: "plain",
             links: false,

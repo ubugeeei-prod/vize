@@ -1,0 +1,24 @@
+{
+  "original-options-api": {
+    "error_count": 1,
+    "warning_count": 0,
+    "diagnostics": [
+      {
+        "rule_name": "script/no-options-api",
+        "severity": "error",
+        "message": "Options API component declarations are not supported",
+        "start": 173,
+        "end": 217,
+        "help": "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed.",
+        "labels": [
+          {
+            "message": "data() option (use ref()/reactive())",
+            "start": 177,
+            "end": 181
+          }
+        ],
+        "fix": null
+      }
+    ]
+  }
+}

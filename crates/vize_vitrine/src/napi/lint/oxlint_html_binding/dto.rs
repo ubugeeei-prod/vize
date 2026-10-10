@@ -9,6 +9,8 @@ pub struct OxlintHtmlPresentation {
     pub links: bool,
     pub width: u32,
     pub stylish_no_color: bool,
+    /// Preserve the public wrapper's established cwd-relative Stylish heading.
+    pub stylish_relative: Option<bool>,
     /// Original cwd for relative human-readable names; process cwd is untouched.
     pub cwd: String,
 }
