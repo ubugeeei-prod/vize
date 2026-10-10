@@ -207,7 +207,7 @@
       "route": "/guide/wasm",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Both locales correct lint-only locale support and replace an unattributed size estimate with an exact-artifact measurement recipe, retaining every full example and heading. The complete Japanese body belongs to #8452; genuine composition and fresh browser/deployed acceptance remain pending."
     },
     {
       "route": "/integrations/mcp",
