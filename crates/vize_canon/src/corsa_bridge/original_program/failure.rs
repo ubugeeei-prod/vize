@@ -11,6 +11,26 @@ use vize_l0::{Allocator, String, cstr};
 use vize_l1::embed::Lang;
 
 mod configuration;
+#[cfg(target_os = "linux")]
+mod publication_tests;
+
+// A fork can retain the writable open-file description after our local
+// close. Its inherited flock lasts until that last writer descriptor closes.
+// The independently reopened read-only lock certifies publication readiness.
+fn write_executable(path: &Path, script: &str) {
+    use std::{fs::File, io::Write};
+    let mut writer = File::create(path).unwrap();
+    writer.write_all(script.as_bytes()).unwrap();
+    publish_executable(path, writer).unwrap();
+}
+
+fn publish_executable(path: &Path, writer: std::fs::File) -> std::io::Result<()> {
+    use std::os::unix::fs::PermissionsExt;
+    writer.set_permissions(std::fs::Permissions::from_mode(0o755))?;
+    writer.lock()?;
+    drop(writer);
+    std::fs::File::open(path)?.lock_shared()
+}
 
 fn shell_quote(path: &Path) -> String {
     cstr!("'{}'", path.to_str().unwrap().replace('\'', "'\\''"))
@@ -18,7 +38,6 @@ fn shell_quote(path: &Path) -> String {
 
 #[test]
 fn failed_and_timed_out_original_overlays_are_reaped_without_source_writes() {
-    use std::os::unix::fs::PermissionsExt;
     for pause in [false, true] {
         let root = tempfile::TempDir::new().unwrap();
         drop(project(root.path(), true));
@@ -33,8 +52,7 @@ fn failed_and_timed_out_original_overlays_are_reaped_without_source_writes() {
             if pause { "sleep 1" } else { ":" },
             shell_quote(&backend())
         );
-        std::fs::write(&wrapper, script).unwrap();
-        std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
+        write_executable(&wrapper, &script);
         let mut bridge = CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(wrapper),
             working_dir: Some(root.path().to_path_buf()),
@@ -102,7 +120,6 @@ fn failed_and_timed_out_original_overlays_are_reaped_without_source_writes() {
 
 #[test]
 fn diagnosing_project_and_configuration_changes_refuse_and_reap_real_overlays() {
-    use std::os::unix::fs::PermissionsExt;
     for nested in [true, false] {
         let root = tempfile::TempDir::new().unwrap();
         drop(project(root.path(), true));
@@ -132,8 +149,7 @@ fn diagnosing_project_and_configuration_changes_refuse_and_reap_real_overlays() 
             mutation,
             shell_quote(&backend())
         );
-        std::fs::write(&wrapper, script).unwrap();
-        std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
+        write_executable(&wrapper, &script);
         let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(wrapper),
             working_dir: Some(root.path().to_path_buf()),
