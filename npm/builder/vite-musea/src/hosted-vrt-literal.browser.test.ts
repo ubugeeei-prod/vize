@@ -39,8 +39,37 @@ void test(
   { skip: process.env.VIZE_MUSEA_NATIVE_BROWSER_TESTS !== "1", timeout: 180000 },
   async (t) => {
     const f = await buildLiteralServiceGallery();
-    const host = await createSecureHost(f.directory);
-    const restoreTrust = await trustSecureHost(host);
+    const owned: {
+      host?: Awaited<ReturnType<typeof createSecureHost>>;
+      restoreTrust?: () => void;
+      session?: Awaited<ReturnType<typeof startHostedVrtSession>>;
+      browser?: Awaited<ReturnType<typeof launchPublicBrowser>>;
+      spaces?: Awaited<ReturnType<typeof createAddressSpaceObserver>>;
+      detachPermission?: () => Promise<void>;
+    } = {};
+    t.after(async () => {
+      const failures: unknown[] = [];
+      for (const cleanup of [
+        () => owned.detachPermission?.(),
+        () => owned.spaces?.close(),
+        () => owned.browser?.close(),
+        () => owned.session?.close(),
+        () => owned.restoreTrust?.(),
+        () => owned.host?.close(),
+        () => f.retain(),
+        () => owned.session && noPersistedBearer(f.output, owned.session.token),
+      ]) {
+        try {
+          await cleanup();
+        } catch (error) {
+          failures.push(error);
+        }
+      }
+      if (failures.length)
+        throw new AggregateError(failures, "Hosted literal fixture cleanup failed");
+    });
+    const host = (owned.host = await createSecureHost(f.directory));
+    owned.restoreTrust = await trustSecureHost(host);
     const local = path.join(f.root, "local-vrt");
     const url = `${host.origin}/built/gallery/`;
     const options = parseArgs(["serve", "--gallery-url", url, "--output", local]);
@@ -49,11 +78,10 @@ void test(
       threshold: 0,
       capture: { settleTime: 0 },
     };
-    const session = await startHostedVrtSession(options, host.spki);
-    const browser = await launchPublicBrowser(host);
+    const session = (owned.session = await startHostedVrtSession(options, host.spki));
+    const browser = (owned.browser = await launchPublicBrowser(host));
     const page = await browser.newPage();
-    const spaces = await createAddressSpaceObserver(page);
-    let detachPermission: (() => Promise<void>) | undefined;
+    const spaces = (owned.spaces = await createAddressSpaceObserver(page));
     const errors: string[] = [];
     const consoleErrors: string[] = [];
     const observations: unknown[] = [];
@@ -61,16 +89,6 @@ void test(
     page.on("pageerror", (error) => errors.push(String(error)));
     page.on("console", (message) => {
       if (message.type() === "error") consoleErrors.push(message.text());
-    });
-    t.after(async () => {
-      await detachPermission?.();
-      await spaces.close();
-      await browser.close();
-      await session.close();
-      restoreTrust();
-      await host.close();
-      await f.retain();
-      await noPersistedBearer(f.output, session.token);
     });
     try {
       const manifestResponse = await fetch(new URL("api/static.json", url));
@@ -121,7 +139,7 @@ void test(
       });
       await page.goto(url);
       assert.equal(await page.evaluate(() => window.isSecureContext), true);
-      detachPermission = await setLoopbackPermission(page, "granted");
+      owned.detachPermission = await setLoopbackPermission(page, "granted");
       const permission = await page.evaluate(
         async () =>
           (await navigator.permissions.query({ name: "loopback-network" as PermissionName })).state,

@@ -14,28 +14,37 @@ export type LiteralTitle = keyof typeof variants;
 /** Keep the frozen authored corpus/helper; only mount its real build under the secure host prefix. */
 export async function buildLiteralServiceGallery() {
   const f = await fixture("hosted");
-  const directory = path.join(f.root, "dist");
-  await build({
-    ...f.config,
-    base: "/built/",
-    logLevel: "warn",
-    plugins: [vize(), musea({ include: ["src/**/*.art.vue"], basePath: "/gallery/" })],
-    build: { outDir: directory, emptyOutDir: true, minify: true },
-  });
-  const raw = await readFile(path.join(directory, "gallery/api/static.json"));
-  const manifest = JSON.parse(raw.toString()) as {
-    snapshotIdentityVersion: number;
-    snapshotIdentities: Record<string, string>;
-    arts: Array<{ path: string; metadata: { title: LiteralTitle } }>;
-    previews: Record<string, Record<string, string>>;
-  };
-  assert.equal(manifest.snapshotIdentityVersion, 1);
-  assert.equal(manifest.arts.length, 2);
-  await writeFile(path.join(f.output, "static.json"), raw);
-  await rm(path.join(f.root, "src"), { recursive: true });
-  for (const title of ["Controls", "Keys"] as const)
-    await assert.rejects(stat(path.join(f.root, "src", `${title}.art.vue`)), { code: "ENOENT" });
-  return { ...f, directory, manifest, raw };
+  try {
+    const directory = path.join(f.root, "dist");
+    await build({
+      ...f.config,
+      base: "/built/",
+      logLevel: "warn",
+      plugins: [vize(), musea({ include: ["src/**/*.art.vue"], basePath: "/gallery/" })],
+      build: { outDir: directory, emptyOutDir: true, minify: true },
+    });
+    const raw = await readFile(path.join(directory, "gallery/api/static.json"));
+    const manifest = JSON.parse(raw.toString()) as {
+      snapshotIdentityVersion: number;
+      snapshotIdentities: Record<string, string>;
+      arts: Array<{ path: string; metadata: { title: LiteralTitle } }>;
+      previews: Record<string, Record<string, string>>;
+    };
+    assert.equal(manifest.snapshotIdentityVersion, 1);
+    assert.equal(manifest.arts.length, 2);
+    await writeFile(path.join(f.output, "static.json"), raw);
+    await rm(path.join(f.root, "src"), { recursive: true });
+    for (const title of ["Controls", "Keys"] as const)
+      await assert.rejects(stat(path.join(f.root, "src", `${title}.art.vue`)), { code: "ENOENT" });
+    return { ...f, directory, manifest, raw };
+  } catch (error) {
+    try {
+      await f.retain();
+    } catch (cleanupError) {
+      throw new AggregateError([error, cleanupError], "Hosted literal build and retention failed");
+    }
+    throw error;
+  }
 }
 
 interface Capture {
