@@ -60,3 +60,9 @@ repository variable and runs initial publication. Registry authorization,
 actual publication and all published consumer results remain pending. #8367
 must stay open and JSR command tabs must not imply completed support until those
 receipts exist.
+
+On 2026-10-10 the maintainer explicitly deferred JSR. Preserve the reviewed
+source and receipts in draft PR #8388 outside the queue, including the active
+0.441 publication window. Registry bootstrap, settings, publication and further
+JSR priority work are deferred; do not seek authorization again. Resume only
+with fresh source qualification and actual delivery, without historical credit.
