@@ -58,6 +58,8 @@
   "vue/valid-v-slot.missing_value": "コンポーネントのデフォルトv-slotにはスロット引数の値が必要です",
   "vue/valid-v-slot.value_help": "スロット引数の値を指定するか、値を持たない子要素の<template #default>を使用してください",
   "vue/valid-v-slot.invalid_modifier": "スロット名を指定しないv-slotでは修飾子を使用できません",
+  "vue/valid-v-slot.named_modifier": "引数を持つv-slotでは既定で修飾子を使用できません",
+  "vue/valid-v-slot.named_modifier_help": "修飾子を削除するかallowModifiersを有効にしてください",
   "vue/valid-v-slot.modifier_help": "v-slotディレクティブの修飾子を削除してください",
   "vue/valid-v-slot.dynamic_scope": "動的スロット名は同じスロットで宣言された変数を参照できません",
   "vue/valid-v-slot.dynamic_scope_help": "スロット名には外側のスコープの変数を使用してください",

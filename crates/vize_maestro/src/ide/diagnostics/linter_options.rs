@@ -182,6 +182,9 @@ pub(super) fn apply_rule_options(
     if let Some(style) = options.attribute_hyphenation() {
         linter = linter.with_attribute_hyphenation(attribute_hyphenation_style(style));
     }
+    if let Some(allow) = options.valid_v_slot_allow_modifiers() {
+        linter = linter.with_valid_v_slot_allow_modifiers(allow);
+    }
     linter
 }
 
