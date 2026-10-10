@@ -2,7 +2,7 @@
 
 All notable changes to this repository are tracked in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project follows [Conventional Commits](https://www.conventionalcommits.org/).
 
-See [`docs/release/support-policy.md`](./docs/release/support-policy.md) for the deprecation contract that backs the entries below.
+See [`docs/release/support-policy.md`](./docs/release/support-policy.md) for the deprecation contract that backs the entries below. Recent published summaries: [0.439.0 and 0.435.0](./docs/release/recent-releases.md).
 
 ## [Unreleased]
 

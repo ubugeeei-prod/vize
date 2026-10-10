@@ -1,0 +1,1107 @@
+{
+  "schema": "vize.n8n.slot-modifier-options-oracle-v1",
+  "providers": {
+    "eslint": {
+      "version": "10.4.1",
+      "entrySha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2"
+    },
+    "eslint-plugin-vue": {
+      "version": "10.9.2",
+      "entrySha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017"
+    },
+    "vue-eslint-parser": {
+      "version": "10.4.1",
+      "entrySha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087"
+    },
+    "@typescript-eslint/parser": {
+      "version": "8.65.0",
+      "entrySha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966"
+    }
+  },
+  "mandatoryInfrastructure": {
+    "name": "vue/base/setup-for-vue",
+    "processor": "vue/vue",
+    "rules": {
+      "vue/comment-directive": "error",
+      "vue/jsx-uses-vars": "error"
+    }
+  },
+  "records": [
+    {
+      "id": "dynamic-name",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-name.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 31,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 39
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-name.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 31,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 39
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-chain",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-chain.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 37,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 44
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template v-slot:[name].one.two=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-chain.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 37,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 44
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template v-slot:[name].one.two=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-member",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-member.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 40,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 48
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[names.current].modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-member.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 40,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 48
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[names.current].modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-own",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-own.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 51
+              },
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 36,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 44
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 2,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot.name].modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-own.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 51
+              },
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 36,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 44
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 2,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot.name].modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-utf8",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-utf8.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 3,
+                "column": 31,
+                "messageId": "disallowAnyModifier",
+                "endLine": 3,
+                "endColumn": 39
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<!-- 備考 🐟 -->\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-utf8.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 3,
+                "column": 31,
+                "messageId": "disallowAnyModifier",
+                "endLine": 3,
+                "endColumn": 39
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<!-- 備考 🐟 -->\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-crlf",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-crlf.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 3,
+                "column": 31,
+                "messageId": "disallowAnyModifier",
+                "endLine": 3,
+                "endColumn": 39
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\r\n<!-- 備考 🐟 -->\r\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\r\n</template>\r\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-crlf.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 3,
+                "column": 31,
+                "messageId": "disallowAnyModifier",
+                "endLine": 3,
+                "endColumn": 39
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\r\n<!-- 備考 🐟 -->\r\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\r\n</template>\r\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "static-dotted",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "static-dotted.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 29,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 33
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #item.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "static-dotted.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 29,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 33
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #item.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "static-longhand",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "static-longhand.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 35,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 39
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template v-slot:item.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "static-longhand.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 35,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 39
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template v-slot:item.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "static-default",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "static-default.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 32,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 36
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #default.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "static-default.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 32,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 36
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #default.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "argless-modifier",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "argless-modifier.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 30,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 38
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template v-slot.modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "argless-modifier.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 30,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 38
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template v-slot.modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-no-modifier",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-no-modifier.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-no-modifier.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-expression-no-modifier",
+      "allowModifiers": false,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-expression-no-modifier.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-expression-no-modifier.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-name",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-name.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-name.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-chain",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-chain.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-chain.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-member",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-member.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-member.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-own",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-own.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 51
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot.name].modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-own.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 51
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot.name].modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-utf8",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-utf8.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-utf8.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-crlf",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-crlf.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-crlf.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "static-dotted",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "static-dotted.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "static-dotted.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "static-longhand",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "static-longhand.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "static-longhand.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "static-default",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "static-default.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "static-default.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "argless-modifier",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "argless-modifier.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 30,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 38
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template v-slot.modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "argless-modifier.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "'v-slot' directive doesn't support any modifier.",
+                "line": 2,
+                "column": 30,
+                "messageId": "disallowAnyModifier",
+                "endLine": 2,
+                "endColumn": 38
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template v-slot.modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-no-modifier",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-no-modifier.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-no-modifier.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "dynamic-expression-no-modifier",
+      "allowModifiers": true,
+      "observations": [
+        [
+          {
+            "filePath": "dynamic-expression-no-modifier.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "dynamic-expression-no-modifier.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    }
+  ]
+}

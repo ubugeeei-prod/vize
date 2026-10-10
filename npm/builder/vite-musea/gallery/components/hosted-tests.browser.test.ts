@@ -3,7 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import { chromium } from "playwright";
+import { chromium, type Browser } from "playwright";
 import { buildHostedGallery } from "./hosted-tests.browser-fixtures.ts";
 
 const repository = fileURLToPath(new URL("../../../../../", import.meta.url));
@@ -17,10 +17,11 @@ await test(
   async () => {
     await mkdir(output, { recursive: true });
     const host = await buildHostedGallery(output);
-    const browser = await chromium.launch();
+    let browser: Browser | undefined;
     const observations: unknown[] = [];
     const errors: string[] = [];
     try {
+      browser = await chromium.launch();
       const page = await browser.newPage();
       page.on("pageerror", (error) => errors.push(String(error)));
       await page.goto(`${host.url}/tests`);
@@ -83,12 +84,18 @@ await test(
       assert.deepEqual(errors, []);
       await page.screenshot({ path: path.join(output, "failed-audits.png"), fullPage: true });
     } finally {
-      await writeFile(
-        path.join(output, "observations.json"),
-        JSON.stringify({ observations, errors }, null, 2),
-      );
-      await browser.close();
-      await host.close();
+      try {
+        await writeFile(
+          path.join(output, "observations.json"),
+          JSON.stringify({ observations, errors }, null, 2),
+        );
+      } finally {
+        try {
+          await browser?.close();
+        } finally {
+          await host.close();
+        }
+      }
     }
   },
 );

@@ -58,6 +58,8 @@
   "vue/valid-v-slot.missing_value": "Default v-slot on a component requires a slot parameter value",
   "vue/valid-v-slot.value_help": "Add a slot parameter value or use a child <template #default> without a value",
   "vue/valid-v-slot.invalid_modifier": "v-slot without a slot argument does not support modifiers",
+  "vue/valid-v-slot.named_modifier": "v-slot with a slot argument does not support modifiers by default",
+  "vue/valid-v-slot.named_modifier_help": "Remove the modifiers or enable allowModifiers",
   "vue/valid-v-slot.modifier_help": "Remove the modifier from the v-slot directive",
   "vue/valid-v-slot.dynamic_scope": "Dynamic slot name cannot reference a binding declared by the same slot",
   "vue/valid-v-slot.dynamic_scope_help": "Use a binding from the enclosing scope to choose the slot name",
