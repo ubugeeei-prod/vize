@@ -2,9 +2,9 @@
 
 Owning issue: [#3984](https://github.com/ubugeeei-prod/vize/issues/3984).
 Reproduction baseline: actual main `77ed369860b19a44f2716dfad9d537d968fba018`.
-The test-first source is composed on actual signed main
-`f9a9bc554eab90158edbfcdffcb479114bb6c62c`; production collector, Canon
-resolver and the original eight-case input/oracle bytes remain unchanged.
+The test-first checkpoint was composed on actual signed main
+`f9a9bc554eab90158edbfcdffcb479114bb6c62c` with the production collector,
+Canon resolver and original eight-case input/oracle bytes unchanged.
 
 CLI import discovery still probes every matching `paths` pattern when an earlier
 pattern's targets are missing. Its input collector can therefore add an unrelated
@@ -27,6 +27,14 @@ parser, provider or compiler stage. This slice does not establish authored JSON
 key order: the existing serde map can reorder equal-prefix patterns. That remains
 the independently recorded ordered-loader TODO. The legacy baseUrl fallback law
 does not qualify the retired compiler option against native TypeScript 7.
+
+The installed pinned TypeScript 6.0.3 source confirms exact-first selection,
+strict longest-prefix selection and ordered targets within that pattern. Two
+pre-existing CLI behaviors stay outside this repair: its baseUrl fallback after
+a missing selected pattern differs from TypeScript 6, and its substitution of an
+empty wildcard capture differs from TypeScript 6's literal target star. Both are
+separate #3984 TODOs; the existing baseUrl and substitution laws preserve CLI
+behavior rather than claiming stock TypeScript equivalence.
 
 ## Required proof
 
@@ -58,7 +66,7 @@ with each original and derived digest plus whole-byte inverse correspondence.
 Original physical-root execution records remain outside Git. These historical
 records grant no qualification to the fresh source build.
 
-At this test-first checkpoint, production collector bytes remain unchanged.
+The test-first checkpoint kept production collector bytes unchanged.
 The first native Actions run `38050710306` stopped at the capture helper's
 unsupported SHA256 formatting trait before any CLI case executed; it is an
 instrumentation failure, not semantic RED evidence. The successor writes every
@@ -68,7 +76,28 @@ twelve-target JSX fixture. Three existing receipt processes share one shell
 source line under the same fail-fast shell, preserving their argv, order and
 failure behavior while keeping the original workflow line ceiling. The generated
 inventory adds only the new test's existing L0 import.
-Actual source-bound Actions RED, the reviewed producer repair, all complete native
-controls, the original unchanged workload measurements, protected qualification
-and actual delivery remain required. No speedup, 10x target, public release,
+Fresh source `3661911968d74569ea59e855e9537c7e7b4d03bd` then executed all eight
+whole CLI controls in native Actions `38052165203`. Both selected-missing cases
+retained the required App TS2307 but added an unrelated source TS2322, producing
+two files/errors instead of the authored App-only one file/error. The other six
+complete stdout packets passed. All raw process/input/output records were saved
+before assertions; the two failures are actual semantic RED.
+
+The producer now selects one alias for both existing APIs before either target
+loop. The original eight-case benchmark consumes a separately labeled literal
+membership successor: only the two selected-missing cases become App-only. Both
+the Canon resolver and CLI collector have independent, exact historical/current
+source hashes for each side. Unknown source hashes fail before preparation can
+invoke a CLI or runtime, and the head must have both selected contracts. All six
+unaffected whole packets still require equality; the two intended membership
+changes compare each side against its own complete authored packet. Original
+inputs, cases.json and the twelve-file archive remain byte-exact.
+
+The existing snapshot workflow adds the collector paths and the two bounded
+proof commands within its alias qualification step. Its jobs, measurement
+recipes, pinned 500-SFC inputs, nine alternating pairs, process windows and
+numeric ceilings stay unchanged. Fresh all-API/native controls and those
+original unchanged workload measurements,
+protected qualification and actual delivery remain required. No speedup, 10x
+target, public release,
 default JSX, full project/declaration parity or P0 completion is claimed.

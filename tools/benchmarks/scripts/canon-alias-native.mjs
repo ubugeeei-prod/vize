@@ -7,10 +7,17 @@ import { basename, dirname, isAbsolute, join, resolve } from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { performance } from "node:perf_hooks";
+import { isDeepStrictEqual } from "node:util";
 import { assertBinariesUnchanged, fileSha256, hashInPlace } from "./benchmark-binary.mjs";
 import { corpusManifest } from "./type-snapshot-cli-corpus.mjs";
 import { prepareRun } from "./type-snapshot-cli-runner.mjs";
 import { normalizeTypecheckResult } from "./typecheck-command.mjs";
+import {
+  expectedFiles,
+  sourceContract,
+  successorSha256,
+  successorUrl,
+} from "./canon-alias-collector.mjs";
 import {
   cases,
   fixtureRoot,
@@ -29,13 +36,23 @@ export function captureAliasCorpus({
   runtimePath,
   typescriptPath,
   vuePackageDir,
-  baseMode = "observed-regression",
+  sourceContracts,
 }) {
+  assert.deepEqual(Object.keys(commands), ["base", "head"]);
+  assert.deepEqual(Object.keys(sourceContracts), ["base", "head"]);
+  for (const side of ["base", "head"]) {
+    const contract = sourceContracts[side];
+    assert.deepEqual(
+      contract,
+      sourceContract(contract.resolverSha256, contract.collectorSha256, side),
+    );
+  }
   let sequence = 0;
   const samples = [];
   const ts = createRequire(import.meta.url)(join(dirname(typescriptPath), "../lib/typescript.js"));
   mkdirSync(join(directory, "raw"), { recursive: true });
   const fixture = corpusManifest(fixtureRoot);
+  assert.equal(fileSha256(fileURLToPath(successorUrl)), successorSha256);
   function execute(command, args, cwd, label, input) {
     const id = `${String(sequence++).padStart(3, "0")}-${label}`;
     const start = performance.now();
@@ -68,7 +85,7 @@ export function captureAliasCorpus({
   }
   const qualified = [];
   const expectedCode = (item, side) =>
-    side === "base" && baseMode === "observed-regression" ? item.before : item.after;
+    sourceContracts[side].resolverMode === "historical" ? item.before : item.after;
   for (const item of cases) {
     const project = prepareAliasCase(join(directory, "inputs"), item, "tsx", vuePackageDir);
     writeJson(join(directory, "inputs", item.id, "tsx.manifest.json"), project.manifest);
@@ -92,6 +109,7 @@ export function captureAliasCorpus({
       );
     }
     const reports = {};
+    const expectations = {};
     for (const [side, command] of Object.entries(commands)) {
       const expected = expectedCode(item, side);
       const result = execute(
@@ -102,15 +120,21 @@ export function captureAliasCorpus({
       );
       assert.equal(result.stderr, "", `${item.id}/${side}: unexpected check stderr`);
       const report = JSON.parse(result.stdout);
+      expectations[side] = expectedCliReport(
+        item,
+        project.root,
+        expected,
+        expectedFiles(item, sourceContracts[side]),
+      );
       assert.deepEqual(
         report,
-        expectedCliReport(item, project.root, expected),
+        expectations[side],
         `${item.id}/${side}: complete authored CLI report`,
       );
       assert.equal(result.status, expected == null ? 0 : 1);
       reports[side] = report;
     }
-    if (expectedCode(item, "base") === item.after && reports.base && reports.head)
+    if (isDeepStrictEqual(expectations.base, expectations.head))
       assert.deepEqual(reports.head, reports.base, `${item.id}: complete unaffected CLI report`);
     assert.deepEqual(
       corpusManifest(project.root),
@@ -167,9 +191,7 @@ export function captureAliasCorpus({
       assert(ts.isStringLiteral(imports[0].moduleSpecifier));
       const module = imports[0].moduleSpecifier.text;
       const mirror =
-        side === "base" && baseMode === "observed-regression"
-          ? item.beforeMirror
-          : item.afterMirror;
+        sourceContracts[side].resolverMode === "historical" ? item.beforeMirror : item.afterMirror;
       if (mirror == null) assert.equal(module, "@x", "missing selected route must remain authored");
       else {
         assert(isAbsolute(module), "a resolved alias must name its physical native mirror");
@@ -192,20 +214,42 @@ export function captureAliasCorpus({
     );
     qualified.push({
       id: item.id,
-      before: item.before,
-      after: item.after,
+      historicalContractCodes: { before: item.before, after: item.after },
+      sourceExpectedCliPackets: expectations,
       tsxInput: project.manifest,
       serverInput: server.manifest,
     });
   }
   assert.deepEqual(corpusManifest(fixtureRoot), fixture, "authored fixture changed");
+  assert.equal(fileSha256(fileURLToPath(successorUrl)), successorSha256);
   return {
     fixture,
-    baseMode,
+    sourceContracts,
     qualified,
     rawSamples: samples.map(({ id, ms, status }) => ({ id, ms, status })),
     timingClaim: "none; paired 500-SFC throughput is reported separately",
   };
+}
+
+export function readSourceContracts(binaries) {
+  return Object.fromEntries(
+    ["base", "head"].map((side) => {
+      const checkout = resolve(dirname(realpathSync(binaries[side])), "../..");
+      return [
+        side,
+        sourceContract(
+          fileSha256(
+            join(
+              checkout,
+              "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs",
+            ),
+          ),
+          fileSha256(join(checkout, "crates/vize/src/commands/check/imports_aliases.rs")),
+          side,
+        ),
+      ];
+    }),
+  );
 }
 
 export function main(argv = process.argv.slice(2)) {
@@ -216,7 +260,11 @@ export function main(argv = process.argv.slice(2)) {
   mkdirSync(join(directory, "work"), { recursive: true });
   let metadata;
   try {
+    // Reject an unknown source before preparation can invoke either CLI/runtime.
+    const sourceContracts = readSourceContracts({ base: argv[0], head: argv[1] });
+    assert.equal(fileSha256(fileURLToPath(successorUrl)), successorSha256);
     const prepared = prepareRun(argv[0], argv[1], directory, ROOT);
+    assert.deepEqual(readSourceContracts(prepared.binarySources), sourceContracts);
     const typescriptPath = realpathSync(
       createRequire(realpathSync(join(ROOT, "node_modules/vite-plus/package.json"))).resolve(
         "typescript/bin/tsc",
@@ -233,28 +281,18 @@ export function main(argv = process.argv.slice(2)) {
       node: hashInPlace(realpathSync(process.execPath)),
       typescript: hashInPlace(typescriptPath),
     };
-    const baseCheckout = resolve(dirname(prepared.binarySources.base), "../..");
-    const baseResolverSha256 = fileSha256(
-      join(
-        baseCheckout,
-        "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs",
-      ),
-    );
-    // Only the byte-exact observed old source receives the frozen wrong packets.
-    // Later baselines must satisfy the original typed contract themselves.
-    const baseMode =
-      baseResolverSha256 === "5a43aa38a8beb0f4005afb4e7ef94e2fcf96dfef53c9b19166471d10e7add833"
-        ? "observed-regression"
-        : "original-contract";
     metadata = {
       ...prepared.metadata,
       kind: "canon-path-alias-precedence-native",
-      baseResolverSha256,
-      baseMode,
+      sourceContracts,
+      collectorSuccessor: { path: fileURLToPath(successorUrl), sha256: successorSha256 },
       originals,
       stockTypeScript: { root: typescriptRoot, version: "6.0.3", payload: typescriptPayload },
       driverSha256: fileSha256(fileURLToPath(import.meta.url)),
       corpusDriverSha256: fileSha256(join(ROOT, "tools/benchmarks/scripts/canon-alias-corpus.mjs")),
+      collectorDriverSha256: fileSha256(
+        join(ROOT, "tools/benchmarks/scripts/canon-alias-collector.mjs"),
+      ),
     };
     writeJson(join(directory, "provenance.json"), metadata);
     const results = captureAliasCorpus({
@@ -267,8 +305,9 @@ export function main(argv = process.argv.slice(2)) {
       runtimePath: prepared.runtimePath,
       typescriptPath,
       vuePackageDir: prepared.vuePackageDir,
-      baseMode,
+      sourceContracts,
     });
+    assert.deepEqual(readSourceContracts(prepared.binarySources), sourceContracts);
     assertBinariesUnchanged(prepared.binaries);
     assertBinariesUnchanged(originals);
     assert.deepEqual(

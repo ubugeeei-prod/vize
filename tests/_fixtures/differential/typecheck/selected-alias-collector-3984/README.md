@@ -33,6 +33,15 @@ root. The integration test retains all eight processes and every input before
 it checks exit codes, empty stderr and complete stdout/report equality.
 Original source and input bytes must remain unchanged by each invocation.
 
+`collector-membership-successor.json` is the separate eight-case benchmark
+successor. It retains the original `path-alias-precedence-3984/cases.json` hash
+and historical archive, and changes only the two missing-selected CLI memberships
+to App-only under the exact repaired collector hash. Independent resolver and
+collector identities determine each side's full diagnostic/membership contract;
+unknown hashes and a historical-only head fail before runtime preparation. The
+six unchanged whole CLI packets still require base/head equality. This successor
+is authored from selected-pattern semantics, not captured output.
+
 Run through the required-native Actions lane:
 
 ```sh
