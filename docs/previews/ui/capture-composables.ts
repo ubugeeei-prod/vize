@@ -130,8 +130,8 @@ async function exercise(page: Page, name: string): Promise<string[]> {
   assert.deepEqual(await items.allTextContents(), ["Deployment"]);
   assert.equal(await page.getByRole("button", { name: "Next page" }).isDisabled(), true);
   await page.getByRole("combobox", { name: "Guides per page" }).focus();
-  await page.keyboard.press("ArrowDown");
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("5");
+  await page.keyboard.press("Tab");
   assert.equal(await page.locator("output").textContent(), "Page 2 of 2");
   assert.deepEqual(await items.allTextContents(), ["Testing", "Deployment"]);
   await activate(page, "Previous page");
