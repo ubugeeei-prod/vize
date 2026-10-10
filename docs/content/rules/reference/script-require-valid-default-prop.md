@@ -42,12 +42,12 @@ The Number and Boolean props receive mismatched scalar defaults, and the Array a
 ```vue
 <script lang="ts">
 export default {
-props: {
-count: { type: Number, default: '0' },     // string default for Number
-enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
-items: { type: Array, default: [] },        // literal must be a factory
-config: { type: Object, default: {} }       // literal must be a factory
-}
+  props: {
+    count: { type: Number, default: '0' },     // string default for Number
+    enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
+    items: { type: Array, default: [] },        // literal must be a factory
+    config: { type: Object, default: {} }       // literal must be a factory
+  }
 }
 </script>
 ```
@@ -59,13 +59,13 @@ The scalar defaults become `0` and `false`; the array and object defaults become
 ```vue
 <script lang="ts">
 export default {
-props: {
-count: { type: Number, default: 0 },
-enabled: { type: Boolean, default: false },
-items: { type: Array, default: () => [] },
-config: { type: Object, default: () => ({}) },
-label: { type: [String, Number], default: '' }
-}
+  props: {
+    count: { type: Number, default: 0 },
+    enabled: { type: Boolean, default: false },
+    items: { type: Array, default: () => [] },
+    config: { type: Object, default: () => ({}) },
+    label: { type: [String, Number], default: '' }
+  }
 }
 </script>
 ```

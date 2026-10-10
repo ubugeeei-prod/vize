@@ -42,15 +42,15 @@ The Options API watcher `value` and the nested `other.handler` are arrow functio
 ```vue
 <script lang="ts">
 export default {
-watch: {
-// `this` is not the component instance inside an arrow function.
-value: () => {
-this.doSomething()
-},
-other: {
-handler: () => {}
-}
-}
+  watch: {
+    // `this` is not the component instance inside an arrow function.
+    value: () => {
+      this.doSomething()
+    },
+    other: {
+      handler: () => {}
+    }
+  }
 }
 </script>
 ```
@@ -62,15 +62,15 @@ Both handlers become ordinary methods, allowing Vue to bind `this` to the compon
 ```vue
 <script lang="ts">
 export default {
-watch: {
-value(newValue, oldValue) {
-this.doSomething()
-},
-other: {
-handler(newValue) {},
-deep: true
-}
-}
+  watch: {
+    value(newValue, oldValue) {
+      this.doSomething()
+    },
+    other: {
+      handler(newValue) {},
+      deep: true
+    }
+  }
 }
 </script>
 ```

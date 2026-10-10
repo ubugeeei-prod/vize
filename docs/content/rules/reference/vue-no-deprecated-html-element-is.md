@@ -41,7 +41,7 @@ A native div uses the old unprefixed is attribute to request a Vue component.
 
 ```vue
 <template>
-<div is="MyComponent" />
+  <div is="MyComponent" />
 </template>
 ```
 
@@ -51,8 +51,8 @@ A dynamic component uses :is; the native-element spelling explicitly uses the vu
 
 ```vue
 <template>
-<component :is="MyComponent" />
-<div is="vue:MyComponent" />
+  <component :is="MyComponent" />
+  <div is="vue:MyComponent" />
 </template>
 ```
 

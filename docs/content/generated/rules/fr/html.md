@@ -310,8 +310,8 @@ Chaque style statique répète une propriété ; `margin` et `MARGIN` sont égal
 
 ```vue annotate="remove:2,3"
 <template>
-<div style="color: red; color: blue">text</div>
-<div style="margin: 0; MARGIN: 1px">text</div>
+  <div style="color: red; color: blue">text</div>
+  <div style="margin: 0; MARGIN: 1px">text</div>
 </template>
 ```
 
@@ -323,8 +323,8 @@ Le style statique utilise des propriétés distinctes de couleur et d’arrière
 
 ```vue annotate="add:2,3"
 <template>
-<div style="color: red; background: blue">text</div>
-<div :style="{ color: a, color: b }">text</div>
+  <div style="color: red; background: blue">text</div>
+  <div :style="{ color: a, color: b }">text</div>
 </template>
 ```
 
@@ -373,7 +373,7 @@ La liste de classes statique répète le nom `btn`.
 
 ```vue annotate="remove:2"
 <template>
-<div class="btn btn primary">click</div>
+  <div class="btn btn primary">click</div>
 </template>
 ```
 
@@ -385,7 +385,7 @@ La liste de classes conserve une seule occurrence de `btn` et le nom distinct `p
 
 ```vue annotate="add:2"
 <template>
-<div class="btn primary">click</div>
+  <div class="btn primary">click</div>
 </template>
 ```
 

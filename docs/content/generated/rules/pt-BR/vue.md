@@ -1206,7 +1206,7 @@ O template do SFC tem o atributo functional removido e lê o antigo contexto pro
 
 ```vue annotate="remove:1,2"
 <template functional>
-<div>{{ props.msg }}</div>
+  <div>{{ props.msg }}</div>
 </template>
 ```
 
@@ -1218,7 +1218,7 @@ O template comum omite functional e lê diretamente a variável msg exposta pelo
 
 ```vue annotate="add:1,2"
 <template>
-<div>{{ msg }}</div>
+  <div>{{ msg }}</div>
 </template>
 ```
 
@@ -1267,7 +1267,7 @@ Uma div nativa usa o antigo atributo is sem prefixo para solicitar um componente
 
 ```vue annotate="remove:2"
 <template>
-<div is="MyComponent" />
+  <div is="MyComponent" />
 </template>
 ```
 
@@ -1279,8 +1279,8 @@ Um componente dinâmico usa :is; a forma no elemento nativo usa explicitamente o
 
 ```vue annotate="add:2,3"
 <template>
-<component :is="MyComponent" />
-<div is="vue:MyComponent" />
+  <component :is="MyComponent" />
+  <div is="vue:MyComponent" />
 </template>
 ```
 
@@ -1390,7 +1390,7 @@ RouterLink usa a prop tag removida para solicitar um elemento button.
 
 ```vue annotate="remove:2"
 <template>
-<router-link to="/home" tag="button">Home</router-link>
+  <router-link to="/home" tag="button">Home</router-link>
 </template>
 ```
 
@@ -1402,9 +1402,9 @@ O slot fornece navigate a um botão escrito explicitamente no template.
 
 ```vue annotate="add:2,3,4"
 <template>
-<router-link to="/home" v-slot="{ navigate }">
-<button @click="navigate">Home</button>
-</router-link>
+  <router-link to="/home" v-slot="{ navigate }">
+    <button @click="navigate">Home</button>
+  </router-link>
 </template>
 ```
 
@@ -1514,10 +1514,10 @@ O slot header é selecionado pelo antigo atributo slot.
 
 ```vue annotate="remove:3,4"
 <template>
-<Foo>
-<template slot="header"><h1>Title</h1></template>
-<div :slot="name">Title</div>
-</Foo>
+  <Foo>
+    <template slot="header"><h1>Title</h1></template>
+    <div :slot="name">Title</div>
+  </Foo>
 </template>
 ```
 
@@ -1529,9 +1529,9 @@ v-slot:header seleciona explicitamente o slot header com a diretiva atual.
 
 ```vue annotate="add:3"
 <template>
-<Foo>
-<template v-slot:header><h1>Title</h1></template>
-</Foo>
+  <Foo>
+    <template v-slot:header><h1>Title</h1></template>
+  </Foo>
 </template>
 ```
 
@@ -1972,7 +1972,7 @@ Cada bloco mantido contém marcação, declarações de script ou declarações 
 
 ```vue annotate="add:1,2,3,5,6,7,9,10"
 <template>
-<div>Hello</div>
+  <div>Hello</div>
 </template>
 
 <script setup>
@@ -2749,7 +2749,7 @@ A própria raiz do componente aparece e desaparece sob v-if.
 
 ```vue annotate="remove:2"
 <template>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </template>
 ```
 
@@ -2761,9 +2761,9 @@ Uma div externa estável permanece como raiz, enquanto o parágrafo aninhado rec
 
 ```vue annotate="add:2,3,4"
 <template>
-<div>
-<p v-if="show">content</p>
-</div>
+  <div>
+    <p v-if="show">content</p>
+  </div>
 </template>
 ```
 
@@ -4864,7 +4864,7 @@ O filho estático dentro de `<Transition>` não tem visibilidade condicional nem
 ```vue annotate="remove:3"
 <template>
 <transition>
-<div>content</div>
+  <div>content</div>
 </transition>
 </template>
 ```
@@ -4878,7 +4878,7 @@ O filho estático dentro de `<Transition>` não tem visibilidade condicional nem
 ```vue annotate="add:3"
 <template>
 <transition>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </transition>
 </template>
 ```
@@ -5857,7 +5857,7 @@ Um `<template>` aninhado comum ocupa a raiz do template sem uma diretiva que lhe
 
 ```vue annotate="remove:2"
 <template>
-<template>content</template>
+  <template>content</template>
 </template>
 ```
 
@@ -5869,7 +5869,7 @@ A `<div>` é um elemento raiz renderizável. Este exemplo não impõe uma restri
 
 ```vue annotate="add:2"
 <template>
-<div>content</div>
+  <div>content</div>
 </template>
 ```
 

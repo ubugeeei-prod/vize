@@ -42,12 +42,12 @@ props の実行時の型に文字列 `"String"` と `"Number"` を使い、コ�
 ```vue
 <script lang="ts">
 export default {
-props: {
-// The type should be the `String` constructor, not the string "String".
-name: "String",
-age: { type: "Number" },
-id: { type: ["String", "Number"] }
-}
+  props: {
+    // The type should be the `String` constructor, not the string "String".
+    name: "String",
+    age: { type: "Number" },
+    id: { type: ["String", "Number"] }
+  }
 }
 </script>
 ```
@@ -59,11 +59,11 @@ id: { type: ["String", "Number"] }
 ```vue
 <script lang="ts">
 export default {
-props: {
-name: String,
-age: { type: Number },
-id: { type: [String, Number] }
-}
+  props: {
+    name: String,
+    age: { type: Number },
+    id: { type: [String, Number] }
+  }
 }
 </script>
 ```

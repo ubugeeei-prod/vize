@@ -53,8 +53,8 @@ The shown `data()` method makes the script carry real Options API logic, so it f
 <script lang="ts">
 // Real options logic — keep the plain script.
 export default {
-name: 'MyComponent',
-data() { return { count: 0 } },
+  name: 'MyComponent',
+  data() { return { count: 0 } },
 }
 </script>
 ```

@@ -310,8 +310,8 @@ Cada estilo estático repete uma propriedade; `margin` e `MARGIN` também contam
 
 ```vue annotate="remove:2,3"
 <template>
-<div style="color: red; color: blue">text</div>
-<div style="margin: 0; MARGIN: 1px">text</div>
+  <div style="color: red; color: blue">text</div>
+  <div style="margin: 0; MARGIN: 1px">text</div>
 </template>
 ```
 
@@ -323,8 +323,8 @@ O estilo estático usa propriedades distintas de cor e plano de fundo. Vinculaç
 
 ```vue annotate="add:2,3"
 <template>
-<div style="color: red; background: blue">text</div>
-<div :style="{ color: a, color: b }">text</div>
+  <div style="color: red; background: blue">text</div>
+  <div :style="{ color: a, color: b }">text</div>
 </template>
 ```
 
@@ -373,7 +373,7 @@ A lista de classes estática repete o token `btn`.
 
 ```vue annotate="remove:2"
 <template>
-<div class="btn btn primary">click</div>
+  <div class="btn btn primary">click</div>
 </template>
 ```
 
@@ -385,7 +385,7 @@ A lista de classes mantém um token `btn` e o token distinto `primary`.
 
 ```vue annotate="add:2"
 <template>
-<div class="btn primary">click</div>
+  <div class="btn primary">click</div>
 </template>
 ```
 

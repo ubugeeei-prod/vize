@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Page } from "playwright";
+import { verifyRenderedRuleIndentation } from "./rule-indentation-render-assertions.ts";
 import { verifyRenderedVueRulePackets } from "./vue-rule-render-assertions.ts";
 import { verifyRenderedCategoryPackets } from "./category-rule-render-assertions.ts";
 import { categoryFiles } from "./rules/catalogue-routes.ts";
@@ -35,6 +36,7 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
   if (!/^\/(?:ja\/)?rules\/all$/.test(route)) return null;
   const ja = route.startsWith("/ja/");
   const locale = ja ? "ja/" : "";
+  const indentation = await verifyRenderedRuleIndentation(page, locale);
   const expected = ["reference", "project"].flatMap((section) =>
     readdirSync(resolve(root, `docs/content/${locale}rules/${section}`)).map((file) => {
       const source = readFileSync(
@@ -152,5 +154,5 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
       });
     }
   }
-  return { locale: locale || "en", pages: receipts.length, receipts };
+  return { locale: locale || "en", pages: receipts.length, receipts, indentation };
 }

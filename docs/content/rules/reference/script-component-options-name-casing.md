@@ -42,7 +42,7 @@ The component option `name: 'my-component'` is kebab-case, whereas this rule req
 ```vue
 <script lang="ts">
 export default {
-name: 'my-component' // kebab-case
+  name: 'my-component' // kebab-case
 }
 </script>
 ```
@@ -54,7 +54,7 @@ name: 'my-component' // kebab-case
 ```vue
 <script lang="ts">
 export default {
-name: 'MyComponent'
+  name: 'MyComponent'
 }
 </script>
 ```

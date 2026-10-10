@@ -12,7 +12,9 @@ export function ruleExamples(root: string, rule: RuleMetadata): RuleExample {
   const docs = source
     .split("\n")
     .filter((line) => line.startsWith("//!"))
-    .map((line) => line.slice(3).trimStart())
+    // Remove only the Rust doc-comment separator. Remaining whitespace belongs
+    // to the authored example, including intentional Bad formatting violations.
+    .map((line) => line.slice(line.startsWith("//! ") ? 4 : 3))
     .join("\n");
   const invalid = docs.match(/### (?:Invalid|Bad)[^\n]*\n([\s\S]*?)(?=\n### |$)/);
   const valid = docs.match(/### (?:Valid|Good)[^\n]*\n([\s\S]*?)(?=\n### |$)/);

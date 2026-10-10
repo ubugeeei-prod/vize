@@ -42,21 +42,21 @@ The prop default and validator read `this`, but those functions cannot rely on t
 ```vue
 <script lang="ts">
 export default {
-props: {
-size: {
-type: Number,
-// `this` is not the component instance in Vue 3.
-default() {
-return this.defaultSize
-}
-},
-value: {
-type: Number,
-validator() {
-return this.value > 0
-}
-}
-}
+  props: {
+    size: {
+      type: Number,
+      // `this` is not the component instance in Vue 3.
+      default() {
+        return this.defaultSize
+      }
+    },
+    value: {
+      type: Number,
+      validator() {
+        return this.value > 0
+      }
+    }
+  }
 }
 </script>
 ```
@@ -68,21 +68,21 @@ The default reads `props.baseSize` from its argument, and the validator tests it
 ```vue
 <script lang="ts">
 export default {
-props: {
-size: {
-type: Number,
-// Vue 3 passes the raw props as the first argument instead.
-default(props) {
-return props.baseSize
-}
-},
-value: {
-type: Number,
-validator(value) {
-return value > 0
-}
-}
-}
+  props: {
+    size: {
+      type: Number,
+      // Vue 3 passes the raw props as the first argument instead.
+      default(props) {
+        return props.baseSize
+      }
+    },
+    value: {
+      type: Number,
+      validator(value) {
+        return value > 0
+      }
+    }
+  }
 }
 </script>
 ```

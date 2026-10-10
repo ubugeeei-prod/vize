@@ -41,7 +41,7 @@ vp run lint
 
 ```vue
 <template>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </template>
 ```
 
@@ -51,9 +51,9 @@ vp run lint
 
 ```vue
 <template>
-<div>
-<p v-if="show">content</p>
-</div>
+  <div>
+    <p v-if="show">content</p>
+  </div>
 </template>
 ```
 

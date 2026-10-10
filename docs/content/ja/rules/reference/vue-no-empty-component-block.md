@@ -54,7 +54,7 @@ template、script、style のブロックが空か、空白だけです。
 
 ```vue
 <template>
-<div>Hello</div>
+  <div>Hello</div>
 </template>
 
 <script setup>

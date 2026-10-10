@@ -41,7 +41,7 @@ A plain nested `<template>` occupies the template root without a directive that 
 
 ```vue
 <template>
-<template>content</template>
+  <template>content</template>
 </template>
 ```
 
@@ -51,7 +51,7 @@ The `<div>` is a renderable root element. This example does not impose a univers
 
 ```vue
 <template>
-<div>content</div>
+  <div>content</div>
 </template>
 ```
 

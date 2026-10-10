@@ -42,10 +42,10 @@ The Options API `data` option is an object literal, a Vue 2 form that Vue 3 no l
 ```vue
 <script lang="ts">
 export default {
-// `data` must be a function in Vue 3, not an object literal.
-data: {
-count: 0
-}
+  // `data` must be a function in Vue 3, not an object literal.
+  data: {
+    count: 0
+  }
 }
 </script>
 ```
@@ -57,9 +57,9 @@ count: 0
 ```vue
 <script lang="ts">
 export default {
-data() {
-return { count: 0 }
-}
+  data() {
+    return { count: 0 }
+  }
 }
 </script>
 ```

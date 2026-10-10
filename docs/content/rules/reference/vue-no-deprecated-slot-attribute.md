@@ -41,10 +41,10 @@ The header slot is selected through the old slot attribute.
 
 ```vue
 <template>
-<Foo>
-<template slot="header"><h1>Title</h1></template>
-<div :slot="name">Title</div>
-</Foo>
+  <Foo>
+    <template slot="header"><h1>Title</h1></template>
+    <div :slot="name">Title</div>
+  </Foo>
 </template>
 ```
 
@@ -54,9 +54,9 @@ v-slot:header explicitly selects the header slot with the current directive.
 
 ```vue
 <template>
-<Foo>
-<template v-slot:header><h1>Title</h1></template>
-</Foo>
+  <Foo>
+    <template v-slot:header><h1>Title</h1></template>
+  </Foo>
 </template>
 ```
 

@@ -1205,7 +1205,7 @@ SFC 模板使用了已移除的 functional 属性，并读取旧的 props 上下
 
 ```vue annotate="remove:1,2"
 <template functional>
-<div>{{ props.msg }}</div>
+  <div>{{ props.msg }}</div>
 </template>
 ```
 
@@ -1217,7 +1217,7 @@ SFC 模板使用了已移除的 functional 属性，并读取旧的 props 上下
 
 ```vue annotate="add:1,2"
 <template>
-<div>{{ msg }}</div>
+  <div>{{ msg }}</div>
 </template>
 ```
 
@@ -1266,7 +1266,7 @@ vp run lint
 
 ```vue annotate="remove:2"
 <template>
-<div is="MyComponent" />
+  <div is="MyComponent" />
 </template>
 ```
 
@@ -1278,8 +1278,8 @@ vp run lint
 
 ```vue annotate="add:2,3"
 <template>
-<component :is="MyComponent" />
-<div is="vue:MyComponent" />
+  <component :is="MyComponent" />
+  <div is="vue:MyComponent" />
 </template>
 ```
 
@@ -1389,7 +1389,7 @@ RouterLink 使用了已移除的 tag prop 来指定 button 元素。
 
 ```vue annotate="remove:2"
 <template>
-<router-link to="/home" tag="button">Home</router-link>
+  <router-link to="/home" tag="button">Home</router-link>
 </template>
 ```
 
@@ -1401,9 +1401,9 @@ RouterLink 使用了已移除的 tag prop 来指定 button 元素。
 
 ```vue annotate="add:2,3,4"
 <template>
-<router-link to="/home" v-slot="{ navigate }">
-<button @click="navigate">Home</button>
-</router-link>
+  <router-link to="/home" v-slot="{ navigate }">
+    <button @click="navigate">Home</button>
+  </router-link>
 </template>
 ```
 
@@ -1513,10 +1513,10 @@ vp run lint
 
 ```vue annotate="remove:3,4"
 <template>
-<Foo>
-<template slot="header"><h1>Title</h1></template>
-<div :slot="name">Title</div>
-</Foo>
+  <Foo>
+    <template slot="header"><h1>Title</h1></template>
+    <div :slot="name">Title</div>
+  </Foo>
 </template>
 ```
 
@@ -1528,9 +1528,9 @@ v-slot:header 使用当前指令显式选择 header 插槽。
 
 ```vue annotate="add:3"
 <template>
-<Foo>
-<template v-slot:header><h1>Title</h1></template>
-</Foo>
+  <Foo>
+    <template v-slot:header><h1>Title</h1></template>
+  </Foo>
 </template>
 ```
 
@@ -1971,7 +1971,7 @@ template、script 和 style 块都没有实质内容。
 
 ```vue annotate="add:1,2,3,5,6,7,9,10"
 <template>
-<div>Hello</div>
+  <div>Hello</div>
 </template>
 
 <script setup>
@@ -2748,7 +2748,7 @@ vp run lint
 
 ```vue annotate="remove:2"
 <template>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </template>
 ```
 
@@ -2760,9 +2760,9 @@ vp run lint
 
 ```vue annotate="add:2,3,4"
 <template>
-<div>
-<p v-if="show">content</p>
-</div>
+  <div>
+    <p v-if="show">content</p>
+  </div>
 </template>
 ```
 
@@ -4863,7 +4863,7 @@ vp run lint
 ```vue annotate="remove:3"
 <template>
 <transition>
-<div>content</div>
+  <div>content</div>
 </transition>
 </template>
 ```
@@ -4877,7 +4877,7 @@ vp run lint
 ```vue annotate="add:3"
 <template>
 <transition>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </transition>
 </template>
 ```
@@ -5856,7 +5856,7 @@ vp run lint
 
 ```vue annotate="remove:2"
 <template>
-<template>content</template>
+  <template>content</template>
 </template>
 ```
 
@@ -5868,7 +5868,7 @@ vp run lint
 
 ```vue annotate="add:2"
 <template>
-<div>content</div>
+  <div>content</div>
 </template>
 ```
 

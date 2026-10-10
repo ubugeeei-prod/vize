@@ -41,7 +41,7 @@ vp run lint
 
 ```vue
 <template>
-<div class="btn btn primary">click</div>
+  <div class="btn btn primary">click</div>
 </template>
 ```
 
@@ -51,7 +51,7 @@ btn は一回だけ残し、別の primary と合わせて指定します。
 
 ```vue
 <template>
-<div class="btn primary">click</div>
+  <div class="btn primary">click</div>
 </template>
 ```
 

@@ -41,7 +41,7 @@ RouterLink uses the removed tag prop to request a button element.
 
 ```vue
 <template>
-<router-link to="/home" tag="button">Home</router-link>
+  <router-link to="/home" tag="button">Home</router-link>
 </template>
 ```
 
@@ -51,9 +51,9 @@ The slot provides navigate to an explicitly authored button.
 
 ```vue
 <template>
-<router-link to="/home" v-slot="{ navigate }">
-<button @click="navigate">Home</button>
-</router-link>
+  <router-link to="/home" v-slot="{ navigate }">
+    <button @click="navigate">Home</button>
+  </router-link>
 </template>
 ```
 

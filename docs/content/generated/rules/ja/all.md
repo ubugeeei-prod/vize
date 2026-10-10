@@ -778,7 +778,7 @@ SFC の template に廃止された functional を指定し、旧来の props �
 
 ```vue annotate="remove:1,2"
 <template functional>
-<div>{{ props.msg }}</div>
+  <div>{{ props.msg }}</div>
 </template>
 ```
 
@@ -790,7 +790,7 @@ functional を取り除き、コンポーネントの msg を直接参照しま�
 
 ```vue annotate="add:1,2"
 <template>
-<div>{{ msg }}</div>
+  <div>{{ msg }}</div>
 </template>
 ```
 
@@ -839,7 +839,7 @@ vp run lint
 
 ```vue annotate="remove:2"
 <template>
-<div is="MyComponent" />
+  <div is="MyComponent" />
 </template>
 ```
 
@@ -851,8 +851,8 @@ vp run lint
 
 ```vue annotate="add:2,3"
 <template>
-<component :is="MyComponent" />
-<div is="vue:MyComponent" />
+  <component :is="MyComponent" />
+  <div is="vue:MyComponent" />
 </template>
 ```
 
@@ -962,7 +962,7 @@ RouterLink の廃止された tag で button を指定しています。
 
 ```vue annotate="remove:2"
 <template>
-<router-link to="/home" tag="button">Home</router-link>
+  <router-link to="/home" tag="button">Home</router-link>
 </template>
 ```
 
@@ -974,9 +974,9 @@ slot から navigate を受け取り、明示的に記述した button で実行
 
 ```vue annotate="add:2,3,4"
 <template>
-<router-link to="/home" v-slot="{ navigate }">
-<button @click="navigate">Home</button>
-</router-link>
+  <router-link to="/home" v-slot="{ navigate }">
+    <button @click="navigate">Home</button>
+  </router-link>
 </template>
 ```
 
@@ -1086,10 +1086,10 @@ vp run lint
 
 ```vue annotate="remove:3,4"
 <template>
-<Foo>
-<template slot="header"><h1>Title</h1></template>
-<div :slot="name">Title</div>
-</Foo>
+  <Foo>
+    <template slot="header"><h1>Title</h1></template>
+    <div :slot="name">Title</div>
+  </Foo>
 </template>
 ```
 
@@ -1101,9 +1101,9 @@ vp run lint
 
 ```vue annotate="add:3"
 <template>
-<Foo>
-<template v-slot:header><h1>Title</h1></template>
-</Foo>
+  <Foo>
+    <template v-slot:header><h1>Title</h1></template>
+  </Foo>
 </template>
 ```
 
@@ -2433,7 +2433,7 @@ vp run lint
 ```vue annotate="remove:3"
 <template>
 <transition>
-<div>content</div>
+  <div>content</div>
 </transition>
 </template>
 ```
@@ -2447,7 +2447,7 @@ vp run lint
 ```vue annotate="add:3"
 <template>
 <transition>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </transition>
 </template>
 ```
@@ -2692,7 +2692,7 @@ vp run lint
 
 ```vue annotate="remove:2"
 <template>
-<template>content</template>
+  <template>content</template>
 </template>
 ```
 
@@ -2704,7 +2704,7 @@ vp run lint
 
 ```vue annotate="add:2"
 <template>
-<div>content</div>
+  <div>content</div>
 </template>
 ```
 
@@ -5037,7 +5037,7 @@ template、script、style のブロックが空か、空白だけです。
 
 ```vue annotate="add:1,2,3,5,6,7,9,10"
 <template>
-<div>Hello</div>
+  <div>Hello</div>
 </template>
 
 <script setup>
@@ -5550,7 +5550,7 @@ vp run lint
 
 ```vue annotate="remove:2"
 <template>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </template>
 ```
 
@@ -5562,9 +5562,9 @@ vp run lint
 
 ```vue annotate="add:2,3,4"
 <template>
-<div>
-<p v-if="show">content</p>
-</div>
+  <div>
+    <p v-if="show">content</p>
+  </div>
 </template>
 ```
 
@@ -9560,8 +9560,8 @@ vp run lint
 
 ```vue annotate="remove:2,3"
 <template>
-<div style="color: red; color: blue">text</div>
-<div style="margin: 0; MARGIN: 1px">text</div>
+  <div style="color: red; color: blue">text</div>
+  <div style="margin: 0; MARGIN: 1px">text</div>
 </template>
 ```
 
@@ -9573,8 +9573,8 @@ vp run lint
 
 ```vue annotate="add:2,3"
 <template>
-<div style="color: red; background: blue">text</div>
-<div :style="{ color: a, color: b }">text</div>
+  <div style="color: red; background: blue">text</div>
+  <div :style="{ color: a, color: b }">text</div>
 </template>
 ```
 
@@ -9623,7 +9623,7 @@ vp run lint
 
 ```vue annotate="remove:2"
 <template>
-<div class="btn btn primary">click</div>
+  <div class="btn btn primary">click</div>
 </template>
 ```
 
@@ -9635,7 +9635,7 @@ btn は一回だけ残し、別の primary と合わせて指定します。
 
 ```vue annotate="add:2"
 <template>
-<div class="btn primary">click</div>
+  <div class="btn primary">click</div>
 </template>
 ```
 
@@ -12356,7 +12356,7 @@ vp run lint
 ```vue annotate="remove:3"
 <script lang="ts">
 export default {
-name: 'my-component' // kebab-case
+  name: 'my-component' // kebab-case
 }
 </script>
 ```
@@ -12370,7 +12370,7 @@ name: 'my-component' // kebab-case
 ```vue annotate="add:3"
 <script lang="ts">
 export default {
-name: 'MyComponent'
+  name: 'MyComponent'
 }
 </script>
 ```
@@ -12738,15 +12738,15 @@ Options API の watcher `value` と `other.handler` がアロー関数です。�
 ```vue annotate="remove:4,5,9"
 <script lang="ts">
 export default {
-watch: {
-// `this` is not the component instance inside an arrow function.
-value: () => {
-this.doSomething()
-},
-other: {
-handler: () => {}
-}
-}
+  watch: {
+    // `this` is not the component instance inside an arrow function.
+    value: () => {
+      this.doSomething()
+    },
+    other: {
+      handler: () => {}
+    }
+  }
 }
 </script>
 ```
@@ -12760,15 +12760,15 @@ handler: () => {}
 ```vue annotate="add:4,8,9"
 <script lang="ts">
 export default {
-watch: {
-value(newValue, oldValue) {
-this.doSomething()
-},
-other: {
-handler(newValue) {},
-deep: true
-}
-}
+  watch: {
+    value(newValue, oldValue) {
+      this.doSomething()
+    },
+    other: {
+      handler(newValue) {},
+      deep: true
+    }
+  }
 }
 </script>
 ```
@@ -12894,11 +12894,11 @@ vp run lint
 ```vue annotate="remove:4,5,6"
 <script lang="ts">
 export default {
-props: {
-// Boolean props already default to false; an explicit default is confusing.
-disabled: { type: Boolean, default: true },
-checked: { type: Boolean, default: false }
-}
+  props: {
+    // Boolean props already default to false; an explicit default is confusing.
+    disabled: { type: Boolean, default: true },
+    checked: { type: Boolean, default: false }
+  }
 }
 </script>
 ```
@@ -12912,15 +12912,15 @@ Boolean のみの props では `default` を省き、Vue の暗黙の false を�
 ```vue annotate="add:4,5,6,7,8,9,10"
 <script lang="ts">
 export default {
-props: {
-// No explicit default: defaults to false.
-disabled: { type: Boolean },
-disabled2: Boolean,
-// Union type may legitimately need a default.
-value: { type: [Boolean, String], default: '' },
-// Non-Boolean prop.
-count: { type: Number, default: 0 }
-}
+  props: {
+    // No explicit default: defaults to false.
+    disabled: { type: Boolean },
+    disabled2: Boolean,
+    // Union type may legitimately need a default.
+    value: { type: [Boolean, String], default: '' },
+    // Non-Boolean prop.
+    count: { type: Number, default: 0 }
+  }
 }
 </script>
 ```
@@ -13034,10 +13034,10 @@ Options API の `data` がオブジェクトリテラルであり、Vue 3 では
 ```vue annotate="remove:3,4,5"
 <script lang="ts">
 export default {
-// `data` must be a function in Vue 3, not an object literal.
-data: {
-count: 0
-}
+  // `data` must be a function in Vue 3, not an object literal.
+  data: {
+    count: 0
+  }
 }
 </script>
 ```
@@ -13051,9 +13051,9 @@ count: 0
 ```vue annotate="add:3,4"
 <script lang="ts">
 export default {
-data() {
-return { count: 0 }
-}
+  data() {
+    return { count: 0 }
+  }
 }
 </script>
 ```
@@ -13364,21 +13364,21 @@ prop の既定値関数と validator が `this` を参照していますが、Vu
 ```vue annotate="remove:6,7,8,13,14"
 <script lang="ts">
 export default {
-props: {
-size: {
-type: Number,
-// `this` is not the component instance in Vue 3.
-default() {
-return this.defaultSize
-}
-},
-value: {
-type: Number,
-validator() {
-return this.value > 0
-}
-}
-}
+  props: {
+    size: {
+      type: Number,
+      // `this` is not the component instance in Vue 3.
+      default() {
+        return this.defaultSize
+      }
+    },
+    value: {
+      type: Number,
+      validator() {
+        return this.value > 0
+      }
+    }
+  }
 }
 </script>
 ```
@@ -13392,21 +13392,21 @@ return this.value > 0
 ```vue annotate="add:6,7,8,13,14"
 <script lang="ts">
 export default {
-props: {
-size: {
-type: Number,
-// Vue 3 passes the raw props as the first argument instead.
-default(props) {
-return props.baseSize
-}
-},
-value: {
-type: Number,
-validator(value) {
-return value > 0
-}
-}
-}
+  props: {
+    size: {
+      type: Number,
+      // Vue 3 passes the raw props as the first argument instead.
+      default(props) {
+        return props.baseSize
+      }
+    },
+    value: {
+      type: Number,
+      validator(value) {
+        return value > 0
+      }
+    }
+  }
 }
 </script>
 ```
@@ -13457,16 +13457,16 @@ vp run lint
 ```vue annotate="remove:5,8,9,10,11"
 <script lang="ts">
 export default {
-props: ['foo'],
-data() {
-return { foo: 1 } // duplicate of prop `foo`
-},
-computed: {
-bar() { return 2 }
-},
-methods: {
-bar() {} // duplicate of computed `bar`
-}
+  props: ['foo'],
+  data() {
+    return { foo: 1 } // duplicate of prop `foo`
+  },
+  computed: {
+    bar() { return 2 }
+  },
+  methods: {
+    bar() {} // duplicate of computed `bar`
+  }
 }
 </script>
 ```
@@ -13480,13 +13480,13 @@ prop、data、computed に別々の名前 `foo`、`bar`、`baz` を使い、オ�
 ```vue annotate="add:5,8"
 <script lang="ts">
 export default {
-props: ['foo'],
-data() {
-return { bar: 1 }
-},
-computed: {
-baz() { return 2 }
-}
+  props: ['foo'],
+  data() {
+    return { bar: 1 }
+  },
+  computed: {
+    baz() { return 2 }
+  }
 }
 </script>
 ```
@@ -14229,17 +14229,17 @@ vp run lint
 
 オブジェクト形式の `ref` と `$foo`、配列形式の `key` は予約された prop 名です。`ref` と `key` はフレームワーク用であり、`$` で始まる名前も拒否されます。
 
-```vue annotate="remove:4,5,6,8,9,10"
+```vue annotate="remove:4,5,8,9,10,11"
 <script lang="ts">
 export default {
-props: {
-ref: String,   // reserved
-$foo: Number    // `$`-prefixed names are reserved
-}
+  props: {
+    ref: String,   // reserved
+    $foo: Number    // `$`-prefixed names are reserved
+  }
 }
 
 export default {
-props: ['key']    // reserved (array form)
+  props: ['key']    // reserved (array form)
 }
 </script>
 ```
@@ -14253,10 +14253,10 @@ props: ['key']    // reserved (array form)
 ```vue annotate="add:4,5"
 <script lang="ts">
 export default {
-props: {
-name: String,
-refValue: Number
-}
+  props: {
+    name: String,
+    refValue: Number
+  }
 }
 </script>
 ```
@@ -14448,18 +14448,18 @@ vp run lint
 ```vue annotate="remove:8,9,12"
 <script lang="ts">
 export default {
-data() {
-return { count: 0, items: [] }
-},
-computed: {
-doubled() {
-this.count = this.count * 2 // side effect: assigns to data
-return this.count
-},
-reversed() {
-return this.items.reverse() // side effect: mutates the array
-}
-}
+  data() {
+    return { count: 0, items: [] }
+  },
+  computed: {
+    doubled() {
+      this.count = this.count * 2 // side effect: assigns to data
+      return this.count
+    },
+    reversed() {
+      return this.items.reverse() // side effect: mutates the array
+    }
+  }
 }
 </script>
 ```
@@ -14473,17 +14473,17 @@ return this.items.reverse() // side effect: mutates the array
 ```vue annotate="add:8,11"
 <script lang="ts">
 export default {
-data() {
-return { count: 0, items: [] }
-},
-computed: {
-doubled() {
-return this.count * 2
-},
-reversed() {
-return [...this.items].reverse() // operate on a copy
-}
-}
+  data() {
+    return { count: 0, items: [] }
+  },
+  computed: {
+    doubled() {
+      return this.count * 2
+    },
+    reversed() {
+      return [...this.items].reverse() // operate on a copy
+    }
+  }
 }
 </script>
 ```
@@ -14538,9 +14538,9 @@ const count = ref(0)
 const user = reactive({ name: '' })
 
 export default {
-setup() {
-return { count, user }
-}
+  setup() {
+    return { count, user }
+  }
 }
 </script>
 ```
@@ -14563,15 +14563,15 @@ const API_URL = 'https://api.example.com'
 
 // Functions that create state are fine
 function createState() {
-return reactive({ count: 0 })
+  return reactive({ count: 0 })
 }
 
 export default {
-setup() {
-// Create state inside setup
-const count = ref(0)
-return { count }
-}
+  setup() {
+    // Create state inside setup
+    const count = ref(0)
+    return { count }
+  }
 }
 </script>
 ```
@@ -14953,8 +14953,8 @@ export default { name: 'MyComponent', inheritAttrs: false }
 <script lang="ts">
 // Real options logic — keep the plain script.
 export default {
-name: 'MyComponent',
-data() { return { count: 0 } },
+  name: 'MyComponent',
+  data() { return { count: 0 } },
 }
 </script>
 ```
@@ -15068,8 +15068,8 @@ vp run lint
 <script setup lang="ts">
 // reactive requires careful handling to avoid losing reactivity
 const state = reactive({
-count: 0,
-name: 'foo'
+  count: 0,
+  name: 'foo'
 })
 </script>
 ```
@@ -15340,7 +15340,7 @@ import { ref } from 'vue'
 const input = ref<HTMLInputElement | null>(null)
 </script>
 <template>
-<input ref="input" />
+  <input ref="input" />
 </template>
 ```
 
@@ -15359,8 +15359,8 @@ const input = useTemplateRef<HTMLInputElement>('input')
 const error = ref(null)
 </script>
 <template>
-<input ref="input" />
-<p>{{ error }}</p>
+  <input ref="input" />
+  <p>{{ error }}</p>
 </template>
 ```
 
@@ -15410,11 +15410,11 @@ vp run lint
 ```vue annotate="remove:4,5,6"
 <script lang="ts">
 export default {
-props: {
-// optional, non-Boolean, no default
-name: String,
-age: { type: Number },
-}
+  props: {
+    // optional, non-Boolean, no default
+    name: String,
+    age: { type: Number },
+  }
 }
 </script>
 ```
@@ -15428,11 +15428,11 @@ age: { type: Number },
 ```vue annotate="add:4,5,6"
 <script lang="ts">
 export default {
-props: {
-name: { type: String, default: '' },
-enabled: Boolean,                 // Boolean defaults to false
-id: { type: Number, required: true },
-}
+  props: {
+    name: { type: String, default: '' },
+    enabled: Boolean,                 // Boolean defaults to false
+    id: { type: Number, required: true },
+  }
 }
 </script>
 ```
@@ -15609,11 +15609,11 @@ vp run lint
 ```vue annotate="remove:2,6"
 <script setup lang="ts">
 const add = (a: number, b: number) => {
-return a + b
+  return a + b
 }
 
 function greet(name: string) {
-return `Hello, ${name}`
+  return `Hello, ${name}`
 }
 </script>
 ```
@@ -15627,11 +15627,11 @@ return `Hello, ${name}`
 ```vue annotate="add:2,6"
 <script setup lang="ts">
 const add = (a: number, b: number): number => {
-return a + b
+  return a + b
 }
 
 function greet(name: string): string {
-return `Hello, ${name}`
+  return `Hello, ${name}`
 }
 </script>
 ```
@@ -15682,12 +15682,12 @@ props の実行時の型に文字列 `"String"` と `"Number"` を使い、コ�
 ```vue annotate="remove:4,5,6,7"
 <script lang="ts">
 export default {
-props: {
-// The type should be the `String` constructor, not the string "String".
-name: "String",
-age: { type: "Number" },
-id: { type: ["String", "Number"] }
-}
+  props: {
+    // The type should be the `String` constructor, not the string "String".
+    name: "String",
+    age: { type: "Number" },
+    id: { type: ["String", "Number"] }
+  }
 }
 </script>
 ```
@@ -15701,11 +15701,11 @@ id: { type: ["String", "Number"] }
 ```vue annotate="add:4,5,6"
 <script lang="ts">
 export default {
-props: {
-name: String,
-age: { type: Number },
-id: { type: [String, Number] }
-}
+  props: {
+    name: String,
+    age: { type: Number },
+    id: { type: [String, Number] }
+  }
 }
 </script>
 ```
@@ -15756,14 +15756,14 @@ vp run lint
 ```vue annotate="remove:3,4,5,6,8,9"
 <script lang="ts">
 export default {
-props: ['status']            // array form: no types
+  props: ['status']            // array form: no types
 }
 
 export default {
-props: {
-status: null,              // no type
-other: {}                  // empty descriptor: no type
-}
+  props: {
+    status: null,              // no type
+    other: {}                  // empty descriptor: no type
+  }
 }
 </script>
 ```
@@ -15777,10 +15777,10 @@ other: {}                  // empty descriptor: no type
 ```vue annotate="add:4,5"
 <script lang="ts">
 export default {
-props: {
-status: String,
-other: { type: Number, default: 0 }
-}
+  props: {
+    status: String,
+    other: { type: Number, default: 0 }
+  }
 }
 </script>
 ```
@@ -16039,12 +16039,12 @@ Number と Boolean の props に型の合わないスカラー既定値を付け
 ```vue annotate="remove:4,5,6,7"
 <script lang="ts">
 export default {
-props: {
-count: { type: Number, default: '0' },     // string default for Number
-enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
-items: { type: Array, default: [] },        // literal must be a factory
-config: { type: Object, default: {} }       // literal must be a factory
-}
+  props: {
+    count: { type: Number, default: '0' },     // string default for Number
+    enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
+    items: { type: Array, default: [] },        // literal must be a factory
+    config: { type: Object, default: {} }       // literal must be a factory
+  }
 }
 </script>
 ```
@@ -16058,13 +16058,13 @@ config: { type: Object, default: {} }       // literal must be a factory
 ```vue annotate="add:4,5,6,7,8"
 <script lang="ts">
 export default {
-props: {
-count: { type: Number, default: 0 },
-enabled: { type: Boolean, default: false },
-items: { type: Array, default: () => [] },
-config: { type: Object, default: () => ({}) },
-label: { type: [String, Number], default: '' }
-}
+  props: {
+    count: { type: Number, default: 0 },
+    enabled: { type: Boolean, default: false },
+    items: { type: Array, default: () => [] },
+    config: { type: Object, default: () => ({}) },
+    label: { type: [String, Number], default: '' }
+  }
 }
 </script>
 ```

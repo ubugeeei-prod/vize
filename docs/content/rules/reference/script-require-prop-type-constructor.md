@@ -42,12 +42,12 @@ The prop declarations use strings `"String"` and `"Number"` as runtime types, in
 ```vue
 <script lang="ts">
 export default {
-props: {
-// The type should be the `String` constructor, not the string "String".
-name: "String",
-age: { type: "Number" },
-id: { type: ["String", "Number"] }
-}
+  props: {
+    // The type should be the `String` constructor, not the string "String".
+    name: "String",
+    age: { type: "Number" },
+    id: { type: ["String", "Number"] }
+  }
 }
 </script>
 ```
@@ -59,11 +59,11 @@ The declarations use the actual `String` and `Number` identifiers, including the
 ```vue
 <script lang="ts">
 export default {
-props: {
-name: String,
-age: { type: Number },
-id: { type: [String, Number] }
-}
+  props: {
+    name: String,
+    age: { type: Number },
+    id: { type: [String, Number] }
+  }
 }
 </script>
 ```

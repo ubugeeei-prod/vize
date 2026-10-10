@@ -41,7 +41,7 @@ vp run lint
 
 ```vue
 <template>
-<div is="MyComponent" />
+  <div is="MyComponent" />
 </template>
 ```
 
@@ -51,8 +51,8 @@ vp run lint
 
 ```vue
 <template>
-<component :is="MyComponent" />
-<div is="vue:MyComponent" />
+  <component :is="MyComponent" />
+  <div is="vue:MyComponent" />
 </template>
 ```
 

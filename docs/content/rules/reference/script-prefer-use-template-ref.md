@@ -45,7 +45,7 @@ import { ref } from 'vue'
 const input = ref<HTMLInputElement | null>(null)
 </script>
 <template>
-<input ref="input" />
+  <input ref="input" />
 </template>
 ```
 
@@ -62,8 +62,8 @@ const input = useTemplateRef<HTMLInputElement>('input')
 const error = ref(null)
 </script>
 <template>
-<input ref="input" />
-<p>{{ error }}</p>
+  <input ref="input" />
+  <p>{{ error }}</p>
 </template>
 ```
 

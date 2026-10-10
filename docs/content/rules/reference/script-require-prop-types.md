@@ -42,14 +42,14 @@ The array entry declares only the name `status`; the `null` value and empty desc
 ```vue
 <script lang="ts">
 export default {
-props: ['status']            // array form: no types
+  props: ['status']            // array form: no types
 }
 
 export default {
-props: {
-status: null,              // no type
-other: {}                  // empty descriptor: no type
-}
+  props: {
+    status: null,              // no type
+    other: {}                  // empty descriptor: no type
+  }
 }
 </script>
 ```
@@ -61,10 +61,10 @@ other: {}                  // empty descriptor: no type
 ```vue
 <script lang="ts">
 export default {
-props: {
-status: String,
-other: { type: Number, default: 0 }
-}
+  props: {
+    status: String,
+    other: { type: Number, default: 0 }
+  }
 }
 </script>
 ```

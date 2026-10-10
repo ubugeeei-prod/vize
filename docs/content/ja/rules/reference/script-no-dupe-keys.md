@@ -42,16 +42,16 @@ vp run lint
 ```vue
 <script lang="ts">
 export default {
-props: ['foo'],
-data() {
-return { foo: 1 } // duplicate of prop `foo`
-},
-computed: {
-bar() { return 2 }
-},
-methods: {
-bar() {} // duplicate of computed `bar`
-}
+  props: ['foo'],
+  data() {
+    return { foo: 1 } // duplicate of prop `foo`
+  },
+  computed: {
+    bar() { return 2 }
+  },
+  methods: {
+    bar() {} // duplicate of computed `bar`
+  }
 }
 </script>
 ```
@@ -63,13 +63,13 @@ prop、data、computed に別々の名前 `foo`、`bar`、`baz` を使い、オ�
 ```vue
 <script lang="ts">
 export default {
-props: ['foo'],
-data() {
-return { bar: 1 }
-},
-computed: {
-baz() { return 2 }
-}
+  props: ['foo'],
+  data() {
+    return { bar: 1 }
+  },
+  computed: {
+    baz() { return 2 }
+  }
 }
 </script>
 ```
