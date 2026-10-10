@@ -8,6 +8,13 @@
   "files": [
     "tools/support/compat/github/require-needs-success.ts",
     "tools/support/compat/github/require-rust-tier.ts",
+    "tools/support/compat/github/docs-deployment-entry.ts",
+    "tests/tooling/docs-deployment-policy.test.ts",
+    "tests/tooling/docs-deployment-receipt.test.ts",
+    "tests/tooling/docs-deployment-archives.test.ts",
+    "tests/tooling/docs-deployment-custody.test.ts",
+    "tests/tooling/docs-deployment-history.test.ts",
+    "tests/tooling/docs-deployment-review.test.ts",
     "tests/tooling/typescript-ci-gates.test.ts"
   ]
 }

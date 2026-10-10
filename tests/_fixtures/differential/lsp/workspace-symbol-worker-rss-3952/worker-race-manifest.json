@@ -1,0 +1,90 @@
+{
+  "schema": "vize-workspace-symbol-worker-race-v1",
+  "baseSource": "c3b847fa86e6f50c619e735cc4fe0c3dbb812662",
+  "command": [
+    "/Users/ubugeeei/.cargo/bin/rust-script",
+    "--test",
+    "/private/tmp/vize-lsp-worker-six-focused-20261010.rs"
+  ],
+  "red": {
+    "exitStatus": 101,
+    "passed": 5,
+    "failed": 1,
+    "ignored": 0,
+    "failure": "Immediate request after a native worker panic returns None before receiver teardown closes the cached Sender."
+  },
+  "green": {
+    "exitStatus": 0,
+    "passed": 6,
+    "failed": 0,
+    "ignored": 0
+  },
+  "hostScope": "Pinned futures0.3.32/tracing0.1.44; original native Worker source executes directly; Inventory in this private host is an explicit field-owner model. Actual Maestro Inventory law remains required in Actions. This is not a full product/RSS/provider measurement. Both cases use identical tests and host bytes; before worker is c3, after worker is reviewed dirty candidate source.",
+  "archiveSha256": "83980b5a8fa8f1d533d23a05e29c5706e7400d53a1072b2928dcdc3b8829aa06",
+  "members": [
+    {
+      "path": "corrected-six-green.log",
+      "bytes": 1247,
+      "sha256": "3b3aee717278eac03d5382f49cb68cfa3984d1b391903405186a8b371c814052"
+    },
+    {
+      "path": "initial/after-worker.rs",
+      "bytes": 2698,
+      "sha256": "a733b00ad89fe93f0188a8a7c5ca543858e3c3ce40c221b312e795f256e05a27"
+    },
+    {
+      "path": "initial/before-worker.rs",
+      "bytes": 1745,
+      "sha256": "5dfd6b2e478fadd4d2503b156b6c94fde6c2e533ac845c3b32ab9f0472e83b03"
+    },
+    {
+      "path": "initial/green.log",
+      "bytes": 1247,
+      "sha256": "533446c032ed6b3bda891323eb3027a293783e79322b0192bd9c01a220d2f649"
+    },
+    {
+      "path": "initial/host.rs",
+      "bytes": 928,
+      "sha256": "3b34c8bcec4fe24a50158e7a59b292834abced724febdb3aa71a4573a8fc19a7"
+    },
+    {
+      "path": "initial/red.log",
+      "bytes": 2893,
+      "sha256": "8f5cf6e04755035f02b172a0e3fdb5394afeadd34df47b967d74e1ca306cd817"
+    },
+    {
+      "path": "initial/tests.rs",
+      "bytes": 7876,
+      "sha256": "b48d0d924195429478e3b1424ee7627207d02f281c88cb75508138d06202f462"
+    },
+    {
+      "path": "initial/worker-delta.diff",
+      "bytes": 3085,
+      "sha256": "93ce13724c4ae937743c7e1f8a695b2b31ea49840ea56169837a088f06b2b82a"
+    },
+    {
+      "path": "revised-host.rs",
+      "bytes": 908,
+      "sha256": "7ac10aac46342c2e593f8ab157f95c3fbebd2c507d1908424fb6ccc8cf4134a0"
+    },
+    {
+      "path": "revised-tests.rs",
+      "bytes": 9595,
+      "sha256": "33b2d3d239467dc5d7f49699bf73a0e3739dacb3ccaae1e693478e0ccb3044d5"
+    },
+    {
+      "path": "seven-identity-green.log",
+      "bytes": 1337,
+      "sha256": "88deff2601e5be6c852239dfc5eeb40701138eea531e65387aa44805b52fa897"
+    }
+  ],
+  "initialArchiveSha256": "05f42f4690cd7a1a6a740b225ec6ca1b99de63885066af9ca185aa22a54b6df5",
+  "namespaceCorrection": "Initial private model used WorkspaceProjectFileInventory, but actual enclosing source type is Inventory. Independent review caught this before publication. Revised authored test and host use Inventory; complete actual Maestro test remains an Actions obligation.",
+  "revisedGreen": {
+    "exitStatus": 0,
+    "passed": 7,
+    "failed": 0,
+    "ignored": 0,
+    "extraLaw": "Deterministic lost-reply retirement must preserve the later genuine native worker."
+  }
+}

@@ -9,7 +9,7 @@ use vize_l0::FxHashMap;
 
 use crate::ide::WorkspaceSymbolsService;
 
-use super::{ServerState, background, is_project_source};
+use super::{ServerState, is_project_source};
 
 impl ServerState {
     pub(crate) async fn search_workspace_project_symbols(
@@ -53,12 +53,14 @@ impl ServerState {
             let symbols = if worker_failed {
                 None
             } else {
-                background(move || {
-                    collect_sources(paths.uris, &worker_open, &retired, &worker_query, |path| {
-                        std::fs::read_to_string(path).ok()
+                self.workspace_project_files
+                    .worker
+                    .run(move || {
+                        collect_sources(paths.uris, &worker_open, &retired, &worker_query, |path| {
+                            std::fs::read_to_string(path).ok()
+                        })
                     })
-                })
-                .await
+                    .await
             }
             .unwrap_or_else(|| collect_sources(Vec::new(), &open, &[], &query, |_| None));
             #[cfg(test)]
