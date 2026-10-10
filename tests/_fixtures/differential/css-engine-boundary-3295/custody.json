@@ -1,0 +1,99 @@
+{
+  "schema": "vize.css-engine-boundary-3295.custody",
+  "version": 1,
+  "sourceQualification": "Pending fresh hosted changed-source execution; unchanged source baseline only.",
+  "files": [
+    {
+      "path": "App.expected.txt",
+      "bytes": 131,
+      "sha256": "849f6453ebc66b8315137c54b8cbb92a7a2870e42faca32ed9b7c7c3f429c347"
+    },
+    {
+      "path": "App.vue.txt",
+      "bytes": 123,
+      "sha256": "49ee657c2f6708bb81acdf1276c5e3de31971207bc9b224ede1e6756fd855fad"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2757,
+      "sha256": "128629ab70121b57c3bc28f2ed9c86391ba31806369a5ca92c4439d5c881239b"
+    },
+    {
+      "path": "cases.json",
+      "bytes": 28206,
+      "sha256": "32b8bb5632bc0755d1540ff828f3e70eb5e41ec45cb0c81de4df67a787f572c1"
+    },
+    {
+      "path": "color-original.css.txt",
+      "bytes": 28,
+      "sha256": "0f607d61c9295b93886115c38ab4f76071254e2da08b03b186f0654be1c9ce2a"
+    },
+    {
+      "path": "issue-3295.body.txt",
+      "bytes": 2704,
+      "sha256": "612ba85e93b0a316befe871788220756a48abbd6334c535e74d2494dc93fd38a"
+    },
+    {
+      "path": "issue-3295.json",
+      "bytes": 2951,
+      "sha256": "fc1b7ae09f0d24747dadabc10d85d04b10319f53d47095ddaa4b9581d2bbc761"
+    },
+    {
+      "path": "issue-4961.body.txt",
+      "bytes": 406,
+      "sha256": "8d607a8bdb857afa52b27b9cfe16a9f3071cba50f6fe69d389a99ebb62bfe797"
+    },
+    {
+      "path": "issue-4961.json",
+      "bytes": 569,
+      "sha256": "ac64c36193abd2e5f93004796bb62459642793554b296a63a32ba43ddd4eedf9"
+    },
+    {
+      "path": "number-original.css.txt",
+      "bytes": 27,
+      "sha256": "d790ef1ee15baffebd81b761f8ae144620e2f5d229b71d4961218c891db0e912"
+    },
+    {
+      "path": "opacity-original.css.txt",
+      "bytes": 20,
+      "sha256": "ae89b0f17d9f2f5977960f37a095657014b45164b1b15e023116db3c5341551a"
+    },
+    {
+      "path": "source-baseline/fixedpoints.json",
+      "bytes": 5308,
+      "sha256": "47f40f8f72b4216e80e176c77dba579a379b3f3798bc7e91e62e11416d053c36"
+    },
+    {
+      "path": "source-baseline/original-boundary-routes-probe.json",
+      "bytes": 9815,
+      "sha256": "c1d538147e954dead41359b4fc39345cd2748771920fd75ccdeb896463cc78fd"
+    },
+    {
+      "path": "source-baseline/original-percentage-probe.json",
+      "bytes": 6024,
+      "sha256": "89ebe65f056e1fa3d86a4a140affb1b866444281611d083abe81231945d9cdc6"
+    },
+    {
+      "path": "source-baseline/probes.json",
+      "bytes": 24078,
+      "sha256": "a9f8933d8922d17ced2437773fa01248ec08ec1d45758b8474841f0182caded4"
+    },
+    {
+      "path": "source-baseline/source-affinity.json",
+      "bytes": 5341,
+      "sha256": "3ae57ea9af39300ffa0d40afe4673c497c99a346e3fe5b6338ef10344d2e3751"
+    }
+  ],
+  "observers": [
+    {
+      "path": "crates/vize_glyph/tests/css_engine_boundary.rs",
+      "bytes": 6110,
+      "sha256": "dd603ce989a5d086cf2bebbd17e3306810225c08123f241a239731ea13d19889"
+    },
+    {
+      "path": "crates/vize_patina/tests/css_engine_boundary.rs",
+      "bytes": 5272,
+      "sha256": "d926ef9fcc0c862f329771822a897fc438f8a595b9fca2b6ad325b75927cc2b6"
+    }
+  ]
+}

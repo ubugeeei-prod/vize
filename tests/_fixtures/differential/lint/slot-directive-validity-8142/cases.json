@@ -1,0 +1,1527 @@
+{
+  "schema": "vize.n8n.slot-validity.corpus",
+  "version": 1,
+  "issue": 8142,
+  "sourceBefore": "26031a4fbb30a1e86511919bafc7035b08440ef3",
+  "scope": "Authored current-source library API, not native product or installed CLI acceptance",
+  "cases": [
+    {
+      "id": "default-component-no-value",
+      "filename": "default-component-no-value.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+      "sourceSha256": "a0d98ef16cf76ab75170313d15933119ca68ab2486efad76193c5977bec73f3e",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-no-value.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 191,
+            "fix": null,
+            "help": "Add a slot parameter value or use a child <template #default> without a value",
+            "labels": [],
+            "message": "Default v-slot on a component requires a slot parameter value",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-component-no-value.vue",
+        "warning_count": 0
+      },
+      "added": [
+        {
+          "end": 191,
+          "fix": null,
+          "help": "Add a slot parameter value or use a child <template #default> without a value",
+          "labels": [],
+          "message": "Default v-slot on a component requires a slot parameter value",
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "start": 185
+        }
+      ],
+      "addedDirective": "v-slot"
+    },
+    {
+      "id": "default-component-empty-value",
+      "filename": "default-component-empty-value.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"\">ready</FancyPanel>\n</template>\n",
+      "sourceSha256": "f6afdf298bc23fa9fb0a07acfc6a6f8c3c6791ac674238e26274ce70b16d0089",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-empty-value.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 194,
+            "fix": null,
+            "help": "Add a slot parameter value or use a child <template #default> without a value",
+            "labels": [],
+            "message": "Default v-slot on a component requires a slot parameter value",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-component-empty-value.vue",
+        "warning_count": 0
+      },
+      "added": [
+        {
+          "end": 194,
+          "fix": null,
+          "help": "Add a slot parameter value or use a child <template #default> without a value",
+          "labels": [],
+          "message": "Default v-slot on a component requires a slot parameter value",
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "start": 185
+        }
+      ],
+      "addedDirective": "v-slot=\"\""
+    },
+    {
+      "id": "default-component-whitespace",
+      "filename": "default-component-whitespace.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"  \">ready</FancyPanel>\n</template>\n",
+      "sourceSha256": "733c34f142c331262a7548bd37e63f363e8e06e752911a9e2fa95c09eadf3724",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-whitespace.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-whitespace.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "default-argument-no-value",
+      "filename": "default-argument-no-value.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default>ready</FancyPanel>\n</template>\n",
+      "sourceSha256": "5690229a1fc8995c3d47f37f137e2bf38ed908e9312e72e2a9583a28e4ec9106",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 193,
+            "fix": {
+              "edits": [
+                {
+                  "end": 193,
+                  "new_text": "v-slot",
+                  "start": 185
+                }
+              ],
+              "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+            },
+            "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+            "labels": [],
+            "message": "Expected 'v-slot' instead of '#default'",
+            "rule_name": "vue/v-slot-style",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-argument-no-value.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 193,
+            "fix": {
+              "edits": [
+                {
+                  "end": 193,
+                  "new_text": "v-slot",
+                  "start": 185
+                }
+              ],
+              "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+            },
+            "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+            "labels": [],
+            "message": "Expected 'v-slot' instead of '#default'",
+            "rule_name": "vue/v-slot-style",
+            "severity": "error",
+            "start": 185
+          },
+          {
+            "end": 193,
+            "fix": null,
+            "help": "Add a slot parameter value or use a child <template #default> without a value",
+            "labels": [],
+            "message": "Default v-slot on a component requires a slot parameter value",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 2,
+        "filename": "default-argument-no-value.vue",
+        "warning_count": 0
+      },
+      "added": [
+        {
+          "end": 193,
+          "fix": null,
+          "help": "Add a slot parameter value or use a child <template #default> without a value",
+          "labels": [],
+          "message": "Default v-slot on a component requires a slot parameter value",
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "start": 185
+        }
+      ],
+      "addedDirective": "#default"
+    },
+    {
+      "id": "default-argument-empty-value",
+      "filename": "default-argument-empty-value.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default=\"\">ready</FancyPanel>\n</template>\n",
+      "sourceSha256": "aea2263674e66fbbc778c925e1724fc65b1a914b4e7b16084c63aa2933e60d4e",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 196,
+            "fix": {
+              "edits": [
+                {
+                  "end": 193,
+                  "new_text": "v-slot",
+                  "start": 185
+                }
+              ],
+              "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+            },
+            "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+            "labels": [],
+            "message": "Expected 'v-slot' instead of '#default'",
+            "rule_name": "vue/v-slot-style",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-argument-empty-value.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 196,
+            "fix": {
+              "edits": [
+                {
+                  "end": 193,
+                  "new_text": "v-slot",
+                  "start": 185
+                }
+              ],
+              "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+            },
+            "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+            "labels": [],
+            "message": "Expected 'v-slot' instead of '#default'",
+            "rule_name": "vue/v-slot-style",
+            "severity": "error",
+            "start": 185
+          },
+          {
+            "end": 196,
+            "fix": null,
+            "help": "Add a slot parameter value or use a child <template #default> without a value",
+            "labels": [],
+            "message": "Default v-slot on a component requires a slot parameter value",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 2,
+        "filename": "default-argument-empty-value.vue",
+        "warning_count": 0
+      },
+      "added": [
+        {
+          "end": 196,
+          "fix": null,
+          "help": "Add a slot parameter value or use a child <template #default> without a value",
+          "labels": [],
+          "message": "Default v-slot on a component requires a slot parameter value",
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "start": 185
+        }
+      ],
+      "addedDirective": "#default=\"\""
+    },
+    {
+      "id": "default-component-scope",
+      "filename": "default-component-scope.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+      "sourceSha256": "606ed0a8533779ff40847ee02e398cee07d9b1505d16169d0951df254d9e80a2",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-scope.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-scope.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "default-argument-scope",
+      "filename": "default-argument-scope.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+      "sourceSha256": "1c175aba1ad1234a4516a537a399f691d355527cfce1986d516ee038ca6a36fd",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 200,
+            "fix": {
+              "edits": [
+                {
+                  "end": 193,
+                  "new_text": "v-slot",
+                  "start": 185
+                }
+              ],
+              "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+            },
+            "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+            "labels": [],
+            "message": "Expected 'v-slot' instead of '#default'",
+            "rule_name": "vue/v-slot-style",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-argument-scope.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 200,
+            "fix": {
+              "edits": [
+                {
+                  "end": 193,
+                  "new_text": "v-slot",
+                  "start": 185
+                }
+              ],
+              "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+            },
+            "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+            "labels": [],
+            "message": "Expected 'v-slot' instead of '#default'",
+            "rule_name": "vue/v-slot-style",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-argument-scope.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "component-empty-pattern",
+      "filename": "component-empty-pattern.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"{}\">ready</FancyPanel>\n</template>\n",
+      "sourceSha256": "ec92ec90f15d6b1c79052e0c2a91a6ac133b1f43297bea64350c368c381692c7",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "component-empty-pattern.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "component-empty-pattern.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "default-template-no-value",
+      "filename": "default-template-no-value.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #default>ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "5534ee30749b25e04e12ca6059e088632620956efe639c79dfde52e8732f26b6",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-template-no-value.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-template-no-value.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "named-template-no-value",
+      "filename": "named-template-no-value.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #header>ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "f8548815ce6a25e794f06a2c76b4bac4a0e187369a2653ec5fa3a57b13ef1637",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "named-template-no-value.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "named-template-no-value.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "named-template-empty-value",
+      "filename": "named-template-empty-value.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #header=\"\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "076ec5c85bb0656d4182f1cb1bd0fb2829ee4a696b539cd79de1d4bce21f7bf5",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "named-template-empty-value.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "named-template-empty-value.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "plain-component",
+      "filename": "plain-component.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel>ready</FancyPanel>\n</template>\n",
+      "sourceSha256": "52ab835215c91810681d1d335eca6fb85e50f96d9a7fbaa8b8bc5624455488db",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "plain-component.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "plain-component.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "native-location",
+      "filename": "native-location.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <div v-slot>ready</div>\n</template>\n",
+      "sourceSha256": "469d5f2a5478eed054c282123c1afdb2d02ab5bf625df4c9d9c6ee8295be1066",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 42,
+            "fix": null,
+            "help": "Remove the unused import or use the component in your template",
+            "labels": [],
+            "message": "Component 'FancyPanel' is registered but never used in template",
+            "rule_name": "vue/no-unused-components",
+            "severity": "error",
+            "start": 32
+          },
+          {
+            "end": 184,
+            "fix": null,
+            "help": "Use v-slot on a component or a template element inside a component",
+            "labels": [],
+            "message": "v-slot can only be used on components or template elements",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 178
+          }
+        ],
+        "error_count": 2,
+        "filename": "native-location.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 42,
+            "fix": null,
+            "help": "Remove the unused import or use the component in your template",
+            "labels": [],
+            "message": "Component 'FancyPanel' is registered but never used in template",
+            "rule_name": "vue/no-unused-components",
+            "severity": "error",
+            "start": 32
+          },
+          {
+            "end": 184,
+            "fix": null,
+            "help": "Use v-slot on a component or a template element inside a component",
+            "labels": [],
+            "message": "v-slot can only be used on components or template elements",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 178
+          }
+        ],
+        "error_count": 2,
+        "filename": "native-location.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "named-component-location",
+      "filename": "named-component-location.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #header>ready</FancyPanel>\n</template>\n",
+      "sourceSha256": "9a5eb89376dd804ae7af087048101c2c3d9524d1e5ee394bdfac06fe0946301d",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 192,
+            "fix": null,
+            "help": "Use v-slot on a component or a template element inside a component",
+            "labels": [],
+            "message": "v-slot can only be used on components or template elements",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "named-component-location.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 192,
+            "fix": null,
+            "help": "Use v-slot on a component or a template element inside a component",
+            "labels": [],
+            "message": "v-slot can only be used on components or template elements",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "named-component-location.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "mixed-default-template",
+      "filename": "mixed-default-template.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"slot\"><template #header>ready</template>{{ slot }}</FancyPanel>\n</template>\n",
+      "sourceSha256": "e2f7205d5308d8e29c3f2f5f6c4b4b9e3eda0eb220e01ab8eb20f68d78134414",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 198,
+            "fix": null,
+            "help": "Use v-slot on a component or a template element inside a component",
+            "labels": [],
+            "message": "Default slot must use a template element when child slot templates are present",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "mixed-default-template.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 198,
+            "fix": null,
+            "help": "Use v-slot on a component or a template element inside a component",
+            "labels": [],
+            "message": "Default slot must use a template element when child slot templates are present",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "mixed-default-template.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "duplicate-template",
+      "filename": "duplicate-template.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #header>one</template><template #header>two</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "13cce959f7506ce38569cf1576868e323fd4d3a0bfab5e916a192a17b341890a",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 234,
+            "fix": null,
+            "help": "Use v-slot on a component or a template element inside a component",
+            "labels": [],
+            "message": "v-slot can only be used on components or template elements",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 227
+          }
+        ],
+        "error_count": 1,
+        "filename": "duplicate-template.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 234,
+            "fix": null,
+            "help": "Use v-slot on a component or a template element inside a component",
+            "labels": [],
+            "message": "v-slot can only be used on components or template elements",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 227
+          }
+        ],
+        "error_count": 1,
+        "filename": "duplicate-template.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "if-else-templates",
+      "filename": "if-else-templates.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template v-if=\"name\" #header>one</template><template v-else #header>two</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "510dc02f8ccc1216c97a0361441bd57fa5eb6ee37cd275f848183578f6582683",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "if-else-templates.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "if-else-templates.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "named-modifier",
+      "filename": "named-modifier.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #header.foo>ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "efde38870b6a4a2754111133a0cab01087c0f31c8260c99c47f69bb340dd514c",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "named-modifier.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "named-modifier.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "default-modifier",
+      "filename": "default-modifier.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot.foo=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+      "sourceSha256": "645bb014272cd0c84e02e851b8c4e97dd5bf17dd9744c82ca8c8df5479b59859",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-modifier.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 202,
+            "fix": null,
+            "help": "Remove the modifier from the v-slot directive",
+            "labels": [],
+            "message": "v-slot without a slot argument does not support modifiers",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 185
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-modifier.vue",
+        "warning_count": 0
+      },
+      "added": [
+        {
+          "end": 202,
+          "fix": null,
+          "help": "Remove the modifier from the v-slot directive",
+          "labels": [],
+          "message": "v-slot without a slot argument does not support modifiers",
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "start": 185
+        }
+      ],
+      "addedDirective": "v-slot.foo=\"slot\""
+    },
+    {
+      "id": "dotted-vuetify",
+      "filename": "dotted-vuetify.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #item.memo=\"slot\">{{ slot }}</template><template #item.tagName=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "2d676632fd73f24277f636a75e1d1564a0a8e8eebb99c7f0b04bf44186a5153e",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dotted-vuetify.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dotted-vuetify.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-same-object",
+      "filename": "dynamic-same-object.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "00ce2383a0b15d84d5b4d75d8fffab1ba835e53192560439b6dd47a130f6286c",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-same-object.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-same-object.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-same-identifier",
+      "filename": "dynamic-same-identifier.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "92971c2f543b3a609ea2e10f95a467bb82888d7dc943f1c786184f322b85df39",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-same-identifier.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-same-identifier.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-destructure",
+      "filename": "dynamic-destructure.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[item]=\"{ item }\">{{ item }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "b9b13b31ee5aa46e779b0176da02854f4903f71fdaf9f9c65df274cc5495d728",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-destructure.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-destructure.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-renamed",
+      "filename": "dynamic-renamed.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[key]=\"{ source: key }\">{{ key }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "04450d9fe4365e5ff31b6110841ad3914440ea7b6aa6abf68862508bdc93cc25",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-renamed.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-renamed.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-property-key-control",
+      "filename": "dynamic-property-key-control.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot]=\"{ slot: alias }\">{{ alias }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "63a1fe90fe1f72c85d9bf1012a49d284f3fb5a5e9fb058efc8e25bcb9811eb61",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-property-key-control.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-property-key-control.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-nested-binding",
+      "filename": "dynamic-nested-binding.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slotKey]=\"{ source: { slotKey } }\">{{ slotKey }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "3df4817a2c2018555ee1698346fc8f7521efac75a1cbd03a5cf889b73fd3b703",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-nested-binding.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-nested-binding.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-outer-control",
+      "filename": "dynamic-outer-control.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[name]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "68e5fe95187bb90798efd673c3718590caf13e1bdd646201ee38dbef35d203fb",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-outer-control.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-outer-control.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-property-control",
+      "filename": "dynamic-property-control.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[outside.slot]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "ec70dbdc6f94bafedb39d3012e2893c16dda0468df3688aa2c296e0059be2995",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-property-control.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-property-control.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-string-control",
+      "filename": "dynamic-string-control.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #['slot']=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "655e623b01828d40f0896cd6a663ee817661c84b7bca2470284ce46f997a3b5d",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-string-control.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-string-control.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-arrow-shadow-control",
+      "filename": "dynamic-arrow-shadow-control.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[((slot)=>slot)(name)]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "8001e5966754d709f0118c8f23677f1c76936730b1d71b4d92aba169d4c4365a",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 205,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+            "rule_name": "parser/template",
+            "severity": "error",
+            "start": 204
+          },
+          {
+            "end": 206,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Attribute `#` is missing a value after `=`; continuing without the value.",
+            "rule_name": "parser/template",
+            "severity": "error",
+            "start": 205
+          }
+        ],
+        "error_count": 2,
+        "filename": "dynamic-arrow-shadow-control.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 205,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+            "rule_name": "parser/template",
+            "severity": "error",
+            "start": 204
+          },
+          {
+            "end": 206,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Attribute `#` is missing a value after `=`; continuing without the value.",
+            "rule_name": "parser/template",
+            "severity": "error",
+            "start": 205
+          }
+        ],
+        "error_count": 2,
+        "filename": "dynamic-arrow-shadow-control.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-arrow-capture",
+      "filename": "dynamic-arrow-capture.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[(()=>slot)()]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "b8e74607071c5b3b2b69edc573ea243048c406fa85eafd875ab2e7aa729db085",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 201,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+            "rule_name": "parser/template",
+            "severity": "error",
+            "start": 200
+          },
+          {
+            "end": 202,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Attribute `#` is missing a value after `=`; continuing without the value.",
+            "rule_name": "parser/template",
+            "severity": "error",
+            "start": 201
+          }
+        ],
+        "error_count": 2,
+        "filename": "dynamic-arrow-capture.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 201,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+            "rule_name": "parser/template",
+            "severity": "error",
+            "start": 200
+          },
+          {
+            "end": 202,
+            "fix": null,
+            "help": null,
+            "labels": [],
+            "message": "Attribute `#` is missing a value after `=`; continuing without the value.",
+            "rule_name": "parser/template",
+            "severity": "error",
+            "start": 201
+          }
+        ],
+        "error_count": 2,
+        "filename": "dynamic-arrow-capture.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-duplicate-control",
+      "filename": "dynamic-duplicate-control.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[name]>one</template><template #[name]>two</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "ba100b478be07c21869cc6f0932f47137ec0671e004c4c5c9a526462afffd1a1",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 234,
+            "fix": null,
+            "help": "Use v-slot on a component or a template element inside a component",
+            "labels": [],
+            "message": "v-slot can only be used on components or template elements",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 227
+          }
+        ],
+        "error_count": 1,
+        "filename": "dynamic-duplicate-control.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 234,
+            "fix": null,
+            "help": "Use v-slot on a component or a template element inside a component",
+            "labels": [],
+            "message": "v-slot can only be used on components or template elements",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 227
+          }
+        ],
+        "error_count": 1,
+        "filename": "dynamic-duplicate-control.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "default-component-no-value-scriptless",
+      "filename": "default-component-no-value-scriptless.vue",
+      "source": "<template>\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+      "sourceSha256": "177a1ddfe16b1aca4c171b446377d3b48714d8fd662c9652ada160eadb1cb117",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-component-no-value-scriptless.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          },
+          {
+            "end": 31,
+            "fix": null,
+            "help": "Add a slot parameter value or use a child <template #default> without a value",
+            "labels": [],
+            "message": "Default v-slot on a component requires a slot parameter value",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 25
+          }
+        ],
+        "error_count": 2,
+        "filename": "default-component-no-value-scriptless.vue",
+        "warning_count": 0
+      },
+      "added": [
+        {
+          "end": 31,
+          "fix": null,
+          "help": "Add a slot parameter value or use a child <template #default> without a value",
+          "labels": [],
+          "message": "Default v-slot on a component requires a slot parameter value",
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "start": 25
+        }
+      ],
+      "addedDirective": "v-slot"
+    },
+    {
+      "id": "default-component-no-value-utf8-lf",
+      "filename": "default-component-no-value-utf8-lf.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+      "sourceSha256": "bd1d4f2b289df362de85546ae9a77d06ba5c2c140d6ce24f3d7feff11364a3f7",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-no-value-utf8-lf.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 216,
+            "fix": null,
+            "help": "Add a slot parameter value or use a child <template #default> without a value",
+            "labels": [],
+            "message": "Default v-slot on a component requires a slot parameter value",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 210
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-component-no-value-utf8-lf.vue",
+        "warning_count": 0
+      },
+      "added": [
+        {
+          "end": 216,
+          "fix": null,
+          "help": "Add a slot parameter value or use a child <template #default> without a value",
+          "labels": [],
+          "message": "Default v-slot on a component requires a slot parameter value",
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "start": 210
+        }
+      ],
+      "addedDirective": "v-slot"
+    },
+    {
+      "id": "default-component-no-value-utf8-crlf",
+      "filename": "default-component-no-value-utf8-crlf.vue",
+      "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel v-slot>ready</FancyPanel>\r\n</template>\r\n",
+      "sourceSha256": "7bfc71a9f8d9e396c5e3986f68d847f92611f8935301b4abb64e0e6f53787751",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-no-value-utf8-crlf.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 224,
+            "fix": null,
+            "help": "Add a slot parameter value or use a child <template #default> without a value",
+            "labels": [],
+            "message": "Default v-slot on a component requires a slot parameter value",
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "start": 218
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-component-no-value-utf8-crlf.vue",
+        "warning_count": 0
+      },
+      "added": [
+        {
+          "end": 224,
+          "fix": null,
+          "help": "Add a slot parameter value or use a child <template #default> without a value",
+          "labels": [],
+          "message": "Default v-slot on a component requires a slot parameter value",
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "start": 218
+        }
+      ],
+      "addedDirective": "v-slot"
+    },
+    {
+      "id": "default-component-scope-scriptless",
+      "filename": "default-component-scope-scriptless.vue",
+      "source": "<template>\n  <FancyPanel v-slot=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+      "sourceSha256": "f5638c423d82629a3e37c918f9bddee2f95cea7fe675d770577b85241099e708",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-component-scope-scriptless.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-component-scope-scriptless.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "default-component-scope-utf8-lf",
+      "filename": "default-component-scope-utf8-lf.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel v-slot=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+      "sourceSha256": "a8ffd8b0bbebabe56da8861db2443f65397af66cefdcb60bba32d17089185c7c",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-scope-utf8-lf.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-scope-utf8-lf.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "default-component-scope-utf8-crlf",
+      "filename": "default-component-scope-utf8-crlf.vue",
+      "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel v-slot=\"slot\">{{ slot }}</FancyPanel>\r\n</template>\r\n",
+      "sourceSha256": "4e72da63e0e322e8f4e9b99dd9ede4a456b1e9137c5140c060be8cd6bd971b15",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-scope-utf8-crlf.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-component-scope-utf8-crlf.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "default-template-no-value-scriptless",
+      "filename": "default-template-no-value-scriptless.vue",
+      "source": "<template>\n  <FancyPanel><template #default>ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "5aba65501c73b6a52ba18050e05f89775b40c30d9effc1dbf0a1c66d732b3c9f",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-template-no-value-scriptless.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "default-template-no-value-scriptless.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "default-template-no-value-utf8-lf",
+      "filename": "default-template-no-value-utf8-lf.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel><template #default>ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "f68f4aebf9f9ab30b57d909a8fe39224c73a158707331eafa613743e2f2b076c",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-template-no-value-utf8-lf.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-template-no-value-utf8-lf.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "default-template-no-value-utf8-crlf",
+      "filename": "default-template-no-value-utf8-crlf.vue",
+      "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel><template #default>ready</template></FancyPanel>\r\n</template>\r\n",
+      "sourceSha256": "203ea10f3ba87563d253e4ebc102309e24e8a1814ab27a6d0384fa1d63465e9b",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-template-no-value-utf8-crlf.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "default-template-no-value-utf8-crlf.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-same-object-scriptless",
+      "filename": "dynamic-same-object-scriptless.vue",
+      "source": "<template>\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "33e0a9f09e55102aea7c78c6b33602ba147f1928cc5b600b7cf27e5d7d4e6ec7",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "dynamic-same-object-scriptless.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "dynamic-same-object-scriptless.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-same-object-utf8-lf",
+      "filename": "dynamic-same-object-utf8-lf.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "7a7bcd06bea3fb476a25e53268f2ca3201ea51edb2a695637b270bb7ab63fa3b",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-same-object-utf8-lf.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-same-object-utf8-lf.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-same-object-utf8-crlf",
+      "filename": "dynamic-same-object-utf8-crlf.vue",
+      "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\r\n</template>\r\n",
+      "sourceSha256": "d5e3e5be29da7d63b3b62154e0f6c4f86b81a174d66fd930959840c82a630e94",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-same-object-utf8-crlf.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-same-object-utf8-crlf.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-outer-control-scriptless",
+      "filename": "dynamic-outer-control-scriptless.vue",
+      "source": "<template>\n  <FancyPanel><template #[name]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "2c458960a9540549367d852904da9641b7bcecdc68d4b4e72f7e4f521c7b67f4",
+      "before": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "dynamic-outer-control-scriptless.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [
+          {
+            "end": 24,
+            "fix": null,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "message": "Component is used but not explicitly imported",
+            "rule_name": "vue/require-component-registration",
+            "severity": "error",
+            "start": 14
+          }
+        ],
+        "error_count": 1,
+        "filename": "dynamic-outer-control-scriptless.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-outer-control-utf8-lf",
+      "filename": "dynamic-outer-control-utf8-lf.vue",
+      "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel><template #[name]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "c0544c2089774579a4ad3bba4a62d1ae3f1507d9ca3d3e1211e0394da84a3cd8",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-outer-control-utf8-lf.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-outer-control-utf8-lf.vue",
+        "warning_count": 0
+      },
+      "added": []
+    },
+    {
+      "id": "dynamic-outer-control-utf8-crlf",
+      "filename": "dynamic-outer-control-utf8-crlf.vue",
+      "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel><template #[name]=\"slot\">{{ slot }}</template></FancyPanel>\r\n</template>\r\n",
+      "sourceSha256": "52cbfd4acbf3c3fa24ccb72e98063259bb962d8835ad4755f562229a5b06b73f",
+      "before": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-outer-control-utf8-crlf.vue",
+        "warning_count": 0
+      },
+      "after": {
+        "diagnostics": [],
+        "error_count": 0,
+        "filename": "dynamic-outer-control-utf8-crlf.vue",
+        "warning_count": 0
+      },
+      "added": []
+    }
+  ]
+}

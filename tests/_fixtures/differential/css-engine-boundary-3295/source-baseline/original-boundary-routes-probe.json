@@ -1,0 +1,115 @@
+{
+  "source": "3390cb6044d53d655a9d64e112d2618375cff5ca",
+  "readActualMain": "b41811e3b33676f68a0843a693c9ed4898f2e86a",
+  "scope": "finite source-baseline original cases, not installed/public qualification",
+  "processes": [
+    {
+      "id": "under-guarded-original",
+      "operation": "parseCssAst",
+      "css": "a{border-image-slice:abs(-50%)}",
+      "args": [
+        "/Users/ubugeeei/.vite-plus/js_runtime/node/24.14.0/bin/node",
+        "-e",
+        "const m=require(process.argv[1]);const op=process.argv[2],css=process.argv[3]; console.log(JSON.stringify(m[op](op==='formatSfc'||op==='lintPatinaSfc'?'<style>'+css+'</style>':css,op==='lintPatinaSfc'?{enabledRules:['css/no-important']}:undefined)));",
+        "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+        "parseCssAst",
+        "a{border-image-slice:abs(-50%)}"
+      ],
+      "exit": 0,
+      "stdout": "{\"errors\":[\"CSS parse error: the CSS engine hit an internal defect (upstream lightningcss panic; see vize issue #3295)\"],\"warnings\":[]}\n",
+      "stderr": "\nthread '<unnamed>' (106470001) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "stdoutHex": "7b226572726f7273223a5b22435353207061727365206572726f723a207468652043535320656e67696e652068697420616e20696e7465726e616c206465666563742028757073747265616d206c696768746e696e676373732070616e69633b207365652076697a6520697373756520233332393529225d2c227761726e696e6773223a5b5d7d0a",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036343730303031292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a"
+    },
+    {
+      "id": "color-original",
+      "operation": "formatSfc",
+      "css": "a{color:hsl(0 abs(-50%) 0%)}",
+      "args": [
+        "/Users/ubugeeei/.vite-plus/js_runtime/node/24.14.0/bin/node",
+        "-e",
+        "const m=require(process.argv[1]);const op=process.argv[2],css=process.argv[3]; console.log(JSON.stringify(m[op](op==='formatSfc'||op==='lintPatinaSfc'?'<style>'+css+'</style>':css,op==='lintPatinaSfc'?{enabledRules:['css/no-important']}:undefined)));",
+        "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+        "formatSfc",
+        "a{color:hsl(0 abs(-50%) 0%)}"
+      ],
+      "exit": -6,
+      "stdout": "",
+      "stderr": "\nthread '<unnamed>' (106470019) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfatal runtime error: failed to initiate panic, error 5, aborting\n",
+      "stdoutHex": "",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036343730303139292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a666174616c2072756e74696d65206572726f723a206661696c656420746f20696e6974696174652070616e69632c206572726f7220352c2061626f7274696e670a"
+    },
+    {
+      "id": "number-fold-original",
+      "operation": "formatSfc",
+      "css": "a{text-size-adjust:calc(5)}",
+      "args": [
+        "/Users/ubugeeei/.vite-plus/js_runtime/node/24.14.0/bin/node",
+        "-e",
+        "const m=require(process.argv[1]);const op=process.argv[2],css=process.argv[3]; console.log(JSON.stringify(m[op](op==='formatSfc'||op==='lintPatinaSfc'?'<style>'+css+'</style>':css,op==='lintPatinaSfc'?{enabledRules:['css/no-important']}:undefined)));",
+        "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+        "formatSfc",
+        "a{text-size-adjust:calc(5)}"
+      ],
+      "exit": -6,
+      "stdout": "",
+      "stderr": "\nthread '<unnamed>' (106470030) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfatal runtime error: failed to initiate panic, error 5, aborting\n",
+      "stdoutHex": "",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036343730303330292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a666174616c2072756e74696d65206572726f723a206661696c656420746f20696e6974696174652070616e69632c206572726f7220352c2061626f7274696e670a"
+    },
+    {
+      "id": "number-fold-neighbor",
+      "operation": "formatSfc",
+      "css": "a{text-size-adjust:50%}",
+      "args": [
+        "/Users/ubugeeei/.vite-plus/js_runtime/node/24.14.0/bin/node",
+        "-e",
+        "const m=require(process.argv[1]);const op=process.argv[2],css=process.argv[3]; console.log(JSON.stringify(m[op](op==='formatSfc'||op==='lintPatinaSfc'?'<style>'+css+'</style>':css,op==='lintPatinaSfc'?{enabledRules:['css/no-important']}:undefined)));",
+        "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+        "formatSfc",
+        "a{text-size-adjust:50%}"
+      ],
+      "exit": 0,
+      "stdout": "{\"code\":\"<style>\\na {\\n  text-size-adjust: 50%;\\n}\\n</style>\\n\",\"changed\":true}\n",
+      "stderr": "",
+      "stdoutHex": "7b22636f6465223a223c7374796c653e5c6e61207b5c6e2020746578742d73697a652d61646a7573743a203530253b5c6e7d5c6e3c2f7374796c653e5c6e222c226368616e676564223a747275657d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "lint-original",
+      "operation": "lintPatinaSfc",
+      "css": "a{opacity:abs(-50%)}",
+      "args": [
+        "/Users/ubugeeei/.vite-plus/js_runtime/node/24.14.0/bin/node",
+        "-e",
+        "const m=require(process.argv[1]);const op=process.argv[2],css=process.argv[3]; console.log(JSON.stringify(m[op](op==='formatSfc'||op==='lintPatinaSfc'?'<style>'+css+'</style>':css,op==='lintPatinaSfc'?{enabledRules:['css/no-important']}:undefined)));",
+        "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+        "lintPatinaSfc",
+        "a{opacity:abs(-50%)}"
+      ],
+      "exit": -6,
+      "stdout": "",
+      "stderr": "\nthread '<unnamed>' (106470048) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfatal runtime error: failed to initiate panic, error 5, aborting\n",
+      "stdoutHex": "",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036343730303438292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a666174616c2072756e74696d65206572726f723a206661696c656420746f20696e6974696174652070616e69632c206572726f7220352c2061626f7274696e670a"
+    },
+    {
+      "id": "lint-neighbor",
+      "operation": "lintPatinaSfc",
+      "css": "a{opacity:min(10%,90%)}",
+      "args": [
+        "/Users/ubugeeei/.vite-plus/js_runtime/node/24.14.0/bin/node",
+        "-e",
+        "const m=require(process.argv[1]);const op=process.argv[2],css=process.argv[3]; console.log(JSON.stringify(m[op](op==='formatSfc'||op==='lintPatinaSfc'?'<style>'+css+'</style>':css,op==='lintPatinaSfc'?{enabledRules:['css/no-important']}:undefined)));",
+        "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+        "lintPatinaSfc",
+        "a{opacity:min(10%,90%)}"
+      ],
+      "exit": 0,
+      "stdout": "{\"diagnostics\":[],\"errorCount\":0,\"filename\":\"anonymous.vue\",\"warningCount\":0}\n",
+      "stderr": "",
+      "stdoutHex": "7b22646961676e6f7374696373223a5b5d2c226572726f72436f756e74223a302c2266696c656e616d65223a22616e6f6e796d6f75732e767565222c227761726e696e67436f756e74223a307d0a",
+      "stderrHex": ""
+    }
+  ]
+}

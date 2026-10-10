@@ -124,3 +124,45 @@ fn readable_selected_source_retains_every_utf8_byte() {
     assert_eq!(read_corpus_source(&path).as_bytes(), source.as_bytes());
     assert_eq!(fs::read(&path).expect("original source"), source.as_bytes());
 }
+
+#[cfg(unix)]
+#[test]
+fn selected_source_reads_every_alias_beyond_single_lookup_symlink_limit() {
+    let scratch = tempfile::tempdir().expect("corpus root");
+    let root = scratch.path();
+    std::os::unix::fs::symlink(".", root.join("alias")).expect("original ancestor alias");
+    let source = "\u{feff}<template>日本語 😀</template>\r\n";
+    fs::write(root.join("selected.vue"), source.as_bytes()).expect("whole source");
+    let mut logical = root.to_path_buf();
+    for _ in 0..80 {
+        logical.push("alias");
+    }
+    logical.push("selected.vue");
+    let original_error = fs::read_to_string(&logical).expect_err("single lookup exceeds limit");
+    assert_eq!(cstr!("{:?}", original_error.kind()), "FilesystemLoop");
+    assert_eq!(read_corpus_source(&logical).as_bytes(), source.as_bytes());
+
+    let mut files = Vec::new();
+    collect_vue_files(root, &mut files);
+    assert!(files.len() > 1, "logical aliases must remain in the vector");
+    assert_eq!(files.last(), Some(&root.join("selected.vue")));
+    for file in files {
+        assert_eq!(read_corpus_source(&file).as_bytes(), source.as_bytes());
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn genuine_source_symlink_cycle_fails_with_logical_path_and_os_error() {
+    let scratch = tempfile::tempdir().expect("corpus root");
+    let path = scratch.path().join("cycle 日本語.vue");
+    std::os::unix::fs::symlink(path.file_name().expect("source name"), &path)
+        .expect("source symlink cycle");
+    let error = fs::read_to_string(&path).expect_err("self-referential link must fail");
+    assert_eq!(cstr!("{:?}", error.kind()), "FilesystemLoop");
+    assert!(error.raw_os_error().is_some());
+    let message = failure_message(|| {
+        read_corpus_source(&path);
+    });
+    assert_eq!(message, expected_failure("read source", &path, &error));
+}

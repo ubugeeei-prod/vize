@@ -1,0 +1,17 @@
+Content-Length: 2231
+
+{"jsonrpc":"2.0","result":{"capabilities":{"codeLensProvider":{"resolveProvider":false},"colorProvider":true,"completionProvider":{"resolveProvider":true,"triggerCharacters":["\"","'",":","@",".","<","=","/",">","+","^","*","(",")","#","[","]","$","-","{","}"]},"definitionProvider":true,"documentHighlightProvider":true,"documentLinkProvider":{"resolveProvider":false},"documentSymbolProvider":true,"experimental":{"vize":{"jsxTypecheck":false}},"foldingRangeProvider":true,"hoverProvider":true,"inlayHintProvider":true,"linkedEditingRangeProvider":true,"referencesProvider":true,"renameProvider":{"prepareProvider":true},"selectionRangeProvider":true,"semanticTokensProvider":{"full":true,"legend":{"tokenModifiers":["declaration","definition","readonly","static","deprecated","abstract","async","modification","documentation","defaultLibrary"],"tokenTypes":["namespace","type","class","enum","interface","struct","typeParameter","parameter","variable","property","enumMember","event","function","method","macro","keyword","modifier","comment","string","number","regexp","operator","decorator"]},"range":true},"signatureHelpProvider":{"retriggerCharacters":[")"],"triggerCharacters":["(",",","<"]},"textDocumentSync":{"change":2,"openClose":true,"save":{"includeText":false},"willSave":false,"willSaveWaitUntil":false},"workspace":{"fileOperations":{"didCreate":{"filters":[{"pattern":{"glob":"**/*.vue","matches":"file"},"scheme":"file"},{"pattern":{"glob":"**/*","matches":"folder"},"scheme":"file"}]},"didDelete":{"filters":[{"pattern":{"glob":"**/*.vue","matches":"file"},"scheme":"file"},{"pattern":{"glob":"**/*","matches":"folder"},"scheme":"file"}]},"didRename":{"filters":[{"pattern":{"glob":"**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}","matches":"file"},"scheme":"file"},{"pattern":{"glob":"**/*","matches":"folder"},"scheme":"file"}]},"willRename":{"filters":[{"pattern":{"glob":"**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}","matches":"file"},"scheme":"file"},{"pattern":{"glob":"**/*","matches":"folder"},"scheme":"file"}]}},"workspaceFolders":{"changeNotifications":true,"supported":true}},"workspaceSymbolProvider":true},"serverInfo":{"name":"vize-maestro","version":"0.436.0"}},"id":1}Content-Length: 114
+
+{"jsonrpc":"2.0","method":"window/logMessage","params":{"message":"vize_maestro LSP server initialized","type":3}}Content-Length: 219
+
+{"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"diagnostics":[],"uri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue","version":1}}Content-Length: 217
+
+{"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"diagnostics":[],"uri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue","version":1}}Content-Length: 228
+
+{"jsonrpc":"2.0","result":{"range":{"end":{"character":0,"line":0},"start":{"character":0,"line":0}},"uri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue"},"id":2}Content-Length: 214
+
+{"jsonrpc":"2.0","method":"textDocument/publishDiagnostics","params":{"diagnostics":[],"uri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue","version":1}}Content-Length: 38
+
+{"jsonrpc":"2.0","result":null,"id":3}Content-Length: 38
+
+{"jsonrpc":"2.0","result":null,"id":4}

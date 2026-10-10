@@ -1,0 +1,682 @@
+{
+  "scope": "One archived genuine native CLI stdio session; typecheck=false structural navigation, not current-main whole-build or external-Corsa qualification.",
+  "binary": "/tmp/vize-css-jsx-routing-target-20261008/debug/vize",
+  "binarySha256": "e0f42e98c2a33a35d5e284f02725cec1470fceffbbbd8d89d219c40e0f8a76d6",
+  "processId": 13931,
+  "workspace": "/private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project",
+  "targetExistsOnDiskBefore": false,
+  "sources": [
+    {
+      "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue",
+      "text": "<script setup lang=\"ts\">\nimport Child from \"./components/Child.vue\";\n</script>\n<template><Child /></template>\n"
+    },
+    {
+      "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue",
+      "text": "<script setup lang=\"ts\">\nimport Child from \"@ui/Child.vue\";\n</script>\n<template><Child /></template>\n"
+    }
+  ],
+  "targetDidOpenText": "<template><button>Child</button></template>\n",
+  "observations": [
+    {
+      "request": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue"
+        },
+        "position": {
+          "line": 3,
+          "character": 12
+        }
+      },
+      "wholeExpected": {
+        "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue",
+        "range": {
+          "start": {
+            "line": 0,
+            "character": 0
+          },
+          "end": {
+            "line": 0,
+            "character": 0
+          }
+        }
+      },
+      "wholeResponse": {
+        "jsonrpc": "2.0",
+        "result": {
+          "range": {
+            "end": {
+              "character": 0,
+              "line": 0
+            },
+            "start": {
+              "character": 0,
+              "line": 0
+            }
+          },
+          "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue"
+        },
+        "id": 2
+      },
+      "equalsExpected": true
+    },
+    {
+      "request": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue"
+        },
+        "position": {
+          "line": 3,
+          "character": 12
+        }
+      },
+      "wholeExpected": {
+        "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue",
+        "range": {
+          "start": {
+            "line": 0,
+            "character": 0
+          },
+          "end": {
+            "line": 0,
+            "character": 0
+          }
+        }
+      },
+      "wholeResponse": {
+        "jsonrpc": "2.0",
+        "result": null,
+        "id": 3
+      },
+      "equalsExpected": false
+    }
+  ],
+  "initialize": {
+    "jsonrpc": "2.0",
+    "result": {
+      "capabilities": {
+        "codeLensProvider": {
+          "resolveProvider": false
+        },
+        "colorProvider": true,
+        "completionProvider": {
+          "resolveProvider": true,
+          "triggerCharacters": [
+            "\"",
+            "'",
+            ":",
+            "@",
+            ".",
+            "<",
+            "=",
+            "/",
+            ">",
+            "+",
+            "^",
+            "*",
+            "(",
+            ")",
+            "#",
+            "[",
+            "]",
+            "$",
+            "-",
+            "{",
+            "}"
+          ]
+        },
+        "definitionProvider": true,
+        "documentHighlightProvider": true,
+        "documentLinkProvider": {
+          "resolveProvider": false
+        },
+        "documentSymbolProvider": true,
+        "experimental": {
+          "vize": {
+            "jsxTypecheck": false
+          }
+        },
+        "foldingRangeProvider": true,
+        "hoverProvider": true,
+        "inlayHintProvider": true,
+        "linkedEditingRangeProvider": true,
+        "referencesProvider": true,
+        "renameProvider": {
+          "prepareProvider": true
+        },
+        "selectionRangeProvider": true,
+        "semanticTokensProvider": {
+          "full": true,
+          "legend": {
+            "tokenModifiers": [
+              "declaration",
+              "definition",
+              "readonly",
+              "static",
+              "deprecated",
+              "abstract",
+              "async",
+              "modification",
+              "documentation",
+              "defaultLibrary"
+            ],
+            "tokenTypes": [
+              "namespace",
+              "type",
+              "class",
+              "enum",
+              "interface",
+              "struct",
+              "typeParameter",
+              "parameter",
+              "variable",
+              "property",
+              "enumMember",
+              "event",
+              "function",
+              "method",
+              "macro",
+              "keyword",
+              "modifier",
+              "comment",
+              "string",
+              "number",
+              "regexp",
+              "operator",
+              "decorator"
+            ]
+          },
+          "range": true
+        },
+        "signatureHelpProvider": {
+          "retriggerCharacters": [
+            ")"
+          ],
+          "triggerCharacters": [
+            "(",
+            ",",
+            "<"
+          ]
+        },
+        "textDocumentSync": {
+          "change": 2,
+          "openClose": true,
+          "save": {
+            "includeText": false
+          },
+          "willSave": false,
+          "willSaveWaitUntil": false
+        },
+        "workspace": {
+          "fileOperations": {
+            "didCreate": {
+              "filters": [
+                {
+                  "pattern": {
+                    "glob": "**/*.vue",
+                    "matches": "file"
+                  },
+                  "scheme": "file"
+                },
+                {
+                  "pattern": {
+                    "glob": "**/*",
+                    "matches": "folder"
+                  },
+                  "scheme": "file"
+                }
+              ]
+            },
+            "didDelete": {
+              "filters": [
+                {
+                  "pattern": {
+                    "glob": "**/*.vue",
+                    "matches": "file"
+                  },
+                  "scheme": "file"
+                },
+                {
+                  "pattern": {
+                    "glob": "**/*",
+                    "matches": "folder"
+                  },
+                  "scheme": "file"
+                }
+              ]
+            },
+            "didRename": {
+              "filters": [
+                {
+                  "pattern": {
+                    "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                    "matches": "file"
+                  },
+                  "scheme": "file"
+                },
+                {
+                  "pattern": {
+                    "glob": "**/*",
+                    "matches": "folder"
+                  },
+                  "scheme": "file"
+                }
+              ]
+            },
+            "willRename": {
+              "filters": [
+                {
+                  "pattern": {
+                    "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                    "matches": "file"
+                  },
+                  "scheme": "file"
+                },
+                {
+                  "pattern": {
+                    "glob": "**/*",
+                    "matches": "folder"
+                  },
+                  "scheme": "file"
+                }
+              ]
+            }
+          },
+          "workspaceFolders": {
+            "changeNotifications": true,
+            "supported": true
+          }
+        },
+        "workspaceSymbolProvider": true
+      },
+      "serverInfo": {
+        "name": "vize-maestro",
+        "version": "0.436.0"
+      }
+    },
+    "id": 1
+  },
+  "targetExistsOnDiskAfter": false,
+  "positiveRelativePass": true,
+  "aliasRed": true,
+  "shutdown": {
+    "jsonrpc": "2.0",
+    "result": null,
+    "id": 4
+  },
+  "exitCode": 0,
+  "sentPackets": [
+    {
+      "jsonrpc": "2.0",
+      "method": "initialize",
+      "params": {
+        "processId": 13930,
+        "rootUri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project",
+        "capabilities": {},
+        "workspaceFolders": [
+          {
+            "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project",
+            "name": "alias-open-buffer-project"
+          }
+        ],
+        "initializationOptions": {
+          "editor": true,
+          "lint": false,
+          "typecheck": false,
+          "definition": true
+        }
+      },
+      "id": 1
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "initialized",
+      "params": {}
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "textDocument/didOpen",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue",
+          "languageId": "vue",
+          "version": 1,
+          "text": "<template><button>Child</button></template>\n"
+        }
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "textDocument/didOpen",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue",
+          "languageId": "vue",
+          "version": 1,
+          "text": "<script setup lang=\"ts\">\nimport Child from \"./components/Child.vue\";\n</script>\n<template><Child /></template>\n"
+        }
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "textDocument/definition",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue"
+        },
+        "position": {
+          "line": 3,
+          "character": 12
+        }
+      },
+      "id": 2
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "textDocument/didOpen",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue",
+          "languageId": "vue",
+          "version": 1,
+          "text": "<script setup lang=\"ts\">\nimport Child from \"@ui/Child.vue\";\n</script>\n<template><Child /></template>\n"
+        }
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "textDocument/definition",
+      "params": {
+        "textDocument": {
+          "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue"
+        },
+        "position": {
+          "line": 3,
+          "character": 12
+        }
+      },
+      "id": 3
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "shutdown",
+      "id": 4
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "exit"
+    }
+  ],
+  "receivedPackets": [
+    {
+      "jsonrpc": "2.0",
+      "result": {
+        "capabilities": {
+          "codeLensProvider": {
+            "resolveProvider": false
+          },
+          "colorProvider": true,
+          "completionProvider": {
+            "resolveProvider": true,
+            "triggerCharacters": [
+              "\"",
+              "'",
+              ":",
+              "@",
+              ".",
+              "<",
+              "=",
+              "/",
+              ">",
+              "+",
+              "^",
+              "*",
+              "(",
+              ")",
+              "#",
+              "[",
+              "]",
+              "$",
+              "-",
+              "{",
+              "}"
+            ]
+          },
+          "definitionProvider": true,
+          "documentHighlightProvider": true,
+          "documentLinkProvider": {
+            "resolveProvider": false
+          },
+          "documentSymbolProvider": true,
+          "experimental": {
+            "vize": {
+              "jsxTypecheck": false
+            }
+          },
+          "foldingRangeProvider": true,
+          "hoverProvider": true,
+          "inlayHintProvider": true,
+          "linkedEditingRangeProvider": true,
+          "referencesProvider": true,
+          "renameProvider": {
+            "prepareProvider": true
+          },
+          "selectionRangeProvider": true,
+          "semanticTokensProvider": {
+            "full": true,
+            "legend": {
+              "tokenModifiers": [
+                "declaration",
+                "definition",
+                "readonly",
+                "static",
+                "deprecated",
+                "abstract",
+                "async",
+                "modification",
+                "documentation",
+                "defaultLibrary"
+              ],
+              "tokenTypes": [
+                "namespace",
+                "type",
+                "class",
+                "enum",
+                "interface",
+                "struct",
+                "typeParameter",
+                "parameter",
+                "variable",
+                "property",
+                "enumMember",
+                "event",
+                "function",
+                "method",
+                "macro",
+                "keyword",
+                "modifier",
+                "comment",
+                "string",
+                "number",
+                "regexp",
+                "operator",
+                "decorator"
+              ]
+            },
+            "range": true
+          },
+          "signatureHelpProvider": {
+            "retriggerCharacters": [
+              ")"
+            ],
+            "triggerCharacters": [
+              "(",
+              ",",
+              "<"
+            ]
+          },
+          "textDocumentSync": {
+            "change": 2,
+            "openClose": true,
+            "save": {
+              "includeText": false
+            },
+            "willSave": false,
+            "willSaveWaitUntil": false
+          },
+          "workspace": {
+            "fileOperations": {
+              "didCreate": {
+                "filters": [
+                  {
+                    "pattern": {
+                      "glob": "**/*.vue",
+                      "matches": "file"
+                    },
+                    "scheme": "file"
+                  },
+                  {
+                    "pattern": {
+                      "glob": "**/*",
+                      "matches": "folder"
+                    },
+                    "scheme": "file"
+                  }
+                ]
+              },
+              "didDelete": {
+                "filters": [
+                  {
+                    "pattern": {
+                      "glob": "**/*.vue",
+                      "matches": "file"
+                    },
+                    "scheme": "file"
+                  },
+                  {
+                    "pattern": {
+                      "glob": "**/*",
+                      "matches": "folder"
+                    },
+                    "scheme": "file"
+                  }
+                ]
+              },
+              "didRename": {
+                "filters": [
+                  {
+                    "pattern": {
+                      "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                      "matches": "file"
+                    },
+                    "scheme": "file"
+                  },
+                  {
+                    "pattern": {
+                      "glob": "**/*",
+                      "matches": "folder"
+                    },
+                    "scheme": "file"
+                  }
+                ]
+              },
+              "willRename": {
+                "filters": [
+                  {
+                    "pattern": {
+                      "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+                      "matches": "file"
+                    },
+                    "scheme": "file"
+                  },
+                  {
+                    "pattern": {
+                      "glob": "**/*",
+                      "matches": "folder"
+                    },
+                    "scheme": "file"
+                  }
+                ]
+              }
+            },
+            "workspaceFolders": {
+              "changeNotifications": true,
+              "supported": true
+            }
+          },
+          "workspaceSymbolProvider": true
+        },
+        "serverInfo": {
+          "name": "vize-maestro",
+          "version": "0.436.0"
+        }
+      },
+      "id": 1
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "window/logMessage",
+      "params": {
+        "message": "vize_maestro LSP server initialized",
+        "type": 3
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "textDocument/publishDiagnostics",
+      "params": {
+        "diagnostics": [],
+        "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue",
+        "version": 1
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "textDocument/publishDiagnostics",
+      "params": {
+        "diagnostics": [],
+        "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue",
+        "version": 1
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "result": {
+        "range": {
+          "end": {
+            "character": 0,
+            "line": 0
+          },
+          "start": {
+            "character": 0,
+            "line": 0
+          }
+        },
+        "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue"
+      },
+      "id": 2
+    },
+    {
+      "jsonrpc": "2.0",
+      "method": "textDocument/publishDiagnostics",
+      "params": {
+        "diagnostics": [],
+        "uri": "file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue",
+        "version": 1
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "result": null,
+      "id": 3
+    },
+    {
+      "jsonrpc": "2.0",
+      "result": null,
+      "id": 4
+    }
+  ],
+  "clientSha256": "221405bda09b87a6c9ba4e3c6bac6187ca5f4d0b9c174d2153fbef1f704b146a",
+  "serverSha256": "ee205872d15966c25394d5e67cb28076600ef399aedee0a95f6b03f910d89915",
+  "stderrSha256": "82b52195d8db72dc4a34c31a9f4d10034489eafbb96c4511bf2ce2c72b0b77ce",
+  "binaryAfterSha256": "e0f42e98c2a33a35d5e284f02725cec1470fceffbbbd8d89d219c40e0f8a76d6"
+}

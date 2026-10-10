@@ -2,6 +2,7 @@
 
 pub mod a11y;
 pub mod css;
+pub(crate) mod css_engine;
 pub mod ecosystem;
 pub mod facts;
 pub mod html;

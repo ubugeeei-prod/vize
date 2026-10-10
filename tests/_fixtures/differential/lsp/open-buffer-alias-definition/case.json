@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "id": "lsp/regression/open-buffer-alias-definition",
+  "issues": [
+    3952,
+    3957
+  ],
+  "beforeSource": "5ed1feff6b2a2b74905bb14b46f970906679a511",
+  "comparedActualMain": "7d645dbca9d3be2e0c96feae7cd826f0f49b02fa",
+  "meaning": "Frozen authored structural-definition inputs and complete expectations; independent archived native RED, no external Corsa/current-main whole-build/publication credit.",
+  "newlines": [
+    "LF",
+    "CRLF"
+  ],
+  "targetRuntimePath": "components/子 [赤] #.vue",
+  "preferredRuntimePath": "preferred/子 [赤] #.vue",
+  "targetInitialOwnership": "didOpen only; source file is a test input, not copied to disk before open/close controls",
+  "queryPosition": {
+    "line": 3,
+    "character": 12
+  },
+  "files": [
+    {
+      "path": "AliasParent.vue.txt",
+      "sha256": "edf04527880a17716324eefb24589457515f4dcac32879005dd0c2d3375fe204"
+    },
+    {
+      "path": "Child.vue.txt",
+      "sha256": "03f67baabd65e2d487275a3f744f0b5e608182c308e70a8815c4a5f223480276"
+    },
+    {
+      "path": "FallbackParent.vue.txt",
+      "sha256": "d94c92ff2a5d3c8bb8328aa960865360147c00bd56e806747007d20706c39481"
+    },
+    {
+      "path": "Preferred.vue.txt",
+      "sha256": "8257927f4549193894fde798fa5f3056ad90b47387d33a359f41384a4a6f2354"
+    },
+    {
+      "path": "RelativeParent.vue.txt",
+      "sha256": "4985fce067469f13a4ac8784c34eefb61630cda040fabbe0a179d7c2b6fb4c29"
+    },
+    {
+      "path": "historical-5ed/client.bin",
+      "sha256": "221405bda09b87a6c9ba4e3c6bac6187ca5f4d0b9c174d2153fbef1f704b146a"
+    },
+    {
+      "path": "historical-5ed/result.json.txt",
+      "sha256": "1c146f25a1277bc2901ecef5d73db40821823bf930bc621ef751c9360558c49a"
+    },
+    {
+      "path": "historical-5ed/server.bin",
+      "sha256": "ee205872d15966c25394d5e67cb28076600ef399aedee0a95f6b03f910d89915"
+    },
+    {
+      "path": "historical-5ed/source-comparison.json.txt",
+      "sha256": "58dff8d72456436689640b55bac5a5e4fcb5b8ee4a9bf35ad1d5f93c0568d545"
+    },
+    {
+      "path": "historical-5ed/stderr.log.txt",
+      "sha256": "82b52195d8db72dc4a34c31a9f4d10034489eafbb96c4511bf2ce2c72b0b77ce"
+    },
+    {
+      "path": "responses.expected.json",
+      "sha256": "82a18d713aeefc08149f021fc275a541c44e8f493b4c0ce8eef79e4771e23839"
+    },
+    {
+      "path": "tsconfig.json.txt",
+      "sha256": "baed5c84d466fb4e618ef40aa72afa16c5f22c4d1f3e359401875d6e39b86066"
+    },
+    {
+      "path": "vize.config.json.txt",
+      "sha256": "bf5a80884f3ca6d4f3f57f39333aed994459c9f1459e009c0656498e163b346f"
+    },
+    {
+      "path": "historical-5ed/full-corpus/crlf.json.txt",
+      "sha256": "f35da56eee23768c62b6363b1886c051c144cdec22762597919873bf9b28e424"
+    },
+    {
+      "path": "historical-5ed/full-corpus/lf.json.txt",
+      "sha256": "43e2120a18685a8168285b9147a329174ed59f9e4e970ed3dc7e60315a4885f7"
+    },
+    {
+      "path": "historical-5ed/full-corpus/receipt.json.txt",
+      "sha256": "104a66ca6fb775a14933d412e8bb44e9e05d059ddcd5955bc95140fb605e4eeb"
+    },
+    {
+      "path": "historical-5ed/full-corpus/test-only-compile.json.txt",
+      "sha256": "200d6db1d96541332bef8e85d48edf7507292fec9d51418d1b9cccf205c228ba"
+    },
+    {
+      "path": "historical-5ed/full-corpus/test.log.txt",
+      "sha256": "83d33d1c56b585171e045b36656a5f7494dc260bd8a883e4e6a9aa1c0aa9fe3e"
+    }
+  ]
+}

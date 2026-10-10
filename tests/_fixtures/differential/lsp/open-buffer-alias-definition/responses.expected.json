@@ -1,0 +1,100 @@
+{
+  "relativeAbsent": null,
+  "aliasAbsent": null,
+  "relativeOpen": {
+    "uri": "$COMPONENT_URI",
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 0
+      }
+    }
+  },
+  "aliasOpen": {
+    "uri": "$COMPONENT_URI",
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 0
+      }
+    }
+  },
+  "relativeClosed": null,
+  "aliasClosed": null,
+  "relativeSaved": {
+    "uri": "$COMPONENT_URI",
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 0
+      }
+    }
+  },
+  "aliasSaved": {
+    "uri": "$COMPONENT_URI",
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 0
+      }
+    }
+  },
+  "relativeDeleted": null,
+  "aliasDeleted": null,
+  "fallbackSaved": {
+    "uri": "$COMPONENT_URI",
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 0
+      }
+    }
+  },
+  "fallbackOpenPreferred": {
+    "uri": "$PREFERRED_URI",
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 0
+      }
+    }
+  },
+  "fallbackClosedPreferred": {
+    "uri": "$COMPONENT_URI",
+    "range": {
+      "start": {
+        "line": 0,
+        "character": 0
+      },
+      "end": {
+        "line": 0,
+        "character": 0
+      }
+    }
+  },
+  "fallbackDeleted": null
+}
