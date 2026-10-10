@@ -45,7 +45,9 @@ requires a reviewed migration. No guessed legacy copies are created.
 
 Approval accepts project-relative patterns such as `right/Button/*` and
 refuses basename patterns that match multiple Arts, including when only one
-currently fails. Capture and clean share job enumeration, including
+currently fails. Pattern matching escapes literal regex characters in real
+Art/variant names and distinguishes component-local `*` from path-crossing
+`**`. Capture and clean share job enumeration, including
 `variant.args.viewport`. CI failures set the exit code and allow runner
 cleanup; an immediate `process.exit()` would leave the ownership lock behind.
 
