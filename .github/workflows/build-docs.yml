@@ -76,6 +76,9 @@ jobs:
       - name: Verify reviewed Japanese editorial reading paths
         run: vp node docs/scripts/verify-ja-editorial-render.ts
 
+      - name: Verify static analysis reading flows
+        run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/static-analysis,/ja/guide/static-analysis --output docs-render-evidence/static-analysis
+
       - name: Verify rendered navigation and adoption guides
         run: vp node docs/scripts/verify-navigation-render.ts
 
