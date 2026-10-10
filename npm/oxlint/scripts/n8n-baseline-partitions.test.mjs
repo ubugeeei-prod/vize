@@ -168,7 +168,7 @@ test("two actual children overlap, close normally and retain complete separate U
         root,
         (index, base) =>
           barrier(index, base) +
-          `process.stdout.write('\r\n child${index} 日本語 \r\n\r\n');process.stderr.write(' err${index}\n');});`,
+          `process.stdout.write(${JSON.stringify(`\r\n child${index} 日本語 \r\n\r\n`)});process.stderr.write(${JSON.stringify(` err${index}\n`)});});`,
       ),
       root,
       { deadlineMs: 2_000 },
