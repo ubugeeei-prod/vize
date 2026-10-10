@@ -2,20 +2,20 @@
 title: 実験的なバンドラー統合
 ---
 
-<!-- Generated translation; source: guide/unplugin.md -->
+<!-- Reviewed translation; source: guide/unplugin.md -->
 
 # 実験的なバンドラー統合
 
 > **⚠️ 実験版:** `@vizejs/unplugin` および `@vizejs/rspack-plugin` はまだ不安定です。
-> `@vizejs/vite-plugin` は現在も推奨され、最もテスト済みのバンドラー統合です。
+> 通常は、検証範囲が最も広い `@vizejs/vite-plugin` を使ってください。
 
 Vize は、`rollup`、`webpack`、および `esbuild` 用の実験的な [unplugin](https://unplugin.unjs.io/) パッケージと、専用の `Rspack` パッケージを提供します。
 
 - `@vizejs/unplugin` — `rollup` / `webpack` / `esbuild`
 - `@vizejs/rspack-plugin` — `Rspack` のみ
 
-RSpack は意図的に共有アンプラグイン パスを**通過しません**。
-そのローダー チェーン、`experiments.css`、および HMR の動作には、Rspack 固有の処理が必要です。
+Rspack では、共有の unplugin 実装を使わず、専用パッケージを使います。
+ローダー、`experiments.css`、HMR に Rspack 固有の対応が必要なためです。
 
 ## インストール
 
@@ -31,7 +31,9 @@ Rspackの場合：
 vp install -D @vizejs/rspack-plugin @rspack/core
 ```
 
-## ロールアップ
+<span id="ロールアップ"></span>
+
+## Rollup
 
 ```javascript
 // rollup.config.mjs
@@ -42,7 +44,9 @@ export default {
 };
 ```
 
-## ウェブパック
+<span id="ウェブパック"></span>
+
+## webpack
 
 ```javascript
 // webpack.config.mjs
@@ -53,7 +57,9 @@ export default {
 };
 ```
 
-## エスビルド
+<span id="エスビルド"></span>
+
+## esbuild
 
 ```javascript
 // build.mjs
@@ -91,11 +97,11 @@ export default {
 };
 ```
 
-Rspack 構成の詳細については、パッケージの README を参照してください。
+Rspack の設定の詳細については、パッケージの README を参照してください。
 
 ## 注意事項
 
-- 最も完全で最もよくテストされた動作が必要な場合は、引き続き Vite が推奨される統合です。
-- Vite 外部の CSS モジュールとスタイル プリプロセッサはホスト バンドラーの CSS パイプラインに依存しており、変更される可能性が高くなります。
+- 対応範囲と検証実績を重視する場合は、Vite 統合を使ってください。
+- Vite 以外での CSS Modules とスタイルのプリプロセッサ処理は、バンドラー側の CSS 処理に依存します。動作が変わる可能性があります。
 - バンドラーが Vue ランタイムを外部化するのではなくインライン化する場合は、通常の Vue コンパイル時機能フラグがそのバンドラーに対して設定されていることを確認してください。
 - これらの統合を実験的なものとして扱い、ロールアウトする前に独自のアプリケーションに対して検証してください。
