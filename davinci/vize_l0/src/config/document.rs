@@ -22,6 +22,13 @@ use super::model::{
 pub struct ConfigDocument(RawVizeConfig);
 
 impl ConfigDocument {
+    /// Defaults for projects without dedicated Vize configuration.
+    ///
+    /// Keep `Default` unchanged for existing dedicated configuration files.
+    pub fn project_defaults() -> Self {
+        Self(RawVizeConfig::project_defaults())
+    }
+
     /// Borrow configured import sorting without changing the stable formatter model.
     pub fn formatter_sort_imports(&self) -> Option<&crate::config::SortImportsSetting> {
         self.0.formatter.sort_imports.as_ref()

@@ -2,6 +2,7 @@
 
 mod compatibility;
 mod compiler;
+mod defaults;
 mod entries;
 mod experimentals;
 mod formatter;
