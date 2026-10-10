@@ -4,6 +4,14 @@ title: "Accessibility core"
 
 # Accessibility core
 
+Use these rules to check the basic accessibility information in a Vue template: image alternatives,
+link text, valid ARIA attributes, keyboard equivalents, and form labels. Start here when adding
+images, links, or inputs to a component.
+
+For example, open [form-control-has-label](./reference/a11y-form-control-has-label.md) before adding
+an input: compare its Bad/Good examples, enable the rule with the shown Vite+ configuration, and
+run `vp run lint`. The [complete accessibility guide](./accessibility.md) explains the broader rule set.
+
 Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show the changes; copied code keeps the complete source. Each packet states its current support limits.
 
 

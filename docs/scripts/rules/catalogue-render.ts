@@ -118,7 +118,9 @@ export function generateRemainingCatalogues(
     return result;
   };
   const page = (locale: VueLocale, file: string, title: string, selected: readonly Reference[]) => {
-    const accessibilityGroup = file.match(/^accessibility-(core|integrity|interactions|structure)$/u)?.[1];
+    const accessibilityGroup = file.match(
+      /^accessibility-(core|integrity|interactions|structure)$/u,
+    )?.[1];
     const labels = vueCategoryLabels[locale];
     const text =
       locale === "en" || locale === "ja" ? intro[locale] : catalogueTranslation(locale).intro;
