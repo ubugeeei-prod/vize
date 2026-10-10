@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import { performance } from "node:perf_hooks";
 import { baselinePartitions, seedOriginalSources } from "./n8n-baseline-partitions.mjs";
 import { runBaselineProcesses } from "./n8n-baseline-processes.mjs";
 import { joinBaselinePartitions } from "./n8n-baseline-join.mjs";
@@ -8,7 +9,11 @@ import { sha256 } from "./n8n-replay-inputs.mjs";
 
 export async function runBaselineWorkers({ packageDir, output, custody, inventory, environment }) {
   assert.equal(sha256(fs.readFileSync(custody.binary.path)), custody.binary.sha256);
-  const seeded = seedOriginalSources(inventory, custody.sources);
+  const started = performance.now();
+  const checkDeadline = () =>
+    assert.ok(performance.now() - started < 900_000, "shared original 900s deadline");
+  const seeded = seedOriginalSources(inventory, custody.sources, checkDeadline);
+  seeded.budget = { deadlineMs: 900_000, preparationMs: performance.now() - started };
   fs.writeFileSync(
     path.join(output, "baseline-source-store.json"),
     JSON.stringify(seeded, null, 2) + "\n",
@@ -39,7 +44,7 @@ export async function runBaselineWorkers({ packageDir, output, custody, inventor
       },
     };
   });
-  const result = await runBaselineProcesses(jobs, output);
+  const result = await runBaselineProcesses(jobs, output, { startedAt: started });
   fs.writeFileSync(path.join(output, "bridge-tests.json"), JSON.stringify(result, null, 2) + "\n");
   assert.equal(result.error, undefined);
   assert.equal(result.signal, null);

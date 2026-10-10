@@ -336,3 +336,11 @@ test("spawn failure cannot become aggregate success and the active sibling drain
     fs.rmSync(root, { recursive: true });
   }
 });
+
+test("expired source preparation refuses input reads before worker admission", () => {
+  const expired = () => assert.fail("shared original 900s deadline");
+  assert.throws(
+    () => seedOriginalSources(inventory, os.tmpdir(), expired),
+    /shared original 900s/u,
+  );
+});

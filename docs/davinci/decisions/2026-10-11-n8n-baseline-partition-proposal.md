@@ -17,14 +17,14 @@ laws. The original revision/options/LRU/collected-cache controls run once in the
 last partition. No product, cache, native logger, controller, pinned host worker,
 licensed input or 51-rule configuration is changed.
 
-Both real process groups share one 900000ms deadline and one combined 32MiB
+Source preseed and both real process groups share one 900000ms deadline and one combined 32MiB
 stdout/stderr budget. Fatal exit, signal, spawn error, output overflow, or parent
 interruption ends the campaign, kills every started owned group, and waits for
 close. A normal direct-child close also drains ignored-pipe descendants before
 completion, so a later sibling failure cannot leave its former group alive.
 The parent saves and verifies complete licensed hash backing before either child
 starts, avoiding a duplicate-text partial-write race. This is source custody,
-with its overhead included in the partitioned arm; native startup hashing is
+with its overhead included in both the partitioned arm timing and deadline; native startup hashing is
 unchanged. Only the final worker creates cache-control backing additions.
 Complete per-worker byte streams, terminal fields, native arguments/results,
 source bytes and vectors remain separate. The join rejects missing, duplicate,

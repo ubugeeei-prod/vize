@@ -74,10 +74,12 @@ export function validatePartitionRows(inventory, partition, rows, rulesFor) {
 
 // Fully finish each original backing file in the parent before either child.
 // Exclusive create alone would allow a sibling to read a partially written file.
-export function seedOriginalSources(inventory, directory) {
+export function seedOriginalSources(inventory, directory, checkDeadline = () => {}) {
+  checkDeadline();
   fs.mkdirSync(directory, { recursive: true });
   const unique = new Set();
   for (const entry of inventory.files) {
+    checkDeadline();
     const bytes = fs.readFileSync(path.join(inventory.fixture, entry.file));
     const hash = createHash("sha256").update(bytes).digest("hex");
     assert.equal(hash, entry.sha256, "complete licensed source matches the original inventory");
@@ -87,5 +89,6 @@ export function seedOriginalSources(inventory, directory) {
     else fs.writeFileSync(target, bytes, { flag: "wx" });
     unique.add(hash);
   }
+  checkDeadline();
   return { files: inventory.files.length, uniqueSources: unique.size };
 }

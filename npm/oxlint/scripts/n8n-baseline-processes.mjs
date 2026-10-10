@@ -16,7 +16,7 @@ const errorPacket = (error) =>
 export async function runBaselineProcesses(
   jobs,
   output,
-  { deadlineMs = 900_000, maxBufferBytes = 32 * 1024 * 1024 } = {},
+  { deadlineMs = 900_000, maxBufferBytes = 32 * 1024 * 1024, startedAt } = {},
 ) {
   assert.notEqual(process.platform, "win32", "source Actions requires owned POSIX groups");
   assert.equal(jobs.length, 2);
@@ -29,7 +29,8 @@ export async function runBaselineProcesses(
     Number.isInteger(maxBufferBytes) && maxBufferBytes > 0 && maxBufferBytes <= 32 * 1024 * 1024,
   );
   assert.equal(new Set(jobs.map((job) => path.resolve(job.output))).size, 2);
-  const started = performance.now();
+  const started = startedAt ?? performance.now();
+  assert.ok(Number.isFinite(started) && started <= performance.now());
   let failure = null,
     totalOutputBytes = 0;
   const children = [];
@@ -80,7 +81,9 @@ export async function runBaselineProcesses(
   process.once("SIGINT", onInterrupt);
   process.once("SIGTERM", onTerminate);
   process.once("exit", onExit);
-  const timer = setTimeout(() => stop("shared original 900s deadline"), deadlineMs);
+  const remainingMs = Math.max(0, deadlineMs - (performance.now() - started));
+  const timer = setTimeout(() => stop("shared original 900s deadline"), remainingMs);
+  if (remainingMs === 0) stop("shared original 900s deadline");
   try {
     await Promise.all(
       jobs.map(
