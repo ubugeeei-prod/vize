@@ -33,11 +33,11 @@ export default defineConfig({
 | `typecheck` | Vérification des types Vue | `vp run typecheck` |
 | `pack.vize` | Déclarations de bibliothèque | `vp run pack` |
 
-Utilisez `vp run check` pour les tâches Vize combinées. Les commandes intégrées `vp check`, `vp lint` et `vp fmt` conservent le fonctionnement propre à Vite+. Un script existant peut renommer une tâche générée en `vize:<nom>` ; consultez les [noms et remplacements des tâches](./vite-plus.md#tasks).
+Utilisez `vp run check` pour les tâches Vize combinées. Les commandes intégrées `vp check`, `vp lint` et `vp fmt` conservent le fonctionnement propre à Vite+. Un script existant peut renommer une tâche générée en `vize:<nom>` ; consultez les [noms et remplacements des tâches](/guide/vite-plus.md#tasks).
 
 ## Modifier une règle
 
-Placez les règles Vue dans `lint.vize.rules` et celles d'Oxlint dans `lint.rules`. Les [options des règles](../rules/options.md) décrivent les paramètres et le [catalogue](../rules/all.md) donne les exemples complets.
+Placez les règles Vue dans `lint.vize.rules` et celles d'Oxlint dans `lint.rules`. Les [options des règles](/rules/options.md) décrivent les paramètres et le [catalogue](../rules/all.md) donne les exemples complets.
 
 ```ts
 export default defineConfig({
@@ -48,9 +48,15 @@ export default defineConfig({
 });
 ```
 
+<span id="lint-rule-options"></span>
+
+### Options des règles lint
+
+Les [options des règles](/rules/options.md) détaillent les objets typés et les exemples incorrects/corrigés (en anglais). Les champs inconnus sont refusés.
+
 ## Choisir les fonctions à adopter
 
-Définissez `compiler`, `typecheck`, `lint.vize` ou `fmt.vize` sur `false` pour désactiver la fonction concernée. Vize formate Vue et Oxfmt les autres fichiers. Consultez la [répartition et la gestion des conflits](./vite-plus.md#lint-and-formatter-ownership).
+Définissez `compiler`, `typecheck`, `lint.vize` ou `fmt.vize` sur `false` pour désactiver la fonction concernée. Vize formate Vue et Oxfmt les autres fichiers. Consultez la [répartition et la gestion des conflits](/guide/vite-plus.md#lint-and-formatter-ownership).
 
 ## Vite classique
 
@@ -109,5 +115,5 @@ Un fichier `vize.config.*` existant reste accepté et a priorité sur la configu
 
 ## Référence détaillée
 
-La [référence partagée](./configuration-reference.md) décrit la recherche des fichiers, les formats dédiés TypeScript/JSON/PKL, les entrées par périmètre, la résolution des types Vue et les réglages LSP/Musea. Consultez la [référence du compilateur](./compiler-configuration-reference.md) pour ses options et ses syntaxes, et les [fonctions expérimentales](./experimentals.md) pour les options à activer explicitement.
+La [référence partagée](./configuration-reference.md) décrit la recherche des fichiers, les formats dédiés TypeScript/JSON/PKL, les entrées par périmètre, la résolution des types Vue et les réglages LSP/Musea. Consultez la [référence du compilateur](./compiler-configuration-reference.md) pour ses options et ses syntaxes, et les [fonctions expérimentales](/guide/experimentals.md) pour les options à activer explicitement.
 

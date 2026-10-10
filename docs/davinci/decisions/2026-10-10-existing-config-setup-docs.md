@@ -24,7 +24,8 @@ precedence, explicit `--config`, direct plugin/editor overrides, and opt-outs.
   guidance. Human review markers describe only reviewed sections where the
   remaining body still contains machine translation.
 - Link tests use the actual maintained UI reference generator for generated
-  targets and the native renderer for source/fallback targets and fragments.
+  targets and the native renderer for existing source targets and fragments.
+  Missing localized routes never inherit an assumed English fallback.
 - Localized Musea and library guidance uses the same whole native Vite examples
   as English. Fresh library init creates `vite.config.mjs`; existing Vite files
   are preserved and receive a manual snippet when needed. Dedicated JSON and
@@ -65,3 +66,12 @@ protected Stack delivery, deployed all-locale
 browser acceptance, and the included public release remain required. Historical
 blog posts keep their original release context; optional dedicated format examples
 stay in detailed references. #8370 is not closed by opening this PR.
+
+The first complete browser run exposed a real French migration link returning 404. Untranslated guides now link explicitly to the existing English route,
+with a localized language notice. The source regression fails on the old
+implicit fallback and passes only when the actual destination exists. Restore
+the lint rule-options reading section in all five practical guides, preserve
+its old native bookmark, and retain complete typed options/bad-good examples
+in the existing reference. Japanese uses a natural heading instead of the
+old English heading literal. All 172 old targets must occur exactly once.
+Every original code fence and all 43 desktop/mobile browser routes remain.

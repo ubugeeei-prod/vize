@@ -48,6 +48,12 @@ export default defineConfig({
 });
 ```
 
+<span id="lint-rule-options"></span>
+
+### ルールのオプション
+
+[ルールのオプション](../rules/options.md)に、設定オブジェクトの型と悪い例・良い例をまとめています。未対応のオプション名は拒否されます。
+
 ## 導入する機能を選ぶ
 
 `compiler`・`typecheck`・`lint.vize`・`fmt.vize` を `false` にすると、その機能を無効にできます。Vue は Vize、その他のファイルは Oxfmt がフォーマットします。[担当範囲と重複の扱い](./vite-plus.md#lint-and-formatter-ownership)も確認してください。
@@ -90,8 +96,6 @@ Vite 設定を使い、入力引数なしで `build`・`lint`・`fmt`・`check` 
 ## 専用設定ファイルを使う場合
 
 既存の `vize.config.*` も使えます。同じディレクトリでは Vite の設定より優先されます。CLI の `--config` でファイルを明示できます。プラグインに直接渡したオプションやエディターで明示した機能の設定は、共通設定より優先されます。`config: false` でプラグインの自動読み込みを無効にできます。
-
-<span id="lint-rule-options"></span>
 
 ## 詳細リファレンス
 

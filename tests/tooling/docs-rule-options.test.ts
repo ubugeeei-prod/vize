@@ -96,8 +96,9 @@ test("configuration docs link to the full lint rule option reference", () => {
     "utf8",
   );
 
-  assert.match(jaConfiguration, /### Lint Rule Options/);
-  assert.match(jaConfiguration, /\[ルール オプション\]\(\.\.\/rules\/options\.md\)/);
+  assert.match(jaConfiguration, /### ルールのオプション/);
+  assert.match(jaConfiguration, /<span id="lint-rule-options"><\/span>/);
+  assert.match(jaConfiguration, /\[ルールのオプション\]\(\.\.\/rules\/options\.md\)/);
 });
 
 test("rules overview links to lint rule option references", () => {

@@ -33,11 +33,11 @@ export default defineConfig({
 | `typecheck` | Vue 类型检查 | `vp run typecheck` |
 | `pack.vize` | 库类型声明 | `vp run pack` |
 
-使用 `vp run check` 运行组合的 Vize 任务。内置的 `vp check`、`vp lint` 和 `vp fmt` 保持 Vite+ 自身的行为。已有脚本可能使生成的任务改名为 `vize:<名称>`；请参阅[任务名称和覆盖设置](./vite-plus.md#tasks)。
+使用 `vp run check` 运行组合的 Vize 任务。内置的 `vp check`、`vp lint` 和 `vp fmt` 保持 Vite+ 自身的行为。已有脚本可能使生成的任务改名为 `vize:<名称>`；请参阅[任务名称和覆盖设置](/guide/vite-plus.md#tasks)。
 
 ## 修改一条规则
 
-Vue 规则放在 `lint.vize.rules` 中，Oxlint 规则放在 `lint.rules` 中。[规则选项](../rules/options.md)介绍参数，[规则目录](../rules/all.md)提供完整示例。
+Vue 规则放在 `lint.vize.rules` 中，Oxlint 规则放在 `lint.rules` 中。[规则选项](/rules/options.md)介绍参数，[规则目录](../rules/all.md)提供完整示例。
 
 ```ts
 export default defineConfig({
@@ -48,9 +48,15 @@ export default defineConfig({
 });
 ```
 
+<span id="lint-rule-options"></span>
+
+### Lint 规则选项
+
+[规则选项](/rules/options.md)列出了配置对象的类型以及错误和正确示例（英文）。不支持的选项字段会被拒绝。
+
 ## 选择启用的功能
 
-将 `compiler`、`typecheck`、`lint.vize` 或 `fmt.vize` 设为 `false` 即可禁用对应功能。Vize 格式化 Vue 文件，Oxfmt 处理其他文件。请参阅[职责划分和冲突处理](./vite-plus.md#lint-and-formatter-ownership)。
+将 `compiler`、`typecheck`、`lint.vize` 或 `fmt.vize` 设为 `false` 即可禁用对应功能。Vize 格式化 Vue 文件，Oxfmt 处理其他文件。请参阅[职责划分和冲突处理](/guide/vite-plus.md#lint-and-formatter-ownership)。
 
 ## 普通 Vite
 
@@ -109,5 +115,5 @@ vp exec vize check
 
 ## 详细参考
 
-[共享配置参考](./configuration-reference.md)介绍文件发现、专用 TypeScript/JSON/PKL 格式、分范围配置、Vue 类型解析和 LSP/Musea 设置。编译选项和语法模式请参阅[编译器参考](./compiler-configuration-reference.md)，需显式启用的功能请参阅[实验性功能](./experimentals.md)。
+[共享配置参考](./configuration-reference.md)介绍文件发现、专用 TypeScript/JSON/PKL 格式、分范围配置、Vue 类型解析和 LSP/Musea 设置。编译选项和语法模式请参阅[编译器参考](./compiler-configuration-reference.md)，需显式启用的功能请参阅[实验性功能](/guide/experimentals.md)。
 

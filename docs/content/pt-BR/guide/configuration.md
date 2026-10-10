@@ -33,11 +33,11 @@ export default defineConfig({
 | `typecheck` | Verificação de tipos Vue | `vp run typecheck` |
 | `pack.vize` | Declarações de biblioteca | `vp run pack` |
 
-Use `vp run check` para as tarefas combinadas do Vize. Os comandos integrados `vp check`, `vp lint` e `vp fmt` mantêm o comportamento próprio do Vite+. Scripts existentes podem renomear as tarefas geradas para `vize:<nome>`; veja [nomes e substituições das tarefas](./vite-plus.md#tasks).
+Use `vp run check` para as tarefas combinadas do Vize. Os comandos integrados `vp check`, `vp lint` e `vp fmt` mantêm o comportamento próprio do Vite+. Scripts existentes podem renomear as tarefas geradas para `vize:<nome>`; veja [nomes e substituições das tarefas](/guide/vite-plus.md#tasks).
 
 ## Alterar uma regra
 
-Coloque as regras Vue em `lint.vize.rules` e as regras do Oxlint em `lint.rules`. Veja os parâmetros em [opções de regras](../rules/options.md) e os exemplos completos no [catálogo](../rules/all.md).
+Coloque as regras Vue em `lint.vize.rules` e as regras do Oxlint em `lint.rules`. Veja os parâmetros em [opções de regras](/rules/options.md) e os exemplos completos no [catálogo](../rules/all.md).
 
 ```ts
 export default defineConfig({
@@ -48,9 +48,15 @@ export default defineConfig({
 });
 ```
 
+<span id="lint-rule-options"></span>
+
+### Opções das regras lint
+
+As [opções das regras](/rules/options.md) mostram os objetos tipados e os exemplos incorretos/corrigidos (em inglês). Campos desconhecidos são rejeitados.
+
 ## Escolher os recursos
 
-Defina `compiler`, `typecheck`, `lint.vize` ou `fmt.vize` como `false` para desativar esse recurso. O Vize formata Vue e o Oxfmt os outros arquivos. Veja a [divisão de responsabilidades e conflitos](./vite-plus.md#lint-and-formatter-ownership).
+Defina `compiler`, `typecheck`, `lint.vize` ou `fmt.vize` como `false` para desativar esse recurso. O Vize formata Vue e o Oxfmt os outros arquivos. Veja a [divisão de responsabilidades e conflitos](/guide/vite-plus.md#lint-and-formatter-ownership).
 
 ## Vite convencional
 
@@ -109,5 +115,5 @@ Um `vize.config.*` existente continua aceito e tem prioridade sobre a configura�
 
 ## Referência detalhada
 
-A [referência compartilhada](./configuration-reference.md) descreve a descoberta, os formatos específicos TypeScript/JSON/PKL, as entradas por escopo, a resolução dos tipos Vue e as opções LSP/Musea. Veja a [referência do compilador](./compiler-configuration-reference.md) para opções e sintaxes, e os [recursos experimentais](./experimentals.md) para opções que precisam ser ativadas.
+A [referência compartilhada](./configuration-reference.md) descreve a descoberta, os formatos específicos TypeScript/JSON/PKL, as entradas por escopo, a resolução dos tipos Vue e as opções LSP/Musea. Veja a [referência do compilador](./compiler-configuration-reference.md) para opções e sintaxes, e os [recursos experimentais](/guide/experimentals.md) para opções que precisam ser ativadas.
 

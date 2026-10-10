@@ -46,6 +46,10 @@ export default defineConfig({
 });
 ```
 
+### Lint Rule Options
+
+Use [Rule Options](../rules/options.md) for the complete typed option objects and bad/good examples. Unknown option fields are rejected.
+
 ## Choose which features to adopt
 
 Set `compiler`, `typecheck`, `lint.vize`, or `fmt.vize` to `false` to disable that feature. Vize formats Vue files; Oxfmt handles other files. See [ownership and conflict handling](./vite-plus.md#lint-and-formatter-ownership).
@@ -86,8 +90,6 @@ Shared global ignores exclude files from CLI discovery and editor lint. An ignor
 ## Optional dedicated configuration
 
 An existing `vize.config.*` remains supported and takes priority over Vite config in the same directory. CLI `--config` selects a file explicitly. Direct plugin options and explicit editor feature switches override shared settings; `config: false` disables automatic plugin config loading.
-
-<span id="lint-rule-options"></span>
 
 ## Detailed reference
 

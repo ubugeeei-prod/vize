@@ -38,9 +38,13 @@ void test("configuration reorganization retains every original native heading ta
   let total = 0;
   for (const document of original.documents) {
     const { html } = render(document.file);
-    const ids = new Set(Array.from(html.matchAll(/\bid="([^"]+)"/g), (match) => match[1]));
+    const ids = Array.from(html.matchAll(/\bid="([^"]+)"/g), (match) => match[1]);
     for (const id of document.headings) {
-      assert.ok(ids.has(id), `${document.file}: original #${id}`);
+      assert.equal(
+        ids.filter((value) => value === id).length,
+        1,
+        `${document.file}: original #${id} occurs once`,
+      );
       total += 1;
     }
   }
@@ -95,13 +99,11 @@ void test("localized configuration reading paths resolve through native rendered
       const document = render(file);
       for (const [, href, fragment] of document.html.matchAll(/\bhref="([^"#]*\.md)(#[^"]*)?"/g)) {
         if (!href || /^(?:https?:|\/\/)/u.test(href)) continue;
-        const target = resolve(root, dirname(file), href);
+        const target = href.startsWith("/")
+          ? resolve(root, "docs/content", `.${href}`)
+          : resolve(root, dirname(file), href);
         const relative = target.slice(`${root}/`.length);
-        const fallback = relative.replace(
-          /^docs\/content\/(?:ja|fr|pt-BR|zh-CN)\//u,
-          "docs/content/",
-        );
-        const chosen = sourceFor(relative) === undefined ? fallback : relative;
+        const chosen = relative;
         assert.ok(sourceFor(chosen) !== undefined, `${file}: ${href}`);
         if (!rendered.has(chosen)) rendered.set(chosen, render(chosen));
         if (fragment) {
