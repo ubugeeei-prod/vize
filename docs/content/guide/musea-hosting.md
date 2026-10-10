@@ -49,3 +49,5 @@ storage, viewport, threshold, or capture settings.
 For a development server, run `vp exec musea-vrt` in the project or use **Run VRT**
 in the gallery. The CLI honors the Vite base and Musea `basePath` from your config;
 `--base-url` selects the server origin. Hosted capture uses `--gallery-url` instead.
+
+See [snapshot identity and migration](./musea-snapshots.md) before reusing existing baselines or testing same-named Art files.

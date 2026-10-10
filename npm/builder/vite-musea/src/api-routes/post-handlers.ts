@@ -125,6 +125,7 @@ export async function handleRunVrt(
     const runner = new MuseaVrtRunner({
       capture: { waitForPreviewReady: true },
       snapshotDir,
+      projectRoot: ctx.projectRoot ?? ctx.config.root,
       previewBasePath: publicBasePathFromViteBase(ctx.config.base, ctx.basePath),
     });
 

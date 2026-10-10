@@ -55,6 +55,9 @@ export interface CliOptions {
   galleryUrl?: string;
   previewBasePath?: string;
   previewUrls?: Record<string, Record<string, string>>;
+  projectRoot?: string;
+  snapshotIdentities?: Record<string, string>;
+  adoptLegacySnapshots?: boolean;
 }
 
 export function parseArgs(args: string[]): CliOptions {
@@ -143,6 +146,9 @@ export function parseArgs(args: string[]): CliOptions {
       case "--help":
         options.help = true;
         break;
+      case "--adopt-legacy-snapshots":
+        options.adoptLegacySnapshots = true;
+        break;
       case "--gallery-url":
         options.galleryUrl = args[++i];
         if (!options.galleryUrl || options.galleryUrl.startsWith("-"))
@@ -185,6 +191,7 @@ Options:
   -t, --threshold <n>  Diff threshold percentage (default: 0.1)
   -b, --base-url <url> Base URL for dev server (default: http://localhost:5173)
   --gallery-url <url>  Capture a built hosted gallery using its static manifest
+  --adopt-legacy-snapshots  Adopt reviewed, unambiguous legacy PNG baselines once
   -w, --workers <n>    Number of concurrent captures (default: 1)
   --json               Output JSON report instead of HTML
   --ci                 CI mode - exit with non-zero code on failures
@@ -258,12 +265,14 @@ async function main(): Promise<void> {
   if (options.galleryUrl) {
     const hosted = await loadHostedGallery(options.galleryUrl);
     options.previewUrls = hosted.previewUrls;
+    options.snapshotIdentities = hosted.snapshotIdentities;
     if (options.command === "run") await runVrt(options, hosted.arts);
     else if (options.command === "approve") await runApprove(options, hosted.arts);
     else if (options.command === "clean") await runClean(options, hosted.arts);
     return;
   }
   const fileSet = await loadMuseaFileSet(options.config, cwd);
+  options.projectRoot = fileSet.projectRoot;
 
   // Scan for art files
   console.log("  Scanning for art files...");

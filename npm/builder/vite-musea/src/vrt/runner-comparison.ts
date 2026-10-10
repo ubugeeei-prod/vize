@@ -15,7 +15,6 @@ import { PNG } from "pngjs";
 import { readPng, writePng, colorDelta, isAntiAliased, fileExists } from "./comparison.js";
 import type { VrtResult } from "./types.js";
 import type { MuseaVrtRunner } from "./runner.js";
-import { buildSnapshotName } from "./utils.js";
 import { observePreviewReady, waitForMountedPreview } from "./preview-ready.js";
 
 /**
@@ -40,7 +39,7 @@ export async function captureAndCompare(
   const comparison = runner.getComparison();
 
   const snapshotDir = options.snapshotDir;
-  const snapshotName = buildSnapshotName(art.path, variantName, viewport);
+  const snapshotName = await runner.getSnapshotName(art, variantName, viewport);
   const snapshotPath = path.join(snapshotDir, snapshotName);
   const currentPath = path.join(snapshotDir, "current", snapshotName);
   const diffPath = path.join(snapshotDir, "diff", snapshotName);

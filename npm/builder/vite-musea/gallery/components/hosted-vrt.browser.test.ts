@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
 import { mkdir, readFile, writeFile, rm, readdir, copyFile } from "node:fs/promises";
 import path from "node:path";
 import test from "node:test";
@@ -8,27 +7,13 @@ import { PNG } from "pngjs";
 import { chromium } from "playwright";
 import { loadHostedGallery } from "../../src/cli/hosted.ts";
 import { buildHostedGallery } from "./hosted-tests.browser-fixtures.ts";
+import { runCli } from "./hosted-vrt.browser-process.ts";
 
 const repository = fileURLToPath(new URL("../../../../../", import.meta.url));
 const output = path.join(repository, "artifacts/musea-hosted-vrt");
-const cli = fileURLToPath(new URL("../../src/cli/index.ts", import.meta.url));
 const optionsUrl = pathToFileURL(
   fileURLToPath(new URL("../../src/plugin/options.ts", import.meta.url)),
 ).href;
-
-async function runCli(cwd: string, args: string[]) {
-  return new Promise<{ status: number; stdout: string; stderr: string }>((resolve, reject) => {
-    execFile(
-      process.execPath,
-      ["--import", import.meta.resolve("tsx"), cli, ...args],
-      { cwd, timeout: 45000, encoding: "utf8" },
-      (error, stdout, stderr) => {
-        if (error && typeof error.code !== "number") return reject(error);
-        resolve({ status: error?.code ?? 0, stdout, stderr });
-      },
-    );
-  });
-}
 
 await test(
   "hosted CLI captures mounted previews, detects diffs, approves and cleans without source files",

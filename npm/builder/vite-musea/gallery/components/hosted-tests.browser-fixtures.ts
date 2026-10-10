@@ -17,7 +17,11 @@ import type { ArtFileInfo } from "../../src/types/index.ts";
 const packageRoot = fileURLToPath(new URL("../../", import.meta.url));
 export const hostedBase = "/site/__musea__";
 
-export async function buildHostedGallery(output: string, setupDelayMs?: number) {
+export async function buildHostedGallery(
+  output: string,
+  setupDelayMs?: number,
+  additionalArts: ArtFileInfo[] = [],
+) {
   const artPath = path.join(output, "Host.art.vue");
   const fixture: { setupDelayMs: number; variants: string[] } = JSON.parse(
     await readFile(
@@ -52,7 +56,10 @@ export async function buildHostedGallery(output: string, setupDelayMs?: number) 
     logLevel: "silent",
     build: { outDir: path.join(packageRoot, "dist/gallery"), emptyOutDir: true },
   });
-  const arts = new Map([[artPath, art]]);
+  const arts = new Map([
+    [artPath, art],
+    ...additionalArts.map((extra) => [extra.path, extra] as const),
+  ]);
   let config: ResolvedConfig;
   const previewPrefix = "virtual:musea-preview:";
   const setupId = "virtual:hosted-setup";
@@ -79,25 +86,35 @@ export async function buildHostedGallery(output: string, setupDelayMs?: number) 
         // dynamic preview modules, async setup, Vue and axe run on an HTTP host.
         return (
           `import { h } from 'vue';` +
-          names
-            .map((name) => {
+          (arts.get(id.slice("\0virtual:musea-art:".length))?.variants ?? art.variants)
+            .map((variant) => {
+              const name = variant.name;
               const identifier = name
                 .replace(/\b\w/g, (letter) => letter.toUpperCase())
                 .replaceAll(" ", "");
-              const child = name.startsWith("Clean")
-                ? `h('button', { type: 'button' }, 'Accessible action')`
-                : `h('button', { type: 'button' })`;
+              const child = additionalArts.some(
+                (extra) => extra.path === id.slice("\0virtual:musea-art:".length),
+              )
+                ? `h('div', { style: ${JSON.stringify(variant.template.match(/style="([^"]+)"/)?.[1] ?? "")} }, ${JSON.stringify(name)})`
+                : name.startsWith("Clean")
+                  ? `h('button', { type: 'button' }, 'Accessible action')`
+                  : `h('button', { type: 'button' })`;
               return `export const ${identifier} = { render() { return h('main', {}, [${child}]); } };`;
             })
             .join("\n")
         );
       }
       if (id.startsWith(`\0${previewPrefix}`)) {
-        const name = id.slice(`\0${previewPrefix}${artPath}:`.length);
+        const artAndVariant = id.slice(`\0${previewPrefix}`.length);
+        const previewArt = [...arts.values()].find((candidate) =>
+          artAndVariant.startsWith(`${candidate.path}:`),
+        );
+        if (!previewArt) throw new Error(`Unknown fixture preview: ${artAndVariant}`);
+        const name = artAndVariant.slice(previewArt.path.length + 1);
         const identifier = name
           .replace(/\b\w/g, (letter) => letter.toUpperCase())
           .replaceAll(" ", "");
-        return generatePreviewModule(art, identifier, name, [], setupId);
+        return generatePreviewModule(previewArt, identifier, name, [], setupId);
       }
       return loadStaticRuntimeModule(id, arts);
     },
@@ -109,6 +126,7 @@ export async function buildHostedGallery(output: string, setupDelayMs?: number) 
         bundle,
         {
           config,
+          projectRoot: output,
           artFiles: arts,
           scanRoots: [output],
           tokensPath: undefined,
