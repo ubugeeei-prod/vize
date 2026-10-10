@@ -13,7 +13,10 @@ on:
       - tests/tooling/n8n-cli-config-contract.test.mjs
       - tests/tooling/n8n-cli-config-failure-custody.test.mjs
       - tests/tooling/support/n8n-cli-config-*.mjs
+      - tests/tooling/support/n8n-slot-options-acceptance.ts
+      - tests/tooling/patina-slot-dynamic-modifiers-oracle.test.ts
       - tests/_fixtures/differential/lint/n8n-cli-config/**
+      - tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/**
       - tests/tooling/support/n8n-compiler-*.mjs
       - tests/tooling/support/n8n-default-slot-loop*.mjs
       - tests/_fixtures/differential/compiler/n8n-*/**
