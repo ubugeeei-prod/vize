@@ -4,6 +4,7 @@ exclude = ["vendor/oxc_parser_compat"]
 members = [
   "vendor/oxc_parser",
   "vendor/oxc_formatter",
+  "vendor/oxlint_html_renderer186",
   "crates/vize_carton",
   "crates/vize_relief",
   "crates/vize_armature",
