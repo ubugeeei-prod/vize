@@ -12,10 +12,10 @@ Pin each action to its corresponding immutable parent in the official
 `dtolnay/rust-toolchain` master history, and explicitly pass the intended Rust
 toolchain where the generated action previously supplied a default.
 
-| Generated stable pin | Reachable official parent | Main calls |
-| --- | --- | ---: |
-| `6bed0761d98439e5a578e2877258200ad565ba87` | `d1031067263f94b142dd6c0ce24c5eb9d02d52a0` | 76 |
-| `89b12181fb390509a0842a86cc55eeb8eb928c1d` | `7e38f4b43b4db5c8dd498af069a4f6196df1d067` | 10 |
+| Generated stable pin                       | Reachable official parent                  | Main calls |
+| ------------------------------------------ | ------------------------------------------ | ---------: |
+| `6bed0761d98439e5a578e2877258200ad565ba87` | `d1031067263f94b142dd6c0ce24c5eb9d02d52a0` |         76 |
+| `89b12181fb390509a0842a86cc55eeb8eb928c1d` | `7e38f4b43b4db5c8dd498af069a4f6196df1d067` |         10 |
 
 The official [first generated commit](https://github.com/dtolnay/rust-toolchain/commit/6bed0761d98439e5a578e2877258200ad565ba87)
 and [second generated commit](https://github.com/dtolnay/rust-toolchain/commit/89b12181fb390509a0842a86cc55eeb8eb928c1d)

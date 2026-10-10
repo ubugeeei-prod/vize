@@ -143,8 +143,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with:
-          toolchain: 1.95.0
+        with: { toolchain: 1.95.0 }
       - uses: ./.github/actions/setup-rust-script
       - name: Use candidate version for SemVer classification
         # cargo-semver-checks derives the release type from the bumped version.
@@ -178,7 +177,8 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
-      - { uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0, with: { toolchain: stable } } # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
       - name: Install JS dependencies
         run: vp install --frozen-lockfile --prefer-offline
@@ -222,7 +222,8 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
-      - { uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0, with: { toolchain: stable } } # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -259,7 +260,8 @@ jobs:
           node-version-file: "package.json"
           cache: true
           run-install: false
-      - { uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0, with: { toolchain: stable } } # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -281,7 +283,8 @@ jobs:
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-      - { uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0, with: { toolchain: stable } } # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -338,7 +341,8 @@ jobs:
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-      - { uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0, with: { toolchain: stable } } # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -409,7 +413,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: {toolchain: stable, components: clippy}
+        with: { toolchain: stable, components: clippy }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -443,7 +447,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - { uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0, with: { toolchain: stable } } # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
@@ -474,7 +479,7 @@ jobs:
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: {toolchain: stable, components: llvm-tools-preview}
+        with: { toolchain: stable, components: llvm-tools-preview }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -519,9 +524,7 @@ jobs:
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # nightly
-        with:
-          toolchain: nightly
-          components: llvm-tools-preview
+        with: { toolchain: nightly, components: llvm-tools-preview }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -562,7 +565,7 @@ jobs:
       # Rust is always needed for @vizejs/native (used by vite-plugin-vize)
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: {toolchain: stable, targets: wasm32-unknown-unknown}
+        with: { toolchain: stable, targets: wasm32-unknown-unknown }
       - uses: ./.github/actions/setup-moonbit
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
