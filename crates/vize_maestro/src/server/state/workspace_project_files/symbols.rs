@@ -12,9 +12,19 @@ use crate::ide::WorkspaceSymbolsService;
 use super::{ServerState, is_project_source};
 
 impl ServerState {
+    #[cfg(test)]
     pub(crate) async fn search_workspace_project_symbols(
         &self,
         query: &str,
+    ) -> Vec<SymbolInformation> {
+        self.search_workspace_project_symbols_filtered(query, |_| true)
+            .await
+    }
+
+    pub(crate) async fn search_workspace_project_symbols_filtered(
+        &self,
+        query: &str,
+        filter: impl Fn(&Url) -> bool + Clone + Send + 'static,
     ) -> Vec<SymbolInformation> {
         loop {
             let paths = self.current_project_paths().await;
@@ -43,6 +53,7 @@ impl ServerState {
             let open = Arc::new(open);
             let worker_open = Arc::clone(&open);
             let worker_query = query.clone();
+            let worker_filter = filter.clone();
             #[cfg(test)]
             let worker_failed = self
                 .workspace_project_files
@@ -56,13 +67,20 @@ impl ServerState {
                 self.workspace_project_files
                     .worker
                     .run(move || {
-                        collect_sources(paths.uris, &worker_open, &retired, &worker_query, |path| {
-                            std::fs::read_to_string(path).ok()
-                        })
+                        collect_sources_filtered(
+                            paths.uris,
+                            &worker_open,
+                            &retired,
+                            &worker_query,
+                            |path| std::fs::read_to_string(path).ok(),
+                            worker_filter,
+                        )
                     })
                     .await
             }
-            .unwrap_or_else(|| collect_sources(Vec::new(), &open, &[], &query, |_| None));
+            .unwrap_or_else(|| {
+                collect_sources_filtered(Vec::new(), &open, &[], &query, |_| None, filter.clone())
+            });
             #[cfg(test)]
             {
                 let pause = self.workspace_project_files.read_pause.write().take();
@@ -80,18 +98,31 @@ impl ServerState {
     }
 }
 
+#[cfg(test)]
 fn collect_sources<Text: AsRef<str>>(
+    uris: Vec<Url>,
+    open: &FxHashMap<Url, Text>,
+    retired: &[PathBuf],
+    query_lower: &str,
+    read: impl FnMut(&Path) -> Option<Text>,
+) -> Vec<SymbolInformation> {
+    collect_sources_filtered(uris, open, retired, query_lower, read, |_| true)
+}
+
+fn collect_sources_filtered<Text: AsRef<str>>(
     mut uris: Vec<Url>,
     open: &FxHashMap<Url, Text>,
     retired: &[PathBuf],
     query_lower: &str,
     mut read: impl FnMut(&Path) -> Option<Text>,
+    filter: impl Fn(&Url) -> bool,
 ) -> Vec<SymbolInformation> {
     uris.extend(open.keys().cloned());
     uris.sort_by(|left, right| left.as_str().cmp(right.as_str()));
     uris.dedup();
     let mut symbols = Vec::new();
     for uri in uris {
+        let before = symbols.len();
         if let Some(source) = open.get(&uri) {
             WorkspaceSymbolsService::collect_source(
                 &uri,
@@ -99,6 +130,9 @@ fn collect_sources<Text: AsRef<str>>(
                 query_lower,
                 &mut symbols,
             );
+            if symbols.len() > before && !filter(&uri) {
+                symbols.truncate(before);
+            }
             continue;
         }
         let Ok(path) = uri.to_file_path() else {
@@ -109,6 +143,9 @@ fn collect_sources<Text: AsRef<str>>(
         }
         let Some(source) = read(&path) else { continue };
         WorkspaceSymbolsService::collect_source(&uri, source.as_ref(), query_lower, &mut symbols);
+        if symbols.len() > before && !filter(&uri) {
+            symbols.truncate(before);
+        }
         // No closed-file buffer survives into the next file read. Sorting and
         // truncation happen once over the complete result, never per source.
     }
@@ -129,5 +166,7 @@ async fn yield_to_source_changes() {
     .await;
 }
 
+#[cfg(test)]
+mod filtered_tests;
 #[cfg(test)]
 mod tests;

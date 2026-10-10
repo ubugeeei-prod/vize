@@ -56,16 +56,19 @@ fn nested_native_diagnostics_use_their_own_relative_tsconfig_and_alias_types() {
     }
     for _ in 0..2 {
         let response = lsp.recv_matching(|message| message["id"] == 60 || message["id"] == 61);
-        assert!(
-            response["error"].is_null() && !response["result"].is_null(),
-            "{response:#}"
-        );
         let ty = if response["id"] == 60 {
             "number"
         } else {
             "string"
         };
-        assert!(response["result"].to_string().contains(ty), "{response:#}");
+        assert_eq!(
+            response,
+            json!({"jsonrpc":"2.0","id":response["id"],"result":{
+                "contents":{"kind":"markdown","value":cstr!("```typescript\nconst value: {ty}\n```")},
+                "range":{"start":{"line":2,"character":6},"end":{"line":2,"character":11}}
+            }}),
+            "{response:#}"
+        );
     }
     for name in ["a", "b"] {
         let uri = file_uri(&root.join(cstr!("packages/{name}/src/App.vue")));

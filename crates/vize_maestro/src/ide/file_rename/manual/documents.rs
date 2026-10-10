@@ -2,6 +2,34 @@
 use super::{ServerState, apply_all_uri_renames, rename_targets};
 use tower_lsp::lsp_types::{FileRename, Url};
 
+#[cfg(feature = "native")]
+pub(in crate::ide::file_rename) fn rename_project_open_documents(
+    owner: &std::sync::Arc<ServerState>,
+    renames: &[FileRename],
+) -> Vec<(Url, Url)> {
+    let targets = rename_targets(renames);
+    let mut renamed = Vec::new();
+    for old in owner.documents.uris() {
+        let Some(new) = apply_all_uri_renames(&old, &targets).filter(|new| *new != old) else {
+            continue;
+        };
+        let previous = owner
+            .document_project_state(&old)
+            .unwrap_or_else(|| owner.current_primary_project_state());
+        if previous.rename_document(&old, new.clone()) {
+            previous.remove_virtual_docs(&old);
+            let current = owner
+                .document_project_state(&new)
+                .unwrap_or_else(|| owner.current_primary_project_state());
+            if let Some(source) = owner.documents.text(&new) {
+                current.update_virtual_docs(&new, &source);
+            }
+            renamed.push((old, new));
+        }
+    }
+    renamed
+}
+
 pub(in crate::ide::file_rename) fn rename_open_documents(
     state: &ServerState,
     renames: &[FileRename],
@@ -38,4 +66,3 @@ pub(in crate::ide::file_rename) fn rename_open_documents(
 
     renamed_documents
 }
-

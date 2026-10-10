@@ -18,6 +18,7 @@ impl ServerState {
         if config_paths.is_empty() {
             return Vec::new();
         }
+        let _change = self.project_routing_change();
         let mut contexts = self.project_contexts.contexts.lock();
         let mut retired = Vec::new();
         let mut affected = contexts

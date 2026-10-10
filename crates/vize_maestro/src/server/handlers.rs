@@ -287,10 +287,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn will_rename_files(&self, params: RenameFilesParams) -> Result<Option<WorkspaceEdit>> {
-        self.native_request(async {
-            Ok(super::workspace_files::will_rename_files(&self.state, &params).await)
-        })
-        .await
+        super::workspace_files::will_rename_files(self, &params).await
     }
 
     async fn did_change_watched_files(&self, params: DidChangeWatchedFilesParams) {

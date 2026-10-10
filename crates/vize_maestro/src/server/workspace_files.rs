@@ -12,6 +12,8 @@ use crate::ide::FileRenameService;
 
 #[cfg(feature = "native")]
 mod dependents;
+#[cfg(feature = "native")]
+mod project_operations;
 mod watched;
 #[cfg(feature = "native")]
 use dependents::{
@@ -75,6 +77,7 @@ fn typecheck_dependency_watcher_registration() -> Registration {
             "**/*.{vue,ts,tsx,mts,cts,js,jsx,mjs,cjs}",
             "**/package.json",
             "**/vize.config.*",
+            "**/vite.config.*",
             "**/tsconfig*.json",
             "**/jsconfig.json",
         ]
@@ -121,15 +124,7 @@ pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFile
         .state
         .observe_module_target_file_events(!params.files.is_empty());
     #[cfg(feature = "native")]
-    {
-        let dependents = versioned_open_typecheck_dependents(
-            &server.state,
-            params.files.iter().map(|file| file.uri.as_str()),
-        );
-        record_created_files(&server.state, params);
-        invalidate_corsa_disk_state(&server.state);
-        publish_versioned_dependents(server, dependents).await;
-    }
+    project_operations::did_create_files(server, params).await;
     #[cfg(not(feature = "native"))]
     let _ = (server, params);
 }
@@ -156,30 +151,7 @@ pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFile
         .state
         .observe_module_target_file_events(!params.files.is_empty());
     #[cfg(feature = "native")]
-    {
-        let mut dependents = versioned_open_typecheck_dependents(
-            &server.state,
-            params.files.iter().map(|file| file.uri.as_str()),
-        );
-        let deleted_paths = affected_vue_source_paths(
-            &server.state,
-            params.files.iter().map(|file| file.uri.as_str()),
-        );
-        if !deleted_paths.is_empty() {
-            dependents = include_open_typecheck_documents(&server.state, dependents);
-        }
-        tracing::info!(
-            files = params.files.len(),
-            affected = deleted_paths.len(),
-            dependents = dependents.len(),
-            "refreshing after deleted workspace files"
-        );
-        record_deleted_files(&server.state, params);
-        forget_corsa_vue_files(&server.state, &deleted_paths);
-        invalidate_corsa_disk_state(&server.state);
-        publish_versioned_dependents(server, dependents).await;
-        tracing::info!("finished refreshing after deleted workspace files");
-    }
+    project_operations::did_delete_files(server, params).await;
     #[cfg(not(feature = "native"))]
     let _ = (server, params);
 }
@@ -201,13 +173,25 @@ fn record_deleted_files(state: &ServerState, params: &DeleteFilesParams) {
 }
 
 pub(super) async fn will_rename_files(
-    state: &ServerState,
+    server: &MaestroServer,
     params: &RenameFilesParams,
-) -> Option<WorkspaceEdit> {
-    if !state.lsp_features().file_rename {
-        return None;
-    }
-    FileRenameService::will_rename_files(state, params).await
+) -> tower_lsp::jsonrpc::Result<Option<WorkspaceEdit>> {
+    #[cfg(feature = "native")]
+    return server
+        .project_request(FileRenameService::will_rename_project_files(
+            &server.state,
+            params,
+        ))
+        .await;
+    #[cfg(not(feature = "native"))]
+    server
+        .native_request(async {
+            if !server.state.lsp_features().file_rename {
+                return Ok(None);
+            }
+            Ok(FileRenameService::will_rename_files(&server.state, params).await)
+        })
+        .await
 }
 
 pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFilesParams) {
@@ -216,48 +200,16 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
         .state
         .observe_module_target_file_events(!params.files.is_empty());
     #[cfg(feature = "native")]
+    project_operations::did_rename_files(server, params).await;
+    #[cfg(not(feature = "native"))]
     {
-        let dependents = versioned_open_typecheck_dependents(
-            &server.state,
-            params
-                .files
-                .iter()
-                .flat_map(|file| [file.old_uri.as_str(), file.new_uri.as_str()]),
-        );
-        let renamed_paths = affected_vue_source_paths(
-            &server.state,
-            params.files.iter().map(|file| file.old_uri.as_str()),
-        );
-        server.state.invalidate_global_component_references(
-            params
-                .files
-                .iter()
-                .flat_map(|file| [file.old_uri.as_str(), file.new_uri.as_str()]),
-        );
-        for file in &params.files {
-            server
-                .state
-                .forget_workspace_vue_files(file.old_uri.as_str());
-            server
-                .state
-                .track_workspace_vue_files(file.new_uri.as_str());
+        if !server.state.lsp_features().file_rename {
+            return;
         }
-        server.state.invalidate_batch_cache();
-        forget_corsa_vue_files(&server.state, &renamed_paths);
-        invalidate_corsa_disk_state(&server.state);
-        publish_versioned_dependents(server, dependents).await;
-    }
-    if !server.state.lsp_features().file_rename {
-        return;
-    }
-
-    let renamed = FileRenameService::did_rename_files(&server.state, params).await;
-    for (old_uri, new_uri) in renamed {
-        server
-            .client
-            .publish_diagnostics(old_uri, vec![], None)
-            .await;
-        server.publish_diagnostics(&new_uri).await;
+        for (old, new) in FileRenameService::did_rename_files(&server.state, params).await {
+            server.client.publish_diagnostics(old, vec![], None).await;
+            server.publish_diagnostics(&new).await;
+        }
     }
 }
 

@@ -63,11 +63,37 @@ prints cold/warm formatting timings for hosted observation without changing any
 existing performance budget. State tests cover cache identity, retirement,
 nearest boundaries, and lazy capability advertisement.
 
-The document-owned slice does not yet reroute the existing global
-`workspace/symbol`, `workspace/willRenameFiles`, or bulk file-operation
-orchestration after primary config retirement. The follow-up must use current
-owners and preserve the shared document store's single rename mutation. Public
-reload and cross-package file-operation oracles are required before #8371 closes.
+Global `workspace/symbol` scans the shared workspace inventory once, filtering
+matched sources through their current project policy before ranking and the
+global limit. Unmatched packages require no config evaluation. File rename uses
+the current initialized native owners in parallel and one authored importer
+scan, applying each importer's own aliases and provider flag. Exact duplicate
+edits are removed; disabled package edits never reach the response.
+
+File creation/deletion invalidates initialized owners and refreshes open typed
+documents, including unresolved imports without a reverse edge. This fallback
+is bounded by editor-open buffers. Physical rename moves the authoritative
+buffer once and rebuilds it through the destination owner, retaining its version
+and unsaved content. The workspace inventory outlives primary runtime retirement
+and never borrows that retired runtime's native transaction.
+
+Bulk requests capture stable routing generation and authored source revision.
+Active config/folder mutations refuse requests before work begins; changes
+during work refuse the aggregate reply. Individual native queries additionally
+hold their own owner's request scope. The routing mutation guard spans folder
+updates, owner retirement, route clearing, and virtual-source cleanup.
+
+Public JSON-RPC controls reload the primary config before querying complete
+symbol and import-edit vectors, preserving sibling package disables and explicit
+initialization disables. Genuine Corsa controls then move an open source across
+packages without another didOpen, delete its alias target, and recreate it,
+requiring complete TS2322, TS2307, and clean notifications at the retained URI
+and version. Unit controls cover lazy primary replacement, global filtering
+before the result limit, and request refusal during and across routing mutation.
+
+Synchronous lazy config evaluation still needs a genuine transport control for
+a slow cold package alongside a warm unrelated request. Package-local locking
+proves registry isolation; it alone does not prove executor freedom.
 
 Current-source Actions, the protected queue, actual merge, and installed release
 replay remain required. Source preparation alone does not close #8371.

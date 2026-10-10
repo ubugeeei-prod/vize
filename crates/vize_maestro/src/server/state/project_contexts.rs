@@ -10,7 +10,7 @@ use std::{
     path::{Path, PathBuf},
     sync::{
         Arc, Weak,
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering},
     },
 };
 use tower_lsp::lsp_types::{ClientCapabilities, Url};
@@ -23,6 +23,8 @@ pub(super) struct ProjectContexts {
     owner: RwLock<Option<Weak<ServerState>>>,
     retired: AtomicBool,
     shutting_down: AtomicBool,
+    generation: AtomicU64,
+    routing_changes: AtomicUsize,
     boundary: RwLock<Option<PathBuf>>,
     contexts: Mutex<FxHashMap<PathBuf, Arc<registry::ProjectContext>>>,
     routes: DashMap<Url, PathBuf>,
@@ -202,6 +204,7 @@ impl ServerState {
     }
 
     pub(crate) fn refresh_project_routes(&self) {
+        let _change = self.project_routing_change();
         self.project_contexts.routes.clear();
         let roots = self.workspace_root_paths();
         let mut retired = Vec::new();
@@ -298,6 +301,7 @@ fn is_config_marker(path: &Path) -> bool {
 }
 
 mod capabilities;
+mod current;
 mod registry;
 #[cfg(test)]
 mod tests;

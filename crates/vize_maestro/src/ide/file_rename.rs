@@ -14,6 +14,8 @@ mod manual;
 mod manual_tests;
 #[cfg(test)]
 mod merge_tests;
+#[cfg(feature = "native")]
+mod projects;
 mod resources;
 #[cfg(all(test, feature = "native"))]
 mod source_alias_tests;

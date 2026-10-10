@@ -12,20 +12,18 @@ fn typecheck_watcher_tracks_declarations_vue_sources_and_manifests() {
     let registration = typecheck_dependency_watcher_registration();
     assert_eq!(registration.method, "workspace/didChangeWatchedFiles");
     let options = registration.register_options.unwrap();
-    assert_eq!(options["watchers"][0]["globPattern"], "**/*.d.{ts,mts,cts}");
     assert_eq!(
-        options["watchers"][1]["globPattern"],
-        "**/*.{vue,ts,tsx,mts,cts,js,jsx,mjs,cjs}"
+        options,
+        serde_json::json!({"watchers":[
+            {"globPattern":"**/*.d.{ts,mts,cts}"},
+            {"globPattern":"**/*.{vue,ts,tsx,mts,cts,js,jsx,mjs,cjs}"},
+            {"globPattern":"**/package.json"},
+            {"globPattern":"**/vize.config.*"},
+            {"globPattern":"**/vite.config.*"},
+            {"globPattern":"**/tsconfig*.json"},
+            {"globPattern":"**/jsconfig.json"}
+        ]})
     );
-    assert_eq!(options["watchers"][2]["globPattern"], "**/package.json");
-    assert_eq!(options["watchers"][3]["globPattern"], "**/tsconfig*.json");
-    assert_eq!(options["watchers"][4]["globPattern"], "**/jsconfig.json");
-    for watcher in options["watchers"].as_array().unwrap() {
-        assert!(
-            watcher.get("kind").is_none(),
-            "omitted kind must request create, change, and delete events: {options}"
-        );
-    }
 }
 
 #[test]

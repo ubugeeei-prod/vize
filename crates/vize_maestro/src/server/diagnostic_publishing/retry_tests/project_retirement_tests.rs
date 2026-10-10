@@ -62,3 +62,44 @@ fn retired_unstamped_lint_and_empty_packets_cannot_publish_or_update_hover_cache
         assert!(hover_after.is_empty());
     }
 }
+
+#[test]
+fn bulk_requests_refuse_a_changed_project_generation_without_borrowing_retired_primary() {
+    let fixture = fixture(false);
+    let server = fixture.service.inner();
+    let config = Url::from_file_path(fixture.root.path().join("vize.config.json")).unwrap();
+    let result = futures::executor::block_on(server.project_request(async {
+        server.state.observe_project_config_events(&[FileEvent {
+            uri: config,
+            typ: FileChangeType::CHANGED,
+        }]);
+        Ok::<_, tower_lsp::jsonrpc::Error>(42)
+    }));
+    assert_eq!(
+        result.unwrap_err(),
+        tower_lsp::jsonrpc::Error::content_modified()
+    );
+    assert!(server.state.project_context_retired());
+    let polled = std::cell::Cell::new(false);
+    let change = server.state.project_routing_change();
+    let refused = futures::executor::block_on(server.project_request(async {
+        polled.set(true);
+        Ok::<_, tower_lsp::jsonrpc::Error>(42)
+    }));
+    assert_eq!(
+        refused.unwrap_err(),
+        tower_lsp::jsonrpc::Error::content_modified()
+    );
+    assert!(
+        !polled.get(),
+        "a request during owner mutation must not run"
+    );
+    drop(change);
+    assert_eq!(
+        futures::executor::block_on(
+            server.project_request(async { Ok::<_, tower_lsp::jsonrpc::Error>(42) })
+        )
+        .unwrap(),
+        42
+    );
+}

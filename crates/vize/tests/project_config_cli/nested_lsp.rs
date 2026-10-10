@@ -1,7 +1,6 @@
 //! One editor workspace must not make sibling package settings order-dependent.
 #![expect(
     clippy::disallowed_types,
-    clippy::disallowed_methods,
     reason = "public JSON-RPC fixtures use protocol strings"
 )]
 use super::{
@@ -120,11 +119,11 @@ fn concurrent_format(lsp: &mut LspProcess, root: &Path, first_id: i64) -> BTreeM
 fn assert_quotes(responses: &BTreeMap<i64, Value>, first_id: i64, quotes: [&str; 2]) {
     for offset in 0..4 {
         let response = &responses[&(first_id + offset)];
-        let formatted = response[0]["newText"]
-            .as_str()
-            .expect("formatting must be enabled");
-        assert!(
-            formatted.contains(quotes[offset as usize % 2]),
+        let index = offset as usize % 2;
+        let ty = ["number", "string"][index];
+        assert_eq!(
+            format_oracle::apply(&SOURCE.replace("VALUE_TYPE", ty), response),
+            format_oracle::expected(ty, quotes[index]),
             "{response:#}"
         );
     }
@@ -137,22 +136,14 @@ fn nested_settings_are_stable_under_concurrent_requests_and_watch_reload() {
     let cold = std::time::Instant::now();
     let mut lsp = initialize(root, Value::Null);
     let responses = concurrent_format(&mut lsp, root, 10);
-    assert_quotes(
-        &responses,
-        10,
-        ["const message = 'hello'", "const message = \"hello\""],
-    );
+    assert_quotes(&responses, 10, ["'", "\""]);
     let cold_elapsed = cold.elapsed();
     let evaluations = ["a", "b"].map(|name| {
         std::fs::read_to_string(root.join(cstr!("packages/{name}/config-evaluations.txt"))).unwrap()
     });
     let warm = std::time::Instant::now();
     // Both request orders retain their own package settings, with no reimport.
-    assert_quotes(
-        &concurrent_format(&mut lsp, root, 20),
-        20,
-        ["const message = 'hello'", "const message = \"hello\""],
-    );
+    assert_quotes(&concurrent_format(&mut lsp, root, 20), 20, ["'", "\""]);
     eprintln!(
         "nested LSP cold open + four formatting requests: {cold_elapsed:?}; warm four requests: {:?}",
         warm.elapsed()
@@ -171,11 +162,7 @@ fn nested_settings_are_stable_under_concurrent_requests_and_watch_reload() {
             "changes":[{"uri":file_uri(&config),"type":2}]
         }}),
     );
-    assert_quotes(
-        &concurrent_format(&mut lsp, root, 30),
-        30,
-        ["const message = \"hello\"", "const message = \"hello\""],
-    );
+    assert_quotes(&concurrent_format(&mut lsp, root, 30), 30, ["\"", "\""]);
     std::fs::write(
         &config,
         settings(true, false, None).replace("lint:false", "formatting:false,lint:false"),
@@ -189,6 +176,12 @@ fn nested_settings_are_stable_under_concurrent_requests_and_watch_reload() {
     let responses = concurrent_format(&mut lsp, root, 40);
     for (id, result) in responses {
         assert_eq!(result.is_null(), id % 2 == 0, "{id}: {result:#}");
+        if id % 2 == 1 {
+            assert_eq!(
+                format_oracle::apply(&SOURCE.replace("VALUE_TYPE", "string"), &result),
+                format_oracle::expected("string", "\""),
+            );
+        }
     }
     finish(lsp);
 }
@@ -214,9 +207,13 @@ fn explicit_initialization_flags_win_over_each_nested_project() {
     finish(lsp);
 }
 
+#[path = "nested_lsp/format_oracle.rs"]
+mod format_oracle;
 #[path = "nested_lsp/ignores.rs"]
 mod ignores;
 #[path = "nested_lsp/marker_lifecycle.rs"]
 mod marker_lifecycle;
 #[path = "nested_lsp/native.rs"]
 mod native;
+#[path = "nested_lsp/workspace_operations.rs"]
+mod workspace_operations;

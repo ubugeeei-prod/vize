@@ -1,5 +1,5 @@
 //! The native editor consumes the canonical ordered Vite-root ignore matcher.
-use super::{Value, cstr, file_uri, finish, fixture, initialize, json, write};
+use super::{SOURCE, Value, cstr, file_uri, finish, fixture, initialize, json, native, write};
 
 const IMAGE: &str = "<template>\n  <img src=\"x\" />\n</template>\n";
 const CONFIG: &str = r#"export default {root:'src',vize:{ignores:['generated/**','!generated/KeepItem.vue','pages/\\[id\\].vue'],linter:{preset:'essential',rules:{'a11y/alt-text':'error'}},lsp:{lint:true,typecheck:false}}};"#;
@@ -63,5 +63,51 @@ fn vite_root_global_ignores_preserve_negation_escaping_and_watch_diagnostics() {
         json!([]),
         "{publication:#}"
     );
+    finish(lsp);
+}
+
+#[test]
+fn ignored_open_sources_keep_native_types_while_lint_exclusions_and_negation_apply() {
+    let Some(runtime) = native::runtime() else {
+        return;
+    };
+    let project = fixture(Some(&runtime));
+    let root = project.path();
+    super::super::typecheck::link_vue(root);
+    let path = root.join("packages/a/vite.config.mjs");
+    let settings = std::fs::read_to_string(&path)
+        .unwrap()
+        .replace(
+            "lint:false",
+            "lint:true",
+        )
+        .replace(
+            "vize:{",
+            "vize:{ignores:['generated/**','!generated/KeepItem.vue'],linter:{preset:'essential',rules:{'a11y/alt-text':'error'}},",
+        );
+    std::fs::write(path, settings).unwrap();
+    let source = SOURCE.replace("VALUE_TYPE", "string").replace(
+        "<template><p>{{ value }} {{ message }}</p></template>",
+        IMAGE.trim_end(),
+    );
+    let mut lsp = initialize(root, Value::Null);
+    for (name, ignored) in [("SkippedItem", true), ("KeepItem", false)] {
+        let file = cstr!("packages/a/src/generated/{name}.vue");
+        write(root, &file, &source);
+        let uri = file_uri(&root.join(file));
+        lsp.send(json!({"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":uri,"languageId":"vue","version":1,"text":source}}}));
+        let mismatch = native::mismatch("number", "string", 2, "value");
+        let expected = if ignored {
+            mismatch
+        } else {
+            let mut lint = alt_text();
+            lint[0]["range"]["start"]["line"] = json!(6);
+            lint[0]["range"]["end"]["line"] = json!(6);
+            let mut diagnostics = lint.as_array().unwrap().clone();
+            diagnostics.extend(mismatch.as_array().unwrap().iter().cloned());
+            json!(diagnostics)
+        };
+        native::publication(&mut lsp, &uri, 1, &expected);
+    }
     finish(lsp);
 }
