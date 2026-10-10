@@ -259,6 +259,53 @@ test("fatal exit forwards failure and kills/reaps the other owned descendant gro
   }
 });
 
+test("a normally closed worker's ignored-stdio descendant is drained before a later sibling failure", async () => {
+  const root = make();
+  const ready = path.join(root, "ignored-descendant.ready");
+  try {
+    const result = await runBaselineProcesses(
+      jobs(root, (index, base) =>
+        index === 0
+          ? `const fs=require('node:fs');require('node:child_process').spawn(process.execPath,['-e',${JSON.stringify(`require('node:fs').writeFileSync(${JSON.stringify(ready)},String(process.pid));setInterval(()=>{},1000);`)}],{stdio:'ignore'}).unref();const wait=setInterval(()=>{if(!fs.existsSync(${JSON.stringify(ready)}))return;clearInterval(wait);process.stdout.write('normal0\\r\\n');process.exit(0);},5);`
+          : `const fs=require('node:fs');const file=${JSON.stringify(path.join(base, "worker-0/worker-process.json"))};const wait=setInterval(()=>{if(!fs.existsSync(file))return;const record=JSON.parse(fs.readFileSync(file));if(!record.closed)return;clearInterval(wait);process.stdout.write('strict7');process.exit(7);},5);`,
+      ),
+      root,
+      { deadlineMs: 2_000 },
+    );
+    assert.equal(result.status, 1);
+    assert.match(result.error.message, /fatal terminal/u);
+    const observed = packet(root);
+    assert.equal(observed.workers[0].status, 0);
+    assert.equal(observed.workers[0].signal, null);
+    assert.equal(observed.workers[1].status, 7);
+    assert.ok(observed.workers.every((x) => x.closed));
+    assert.equal(
+      fs.readFileSync(path.join(observed.workers[0].output, "worker.stdout.bin"), "utf8"),
+      "normal0\r\n",
+    );
+    assert.equal(
+      fs.readFileSync(path.join(observed.workers[1].output, "worker.stdout.bin"), "utf8"),
+      "strict7",
+    );
+    const state = spawnSync("ps", ["-o", "stat=", "-p", fs.readFileSync(ready, "utf8")], {
+      encoding: "utf8",
+    });
+    assert.ok(
+      state.status !== 0 || state.stdout.trim().startsWith("Z"),
+      "closed worker's owned descendant must no longer execute",
+    );
+  } finally {
+    if (fs.existsSync(ready)) {
+      try {
+        process.kill(Number(fs.readFileSync(ready)), "SIGKILL");
+      } catch (error) {
+        if (error.code !== "ESRCH") throw error;
+      }
+    }
+    fs.rmSync(root, { recursive: true });
+  }
+});
+
 test("shared deadline remains a strict failure and all started children close", async () => {
   const root = make();
   try {

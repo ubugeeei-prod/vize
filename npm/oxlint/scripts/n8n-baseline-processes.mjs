@@ -58,17 +58,21 @@ export async function runBaselineProcesses(
       stop(`worker ${record.index} evidence write error`);
     }
   };
-  const stop = (reason) => {
-    failure ??= reason;
-    for (const { child, record } of children) {
-      if (record.closed || !child.pid) continue;
+  const terminateGroup = (child, record, reason) => {
+    if (!child.pid) return;
+    try {
+      process.kill(-child.pid, "SIGKILL");
       record.terminationReason ??= reason;
-      try {
-        process.kill(-child.pid, "SIGKILL");
-      } catch (error) {
-        if (error.code !== "ESRCH") record.terminationError = errorPacket(error);
+    } catch (error) {
+      if (error.code !== "ESRCH") {
+        record.terminationError = errorPacket(error);
+        failure ??= `worker ${record.index} owned group termination error`;
       }
     }
+  };
+  const stop = (reason) => {
+    failure ??= reason;
+    for (const { child, record } of children) terminateGroup(child, record, reason);
   };
   const onInterrupt = () => stop("parent interrupted by SIGINT");
   const onTerminate = () => stop("parent interrupted by SIGTERM");
@@ -139,6 +143,9 @@ export async function runBaselineProcesses(
               if (status !== 0 || signal !== null) stop(`worker ${index} fatal terminal`);
             });
             child.once("close", (status, signal) => {
+              // Ignored pipes can hide a still-live grandchild after a normal exit.
+              terminateGroup(child, record, "closed worker residual group cleanup");
+              if (failure) stop(failure);
               record.status = status;
               record.signal = signal;
               record.closed = true;

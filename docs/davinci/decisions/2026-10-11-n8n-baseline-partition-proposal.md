@@ -5,13 +5,13 @@ to its original serial observer. No partitioned native campaign, paired speedup
 or gate-wide gain has been measured for this change.
 
 The retained normal PR Check 38066980020 at source 0f5a/tested merge 459e observes
-1017s for Test JS packages:264334ms for the original JS suite and727418ms for
-project transport. Baseline preparation consumes334008ms; its two unchanged
-51-rule per-rule modes total288979ms. The complete source/receipt attribution is
+1017s for Test JS packages: 264334ms for the original JS suite and 727418ms for
+project transport. Baseline preparation consumes 334008ms; its two unchanged
+51-rule per-rule modes total 288979ms. The complete source/receipt attribution is
 retained in ordinary-pr-js-1017s-source-attribution.json, SHA d5cf5ecac203ee09.
 
 The proposal partitions the original ordered 1369 inputs into fixed contiguous
-ranges 685 and684. Each input runs all six original modes sequentially with the
+ranges 685 and 684. Each input runs all six original modes sequentially with the
 same settings, options, full ordered diagnostics, cold-call and zero-warm-call
 laws. The original revision/options/LRU/collected-cache controls run once in the
 last partition. No product, cache, native logger, controller, pinned host worker,
@@ -19,7 +19,9 @@ licensed input or 51-rule configuration is changed.
 
 Both real process groups share one 900000ms deadline and one combined 32MiB
 stdout/stderr budget. Fatal exit, signal, spawn error, output overflow, or parent
-interruption ends the campaign, kills its active groups, and waits for close.
+interruption ends the campaign, kills every started owned group, and waits for
+close. A normal direct-child close also drains ignored-pipe descendants before
+completion, so a later sibling failure cannot leave its former group alive.
 The parent saves and verifies complete licensed hash backing before either child
 starts, avoiding a duplicate-text partial-write race. This is source custody,
 with its overhead included in the partitioned arm; native startup hashing is
