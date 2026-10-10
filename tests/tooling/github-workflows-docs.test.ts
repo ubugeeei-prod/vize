@@ -67,6 +67,7 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
   assert.deepEqual(events.push?.paths, [
     ".github/workflows/build-docs.yml",
     "docs/**",
+    "!docs/davinci/decisions/**",
     "playground/**",
     "examples/vite-musea/**",
   ]);
