@@ -6,7 +6,7 @@ import { resolveLintTarget } from "./lint-target.js";
 import { planBundler } from "./plan-bundler.js";
 import { planEditorFile } from "./plan-editor.js";
 import { planLint } from "./plan-lint.js";
-import { planScripts, planVizeConfig } from "./plan-project.js";
+import { planScripts, planToolSettings } from "./plan-project.js";
 import {
   createPlanDraft,
   skipped,
@@ -80,7 +80,7 @@ export function planInit(options: PlanInitOptions): InitPlan {
     draft.updatedFiles.push(filename);
   }
 
-  planVizeConfig(detection, selection, draft);
+  planToolSettings(detection, selection, draft);
   for (const id of ["fmt", "typecheck"] as const) {
     if (selection[id]) {
       addAll(draft.dependencies, FEATURE_DEPENDENCIES[id]);
