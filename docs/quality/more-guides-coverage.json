@@ -13,7 +13,7 @@
       "route": "/architecture/language-engineering-practices",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Japanese complete body reviewed against the retained English source, with all commands, external references and published anchors preserved; fresh browser and deployed acceptance remain pending."
     },
     {
       "route": "/architecture/overview",
