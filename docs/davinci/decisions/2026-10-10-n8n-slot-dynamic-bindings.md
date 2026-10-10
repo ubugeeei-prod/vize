@@ -33,6 +33,11 @@ observations are retained before assertions. This preparation needs fresh
 exact-head Actions, protected checks, actual signed delivery and public installed
 execution. It grants no full51, monorepo, native-product or performance credit.
 
+Initial source Actions at `48df7c6ad` rejected the private `drawer::helpers`
+import and its unused internal export. Re-export the helper through the existing
+public `drawer` facade and consume that route. The failed build grants no source
+or runtime credit; all original fixtures and refusal laws stay unchanged.
+
 The parser currently cannot retain shorthand-default patterns such as
 `{ slot = fallback }` as expression ASTs. Such patterns, malformed argument
 headers (including the parent's arrow cases), type-syntax refusals and the

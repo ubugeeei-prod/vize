@@ -8,7 +8,7 @@ use oxc_ast::ast::{
     ArrayExpressionElement, AssignmentTarget, Expression, ObjectPropertyKind, PropertyKind,
 };
 use oxc_syntax::operator::AssignmentOperator;
-use vize_croquis::drawer::helpers::extract_identifier_refs_retained_only;
+use vize_croquis::drawer::extract_identifier_refs_retained_only;
 use vize_relief::{DirectiveNode, ExpressionNode};
 
 pub(super) fn references_own_binding(directive: &DirectiveNode<'_>) -> bool {
