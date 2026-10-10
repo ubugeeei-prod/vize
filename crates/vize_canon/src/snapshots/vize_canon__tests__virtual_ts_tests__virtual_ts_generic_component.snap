@@ -160,7 +160,7 @@ function __setup<T extends string | number>() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: __DefineProps<__VizeSetupProps> = {} as __DefineProps<__VizeSetupProps>;
+  const props: __VizePrettify<__DefineProps<__VizeSetupProps>> = {} as __DefineProps<__VizeSetupProps>;
   void props; // Mark as used to avoid TS6133
   const items = props["items"];
   void items;

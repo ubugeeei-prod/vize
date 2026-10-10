@@ -38,6 +38,7 @@ type __DefaultFactory<T> = (props: any) => T; type __WithDefaultValue<T> = T | _
 type __LooseRequired<T> = { [P in keyof (T & Required<T>)]: T[P] };
 type __VizeBooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K], undefined>] extends [never] ? never : [Exclude<T[K], undefined>] extends [boolean] ? K : never : never;
 type __DefineProps<T, __BKeys extends keyof T = never> = __LooseRequired<T>;
+type __VizePrettify<T> = (T extends any ? { [K in keyof T]: T[K] } : { [K in keyof T as K]: T[K] }) & {};
 type __WithDefaultsArgs<T> = { [K in keyof T]?: __WithDefaultValue<T[K]> };
 type __WithDefaultsResult<T, D, __BKeys extends keyof T = never, __Props = __LooseRequired<T>> = T extends unknown ? Omit<__Props, keyof D> & { [K in keyof D & keyof T]-?: [D[K]] extends [undefined] ? __LooseRequired<T>[K] : Exclude<__Props[K & keyof __Props], undefined> } : never;
 type __Ref<T> = { value: T };
@@ -116,7 +117,7 @@ function __setup() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: __DefineProps<Props> = {} as __DefineProps<Props>;
+  const props: __VizePrettify<__DefineProps<Props>> = {} as __DefineProps<Props>;
   void props; // Mark as used to avoid TS6133
   const test = props["test"];
   void test;

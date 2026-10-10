@@ -1,0 +1,15 @@
+{
+  "originalFixture": "../n8n-authored-editor/NullEmptyCellRenderer.vue.txt",
+  "originalSha256": "91446b8d45dab10ef21fac1c4351cc7381c9e658f9a60f7144c6bbc0b84f28d3",
+  "originalBytes": 288,
+  "originalProvenance": "../n8n-authored-editor/provenance.json",
+  "originalLicense": "../n8n-authored-editor/LICENSE.md",
+  "expectedAuthorship": "Whole signatures are authored from the inline prop contract and Vue readonly, optional Boolean, withDefaults, object-union and generic semantics; authored ranges use original UTF-16 source positions. They are not captured current outputs.",
+  "historicalSource": "6ed76e635ac788122f5662b649e973beb6df9488",
+  "historicalRun": 38066435579,
+  "historicalJob": 114254921973,
+  "historicalWholeHover": "```typescript\nconst props: __DefineProps<Props, never>\n```",
+  "historicalWireState": "awaiting-process-close with empty files; raw wire acceptance unavailable",
+  "preservedRegistryProjects": 145,
+  "preservedAuthoredOracles": 51
+}

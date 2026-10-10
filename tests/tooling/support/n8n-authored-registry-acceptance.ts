@@ -148,7 +148,13 @@ try {
   fs.writeFileSync(path.join(output, "stderr.txt"), session.stderrText);
   write("complete.json", evidence);
 }
-if (failure) throw failure;
-process.stdout.write(
-  "n8n: existing authored LSP and file-lifecycle provider passed on original pinned sources\n",
-);
+if (failure) {
+  // Shutdown has observed child exit; let its existing close/stdio handlers
+  // finish the raw capture before Node ends this failed provider process.
+  console.error(failure);
+  process.exitCode = 1;
+} else {
+  process.stdout.write(
+    "n8n: existing authored LSP and file-lifecycle provider passed on original pinned sources\n",
+  );
+}

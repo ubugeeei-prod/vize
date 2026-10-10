@@ -180,10 +180,14 @@ pub(crate) fn generate_props_variables(
 
     ts.push_str("  // Props are available in template as variables\n");
     ts.push_str("  // Access via `propName` or `props.propName`\n");
+    // Preserve the resolved contract while asking native quick info to expose
+    // its members instead of the generated Props/defineProps helper aliases.
+    // The existing distributive mapped type retains readonly/optional keys and
+    // union branches; the assignment still uses the same resolved contract.
     let props_start = ts.len() + "  const ".len();
     append!(
         *ts,
-        "  const props: {template_props_type_ref} = {{}} as {template_props_type_ref};\n"
+        "  const props: __VizePrettify<{template_props_type_ref}> = {{}} as {template_props_type_ref};\n"
     );
     if let Some(anchor) = props_shadow_anchor {
         binding_mappings
