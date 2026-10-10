@@ -7,7 +7,7 @@ title: JSX与多伦多证券交易所
 # JSX与多伦多证券交易所
 
 > **状态：**JSX/TSX 涵盖编译器、打印器、类型检查器、LSP 和格式化器。
-> 类型识别检查保持选择加入状态，确保 React `.tsx` 文件不会被误当为 Vue JSX。
+> 下一版本将为没有专用配置的项目默认启用 Vue JSX 类型检查。现有专用配置仍需显式启用；React 项目需要显式关闭这项检查。
 > 独立`.jsx`/`.tsx`模块的HMR仍然是主要的集成空白。
 
 Vize 通过**相同的编译器箱**编译 `.jsx` 和 Vue 组件 `.tsx` Vue 组件`.vue`
@@ -361,9 +361,9 @@ vize fmt src --write
 
 ## 打字检查
 
-JSX/TSX类型检查通过`typeChecker.jsxTypecheck`为**选择加入**，默认为**`false`\*\***。
-默认情况下是故意关闭的：仓库可能包含 React `.tsx` 文件，而这些文件不该存在
-类型校对为 Vue JSX。
+下一版本中，没有专用 `vize.config.*` 时，`vize check` 和 `vize lsp` 将默认启用 Vue JSX 类型检查。专用配置仍保留 `typeChecker.jsxTypecheck: false`，除非显式启用。
+已发布版本保持现有行为。请参阅[项目和编辑器的默认设置](../../guide/configuration.md#project-and-editor-defaults)（英文）。
+React 项目或混合项目需要在 Vite 中将 `vize.typeChecker.jsxTypecheck` 显式设为 `false`。JSX 语法无法判断所用框架；Vue SFC 类型检查仍然可用。
 
 ```ts
 // vize.config.ts
@@ -433,10 +433,9 @@ vize check src
 - 代码动作
 - `<style scoped>`块的嵌入式CSS诊断
 
-结构性特征（文档符号、语义标记、带作用域的诊断、代码操作）是有效的
-来自解析后的文档和始终可用。类型感知功能（诊断、悬停，
-完成、进入定义、引用、重命名）仅在 `typeChecker.jsxTypecheck` 为 时才会达到
-因此，React `.tsx` 文件在编辑器中也从未被视为 Vue JSX。
+结构功能（文档符号、语义标记、作用域样式诊断和代码操作）使用解析后的文档，始终可用。
+类型相关功能（诊断、悬停、补全、定义、引用和重命名）在启用 `typeChecker.jsxTypecheck` 时可用。
+React 项目也需要在编辑器中显式关闭 Vue JSX 类型检查。
 
 ## 绒毛
 
@@ -493,8 +492,8 @@ vize lint src
 
 注意当前的边缘：
 
-- **类型检查是自愿加入的。**`typeChecker.jsxTypecheck`默认`false`，因此混合使用Vue/React
-  仓库不会意外将 React TSX 路由到 Vue JSX 检查器。
+- **新的默认设置计划在下一版本提供。** 现有专用配置仍需显式启用类型检查。
+  React 项目或混合项目需要显式关闭 Vue JSX 类型检查。
 - **HMR 尚未为 `.jsx`/`.tsx` 模块接线。**JSX 编译器目前输出
   渲染函数模块而非完整的组件-对象模块，因此没有 Vue HMR 边界
   去依附。计划中的后续是完整的组件模块输出加上保持状态的HMR;直到

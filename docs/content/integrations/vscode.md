@@ -49,6 +49,8 @@ binary picker, restart action, settings, and logs from one place.
 This enables lint diagnostics first while leaving navigation, completion, and formatting to your
 existing Vue tooling.
 
+For the next release, projects without dedicated `vize.config.*` enable native LSP formatting and Vue JSX checking by default. This explicit lint-only profile still disables both type-aware diagnostics and formatting. Authored editor switches win over project defaults; see [project defaults](../guide/configuration.md#project-and-editor-defaults) for release availability and dedicated-config compatibility.
+
 ### Common Settings
 
 | Setting                      | Purpose                                            |

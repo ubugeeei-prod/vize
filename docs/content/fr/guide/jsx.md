@@ -7,7 +7,7 @@ title: JSX & TSX
 # JSX & TSX
 
 > **Statut :** JSX/TSX est couvert par le compilateur, le linter, le vérificateur de type, le LSP et le formateur.
-> Les vérifications sensibles au type restent volontaires, donc les fichiers React `.tsx` ne sont jamais traités comme Vue JSX par accident.
+> À la prochaine version, les projets sans configuration dédiée activeront la vérification Vue JSX par défaut. Les configurations dédiées existantes gardent l'activation explicite ; désactivez cette vérification explicitement pour React.
 > HMR pour les modules `.jsx`/`.tsx` autonomes reste le principal manque d’intégration restant.
 
 Vize compile `.jsx` et `.tsx` composants Vue via les **mêmes caisses de compilation** que `.vue`
@@ -361,9 +361,9 @@ vize fmt src --write
 
 ## Vérification de type
 
-La vérification de type JSX/TSX se fait **par option** via `typeChecker.jsxTypecheck`, qui par défaut ** est`false`**.
-Il est désactivé par défaut volontairement : un dépôt peut contenir des fichiers React `.tsx` qui ne doivent pas être
-vérifiés en tant que JSX Vue.
+À la prochaine version, `vize check` et `vize lsp` activeront la vérification Vue JSX sans `vize.config.*` dédié. Les configurations dédiées conserveront `typeChecker.jsxTypecheck: false`, sauf activation explicite.
+Les versions publiées conservent leur comportement actuel. Consultez les [valeurs par défaut du projet et de l'éditeur](../../guide/configuration.md#project-and-editor-defaults) (en anglais).
+Pour un projet React ou mixte, définissez explicitement `vize.typeChecker.jsxTypecheck` à `false` dans Vite. La syntaxe JSX ne permet pas d'identifier le framework ; la vérification des SFC Vue reste disponible.
 
 ```ts
 // vize.config.ts
@@ -433,10 +433,9 @@ fonctionnalités qu’un SFC — **pas besoin d’un wrapper SFC** :
 - Actions du code
 - Diagnostic CSS intégré pour `<style scoped>` blocs
 
-Les caractéristiques structurelles (symboles de documents, jetons sémantiques, diagnostics de type scoped, actions de code) fonctionnent
-du document analysé et sont toujours disponibles. Les fonctionnalités sensibles aux types (diagnostic, survolation, complétion
-, aller à la définition, références, renommage) ne sont atteintes que lorsque `typeChecker.jsxTypecheck` est
-activé, donc les fichiers React `.tsx` ne sont jamais traités comme Vue JSX dans l’éditeur non plus.
+Les fonctions structurelles (symboles, jetons sémantiques, diagnostics de styles délimités et actions de code) utilisent le document analysé et restent disponibles.
+Les fonctions fondées sur les types (diagnostics, survol, complétion, définitions, références et renommage) sont disponibles lorsque `typeChecker.jsxTypecheck` est activé.
+Dans un projet React, désactivez explicitement la vérification Vue JSX dans l'éditeur également.
 
 ## Linting
 
@@ -493,8 +492,8 @@ Voir [Static Analysis](./static-analysis.md) pour le modèle de peluches et de c
 
 Soyez conscient des arêtes actuelles :
 
-- **La vérification de la typographie se fait volontairement.** `typeChecker.jsxTypecheck` est `false` par défaut, donc un mélange Vue/React
-  dépôts ne routent pas accidentellement React TSX via le vérificateur JSX de Vue.
+- **Les nouvelles valeurs par défaut sont prévues pour la prochaine version.** Les configurations dédiées existantes gardent l'activation explicite.
+  Dans les projets React ou mixtes, désactivez explicitement la vérification Vue JSX.
 - **HMR n’est pas encore câblé pour les modules `.jsx`/`.tsx` .** Le compilateur JSX émet actuellement un
   module de fonction de rendu plutôt qu’un module composant-objet complet, il n’y a donc pas de
   frontière Vue HMR à attacher. Une sortie complète du module composant plus un HMR préservant l’état est un suivi prévu ; Jusqu’à
