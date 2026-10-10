@@ -35,24 +35,38 @@ struct NestedRootLowerer<'l, 'a, 'm, 's: 'a> {
 
 impl<'ast> Visit<'ast> for NestedRootLowerer<'_, '_, '_, '_> {
     fn visit_jsx_element(&mut self, element: &JSXElement<'ast>) {
-        // Structural children are lowered once by the existing native lowerer.
-        // Its plain-expression branches retain any deeper expression roots.
-        let outer_styles = std::mem::take(&mut self.lowerer.pending_styles);
-        let root = self.lowerer.lower_element_root(element);
-        let scoped_style = self.lowerer.take_scoped_styles();
-        self.lowerer.pending_styles = outer_styles;
-        self.lowerer
-            .pending_typecheck_roots
-            .push(TypecheckRoot { root, scoped_style });
+        self.lowerer.retain_typecheck_element(element);
     }
 
     fn visit_jsx_fragment(&mut self, fragment: &JSXFragment<'ast>) {
-        let outer_styles = std::mem::take(&mut self.lowerer.pending_styles);
-        let root = self.lowerer.lower_fragment_root(fragment);
-        let scoped_style = self.lowerer.take_scoped_styles();
-        self.lowerer.pending_styles = outer_styles;
-        self.lowerer
-            .pending_typecheck_roots
+        self.lowerer.retain_typecheck_fragment(fragment);
+    }
+}
+
+impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
+    pub(crate) fn retain_typecheck_element(&mut self, element: &JSXElement<'_>) {
+        if !self.preserve_slot_parameter_types {
+            return;
+        }
+        // Structural children are lowered once by the existing native lowerer.
+        // Its plain-expression branches retain any deeper expression roots.
+        let outer_styles = std::mem::take(&mut self.pending_styles);
+        let root = self.lower_element_root(element);
+        let scoped_style = self.take_scoped_styles();
+        self.pending_styles = outer_styles;
+        self.pending_typecheck_roots
+            .push(TypecheckRoot { root, scoped_style });
+    }
+
+    pub(crate) fn retain_typecheck_fragment(&mut self, fragment: &JSXFragment<'_>) {
+        if !self.preserve_slot_parameter_types {
+            return;
+        }
+        let outer_styles = std::mem::take(&mut self.pending_styles);
+        let root = self.lower_fragment_root(fragment);
+        let scoped_style = self.take_scoped_styles();
+        self.pending_styles = outer_styles;
+        self.pending_typecheck_roots
             .push(TypecheckRoot { root, scoped_style });
     }
 }

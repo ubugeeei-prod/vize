@@ -1,0 +1,68 @@
+{
+  "files": [
+    {
+      "file": "components/__vize_semantic_probe_control.vue",
+      "diagnostics": [
+        "error:2:7 [TS2322] Type 'number' is not assignable to type 'string'."
+      ]
+    },
+    {
+      "file": "tsconfig.json",
+      "diagnostics": [
+        "error:1:1 [TS5023] Unknown compiler option 'importsNotUsedAsValues'."
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "allowJs": true,
+        "baseUrl": "/private/tmp/vize-ant-design-native-default-repro-8371",
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "importsNotUsedAsValues": "preserve",
+        "jsx": "preserve",
+        "jsxImportSource": "vue",
+        "lib": [
+          "DOM",
+          "ESNext"
+        ],
+        "module": "esnext",
+        "moduleResolution": "node",
+        "noImplicitAny": false,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "paths": {
+          "ant-design-vue": [
+            "/private/tmp/vize-ant-design-native-default-repro-8371/components/index.ts"
+          ],
+          "ant-design-vue/es/*": [
+            "/private/tmp/vize-ant-design-native-default-repro-8371/components/*"
+          ],
+          "ant-design-vue/lib/*": [
+            "/private/tmp/vize-ant-design-native-default-repro-8371/components/*"
+          ],
+          "ant-design-vue/locale/*": [
+            "/private/tmp/vize-ant-design-native-default-repro-8371/components/locale/*"
+          ]
+        },
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "strictNullChecks": false,
+        "stripInternal": true,
+        "target": "es6"
+      },
+      "files": [
+        "components/__vize_semantic_probe_control.vue",
+        "site/src/typings.d.ts",
+        "site/typings.d.ts",
+        "typings/global.d.ts"
+      ]
+    }
+  ],
+  "errorCount": 2,
+  "warningCount": 0,
+  "fileCount": 1
+}

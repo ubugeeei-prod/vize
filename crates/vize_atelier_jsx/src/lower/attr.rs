@@ -8,6 +8,7 @@
 //! - `v-x` / `v-x:arg` -> [`DirectiveNode`] named `x`
 
 mod compat;
+mod value;
 
 use compat::split_on_event_modifiers;
 
@@ -69,6 +70,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
 
     /// `{...obj}` -> `v-bind="obj"`.
     fn lower_spread_attribute(&mut self, spread: &JSXSpreadAttribute<'_>) -> PropNode<'a> {
+        self.retain_nested_typecheck_roots(&spread.argument);
         let loc = self.mapper().location(spread.span);
         let mut directive = DirectiveNode::new(self.bump(), "bind", loc);
         directive.exp = Some(self.dyn_expr(spread.argument.span()));
@@ -96,6 +98,8 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         if self.is_v_slots_attribute(attr) {
             return None;
         }
+
+        self.retain_typecheck_attribute_value(attr.value.as_ref());
 
         // Directive forms: `v-model`, `v-show`, `v-on:click`, custom `v-foo:arg`.
         match self.try_directive_attribute(attr, &loc, on_component) {
@@ -331,6 +335,4 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             &self.bump(),
         )))
     }
-
-
 }
