@@ -15,7 +15,7 @@
 //! functions (typically in JSX / a render function), not as SFC templates.
 //!
 //! This mirrors eslint-plugin-vue's `vue/no-deprecated-functional-template`. It
-//! is an opt-in migration rule and only fires for the default Vue 3 dialect.
+//! is a default correctness rule and only fires for the default Vue 3 dialect.
 //!
 //! ## Scope
 //!
@@ -77,7 +77,7 @@ impl Rule for NoDeprecatedFunctionalTemplate {
         // `.vue` file), so this guard is effectively always true here; it mirrors
         // the sibling migration rules and keeps the rule inert for any non-Vue
         // dialect a future caller might thread through.
-        if ctx.dialect() != VueDialect::Vue {
+        if ctx.dialect() != VueDialect::Vue || !ctx.is_rule_enabled(META.name) {
             return;
         }
 

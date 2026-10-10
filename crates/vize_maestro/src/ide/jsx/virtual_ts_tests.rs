@@ -174,7 +174,7 @@ fn scoped_slot_lowering_matches_the_batch_generator() {
         .expect("the render root must be rewritten");
     assert_eq!(
         rendered,
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props: { item: string }) => __vize_jsx_expr__(props.item)));"
     );
 
     let mapped: Vec<&str> = generated
@@ -190,7 +190,8 @@ fn scoped_slot_lowering_matches_the_batch_generator() {
             "\"ok\"",
             "fooBar=\"ok\"",
             "Widget",
-            "props",
+            "props: { item: string }",
+            "(",
             "props.item",
             ";\n",
         ]

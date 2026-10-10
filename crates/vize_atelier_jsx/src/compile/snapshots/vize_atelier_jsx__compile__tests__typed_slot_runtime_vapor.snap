@@ -1,0 +1,45 @@
+---
+source: crates/vize_atelier_jsx/src/compile/tests.rs
+expression: packet
+---
+(
+    "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<span> </span>\")\nconst t1 = _template(\"<b> </b>\")\n\nexport function View(_ctx) {\n  const _component_Host = _resolveComponent(\"Host\")\n  const n4 = _createComponentWithFallback(_component_Host, null, {\n    \"named\": (props) => {\n      const n0 = t0()\n      const x0 = _txt(n0)\n      _renderEffect(() => _setText(x0, _toDisplayString(props.value)))\n      return n0\n    },\n    \"other\": (_slotProps0) => {\n      const n2 = t1()\n      const x2 = _txt(n2)\n      _renderEffect(() => _setText(x2, _toDisplayString(_slotProps0.value)))\n      return n2\n    }\n  }, true)\n  return n4\n}\nimport { template as _template } from 'vue';\nconst t0 = _template(\"<div data-v-46cced53><p class=\\\"view\\\">ok</p></div>\", true)\n\nexport function Styled(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+    None,
+    [
+        (
+            Some(
+                "View",
+            ),
+            None,
+            Vapor,
+            "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<span> </span>\")\nconst t1 = _template(\"<b> </b>\")\n\nexport function render(_ctx) {\n  const _component_Host = _resolveComponent(\"Host\")\n  const n4 = _createComponentWithFallback(_component_Host, null, {\n    \"named\": (props) => {\n      const n0 = t0()\n      const x0 = _txt(n0)\n      _renderEffect(() => _setText(x0, _toDisplayString(props.value)))\n      return n0\n    },\n    \"other\": (_slotProps0) => {\n      const n2 = t1()\n      const x2 = _txt(n2)\n      _renderEffect(() => _setText(x2, _toDisplayString(_slotProps0.value)))\n      return n2\n    }\n  }, true)\n  return n4\n}\n",
+            "",
+            None,
+            None,
+            [
+                "<span> </span>",
+                "<b> </b>",
+            ],
+        ),
+        (
+            Some(
+                "Styled",
+            ),
+            None,
+            Vapor,
+            "import { template as _template } from 'vue';\nconst t0 = _template(\"<div data-v-46cced53><p class=\\\"view\\\">ok</p></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+            "",
+            None,
+            Some(
+                ScopedStyle {
+                    scope_id: "data-v-46cced53",
+                    css: ".view[data-v-46cced53]{ color: red; }",
+                },
+            ),
+            [
+                "<div data-v-46cced53><p class=\"view\">ok</p></div>",
+            ],
+        ),
+    ],
+    [],
+)

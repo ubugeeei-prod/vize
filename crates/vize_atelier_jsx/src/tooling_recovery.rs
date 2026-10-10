@@ -20,7 +20,17 @@ pub fn lower_source_for_typecheck<'a>(
     source: &'a str,
     lang: JsxLang,
 ) -> LowerOutput<'a> {
-    let mut output = crate::lower_source(bump, allocator, source, lang);
+    let mut output = crate::lower_source_with_options(
+        bump,
+        allocator,
+        source,
+        lang,
+        crate::LoweringOptions {
+            preserve_slot_parameter_types: true,
+            ..crate::LoweringOptions::default()
+        },
+    )
+    .0;
     if !output.roots.is_empty() || output.diagnostics.is_empty() {
         return output;
     }
@@ -47,7 +57,7 @@ pub fn lower_source_for_typecheck<'a>(
     }
     .visit_program(&mut parsed.program);
     let mapper = SpanMapper::new(source);
-    let mut lowerer = Lowerer::new(bump, &mapper);
+    let mut lowerer = Lowerer::new(bump, &mapper).with_slot_parameter_types(true);
     output.roots = finder::lower_program_roots(&parsed.program, &mut lowerer, JsxOutputMode::Vdom);
     output.analysis = analyze::analyze_program(&parsed.program, source);
     output.diagnostics.extend(lowerer.into_diagnostics());

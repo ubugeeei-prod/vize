@@ -170,7 +170,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         let mut directive =
             DirectiveNode::new(self.bump(), "slot", self.mapper().location(name_span));
         directive.arg = Some(self.static_expr(slot_name, name_span));
-        if let Some(param_span) = slot_fn.param_span {
+        if let Some(param_span) = slot_fn.parameter_span(self.preserve_slot_parameter_types) {
             // The scoped-slot params carry the RAW pattern source (`{ x }`,
             // `item`); `dyn_expr` slices exactly that span.
             directive.exp = Some(self.dyn_expr(param_span));
@@ -192,7 +192,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         let mut directive =
             DirectiveNode::new(self.bump(), "slot", self.mapper().location(name_span));
         directive.arg = Some(self.dyn_expr(name_span));
-        if let Some(param_span) = slot_fn.param_span {
+        if let Some(param_span) = slot_fn.parameter_span(self.preserve_slot_parameter_types) {
             directive.exp = Some(self.dyn_expr(param_span));
         }
         node.props.push(PropNode::Directive(self.boxed(directive)));
@@ -263,13 +263,18 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
 /// A normalized view of a slot function (arrow or `function`).
 pub(crate) struct SlotFn<'o> {
     span: Span,
-    /// Span of the single formal param's binding pattern (scoped slot), if any.
-    param_span: Option<Span>,
+    /// Binding pattern and full OXC formal parameter (including authored types).
+    param_spans: Option<(Span, Span)>,
     /// The JSX expression returned by the function body, if reachable.
     return_expr: Option<&'o Expression<'o>>,
 }
 
 impl<'o> SlotFn<'o> {
+    fn parameter_span(&self, preserve_types: bool) -> Option<Span> {
+        self.param_spans
+            .map(|(pattern, formal)| if preserve_types { formal } else { pattern })
+    }
+
     fn from_value(value: &'o Expression<'o>) -> Option<Self> {
         match value.get_inner_expression() {
             Expression::ArrowFunctionExpression(arrow) => Some(arrow.as_ref().into()),
@@ -283,7 +288,7 @@ impl<'o> From<&'o ArrowFunctionExpression<'o>> for SlotFn<'o> {
     fn from(arrow: &'o ArrowFunctionExpression<'o>) -> Self {
         SlotFn {
             span: arrow.span,
-            param_span: single_param_span(arrow.params.items.as_slice()),
+            param_spans: single_param_spans(arrow.params.items.as_slice()),
             return_expr: arrow_return_expr(arrow),
         }
     }
@@ -293,16 +298,16 @@ impl<'o> From<&'o Function<'o>> for SlotFn<'o> {
     fn from(func: &'o Function<'o>) -> Self {
         SlotFn {
             span: func.span,
-            param_span: single_param_span(func.params.items.as_slice()),
+            param_spans: single_param_spans(func.params.items.as_slice()),
             return_expr: func.body.as_ref().and_then(|body| block_return_expr(body)),
         }
     }
 }
 
-/// The binding-pattern span when a function has exactly one formal parameter.
-fn single_param_span(items: &[oxc_ast::ast::FormalParameter<'_>]) -> Option<Span> {
+/// Retain actual OXC spans when a function has exactly one formal parameter.
+fn single_param_spans(items: &[oxc_ast::ast::FormalParameter<'_>]) -> Option<(Span, Span)> {
     match items {
-        [only] => Some(only.pattern.span()),
+        [only] => Some((only.pattern.span(), only.span)),
         _ => None,
     }
 }

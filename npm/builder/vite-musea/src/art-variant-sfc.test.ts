@@ -2,7 +2,35 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { buildVariantSfcSource, compileVariantSfc } from "./art-variant-sfc.js";
+import { readFileSync } from "node:fs";
+import { loadNative } from "./native-loader.ts";
 import type { ArtFileInfo } from "./types/index.js";
+
+void test("native inline Art Self retains the imported host component", () => {
+  const fixture = JSON.parse(
+    readFileSync(
+      new URL(
+        "../../../../tests/_fixtures/differential/musea/inline-self-binding.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ) as { filename: string; source: string; template: string; variant: string };
+  const parsed = loadNative().parseArt(fixture.source, { filename: fixture.filename });
+  assert.equal(parsed.variants[0].template, fixture.template);
+  const art = artFile({
+    path: fixture.filename,
+    componentPath: fixture.filename,
+    isInline: true,
+    scriptSetupContent: undefined,
+    hasScriptSetup: false,
+    variants: parsed.variants,
+  });
+  const result = compileVariantSfc(art, fixture.template, fixture.variant, fixture.filename);
+  assert.deepEqual(result.errors, []);
+  assert.match(result.code, /import MuseaComponent from "\/project\/Button\.vue"/u);
+  assert.doesNotMatch(result.code, /_resolveComponent\("MuseaComponent"\)/u);
+});
 
 const scriptSetup = [
   "import { ref } from 'vue'",

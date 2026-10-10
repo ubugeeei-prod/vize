@@ -3,6 +3,19 @@ description: Capture whole original SFC components and compare pinned Vue click 
 runs:
   using: composite
   steps:
+    - name: Qualify fresh completed lower File static class modules in both runtime modes
+      shell: bash
+      env:
+        VIZE_L4_DOM_STATIC_CLASS_CAPTURE: ${{ runner.temp }}/native-dom-static-class.json
+        VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE: ${{ runner.temp }}/native-dom-static-class-runtime
+        VIZE_L4_DOM_STATIC_CLASS_REQUIRE_CAPTURE: "1"
+      run: |
+        cargo test --locked --profile ci -p vize_l4 --test native_dom_static_class -- --nocapture
+        NODE_ENV=development vp node --test tests/tooling/native-dom-static-class-reference.test.ts
+        NODE_ENV=production vp node --test tests/tooling/native-dom-static-class-reference.test.ts
+        test -s "$VIZE_L4_DOM_STATIC_CLASS_CAPTURE"
+        test -s "${VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE}.development.json"
+        test -s "${VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE}.production.json"
     - name: Capture and execute source-built selected SFC components
       shell: bash
       env:
@@ -77,6 +90,9 @@ runs:
       with:
         name: native-selected-sfc-dom-${{ github.sha }}-${{ github.run_attempt }}
         path: |
+          ${{ runner.temp }}/native-dom-static-class.json
+          ${{ runner.temp }}/native-dom-static-class-runtime.development.json
+          ${{ runner.temp }}/native-dom-static-class-runtime.production.json
           ${{ runner.temp }}/native-selected-sfc-dom-capture.json
           ${{ runner.temp }}/native-selected-sfc-dom-runtime.json
           ${{ runner.temp }}/native-selected-setup-sfc-dom-capture.json
