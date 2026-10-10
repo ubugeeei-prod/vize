@@ -2,7 +2,8 @@
 //!
 //! Ordering/defaults follow OXC's MIT-licensed `apps/oxlint/src/{lint,walk}.rs`
 //! and `crates/oxc_config/src/walk.rs` at c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd
-//! (1.78.0) and 2ae2939bb2fd98796393658b21556b2a2467e047 (1.86.0).
+//! (1.78.0), 0b4e2e67f4193e7ebfcc64982275eb583ae82c83 (1.81.0), and
+//! 2ae2939bb2fd98796393658b21556b2a2467e047 (1.86.0).
 //! Upstream copyright and permission notice: `oxlint_html_profile/OXC_LICENSE`.
 //! Matching is performed by the same locked ignore 0.4.33, not copied glob logic.
 //! Sorted paths are this internal contract, not Oxlint's parallel report order.
@@ -19,6 +20,7 @@ mod tests;
 #[cfg_attr(test, derive(serde::Serialize))]
 pub(crate) enum HostProfile {
     Oxlint178,
+    Oxlint181,
     Oxlint186,
 }
 
@@ -81,6 +83,10 @@ pub(crate) struct SourceCustody {
 #[cfg_attr(test, derive(serde::Serialize))]
 pub(crate) struct Selection {
     pub host: HostProfile,
+    /// The exact 1.81 walker also admits targets outside a VCS boundary.
+    /// Keep the original 1.78/1.86 complete serialized packets unchanged.
+    #[cfg_attr(test, serde(skip))]
+    pub has_vcs_boundary: bool,
     pub cwd: PathBuf,
     pub literal_target: String,
     pub target: PathBuf,
@@ -149,7 +155,8 @@ impl Refusal {
     }
 }
 
-/// One existing literal target, explicit regular JSON in cwd, regular Git marker.
+/// One existing literal target and explicit regular JSON in cwd. The 1.78/1.86
+/// profiles require a regular Git marker; 1.81 also owns the no-VCS parent chain.
 /// No config discovery, inherited/override configs, symlinks, linked/JJ/nested
 /// repositories, outside-cwd roots, non-POSIX/non-UTF8 paths, or wildcard targets.
 /// This returns HTML custody only; it does not produce any lint diagnostic packet.
@@ -175,6 +182,7 @@ pub(crate) fn select_with_root_decoder<T>(
     let admitted = envelope::admit(&request)?;
     let mut selection = Selection {
         host: request.host,
+        has_vcs_boundary: admitted.has_vcs_boundary,
         cwd: request.cwd.to_path_buf(),
         literal_target: request.literal_target.to_compact_string(),
         target: admitted.target.clone(),

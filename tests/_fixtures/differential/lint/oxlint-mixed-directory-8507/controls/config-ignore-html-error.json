@@ -1,0 +1,13 @@
+{
+  "plugins": ["vue"],
+  "jsPlugins": ["oxlint-plugin-vize"],
+  "settings": {
+    "vize": {
+      "preset": "recommended"
+    }
+  },
+  "ignorePatterns": ["**/*.html"],
+  "rules": {
+    "vize/vue/no-duplicate-attributes": "error"
+  }
+}
