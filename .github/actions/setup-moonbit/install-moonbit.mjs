@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import process from "node:process";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
@@ -44,6 +44,77 @@ function run(command, args, env) {
 
   if ((result.status ?? 1) !== 0) {
     process.exit(result.status ?? 1);
+  }
+}
+
+async function updateRegistry(command, args, env) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const stderr = [];
+    const stderrWrites = [];
+    const result = await new Promise((resolve) => {
+      let error;
+      const child = spawn(command, args, { stdio: ["inherit", "inherit", "pipe"], env });
+      child.stderr?.on("data", (chunk) => {
+        // Keep every attempt's original bytes in the Actions log while retaining
+        // stderr only to recognize the specific registry Git transport failure.
+        stderrWrites.push(new Promise((resolve) => process.stderr.write(chunk, resolve)));
+        stderr.push(chunk);
+      });
+      child.once("error", (cause) => {
+        error = cause;
+        console.error(`MoonBit registry update failed to start: ${cause.message}`);
+      });
+      child.once("close", (status, signal) => resolve({ status, signal, error }));
+    });
+    // A closed child does not imply that the parent's piped stderr is drained.
+    await Promise.all(stderrWrites);
+    if (result.status === 0) {
+      return;
+    }
+
+    const text = Buffer.concat(stderr).toString("utf8");
+    // This private helper is used only by the validated cold-install moon update.
+    // RPC errors omit the URL; their complete Moon/Git failure profile is bound
+    // to that same pinned executable and registry operation by the sole caller.
+    const registryGitFailure =
+      /^Error: update failed\s*$/m.test(text) &&
+      /^\s*\d+: failed to (?:clone|fetch) registry index\s*$/m.test(text) &&
+      /^\s*\d+: non-zero exit code: exit status: 128\s*$/m.test(text) &&
+      /^\s*git stderr:\s*$/m.test(text);
+    const exactUrlFailure =
+      /^\s*fatal: unable to access 'https:\/\/mooncakes\.io\/git\/index\/': The requested URL returned error: (?:502|503|504)\s*$/m.test(
+        text,
+      );
+    const registryRpcFailure =
+      result.status === 255 &&
+      /^\s*error: RPC failed; HTTP (502|503|504) curl 22 The requested URL returned error: \1\s*$/m.test(
+        text,
+      ) &&
+      /^\s*fatal: expected 'packfile'\s*$/m.test(text) &&
+      text.split(/\r?\n/).some((line) => {
+        const destination = path.join(env.MOON_HOME, "registry", "index");
+        return (
+          line.trim() === `Cloning into '${destination}'...` ||
+          line.trim() === `Cloning into '${destination.replaceAll("\\", "/")}'...`
+        );
+      });
+    const transientTransport =
+      registryGitFailure &&
+      (exactUrlFailure || registryRpcFailure) &&
+      !/authentication|could not read username|permission denied|unauthorized|forbidden|certificate|validation|invalid|hash mismatch|version mismatch|compil|failed to (?:verify|validate)/i.test(
+        text,
+      ) &&
+      !/The requested URL returned error: (?!(?:502|503|504)\b)\d+/.test(text) &&
+      !/fatal: unable to access '(?!https:\/\/mooncakes\.io\/git\/index\/')[^']+'/.test(text);
+    if (result.error || result.signal || !transientTransport || attempt === 3) {
+      process.exit(result.error ? 1 : (result.status ?? 1));
+    }
+
+    const delay = attempt * 1000;
+    console.warn(
+      `MoonBit registry update transport failed (attempt ${attempt}/3, exit ${result.status}); retrying in ${delay}ms`,
+    );
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
 }
 
@@ -251,7 +322,7 @@ if (!hasExistingMoonInstall()) {
     process.exit(1);
   }
 
-  run(moonExe, ["update"], {
+  await updateRegistry(moonExe, ["update"], {
     ...process.env,
     MOON_HOME: moonHome,
     PATH: `${moonBin}${path.delimiter}${process.env.PATH ?? ""}`,

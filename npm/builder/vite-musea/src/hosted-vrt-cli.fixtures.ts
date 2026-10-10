@@ -71,6 +71,15 @@ export async function proveCompiledSession(
       });
     });
     clearTimeout(timer);
+    assert.ok(
+      stdout
+        .split("\n")
+        .includes(
+          "  This session token is a live credential; do not share it or retain it in captured logs.",
+        ),
+      "Compiled CLI must explain the printed session token credential",
+    );
+    receipt.tokenPrivacyNotice = true;
     const actual = await fetch(`${endpoint}/session`, {
       headers: { Origin: host.origin, Authorization: `Bearer ${token}` },
       signal: AbortSignal.timeout(30000),

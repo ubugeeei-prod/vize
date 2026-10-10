@@ -1,0 +1,146 @@
+[
+  {
+    "name": "original compact unchanged",
+    "expected": {
+      "title": "Compact Probe",
+      "componentTagName": "CompactProbe",
+      "controls": [
+        {
+          "name": "label",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "constructor",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "hasOwnProperty",
+          "control": "text",
+          "required": false,
+          "options": []
+        }
+      ],
+      "groups": [],
+      "json": "{\n  \"title\": \"Compact Probe\",\n  \"controls\": [\n    {\n      \"name\": \"label\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"constructor\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"hasOwnProperty\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    }\n  ]\n}",
+      "typescript": "export interface CompactProbeProps {\n  label?: string;\n  constructor?: string;\n  hasOwnProperty?: string;\n}\n"
+    }
+  },
+  {
+    "name": "original multiline unchanged",
+    "expected": {
+      "title": "Compact Probe",
+      "componentTagName": "CompactProbe",
+      "controls": [
+        {
+          "name": "label",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "constructor",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "hasOwnProperty",
+          "control": "text",
+          "required": false,
+          "options": []
+        }
+      ],
+      "groups": [],
+      "json": "{\n  \"title\": \"Compact Probe\",\n  \"controls\": [\n    {\n      \"name\": \"label\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"constructor\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"hasOwnProperty\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    }\n  ]\n}",
+      "typescript": "export interface CompactProbeProps {\n  label?: string;\n  constructor?: string;\n  hasOwnProperty?: string;\n}\n"
+    }
+  },
+  {
+    "name": "literal compact",
+    "expected": {
+      "title": "Compact Probe",
+      "componentTagName": "CompactProbe",
+      "controls": [
+        {
+          "name": "label",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "scope.name",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "__proto__",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "constructor",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "hasOwnProperty",
+          "control": "text",
+          "required": false,
+          "options": []
+        }
+      ],
+      "groups": [],
+      "json": "{\n  \"title\": \"Compact Probe\",\n  \"controls\": [\n    {\n      \"name\": \"label\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"scope.name\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"__proto__\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"constructor\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"hasOwnProperty\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    }\n  ]\n}",
+      "typescript": "export interface CompactProbeProps {\n  label?: string;\n  \"scope.name\"?: string;\n  __proto__?: string;\n  constructor?: string;\n  hasOwnProperty?: string;\n}\n"
+    }
+  },
+  {
+    "name": "literal multiline",
+    "expected": {
+      "title": "Compact Probe",
+      "componentTagName": "CompactProbe",
+      "controls": [
+        {
+          "name": "label",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "scope.name",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "__proto__",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "constructor",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "hasOwnProperty",
+          "control": "text",
+          "required": false,
+          "options": []
+        }
+      ],
+      "groups": [],
+      "json": "{\n  \"title\": \"Compact Probe\",\n  \"controls\": [\n    {\n      \"name\": \"label\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"scope.name\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"__proto__\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"constructor\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"hasOwnProperty\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    }\n  ]\n}",
+      "typescript": "export interface CompactProbeProps {\n  label?: string;\n  \"scope.name\"?: string;\n  __proto__?: string;\n  constructor?: string;\n  hasOwnProperty?: string;\n}\n"
+    }
+  }
+]

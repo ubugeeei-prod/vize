@@ -164,6 +164,9 @@ export async function startHostedVrtSession(options: CliOptions, certificateSpki
 
 export async function runServe(options: CliOptions): Promise<void> {
   const session = await startHostedVrtSession(options);
+  console.log(
+    "  This session token is a live credential; do not share it or retain it in captured logs.",
+  );
   console.log(`  VRT endpoint: ${session.endpoint}\n  Session token: ${session.token}\n`);
   const stop = () => {
     void session.close().then(

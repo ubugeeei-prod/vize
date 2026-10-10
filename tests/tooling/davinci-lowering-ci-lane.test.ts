@@ -51,7 +51,19 @@ test("feature-gated L1-to-L2 corpus lanes run in scheduled and manual Check", ()
   );
   assert.doesNotMatch(testReportJob, /- clippy-and-test\b/);
   assert.match(clippyJob, /uses: \.\/\.github\/actions\/test-rust-workspace-differential/);
-  assert.match(recipe, /run: cargo test --workspace/);
+  assert.match(recipe, /run: node tools\/support\/compat\/github\/run-rust-workspace-tests\.mjs/);
+  const workspaceRunner = readRepoFile(
+    "tools",
+    "support",
+    "compat",
+    "github",
+    "run-rust-workspace-tests.mjs",
+  );
+  assert.match(
+    workspaceRunner,
+    /"nextest",\s*"run",\s*"--locked",\s*"--workspace",\s*"--profile",\s*"full"/,
+  );
+  assert.match(workspaceRunner, /"test", "--locked", "--workspace", "--doc"/);
   assert.ok(
     recipe.includes(s1ToL2LoweringCorpusCommand),
     "the feature-gated lowering corpus entry must run explicitly after cargo test --workspace",
