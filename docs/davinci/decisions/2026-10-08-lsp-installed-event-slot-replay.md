@@ -162,3 +162,35 @@ provenance signature verification was not performed. Fresh exact-head Actions
 and actual protected merge remain required for these bounded PR slices. The
 additional14 and complete-batch acceptance TODOs above remain explicit, and the
 broader #3952 roadmap remains open.
+
+## Actual public 0.440.0 successor
+
+A fresh official public four-package installation after successful Release
+`38026960473` completed the unchanged original32 alias and original60 event/slot
+contracts with terminal exit 0. C is
+`e5702be6d0119a716499827fa7b918ce8c9dcbae`, H is
+`bf2cd911c268605588b2ceedbc011e36c79d113c`, source PR is #8401 and annotated tag
+`e6a4a955e5374e5748157dc261208e49747d10b2` points to H. The receipt SHA256 is
+`ad20350f3e7e9d644e311abba179c6f7f61fa0cef8e9a3a9655cfb017fb35ce3`.
+Approved collector snapshot SHA256 is
+`a26411442a3fde2590d969160fd83b97685e9019d2de4decb0c103a376f10786`.
+Both immutable C/H genuinely include signed #8262 source delivery. Runner
+`076fa3f25adf2feb249bdbdff3aa16d3f9e9dfa0` is separately authenticated;
+its complete static module closure is retained as tooling, not released source.
+
+The actual native original-loader return, automatic public bundled Corsa 7.0.2,
+all 202 ordinary installed files, whole lock and the separate unchanged original
+Vue fixture were rechecked before and after every session and after all92. Earlier
+Vue fixture preparation is not relabeled as this new Vize install. The terminal
+stdout/stderr, full JSON-RPC/native journals and final audit are retained.
+Registry integrity and provenance payload binding were checked; cryptographic
+signature verification was not performed. Source/protected delivery of the
+remaining #8301 evidence successor requires fresh exact-head Actions after genuine
+restacking onto actual main. The additional14 and complete-batch obligations,
+broader #3952 and the 10x performance target remain unfinished.
+
+The [complete installed60 record](../../../tests/_fixtures/differential/lsp/event-rename/8010/supplemental/public-0.440.0-event-slot60/README.md)
+has archive SHA256
+`98b93a8d4a0462168e97fc8e925f65e803c256fda528beb144582d88f492a2a9`
+and whole raw receipt SHA256
+`519f04adf7e2e392b848d1c2961d2fe42aef75e56d9e106ff67d07b539039237`.
