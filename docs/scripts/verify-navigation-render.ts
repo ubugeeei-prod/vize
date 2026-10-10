@@ -16,6 +16,7 @@ import {
   verifyThemeReadability,
   switchDocsTheme,
 } from "./theme-render-assertions.ts";
+import { verifyCommandTabs } from "./command-tab-render-assertions.ts";
 
 type FontUsage = { familyName: string; glyphCount: number };
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -94,10 +95,16 @@ const pages = [
 ];
 const routes = values.routes?.split(",") ?? [
   ...pages.flatMap((route) => [route, `/ja${route}`]),
+<<<<<<< HEAD
   ...["", "/ja", "/zh-CN", "/pt-BR", "/fr"].flatMap((locale) => [
     `${locale}/philosophy`,
     `${locale}/guide/content-mapper`,
   ]),
+=======
+  "/zh-CN/getting-started",
+  "/pt-BR/getting-started",
+  "/fr/getting-started",
+>>>>>>> 4a17da1bab (feat(docs): add accessible package manager command tabs)
 ];
 const types: Record<string, string> = {
   ".html": "text/html",
@@ -213,6 +220,7 @@ try {
       await verifySidebarMotion(page, device);
       const codeContrast = await verifyThemeReadability(page);
       const rulePackets = await verifyRenderedRulePackets(page, route);
+      await verifyCommandTabs(page, route);
       assert(metrics.bodyWidth <= viewport.width + 1, `${route}: page overflows viewport`);
       assert.equal(pageErrors.length, 0, pageErrors.join("\n"));
       const sidebar = page.locator(".sidebar");

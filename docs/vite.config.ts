@@ -18,6 +18,7 @@ const themeCss = [
   "entry-layout.css",
   "features.css",
   "code-annotations.css",
+  "command-tabs.css",
   "i18n/locale-selector.css",
 ]
   .map((file) => readFileSync(resolve(themeDir, file), "utf-8"))

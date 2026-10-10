@@ -98,6 +98,8 @@ void test("theme scripts load the sitemap and every locale before navigation", (
     "syntax-highlight-languages",
     "syntax-highlight-core",
     "syntax-highlight",
+    "command-variants",
+    "command-tabs",
   ]);
 
   // A locale file that exists but is never concatenated would leave the
