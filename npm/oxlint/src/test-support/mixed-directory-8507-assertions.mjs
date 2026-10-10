@@ -89,6 +89,23 @@ export function expectedRow(finding, cwd) {
   };
 }
 
+export function expectedStockVueRow(finding, cwd) {
+  // Stock 1.81 extracts the script and cannot map this template diagnostic.
+  // plugin.ts uses [1, 1]; oxc_linter restores its trimmed LF, then the Vue
+  // loader restores the script body's physical offset (24 + 1 + 1 = 26).
+  const source = fs.readFileSync(path.join(cwd, finding.path));
+  assert.ok(finding.path.endsWith(".vue"));
+  assert.ok(source.subarray(0, 25).equals(Buffer.from('<script setup lang="ts">\n')));
+  assert.ok(finding.start > source.indexOf(Buffer.from("</script>")));
+  const original = expectedRow(finding, cwd);
+  const span = original.labels[0].span;
+  return {
+    ...original,
+    message: `${finding.message} (at <template>:${span.line}:${span.column})\n    Help:\n      ${finding.help}`,
+    labels: [{ span: { offset: 26, length: 0, line: 2, column: 2 } }],
+  };
+}
+
 export function judgeCli(fixture, format, record, cwd, engine) {
   const stdout = Buffer.from(record.stdoutBytes).toString("utf8");
   assert.equal(record.status, fixture.expectedExit, stdout + Buffer.from(record.stderrBytes));

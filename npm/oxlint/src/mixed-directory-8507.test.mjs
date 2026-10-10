@@ -16,7 +16,7 @@ import { presentationInputs } from "./cli/presentation-context.ts";
 import {
   authorities,
   assertEvents,
-  expectedRow,
+  expectedStockVueRow,
   judgeCli,
   judgeNative,
 } from "./test-support/mixed-directory-8507-assertions.mjs";
@@ -282,7 +282,7 @@ try {
           if (format === "json")
             assert.deepEqual(
               JSON.parse(Buffer.from(stock.stdoutBytes).toString("utf8")).diagnostics,
-              vue.map((finding) => expectedRow(finding, cwd)),
+              vue.map((finding) => expectedStockVueRow(finding, cwd)),
             );
           const record = observe(wrapper, argv, cwd, workspace, fixture.name, format, "wrapper");
           judgeCli(fixture, format, record, cwd, engine);

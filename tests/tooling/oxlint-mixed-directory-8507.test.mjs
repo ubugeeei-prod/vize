@@ -1,14 +1,19 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  expectedRow,
+  expectedStockVueRow,
+} from "../../npm/oxlint/src/test-support/mixed-directory-8507-assertions.mjs";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const corpus = path.join(root, "tests/_fixtures/differential/lint/oxlint-mixed-directory-8507");
 const read = (file) => fs.readFileSync(path.join(corpus, file), "utf8");
 
-test("the complete reporter files retain their original no-Git reproduction", () => {
+await test("the complete reporter files retain their original no-Git reproduction", () => {
   const issue = JSON.parse(read("issue.json"));
   assert.equal(read("issue.md"), issue.body);
   assert.equal(issue.number, 8507);
@@ -29,7 +34,7 @@ test("the complete reporter files retain their original no-Git reproduction", ()
   assert.equal(JSON.parse(read("controls.json")).gitInit, false);
 });
 
-test("the exact 1.81 source ledger covers all fourteen pinned original renderer files", () => {
+await test("the exact 1.81 source ledger covers all fourteen pinned original renderer files", () => {
   const evidence = JSON.parse(
     fs.readFileSync(path.join(root, "docs/acceptance/oxlint-181-capability-source.json")),
   );
@@ -49,4 +54,33 @@ test("the exact 1.81 source ledger covers all fourteen pinned original renderer 
     ),
     pinned.files,
   );
+});
+
+await test("stock's extracted-script fallback preserves the distinct authored Vue location", () => {
+  const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-stock-vue-8507-"));
+  try {
+    fs.mkdirSync(path.join(cwd, "app"));
+    fs.copyFileSync(path.join(corpus, "controls/App-error.vue"), path.join(cwd, "app/App.vue"));
+    fs.copyFileSync(path.join(corpus, "app/index.html"), path.join(cwd, "app/index.html"));
+    const finding = JSON.parse(read("controls.json")).cases.find(
+      (fixture) => fixture.name === "mixed-directory-keeps-vue-error",
+    ).expectedDiagnostics[0];
+    const original = expectedRow(finding, cwd);
+    assert.deepEqual(original, {
+      message: "Duplicate attribute 'id'\n    Help:\n      Remove the duplicate attribute",
+      code: "vize(vue/no-duplicate-attributes)",
+      severity: "error",
+      filename: "app/App.vue",
+      labels: [{ span: { offset: 80, length: 11, line: 6, column: 17 } }],
+    });
+    assert.deepEqual(expectedStockVueRow(finding, cwd), {
+      ...original,
+      message:
+        "Duplicate attribute 'id' (at <template>:6:17)\n    Help:\n      Remove the duplicate attribute",
+      labels: [{ span: { offset: 26, length: 0, line: 2, column: 2 } }],
+    });
+    assert.throws(() => expectedStockVueRow({ ...finding, path: "app/index.html" }, cwd));
+  } finally {
+    fs.rmSync(cwd, { recursive: true, force: true });
+  }
 });

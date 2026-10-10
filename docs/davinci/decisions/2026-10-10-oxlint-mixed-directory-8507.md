@@ -49,6 +49,24 @@ the two newly authored Vue fixture paths (498 to 500), with all 151 remarks and
 zero remark changes preserved; register only those sorted paths. Original
 inputs, reports, counts, timeouts and every prior corpus assertion remain fixed.
 
+The 2bc source attempt reaches the new cases and retains 22 passing wrapper
+invocations before its stock JSON comparison fails. That new stock oracle
+incorrectly expected the wrapper's authored template span. Stock 1.81 extracts
+the script: the existing plugin's unmappable-template fallback is `[1, 1]`,
+the pinned linter restores its trimmed LF, and the Vue sub-host restores the
+script body's physical offset. The independently source-derived stock row is
+offset 26, length 0, line 2, column 2, with `(at <template>:6:17)` in the message.
+Keep its complete row separate from the unchanged native/wrapper span 80–91;
+an original-source contrast law covers both. The two new early source tests
+also need awaited completion under the existing zero-warning lint gate.
+Whole failed packets remain historical evidence; fresh Actions are required.
+
+Compose the successor once onto actual signed main `85d5068`, which delivers
+the parallel host recipe. Run the same bounded 1.81 source/history qualification
+once after native staging, before baseline preparation and the existing host
+workers; retain its result and walltime separately. All incoming workers and
+their complete original transport controls remain unchanged.
+
 No regression campaign has completed. Require fresh exact-head
 Actions and protected actual merge, then the first genuinely included published
 release and its official installed consumer replay before closing #8507. The
