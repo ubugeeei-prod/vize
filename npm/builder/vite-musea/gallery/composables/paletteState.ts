@@ -83,17 +83,11 @@ export function restorePaletteState(
   }
 
   const allowedNames = new Set([...paletteNames, ...customNames]);
-  const restoredValues = initialPaletteValues(controls);
-
-  for (const customProp of customProps) {
-    restoredValues[customProp.name] = customProp.default_value;
-  }
-
-  for (const [name, value] of Object.entries(saved.values)) {
-    if (allowedNames.has(name)) {
-      restoredValues[name] = value;
-    }
-  }
+  const restoredValues = Object.fromEntries([
+    ...Object.entries(initialPaletteValues(controls)),
+    ...customProps.map((prop) => [prop.name, prop.default_value]),
+    ...Object.entries(saved.values).filter(([name]) => allowedNames.has(name)),
+  ]);
 
   return {
     values: restoredValues,
@@ -138,12 +132,12 @@ export function clearSavedPaletteState(artPath: string): void {
 }
 
 export function initialPaletteValues(controls: PaletteControl[]): Record<string, unknown> {
-  const initial: Record<string, unknown> = {};
-  for (const control of controls) {
-    initial[control.name] =
-      control.default_value !== undefined ? control.default_value : fallbackValue(control);
-  }
-  return initial;
+  return Object.fromEntries(
+    controls.map((control) => [
+      control.name,
+      control.default_value !== undefined ? control.default_value : fallbackValue(control),
+    ]),
+  );
 }
 
 function getPaletteStateStorage(): Storage | null {

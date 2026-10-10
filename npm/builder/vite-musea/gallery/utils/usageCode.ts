@@ -1,12 +1,25 @@
 export function usagePropsAttributes(values: Record<string, unknown>): string {
-  return Object.entries(values)
-    .filter(([, value]) => value !== undefined)
-    .map(([name, value]) => {
-      if (typeof value === "boolean") return value ? ` ${name}` : ` :${name}="false"`;
-      if (typeof value === "string") return ` ${name}="${escapeAttribute(value)}"`;
-      return ` :${name}="${escapeAttribute(usageExpression(value))}"`;
-    })
-    .join("");
+  const attributes: string[] = [];
+  const bindings: Array<[string, unknown]> = [];
+  // Combining an own __proto__ binding with attributes invokes Vue's mergeProps
+  // assignment path. A single object binding keeps it an own key for Vue to handle.
+  const bindAll = Object.hasOwn(values, "__proto__") && values.__proto__ !== undefined;
+  for (const [name, value] of Object.entries(values)) {
+    if (value === undefined) continue;
+    if (bindAll || !/^[A-Za-z_][A-Za-z0-9_-]*$/.test(name) || name.startsWith("v-")) {
+      bindings.push([name, value]);
+    } else if (typeof value === "boolean") {
+      attributes.push(value ? ` ${name}` : ` :${name}="false"`);
+    } else if (typeof value === "string") {
+      attributes.push(` ${name}="${escapeAttribute(value)}"`);
+    } else {
+      attributes.push(` :${name}="${escapeAttribute(usageExpression(value))}"`);
+    }
+  }
+  if (bindings.length > 0) {
+    attributes.push(` v-bind="${escapeAttribute(usageExpression(Object.fromEntries(bindings)))}"`);
+  }
+  return attributes.join("");
 }
 
 function escapeAttribute(value: string): string {

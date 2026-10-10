@@ -1,0 +1,20 @@
+{
+  "values": {
+    "unsafe name": "quoted \"value\" & <ready>",
+    "dotted.name": 42,
+    "quote\"key": { "enabled": false },
+    "v-if": "false",
+    "@event": null,
+    ":handler": [1, "two"],
+    "__proto__": { "retained": true }
+  },
+  "props": {
+    "unsafe name": "quoted \"value\" & <ready>",
+    "dotted.name": 42,
+    "quote\"key": { "enabled": false },
+    "vIf": "false",
+    "@event": null,
+    ":handler": [1, "two"]
+  },
+  "attrs": {}
+}

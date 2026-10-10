@@ -6,9 +6,12 @@ export async function assertUsageProps(
   template: string,
   expected: Record<string, unknown>,
   componentName = "Probe",
+  expectedAttrs?: Record<string, unknown>,
 ) {
   let received: Record<string, unknown> | undefined;
+  let receivedAttrs: Record<string, unknown> | undefined;
   const Probe = defineComponent({
+    inheritAttrs: expectedAttrs === undefined,
     props: Object.fromEntries(
       Object.entries(expected).map(([name, value]) => [
         name,
@@ -19,8 +22,9 @@ export async function assertUsageProps(
             : {},
       ]),
     ),
-    setup(props) {
+    setup(props, { attrs }) {
       received = { ...props };
+      receivedAttrs = { ...attrs };
       return () => h("span", "Rendered props");
     },
   });
@@ -30,5 +34,6 @@ export async function assertUsageProps(
   });
   assert.equal(await renderToString(app), "<span>Rendered props</span>");
   assert.deepEqual(received, expected);
+  assert.deepEqual(receivedAttrs, expectedAttrs ?? {});
   return received;
 }
