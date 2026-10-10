@@ -47,6 +47,8 @@ predicates and unmatched neighbors, eight complete JSX/TSX fallback packets,
 explicit Nuxt mode, and rule selection.
 The original #7979 fixture bytes remain unchanged; its positive Router case
 now explicitly selects the global it previously assumed.
+The repository gallery now explicitly imports its existing Vue Router components;
+all template bytes and the oversized component line counts remain unchanged.
 
 CLI and per-document LSP transfer must derive the matcher from the already
 loaded `ConfigDocument` snapshot using
