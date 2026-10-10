@@ -1,0 +1,22 @@
+[
+  {
+    "name": "optional-boolean-and-nested-write",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ params: { value: string }; note?: string; flag?: boolean }>();\n</script>\n<template>{{ props.params.value = 'changed' }} {{ props.flag }} {{ props.note }}</template>\n",
+    "signature": "const props: {\n    readonly params: {\n        value: string;\n    };\n    readonly note?: string;\n    readonly flag: boolean;\n}"
+  },
+  {
+    "name": "defaulted-fields",
+    "source": "<script setup lang=\"ts\">\nconst props = withDefaults(defineProps<{ params: { value: string }; note?: string; flag?: boolean }>(), { note: 'default', flag: false });\n</script>\n<template>{{ props.params.value }} {{ props.note.toUpperCase() }} {{ props.flag }}</template>\n",
+    "signature": "const props: {\n    readonly params: {\n        value: string;\n    };\n    readonly note: string;\n    readonly flag: boolean;\n}"
+  },
+  {
+    "name": "discriminated-union",
+    "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ kind: \"text\"; value: string } | { kind: \"count\"; value: number }>();\n</script>\n<template><span v-if=\"props.kind === 'text'\">{{ props.value.toUpperCase() }}</span><span v-else>{{ props.value.toFixed() }}</span></template>\n",
+    "signature": "const props: {\n    readonly kind: \"text\";\n    readonly value: string;\n} | {\n    readonly kind: \"count\";\n    readonly value: number;\n}"
+  },
+  {
+    "name": "unconcretized-generic",
+    "source": "<script setup lang=\"ts\" generic=\"T extends { id: string }\">\nconst props = defineProps<{ items: T[]; selected?: T }>();\n</script>\n<template>{{ props.items.map(item => item.id) }} {{ props.selected?.id }}</template>\n",
+    "signature": "const props: __DefineProps<__VizeSetupProps, [Exclude<T, undefined>] extends [never] ? never : [Exclude<T, undefined>] extends [boolean] ? \"selected\" : never>"
+  }
+]

@@ -1,0 +1,197 @@
+{
+  "templateBinding": {
+    "file": "packages/frontend/editor-ui/src/features/core/dataTable/components/dataGrid/NullEmptyCellRenderer.vue",
+    "symbol": "props",
+    "usageAnchor": "{{ props.params.value }}",
+    "declarationAnchor": "const props =",
+    "hoverContains": ["const props:", "value: string"],
+    "renameTo": "__vizeRenamedProps"
+  },
+  "componentBoundary": {
+    "importerFile": "packages/frontend/editor-ui/src/features/ndv/runData/components/RunData.vue",
+    "componentFile": "packages/frontend/editor-ui/src/features/ndv/runData/components/RunDataItemCount.vue",
+    "tagName": "RunDataItemCount",
+    "tagAnchor": "<RunDataItemCount ",
+    "completionItemCount": 41,
+    "completionItems": [
+      {
+        "label": "v-if",
+        "rank": 0
+      },
+      {
+        "label": "v-else-if",
+        "rank": 1
+      },
+      {
+        "label": "v-else",
+        "rank": 2
+      },
+      {
+        "label": "v-for",
+        "rank": 3
+      },
+      {
+        "label": "v-on",
+        "rank": 4
+      },
+      {
+        "label": "v-bind",
+        "rank": 5
+      },
+      {
+        "label": "v-model",
+        "rank": 6
+      },
+      {
+        "label": "v-slot",
+        "rank": 7
+      },
+      {
+        "label": "v-show",
+        "rank": 8
+      },
+      {
+        "label": "v-pre",
+        "rank": 9
+      },
+      {
+        "label": "v-once",
+        "rank": 10
+      },
+      {
+        "label": "v-memo",
+        "rank": 11
+      },
+      {
+        "label": "v-cloak",
+        "rank": 12
+      },
+      {
+        "label": "v-text",
+        "rank": 13
+      },
+      {
+        "label": "v-html",
+        "rank": 14
+      },
+      {
+        "label": "@",
+        "rank": 15
+      },
+      {
+        "label": ":",
+        "rank": 16
+      },
+      {
+        "label": "#",
+        "rank": 17
+      },
+      {
+        "label": "@click",
+        "rank": 18
+      },
+      {
+        "label": "@input",
+        "rank": 19
+      },
+      {
+        "label": "@change",
+        "rank": 20
+      },
+      {
+        "label": "@submit",
+        "rank": 21
+      },
+      {
+        "label": "@keydown",
+        "rank": 22
+      },
+      {
+        "label": "@keyup",
+        "rank": 23
+      },
+      {
+        "label": "@focus",
+        "rank": 24
+      },
+      {
+        "label": "@blur",
+        "rank": 25
+      },
+      {
+        "label": "@mouseenter",
+        "rank": 26
+      },
+      {
+        "label": "@mouseleave",
+        "rank": 27
+      },
+      {
+        "label": "id",
+        "rank": 28
+      },
+      {
+        "label": "class",
+        "rank": 29
+      },
+      {
+        "label": "style",
+        "rank": 30
+      },
+      {
+        "label": "title",
+        "rank": 31
+      },
+      {
+        "label": "role",
+        "rank": 32
+      },
+      {
+        "label": "tabindex",
+        "rank": 33
+      },
+      {
+        "label": "aria-label",
+        "rank": 34
+      },
+      {
+        "label": "ref",
+        "rank": 35
+      },
+      {
+        "label": "key",
+        "rank": 36
+      },
+      {
+        "label": "data-count",
+        "rank": 37
+      },
+      {
+        "label": "unfiltered-data-count",
+        "rank": 38
+      },
+      {
+        "label": "sub-executions-count",
+        "rank": 39
+      },
+      {
+        "label": "search",
+        "rank": 40
+      }
+    ],
+    "dependencyEdit": {
+      "anchor": "\tsearch: string;\n",
+      "replacement": "\tsearch: string;\n\tvizeOracleProbe?: boolean;\n",
+      "completionLabel": "vize-oracle-probe"
+    }
+  },
+  "fileLifecycle": {
+    "copiedFile": "packages/frontend/editor-ui/src/features/ndv/runData/components/__VizeOracleRunDataItemCount.vue",
+    "renamedFile": "packages/frontend/editor-ui/src/features/ndv/runData/components/__VizeOracleRenamedRunDataItemCount.vue",
+    "originalImportSpecifier": "./RunDataItemCount.vue",
+    "copiedImportSpecifier": "./__VizeOracleRunDataItemCount.vue",
+    "renamedImportSpecifier": "./__VizeOracleRenamedRunDataItemCount.vue",
+    "markerInsertionAnchor": "<script setup lang=\"ts\">\n",
+    "markerSymbol": "__vizeFileLifecycleMarker__"
+  }
+}

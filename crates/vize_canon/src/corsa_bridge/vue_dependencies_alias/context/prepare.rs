@@ -44,9 +44,10 @@ impl AliasContext {
         capture_phase.finish();
         let cache_phase =
             crate::corsa_bridge::preparation_trace::Phase::start("alias_cache_lookup", 1);
-        let cached = {
+        let (cached, rebuild_candidate) = {
             let mut cache = environment.editor_session.cache();
-            cache.get(source_path, &fingerprint).map(|context| {
+            let (cached, rebuild_candidate) = cache.get_for_rebuild(source_path, &fingerprint);
+            let cached = cached.map(|context| {
                 let catalog = context
                     .mirror
                     .as_ref()
@@ -54,7 +55,8 @@ impl AliasContext {
                         cache.source_catalog(mirror.virtual_root())
                     });
                 (context, catalog)
-            })
+            });
+            (cached, rebuild_candidate)
         };
         cache_phase.finish();
         if let Some((context, source_catalog)) = cached {
@@ -65,22 +67,56 @@ impl AliasContext {
             });
         }
         let mut resolver = environment.package_routes.clone();
-        let build_phase = crate::corsa_bridge::preparation_trace::Phase::start(
+        let mut build_phase = crate::corsa_bridge::preparation_trace::Phase::start(
             "alias_build",
             requested_sources.len(),
         );
-        let mut context = build::build(
-            source_path,
-            content,
-            overlays,
-            build::SourceRevision {
+        let mut graph_guard = 0;
+        let mut discarded_work = (0, 0);
+        let reused = rebuild_candidate.and_then(|candidate| {
+            match candidate.rebuild(
+                &fingerprint,
+                source_path,
+                content,
+                overlays,
                 requested_sources,
-                overlay_identity: fingerprint.overlay_identity(),
-            },
-            &mut resolver,
-            options,
-            environment,
-        )?;
+                options,
+                environment,
+            ) {
+                Ok(context) => Some(context),
+                Err(reason) => {
+                    graph_guard = reason.guard.code();
+                    discarded_work = reason.work;
+                    None
+                }
+            }
+        });
+        let takeover = u8::from(reused.is_some());
+        let mut context = match reused {
+            Some(context) => context,
+            None => build::build(
+                source_path,
+                content,
+                overlays,
+                build::SourceRevision {
+                    requested_sources,
+                    overlay_identity: fingerprint.overlay_identity(),
+                },
+                &mut resolver,
+                options,
+                environment,
+            )?,
+        };
+        let (rebuilt, reconciled) = context
+            .mirror
+            .as_ref()
+            .map_or((0, 0), |mirror| mirror.source_patch_work());
+        build_phase.graph_revision(
+            takeover,
+            graph_guard,
+            rebuilt + discarded_work.0,
+            reconciled + discarded_work.1,
+        );
         build_phase.finish();
         let stamp_phase = crate::corsa_bridge::preparation_trace::Phase::start("alias_stamp", 1);
         fingerprint.stamp(&context);

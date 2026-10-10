@@ -12,6 +12,34 @@ use vize_carton::FxHashSet;
 use super::VirtualProject;
 
 impl VirtualProject {
+    /// Source-derived ambient stubs must be recomputed when their graph leaves.
+    pub(crate) fn source_options_match(&self, configured: &Self) -> bool {
+        self.virtual_ts_options.auto_import_stubs == configured.virtual_ts_options.auto_import_stubs
+    }
+
+    pub(crate) fn source_patch_work(&self) -> (usize, usize) {
+        (
+            self.incremental_source_nodes_rebuilt,
+            self.incremental_dependency_nodes_reconciled,
+        )
+    }
+
+    /// Existing owners must resolve a deleted or changed dependency again.
+    /// Keep this within the authoritative graph rather than another index.
+    pub(crate) fn dependency_owners_for_sources(
+        &self,
+        sources: &FxHashSet<PathBuf>,
+    ) -> Vec<PathBuf> {
+        let mut owners = self
+            .dependency_edges
+            .iter()
+            .filter(|(_, targets)| targets.iter().any(|target| sources.contains(target)))
+            .map(|(owner, _)| owner.clone())
+            .collect::<Vec<_>>();
+        owners.sort();
+        owners
+    }
+
     pub(crate) fn reset_dependency_ownership(&mut self) {
         self.dependency_edges.clear();
         self.dependency_inbound.clear();

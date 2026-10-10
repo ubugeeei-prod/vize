@@ -33,7 +33,7 @@ const { thickness, label } = props;
     );
     assert!(
         virtual_ts.contains(
-            r#"const props: __WithDefaultsResult<Props, Pick<Props, "label" | "thickness">>"#
+            r#"const props: __VizePrettify<__WithDefaultsResult<Props, Pick<Props, "label" | "thickness">>>"#
         ),
         "{virtual_ts}"
     );

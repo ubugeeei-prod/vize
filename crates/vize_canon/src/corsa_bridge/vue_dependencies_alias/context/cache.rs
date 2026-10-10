@@ -10,6 +10,7 @@ use super::AliasContext;
 
 mod catalog;
 mod fingerprint;
+mod reuse;
 pub(super) use fingerprint::ContextFingerprint;
 
 const CONTEXT_CACHE_CAPACITY: usize = 8;
@@ -80,6 +81,15 @@ impl SessionCache {
         source_path: &Path,
         fingerprint: &ContextFingerprint,
     ) -> Option<Arc<AliasContext>> {
+        self.get_inner(source_path, fingerprint, false)
+    }
+
+    fn get_inner(
+        &mut self,
+        source_path: &Path,
+        fingerprint: &ContextFingerprint,
+        keep_invalidated: bool,
+    ) -> Option<Arc<AliasContext>> {
         // One filesystem observation per path in this lookup. The cache never
         // survives a request, so same-mtime/same-length edits remain detectable.
         let mut observed = crate::package_route::stamp::InputStampCache::default();
@@ -96,7 +106,9 @@ impl SessionCache {
                 })
         });
         if !valid {
-            self.slots.remove(source_path);
+            if !keep_invalidated {
+                self.slots.remove(source_path);
+            }
             return None;
         }
         self.clock = self.clock.wrapping_add(1);

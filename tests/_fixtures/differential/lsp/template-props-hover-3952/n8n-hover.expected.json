@@ -1,0 +1,16 @@
+{
+  "contents": {
+    "kind": "markdown",
+    "value": "```typescript\nconst props: {\n    readonly params: {\n        value: string;\n    };\n}\n```"
+  },
+  "range": {
+    "start": {
+      "line": 9,
+      "character": 34
+    },
+    "end": {
+      "line": 9,
+      "character": 39
+    }
+  }
+}

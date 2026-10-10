@@ -180,11 +180,22 @@ pub(crate) fn generate_props_variables(
 
     ts.push_str("  // Props are available in template as variables\n");
     ts.push_str("  // Access via `propName` or `props.propName`\n");
+    // Concrete contracts expose their members through the existing native
+    // member view. Its anonymous intersection also exposes union members.
+    // Generic SFCs keep their original deferred indexed identity:
+    // mapping it again can change IfEquals/inference at a forwarded root.
     let props_start = ts.len() + "  const ".len();
-    append!(
-        *ts,
-        "  const props: {template_props_type_ref} = {{}} as {template_props_type_ref};\n"
-    );
+    if sfc_generic_param(summary).is_some() {
+        append!(
+            *ts,
+            "  const props: {template_props_type_ref} = {{}} as {template_props_type_ref};\n"
+        );
+    } else {
+        append!(
+            *ts,
+            "  const props: __VizePrettify<{template_props_type_ref}> & {{}} = {{}} as {template_props_type_ref};\n"
+        );
+    }
     if let Some(anchor) = props_shadow_anchor {
         binding_mappings
             .link_setup_shadow(anchor.clone(), props_start..props_start + "props".len());

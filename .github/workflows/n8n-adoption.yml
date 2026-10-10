@@ -28,6 +28,8 @@ on:
       - tests/tooling/n8n-authored-editor.test.ts
       - tests/tooling/support/n8n-authored-editor.ts
       - tests/_fixtures/differential/lsp/n8n-authored-editor/**
+      - tests/tooling/support/n8n-authored-registry-acceptance.ts
+      - tests/_fixtures/differential/lsp/n8n-registry-authored-3952/**
       - crates/vize_maestro/**
       - crates/vize_canon/**
       - crates/vize_corsa/**
@@ -195,6 +197,9 @@ jobs:
             "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/semantic-routing"
       - name: Verify both slot modifier options through whole source CLI and JSON-RPC packets
         run: vp node tests/tooling/support/n8n-slot-options-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-options"
+      - name: Observe the existing authored registry provider on original n8n components
+        env: { VIZE_TRACE_EDITOR_PREPARATION: "1" }
+        run: vp node tests/tooling/support/n8n-authored-registry-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/authored-registry"
       - name: Upload whole CLI and independent oracle packets
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

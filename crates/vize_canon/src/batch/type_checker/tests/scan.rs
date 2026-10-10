@@ -6,6 +6,9 @@ mod incremental;
 #[path = "scan/suffix_path_aliases.rs"]
 mod suffix_path_aliases;
 
+#[path = "scan/frontier_transfer.rs"]
+mod frontier_transfer;
+
 #[test]
 fn test_batch_type_checker_scan() {
     let project_root = unique_case_dir("scan");

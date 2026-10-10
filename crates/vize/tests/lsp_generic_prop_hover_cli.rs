@@ -94,3 +94,6 @@ fn original_native_generic_prop_hovers_keep_whole_declared_types_and_authored_ra
     }
     project.shutdown();
 }
+
+#[path = "lsp_generic_prop_hover_cli/template_props.rs"]
+mod template_props;

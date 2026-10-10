@@ -64,6 +64,11 @@ impl InputStampCache {
 }
 
 impl InputStamp {
+    #[cfg(feature = "native")]
+    pub(crate) fn path(&self) -> &Path {
+        &self.path
+    }
+
     pub(crate) fn capture(path: impl Into<PathBuf>) -> Self {
         Self::capture_input(path.into(), None, false)
     }
