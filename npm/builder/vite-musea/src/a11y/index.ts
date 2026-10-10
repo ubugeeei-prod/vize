@@ -13,6 +13,8 @@ import type {
   ViewportConfig,
 } from "../types/index.js";
 import type { MuseaVrtRunner } from "../vrt.js";
+import { buildVariantUrl } from "../vrt/utils.js";
+import { observePreviewReady, waitForMountedPreview } from "../vrt/preview-ready.js";
 
 import { computeA11ySummary, generateA11yHtmlReport, generateA11yJsonReport } from "./report.js";
 
@@ -116,8 +118,13 @@ export class MuseaA11yRunner {
             context = { page, context: ctx };
           }
 
-          const variantUrl = this.buildVariantUrl(baseUrl, art.path, variant.name);
+          const variantUrl = vrtRunner
+            ? vrtRunner.getPreviewUrl(baseUrl, art.path, variant.name)
+            : buildVariantUrl(baseUrl, art.path, variant.name);
+          const waitForReady = vrtRunner?.getCapture().waitForPreviewReady;
+          if (waitForReady) await observePreviewReady(page);
           await page.goto(variantUrl, { waitUntil: "networkidle" });
+          if (waitForReady) await waitForMountedPreview(page);
           await page.waitForSelector(".musea-variant", { timeout: 10000 });
           await page.waitForTimeout(200);
 
@@ -248,11 +255,5 @@ export class MuseaA11yRunner {
       ...(Object.keys(runOnly).length > 0 ? { runOnly } : {}),
       ...(Object.keys(rules).length > 0 ? { rules } : {}),
     };
-  }
-
-  private buildVariantUrl(baseUrl: string, artPath: string, variantName: string): string {
-    const encodedPath = encodeURIComponent(artPath);
-    const encodedVariant = encodeURIComponent(variantName);
-    return `${baseUrl}/__musea__/preview?art=${encodedPath}&variant=${encodedVariant}`;
   }
 }

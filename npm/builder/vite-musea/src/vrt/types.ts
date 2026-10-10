@@ -45,6 +45,8 @@ export interface VrtSummary {
  * Extended VRT options aligned with Rust VrtConfig.
  */
 export interface ExtendedVrtOptions extends VrtOptions {
+  /** Exact preview URLs from a built gallery's static manifest. Missing entries fail closed. */
+  previewUrls?: Record<string, Record<string, string>>;
   capture?: CaptureConfig;
   comparison?: ComparisonConfig;
   ci?: CiConfig;

@@ -12,6 +12,7 @@ import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { generatePreviewModuleWithProps } from "../preview/index.js";
 import { assertVueSourcePath, HttpError, parseJsonBody, resolveInside } from "../security.js";
 import { toPascalCase } from "../utils.js";
+import { publicBasePathFromViteBase } from "../static-base.js";
 
 /** POST /api/preview-with-props */
 export function handlePreviewWithProps(
@@ -121,7 +122,11 @@ export async function handleRunVrt(
     const snapshotDir = path.resolve(ctx.config.root, ".vize/snapshots");
     const reportDir = path.resolve(ctx.config.root, ".vize/reports");
 
-    const runner = new MuseaVrtRunner({ snapshotDir });
+    const runner = new MuseaVrtRunner({
+      capture: { waitForPreviewReady: true },
+      snapshotDir,
+      previewBasePath: publicBasePathFromViteBase(ctx.config.base, ctx.basePath),
+    });
 
     const port = ctx.getDevServerPort();
     const baseUrl = `http://localhost:${port}`;

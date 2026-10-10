@@ -17,10 +17,10 @@ import type {
 import fs from "node:fs";
 import path from "node:path";
 
+import { assertUniqueSnapshotNames } from "./snapshot-collisions.js";
 import { fileExists, matchGlob } from "./comparison.js";
 import { captureAndCompare } from "./runner-comparison.js";
-import { buildSnapshotName, computeSummary } from "./utils.js";
-import { assertUniqueSnapshotNames } from "./snapshot-collisions.js";
+import { buildSnapshotName, buildVariantUrl, computeSummary } from "./utils.js";
 
 export type { VrtResult, VrtSummary, ExtendedVrtOptions, PixelCompareOptions } from "./types.js";
 
@@ -42,9 +42,11 @@ export class MuseaVrtRunner {
   private ci: CiConfig;
   private browser: Browser | null = null;
   private startTime: number = 0;
+  private previewUrls: ExtendedVrtOptions["previewUrls"];
 
   constructor(options: ExtendedVrtOptions = {}) {
     this.options = {
+      previewBasePath: options.previewBasePath ?? "/__musea__",
       snapshotDir: options.snapshotDir ?? ".vize/snapshots",
       threshold: options.threshold ?? 0.1,
       viewports: options.viewports ?? [
@@ -59,6 +61,7 @@ export class MuseaVrtRunner {
       caret: options.capture?.caret ?? "hide",
       fullPage: options.capture?.fullPage ?? false,
       waitForNetwork: options.capture?.waitForNetwork ?? true,
+      waitForPreviewReady: options.capture?.waitForPreviewReady ?? false,
       settleTime: options.capture?.settleTime ?? 100,
       waitSelector: options.capture?.waitSelector ?? ".musea-variant",
       hideElements: options.capture?.hideElements ?? [],
@@ -66,6 +69,21 @@ export class MuseaVrtRunner {
     };
     this.comparison = options.comparison ?? {};
     this.ci = options.ci ?? {};
+    this.previewUrls = options.previewUrls;
+  }
+
+  /** Resolve the same actual preview for screenshots and accessibility audits. */
+  getPreviewUrl(baseUrl: string, artPath: string, variantName: string): string {
+    if (this.previewUrls !== undefined) {
+      const variants = Object.hasOwn(this.previewUrls, artPath)
+        ? this.previewUrls[artPath]
+        : undefined;
+      const url =
+        variants && Object.hasOwn(variants, variantName) ? variants[variantName] : undefined;
+      if (!url) throw new Error(`Hosted preview not found: ${artPath}/${variantName}`);
+      return url;
+    }
+    return buildVariantUrl(baseUrl, artPath, variantName, this.options.previewBasePath);
   }
 
   // --- Internal accessors used by runner-comparison ---

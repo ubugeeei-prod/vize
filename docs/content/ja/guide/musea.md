@@ -81,12 +81,7 @@ vp dev
 http://localhost:5173/__musea__
 ```
 
-`vize` npm パッケージをインストールすると、`vp exec vize musea` は Vite の便利なラッパーになります。
-
-```bash
-vp exec vize musea
-vp exec vize musea --build
-```
+CLI ラッパー、静的ホスト、テストの要件は [Musea のホスティング](./musea-hosting) を参照してください。
 
 ## 共有構成
 
