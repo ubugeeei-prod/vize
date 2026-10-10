@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
-import { spawnSync, type SpawnSyncReturns } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { runtimeGraph } from "../../../../performance/support/warm-type-backed-runtime.ts";
+import { RawGitRepository } from "./raw-git.ts";
 
 export const originalHead = "c2bc3a55a2b70dc4dd6c4e43ee0737c347476398";
 export const originalFiles = Object.freeze({
@@ -129,19 +130,11 @@ export function loadVueFixtureAuthority(options: {
   assert.ok(path.isAbsolute(options.sourceRoot));
   assert.equal(fs.realpathSync(options.sourceRoot), options.sourceRoot);
   let lockSource = "";
+  const repository = new RawGitRepository(options.sourceRoot);
   for (const [file, sha] of Object.entries(originalFiles)) {
-    const read: SpawnSyncReturns<Buffer> = spawnSync(
-      "git",
-      ["show", `${options.sourceHead}:${file}`],
-      {
-        cwd: options.sourceRoot,
-        maxBuffer: 16 * 1024 * 1024,
-      },
-    );
-    assert.equal(read.error, undefined);
-    assert.equal(read.status, 0);
-    assert.equal(digest(read.stdout), sha);
-    if (file === "pnpm-lock.yaml") lockSource = read.stdout.toString("utf8");
+    const bytes = repository.file(options.sourceHead, file);
+    assert.equal(digest(bytes), sha);
+    if (file === "pnpm-lock.yaml") lockSource = bytes.toString("utf8");
   }
   assert.deepEqual(receipt.lockedPackages, stockGraph(lockSource));
   assert.ok(path.isAbsolute(receipt.installRoot));

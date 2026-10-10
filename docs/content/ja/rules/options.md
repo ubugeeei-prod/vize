@@ -73,6 +73,7 @@ export default defineConfig({
 | `vue/html-self-closing` | `{ html?: { void?: Style; normal?: Style; component?: Style }; svg?: Style; math?: Style }`, where `Style` is `"always"`, `"never"`, or `"any"` | 既定は `html.void: "always"`、`html.normal: "any"`、`html.component: "always"`、`svg: "always"`、`math: "always"` です。 |
 | `vue/v-on-event-hyphenation` | `"always" \| "never"` | component 上の static event listener 名を hyphenation するかを設定します。 |
 | `vue/attribute-hyphenation` | `"always" \| "never"` | template 内の component prop attribute を hyphenation するかを設定します。 |
+| `vue/valid-v-slot` | `{ allowModifiers?: boolean }` | 既定は `false`。`true` で引数付き slot の modifier を許可します。引数なしの modifier と自身の slot props に依存する dynamic name は報告します。 |
 | `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | token data が設定され、rule が有効か、空でない token list で暗黙に選択されたときだけ発火します。`tier` の既定は `primitive` です。 |
 | `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`、`allowNumber`、`allowNullableObject` の既定は `true`、その他は `false` です。rule を明示的に有効にする必要があります。 |
 
@@ -515,6 +516,41 @@ export default defineConfig({
   <UserCard userName="Ada" aria-label="Ada Lovelace" />
 </template>
 ```
+
+## `vue/valid-v-slot`
+
+既定では `#item.memo` や `#[name].memo` の modifier を報告します。
+Vuetify の data table など、ドットを含む slot 名を使う component では
+`allowModifiers: true` を指定します。
+
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({
+  lint: {
+    vize: {
+      rules: { "vue/valid-v-slot": "error" },
+      ruleOptions: { "vue/valid-v-slot": { allowModifiers: true } },
+    },
+  },
+});
+```
+
+この設定で許可される例:
+
+```vue
+<template>
+  <FancyPanel>
+    <template #item.memo="{ item }">{{ item.memo }}</template>
+    <template #[name].memo="slot">{{ slot }}</template>
+  </FancyPanel>
+</template>
+```
+
+`v-slot.memo` のように引数がない場合や、`#[slot.name]="slot"` のように
+slot 名が自身の slot props に依存する場合は、この設定でも報告します。
+file ごとの `entries` に `allowModifiers: false` を指定すると、root の
+`true` より優先されます。`ruleOptions` の指定だけではルールは有効になりません。
 
 ## `musea/prefer-design-tokens`
 

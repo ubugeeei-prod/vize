@@ -34,7 +34,13 @@ const authority = () =>
     .filter((file) => file.endsWith(".ts"))
     .sort()
     .map((file) => ({ file, sha256: digest(readFileSync(path.join(toolDirectory, file))) }));
-const consumerHarness = ["installed.ts", "native.ts", "browser.ts", "gallery.ts"];
+const consumerHarness = [
+  "installed.ts",
+  "native.ts",
+  "browser.ts",
+  "gallery.ts",
+  "browser_observation.ts",
+];
 
 if (process.argv[2] === "prepare") {
   mkdirSync(output, { recursive: true });

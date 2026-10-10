@@ -1,0 +1,238 @@
+{
+  "schema": "vize-installed-library22-originals-v1",
+  "sourceHead": "9fe63a3f20b7a56349bcca281e5f7fd98aca4adc",
+  "sourceShaFields": null,
+  "artifactReceipt": {
+    "file": "artifact-receipt.json.txt",
+    "sha256": "0adb31d15824b4ec591aee0f7474586a486ac93d02db2efb26e5c85dddb2730e"
+  },
+  "archives": [
+    {
+      "run": 37743192231,
+      "name": "rust-test-shard-1-37743192231-1",
+      "id": 11534913271,
+      "zipSHA256": "4f019e232c0dbbc71a13367a9f4594bfca7f17f2ed4309aa2f4a950e90239644",
+      "path": "/private/tmp/vize-lsp-9fe-evidence/rust-test-shard-1-37743192231-1",
+      "files": 183,
+      "metadataFile": "rust-test-shard-1-37743192231-1.artifact.json.txt",
+      "metadataSha256": "1941d4f1c60fe09c7a00a2e1a9b5a4865d77cc3a8db25994b469c95505546676"
+    },
+    {
+      "run": 37743192231,
+      "name": "rust-test-shard-2-37743192231-1",
+      "id": 11534364698,
+      "zipSHA256": "213800be84a553cee8cc210c8fa0e5801d0d91f2e6da11fc4c56edeb104b4eb2",
+      "path": "/private/tmp/vize-lsp-9fe-evidence/rust-test-shard-2-37743192231-1",
+      "files": 117,
+      "metadataFile": "rust-test-shard-2-37743192231-1.artifact.json.txt",
+      "metadataSha256": "d17dcdf4845b223a89bf8aaa40285f17c79761750f13f2b7499cd58dabf14c8b"
+    },
+    {
+      "run": 37743192231,
+      "name": "rust-test-shard-3-37743192231-1",
+      "id": 11534413040,
+      "zipSHA256": "b26cfa4f78f80168f2ec94fddccf0adb4d7ad6161f586002c48e9b9a5fb9415c",
+      "path": "/private/tmp/vize-lsp-9fe-evidence/rust-test-shard-3-37743192231-1",
+      "files": 75,
+      "metadataFile": "rust-test-shard-3-37743192231-1.artifact.json.txt",
+      "metadataSha256": "d7c9dd470398c3d78425fd66080ca25614641ba745f8a5749a291ee72b06b1d3"
+    }
+  ],
+  "sourceFiles": {
+    "crates/vize/tests/lsp_component_attribute_authority_cli.rs": "2cd40ae2c8f1ba73b6e04ae2f7de5d6d662dad0e5ccb6ae98516d80ecd358dba",
+    "crates/vize/tests/lsp_component_attribute_authority_cli/native_probe.rs": "edc57aa990ead01c59272f4422d04a082079989218035d6f6be2cce8448f15fe",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/original.rs": "73ee2fe5d85623dc3ff0dde4bcfe42bae8de493b9e1750d388fc8bfc82ef0007",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/safe_update.rs": "e33a39bb8b87bb4ddb26986a234fe80457891fac1448618d3399f959be2b5271",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/cold_collision.rs": "9a62f8cc30ef1b8b46543ad4c772227ce49361113c66314a93037666ea2ba0ca",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/safety_controls.rs": "286243bddd516e608c0869046414b340764b7ab3a627cb451e6bf5f4d10f6f8c",
+    "crates/vize/tests/lsp_library_rename_refusal_cli/diagnostic_witness.rs": "a71b2304909e70e6a4055b5f00885ef1b1f93a060ca6a6177a09c29cb3e90da8",
+    "tests/_fixtures/differential/lsp/rename-library-refusal/8010/App.vue.txt": "4166a47d3a1e433f69690c43cd09a80097cdc10da07f98e32030928b0e450d32",
+    "tests/_fixtures/differential/lsp/rename-library-refusal/8010/Toggle.vue.txt": "9ee595b05e57189ca7141a486318162358784c2f929d6a2fd944f7013b3da0a8",
+    "tests/_fixtures/differential/lsp/rename-library-refusal/8010/supplemental/ambiguous-bound-emitter/Toggle.vue.txt": "9c729a86f19dd4b6c3e6cf53bbd44b8c9c290712ac39e4396de2a3504028e9d9",
+    "tests/_fixtures/differential/lsp/rename-library-refusal/8010/supplemental/cold-value-collision/Toggle.vue.txt": "23e9e34ac22979e29a524801d4cd81aad7f1889d3a7209afcdf109635f76771e",
+    "tests/_fixtures/differential/lsp/rename-library-refusal/8010/supplemental/cold-value-collision/UpdatedToggle.vue.txt": "2569c66522282377ab3812fa7ef4d49e26cab1b9104ef0258684627579c7d1db",
+    "tests/_fixtures/differential/lsp/rename-library-refusal/8010/supplemental/partial-application/CallOnlyToggle.vue.txt": "b716d8abcf71ceaf29e69b39e820830c4e00105cfe6d11a11b50d80cb44beb5b",
+    "tests/_fixtures/differential/lsp/rename-library-refusal/8010/supplemental/partial-application/MissingCallToggle.vue.txt": "819c9f2d6359a663d192a85f7173668389da8f888e2f4b80330f7742ad0ef9b8",
+    "tests/_fixtures/differential/lsp/event-rename/8010/UpdatedToggle.vue.txt": "d33acfb768e592a0f344867485a963ef4b81bf80b977170739d49cc8b3d88348",
+    "tests/_fixtures/differential/lsp/event-rename/8010/UpdatedApp.vue.txt": "46c5553979a65149f7f7b14c75e35ce0aed220d72f5d2173b9f30d1ac644dae0"
+  },
+  "cases": [
+    {
+      "file": "packets/lsp-rename-authority-p49wBd.json.gz.txt",
+      "context": "ambiguous mutable event whole refusal, parent_open=false, newline=\"\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-p49wBd.json",
+      "rawSha256": "cc12d4d08d6a1e351e4b5e477f4ff1b6e0c1750c304dab431b0e8aa07b268b6c",
+      "gzipSha256": "5e470e67ee4f7cca5653a1cc75e1b2c8f9f6ede3dcc2d33caff706d8ef618c30"
+    },
+    {
+      "file": "packets/lsp-rename-authority-bz5gNG.json.gz.txt",
+      "context": "ambiguous mutable event whole refusal, parent_open=false, newline=\"\\r\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-bz5gNG.json",
+      "rawSha256": "462d6c4bda4576b8816eea668b8c8f848b52803185d0750cc2c1220625b8cc8e",
+      "gzipSha256": "61dc35e10b7bcc2f835ef269325ded186b257dbe58324177d23faca3db755aa5"
+    },
+    {
+      "file": "packets/lsp-rename-authority-opS6zm.json.gz.txt",
+      "context": "ambiguous mutable event whole refusal, parent_open=true, newline=\"\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-opS6zm.json",
+      "rawSha256": "56cc133b02119f6fb6f8b471486819a54a7a4833a366c71fe539d988f06cf6c9",
+      "gzipSha256": "7ed0faeb246b3480710272a186e5da72a46e08024d04a1a132be76bc16966bd8"
+    },
+    {
+      "file": "packets/lsp-rename-authority-Ufo7Zu.json.gz.txt",
+      "context": "ambiguous mutable event whole refusal, parent_open=true, newline=\"\\r\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-Ufo7Zu.json",
+      "rawSha256": "bffaa9c726c57d76af30198552b54e197cd07798517f9d929d4d6fbaf6963028",
+      "gzipSha256": "388f4dd3462ba82108417769323baeef32d2a1eba14dd9b9fc96c04b31cd0862"
+    },
+    {
+      "file": "packets/lsp-rename-authority-e1YhuK.json.gz.txt",
+      "context": "cold event/value collision, unopened parent, newline=\"\\n\"",
+      "artifactId": 11534364698,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-e1YhuK.json",
+      "rawSha256": "55250661992b0bfbd04ed1e5f7a27309106370ae823bf851327c33e4a5cb90c4",
+      "gzipSha256": "05dd39a8118af0e00c85fef1367f00682e2c6fc17141d33bd050f2421028bdcb"
+    },
+    {
+      "file": "packets/lsp-rename-authority-scinhW.json.gz.txt",
+      "context": "cold event/value collision, unopened parent, newline=\"\\r\\n\"",
+      "artifactId": 11534364698,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-scinhW.json",
+      "rawSha256": "10caf38737fa3f7b6da13d48b6115be49ef781fc9790f15c0a549b06506a3b60",
+      "gzipSha256": "13d1957ab2c6943bc5d77ba015044bfdcc31d1de8db505a4bb52b0a94345404b"
+    },
+    {
+      "file": "packets/lsp-rename-authority-0VGysP.json.gz.txt",
+      "context": "incomplete event application CallOnly, newline=\"\\n\"",
+      "artifactId": 11534413040,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-0VGysP.json",
+      "rawSha256": "70f5a5df735484ee8aab78db05b61e961ef90ecfb7bf534c06630fb3b634ecad",
+      "gzipSha256": "7e8e3b423250f2413b5b783753d5f4f1b6668c4ddfa581ea81b555481be19790"
+    },
+    {
+      "file": "packets/lsp-rename-authority-rscLus.json.gz.txt",
+      "context": "incomplete event application CallOnly, newline=\"\\r\\n\"",
+      "artifactId": 11534413040,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-rscLus.json",
+      "rawSha256": "58b324942f55af1a38ae5a83f84b66992086b8178969e147b6fd5701131da95e",
+      "gzipSha256": "bb7d544f3f5aacdff19961d9562d2a5efa8af0523508721747fdf3b8f2be74e1"
+    },
+    {
+      "file": "packets/lsp-rename-authority-SPxUzI.json.gz.txt",
+      "context": "incomplete event application MissingCall, newline=\"\\n\"",
+      "artifactId": 11534413040,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-SPxUzI.json",
+      "rawSha256": "25f4c9af156216c09e5487d22139b5a7b2bd4cdd894fc33e3a1e5d88bcff740c",
+      "gzipSha256": "3ba0191dfef1325123cea87a8031654d69bbf75f9a77cc36d2d407ca0764a90e"
+    },
+    {
+      "file": "packets/lsp-rename-authority-dHLd6x.json.gz.txt",
+      "context": "incomplete event application MissingCall, newline=\"\\r\\n\"",
+      "artifactId": 11534413040,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-dHLd6x.json",
+      "rawSha256": "35fd80f072d811805eb0472a64e105a1fb1eef895ac2e06e807f72f85bd4a370",
+      "gzipSha256": "3cc8c17e0dd43e304cc4ebcc6dd1079d194dcbf2c857626b3ae392917a0b0ec3"
+    },
+    {
+      "file": "packets/lsp-rename-authority-3ySEA3.json.gz.txt",
+      "context": "original strict event safe update Original, parent_open=false, newline=\"\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-3ySEA3.json",
+      "rawSha256": "7cf9b0defdcf95f7582e8cffcc189b754f1808d05804f810c878b76bf81f6764",
+      "gzipSha256": "4eda33b68cea8ba2ad0c549df032def52a9e88f27fb969c27354302d735d98c8"
+    },
+    {
+      "file": "packets/lsp-rename-authority-IXVVej.json.gz.txt",
+      "context": "original strict event safe update Original, parent_open=false, newline=\"\\r\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-IXVVej.json",
+      "rawSha256": "a08f219ca79a0f06e83924acd0e0f04664de3b31f6b8dcf8a104f2d1c3cd8cb8",
+      "gzipSha256": "cb953e151b025507c84c236585a4e4f20665b0bce4a6ed1887768b4e66de8f02"
+    },
+    {
+      "file": "packets/lsp-rename-authority-68u6Di.json.gz.txt",
+      "context": "original strict event safe update Original, parent_open=true, newline=\"\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-68u6Di.json",
+      "rawSha256": "6d3f6aa8982d392a724d77cca590ec88370c0417cee00751b0cc588828d73026",
+      "gzipSha256": "ae48346c50241a39aaebdb90ed2f22915dae40ae0c93a8be1059b86796b564eb"
+    },
+    {
+      "file": "packets/lsp-rename-authority-7jAlpr.json.gz.txt",
+      "context": "original strict event safe update Original, parent_open=true, newline=\"\\r\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-7jAlpr.json",
+      "rawSha256": "d6324a769b79aab90772bc3cc5d9f964206259454c24bd122895ebc1df756632",
+      "gzipSha256": "fd2378619ad2f0a212a38481219aa9b9391f1bec667a52c4ecce0fa0049ca5e8"
+    },
+    {
+      "file": "packets/lsp-rename-authority-bbk2gz.json.gz.txt",
+      "context": "original strict event safe update Restored, parent_open=false, newline=\"\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-bbk2gz.json",
+      "rawSha256": "4fc03762d8af2489df5d050affabb2df947cf24d01801b51cd479c171edba08e",
+      "gzipSha256": "840ffbc173614d9b4e210115d939c8a431a968aae1ed92b0e7cc28e8b668724a"
+    },
+    {
+      "file": "packets/lsp-rename-authority-RUknlU.json.gz.txt",
+      "context": "original strict event safe update Restored, parent_open=false, newline=\"\\r\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-RUknlU.json",
+      "rawSha256": "ed550ccfde1263e64c53565ad36b1a93c369b9378d482b175b4a2fcff8046205",
+      "gzipSha256": "1290e5de3cb5f683833f219f6146e2c4b6ed8ee0306e78fa6d6f27e667307452"
+    },
+    {
+      "file": "packets/lsp-rename-authority-swVrrp.json.gz.txt",
+      "context": "original strict event safe update Restored, parent_open=true, newline=\"\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-swVrrp.json",
+      "rawSha256": "4817be83ee47d0f870776f8d1d4bff9e2557ce096c5f49b2c176f00ebe127911",
+      "gzipSha256": "5598fbaf1779848e3d2c1d9a564fe78fe0591cb6f6e0904b8fcef20231eccea8"
+    },
+    {
+      "file": "packets/lsp-rename-authority-Sd7aCX.json.gz.txt",
+      "context": "original strict event safe update Restored, parent_open=true, newline=\"\\r\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-Sd7aCX.json",
+      "rawSha256": "e6bb3c98373de2cc9c288d83ec9377d16687c9e1c155292e7f719645a3597bfa",
+      "gzipSha256": "5050a30a9deebec959232baddc55113bef87a3b46bc114ee0ddcad302dd9c886"
+    },
+    {
+      "file": "packets/lsp-rename-authority-MAr4KH.json.gz.txt",
+      "context": "original strict event safe update UnsavedEmoji, parent_open=false, newline=\"\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-MAr4KH.json",
+      "rawSha256": "b43d8bf628e9d460b96ee87dafbbc4495203080309fe4ff4fc333fef7716547a",
+      "gzipSha256": "4a5f69a1e39f550e99d4c33e273cd7da943af58c3aadf2dfef76fa89c6326eb9"
+    },
+    {
+      "file": "packets/lsp-rename-authority-e76P3w.json.gz.txt",
+      "context": "original strict event safe update UnsavedEmoji, parent_open=false, newline=\"\\r\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-e76P3w.json",
+      "rawSha256": "c17ff618c6f7b8ff4dd214657dce9226e06af03c4fdb1e087bfb4e828d1513b8",
+      "gzipSha256": "0bb3459ecf75f99b512ab7cb45d645bb63823399abe224096be2f5036cedc524"
+    },
+    {
+      "file": "packets/lsp-rename-authority-dtrgey.json.gz.txt",
+      "context": "original strict event safe update UnsavedEmoji, parent_open=true, newline=\"\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-dtrgey.json",
+      "rawSha256": "1c6fdaf215d2be8fc5e3cc2c6d8bbb76a8f4d15351ad07a34aeaa9c444161ee3",
+      "gzipSha256": "5d8a0c2494cf5a118daed0d1a11b8da5da6abd5bad1692b0a7a9024edad519b7"
+    },
+    {
+      "file": "packets/lsp-rename-authority-FuedbF.json.gz.txt",
+      "context": "original strict event safe update UnsavedEmoji, parent_open=true, newline=\"\\r\\n\"",
+      "artifactId": 11534913271,
+      "zipMember": "event-library-authority-transactions/lsp-rename-authority-FuedbF.json",
+      "rawSha256": "50bdc2ed5e2d0c6d98e9c4e737ad03a057a57257398e9df1214748e884cf04f6",
+      "gzipSha256": "0da61b1d574b7047a717837c79e7d7784adb655bb48a19198e21b7e8e97e89ca"
+    }
+  ],
+  "scope": "22 complete source observations. Actual source packets and batch witnesses remain historical bytes; only original expected fields supply replay oracles. Uncaptured runtime/foreign/package refusal obligations remain pending."
+}

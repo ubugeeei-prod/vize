@@ -238,7 +238,7 @@ linter	Linter	source	crates/vize_patina/src/markup/context.rs	7	croquis	Croquis 
 linter	Linter	test/dev	crates/vize_patina/src/markup/differential.rs	34	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/markup/differential.rs	34	old_ast	old AST/parser	old	vize_relief	legacy	2
 linter	Linter	test/dev	crates/vize_patina/src/markup/differential.rs	34	old_ast	old AST/parser	old	vize_armature	legacy	1
-linter	Linter	source	crates/vize_patina/src/markup/differential/battery.rs	288	l0	L0	stage	vize_l0	preferred	9
+linter	Linter	source	crates/vize_patina/src/markup/differential/battery.rs	292	l0	L0	stage	vize_l0	preferred	9
 linter	Linter	source	crates/vize_patina/src/markup/differential/fixture_cursor.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/differential/fixture_escape.rs	6	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/differential/fixture_syntax.rs	7	l0	L0	stage	vize_l0	preferred	1
@@ -276,6 +276,8 @@ linter	Linter	source	crates/vize_patina/src/markup/l2.rs	16	l1_to_l2	L1->L2	stag
 linter	Linter	source	crates/vize_patina/src/markup/l2/binding.rs	8	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/l2/binding.rs	8	l1	L1	stage	vize_l1	preferred	4
 linter	Linter	source	crates/vize_patina/src/markup/l2/binding.rs	8	l2	L2	stage	vize_l2	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/markup/l2/binding/tests.rs	3	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/src/markup/l2/binding/tests.rs	3	l2	L2	stage	vize_l2	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/l2/bound.rs	10	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/l2/bound.rs	10	l1	L1	stage	vize_l1	preferred	1
 linter	Linter	source	crates/vize_patina/src/markup/l2/bound.rs	10	l2	L2	stage	vize_l2	preferred	1

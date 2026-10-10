@@ -36,3 +36,8 @@ local baselines. Its VRT panel therefore explains `vp exec musea-vrt` and the
 development-server requirement instead of presenting an inoperable button.
 Hosted VRT execution and automatic global-combination capture remain unfinished;
 this change does not claim to complete those features.
+
+The browser regression acquires Chromium inside its guarded lifecycle. Nested
+finalizers attempt browser and HTTP-host cleanup after launch, artifact-write
+or browser-close failures. Audit steps, fixture bytes, predicates and timing
+bounds remain unchanged.

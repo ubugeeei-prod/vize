@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { exactKeys7502 } from "./native-attribute-values-7502-inputs.ts";
+import { disposition7502, exactKeys7502 } from "./native-attribute-values-7502-inputs.ts";
 
 const span = (value: any) => {
   exactKeys7502(value, ["start", "end"]);
@@ -62,7 +62,7 @@ export function value7502(value: any, source: string) {
       assert.equal(typeof segment.kind, "string");
     }
 }
-export function custody7502(row: any) {
+export function custody7502(row: any, disposition = disposition7502(row)) {
   const original = row.observation;
   exactKeys7502(original, [
     "debug",
@@ -262,12 +262,18 @@ export function custody7502(row: any) {
     value7502(entry.observation, row.nativeSource);
     assert.equal(entry.attribute.value, entry.observation.decoded);
   }
-  if (row.disposition === "positive") {
+  if (disposition !== "lower-refusal") {
     assert.equal(original.admitted, true);
     assert(file && file.complete);
     assert.deepEqual(original.sourceIssues, []);
     assert.deepEqual(original.descriptorIssues, []);
     assert.deepEqual(original.descriptorErrors, []);
+    if (disposition === "target-refusal") {
+      assert.equal(row.id, "original-regression-11");
+      assert.equal(row.target, "vapor");
+    }
+    // Target refusal occurs at the public output boundary after the genuine
+    // completed L3 decision retains the same lower File and original value.
     assert.equal(l3.state, "complete");
     assert.equal(l3.ownerSame, true);
     assert.equal(l3.fileSame, true);
@@ -303,7 +309,10 @@ export function custody7502(row: any) {
       file.attributeValues.map((entry: any) => entry.failure),
       [null],
     );
-    assert.equal(l3.values[0].attribute.name, "title");
+    assert.equal(
+      l3.values[0].attribute.name,
+      row.id === "original-regression-11" ? "class" : "title",
+    );
     assert.deepEqual(l3.values[0].observation, file.attributeValues[0].observation);
   } else {
     assert.equal(original.admitted, false);

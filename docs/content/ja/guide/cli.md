@@ -6,7 +6,7 @@ title: CLI
 
 # CLI リファレンス
 
-> **⚠️ 進行中の作業:**Vize は活発に開発中であり、CLI サーフェスはまだ進化中です。
+> **⚠️ 進行中の作業:** Vize は活発に開発中であり、CLI サーフェスはまだ進化中です。
 
 ほとんどのアプリケーション ワークフローでは、`vize` npm パッケージをインストールし、`package.json` を通じて実行する必要があります。
 スクリプト。このページでは、LSP、IDE管理、
@@ -192,6 +192,8 @@ vize lint --format plain src
 vize lint --format agent src
 vize lint --format markdown src
 ```
+
+<span id="check"></span>
 
 ## チェック
 

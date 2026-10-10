@@ -64,8 +64,8 @@ export class LspWire {
   child: ChildProcessWithoutNullStreams;
   exited: Promise<void>;
 
-  constructor(command: string, args: string[], cwd: string) {
-    this.child = spawn(command, args, { cwd, stdio: ["pipe", "pipe", "pipe"] });
+  constructor(command: string, args: string[], cwd: string, env?: NodeJS.ProcessEnv) {
+    this.child = spawn(command, args, { cwd, env, stdio: ["pipe", "pipe", "pipe"] });
     this.exited = new Promise<void>((resolve) => {
       this.child.once("close", (code, signal) => {
         this.exitStatus = code;

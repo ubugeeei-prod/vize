@@ -1,0 +1,16 @@
+{
+  "components": [
+    {
+      "code": "export function render(_ctx, _cache) {\n  const _component_Host = _resolveComponent(\"Host\")\n  \n  return (_openBlock(), _createBlock(_component_Host, null, {\n    content: _withCtx(() => [\n      _createElementVNode(\"div\", null, _toDisplayString(Array.from({ length: 3 }, (_, i) => <p>{i.toFixed(1)}{(() => <span>{i + 1}</span>)()}</p>)) + _toDisplayString((() => <aside>{42}</aside>)()) + \"<p>literal</p>\", 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+      "map": "{\"file\":\"template.vue\",\"mappings\":\"AACa;6CAAC;;SAAD;IAAS,SAAS;2BAAO,6BAAK,+GAA4F,kCAA+B\",\"names\":[],\"sources\":[\"template.vue\"],\"sourcesContent\":[\"// 日本語 😀\\r\\nconst view = <Host>{{ content: () => <div>{Array.from({ length: 3 }, (_, i) => <p>{i.toFixed(1)}{(() => <span>{i + 1}</span>)()}</p>)}{(() => <aside>{42}</aside>)()}{\\\"<p>literal</p>\\\"}<style scoped>{`p { color: ${color}; }`}</style></div> }}</Host>;\\r\\n\"],\"version\":3}",
+      "mode": "Vdom",
+      "name": null,
+      "preamble": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n",
+      "setup": "None",
+      "style": "Some(ScopedStyle { scope_id: \"data-v-1e1c1096\", css: \"p[data-v-1e1c1096]{ color: ; }\" })"
+    }
+  ],
+  "diagnostics": "[]",
+  "module": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n\n// 日本語 😀\r\nconst view = (() => {\nreturn ((_ctx, _cache) => {\n  const _component_Host = _resolveComponent(\"Host\")\n  \n  return (_openBlock(), _createBlock(_component_Host, null, {\n    content: _withCtx(() => [\n      _createElementVNode(\"div\", null, _toDisplayString(Array.from({ length: 3 }, (_, i) => <p>{i.toFixed(1)}{(() => <span>{i + 1}</span>)()}</p>)) + _toDisplayString((() => <aside>{42}</aside>)()) + \"<p>literal</p>\", 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n})(undefined, [])\n})();\r\n",
+  "moduleMap": "{\"file\":\"module.tsx\",\"mappings\":\";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC;AACV,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;6CAAE;;SAAD;IAAS,SAAS;2BAAO,6BAAK,+GAA4F,kCAA+B;;;;;IAAiF,CAAC,CAAC\",\"names\":[],\"sources\":[\"module.tsx\"],\"sourcesContent\":[\"// 日本語 😀\\r\\nconst view = <Host>{{ content: () => <div>{Array.from({ length: 3 }, (_, i) => <p>{i.toFixed(1)}{(() => <span>{i + 1}</span>)()}</p>)}{(() => <aside>{42}</aside>)()}{\\\"<p>literal</p>\\\"}<style scoped>{`p { color: ${color}; }`}</style></div> }}</Host>;\\r\\n\"],\"version\":3}"
+}
