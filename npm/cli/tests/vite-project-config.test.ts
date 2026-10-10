@@ -130,26 +130,42 @@ test("Vite root projects scoped paths while preserving global entries and author
   };
   const original = JSON.stringify(source);
   const resolved = await resolveViteConfigExport(source, undefined, root);
-  assert.equal(resolved.__vizeProjectRoot, path.join(root, "app"));
-  assert.equal(resolved.basePath, path.join(root, "app"));
-  assert.deepEqual(resolved.ignores, [
-    "src/Ignored.vue",
-    "!src/Keep.vue",
-    String.raw`src/\[id\].vue`,
-  ]);
-  assert.equal(resolved.typeChecker.tsconfig, path.join(root, "app/tsconfig.json"));
-  assert.equal(resolved.typeChecker.corsaPath, path.join(root, "app/tools/corsa"));
-  assert.equal(resolved.entries[0].basePath, path.join(root, "app"));
-  assert.equal(resolved.entries[1].basePath, path.join(root, "app/packages/ui"));
+  assert.deepEqual(resolved, {
+    __vizeProjectRoot: path.join(root, "app"),
+    basePath: path.join(root, "app"),
+    files: ["src/**/*.vue"],
+    ignores: ["src/Ignored.vue", "!src/Keep.vue", String.raw`src/\[id\].vue`],
+    typeChecker: {
+      jsxTypecheck: true,
+      tsconfig: path.join(root, "app/tsconfig.json"),
+      corsaPath: path.join(root, "app/tools/corsa"),
+    },
+    entries: [
+      {
+        basePath: path.join(root, "app"),
+        files: ["src/**/*.vue"],
+        linter: { rules: { "a11y/alt-text": "error" } },
+      },
+      { basePath: path.join(root, "app/packages/ui"), files: ["*.vue"] },
+    ],
+  });
   assert.equal(JSON.stringify(source), original);
 
   const entries = await resolveViteConfigExport(
-    { root: "app", vize: [{ formatter: { singleQuote: true } }, { files: ["src/*.vue"] }] },
+    {
+      root: "app",
+      vize: [
+        { __vizeProjectRoot: "decoy", formatter: { singleQuote: true } },
+        { files: ["src/*.vue"] },
+      ],
+    },
     undefined,
     root,
   );
-  assert.equal(entries[0].__vizeProjectRoot, path.join(root, "app"));
-  assert.equal(entries[1].basePath, undefined);
-  assert.equal(entries[1].formatter.singleQuote, true);
-  assert.equal(entries[2].basePath, path.join(root, "app"));
+  assert.deepEqual(entries, [
+    { __vizeProjectRoot: path.join(root, "app"), typeChecker: { jsxTypecheck: true } },
+    { __vizeProjectRoot: "decoy", formatter: { singleQuote: true } },
+    { basePath: path.join(root, "app"), files: ["src/*.vue"] },
+    { __vizeProjectRoot: path.join(root, "app") },
+  ]);
 });

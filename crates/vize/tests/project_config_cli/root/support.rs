@@ -12,7 +12,7 @@ pub(super) const IMAGE: &str =
 pub(super) const TSCONFIG: &str = include_str!(
     "../../../../../tests/_fixtures/differential/config/vite-root-8371/tsconfig.json.txt"
 );
-pub(super) const ARRAY: &str = "export default {root:'app',vize:[{linter:{preset:'essential',rules:{'a11y/alt-text':'off'}}},{files:['src/**/*.vue'],ignores:['src/Ignored.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]};";
+pub(super) const ARRAY: &str = "export default {root:'app',vize:[{__vizeProjectRoot:'decoy',linter:{preset:'essential',rules:{'a11y/alt-text':'off'}}},{files:['src/**/*.vue'],ignores:['src/Ignored.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]};";
 pub(super) const DEDICATED: &str =
     r#"{"linter":{"preset":"essential","rules":{"a11y/alt-text":"off"}}}"#;
 pub(super) const IGNORE_SETTINGS: &str = include_str!(

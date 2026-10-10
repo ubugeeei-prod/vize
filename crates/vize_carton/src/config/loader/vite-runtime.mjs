@@ -105,7 +105,7 @@ export async function resolveViteConfigExport(exported, env, configDir) {
     return [
       { ...projectConfigDefaults(), ...(root ? { __vizeProjectRoot: root } : {}) },
       ...shared.map((entry) => projectPaths(entry, root, true)),
-      projectPaths(overrides, root, false),
+      projectPaths({ ...overrides, ...(root ? { __vizeProjectRoot: root } : {}) }, root, false),
     ];
   }
   const config = merge(merge(projectConfigDefaults(), shared ?? {}), overrides);
