@@ -31,7 +31,10 @@ root as their separate `base_path`; they are never made absolute with
 sequences within each base path. Dedicated native files discard the reserved
 host identity before projection, so previously ignored extension values cannot
 change their invocation/config-directory behavior. Existing dedicated collectors
-retain their established matching rules.
+retain their established matching rules. Authored absolute patterns are rebased
+without interpreting glob syntax; ordered in-project negation still applies.
+Default project globs discard their leading `./` before joining the root so
+formatter discovery cannot succeed without actually formatting its selected files.
 
 The differential fixture `config/vite-root-8371` is exercised through the actual
 CLI in `project_config_cli/root.rs`: source discovery, compiler output, scoped
@@ -40,3 +43,9 @@ explicit overrides, dedicated precedence, and `--no-config`. A config export
 records each evaluation, so the public commands also detect duplicate evaluation.
 The TypeScript test requires Corsa through the repository's existing requirement
 helper; Actions must supply the checked-out executable and Vue dependency.
+
+Shared global ignores exclude standalone CLI file discovery and editor lint
+policy. Files explicitly opened in the editor continue to receive parser, type,
+and navigation results, preserving the existing dedicated-config behavior and
+TypeScript editor exclude convention. CLI and editor file selection are therefore
+not identical; full public diagnostic vectors test the supported boundary.
