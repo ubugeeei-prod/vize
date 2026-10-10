@@ -91,14 +91,14 @@ test("docs build evidence is immutable per SHA and has no Pages authority", () =
   }
 });
 
-test("docs deployment serializes before revalidating current main", () => {
+test("docs deployment serializes before validating actual source and publication custody", () => {
   const workflow = readWorkflow("deploy-docs.yml");
   const events = workflow.on as {
     workflow_run?: { workflows?: string[]; types?: string[]; branches?: string[] };
   };
   const deploy = workflowJob(workflow, "deploy");
   const checkoutMain = namedStep(deploy, "Checkout current main");
-  const compare = namedStep(deploy, "Compare docs build with current main");
+  const compare = namedStep(deploy, "Validate completed build and actual Pages publication floor");
 
   assert.equal(workflow.name, "Deploy docs");
   assert.deepEqual(Object.keys(events), ["workflow_run"]);
@@ -125,32 +125,51 @@ test("docs deployment serializes before revalidating current main", () => {
     checkoutMain,
     "main must be fetched after concurrency is acquired",
   );
-  assert.equal(deploy.steps?.[1], compare, "the freshness check must open the deploy section");
-  assert.equal(compare.env?.DOCS_BUILD_SHA, "${{ github.event.workflow_run.head_sha }}");
-  assert.match(compare.run ?? "", /\^\[0-9a-f\]\{40\}\$/);
-  assert.match(compare.run ?? "", /CURRENT_MAIN_SHA="\$\(git rev-parse HEAD\)"/);
-  assert.match(compare.run ?? "", /\[\[ "\$DOCS_BUILD_SHA" == "\$CURRENT_MAIN_SHA" \]\]/);
-  assert.match(compare.run ?? "", /eligible=false/);
+  assert.equal(
+    deploy.steps?.[2],
+    compare,
+    "primary custody must be checked before any source checkout or Pages effects",
+  );
+  assert.equal(compare.env?.GITHUB_TOKEN, "${{ github.token }}");
+  assert.match(
+    compare.run ?? "",
+    /cp tools\/support\/compat\/github\/docs-deployment-\*\.ts "\$RUNNER_TEMP\/"/,
+  );
+  assert.match(compare.run ?? "", /vp node "\$RUNNER_TEMP\/docs-deployment-entry\.ts" prepare/);
 });
 
-test("only the exact current-main build can download or deploy Pages", () => {
+test("only a source-custody-qualified build can download or deploy, and success follows actual Pages", () => {
   const workflow = readWorkflow("deploy-docs.yml");
   const deploy = workflowJob(workflow, "deploy");
   const download = namedStep(deploy, "Download docs build artifacts");
   const checkout = namedStep(deploy, "Checkout docs build");
-  namedStep(deploy, "Deploy to GitHub Pages");
+  const pages = namedStep(deploy, "Deploy to GitHub Pages");
+  const record = namedStep(deploy, "Record Pages artifact custody");
+  const confirm = namedStep(deploy, "Confirm actual Pages publication");
   const eligibility = "${{ steps.main.outputs.eligible == 'true' }}";
 
   assert.equal(deploy.permissions?.actions, "read");
   assert.equal(deploy.permissions?.pages, "write");
+  assert.equal(deploy.permissions?.deployments, "write");
   assert.equal(deploy.permissions?.["id-token"], "write");
   assert.equal(checkout?.with?.ref, "${{ github.event.workflow_run.head_sha }}");
-  for (const step of deploy.steps?.slice(2) ?? []) {
+  for (const step of deploy.steps?.slice(3).filter((step) => step !== confirm) ?? []) {
     assert.equal(step.if, eligibility, `${step.name ?? step.uses} bypasses the freshness gate`);
   }
   assert.equal(download.with?.["run-id"], "${{ github.event.workflow_run.id }}");
+  assert.equal(download.with?.["artifact-ids"], "${{ steps.main.outputs.artifact_ids }}");
   assert.equal(download.with?.["github-token"], "${{ github.token }}");
   assert.equal(download.with?.path, "artifacts");
+  assert.match(
+    pages.uses ?? "",
+    /^actions\/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e$/,
+  );
+  assert.equal(
+    confirm.if,
+    "${{ steps.main.outputs.eligible == 'true' && steps.deployment.conclusion == 'success' }}",
+  );
+  assert(deploy.steps!.indexOf(record) < deploy.steps!.indexOf(pages));
+  assert(deploy.steps!.indexOf(confirm) > deploy.steps!.indexOf(pages));
 });
 
 test("release preflight requires docs build evidence, never mutable deployment", () => {

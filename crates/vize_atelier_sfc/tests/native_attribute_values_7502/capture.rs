@@ -1,4 +1,4 @@
-use super::{custody, inputs};
+use super::{custody, inputs, successor};
 use inputs::{FILENAME, Fixture, Inputs, sha256};
 use serde_json::{Value, json};
 use vize_atelier_sfc::{
@@ -61,8 +61,13 @@ pub fn packet(inputs: &Inputs) -> Value {
                 == Some("lower-refusal")
         })
         .count();
+    let target_refusals = rows
+        .iter()
+        .filter(|row| row["result"]["classification"] == "target-refusal")
+        .count();
     json!({
-        "schema":"vize.native-attribute-values-7502.capture", "version":1,
+        "schema":"vize.native-attribute-values-7502.capture", "version":2,
+        "transition":successor::transition(),
         "custody":"once-selected-original", "fixtureSha256":inputs::PACK_SHA256,
         "ledgerSha256":inputs.ledger_sha256,
         "original":{"fix":inputs.original_fix,"parent":inputs.original_parent,
@@ -76,7 +81,8 @@ pub fn packet(inputs: &Inputs) -> Value {
             "linkModes":[{"linkMode":"Recorded","sourceMap":true},
                 {"linkMode":"NoLinks","sourceMap":false}]},
         "summary":{"fixtures":inputs.fixtures.len(),"outcomes":rows.len(),
-            "positive":positive,"lowerRefusals":lower_refusals}, "rows":rows
+            "positive":positive,"lowerRefusals":lower_refusals,
+            "targetRefusals":target_refusals}, "rows":rows
     })
 }
 

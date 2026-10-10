@@ -2,41 +2,15 @@
 import { ref, computed } from "vue";
 import { mdiLoading, mdiImageOutline } from "@mdi/js";
 import { runVrt } from "../api";
+import { isStaticGallery } from "../staticApi";
 import MdiIcon from "./MdiIcon.vue";
+import StaticVrtNotice from "./StaticVrtNotice.vue";
+import type { VrtResult, VrtSummary, VrtArtifacts } from "./vrtResults";
 
 const props = defineProps<{
   artPath: string;
   defaultVariantName?: string;
 }>();
-
-interface VrtResult {
-  artPath: string;
-  variantName: string;
-  viewport: string;
-  passed: boolean;
-  isNew?: boolean;
-  diffPercentage?: number;
-  snapshotPath?: string;
-  currentPath?: string;
-  diffPath?: string;
-  error?: string;
-}
-
-interface VrtSummary {
-  total: number;
-  passed: number;
-  failed: number;
-  new: number;
-}
-
-interface VrtArtifacts {
-  reportDir: string;
-  htmlReportPath: string;
-  jsonReportPath: string;
-  snapshotDir: string;
-  currentDir: string;
-  diffDir: string;
-}
 
 const isRunning = ref(false);
 const hasRun = ref(false);
@@ -85,7 +59,7 @@ function getStatusIcon(result: VrtResult): string {
   <div class="vrt-panel">
     <div class="vrt-header">
       <h3 class="vrt-title">Visual Regression Testing</h3>
-      <div class="vrt-actions">
+      <div v-if="!isStaticGallery" class="vrt-actions">
         <label class="vrt-update-label">
           <input v-model="updateSnapshots" type="checkbox" class="vrt-checkbox" />
           Update snapshots
@@ -98,7 +72,8 @@ function getStatusIcon(result: VrtResult): string {
       </div>
     </div>
 
-    <div v-if="error" class="vrt-error">
+    <StaticVrtNotice v-if="isStaticGallery" />
+    <div v-else-if="error" class="vrt-error">
       <p>{{ error }}</p>
       <p class="vrt-hint">Make sure Playwright is installed: <code>npm install playwright</code></p>
     </div>

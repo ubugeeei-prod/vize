@@ -4,6 +4,10 @@ title: TypeScript Content Mapper
 
 # TypeScript Content Mapper
 
+Use this guide when integrating Vue files with a content-mapper-enabled native TypeScript host.
+For day-to-day project checks, start with [Static Analysis](./static-analysis.md); for editor setup,
+see the [VS Code integration](../integrations/vscode.md).
+
 Content Mappers are TypeScript's plugin surface for checking file types the compiler cannot parse
 itself — the [TypeScript 7.1 API roadmap](https://github.com/microsoft/typescript-go/issues/4830)
 identifies them as the TS Server plugin replacement needed by Vue. The API merged into

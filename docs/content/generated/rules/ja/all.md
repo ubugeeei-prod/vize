@@ -66,7 +66,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vue/valid-v-on`](#vue-valid-v-on) | [悪い例](#vue-valid-v-on-bad) · [良い例](#vue-valid-v-on-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) | v-on のイベント名・式・modifier を検査します。 | Essential |
 | [`vue/valid-v-once`](#vue-valid-v-once) | [悪い例](#vue-valid-v-once-bad) · [良い例](#vue-valid-v-once-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) | v-once の引数・値・modifier を検査します。 | Essential |
 | [`vue/valid-v-show`](#vue-valid-v-show) | [悪い例](#vue-valid-v-show-bad) · [良い例](#vue-valid-v-show-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_show.rs#L28) | v-show に有効な条件式を指定します。 | Essential |
-| [`vue/valid-v-slot`](#vue-valid-v-slot) | [悪い例](#vue-valid-v-slot-bad) · [良い例](#vue-valid-v-slot-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) | v-slot の適用先・宣言・modifier を検査します。 | Essential |
+| [`vue/valid-v-slot`](#vue-valid-v-slot) | [悪い例](#vue-valid-v-slot-bad) · [良い例](#vue-valid-v-slot-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) | v-slot の適用先・宣言・modifier を検査します。 | Essential |
 | [`vue/valid-v-text`](#vue-valid-v-text) | [悪い例](#vue-valid-v-text-bad) · [良い例](#vue-valid-v-text-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) | v-text の値・引数・modifier を検査します。 | Essential |
 | [`vue/attribute-hyphenation`](#vue-attribute-hyphenation) | [悪い例](#vue-attribute-hyphenation-bad) · [良い例](#vue-attribute-hyphenation-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | あり | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L35) | コンポーネントの prop 属性名を設定した形式に揃えます。 | Strongly Recommended |
 | [`vue/component-definition-name-casing`](#vue-component-definition-name-casing) | [悪い例](#vue-component-definition-name-casing-bad) · [良い例](#vue-component-definition-name-casing-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L36) | コンポーネント定義名を PascalCase または kebab-case に揃えます。 | Strongly Recommended |
@@ -3518,7 +3518,7 @@ v-slot の適用先・宣言・modifier を検査します。
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
 

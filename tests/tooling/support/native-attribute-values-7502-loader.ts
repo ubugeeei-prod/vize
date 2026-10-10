@@ -56,11 +56,20 @@ export async function environment7502(mode: "development" | "production") {
   assert.equal(vaporRuntime.version, "3.6.0-rc.9");
   assert.equal(ssrRuntime.version, "3.5.35");
   const { parse } = createRequire(dom.resolve("@vue/compiler-sfc"))("@babel/parser");
-  async function load(code: string, target: string, helperCode: string | null = null) {
+  async function load(
+    code: string,
+    target: string,
+    helperCode: string | null = null,
+    importFreeStaticSsr = false,
+  ) {
     const imports = parse(code, { sourceType: "module" }).program.body.filter(
       (node: any) => node.type === "ImportDeclaration",
     );
-    assert(imports.length > 0, "whole module has actual runtime imports");
+    if (importFreeStaticSsr) assert.equal(target, "ssr");
+    assert(
+      imports.length > 0 || (importFreeStaticSsr && target === "ssr"),
+      "whole module has actual runtime imports",
+    );
     const runtime =
       target === "vapor"
         ? vaporRuntime

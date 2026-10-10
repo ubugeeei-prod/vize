@@ -13,6 +13,7 @@ use super::{ServerState, global_components::is_excluded_directory};
 
 mod paths;
 mod symbols;
+mod worker;
 
 #[derive(Default)]
 pub(super) struct Inventory {
@@ -20,6 +21,7 @@ pub(super) struct Inventory {
     paths: RwLock<Option<CachedPaths>>,
     retired: RwLock<Vec<PathBuf>>,
     scan: Mutex<()>,
+    worker: worker::Worker,
     #[cfg(test)]
     symbol_worker_failure: std::sync::atomic::AtomicBool,
     #[cfg(test)]
