@@ -79,6 +79,9 @@ jobs:
           tool: cargo-nextest@0.9.146
           checksum: true
           fallback: cargo-binstall
+      - name: Install the original pinned Pkl fixture runtime
+        if: inputs.custody_scope == 'original-shard-2'
+        run: npm install --global @pkl-community/pkl@0.27.2
       - name: Restore the exact original archive source
         if: inputs.custody_scope == 'original-shard-2'
         run: |
