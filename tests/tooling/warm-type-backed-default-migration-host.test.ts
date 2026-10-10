@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import { test } from "node:test";
 import { createHash } from "node:crypto";
-import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
+import os from "node:os";
+import path from "node:path";
 import { qualifyDefaultMigrationHost } from "../performance/support/warm-type-backed-default-migration-host.ts";
 import { qualifyHostMoves } from "../performance/support/warm-type-backed-host-qualifications.ts";
 import { gitBodyDigest } from "../performance/support/warm-type-backed-path-host.ts";
@@ -34,15 +36,61 @@ test("only all ten reviewed migration source bodies qualify for real400 measurem
   assert.deepEqual(result.files, production);
 });
 
-test("the finite manifest binds actual original Git and every current whole source body", () => {
-  const root = fileURLToPath(new URL("../../", import.meta.url));
+test("the finite manifest binds every current whole source and original corpus body", () => {
   const actual = (side: "before" | "after", file: string) =>
     side === "before"
-      ? gitBodyDigest(root, manifest.originalSource, file)
+      ? digest(side, file)
       : createHash("sha256")
           .update(fs.readFileSync(new URL("../../" + file, import.meta.url)))
           .digest("hex");
   assert.ok(qualifyDefaultMigrationHost(production, new Set(), actual));
+});
+
+test("the real Git body reader preserves whole bytes and absence and refuses changed modes", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-default-migration-git-"));
+  const git = (...args: string[]) => execFileSync("git", args, { cwd: root });
+  const file = "source.rs";
+  const body = Buffer.from('// complete original body\r\nconst KEY: &str = "日本語";\r\n');
+  try {
+    git("init", "--quiet");
+    fs.writeFileSync(path.join(root, file), body);
+    git("add", "--", file);
+    git(
+      "-c",
+      "user.name=Fixture",
+      "-c",
+      "user.email=fixture@example.invalid",
+      "commit",
+      "--quiet",
+      "-m",
+      "test: original body",
+    );
+    const original = git("rev-parse", "HEAD").toString().trim();
+    assert.equal(
+      gitBodyDigest(root, original, file),
+      createHash("sha256").update(body).digest("hex"),
+    );
+    assert.equal(gitBodyDigest(root, original, "absent.rs"), null);
+    git("update-index", "--chmod=+x", "--", file);
+    git(
+      "-c",
+      "user.name=Fixture",
+      "-c",
+      "user.email=fixture@example.invalid",
+      "commit",
+      "--quiet",
+      "-m",
+      "test: refuse executable owner",
+    );
+    const changed = git("rev-parse", "HEAD").toString().trim();
+    assert.throws(() => gitBodyDigest(root, changed, file), /one regular source blob/u);
+    assert.equal(
+      gitBodyDigest(root, original, file),
+      createHash("sha256").update(body).digest("hex"),
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("composition preserves old authorities and refuses literal-cut qualification", () => {
