@@ -9,7 +9,27 @@ use std::{
     process::{Command, Stdio},
 };
 
-pub(super) const MAX_BYTES: usize = 16 * 1024 * 1024;
+pub(super) const MAX_BYTES: usize = 64 * 1024 * 1024;
+pub(super) const MAX_LOG_BYTES: usize = 8 * 1024 * 1024;
+
+pub(super) fn check_size(metadata_bytes: usize, log_bytes: usize) -> Result<(), String> {
+    if log_bytes > MAX_LOG_BYTES {
+        return Err("Failure logs exceed bounded 8 MiB aggregate".into());
+    }
+    if metadata_bytes
+        .checked_add(log_bytes)
+        .is_none_or(|total| total > MAX_BYTES)
+    {
+        return Err(format!(
+            "Complete retirement archive exceeds 64 MiB: metadata={metadata_bytes} bytes; logs={log_bytes} bytes; limit={MAX_BYTES} bytes"
+        ));
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+#[path = "pr_pin_retire_size_tests.rs"]
+mod size_tests;
 
 pub(super) fn remote(reference: &str, root: &Path) -> Result<Option<String>, String> {
     let raw = github::git(&["ls-remote", "--refs", "origin", reference], root)?;
@@ -111,7 +131,7 @@ pub(super) fn read(tag: &str, root: &Path) -> Result<Option<(String, Value)>, St
             .map_err(|_| "Invalid archive blob size")?;
         total = total.checked_add(size).ok_or("Archive size overflow")?;
         if total > MAX_BYTES {
-            return Err("Retirement metadata archive exceeds 16 MiB".into());
+            return Err("Retirement metadata archive exceeds 64 MiB".into());
         }
         if path != "retirement.json" {
             observed.insert(path.to_string(), json!({"oid":fields[2],"bytes":size}));
@@ -191,8 +211,8 @@ pub(super) fn install_authorized(
         total = total
             .checked_add(bytes.len())
             .ok_or("Archive size overflow")?;
-        if total > MAX_BYTES {
-            return Err("Retirement metadata archive exceeds 16 MiB".into());
+        if total > MAX_LOG_BYTES {
+            return Err("Failure logs exceed bounded 8 MiB aggregate".into());
         }
         let oid = blob(bytes, root)?;
         objects.insert(path.clone(), json!({"oid":oid,"bytes":bytes.len()}));
@@ -201,13 +221,7 @@ pub(super) fn install_authorized(
     receipt["failureLogObjects"] = json!(objects);
     super::retire_ledger::validate(&receipt, root)?;
     let encoded = serde_json::to_vec_pretty(&receipt).map_err(|e| e.to_string())?;
-    if encoded
-        .len()
-        .checked_add(total)
-        .is_none_or(|n| n > MAX_BYTES)
-    {
-        return Err("Retirement metadata archive exceeds 16 MiB".into());
-    }
+    check_size(encoded.len(), total)?;
     let oid = blob(&encoded, root)?;
     entries.push(format!("100644 blob {oid}\tretirement.json\n"));
     entries.sort();

@@ -293,8 +293,8 @@ pub(super) fn collect(
                 total_log_bytes = total_log_bytes
                     .checked_add(bytes.len())
                     .ok_or("Failure log size overflow")?;
-                if total_log_bytes > super::retire_archive::MAX_BYTES / 2 {
-                    return Err("Complete failure logs exceed bounded retirement archive; preserve originals and stop".into());
+                if total_log_bytes > super::retire_archive::MAX_LOG_BYTES {
+                    return Err("Complete failure logs exceed bounded 8 MiB aggregate; preserve originals and stop".into());
                 }
                 logs.insert(format!("failure/{job_id}.log"), bytes);
             }
