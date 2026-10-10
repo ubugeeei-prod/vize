@@ -12,7 +12,7 @@ use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
 
 use crate::virtual_ts::{VizeMapping, VizeSubSpan};
 
-use super::{JsxExpr, push_mapped_expr};
+use super::{JsxExpr, RenderContext, push_mapped_expr};
 
 /// Type-only component invocation. The constructor branch consumes the
 /// `$props` contract exported by generated SFC modules; the function branch
@@ -102,9 +102,10 @@ pub(super) fn render(
     out: &mut CompactString,
     mappings: &mut Vec<VizeMapping>,
     component: &JsxComponent,
+    context: &RenderContext<'_>,
 ) {
     out.push_str("__vize_jsx_component__(");
-    push_mapped_expr(out, mappings, &component.tag);
+    push_mapped_expr(out, mappings, &component.tag, context);
     // Preserve the function itself so generic props infer from this literal.
     out.push_str(")(");
     let literal_start = out.len();
@@ -113,7 +114,7 @@ pub(super) fn render(
         if index > 0 {
             out.push_str(", ");
         }
-        render_prop(out, mappings, prop);
+        render_prop(out, mappings, prop, context);
     }
     out.push('}');
     let literal_end = out.len();
@@ -125,7 +126,12 @@ pub(super) fn render(
     out.push(')');
 }
 
-fn render_prop(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, prop: &JsxComponentProp) {
+fn render_prop(
+    out: &mut CompactString,
+    mappings: &mut Vec<VizeMapping>,
+    prop: &JsxComponentProp,
+    context: &RenderContext<'_>,
+) {
     match prop {
         JsxComponentProp::Property {
             name,
@@ -134,12 +140,12 @@ fn render_prop(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, prop: &
             source_end,
         } => {
             let entry_start = out.len();
-            let (name_gen_range, name_src_range) = render_name(out, mappings, name);
+            let (name_gen_range, name_src_range) = render_name(out, mappings, name, context);
             out.push_str(": ");
             match value {
                 PropValue::Boolean => out.push_str("true"),
                 PropValue::Expression(expression) => {
-                    push_mapped_expr(out, mappings, expression);
+                    push_mapped_expr(out, mappings, expression, context);
                 }
             }
             let entry_end = out.len();
@@ -163,7 +169,7 @@ fn render_prop(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, prop: &
         } => {
             let entry_start = out.len();
             out.push_str("...__vize_jsx_component_spread__(");
-            push_mapped_expr(out, mappings, value);
+            push_mapped_expr(out, mappings, value, context);
             out.push(')');
             let entry_end = out.len();
             mappings.push(VizeMapping {
@@ -179,6 +185,7 @@ fn render_name(
     out: &mut CompactString,
     mappings: &mut Vec<VizeMapping>,
     name: &PropName,
+    context: &RenderContext<'_>,
 ) -> (
     Option<std::ops::Range<usize>>,
     Option<std::ops::Range<usize>>,
@@ -199,7 +206,7 @@ fn render_name(
         }
         PropName::Computed(expression) => {
             out.push('[');
-            push_mapped_expr(out, mappings, expression);
+            push_mapped_expr(out, mappings, expression, context);
             out.push(']');
             (None, None)
         }

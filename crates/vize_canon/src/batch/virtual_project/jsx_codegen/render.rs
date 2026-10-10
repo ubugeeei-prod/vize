@@ -1,5 +1,6 @@
-//! Plain TypeScript rendering and authored JSX source mappings.
+//! Render plain virtual TypeScript from native JSX emit units.
 
+use super::nested::RenderContext;
 use super::{CTX_HELPER, JSX_EXPR_SINK, JsxEmit, JsxExpr, component, slot};
 use crate::virtual_ts::VizeMapping;
 use vize_carton::String as CompactString;
@@ -31,6 +32,7 @@ pub(super) fn render_plain_ts(
         out.push_str(component::HELPER);
     }
 
+    let context = RenderContext { source, roots };
     let mut cursor = 0usize;
     for (start, end, emits) in roots {
         let start = (*start as usize).min(source.len());
@@ -45,7 +47,7 @@ pub(super) fn render_plain_ts(
         // despite the prepended ambient-helper preamble.
         push_verbatim(&mut out, &mut mappings, source, cursor, start);
 
-        render_sink_call(&mut out, &mut mappings, emits);
+        render_sink_call(&mut out, &mut mappings, emits, &context);
         cursor = end.max(start);
     }
     // Trailing verbatim suffix (e.g. `export default Comp;`).
@@ -56,23 +58,33 @@ pub(super) fn render_plain_ts(
 
 /// Emit `__vize_jsx_expr__(<unit>, <unit>, …)` for one render scope, recursing
 /// into `v-for` bodies so their loop aliases stay in scope.
-fn render_sink_call(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, emits: &[JsxEmit]) {
+pub(super) fn render_sink_call(
+    out: &mut CompactString,
+    mappings: &mut Vec<VizeMapping>,
+    emits: &[JsxEmit],
+    context: &RenderContext<'_>,
+) {
     out.push_str(JSX_EXPR_SINK);
     out.push('(');
     for (index, emit) in emits.iter().enumerate() {
         if index > 0 {
             out.push_str(", ");
         }
-        render_emit(out, mappings, emit);
+        render_emit(out, mappings, emit, context);
     }
     out.push(')');
 }
 
 /// Re-emit one [`JsxEmit`] unit as a `__vize_jsx_expr__` argument, recording the
 /// source mappings that point its diagnostics back at the original JSX.
-fn render_emit(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, emit: &JsxEmit) {
+fn render_emit(
+    out: &mut CompactString,
+    mappings: &mut Vec<VizeMapping>,
+    emit: &JsxEmit,
+    context: &RenderContext<'_>,
+) {
     match emit {
-        JsxEmit::Expr(expr) => push_mapped_expr(out, mappings, expr),
+        JsxEmit::Expr(expr) => push_mapped_expr(out, mappings, expr, context),
         JsxEmit::ModelTarget(expr) => {
             // `v-model` binds a writable lvalue. Re-emit the target as an
             // assignment to itself so TypeScript reports binding to a `const`,
@@ -80,20 +92,20 @@ fn render_emit(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, emit: &
             // left-hand side is mapped: assignability and name-resolution errors
             // land on the LHS, so the unmapped RHS copy never double-reports.
             out.push('(');
-            push_mapped_expr(out, mappings, expr);
+            push_mapped_expr(out, mappings, expr, context);
             out.push_str(" = ");
             out.push_str(&expr.content);
             out.push(')');
         }
-        JsxEmit::Component(component) => component::render(out, mappings, component),
+        JsxEmit::Component(component) => component::render(out, mappings, component, context),
         JsxEmit::SlotScope(scope) => {
             // `__vize_jsx_component_slot__(<Host>, "<name>", (<pattern>) =>
             //  __vize_jsx_expr__(<body…>))`: the body is re-emitted inside the
             // callback so the slot pattern binds with the payload type declared
             // by the host component's `$slots`. `render_open` leaves the helper
             // call open; the trailing `)` below closes it.
-            slot::render_open(out, mappings, scope);
-            render_sink_call(out, mappings, scope.body());
+            slot::render_open(out, mappings, scope, context);
+            render_sink_call(out, mappings, scope.body(), context);
             out.push(')');
         }
         JsxEmit::ForScope {
@@ -107,19 +119,19 @@ fn render_emit(out: &mut CompactString, mappings: &mut Vec<VizeMapping>, emit: &
             // with their inferred element types. The `.map` scaffolding is left
             // unmapped (its diagnostics, if any, point at the mapped `source`).
             out.push('(');
-            push_mapped_expr(out, mappings, source);
+            push_mapped_expr(out, mappings, source, context);
             out.push_str(").map((");
             if let Some(value) = value_alias {
-                push_mapped_expr(out, mappings, value);
+                push_mapped_expr(out, mappings, value, context);
             } else {
                 out.push_str("__vize_v");
             }
             if let Some(key) = key_alias {
                 out.push_str(", ");
-                push_mapped_expr(out, mappings, key);
+                push_mapped_expr(out, mappings, key, context);
             }
             out.push_str(") => ");
-            render_sink_call(out, mappings, body);
+            render_sink_call(out, mappings, body, context);
             out.push(')');
         }
     }
@@ -141,7 +153,11 @@ pub(super) fn push_mapped_expr(
     out: &mut CompactString,
     mappings: &mut Vec<VizeMapping>,
     expr: &JsxExpr,
+    context: &RenderContext<'_>,
 ) {
+    if context.rewrite_expression(out, mappings, expr) {
+        return;
+    }
     let gen_start = out.len();
     out.push_str(&expr.content);
     let gen_end = out.len();
@@ -154,7 +170,7 @@ pub(super) fn push_mapped_expr(
 
 /// Copy `source[src_start..src_end)` verbatim into `out`, recording an identity
 /// mapping (generated range -> original range) for diagnostics in the region.
-fn push_verbatim(
+pub(super) fn push_verbatim(
     out: &mut CompactString,
     mappings: &mut Vec<VizeMapping>,
     source: &str,

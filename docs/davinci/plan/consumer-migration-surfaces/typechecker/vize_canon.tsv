@@ -191,6 +191,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/jsx_c
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/jsx_codegen/collect.rs	9	old_ast	old AST/parser	old	vize_relief	legacy	4
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/jsx_codegen/component.rs	10	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/jsx_codegen/component.rs	10	old_ast	old AST/parser	old	vize_relief	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/jsx_codegen/nested.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/jsx_codegen/render.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/jsx_codegen/slot.rs	28	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/jsx_codegen/slot.rs	28	old_ast	old AST/parser	old	vize_relief	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/mapping.rs	20	carton	Carton host/compatibility	old	vize_carton	legacy	3

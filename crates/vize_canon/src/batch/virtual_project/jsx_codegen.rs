@@ -82,11 +82,13 @@ use super::diagnostics::diagnostic_for_offset;
 
 mod collect;
 mod component;
+mod nested;
 mod render;
 mod slot;
 
 use collect::{collect_root_expressions, collect_style_expressions, expr_of};
-use render::{push_mapped_expr, render_plain_ts};
+use nested::RenderContext;
+use render::{push_mapped_expr, push_verbatim, render_plain_ts, render_sink_call};
 
 /// The generated plain-`.ts` virtual file for one `.jsx`/`.tsx` source.
 pub struct GeneratedJsxFile {
@@ -227,3 +229,7 @@ fn jsx_parse_message(diagnostic: &JsxDiagnostic) -> CompactString {
 #[cfg(test)]
 #[path = "jsx_codegen_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "jsx_codegen_nested_tests.rs"]
+mod nested_tests;
