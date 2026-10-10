@@ -124,3 +124,100 @@ Stack prefix without waiting for this optional memory campaign.
 The corrected normal-mode campaign at source `295289873e982e58845c8ec628d6f4f5e6e77d1b` ([Actions run 38078816799](https://github.com/ubugeeei-prod/vize/actions/runs/38078816799)) retained all 624 fresh reports, 131 completed process receipts and 262 whole raw streams. Every one of the original 104 paired allocation counts and peak allocation-byte measurements equals baseline `2703daa2f03f5d943dd6b31089aee4a8c5bc7a9e` in each of three repetitions. The seven candidate-only increments recorded for the earlier `3c92` campaign are absent; the unchanged baseline counters match that earlier baseline for all 104 cases. Both sides still fail exactly the same 57 original 100-row allocation equality laws (40 increases and 17 decreases against the normative constants), in every repetition. The four formatter rows remain report-only without allocation ceilings. RSS and quick wall samples differ and are retained without an improvement or causal claim. This campaign remains unqualified and transfers no source, instruction, runtime or memory qualification to parent `504` or a later composition; the parent's own qualification remains independent. Parser +24 B and Core context +16 B measured layout costs remain reported. The next required child refresh follows the parent's actual merge and reruns its own exact-source gates.
 
 After the actual signed SSR merge `ceb3677dfc29b9b6a9c5751771b8f01cb0969c52`, GitHub native Stack 8527 retargeted this child to `main` and replayed its source as `e39085cb9c66f5fe06d2436797a953abfa2a4db2`. The complete incoming foreign tree and seven tooling, law and workflow files are unchanged. The two factual record clauses from the old `295` merge resolution are restored before this new campaign record. This actual-main successor still needs fresh source/full/native, separate 104-row instruction and complete 624-report normal qualification; old results provide no acceptance transfer.
+
+
+## Authenticate the released harness version on each side
+
+The exact `38206df1` campaign stopped at its first complete 104-row base/head
+pair because the collector required the same raw harness version. The fixed
+`2703` baseline reports `0.441.0`; the `382` candidate reports `0.442.0`. Both
+versions match their pinned whole workspace manifest and actual Cargo harness
+library package IDs. The complete retained artifact contains 208 raw reports,
+26 normal child outcomes and 71 complete process receipts. Its metadata says
+observations are incomplete, qualification is false, and no original budget
+judge ran. This result supplies no 624-report or original 100-row acceptance.
+
+The corrective collector uses the already resolved pinned Cargo image to retain
+`cargo metadata --locked --no-deps --format-version 1` for each arm. Before Cargo
+runs, it joins the whole workspace manifest, harness manifest and harness library
+source bytes to their exact mode and Git blob in the existing retained source
+listing. After the build, those three bodies must remain equal before their exact
+workspace, package ID, manifest, library artifact and version can issue a source
+witness. The witness retains both SHA-256 and Git blob identities. Each later
+report admission rechecks those source bodies and matches the raw version and
+report path to its own source arm. These are before/after observations; they do
+not provide compiler-open-time telemetry or detect a transient source change
+that is restored between observations.
+
+An explicitly supplied pair of issued witnesses permits different declared
+source versions. A copied, missing, foreign, swapped or report-mismatched witness
+cannot qualify. The original comparison without witnesses still requires
+identical versions. Every completed suite's raw report copies and row receipt
+are saved before the additional own-source version assertion. The genuine
+`382` failure remains retained; neither the missing early data from a canceled
+child nor the original schema/allocator refusal boundary is claimed to change.
+
+The finite change adds no product provider, parser, stage, manifest edit or
+budget waiver. All other input/window/platform identities remain exact. All
+624 reports must precede the six untouched 100-row judges; the four formatter
+rows remain uncapped. The original `382` failure and all prior complete 624-report
+REDs remain retained. First-pair allocation and peak-allocation differences are
+zero for all 104 inputs, with no claim for missing repetitions, RSS, wall time,
+causality or the 57 previously observed allocation-equality failures. The new
+source laws use synthetic metadata and a synthetic completed probe; their 23
+passing source tests are not a native build or hosted benchmark qualification.
+The untouched Rust comparator also independently requires equal raw harness
+versions (`bench-compare.rs`, `assert_comparable_identity`). The source witness
+changes only collector admission: a complete next campaign still executes all
+six original judges, and the candidate judges will retain that version refusal.
+No normalized report copies or comparator exception are introduced. Fresh
+exact-source Actions are required; the optional child remains off queue.
+
+
+## Coalesced source-owned judge boundary
+
+The preceding collector-only record describes immutable correction `e726`.
+The next coalesced successor adds one private optional Rust argument,
+`--source-harness-pair`, after all 624 observations. The default two-directory
+comparison still requires equal raw harness versions, with its original exact
+identity output and all numerical verdicts preserved. The opt-in argument
+refuses subset benches and baseline refresh. It never normalizes report bytes
+or changes the original 100-row allocation, platform peak or conditional wall
+judgments; the four formatter rows remain report-only.
+
+A validated pair requires complete source/build/report custody for both arms.
+Its source roles bind the actual inherited workspace version to one retained
+pinned Cargo metadata result, a unique library artifact and the pre-build Git
+blobs/source hashes. Completed process outcomes and full streams, source-built
+image hashes, canonical source/report paths, all 104 identities in three runs
+per arm and exact whole raw/copy bodies are mandatory. Each suite retains the
+original normal argv, allocator/environment and actual emitted-file markers.
+The six original numerical comparisons use the complete 100-row level plane;
+a missing, extra, foreign or formatter row refuses before metric judgments.
+Every judgment retains its original base/run-N baseline operand and the same
+repetition N for the current base-or-head operand. Each side requires its own
+source version. A run-1-only carrier was rejected by the new source law before
+publication; no original numerical comparison input changes.
+
+Different versions alone do not establish comparability. Both complete harness
+and test-support source trees, all 13 original provider bodies and the source
+suite registry must be identical, including complete path sets and modes.
+Harness manifests, inherited non-version package metadata, build profile,
+compiler/Cargo images, toolchain and all external lock records must match.
+Only four named dev-product workspace dependency release-version fields may
+follow their respective authenticated workspace versions; paths, features and
+all other declarations remain exact. Reporter, scenario, allocator, schema,
+provider, added/removed path or dependency drift refuses. These checks retain
+the same before/after limitation: they are not compiler-open-time attestation
+and do not rule out transient restored mutation between observations.
+
+The new controls use explicitly synthetic source/process/report packets and
+provide no native execution or performance credit. The original default
+identity and numerical fixtures remain unchanged. Whole source review and
+fresh Actions must exercise the source-owned judge before at most one final
+paired 624-report campaign. Original `382` partial208/version RED, `295`
+complete624 RED and earlier outcomes remain retained. The 57 original equality
+failures are still debt, with no cap/baseline waiver or acceptance claim. This
+optional child stays off queue while unqualified and does not hold releases.
+
+The first frozen judge net `09597707` remains retained as a rejected source snapshot. Independent review found three concrete joins missing: inherited release-profile settings, the absolute resolved Cargo/Rustc image and metadata/build image equality, and the exact authored `=ownVersion` requirement for the four dev products. The corrective net binds the complete authored profile table, both actual pinned build executables and identical metadata/build Cargo images, and only those exact version requirements. Synthetic source laws preserve the authored requirement shape in both arms and refuse inherited-profile, stable foreign-image and unprefixed/foreign-version substitutions. No native execution, numerical acceptance or performance credit is inferred from this source correction.

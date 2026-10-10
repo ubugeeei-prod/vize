@@ -13,11 +13,14 @@ import {
 } from "./instruction-counts-lib.mjs";
 import {
   collectFreshReports,
+  bindHarnessSource,
+  captureHarnessSource,
   MEMORY_ENVIRONMENT,
   memorySuites,
   NORMAL_ARGUMENTS,
   REPORT_DIRECTORY,
   sha256,
+  validateHarnessReports,
 } from "./level-memory-lib.mjs";
 
 export function writeJson(file, value) {
@@ -104,6 +107,12 @@ export function run(executable, args, cwd, directory, env = process.env) {
 }
 
 export function build(root, target, out) {
+  const sourcePin = captureHarnessSource(
+    root,
+    fs.readFileSync(path.join(out, "../provenance/whole-tree/stdout.bin"), "utf8"),
+  );
+  fs.mkdirSync(out, { recursive: true });
+  writeJson(path.join(out, "harness-source-before.json"), sourcePin);
   const toolchain = parseTomlLite(fs.readFileSync(path.join(root, "rust-toolchain.toml"), "utf8"))
     .toolchain.channel;
   assert.equal(toolchain, "1.99.0", "same-input memory recipe requires pinned Rust 1.99.0");
@@ -125,6 +134,22 @@ export function build(root, target, out) {
   );
   const rust = run(compiler, ["-Vv"], root, path.join(out, "rustc"));
   assert.match(rust.stdout, /^rustc 1\.99\.0 /);
+  const buildEnvironment = {
+    ...process.env,
+    RUSTC: compiler,
+    RUSTC_WRAPPER: "",
+    RUSTC_WORKSPACE_WRAPPER: "",
+    RUSTUP_TOOLCHAIN: toolchain,
+    CARGO_INCREMENTAL: "0",
+    RUSTFLAGS: "-C target-cpu=x86-64",
+  };
+  const metadata = run(
+    cargo,
+    ["metadata", "--locked", "--no-deps", "--format-version", "1"],
+    root,
+    path.join(out, "cargo-metadata"),
+    buildEnvironment,
+  );
   const suites = memorySuites(root);
   assert.equal(suites.length, 13, "original twelve level and one formatter providers required");
   const args = [
@@ -141,23 +166,17 @@ export function build(root, target, out) {
   ];
   for (const pkg of new Set(suites.map(({ pkg }) => pkg))) args.push("-p", pkg);
   for (const bench of new Set(suites.map(({ bench }) => bench))) args.push("--bench", bench);
-  const built = run(cargo, args, root, path.join(out, "cargo"), {
-    ...process.env,
-    RUSTC: compiler,
-    RUSTC_WRAPPER: "",
-    RUSTC_WORKSPACE_WRAPPER: "",
-    RUSTUP_TOOLCHAIN: toolchain,
-    CARGO_INCREMENTAL: "0",
-    RUSTFLAGS: "-C target-cpu=x86-64",
-  });
-  const artifacts = built.stdout
+  const built = run(cargo, args, root, path.join(out, "cargo"), buildEnvironment);
+  const messages = built.stdout
     .split("\n")
     .filter(Boolean)
-    .map((line) => JSON.parse(line))
-    .filter(
-      (row) =>
-        row.reason === "compiler-artifact" && row.executable && row.target.kind.includes("bench"),
-    );
+    .map((line) => JSON.parse(line));
+  const harnessSource = bindHarnessSource(root, JSON.parse(metadata.stdout), messages, sourcePin);
+  writeJson(path.join(out, "harness-source.json"), harnessSource);
+  const artifacts = messages.filter(
+    (row) =>
+      row.reason === "compiler-artifact" && row.executable && row.target.kind.includes("bench"),
+  );
   const binaries = suites.map(({ plane, pkg, bench }) => {
     const directory =
       pkg === "davinci_harness"
@@ -184,6 +203,7 @@ export function build(root, target, out) {
       fresh: artifact.fresh,
       source_sha256: sha256(fs.readFileSync(source)),
       sha256: sha256(fs.readFileSync(executable)),
+      harness_source: harnessSource,
     };
   });
   writeJson(path.join(out, "binaries.json"), binaries);
@@ -284,6 +304,7 @@ export function collectNormal(root, suite, probe, out, identities) {
     "benchmark provider changed",
   );
   writeJson(path.join(out, "rows.json"), Object.fromEntries(rows));
+  validateHarnessReports(rows, suite.harness_source);
   return rows;
 }
 

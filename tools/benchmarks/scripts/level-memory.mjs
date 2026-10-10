@@ -12,6 +12,7 @@ import {
   partitionMemoryReports,
   REPORT_DIRECTORY,
   sha256,
+  writeHarnessJudgePair,
 } from "./level-memory-lib.mjs";
 import {
   bindProbe,
@@ -50,6 +51,7 @@ const measurements = { base: [], head: [] };
 const manifest = {
   schema_version: 1,
   source: revisions,
+  source_harness: {},
   recorded_run: `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
   methodology: {
     profile: "ci-opt",
@@ -150,6 +152,7 @@ try {
   for (const [side, root] of Object.entries(roots)) {
     const target = path.join(roots.head, "target", `level-memory-${side}`);
     binaries[side] = build(root, target, path.join(out, side, "build"));
+    manifest.source_harness[side] = binaries[side][0].harness_source;
   }
   const identities = { base: [], head: [] };
   for (const side of ["base", "head"]) {
@@ -215,7 +218,10 @@ try {
       writeJson(path.join(directory, "whole-rows.json"), Object.fromEntries(whole));
     }
     manifest.paired_metrics.push(
-      compareMemoryMetrics(measurements.base[repetition - 1], measurements.head[repetition - 1]),
+      compareMemoryMetrics(measurements.base[repetition - 1], measurements.head[repetition - 1], {
+        base: binaries.base[0].harness_source,
+        head: binaries.head[0].harness_source,
+      }),
     );
   }
   for (const side of ["base", "head"]) {
@@ -250,6 +256,17 @@ try {
   for (let repetition = 1; repetition <= 3; repetition += 1) {
     const baseline = path.join(out, "base", `run-${repetition}`, "level-reports");
     for (const side of ["base", "head"]) {
+      writeJson(path.join(out, "measurement.json"), manifest);
+      const sourcePair = writeHarnessJudgePair(
+        out,
+        manifest,
+        {
+          base: binaries.base[0].harness_source,
+          head: binaries.head[0].harness_source,
+        },
+        side,
+        repetition,
+      );
       let accepted = false;
       try {
         run(
@@ -262,6 +279,8 @@ try {
             baseline,
             "--budgets",
             authority.head.planes.level.registry_file,
+            "--source-harness-pair",
+            sourcePair,
           ],
           roots.head,
           path.join(out, "gates", `${side}-${repetition}`),

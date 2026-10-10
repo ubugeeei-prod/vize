@@ -5,6 +5,8 @@
 //! serde = { version = "1", features = ["derive"] }
 //! serde_json = "1"
 //! toml = "0.9"
+//! sha1 = "=0.10.6"
+//! sha2 = "=0.10.9"
 //!
 //! [package]
 //! edition = "2024"
@@ -12,6 +14,8 @@
 
 #[path = "../../support/common.rs"]
 mod common;
+#[path = "../../support/bench-source-harness.rs"]
+mod source_harness;
 
 use regex::Regex;
 use serde_json::Value as JsonValue;
@@ -44,6 +48,7 @@ struct Options {
     results: PathBuf,
     benches: Vec<String>,
     update_baseline: bool,
+    source_harness_pair: Option<PathBuf>,
 }
 
 #[derive(Clone, Debug)]
@@ -132,7 +137,19 @@ fn run() -> Result<u8, ConfigError> {
     }
 
     let baseline_reports = select_reports(load_reports(&options.baseline, "baseline")?, &selected);
-    let verdict = compare(&budgets, &baseline_reports, &current_reports)?;
+    let verdict = if let Some(path) = &options.source_harness_pair {
+        let source = source_harness::load(
+            path,
+            &options.budgets,
+            &options.baseline,
+            &options.results,
+            &budgets.keys().cloned().collect(),
+        )
+        .map_err(ConfigError)?;
+        compare_with_sources(&budgets, &baseline_reports, &current_reports, Some(&source))?
+    } else {
+        compare(&budgets, &baseline_reports, &current_reports)?
+    };
     for row in &verdict.rows {
         println!("{row}");
     }
@@ -153,6 +170,7 @@ fn parse_args(root: &Path, argv: Vec<String>) -> Result<Options, ConfigError> {
         results: root.join("tools/benchmarks/results/davinci"),
         benches: Vec::new(),
         update_baseline: false,
+        source_harness_pair: None,
     };
     let mut index = 0;
     while index < argv.len() {
@@ -166,7 +184,7 @@ fn parse_args(root: &Path, argv: Vec<String>) -> Result<Options, ConfigError> {
                     .ok_or_else(|| ConfigError("--bench requires a bench id".to_string()))?;
                 options.benches.push(value.clone());
             }
-            "--budgets" | "--baseline" | "--results" => {
+            "--budgets" | "--baseline" | "--results" | "--source-harness-pair" => {
                 index += 1;
                 let value = argv
                     .get(index)
@@ -176,6 +194,11 @@ fn parse_args(root: &Path, argv: Vec<String>) -> Result<Options, ConfigError> {
                     "--budgets" => options.budgets = path,
                     "--baseline" => options.baseline = path,
                     "--results" => options.results = path,
+                    "--source-harness-pair" => {
+                        if options.source_harness_pair.replace(path).is_some() {
+                            return Err(ConfigError("duplicate --source-harness-pair".into()));
+                        }
+                    }
                     _ => unreachable!(),
                 }
             }
@@ -186,6 +209,13 @@ fn parse_args(root: &Path, argv: Vec<String>) -> Result<Options, ConfigError> {
             }
         }
         index += 1;
+    }
+    if options.source_harness_pair.is_some()
+        && (options.update_baseline || !options.benches.is_empty())
+    {
+        return Err(ConfigError(
+            "source harness comparison refuses baseline refresh or subset benches".into(),
+        ));
     }
     Ok(options)
 }
@@ -613,6 +643,15 @@ fn compare(
     baseline_reports: &BTreeMap<String, BenchReport>,
     current_reports: &BTreeMap<String, BenchReport>,
 ) -> Result<Verdict, ConfigError> {
+    compare_with_sources(budgets, baseline_reports, current_reports, None)
+}
+
+fn compare_with_sources(
+    budgets: &BTreeMap<String, Budget>,
+    baseline_reports: &BTreeMap<String, BenchReport>,
+    current_reports: &BTreeMap<String, BenchReport>,
+    source: Option<&source_harness::ValidatedPair>,
+) -> Result<Verdict, ConfigError> {
     let ids = budgets
         .keys()
         .chain(current_reports.keys())
@@ -649,7 +688,7 @@ fn compare(
             verdict.breaches += 1;
             continue;
         };
-        assert_comparable_identity(&id, baseline, current)?;
+        assert_comparable_identity(&id, baseline, current, source)?;
         let mut bench_rows = Vec::new();
         let wall_skipped = wall_report_only_reason(budget, baseline);
         let mut limit = None;
@@ -774,6 +813,7 @@ fn assert_comparable_identity(
     id: &str,
     baseline: Option<&BenchReport>,
     current: &BenchReport,
+    source: Option<&source_harness::ValidatedPair>,
 ) -> Result<(), ConfigError> {
     let Some(baseline) = baseline else {
         return Ok(());
@@ -787,6 +827,12 @@ fn assert_comparable_identity(
             &current.harness_version,
         ),
     ] {
+        if field == "harness_version"
+            && let Some(source) = source
+        {
+            source.versions(left, right).map_err(ConfigError)?;
+            continue;
+        }
         if left != right {
             return Err(ConfigError(format!(
                 "{id} baseline/current {field} mismatch: {left} vs {right}"
