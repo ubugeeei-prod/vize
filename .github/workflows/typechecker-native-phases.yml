@@ -108,7 +108,10 @@ jobs:
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        with: { key: typechecker-native-phases, cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}", target-path: target }
+        with:
+          key: typechecker-native-phases
+          cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}"
+          target-path: target
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
         with: { node-version-file: package.json, run-install: false }
       - name: Reject source, lock, corpus, workflow and baseline drift before installation
