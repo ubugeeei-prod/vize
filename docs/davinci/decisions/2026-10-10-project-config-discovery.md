@@ -106,3 +106,10 @@ repaired diagnostic vector. Both initialization passes must leave every
 `vize.config.*` absent. Existing dedicated-user compatibility controls remain.
 Pure projection controls do not qualify a packed installation; fresh Actions
 and the actual generated-project runtime remain required before release credit.
+
+The original release input audit retains all 37 historical contracts, 31 scoped
+contracts and six complete broad selections. Its explicit current successor
+adds only the config-free initializer contract to the broad set; unresolved
+dynamic source reads remain broad. Actions must validate the generated formatter
+inventory against the current source addresses; updating those addresses does
+not change a provider, consumer, symbol or import count.

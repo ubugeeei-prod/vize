@@ -14,10 +14,35 @@ const unscoped = releaseFiles.filter((file) => !scoped.includes(file));
 const selected = (path) =>
   planToolingTests([path]).tests.filter((file) => file.startsWith("tests/tooling/release/"));
 
+const configFreeInitContract = "tests/tooling/release/release-smoke-init-config-free.test.ts";
+const deliveredInitContracts = [
+  "tests/tooling/release/release-smoke-init-child-outcome.test.ts",
+  "tests/tooling/release/release-smoke-init-yarn-checkjs.test.ts",
+];
+
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
-  assert.equal(releaseFiles.length, 39);
+  assert.equal(releaseFiles.length, 37 + 2 + 1);
+  assert.equal(releaseFiles.filter((file) => file !== configFreeInitContract).length, 39);
+  assert.equal(
+    releaseFiles.filter(
+      (file) => file !== configFreeInitContract && !deliveredInitContracts.includes(file),
+    ).length,
+    37,
+  );
   assert.equal(scoped.length, 31);
-  assert.deepEqual(unscoped, [
+  const historicalUnscoped = unscoped.filter(
+    (file) => file !== configFreeInitContract && !deliveredInitContracts.includes(file),
+  );
+  assert.deepEqual(historicalUnscoped, [
+    "tests/tooling/release/release-guest-locks.test.ts",
+    "tests/tooling/release/release-integration-catalog.test.ts",
+    "tests/tooling/release/release-preflight-full-js.test.ts",
+    "tests/tooling/release/release-public-native-invocation.test.ts",
+    "tests/tooling/release/release-smoke-init-fresh.test.ts",
+    "tests/tooling/release/release-smoke-init-typecheck.test.ts",
+  ]);
+  const deliveredUnscoped = unscoped.filter((file) => file !== configFreeInitContract);
+  assert.deepEqual(deliveredUnscoped, [
     "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/release/release-integration-catalog.test.ts",
     "tests/tooling/release/release-preflight-full-js.test.ts",
@@ -27,6 +52,7 @@ void test("audited release contracts have complete imports and leave unresolved 
     "tests/tooling/release/release-smoke-init-typecheck.test.ts",
     "tests/tooling/release/release-smoke-init-yarn-checkjs.test.ts",
   ]);
+  assert.deepEqual(unscoped, [...deliveredUnscoped, configFreeInitContract].sort());
   for (const file of scoped) {
     assert.ok(releaseFiles.includes(file), `${file} must exist`);
     assert.equal(localImportInputs(file).complete, true, `${file} import closure`);
