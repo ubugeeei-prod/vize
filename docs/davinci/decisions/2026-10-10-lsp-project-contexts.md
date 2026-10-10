@@ -187,3 +187,12 @@ concurrent complete-snapshot control, and actual relative-config JSON-RPC
 vectors must all pass. No historical oracle or provider budget changes.
 
 The final hosted native proof uses `project-config-native.yml`: pin the actual PR head, build the production CLI, retain its existing source receipt, and run the entire unchanged `project_config_cli` target with required Corsa and decoded JSON-RPC/terminal capture. Ordinary PR Rust shards intentionally disable native execution and cannot supply this evidence. Keep their policy and the separate immutable native-phase recipe unchanged. All thirteen original nested lifecycle cases and sixteen captured editor processes must join the pinned source, post-test production executable, successful terminal and joined readers; complete decoded protocol and stderr hashes remain available. Preserve the canonical build receipt and record the actual locked build/test arguments separately. Original formatting and explicit controls must run; historical local captures remain historical.
+
+The first hosted native run genuinely passed all 32 original target cases, but
+Cargo test relinked the CLI and the retained binary join correctly refused
+qualification. Prepare the exact Cargo-authored test target/package/source
+artifact first, then build and receipt the canonical production CLI, and run
+only the authenticated harness directly. Retain both harness hashes, raw
+stdout/stderr, exact locked preparation/build and direct execution arguments,
+and the unchanged post-execution CLI join. Reset only the Actions-owned scratch
+evidence directory before each attempt so cached captures cannot count as new.

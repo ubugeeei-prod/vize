@@ -8,6 +8,7 @@ on:
       - "crates/vize/tests/project_config_cli**"
       - "crates/vize/tests/support/lsp_process**"
       - "tests/differential/project-config-native-receipt.ts"
+      - "tests/differential/project-config-native-run.ts"
       - "crates/vize_carton/src/config/**"
       - "crates/vize_maestro/src/server/**"
       - "tests/_fixtures/differential/config/**"
@@ -55,16 +56,18 @@ jobs:
           set -euo pipefail
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          rm -rf target/project-config-native
+          mkdir -p target/project-config-native
+          cargo test --locked --profile ci -p vize --test project_config_cli --no-run --message-format=json | tee target/project-config-native/prepare-tests.jsonl
           cargo build --locked --profile ci -p vize
           vp node tests/differential/build-receipt.ts
-          mkdir -p target/project-config-native
           cp target/ci/vize.differential-build.json target/project-config-native/build.json
       - name: Run all original project contracts with required native diagnostics
         shell: bash
         run: |
           set -euo pipefail
           unset VIZE_TEST_DISABLE_TSGO
-          cargo test --locked --profile ci -p vize --test project_config_cli -- --nocapture 2>&1 | tee target/project-config-native/tests.log
+          vp node tests/differential/project-config-native-run.ts
       - name: Authenticate every lifecycle case against the post-test production executable
         shell: bash
         run: |

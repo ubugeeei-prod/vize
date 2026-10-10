@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { stripVTControlCharacters } from "node:util";
 import { BUILD_RECIPE, expectedBuildIdentity, validateBuildReceipt } from "./build-receipt.ts";
+import { BUILD_ARGV, PREPARE_ARGV } from "./project-config-native-run.ts";
 import { sha256 } from "./sha256.ts";
 
 // Each existing lifecycle law owns one process; the original formatter law
@@ -27,21 +28,6 @@ const expectedCounts = new Map([
   ["lsp::lsp_initializes_project_formatting_without_options_and_respects_false", 2],
   ["lsp::active_native_typecheck_advertises_fresh_jsx_without_an_opt_in_flag", 1],
 ]);
-const buildArgv = ["cargo", "build", "--locked", "--profile", "ci", "-p", "vize"];
-const testArgv = [
-  "cargo",
-  "test",
-  "--locked",
-  "--profile",
-  "ci",
-  "-p",
-  "vize",
-  "--test",
-  "project_config_cli",
-  "--",
-  "--nocapture",
-];
-
 const root = process.cwd();
 const destination = path.join(root, "target/project-config-native");
 const json = (file: string) => JSON.parse(fs.readFileSync(file, "utf8"));
@@ -49,19 +35,39 @@ const identity = expectedBuildIdentity(root);
 assert.equal(identity.sourceRevision, process.env.SOURCE_SHA);
 assert.equal(process.env.VIZE_TEST_REQUIRE_TSGO, "1");
 assert.equal(process.env.VIZE_TEST_DISABLE_TSGO, undefined);
-// Recompute the executable after cargo test: its hash must still equal the
+// Recompute the executable after the prepared harness: its hash must equal the
 // receipt written immediately after the authenticated production build.
 const build = json(path.join(destination, "build.json"));
 validateBuildReceipt(build, identity);
 const workflow = fs.readFileSync(path.join(root, ".github/workflows/project-config-native.yml"));
-for (const argv of [buildArgv, testArgv]) {
+for (const argv of [BUILD_ARGV, PREPARE_ARGV]) {
   assert.ok(workflow.toString().includes(argv.join(" ")), "declared locked recipe is present");
 }
 fs.writeFileSync(path.join(destination, "workflow.yml"), workflow);
 
 const logBytes = fs.readFileSync(path.join(destination, "tests.log"));
+const harness = json(path.join(destination, "harness.json"));
+for (const field of ["sourceRevision", "binaryPath", "binarySha256", "cliVersion"]) {
+  assert.equal(harness[field], identity[field]);
+}
+assert.deepEqual(harness.prepareArgv, PREPARE_ARGV);
+assert.deepEqual(harness.arguments, ["--nocapture"]);
+assert.equal(harness.exitCode, 0);
+assert.equal(harness.signal, null);
+assert.equal(harness.error, undefined);
+assert.equal(harness.harnessSha256, sha256(fs.readFileSync(harness.executable)));
+assert.equal(harness.harnessAfterSha256, harness.harnessSha256);
+assert.deepEqual(harness.productionAfterIdentity, identity);
+assert.equal(
+  harness.preparationSha256,
+  sha256(fs.readFileSync(path.join(destination, "prepare-tests.jsonl"))),
+);
+assert.equal(harness.stdoutSha256, sha256(logBytes));
+const harnessStderr = fs.readFileSync(path.join(destination, "harness-stderr.bin"));
+assert.equal(harness.stderrSha256, sha256(harnessStderr));
+assert.equal(harness.stderrBytes, harnessStderr.length);
 const log = stripVTControlCharacters(logBytes.toString());
-assert.match(log, /test result: ok\. \d+ passed; 0 failed; 0 ignored;/);
+assert.match(log, /test result: ok\. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out;/);
 for (const name of expectedCounts.keys()) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   assert.match(log, new RegExp(`^test ${escaped} \\.\\.\\. ok$`, "m"));
@@ -132,7 +138,12 @@ const processes = fs
       stderrBytes: stderr.length,
     };
   });
-assert.deepEqual([...seen].sort(), [...expectedCounts].sort());
+const compareNames = ([left]: [string, number], [right]: [string, number]) => {
+  if (left < right) return -1;
+  if (left > right) return 1;
+  return 0;
+};
+assert.deepEqual([...seen].sort(compareNames), [...expectedCounts].sort(compareNames));
 assert.equal(processes.length, 16);
 fs.writeFileSync(
   path.join(destination, "custody.json"),
@@ -142,7 +153,12 @@ fs.writeFileSync(
       version: 1,
       ...identity,
       canonicalBuildRecipe: BUILD_RECIPE,
-      declaredWorkflowArgv: { build: buildArgv, test: testArgv },
+      declaredWorkflowArgv: {
+        prepare: PREPARE_ARGV,
+        build: BUILD_ARGV,
+        harness: [harness.executable, ...harness.arguments],
+      },
+      harnessReceiptSha256: sha256(fs.readFileSync(path.join(destination, "harness.json"))),
       workflowSha256: sha256(workflow),
       testLogSha256: sha256(logBytes),
       requiredNative: true,
