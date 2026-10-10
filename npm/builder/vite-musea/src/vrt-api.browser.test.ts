@@ -11,6 +11,7 @@ import { createServer } from "vite";
 import vize from "../../vite/src/index.ts";
 import { musea } from "./plugin/index.ts";
 import type { VrtSummary } from "./vrt/types.ts";
+import type { MuseaVrtOptions } from "./types/plugin.ts";
 
 const repository = fileURLToPath(new URL("../../../../", import.meta.url));
 
@@ -72,14 +73,12 @@ void test(
     await writeFile(path.join(root, "index.html"), "<!doctype html><html><body></body></html>");
     const viewport = { name: "authored-compact", width: 320, height: 180 };
     const configuredSnapshotDir = path.join(root, "reviewed-baselines");
-    const config = {
-      viewports: [viewport],
-      snapshotDir: "reviewed-baselines",
-      threshold: 100,
-      workers: 2,
-      capture: { settleTime: 0, waitForNetwork: false },
-      comparison: { antiAliasing: false },
-    };
+    const config = JSON.parse(
+      await readFile(
+        path.join(repository, "tests/_fixtures/differential/musea/gallery-vrt-options.json"),
+        "utf8",
+      ),
+    ) as MuseaVrtOptions;
     const server = await createServer({
       root,
       configFile: false,

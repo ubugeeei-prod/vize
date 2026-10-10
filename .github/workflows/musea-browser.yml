@@ -69,6 +69,7 @@ jobs:
             artifacts/musea-native-vrt-api/**
           if-no-files-found: warn
           retention-days: 14
+          include-hidden-files: true
   musea-browser:
     name: Musea real Chromium contracts
     runs-on: blacksmith-32vcpu-ubuntu-2404

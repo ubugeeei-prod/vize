@@ -177,6 +177,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           resolvedPreviewCss,
           resolvedPreviewSetup,
           toolbar,
+          vrt: options.vrt,
           devSessionToken,
           processArtFile,
           getDevServerPort: () => devServer.config.server.port || 5173,
