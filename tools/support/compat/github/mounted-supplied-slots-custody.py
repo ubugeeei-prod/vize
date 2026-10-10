@@ -56,28 +56,34 @@ def forward(command, environment, directory, stdin, stdout, stderr):
 
     def relay(reader, destination, name, close=False):
         enabled = True
-        with (directory / name).open("wb") as retained:
-            while True:
-                data = reader.read1(65536) if hasattr(reader, "read1") else reader.read(65536)
-                if not data:
-                    break
-                retained.write(data)
-                if enabled:
-                    try:
-                        view = memoryview(data)
-                        while view:
-                            written = destination.write(view)
-                            assert written and written <= len(view), "Incomplete pipe write"
-                            view = view[written:]
-                        destination.flush()
-                    except (OSError, ValueError, AssertionError) as error:
-                        errors.append({"stream": name, "error": repr(error)})
-                        enabled = False
-        if close:
+        try:
+            with (directory / name).open("wb") as retained:
+                while True:
+                    data = reader.read1(65536) if hasattr(reader, "read1") else reader.read(65536)
+                    if not data:
+                        break
+                    assert retained.write(data) == len(data), "Incomplete retained write"
+                    if enabled:
+                        try:
+                            view = memoryview(data)
+                            while view:
+                                written = destination.write(view)
+                                assert written and written <= len(view), "Incomplete pipe write"
+                                view = view[written:]
+                            destination.flush()
+                        except Exception as error:
+                            errors.append({"stream": name, "stage": "forward", "error": repr(error)})
+                            enabled = False
+        except Exception as error:
+            errors.append({"stream": name, "stage": "capture", "error": repr(error)})
+        finally:
             try:
-                destination.close()
-            except OSError as error:
-                errors.append({"stream": name, "error": repr(error)})
+                if close:
+                    destination.close()
+                else:
+                    reader.close()
+            except Exception as error:
+                errors.append({"stream": name, "stage": "close", "error": repr(error)})
 
     threads = [threading.Thread(target=relay, args=args) for args in [
         (stdin, child.stdin, "stdin.bin", True),
@@ -88,12 +94,17 @@ def forward(command, environment, directory, stdin, stdout, stderr):
     status = child.wait()
     for thread in threads:
         thread.join()
+    raw = {}
+    for name in ["stdin.bin", "stdout.bin", "stderr.bin"]:
+        try:
+            data = (directory / name).read_bytes()
+            raw[name] = {"bytes": len(data), "sha256": digest(data)}
+        except Exception as error:
+            raw[name] = {"error": repr(error)}
+            errors.append({"stream": name, "stage": "receipt", "error": repr(error)})
     packet = {"pid": child.pid, "launcherPid": os.getpid(), "rustPid": os.getppid(),
               "startedNs": started, "endedNs": time.time_ns(), "returncode": status,
-              "signal": -status if status < 0 else None, "relayErrors": errors,
-              "raw": {name: {"bytes": (directory / name).stat().st_size,
-                             "sha256": digest((directory / name).read_bytes())}
-                      for name in ["stdin.bin", "stdout.bin", "stderr.bin"]}}
+              "signal": -status if status < 0 else None, "relayErrors": errors, "raw": raw}
     write_json(directory / "wait.json", packet)
     return packet
 
