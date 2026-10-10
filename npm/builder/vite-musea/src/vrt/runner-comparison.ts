@@ -16,6 +16,7 @@ import { readPng, writePng, colorDelta, isAntiAliased, fileExists } from "./comp
 import type { VrtResult } from "./types.js";
 import type { MuseaVrtRunner } from "./runner.js";
 import { observePreviewReady, waitForMountedPreview } from "./preview-ready.js";
+import { guardHostedNavigation } from "./hosted-navigation.js";
 
 /**
  * Capture screenshot and compare with baseline.
@@ -62,6 +63,8 @@ export async function captureAndCompare(
       reducedMotion: capture.reducedMotion,
     });
     page = await context.newPage();
+    const gallery = runner.getHostedNavigation();
+    const assertNavigation = gallery ? await guardHostedNavigation(page, gallery) : undefined;
 
     // Navigate to variant preview URL
     const variantUrl = runner.getPreviewUrl(baseUrl, art.path, variantName);
@@ -102,6 +105,7 @@ export async function captureAndCompare(
     }
 
     // Take screenshot
+    assertNavigation?.();
     await page.screenshot({
       path: currentPath,
       fullPage: capture.fullPage,
