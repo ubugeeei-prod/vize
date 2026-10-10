@@ -23,3 +23,7 @@ before repair in the new runtime snapshots; their expectations are unchanged.
 The original historical JSX corpora and all existing runtime snapshots remain
 unchanged. Fresh exact-source Actions, native Stack ancestry, protected merge and
 installed product qualification remain required.
+
+The archived Ant probe keeps its original bytes with a `.vue.txt` suffix so
+observation custody does not add an executable input to the existing L3 sweep.
+Its original authored `.vue` path remains recorded in input and program metadata.

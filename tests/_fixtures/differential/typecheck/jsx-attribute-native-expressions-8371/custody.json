@@ -17,10 +17,10 @@
   "artifacts": {
     "Host.vue.txt": "69286a647ec6c2e04c62b0ecd509cfd983ba844cdc0568cd43d01e5fec242dd3",
     "Probe.vue.txt": "6d4a8fc4396f81705b92d5692b999fd3cb9fcc66f01d90c4d4146b6df3df0a2d",
-    "README.md": "363aa442f60a5c8a502e0d347d74a510f70c1cdb1a7ab520d45723d9c9d27181",
+    "README.md": "e063d5b75e89eba72b3138f873c785a88e2cbeae56f3714c55073c41f82068bb",
     "invalid.tsx.txt": "f6fb1f71ac01b860e3517ba18237b5b1d371ccc2f412245b47c767f71d604aa8",
     "observations/ant-design-original/before-79939-jsx-true.json": "2d514cd83dfe1a953ee52d2921b0901d2eb3a46ddc5538dc97401020b686c728",
-    "observations/ant-design-original/inputs/components/__vize_semantic_probe_control.vue": "6d4a8fc4396f81705b92d5692b999fd3cb9fcc66f01d90c4d4146b6df3df0a2d",
+    "observations/ant-design-original/inputs/components/__vize_semantic_probe_control.vue.txt": "6d4a8fc4396f81705b92d5692b999fd3cb9fcc66f01d90c4d4146b6df3df0a2d",
     "observations/ant-design-original/inputs/site/src/typings.d.ts": "ec9d3607d370607942ee4ed7722f92304dd8b5083c7d745522bbba1f749bf7f7",
     "observations/ant-design-original/inputs/site/typings.d.ts": "d3b053ddd5302522a6d05a6a54d6add5c6027e72f59702f571536967a0ba053d",
     "observations/ant-design-original/inputs/tsconfig.json": "108574c2480713a6218c03bd4d5a5c17cbf5cb6217c7d691f9e99b8b9695bb03",
