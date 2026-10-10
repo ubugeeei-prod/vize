@@ -49,6 +49,22 @@ two formatter-only line wraps. The
 serial branch keeps the original vp argv, environment, timeout, maxBuffer, raw
 capture and assertions. Existing two concurrent project hosts remain unchanged.
 
-TODO: whole semantic source peer; same-source Actions pair; report measured
-result; only then decide whether the ordinary baseline default should change.
+The finite eight-path source peer and ten inert process/source controls pass.
+The earlier ignored-pipe descendant control is retained RED against the old
+helper, and the malformed controlled CRLF child source is retained RED before
+its string-serialization repair. Neither control executed product/native inputs.
+
+The manual-only `component=n8n-baseline` dispatch uses
+`.github/workflows/ci-walltime-benchmark.yml`. It checks out the run's immutable
+`github.sha`, uses the original JS setup, builds the existing debug native once,
+and packs the bridge once. It then runs the unchanged complete controller twice
+with concurrent project hosts, changing only the explicit baseline mode and
+owned timing filename. The second arm runs after a first-arm failure unless
+cancelled; either failure keeps the job failed. The always uploader retains both
+staging trees, whole logs and the one native build receipt/process. Original four
+comparison jobs, default `all`, required JS suite and ordinary defaults are intact.
+
+TODO: whole manual workflow peer and exact-source Actions admission; same-source
+Actions pair; report measured result; only then decide whether the ordinary
+baseline default should change.
 The inherited unfinished Docs comparison and remaining CI acceptance stay open.

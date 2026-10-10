@@ -8,7 +8,7 @@ on:
       component:
         description: Compare serial and concurrent execution on the same source
         type: choice
-        options: [all, js, docs, rust, native]
+        options: [all, js, docs, rust, native, n8n-baseline]
         default: all
 permissions: { contents: read }
 concurrency:
@@ -151,5 +151,39 @@ jobs:
         with:
           name: ci-walltime-native-${{ github.sha }}
           path: target/ci-walltime/
+          if-no-files-found: error
+          retention-days: 14
+  n8n-baseline:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.component == 'n8n-baseline' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env: { CARGO_BUILD_JOBS: "12" }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: ./.github/actions/setup-js-package-tests
+      - name: Build the same source native binary and bridge once
+        run: |
+          vp run --workspace-root build:native:test
+          vp run --filter './npm/oxlint' build
+      - name: Serial baseline with unchanged concurrent project hosts
+        env: { VIZE_N8N_BASELINE_MODE: serial }
+        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-serial.json
+      - name: Partitioned baseline with unchanged concurrent project hosts
+        if: ${{ !cancelled() }}
+        env: { VIZE_N8N_BASELINE_MODE: partitioned }
+        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/n8n-baseline-partitioned.json
+      - name: Preserve both complete baseline campaigns and the one native build
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-walltime-n8n-baseline-${{ github.sha }}
+          path: |
+            target/ci-walltime/
+            target/oxlint-original-project-transport/
+            npm/native/.artifacts/native/formatter-history/build-receipt.json
+            npm/native/.artifacts/native/formatter-history/build-process.json
+            npm/native/.artifacts/native/formatter-history/cargo.stdout.bin
+            npm/native/.artifacts/native/formatter-history/cargo.stderr.bin
           if-no-files-found: error
           retention-days: 14
