@@ -125,7 +125,6 @@ The corrected normal-mode campaign at source `295289873e982e58845c8ec628d6f4f5e6
 
 After the actual signed SSR merge `ceb3677dfc29b9b6a9c5751771b8f01cb0969c52`, GitHub native Stack 8527 retargeted this child to `main` and replayed its source as `e39085cb9c66f5fe06d2436797a953abfa2a4db2`. The complete incoming foreign tree and seven tooling, law and workflow files are unchanged. The two factual record clauses from the old `295` merge resolution are restored before this new campaign record. This actual-main successor still needs fresh source/full/native, separate 104-row instruction and complete 624-report normal qualification; old results provide no acceptance transfer.
 
-
 ## Authenticate the released harness version on each side
 
 The exact `38206df1` campaign stopped at its first complete 104-row base/head
@@ -172,7 +171,6 @@ changes only collector admission: a complete next campaign still executes all
 six original judges, and the candidate judges will retain that version refusal.
 No normalized report copies or comparator exception are introduced. Fresh
 exact-source Actions are required; the optional child remains off queue.
-
 
 ## Coalesced source-owned judge boundary
 
@@ -221,3 +219,22 @@ failures are still debt, with no cap/baseline waiver or acceptance claim. This
 optional child stays off queue while unqualified and does not hold releases.
 
 The first frozen judge net `09597707` remains retained as a rejected source snapshot. Independent review found three concrete joins missing: inherited release-profile settings, the absolute resolved Cargo/Rustc image and metadata/build image equality, and the exact authored `=ownVersion` requirement for the four dev products. The corrective net binds the complete authored profile table, both actual pinned build executables and identical metadata/build Cargo images, and only those exact version requirements. Synthetic source laws preserve the authored requirement shape in both arms and refuse inherited-profile, stable foreign-image and unprefixed/foreign-version substitutions. No native execution, numerical acceptance or performance credit is inferred from this source correction.
+
+## Source-file responsibility correction
+
+Published `d03f4183` exercised all eight new source-owned Rust control groups
+successfully in PR tooling group 4/4 on its actual `02dffeba` projection. Its
+original check-js formatting and 350-line source guard failures remain retained.
+The corrective successor removes two extra documentation blank lines and moves
+existing witness, synthetic-fixture and source-control bodies into modules at
+their existing responsibility boundaries. All 18 Node controls and eight Rust
+source-control bodies are preserved; the original default identity file is
+restored byte-for-byte. Whole-body inverses retain the original collector
+recipe, provider inputs, numerical judgments and source ownership checks.
+
+All split JS/TS files have at most 329 lines. The existing 1,180-line Rust
+helper remains unchanged within the guard's original `tools/support/` boundary;
+no guard exclusion or limit is added. Fresh Actions must resolve every original
+required gate. Passing source laws does not resolve the original 57 allocation
+equality failures. No knowingly unqualified 624-report campaign is dispatched,
+and the optional memory PR remains off queue without holding releases.
