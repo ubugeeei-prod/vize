@@ -35,7 +35,9 @@ Adding these inputs under `tests/_fixtures` changed its fixed file vector from
 498 to 502 despite zero remark changes; relocation restores the original 498
 paths without changing collector rules, first-500 selection, goldens or budgets.
 The retained `compiler-corpus-boundary.json` authenticates that exact pre-addition
-main path vector and unchanged remarks baseline by SHA-256.
+main path vector and unchanged remarks baseline by SHA-256. The existing
+formatter-sensitive custody policy covers this exact original-fixture directory;
+formatting these retained inputs would erase their authenticated authored bytes.
 
 ## Genuine built HTTP contract
 
