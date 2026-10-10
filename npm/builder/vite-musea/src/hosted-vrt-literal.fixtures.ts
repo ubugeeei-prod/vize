@@ -8,6 +8,7 @@ import vize from "../../vite/src/index.ts";
 import { musea } from "./plugin/index.ts";
 import { fixture, variants } from "./literal-variant-browser.fixture.ts";
 import { sha256 } from "./hosted-vrt-build.fixtures.ts";
+import { assertHostedVrtStyles } from "./hosted-vrt-style.fixtures.ts";
 
 export type LiteralTitle = keyof typeof variants;
 
@@ -173,6 +174,7 @@ export async function captureLiteralService(input: {
     await page.locator(".vrt-variant-name").allTextContents(),
     variants[title].map(([name]) => name),
   );
+  const styles = await assertHostedVrtStyles(page);
   const reportReceipts: unknown[] = [];
   for (const kind of ["json", "html"] as const) {
     const bytes = await artifact(data.reports[kind]);
@@ -191,6 +193,6 @@ export async function captureLiteralService(input: {
   }
   return {
     baselines,
-    receipt: { title, phase, data, images: imageReceipts, reports: reportReceipts },
+    receipt: { title, phase, data, images: imageReceipts, reports: reportReceipts, styles },
   };
 }

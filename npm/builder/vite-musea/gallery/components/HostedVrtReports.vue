@@ -1,11 +1,19 @@
 <script setup lang="ts">
 const emit = defineEmits<{ download: [kind: "html" | "json"] }>();
+
+function downloadHtml() {
+  emit("download", "html");
+}
+
+function downloadJson() {
+  emit("download", "json");
+}
 </script>
 
 <template>
   <div class="hosted-vrt-reports">
-    <button type="button" @click="emit('download', 'html')">Download HTML report</button>
-    <button type="button" @click="emit('download', 'json')">Download JSON report</button>
+    <button type="button" @click="downloadHtml">Download HTML report</button>
+    <button type="button" @click="downloadJson">Download JSON report</button>
   </div>
 </template>
 

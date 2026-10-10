@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import { mdiLoading, mdiImageOutline } from "@mdi/js";
 import { runVrt } from "../api";
 import { isStaticGallery } from "../staticApi";
@@ -7,6 +7,7 @@ import MdiIcon from "./MdiIcon.vue";
 import StaticVrtNotice from "./StaticVrtNotice.vue";
 import HostedVrtConnection from "./HostedVrtConnection.vue";
 import HostedVrtReports from "./HostedVrtReports.vue";
+import VrtResults from "./VrtResults.vue";
 import { useHostedVrt } from "../composables/useHostedVrt";
 import type { VrtResult, VrtSummary, VrtArtifacts } from "./vrtResults";
 
@@ -23,16 +24,6 @@ const error = ref<string | null>(null);
 const updateSnapshots = ref(false);
 const artifacts = ref<VrtArtifacts | null>(null);
 const hosted = useHostedVrt();
-
-const groupedResults = computed(() => {
-  const groups: Record<string, VrtResult[]> = Object.create(null);
-  for (const r of results.value) {
-    const key = r.variantName;
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(r);
-  }
-  return groups;
-});
 
 async function runTest() {
   isRunning.value = true;
@@ -51,13 +42,6 @@ async function runTest() {
   } finally {
     isRunning.value = false;
   }
-}
-
-function getStatusIcon(result: VrtResult): string {
-  if (result.error) return "error";
-  if (result.isNew) return "new";
-  if (result.passed) return "pass";
-  return "fail";
 }
 </script>
 
@@ -138,49 +122,200 @@ function getStatusIcon(result: VrtResult): string {
         </div>
       </div>
 
-      <div class="vrt-results">
-        <div
-          v-for="(variantResults, variantName) in groupedResults"
-          :key="variantName"
-          class="vrt-variant"
-        >
-          <div class="vrt-variant-name">{{ variantName }}</div>
-          <div class="vrt-viewports">
-            <div
-              v-for="result in variantResults"
-              :key="result.viewport"
-              class="vrt-viewport"
-              :class="getStatusIcon(result)"
-            >
-              <span class="vrt-viewport-name">{{ result.viewport }}</span>
-              <div class="vrt-viewport-body">
-                <figure v-for="(url, kind) in result.images" :key="kind">
-                  <figcaption>{{ kind }}</figcaption>
-                  <img
-                    :src="url"
-                    :alt="`${result.variantName} ${kind}`"
-                    style="max-width: 240px; height: auto"
-                  />
-                </figure>
-                <span class="vrt-status" :class="getStatusIcon(result)">
-                  <template v-if="result.error">Error</template>
-                  <template v-else-if="result.isNew">New baseline</template>
-                  <template v-else-if="result.passed">Pass</template>
-                  <template v-else> Diff {{ result.diffPercentage?.toFixed(2) }}% </template>
-                </span>
-                <code
-                  v-if="result.diffPath || result.currentPath || result.snapshotPath"
-                  class="vrt-result-path"
-                >
-                  {{ result.diffPath || result.currentPath || result.snapshotPath }}
-                </code>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <VrtResults :results="results" />
     </template>
   </div>
 </template>
 
-<style scoped src="./vrtPanel.css"></style>
+<style scoped>
+.vrt-panel {
+  padding: 0.5rem;
+}
+
+.vrt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.vrt-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.vrt-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.vrt-update-label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--musea-text-muted);
+  cursor: pointer;
+}
+
+.vrt-checkbox {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.vrt-run-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--musea-accent);
+  border: none;
+  border-radius: var(--musea-radius-sm);
+  color: var(--musea-accent-contrast);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--musea-transition);
+}
+
+.vrt-run-btn:hover:not(:disabled) {
+  background: var(--musea-accent-hover);
+}
+
+.vrt-run-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.vrt-empty {
+  padding: 2rem;
+  text-align: center;
+  color: var(--musea-text-muted);
+  font-size: 0.875rem;
+}
+
+.vrt-hint {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  opacity: 0.7;
+}
+
+.vrt-hint {
+  code {
+    background: var(--musea-bg-tertiary);
+    padding: 0.125rem 0.375rem;
+    border-radius: 3px;
+    font-family: var(--musea-font-mono);
+  }
+}
+
+.vrt-error {
+  padding: 1rem;
+  background: color-mix(in srgb, var(--musea-error) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--musea-error) 20%, transparent);
+  border-radius: var(--musea-radius-sm);
+  color: var(--musea-error);
+  font-size: 0.8125rem;
+}
+
+.vrt-summary {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.vrt-artifacts {
+  display: grid;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+  padding: 0.875rem 1rem;
+  background: var(--musea-bg-secondary);
+  border: 1px solid var(--musea-border);
+  border-radius: var(--musea-radius-sm);
+}
+
+.vrt-artifacts-header {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.vrt-artifact {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.vrt-artifact-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--musea-text-muted);
+}
+
+.vrt-artifact-path {
+  display: block;
+  padding: 0.5rem 0.625rem;
+  background: var(--musea-bg-primary);
+  border: 1px solid var(--musea-border);
+  border-radius: var(--musea-radius-sm);
+  color: var(--musea-text-secondary);
+  font-size: 0.75rem;
+  font-family: var(--musea-font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.vrt-stat {
+  background: var(--musea-bg-secondary);
+  border: 1px solid var(--musea-border);
+  border-radius: var(--musea-radius-sm);
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  min-width: 60px;
+}
+
+.vrt-stat-value {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.vrt-stat-label {
+  font-size: 0.625rem;
+  color: var(--musea-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vrt-stat.passed {
+  .vrt-stat-value {
+    color: var(--musea-success);
+  }
+}
+.vrt-stat.failed {
+  .vrt-stat-value {
+    color: var(--musea-error);
+  }
+}
+.vrt-stat.new {
+  .vrt-stat-value {
+    color: var(--musea-info);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+</style>
