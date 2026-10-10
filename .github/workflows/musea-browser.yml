@@ -41,7 +41,7 @@ jobs:
           key: native-inline-browser
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
       - name: Install source-native browser dependencies
-        run: vp install --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
+        run: vp install --filter './npm/native...' --filter './npm/builder/vite...' --filter './npm/builder/vite-musea...' --frozen-lockfile --prefer-offline
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: ~/.cache/ms-playwright
