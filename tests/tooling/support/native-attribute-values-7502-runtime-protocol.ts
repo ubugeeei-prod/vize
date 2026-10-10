@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { exactKeys7502, hash7502, loadInputs7502 } from "./native-attribute-values-7502-inputs.ts";
+import {
+  disposition7502,
+  exactKeys7502,
+  hash7502,
+  loadInputs7502,
+} from "./native-attribute-values-7502-inputs.ts";
 
 function trace(value: any, hydrated: boolean, cloned = false) {
   exactKeys7502(value, [
@@ -49,7 +54,7 @@ export function validateRuntime7502(output: any, packet: any, mode: string) {
     "executions",
   ]);
   assert.equal(output.schema, "vize.native-attribute-values-7502.runtime");
-  assert.equal(output.version, 1);
+  assert.equal(output.version, 2);
   assert.equal(output.mode, mode);
   assert.equal(output.capturedFromRust, true);
   assert.equal(output.acceptance, "unreviewed");
@@ -57,11 +62,12 @@ export function validateRuntime7502(output: any, packet: any, mode: string) {
   assert.deepEqual(output.counts, {
     originalControls: 14,
     knownIncorrectRc9Clients: 9,
-    positiveNativeExecutions: 72,
-    lowerRefusalOutcomes: 12,
+    positiveNativeExecutions: 76,
+    lowerRefusalOutcomes: 6,
+    targetRefusalOutcomes: 2,
   });
   assert.equal(output.controls.length, 14);
-  assert.equal(output.executions.length, 72);
+  assert.equal(output.executions.length, 76);
   for (const [index, fixture] of loadInputs7502().fixtures.entries()) {
     const control = output.controls[index];
     exactKeys7502(control, [
@@ -122,7 +128,7 @@ export function validateRuntime7502(output: any, packet: any, mode: string) {
       assert.deepEqual(entry.tree, control.expectedTree);
   }
   assert.equal(output.controls.filter((entry: any) => !entry.stockClientMatches).length, 9);
-  const positives = packet.rows.filter((row: any) => row.disposition === "positive");
+  const positives = packet.rows.filter((row: any) => disposition7502(row) === "positive");
   for (const [index, row] of positives.entries()) {
     const execution = output.executions[index];
     exactKeys7502(execution, [

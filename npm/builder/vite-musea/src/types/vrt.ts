@@ -16,6 +16,8 @@ export interface ViewportConfig {
  * VRT configuration options.
  */
 export interface VrtOptions {
+  /** Public gallery route, including the Vite base path. @default '/__musea__' */
+  previewBasePath?: string;
   /**
    * Snapshot storage directory.
    * @default '.vize/snapshots'
@@ -53,6 +55,8 @@ export interface CaptureConfig {
   caret?: "hide" | "initial";
   /** Capture full page vs viewport only */
   fullPage?: boolean;
+  /** Wait for Musea async setup and mounted preview. Enabled by the CLI and gallery. */
+  waitForPreviewReady?: boolean;
   /** Wait for network idle before capture */
   waitForNetwork?: boolean;
   /** Additional wait time after load (ms) */

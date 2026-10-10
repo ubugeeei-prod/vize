@@ -193,6 +193,8 @@ vize lint --format agent src
 vize lint --format markdown src
 ```
 
+<span id="check"></span>
+
 ## Confere
 
 ```bash

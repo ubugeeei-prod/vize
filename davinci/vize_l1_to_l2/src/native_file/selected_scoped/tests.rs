@@ -294,7 +294,7 @@ fn nondefault_public_profile_and_uncompleted_file_cannot_grant_scoped_authority(
 }
 
 #[test]
-fn old_scriptless_setup_and_authored_class_gates_remain_intact() {
+fn old_scriptless_setup_and_authored_style_gates_remain_intact() {
     let arena = Allocator::default();
     let source = "<template><p/></template><style scoped>.a:empty{color:red}</style>";
     let old = lower_selected_sfc_native(&arena, source, options());
@@ -304,7 +304,7 @@ fn old_scriptless_setup_and_authored_class_gates_remain_intact() {
     let setup = lower_selected_setup_sfc_native(&arena, setup_source, options());
     assert!(setup.admitted().is_none());
     assert_eq!(setup.original().issues()[0].kind, LowerKind::Style);
-    for attr in ["class='a'", "style='color:red'"] {
+    for attr in ["style='color:red'"] {
         let source = std::format!(
             "<template><p {attr}/></template><style scoped>.a:empty{{color:red}}</style>"
         );
@@ -314,4 +314,25 @@ fn old_scriptless_setup_and_authored_class_gates_remain_intact() {
         assert!(owner.style_syntax().is_some());
         assert!(owner.original().template().unwrap().view().is_err());
     }
+}
+
+#[test]
+fn former_scoped_class_refusal_keeps_original_style_and_completed_class_custody() {
+    let arena = Allocator::default();
+    let source = "<template><p class='a'/></template><style scoped>.a:empty{color:red}</style>";
+    let owner = lower_selected_scoped_sfc_native(&arena, source, options());
+    assert!(owner.admitted().is_some());
+    assert!(owner.style_syntax().is_some());
+    assert!(owner.original().template().unwrap().view().is_ok());
+    assert!(core::ptr::eq(
+        owner.original().descriptor().source(),
+        source
+    ));
+    let file = owner.original().template().unwrap().file().unwrap();
+    let [record] = file.native_attribute_values() else {
+        panic!("one retained original class");
+    };
+    assert_eq!(record.observation().unwrap().raw_value(), "a");
+    assert_eq!(record.observation().unwrap().source().text(), "a");
+    assert!(file.is_complete());
 }

@@ -59,12 +59,7 @@ vp dev
 
 Open `http://localhost:5173/__musea__`.
 
-If you install the `vize` npm package, `vp exec vize musea` is a convenience wrapper around Vite:
-
-```bash
-vp exec vize musea
-vp exec vize musea --build
-```
+See [Musea Hosting](./musea-hosting) for the CLI wrapper, static deployment, and test requirements.
 
 ## Shared Config
 

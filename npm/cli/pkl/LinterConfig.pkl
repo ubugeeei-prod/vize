@@ -121,6 +121,10 @@ class DefinePropsDestructuringOptions {
   destructure: "only-when-assigned"|"always"|"never" = "only-when-assigned"
 }
 
+class ValidVSlotOptions {
+  allowModifiers: Boolean = false
+}
+
 class LintRuleOptions {
   `script/define-props-destructuring`: DefinePropsDestructuringOptions? = null
   `type/strict-boolean-expressions`: StrictBooleanExpressionsOptions? = null
@@ -134,6 +138,7 @@ class LintRuleOptions {
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
   `vue/v-on-event-hyphenation`: HyphenationStyle? = null
   `vue/attribute-hyphenation`: HyphenationStyle? = null
+  `vue/valid-v-slot`: ValidVSlotOptions? = null
   `musea/prefer-design-tokens`: MuseaPreferDesignTokensOptions? = null
 }
 

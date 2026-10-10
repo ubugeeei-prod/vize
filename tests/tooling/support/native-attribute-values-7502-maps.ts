@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { exactKeys7502 } from "./native-attribute-values-7502-inputs.ts";
+import { disposition7502, exactKeys7502 } from "./native-attribute-values-7502-inputs.ts";
 
 export function coordinate7502(text: string, offset: number) {
   assert(Number.isSafeInteger(offset) && offset >= 0 && offset <= Buffer.byteLength(text));
@@ -19,7 +19,7 @@ export function codec7502() {
 }
 export function maps7502(packet: any, codec: any) {
   for (const row of packet.rows) {
-    if (row.disposition !== "positive" || !row.sourceMap) continue;
+    if (disposition7502(row) !== "positive" || !row.sourceMap) continue;
     const { code, map, links } = row.result;
     assert.equal(map.file, row.filename);
     assert.deepEqual(map.sources, [row.filename]);
@@ -82,6 +82,41 @@ export function maps7502(packet: any, codec: any) {
       actual,
       expected,
       "every original segment-bearing link has its complete exact start anchor",
+    );
+  }
+}
+
+export function classAnchorDeletion7502(packet: any, codec: any) {
+  const rows = packet.rows.filter(
+    (row: any) =>
+      row.id === "original-regression-11" && disposition7502(row) === "positive" && row.sourceMap,
+  );
+  assert.deepEqual(
+    rows.map((row: any) => row.target),
+    ["dom", "ssr"],
+  );
+  for (const row of rows) {
+    const attribute = row.l3.values.find(
+      (value: any) => value.attribute.name === "class",
+    ).attribute;
+    const anchor = row.result.links.findIndex(
+      (link: any) =>
+        link.segment &&
+        link.authored.start === attribute.span.start &&
+        link.authored.end === attribute.span.end,
+    );
+    assert(anchor >= 0, "actual captured class anchor required");
+    const changed = {
+      ...row,
+      result: {
+        ...row.result,
+        links: row.result.links.filter((_: any, index: number) => index !== anchor),
+      },
+    };
+    assert.throws(
+      () => maps7502({ rows: [changed] }, codec),
+      assert.AssertionError,
+      "removing an actual captured class anchor must fail",
     );
   }
 }

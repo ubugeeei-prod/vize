@@ -6,6 +6,10 @@ title: TypeScript Content Mapper
 
 # TypeScript Content Mapper
 
+Content Mapper 対応の native TypeScript ホストへ Vue ファイルを統合するときに、このガイドを使ってください。
+日常のプロジェクト検査は[静的解析](./static-analysis.md)から始め、エディターの設定は
+[VS Code 連携](../integrations/vscode.md)を参照してください。
+
 Content Mapper は、コンパイラー自身がパースできないファイルタイプをチェックするための
 TypeScript のプラグイン機構です。[TypeScript 7.1 API ロードマップ](https://github.com/microsoft/typescript-go/issues/4830)
 では、Vue に必要な TS Server プラグインの後継として位置づけられています。この API は

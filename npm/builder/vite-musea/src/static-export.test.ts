@@ -94,8 +94,12 @@ void test("emitStaticGallery packages browser-facing static output", async () =>
     const staticPayload = JSON.parse(assetText(assets, "__musea__/api/static.json")) as {
       arts: Array<{ path: string; metadata: { title: string }; variants: Array<{ name: string }> }>;
       previews: Record<string, Record<string, string>>;
+      snapshotIdentityVersion: number;
+      snapshotIdentities: Record<string, string>;
       details?: Record<string, Record<string, unknown>>;
     };
+    assert.equal(staticPayload.snapshotIdentityVersion, 1);
+    assert.deepEqual(staticPayload.snapshotIdentities, { [art.path]: "src/Button.art.vue" });
     const artsPayload = JSON.parse(assetText(assets, "__musea__/api/arts")) as Array<{
       path: string;
       metadata: { title: string };
