@@ -6,7 +6,8 @@ import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 import type { Browser } from "playwright";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
-import { ruleRenderRoutes, verifyRenderedRulePackets } from "./rule-render-assertions.ts";
+import { verifyRenderedRulePackets } from "./rule-render-assertions.ts";
+import { navigationRenderRoutes } from "./navigation-render-routes.ts";
 import { capturePageRender } from "./capture-page-render.ts";
 import type { PageCapture } from "./capture-page-render.ts";
 import { verifyCaptureRenderControls } from "./capture-render-controls.ts";
@@ -16,6 +17,7 @@ import {
   verifyThemeReadability,
   switchDocsTheme,
 } from "./theme-render-assertions.ts";
+import { verifyCommandTabs } from "./command-tab-render-assertions.ts";
 
 type FontUsage = { familyName: string; glyphCount: number };
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -81,24 +83,7 @@ const { values } = parseArgs({
 });
 const dist = path.resolve(values.dir);
 const output = path.resolve(values.output);
-const pages = [
-  "/",
-  "/getting-started",
-  "/guide/configuration",
-  "/guide/migration",
-  "/guide/vite-plus",
-  "/guide/vite-plugin",
-  "/guide/configuration-reference",
-  "/guide/compiler-configuration-reference",
-  ...ruleRenderRoutes,
-];
-const routes = values.routes?.split(",") ?? [
-  ...pages.flatMap((route) => [route, `/ja${route}`]),
-  ...["", "/ja", "/zh-CN", "/pt-BR", "/fr"].flatMap((locale) => [
-    `${locale}/philosophy`,
-    `${locale}/guide/content-mapper`,
-  ]),
-];
+const routes = values.routes?.split(",") ?? navigationRenderRoutes;
 const types: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -213,6 +198,7 @@ try {
       await verifySidebarMotion(page, device);
       const codeContrast = await verifyThemeReadability(page);
       const rulePackets = await verifyRenderedRulePackets(page, route);
+      await verifyCommandTabs(page, route);
       assert(metrics.bodyWidth <= viewport.width + 1, `${route}: page overflows viewport`);
       assert.equal(pageErrors.length, 0, pageErrors.join("\n"));
       const sidebar = page.locator(".sidebar");
