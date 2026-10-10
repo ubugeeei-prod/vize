@@ -161,3 +161,11 @@ regenerate packets from the actual source metadata, and preserve every complete
 code block. No preset, option, example, support boundary, assertion, or pixel
 capture is removed. Fresh exact-head source and full Docs, protected delivery,
 and the actual deployed reader flow remain required.
+
+The genuine post-navigation parent composes actual signed main
+`538c07ac7eca17db3151fe68cdf38586bc561bb0`. Retain its shared navigation routes,
+motion/contrast/command-tab checks and theme switching, then append every prior
+foreign category and English subgroup route. Complete copy, font, link, source,
+device, palette and pixel assertions and bounded progress logs remain. This
+resolves the actual verifier conflict without weakening either owner's oracle;
+fresh exact-head full qualification remains mandatory.
