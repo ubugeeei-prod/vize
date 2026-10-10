@@ -118,11 +118,31 @@ impl Rule for ValidVSlot {
             return;
         }
 
-        if tag != "template" && Self::is_named_slot(directive) {
+        if tag != "template" {
+            if Self::is_named_slot(directive) {
+                ctx.error_with_help(
+                    ctx.t("vue/valid-v-slot.invalid_location"),
+                    &directive.loc,
+                    ctx.t("vue/valid-v-slot.help"),
+                );
+            } else if directive.exp.as_ref().is_none_or(
+                |exp| matches!(exp, ExpressionNode::Simple(value) if value.content.is_empty()),
+            ) {
+                ctx.error_with_help(
+                    ctx.t("vue/valid-v-slot.missing_value"),
+                    &directive.loc,
+                    ctx.t("vue/valid-v-slot.value_help"),
+                );
+            }
+        }
+
+        // Dotted named slots remain supported (for example, Vuetify's item.memo).
+        // Without an argument, the dots can only be unsupported modifiers.
+        if directive.arg.is_none() && !directive.modifiers.is_empty() {
             ctx.error_with_help(
-                ctx.t("vue/valid-v-slot.invalid_location"),
+                ctx.t("vue/valid-v-slot.invalid_modifier"),
                 &directive.loc,
-                ctx.t("vue/valid-v-slot.help"),
+                ctx.t("vue/valid-v-slot.modifier_help"),
             );
         }
 
