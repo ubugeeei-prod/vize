@@ -153,7 +153,20 @@ fn corpus_entry_path(root: &Path, entry: io::Result<fs::DirEntry>) -> PathBuf {
 /// Fails the calling test with the path and original IO error when a selected
 /// file cannot be read; unreadable files must never become omitted evidence.
 pub fn read_corpus_source(file: &Path) -> CompactString {
-    fs::read_to_string(file)
+    // Retain every logical alias in the collected vector, but do not send the
+    // whole alias chain through one kernel pathname lookup. Resolve each
+    // component before adding the next; canonicalize still rejects a genuine
+    // self-referential link. There is one source read and no error retry.
+    let mut physical = PathBuf::new();
+    for component in file.components() {
+        physical.push(component);
+        if matches!(component, std::path::Component::Prefix(_)) {
+            continue;
+        }
+        physical = fs::canonicalize(&physical)
+            .unwrap_or_else(|error| fail_corpus_io("read source", file, &error));
+    }
+    fs::read_to_string(&physical)
         .unwrap_or_else(|error| fail_corpus_io("read source", file, &error))
         .into()
 }
