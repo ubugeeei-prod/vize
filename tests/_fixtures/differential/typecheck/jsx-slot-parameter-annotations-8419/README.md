@@ -7,7 +7,9 @@ error retains TS2339. Source text includes Japanese, emoji and CRLF.
 
 `cases.json` contains literal diagnostic expectations. The assignability
 messages were independently checked against the original Corsa 7.0.2 typed
-callback contract, without using repaired output as the oracle. The source
+callback contract, without using repaired output as the semantic oracle. CLI protocol messages
+flatten diagnostic chains without plain-CLI indentation, and the authored
+callback opener is column 33; both are asserted literally. The source
 CLI test compares every report field, including all file/program entries,
 compiler options, diagnostic text, coordinates, counts, stderr and exit code.
 
