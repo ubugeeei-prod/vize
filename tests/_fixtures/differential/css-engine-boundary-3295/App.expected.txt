@@ -1,0 +1,11 @@
+<style>
+a{opacity:abs(-50%)}
+</style>
+
+<style>
+a{color:hsl(0 abs(-50%) 0%)}
+</style>
+
+<style>
+a{text-size-adjust:calc(5)}
+</style>
