@@ -1,0 +1,260 @@
+{
+  "issue": 8495,
+  "originalCompactSourceSha256": "f96f84e4fbbd048c8d4e73e280abe4a432c9215392c69d6b563937231d4e90a4",
+  "originalMultilineSourceSha256": "ee38c93e4f394aa91c8f3f239dbf3a698abb07db2fea626c7e8a49759712a3ee",
+  "cases": [
+    {
+      "name": "original compact unchanged",
+      "source": "<script setup lang=\"ts\">\nimport { toRaw, useAttrs } from 'vue';\ndefineOptions({ inheritAttrs: false });\nconst props = defineProps<{ label?: string; constructor?: string; hasOwnProperty?: string }>();\nconst attrs = useAttrs();\nconst currentProps = () => Object.fromEntries(Object.entries(toRaw(props)).filter(([, value]) => value !== undefined));\n</script>\n<template><output>{{ JSON.stringify({ props: currentProps(), attrs: { ...attrs } }) }}</output></template>",
+      "expected": {
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "constructor",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "hasOwnProperty",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "emits": []
+      }
+    },
+    {
+      "name": "original multiline unchanged",
+      "source": "<script setup lang=\"ts\">\nimport { toRaw, useAttrs } from 'vue';\ndefineOptions({ inheritAttrs: false });\nconst props = defineProps<{\n  label?: string;\n  constructor?: string;\n  hasOwnProperty?: string;\n}>();\nconst attrs = useAttrs();\nconst currentProps = () => Object.fromEntries(Object.entries(toRaw(props)).filter(([, value]) => value !== undefined));\n</script>\n<template><output>{{ JSON.stringify({ props: currentProps(), attrs: { ...attrs } }) }}</output></template>",
+      "expected": {
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "constructor",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "hasOwnProperty",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "emits": []
+      }
+    },
+    {
+      "name": "literal compact",
+      "source": "<script setup lang=\"ts\">const p=defineProps<{label?:string; 'scope.name'?:string; __proto__?:string; constructor?:string; hasOwnProperty?:string}>();</script><template><div /></template>",
+      "expected": {
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "scope.name",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "__proto__",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "constructor",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "hasOwnProperty",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "emits": []
+      }
+    },
+    {
+      "name": "literal multiline",
+      "source": "<script setup lang=\"ts\">const p=defineProps<{\nlabel?:string;\n'scope.name'?:string;\n__proto__?:string;\nconstructor?:string;\nhasOwnProperty?:string\n}>();</script><template><div /></template>",
+      "expected": {
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "scope.name",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "__proto__",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "constructor",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "hasOwnProperty",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "emits": []
+      }
+    },
+    {
+      "name": "nested and delimited compact",
+      "source": "<script setup lang=\"ts\">const p=defineProps<{label?:'a;b'; payload?:{left:string;right:number}; callback?:(event:Event)=>void; hasOwnProperty?:string}>();</script><template><div /></template>",
+      "expected": {
+        "props": [
+          {
+            "name": "label",
+            "type": "'a;b'",
+            "required": false
+          },
+          {
+            "name": "payload",
+            "type": "{left:string;right:number}",
+            "required": false
+          },
+          {
+            "name": "callback",
+            "type": "(event:Event)=>void",
+            "required": false
+          },
+          {
+            "name": "hasOwnProperty",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "emits": []
+      }
+    },
+    {
+      "name": "computed literal and unicode keys",
+      "source": "<script setup lang=\"ts\">const p=defineProps<{[\"scope.name\"]?:string; café?:number}>();</script>",
+      "expected": {
+        "props": [
+          {
+            "name": "scope.name",
+            "type": "string",
+            "required": false
+          },
+          {
+            "name": "café",
+            "type": "number",
+            "required": false
+          }
+        ],
+        "emits": []
+      }
+    },
+    {
+      "name": "defaults and emits remain owned by macros",
+      "source": "<script setup lang=\"ts\">\nconst label = \"unrelated local\";\nconst p=withDefaults(defineProps<{label:string; \"scope.name\"?:string; __proto__?:string; constructor?:string; hasOwnProperty?:string}>(), {label:\"Seed\", \"scope.name\":\"Seed custom\", \"__proto__\":\"Seed proto\", constructor:\"Seed constructor\", hasOwnProperty:\"Seed method\"});\ndefineEmits<{change:[string]; submit:[]}>();\n</script>",
+      "expected": {
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": false,
+            "default_value": "\"Seed\""
+          },
+          {
+            "name": "scope.name",
+            "type": "string",
+            "required": false,
+            "default_value": "\"Seed custom\""
+          },
+          {
+            "name": "__proto__",
+            "type": "string",
+            "required": false,
+            "default_value": "\"Seed proto\""
+          },
+          {
+            "name": "constructor",
+            "type": "string",
+            "required": false,
+            "default_value": "\"Seed constructor\""
+          },
+          {
+            "name": "hasOwnProperty",
+            "type": "string",
+            "required": false,
+            "default_value": "\"Seed method\""
+          }
+        ],
+        "emits": [
+          "change",
+          "submit"
+        ]
+      }
+    },
+    {
+      "name": "comments and string contents are not macro calls",
+      "source": "<script setup lang=\"ts\">\nconst example=\"defineProps<{fake?:string}>()\";\n// defineProps<{alsoFake?:number}>()\nconst p=defineProps<{label?:string}>();\n</script>",
+      "expected": {
+        "props": [
+          {
+            "name": "label",
+            "type": "string",
+            "required": false
+          }
+        ],
+        "emits": []
+      }
+    }
+  ],
+  "browserCases": [
+    {
+      "name": "original compact unchanged",
+      "filename": "original-compact.vue",
+      "title": "Compact / Original",
+      "source": "<script setup lang=\"ts\">\nimport { toRaw, useAttrs } from 'vue';\ndefineOptions({ inheritAttrs: false });\nconst props = defineProps<{ label?: string; constructor?: string; hasOwnProperty?: string }>();\nconst attrs = useAttrs();\nconst currentProps = () => Object.fromEntries(Object.entries(toRaw(props)).filter(([, value]) => value !== undefined));\n</script>\n<template><output>{{ JSON.stringify({ props: currentProps(), attrs: { ...attrs } }) }}</output></template>",
+      "names": [
+        "label",
+        "constructor",
+        "hasOwnProperty"
+      ]
+    },
+    {
+      "name": "five literal compact props",
+      "filename": "literal-compact.vue",
+      "title": "Compact / Literal",
+      "source": "<script setup lang=\"ts\">\nimport { toRaw, useAttrs } from 'vue';\ndefineOptions({ inheritAttrs: false });\nconst props = defineProps<{ label?: string; \"scope.name\"?: string; __proto__?: string; constructor?: string; hasOwnProperty?: string }>();\nconst attrs = useAttrs();\nconst currentProps = () => Object.fromEntries(Object.entries(toRaw(props)).filter(([, value]) => value !== undefined));\n</script>\n<template><output>{{ JSON.stringify({ props: currentProps(), attrs: { ...attrs }, ownProto: Object.hasOwn(toRaw(props), \"__proto__\"), prototypeUnchanged: Object.getPrototypeOf(Object.prototype) === null && Object.prototype.constructor === Object }) }}</output></template>",
+      "names": [
+        "label",
+        "scope.name",
+        "__proto__",
+        "constructor",
+        "hasOwnProperty"
+      ]
+    }
+  ],
+  "editedValues": {
+    "label": "Edited compact label",
+    "scope.name": "Edited custom",
+    "__proto__": "Edited proto",
+    "constructor": "Edited constructor",
+    "hasOwnProperty": "Edited method"
+  }
+}
