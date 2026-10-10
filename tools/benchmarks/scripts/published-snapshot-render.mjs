@@ -2,6 +2,7 @@ import { formatMs, renderDocument } from "./compare-tools.mjs";
 import { formatSpeedup, getVariant, renderEngineClassSections } from "./compare-tools-report.mjs";
 import { SNAPSHOT_LOCALES, SURFACE_ORDER, surfaceLabel } from "./published-snapshot-locales.mjs";
 import { diagnosticText } from "./published-snapshot-diagnostics.mjs";
+import { renderProvenanceLines } from "./benchmark-provenance.mjs";
 
 export const RESULT_PATH = "tools/benchmarks/results/tool-benchmark-latest.json";
 const REPOSITORY = "https://github.com/ubugeeei-prod/vize";
@@ -28,9 +29,10 @@ export function provenance(data, locale) {
       ],
     ),
     `[Actions](${data.commit.runUrl}) · [${data.commit.sha.slice(0, 12)}](${REPOSITORY}/commit/${data.commit.sha}) · [JSON](${REPOSITORY}/blob/main/${RESULT_PATH})`,
-    `${t.metadata[4]}: ${["vize", "tsgo", "vueTsc", "verterTsc", "vue", "node"].map((key) => `${key}: \`${data.versions[key]}\``).join(" · ")}.`,
   ].join("\n\n");
 }
+
+export const provenanceDetails = (data, locale) => renderProvenanceLines(data, locale).join("\n");
 
 export function summaryTable(data, locale, ids = SURFACE_ORDER) {
   return table(
@@ -84,6 +86,7 @@ export function readmeSection(data) {
     SNAPSHOT_LOCALES.en.note,
     `Nuxt measures the entire build pipeline, not isolated SFC compilation. Most build work is shared by both variants. Its ratio is ${formatSpeedup(nuxt.primarySpeedup)}; a ratio below 1 means Vize was slower in this run.`,
     "See the [Blacksmith benchmark snapshot](https://vizejs.dev/architecture/performance-blacksmith) for per-variant timings, diagnostic counts, rejected measurements and methodology.",
+    provenanceDetails(data, "en"),
   ].join("\n\n");
 }
 
@@ -109,6 +112,8 @@ export function snapshotPage(data, locale) {
     t.note,
     "",
     `[${t.full}](/architecture/performance-blacksmith)`,
+    "",
+    provenanceDetails(data, locale),
     "",
     `## ${t.diagnostics}`,
     "",
@@ -155,6 +160,7 @@ export function environmentSection(data, locale) {
     `${t.columns[1]}: **${s.files.toLocaleString("en-US")}** (${s.bytes.toLocaleString("en-US")} bytes).`,
     table(["", "@vue/compiler-sfc", "Vize", t.columns[6]], rows),
     `[${t.full}](./performance-blacksmith)`,
+    provenanceDetails(data, locale),
   ].join("\n\n");
 }
 

@@ -33,6 +33,8 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "davinci/vize_l3/tests/native_ssr_receipt.rs",
     "davinci/vize_l3/src/decision/ssr/build.rs",
     "davinci/vize_l4/src/targets/ssr/write.rs",
+    "davinci/vize_l4/src/targets/static_class.rs",
+    "davinci/vize_l4/src/targets.rs",
     "davinci/vize_l4/src/write/source_map.rs",
     "davinci/vize_l4/src/module.rs",
     "davinci/vize_l4/src/module/imports.rs",

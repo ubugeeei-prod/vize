@@ -45,19 +45,38 @@ assert.equal(
     " --test lsp_bare_script_symbols_cli --test check_tsconfig_bom_cli --config",
   ),
 );
-export const currentRequiredRun = readFileSync(
+export const ignoreRequiredRun = readFileSync(
   new URL("../../../tests/_fixtures/tooling/native-current-recipe-ignore-3984.sh", import.meta.url),
   "utf8",
 );
 assert.equal(
-  hash(currentRequiredRun),
+  hash(ignoreRequiredRun),
   "8a2b3e2ffc52c4a80a3c02ae15cede5d8c15fd3415a2368aa1974135703e9c56",
 );
 assert.equal(
-  currentRequiredRun,
+  ignoreRequiredRun,
   bomRequiredRun.replace(
     " --test check_tsconfig_bom_cli --config",
     " --test check_tsconfig_bom_cli --test check_tsconfig_ignore_cli --config",
+  ),
+);
+
+export const currentRequiredRun = readFileSync(
+  new URL(
+    "../../../tests/_fixtures/tooling/native-current-recipe-jsx-slot-8419.sh",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.equal(
+  hash(currentRequiredRun),
+  "3e1cbab6ccc79028c9de0d086801c140b0e99f1876dc9b7002acb74144b600e7",
+);
+assert.equal(
+  currentRequiredRun,
+  ignoreRequiredRun.replace(
+    " --test check_tsconfig_ignore_cli --config",
+    " --test check_tsconfig_ignore_cli --test check_jsx_slot_parameter_types_cli --config",
   ),
 );
 

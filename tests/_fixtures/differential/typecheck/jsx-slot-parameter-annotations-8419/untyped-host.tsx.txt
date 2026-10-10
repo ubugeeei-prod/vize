@@ -1,0 +1,3 @@
+// 日本語 😀
+declare const Host: any;
+const view = <Host>{{ default: (props: { value: string }) => props.value.toUpperCase() }}</Host>;

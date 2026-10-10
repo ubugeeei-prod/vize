@@ -1,0 +1,43 @@
+{
+  "files": [
+    {
+      "file": "Child.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "Generic.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "Host.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "consumer.tsx",
+      "diagnostics": []
+    },
+    {
+      "file": "env.d.ts",
+      "diagnostics": []
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "jsx": "preserve",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "noEmit": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext"
+      },
+      "files": ["Child.vue", "Generic.vue", "Host.vue", "consumer.tsx", "env.d.ts"]
+    }
+  ],
+  "errorCount": 0,
+  "warningCount": 0,
+  "fileCount": 5
+}

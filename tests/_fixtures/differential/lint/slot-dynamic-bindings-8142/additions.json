@@ -1,0 +1,126 @@
+{
+  "schema": "vize.n8n.slot-dynamic-additions",
+  "parent": "efd843f4ce9387c4782efbc969b5ad9f99b0ee82",
+  "additions": [
+    {
+      "id": "dynamic-same-object",
+      "sourceSha256": "00ce2383a0b15d84d5b4d75d8fffab1ba835e53192560439b6dd47a130f6286c",
+      "authored": "#[slot.name]=\"slot\"",
+      "diagnostic": {
+        "rule_name": "vue/valid-v-slot",
+        "severity": "error",
+        "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+        "start": 195,
+        "end": 214,
+        "help": "Use a binding from the enclosing scope to choose the slot name",
+        "labels": [],
+        "fix": null
+      }
+    },
+    {
+      "id": "dynamic-same-identifier",
+      "sourceSha256": "92971c2f543b3a609ea2e10f95a467bb82888d7dc943f1c786184f322b85df39",
+      "authored": "#[slot]=\"slot\"",
+      "diagnostic": {
+        "rule_name": "vue/valid-v-slot",
+        "severity": "error",
+        "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+        "start": 195,
+        "end": 209,
+        "help": "Use a binding from the enclosing scope to choose the slot name",
+        "labels": [],
+        "fix": null
+      }
+    },
+    {
+      "id": "dynamic-destructure",
+      "sourceSha256": "b9b13b31ee5aa46e779b0176da02854f4903f71fdaf9f9c65df274cc5495d728",
+      "authored": "#[item]=\"{ item }\"",
+      "diagnostic": {
+        "rule_name": "vue/valid-v-slot",
+        "severity": "error",
+        "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+        "start": 195,
+        "end": 213,
+        "help": "Use a binding from the enclosing scope to choose the slot name",
+        "labels": [],
+        "fix": null
+      }
+    },
+    {
+      "id": "dynamic-renamed",
+      "sourceSha256": "04450d9fe4365e5ff31b6110841ad3914440ea7b6aa6abf68862508bdc93cc25",
+      "authored": "#[key]=\"{ source: key }\"",
+      "diagnostic": {
+        "rule_name": "vue/valid-v-slot",
+        "severity": "error",
+        "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+        "start": 195,
+        "end": 219,
+        "help": "Use a binding from the enclosing scope to choose the slot name",
+        "labels": [],
+        "fix": null
+      }
+    },
+    {
+      "id": "dynamic-nested-binding",
+      "sourceSha256": "3df4817a2c2018555ee1698346fc8f7521efac75a1cbd03a5cf889b73fd3b703",
+      "authored": "#[slotKey]=\"{ source: { slotKey } }\"",
+      "diagnostic": {
+        "rule_name": "vue/valid-v-slot",
+        "severity": "error",
+        "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+        "start": 195,
+        "end": 231,
+        "help": "Use a binding from the enclosing scope to choose the slot name",
+        "labels": [],
+        "fix": null
+      }
+    },
+    {
+      "id": "dynamic-same-object-scriptless",
+      "sourceSha256": "33e0a9f09e55102aea7c78c6b33602ba147f1928cc5b600b7cf27e5d7d4e6ec7",
+      "authored": "#[slot.name]=\"slot\"",
+      "diagnostic": {
+        "rule_name": "vue/valid-v-slot",
+        "severity": "error",
+        "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+        "start": 35,
+        "end": 54,
+        "help": "Use a binding from the enclosing scope to choose the slot name",
+        "labels": [],
+        "fix": null
+      }
+    },
+    {
+      "id": "dynamic-same-object-utf8-lf",
+      "sourceSha256": "7a7bcd06bea3fb476a25e53268f2ca3201ea51edb2a695637b270bb7ab63fa3b",
+      "authored": "#[slot.name]=\"slot\"",
+      "diagnostic": {
+        "rule_name": "vue/valid-v-slot",
+        "severity": "error",
+        "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+        "start": 220,
+        "end": 239,
+        "help": "Use a binding from the enclosing scope to choose the slot name",
+        "labels": [],
+        "fix": null
+      }
+    },
+    {
+      "id": "dynamic-same-object-utf8-crlf",
+      "sourceSha256": "d5e3e5be29da7d63b3b62154e0f6c4f86b81a174d66fd930959840c82a630e94",
+      "authored": "#[slot.name]=\"slot\"",
+      "diagnostic": {
+        "rule_name": "vue/valid-v-slot",
+        "severity": "error",
+        "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+        "start": 228,
+        "end": 247,
+        "help": "Use a binding from the enclosing scope to choose the slot name",
+        "labels": [],
+        "fix": null
+      }
+    }
+  ]
+}

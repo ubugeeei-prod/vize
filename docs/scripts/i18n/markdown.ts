@@ -94,7 +94,7 @@ export function protectMarkdown(text: string, translationProvider: TranslationPr
 }
 
 export function normalizeTranslatedMarkdown(markdown: string) {
-  return markdown
+  return normalizeEmphasisBoundaries(markdown)
     .replace(/^- --$/gm, "---")
     .replace(/^([＃]+)/gm, (hashes) => "#".repeat(hashes.length))
     .replaceAll("！[", "![")
@@ -105,6 +105,41 @@ export function normalizeTranslatedMarkdown(markdown: string) {
     .replace(/(!?\[)\s+/g, "$1")
     .replace(/\s+\]\(([^)\n]+)\)/g, "]($1)")
     .replace(/^(\s*[-+*])(?=[^-+*\s])/gm, "$1 ");
+}
+
+/** Keep translated punctuation from turning authored emphasis into literal delimiters. */
+function normalizeEmphasisBoundaries(markdown: string) {
+  const code: string[] = [];
+  const protect = (value: string) => {
+    code.push(value);
+    return `VIZEINLINECODE${code.length - 1}Z`;
+  };
+  const protectedText = markdown
+    .replace(/(`+)[\s\S]*?\1/g, protect)
+    .replace(/<[^>\n]+>/g, protect)
+    .replace(/(?<=\]\()[^)\n]+(?=\))/g, protect)
+    .replace(/https?:\/\/[^\s)>]+/g, protect);
+  const punctuation = /[\p{P}\p{S}]/u;
+  const whitespace = /\s/u;
+  const prose = protectedText.replace(
+    /(?<![\\*_])(\*\*|__|\*|_)(?![*_\s])([^\n]+?)\1(?![*_])/g,
+    (whole: string, _marker: string, content: string, offset: number) => {
+      const before = protectedText.slice(0, offset).match(/.$/u)?.[0] ?? " ";
+      const after = protectedText.slice(offset + whole.length).match(/^./u)?.[0] ?? " ";
+      const restoredContent = content.replace(
+        /VIZEINLINECODE(\d+)Z/g,
+        (_token, index: string) => code[Number(index)],
+      );
+      const first = restoredContent.match(/^./u)?.[0] ?? " ";
+      const last = restoredContent.match(/.$/u)?.[0] ?? " ";
+      const needsBefore =
+        !whitespace.test(before) && !punctuation.test(before) && punctuation.test(first);
+      const needsAfter =
+        !whitespace.test(after) && !punctuation.test(after) && punctuation.test(last);
+      return `${needsBefore ? " " : ""}${whole}${needsAfter ? " " : ""}`;
+    },
+  );
+  return prose.replace(/VIZEINLINECODE(\d+)Z/g, (_token, index: string) => code[Number(index)]);
 }
 
 export function normalizeMarkdownDocument(markdown: string) {

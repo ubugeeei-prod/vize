@@ -76,7 +76,11 @@ export async function openArt(page: Page, title: string) {
   await page.getByRole("heading", { name: title, exact: true }).waitFor();
 }
 
-export async function checkLegacy(browser: Browser, errors: string[]) {
+export async function checkLegacy(
+  browser: Browser,
+  errors: string[],
+  observe?: (page: Page) => void,
+) {
   const { createServer } = await import("vite");
   const { default: vize } = await import("@vizejs/vite-plugin");
   const { musea } = await import("@vizejs/vite-plugin-musea");
@@ -99,6 +103,7 @@ export async function checkLegacy(browser: Browser, errors: string[]) {
     assert.ok(legacyAddress && typeof legacyAddress !== "string");
     const legacyContext = await browser.newContext();
     const legacyPage = await legacyContext.newPage();
+    observe?.(legacyPage);
     legacyPage.on("pageerror", (error) => errors.push(String(error)));
     await legacyPage.goto(`http://127.0.0.1:${legacyAddress.port}/__musea__/`);
     await openArt(legacyPage, "Button");

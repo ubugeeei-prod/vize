@@ -146,11 +146,8 @@ impl<E: ExpressionWriter, L: LinkSink> Emitter<'_, '_, '_, E, L> {
             self.property_start(index, multiline);
             property(&mut self.writer, attribute.name, attribute.span);
             self.writer.push(": ");
-            quoted(
-                &mut self.writer,
-                attribute.value.unwrap_or(""),
-                attribute.span,
-            );
+            let value = crate::targets::static_class::value(attribute);
+            quoted(&mut self.writer, value.as_str(), attribute.span);
             index += 1;
         }
         for &id in bindings {
