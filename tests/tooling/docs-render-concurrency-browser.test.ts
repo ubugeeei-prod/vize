@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { createRenderJobs } from "../../docs/scripts/navigation-render-concurrency.ts";
+import { SCRIPT_BASENAMES } from "../../docs/theme/background.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const script = path.join(root, "docs/scripts/verify-navigation-render.ts");
@@ -45,6 +46,47 @@ async function json(file: string) {
   return JSON.parse(await readFile(file, "utf8"));
 }
 
+async function prepareLocaleControls(dir: string) {
+  const scripts = SCRIPT_BASENAMES.filter((name) => name.startsWith("i18n/"));
+  for (const name of [...scripts.map((name) => `${name}.js`), "i18n/locale-selector.css"]) {
+    const destination = path.join(dir, "locale-fixture", name);
+    await mkdir(path.dirname(destination), { recursive: true });
+    await writeFile(destination, await readFile(path.join(root, "docs/theme", name)));
+  }
+  const html = `<!doctype html><html data-theme="light"><head><meta charset="utf-8"><title>Locale fixture</title>
+    <link rel="stylesheet" href="/locale-fixture/i18n/locale-selector.css">
+    <style>
+    :root { font-size: 16px; --octc-font-mono: monospace; --octc-font-sans: Arial, sans-serif;
+      --octc-color-bg: #fff; --octc-color-bg-alt: #eee; --octc-color-text: #222;
+      --octc-color-text-muted: #444; --octc-color-border: #aaa; --octc-color-primary: #06c; }
+    :root[data-theme="dark"] { --octc-color-bg: #121212; --octc-color-bg-alt: #333;
+      --octc-color-text: #fff; --octc-color-text-muted: #aaa; --octc-color-border: #555; }
+    body { margin: 0; padding: 16px; color: var(--octc-color-text); background: var(--octc-color-bg); }
+    .header { display: flex; width: 100%; box-sizing: border-box; padding: 8px 0; min-height: 80px; }
+    .header-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+    .content { min-height: 150px; } button { min-height: 44px; }
+    [data-mobile-theme] { display: none; }
+    @media (max-width: 768px) {
+      .header-actions { display: none; } [data-mobile-theme] { display: block; }
+    }
+    </style></head><body>
+    <header class="header"><div class="header-actions">
+    <button class="search-button">Search</button><button class="theme-toggle">Theme</button>
+    </div></header><main class="content"><h1>Locale fixture</h1>
+    <a href="/linked/#anchor">Linked page</a></main><button data-mobile-theme>Theme</button>
+    ${scripts.map((name) => `<script src="/locale-fixture/${name}.js"></script>`).join("\n")}
+    <script>document.addEventListener("click", (event) => {
+      if (event.target.closest(".theme-toggle, [data-mobile-theme]"))
+        document.documentElement.dataset.theme =
+          document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    });</script></body></html>`;
+  for (const locale of ["en", "ja", "zh-CN", "pt-BR", "fr"]) {
+    const destination = path.join(dir, locale === "en" ? "" : locale, "getting-started");
+    await mkdir(destination, { recursive: true });
+    await writeFile(path.join(destination, "index.html"), html);
+  }
+}
+
 test(
   "real browser keeps serial/parallel receipts equivalent and persists failed-page evidence",
   { timeout: 120_000 },
@@ -65,6 +107,7 @@ test(
         <span id="anchor">Anchor</span></body></html>`,
         );
       }
+      await prepareLocaleControls(dir);
       const receipts = [];
       const durations = [];
       for (const workers of ["1", "2"]) {
@@ -73,6 +116,10 @@ test(
         assert.equal(result.status, 0, result.log);
         const receipt = await json(path.join(output, "receipt.json"));
         const timings = await json(path.join(output, "timings.json"));
+        const locale = await json(path.join(output, "locale-controls/receipt.json"));
+        assert.equal(locale.completed, true);
+        assert.equal(locale.cases.length, 8);
+        assert.equal(locale.failure, null);
         assert.equal(receipt.status, "passed");
         assert.equal(timings.schemaVersion, 1);
         assert.equal(timings.workers, Number(workers));
