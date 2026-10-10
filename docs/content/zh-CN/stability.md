@@ -11,9 +11,9 @@ Vize正朝着v1 alpha迈进。alpha 合同故意比稳定的 v1 更窄
 合同：它指定了早期采用者应能使用的表面，同时保留空间
 快速更换内部结构和实验集成。整个项目尚未完全完成
 生产准备工具链;发布决策应使用以下内容
-[生产准备检查表](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/production-readiness.md)。
+[生产准备检查表](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/production-readiness%2Emd)。
 弃用窗口、SemVer规则和发布行支持在
-[支持政策](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/support-policy.md)。
+[支持政策](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/support-policy%2Emd)。
 
 ## 版本控制合同
 
@@ -145,7 +145,7 @@ alpha版本并不保证对所有Vue编译器边缘情况、每个包都完全兼
 官方Vue工具，除非是Vize指南，否则将官方输出视为兼容性基线
 明确记录了不同的行为。发布阻断编译器、类型检查、运行时，
 而 Vite 构建曲面在
-[Vue 奇偶校验矩阵](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/vue-parity-matrix.md)。
+[Vue 奇偶校验矩阵](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/vue-parity-matrix%2Emd)。
 
 有关安全处理，请参见仓库 `SECURITY.md`。关于贡献和修复的工作流程，请参见
 `CONTRIBUTING.md`。

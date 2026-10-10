@@ -14,8 +14,6 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 
 [Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-版本: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
-
 | 项目              | 文件数 | 比较工具               | 比较工具中位数 | Vize 1T | Vize max | 速度比     |
 | ----------------- | ------ | ---------------------- | -------------- | ------- | -------- | ---------- |
 | SFC 编译          | 3,000  | @vue/compiler-sfc (1T) | 3.57s          | 835.3ms | 65.0ms   | **54.8x**  |
@@ -31,6 +29,26 @@ README 与所有语言页面均由同一个已提交的产物生成。文件数�
 类型检查速度比比较 Vize 与 vue-tsc，即 Vue 项目当前实际使用的类型检查器。vue-tsc 运行 JavaScript 版 TypeScript 编译器，而 Vize 运行原生 tsgo，因此该比值涵盖整条工具链，而非仅 Vue 层；完整快照中按引擎类别分组的表格会在同一引擎内部排名，用于单独衡量 Vue 层。每次计时都通过诊断工作验证，但不同工具的诊断覆盖范围并不相同。这些比值不代表准确性相同，也不代表相对于旧版 Vize 的性能提升。未通过验证的比较工具不发布耗时或排名。
 
 [完整方法与验证结果](/architecture/performance-blacksmith)
+
+<details class="benchmark-provenance">
+<summary>工具版本与二进制校验和</summary>
+
+| 工具                 | 版本                                 | 二进制 SHA-256                                                                |
+| -------------------- | ------------------------------------ | ----------------------------------------------------------------------------- |
+| Vize                 | <code>vize 0.424.11</code>           | <code>dc5e840133beec86106ca27c496ca01fbff4299a8aef6c3a0f2fca3131f88fe3</code> |
+| tsgo                 | <code>Version 7.0.2</code>           | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
+| vue-tsc              | <code>Version 6.0.3</code>           | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
+| verter-tsc           | <code>verter-tsc 0.0.1-beta.3</code> | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
+| Golar                | <code>Golar version 0.1.10</code>    | <code>a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da</code> |
+| TypeScript (vue-tsc) | n/a                                  | n/a                                                                           |
+| Vue                  | <code>3.6.0-beta.10</code>           | n/a                                                                           |
+| ESLint               | <code>v10.4.1</code>                 | <code>41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc</code> |
+| Prettier             | <code>3.8.3</code>                   | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
+| Node.js              | <code>v24.14.0</code>                | n/a                                                                           |
+
+Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
+
+</details>
 
 ## 诊断工作验证
 

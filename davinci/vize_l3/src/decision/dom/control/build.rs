@@ -57,7 +57,7 @@ impl<'owner, 'arena> ConditionalFrame<'owner, 'arena> {
         let eligible = matches!(op, Op::Element(element)
             if element.namespace == Namespace::Html && element.tag != "template"
             && !element.attributes.iter().any(|attribute|
-                matches!(attribute.name, "class" | "style" | "key" | "ref")));
+                matches!(attribute.name, "style" | "key" | "ref")));
         if branch.region.ops.len() != 1 || !eligible {
             self.admitted = false;
         }

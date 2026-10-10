@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "file": "src/AfsStepperDialog.stories.tsx",
+      "diagnostics": [
+        "error:28:16 [TS1005] '>' expected.",
+        "error:28:19 [TS1005] ')' expected.",
+        "error:28:31 [TS1005] ',' expected.",
+        "error:28:34 [TS1005] ',' expected.",
+        "error:28:37 [TS1005] ',' expected.",
+        "error:28:39 [TS1110] Type expected.",
+        "error:29:11 [TS1128] Declaration or statement expected.",
+        "error:29:12 [TS1128] Declaration or statement expected.",
+        "error:35:1 [TS1128] Declaration or statement expected.",
+        "error:43:18 [TS1005] '>' expected.",
+        "error:43:23 [TS1005] '{' expected.",
+        "error:43:55 [TS1109] Expression expected."
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "jsx": "preserve",
+        "jsxImportSource": "vue",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "strict": true,
+        "target": "ES2022",
+        "types": [
+          "vue/jsx"
+        ]
+      },
+      "files": [
+        "node_modules/vue/jsx.d.ts",
+        "src/AfsStepperDialog.stories.tsx"
+      ]
+    }
+  ],
+  "errorCount": 12,
+  "warningCount": 0,
+  "fileCount": 1
+}

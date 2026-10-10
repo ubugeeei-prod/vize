@@ -1,0 +1,2 @@
+const Host = (_props: any) => <div/>;
+export const view = <Host>{{ content: () => <div>{Array.from({ length: 3 }, (_, i) => <p><style scoped>{`p { color: ${i}; }`}</style>{i.toFixed()}</p>)}</div> }}</Host>;

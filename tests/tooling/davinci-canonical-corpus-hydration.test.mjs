@@ -7,6 +7,7 @@ import {
   readFileSync,
   rmSync,
   symlinkSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -131,12 +132,21 @@ await test("fixture CRLF filter warnings require exact raw blobs, modes and a cl
     const original = '{"authored":"CRLF fixture"}\r\n';
     writeFileSync(join(root, ".gitattributes"), "*.json -text\n");
     writeFileSync(path, original);
+    const authoredTime = new Date("2000-01-01T00:00:00Z");
+    utimesSync(path, authoredTime, authoredTime);
     writeFileSync(join(root, "Original.vue"), "<template>original</template>\n");
     commit(root);
     writeFileSync(join(root, ".gitattributes"), "*.json text eol=lf\n");
     git(root, "add", ".gitattributes");
     git(root, "commit", "--quiet", "-m", "authored upstream attributes");
     git(root, "checkout", "--force", "HEAD");
+    const indexed = git(root, "ls-files", "--stage", "--", "authored.json");
+    const blob = git(root, "rev-parse", "HEAD:authored.json");
+    // Changing attributes leaves this file's cached stat unchanged. Force Git
+    // to apply the new filter while preserving the exact committed index entry.
+    git(root, "update-index", "--cacheinfo", `100644,${blob},authored.json`);
+    assert.equal(git(root, "ls-files", "--stage", "--", "authored.json"), indexed);
+    assert.equal(git(root, "diff", "--cached", "--name-only", "HEAD", "--"), "");
     assert.equal(readFileSync(path, "utf8"), original);
     assert.equal(git(root, "diff", "--name-only", "--"), "authored.json");
     assertFixtureCheckout(root);

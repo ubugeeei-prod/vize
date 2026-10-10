@@ -1,0 +1,29 @@
+{
+  "files": [
+    {
+      "file": "App.tsx",
+      "diagnostics": [
+        "error:2:121 [TS2339] Property 'toUpperCase' does not exist on type 'number'."
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "jsx": "preserve",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2022",
+        "types": ["vue/jsx"]
+      },
+      "files": ["App.tsx", "node_modules/vue/jsx.d.ts"]
+    }
+  ],
+  "errorCount": 1,
+  "warningCount": 0,
+  "fileCount": 1
+}
