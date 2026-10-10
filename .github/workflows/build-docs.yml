@@ -88,6 +88,9 @@ jobs:
       - name: Verify JSX and Compiler Inspector reading paths
         run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/jsx,/ja/guide/jsx,/guide/jsx-babel-compat,/ja/guide/jsx-babel-compat,/guide/compiler-inspector,/ja/guide/compiler-inspector --output docs-render-evidence/compiler-tools
 
+      - name: Verify philosophy reading paths
+        run: vp node docs/scripts/verify-navigation-render.ts --routes /philosophy,/ja/philosophy --output docs-render-evidence/philosophy
+
       - name: Verify rendered navigation and adoption guides
         run: vp node docs/scripts/verify-navigation-render.ts
 

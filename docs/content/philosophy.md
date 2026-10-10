@@ -51,7 +51,7 @@ This principle extends to the broader ecosystem. Vize's Vite plugin is compatibl
 
 ### 4. Art as Architecture
 
-Every Vize crate is named after a concept from the visual arts — painting, sculpture, and museum curation. This is not mere whimsy. The naming convention encodes a philosophy: **code is a creative medium**, and the tools that shape it should reflect the craft involved.
+Vize's product and legacy compiler crates use names from the visual arts — painting, sculpture, and museum curation. Davinci's internal crates use level names. The art names encode a philosophy: **code is a creative medium**, and the tools that shape it should reflect the craft involved.
 
 | Crate        | Art Origin                      | Role                                    |
 | ------------ | ------------------------------- | --------------------------------------- |
