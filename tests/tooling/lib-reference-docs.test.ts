@@ -175,8 +175,8 @@ void test("component hub guides tasks in English and Japanese and links real cap
 void test("practical composable examples share complete source with their live preview", () => {
   const packageRoot = path.join(repoRoot, "npm/compose/core");
   const exports = JSON.parse(readFileSync(path.join(packageRoot, "package.json"), "utf8")).exports;
-  assert.equal(composableExamples.length, 12);
-  assert.equal(new Set(composableExamples.map((example) => example.name)).size, 12);
+  assert.equal(composableExamples.length, 16);
+  assert.equal(new Set(composableExamples.map((example) => example.name)).size, 16);
   for (const example of composableExamples) {
     const source = composableExampleSource(packageRoot, example.name);
     const preview = previewComposableExamples.find((item) => item.name === example.name);

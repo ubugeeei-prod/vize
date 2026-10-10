@@ -39,10 +39,11 @@ browser checks with its normal OG-image configuration.
 
 ## Composable examples
 
-Twelve complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
+Sixteen complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
 bounded quantities, debounced local search, blur validation, undo/redo, and
 pagination, plus async results, interval/timeout controls, browser storage,
-media queries, and document focus. Their displayed source and compiled preview are byte-identical,
+media queries, document focus, form submission, multistep navigation, bounded
+selection, and cyclic tips. Their displayed source and compiled preview are byte-identical,
 with a SHA-256 identity exposed by each iframe. They use public composable
 imports and can be copied into a Vue 3.5+ project. The preview shell's CSS is
 optional presentation; the examples themselves use native controls.
@@ -62,13 +63,15 @@ completion, start/pause/reset, replace/cancel/single delivery, actual storage
 across reload/reset, actual matchMedia at resized viewports and changed queries,
 and actual document focus through Tab/programmatic focus/blur.
 Browser clock control advances the actual timers deterministically; browser
-hosts are not replaced with mocks. Forty-eight real PNGs and a JSON receipt record source hashes, image hashes,
+hosts are not replaced with mocks. `interactions-form-state.ts` checks validation
+and reset, step boundaries and preserved input, stable selected keys after data
+replacement, and cyclic list boundaries. Sixty-four real PNGs and a JSON receipt record source hashes, image hashes,
 and individual interaction results under the ignored
 `public/component-previews/composables/` build output. Each reference page
 offers initial/after images in a native disclosure alongside its live preview.
 
-After the real SSG build, `check-site.ts` verifies twenty-two routes at desktop
-and mobile widths, including the twelve exact displayed SFC packets and their
+After the real SSG build, `check-site.ts` verifies twenty-six routes at desktop
+and mobile widths, including the sixteen exact displayed SFC packets and their
 iframe identities, then runs the unchanged composable interaction checks.
 The existing Docs Actions build executes both paths. To check deployed content:
 
@@ -77,6 +80,6 @@ vp node docs/previews/ui/check-site.ts --site https://vizejs.dev --output docs-r
 ```
 
 The supplied deployed URL must expose the expected source hashes; an older
-deployment fails instead of receiving current-source credit. These twelve
+deployment fails instead of receiving current-source credit. These sixteen
 examples are a bounded acceptance slice, not complete live coverage of the
 composable catalogue. #8374 and the broader #6101 remain open for that work.

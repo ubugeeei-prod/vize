@@ -9,6 +9,8 @@ import { asyncEffectExamples } from "../../../npm/ui/scripts/reference-docs/asyn
 import { exerciseAsyncExample } from "./interactions-async-effects.ts";
 import { browserEffectExamples } from "../../../npm/ui/scripts/reference-docs/browser-effect-examples.ts";
 import { exerciseBrowserExample } from "./interactions-browser-effects.ts";
+import { formStateExamples } from "../../../npm/ui/scripts/reference-docs/form-state-examples.ts";
+import { exerciseFormStateExample } from "./interactions-form-state.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
   await page.getByRole("button", { name: label, exact: true }).focus();
@@ -20,6 +22,8 @@ async function exercise(page: Page, name: string): Promise<string[]> {
     return exerciseAsyncExample(page, name);
   if (browserEffectExamples.some((example) => example.name === name))
     return exerciseBrowserExample(page, name);
+  if (formStateExamples.some((example) => example.name === name))
+    return exerciseFormStateExample(page, name);
   if (name === "use-toggle") {
     assert.equal(await page.getByText("Free delivery in 2–3 business days.").count(), 0);
     await activate(page, "Show delivery details");
