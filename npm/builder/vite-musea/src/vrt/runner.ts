@@ -17,7 +17,7 @@ import type {
 import fs from "node:fs";
 import path from "node:path";
 
-import { fileExists, matchGlob } from "./comparison.js";
+import { fileExists } from "./comparison.js";
 import { captureAndCompare } from "./runner-comparison.js";
 import { buildVariantUrl, computeSummary } from "./utils.js";
 
@@ -27,6 +27,7 @@ import type { VrtResult, VrtSummary, ExtendedVrtOptions } from "./types.js";
 import { createVrtJobs, normalizeVrtWorkerCount, runJobsWithWorkers } from "./jobs.js";
 import { SnapshotIndex } from "./snapshot-index.js";
 import { resolveSnapshotIdentity } from "./snapshot-identity.js";
+import { matchesSnapshotPattern } from "./snapshot-pattern.js";
 export { normalizeVrtWorkerCount } from "./jobs.js";
 
 /**
@@ -284,17 +285,15 @@ export class MuseaVrtRunner {
           const relativeName = `${identity.replace(/\.art\.vue$/, "")}/${result.variantName}`;
           const legacyName = `${path.basename(result.artPath, ".art.vue")}/${result.variantName}`;
           return (
-            relativeName.includes(pattern) ||
-            matchGlob(relativeName, pattern) ||
-            legacyName.includes(pattern) ||
-            matchGlob(legacyName, pattern)
+            matchesSnapshotPattern(relativeName, pattern) ||
+            matchesSnapshotPattern(legacyName, pattern)
           );
         })
       : candidates;
     if (pattern) {
       const legacyMatches = results.filter((result) => {
         const name = `${path.basename(result.artPath, ".art.vue")}/${result.variantName}`;
-        return name.includes(pattern) || matchGlob(name, pattern);
+        return matchesSnapshotPattern(name, pattern);
       });
       if (new Set(legacyMatches.map((result) => result.artPath)).size > 1)
         throw new Error(
