@@ -183,7 +183,7 @@ try {
   }
 
   let sequence = 0;
-  async function evaluate(code, dependencies, helper) {
+  async function evaluate(code, dependencies, helper, arm) {
     const modules = {
       vue,
       "vue/server-renderer": server,
@@ -229,7 +229,13 @@ try {
         ],
       });
       const loaded = await import(url(`${transformed.code}\n// whole SSR graph ${sequence++}`));
-      assert(loaded.default && typeof loaded.default.ssrRender === "function");
+      if (arm === "official") {
+        assert.equal(loaded.default?.__ssrInlineRender, true);
+        assert.equal(typeof loaded.default.setup, "function");
+      } else {
+        assert.equal(arm, "current");
+        assert(loaded.default && typeof loaded.default.ssrRender === "function");
+      }
       return loaded.default;
     } finally {
       delete globalThis[slot];
@@ -274,7 +280,7 @@ try {
             ? file.current
             : evidence.stock.find(({ name }) => name === file.name).result;
         const helper = arm === "official" ? evidence.stock[0].helper : undefined;
-        const child = await evaluate(row(input.files[0]).code, {}, helper);
+        const child = await evaluate(row(input.files[0]).code, {}, helper, arm);
         const component = await evaluate(
           row(parent).code,
           {
@@ -282,6 +288,7 @@ try {
             "./fixture": { state },
           },
           helper,
+          arm,
         );
         const app = vue.createSSRApp(component);
         const diagnostics = [];

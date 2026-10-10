@@ -92,6 +92,26 @@ unchanged. No new whole SSR runtime packet executed on that failed head.
 Its separate Misskey server RSS result is 130.51 MiB over the unchanged
 128 MiB ceiling; fresh full proof and the real LSP prerequisite remain.
 
+Exact `ca0742` full Check `38045442545` executes all 24 complete compiler
+packets, and the original-source selected/legacy result and additive map
+checks pass. It preserves two failures: the shared v-pre/identity control
+still differs on its original ancestry, and the actual Node child exits 1
+with no signal before any of the twelve renders. The pinned official Vite
+SSR module uses `__ssrInlineRender: true` and a `setup` function returning
+its renderer, so the evaluator's separate `ssrRender` assertion rejects
+that valid official Child. The evaluator validates the genuine shape per
+route without invoking or replacing setup: official requires inline SSR
+and setup; current still requires its separate SSR renderer. All authored
+modules, complete map graphs, twelve HTML/state/diagnostic oracles and
+shared lower controls remain unchanged. Fresh full execution on genuine
+current main is still required; this failed run has zero completed renders.
+A local replay of those exact source-built compiler modules and maps with
+pinned packages reproduces exit 1 before the correction and exit 0 with all
+twelve original outcomes after it. The local host is Node `26.11.1`, distinct
+from the runner's `24.14.0`; this diagnostic replay is not new Actions or
+current-main qualification. Earlier local missing-dependency failures stay
+separate from the actual runner's renderer-shape failure.
+
 TODO: obtain fresh exact-source full Actions, complete runtime/map packets,
 unchanged performance and protected qualification, and actual merged main.
 Local classifier failure and fixture custody do not replace those witnesses.
