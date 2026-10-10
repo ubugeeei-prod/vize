@@ -32,7 +32,13 @@ pub(super) fn resolve_patterns(
             .map(|pattern| {
                 snapshot.project_root.as_deref().map_or_else(
                     || String::from(pattern.as_str()),
-                    |root| String::from(root.join(pattern).to_string_lossy().as_ref()),
+                    |root| {
+                        String::from(
+                            root.join(pattern.strip_prefix("./").unwrap_or(pattern))
+                                .to_string_lossy()
+                                .as_ref(),
+                        )
+                    },
                 )
             })
             .collect()
