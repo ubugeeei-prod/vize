@@ -5,14 +5,14 @@ use super::{
 use serde_json::Value;
 use std::{fs, path::Path, process::Command};
 
-fn workspace_root() -> &'static Path {
+pub(super) fn workspace_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .and_then(Path::parent)
         .unwrap()
 }
 
-fn link_vue(root: &Path) {
+pub(super) fn link_vue(root: &Path) {
     let workspace = workspace_root();
     let vue = [
         "npm/cli/node_modules/vue",

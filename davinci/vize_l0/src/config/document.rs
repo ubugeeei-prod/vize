@@ -29,6 +29,11 @@ impl ConfigDocument {
         Self(RawVizeConfig::project_defaults())
     }
 
+    /// Project identity supplied by the Vite host projection.
+    pub fn project_root(&self) -> Option<&str> {
+        self.0.project_root.as_deref()
+    }
+
     /// Borrow configured import sorting without changing the stable formatter model.
     pub fn formatter_sort_imports(&self) -> Option<&crate::config::SortImportsSetting> {
         self.0.formatter.sort_imports.as_ref()

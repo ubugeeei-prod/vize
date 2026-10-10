@@ -21,7 +21,9 @@ pub use args::LintArgs;
 
 use crate::profile_support;
 use aggregate::{LintRunAccumulator, should_retain_file_results};
-use collect::{LintIgnoreSet, collect_lint_inputs, resolve_lint_config_path};
+use collect::{
+    LintIgnoreSet, collect_lint_file_collection, collect_lint_inputs, resolve_lint_config_path,
+};
 use entry_rules::LinterRuleResolver;
 use fix::lint_source_with_optional_fix;
 use rayon::prelude::*;
@@ -44,7 +46,7 @@ pub fn run(mut args: LintArgs) {
     let locale = rich::parse_locale(args.locale.as_str());
     let render_details = aggregate::should_render_details(format, args.quiet);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let (loaded_config, linter_plan, linter_features) = config_load::load(&mut args);
+    let (loaded_config, linter_plan, linter_features, project_root) = config_load::load(&mut args);
     crate::config::write_schema_for_config(loaded_config.source_path.as_deref());
     let linter_enabled = linter_plan.plan.base.enabled;
     let config_dir = loaded_config
@@ -63,7 +65,26 @@ pub fn run(mut args: LintArgs) {
         .map(|path| resolve_lint_config_path(config_dir, path));
     let ignore_set = LintIgnoreSet::new(&linter_plan.plan.global_ignores, config_dir);
     let collect_start = Instant::now();
-    let (files, input_warnings) = collect_lint_inputs(&args.patterns, ignore_set.as_ref());
+    let default_patterns = args.patterns.is_empty().then(|| {
+        patterns::LINT_DEFAULT_PATTERNS
+            .iter()
+            .map(|pattern| {
+                project_root.as_deref().map_or_else(
+                    || String::from(*pattern),
+                    |root| String::from(root.join(pattern).to_string_lossy().as_ref()),
+                )
+            })
+            .collect::<Vec<_>>()
+    });
+    let input_patterns = default_patterns.as_deref().unwrap_or(&args.patterns);
+    let (files, input_warnings) = if args.patterns.is_empty() {
+        (
+            collect_lint_file_collection(input_patterns, ignore_set.as_ref()).files,
+            0,
+        )
+    } else {
+        collect_lint_inputs(input_patterns, ignore_set.as_ref())
+    };
     let collect_time = collect_start.elapsed();
     if files.is_empty() {
         patterns::write_no_files(format, &args.patterns);
