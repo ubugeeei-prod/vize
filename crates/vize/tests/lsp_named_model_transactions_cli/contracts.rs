@@ -35,7 +35,11 @@ pub fn bind(value: &Value, uris: &Value) -> Value {
     match value {
         Value::String(text) if text.starts_with('$') => {
             let name = text.strip_prefix('$').unwrap();
-            assert!(FILES.contains(&name), "unknown expected URI marker");
+            assert_eq!(
+                FILES.into_iter().find(|candidate| *candidate == name),
+                Some(name),
+                "unknown expected URI marker"
+            );
             uris[name].clone()
         }
         Value::Array(values) => json!(values.iter().map(|v| bind(v, uris)).collect::<Vec<_>>()),
@@ -44,7 +48,11 @@ pub fn bind(value: &Value, uris: &Value) -> Value {
                 .iter()
                 .map(|(key, v)| {
                     let key = if let Some(name) = key.strip_prefix('$') {
-                        assert!(FILES.contains(&name), "unknown expected URI key");
+                        assert_eq!(
+                            FILES.into_iter().find(|candidate| *candidate == name),
+                            Some(name),
+                            "unknown expected URI key"
+                        );
                         uris[name].as_str().unwrap().to_string()
                     } else {
                         key.clone()
@@ -173,6 +181,18 @@ fn synthetic_uris() -> Value {
 #[test]
 fn authored_named_model_oracles_preserve_twelve_whole_contexts() {
     assert_eq!(cases().len(), 12);
+}
+
+#[test]
+#[should_panic(expected = "unknown expected URI marker")]
+fn unknown_expected_uri_markers_are_refused() {
+    bind(&json!("$Foreign.vue"), &synthetic_uris());
+}
+
+#[test]
+#[should_panic(expected = "unknown expected URI key")]
+fn unknown_expected_uri_keys_are_refused() {
+    bind(&json!({"$Foreign.vue": []}), &synthetic_uris());
 }
 
 #[test]

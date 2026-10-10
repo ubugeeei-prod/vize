@@ -133,8 +133,42 @@ impl<'a> MacroTypeMappings<'a> {
                 continue;
             };
             let start = generated_start + start + 2;
-            self.map_whole_symbol(start..start + needle.len() - 2, authored);
+            self.map_model_symbol(
+                ts,
+                start..start + needle.len() - 2,
+                authored,
+                model.name.as_str(),
+            );
         }
+    }
+
+    /// Keep quoted model names and synthesized update keys on the retained
+    /// authored name. Whole literal definitions and interior references use
+    /// different native spans; the update prefix has no authored counterpart.
+    pub(crate) fn map_model_symbol(
+        &mut self,
+        ts: &str,
+        generated: Range<usize>,
+        authored: (u32, u32),
+        name: &str,
+    ) {
+        let source_name = self.authored_text(authored).and_then(quoted_content);
+        let generated_name = ts.get(generated.clone()).and_then(quoted_content);
+        let verified = !name.is_empty()
+            && source_name == Some(name)
+            && generated_name
+                .is_some_and(|text| text == name || text.strip_prefix("update:") == Some(name));
+        if !verified {
+            self.map_whole_symbol(generated, authored);
+            return;
+        }
+        let content = (authored.0 + 1, authored.1 - 1);
+        let inner = generated.start + 1..generated.end - 1;
+        self.map_whole_symbol(generated, content);
+        if inner.len() != name.len() {
+            self.map_whole_symbol(inner.clone(), content);
+        }
+        self.map_exact(inner.end - name.len()..inner.end, content);
     }
 
     pub(crate) fn map_exact(&mut self, generated: Range<usize>, authored: (u32, u32)) {
@@ -164,3 +198,15 @@ impl<'a> MacroTypeMappings<'a> {
         });
     }
 }
+
+fn quoted_content(text: &str) -> Option<&str> {
+    let quote = *text.as_bytes().first()?;
+    if matches!(quote, b'\'' | b'"' | b'`') && text.as_bytes().last() == Some(&quote) {
+        text.get(1..text.len().checked_sub(1)?)
+    } else {
+        None
+    }
+}
+
+#[cfg(test)]
+mod model_symbols_tests;
