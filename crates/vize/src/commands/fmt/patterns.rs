@@ -5,6 +5,8 @@ pub(super) const FORMAT_EXTENSIONS: &[&str] = &[
 
 pub(super) const FORMAT_EXTENSIONS_DISPLAY: &str = ".vue, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, .json, .jsonc, .yaml, .yml, .md, or .markdown";
 
+pub(super) const FORMAT_PATTERN_HELP: &str = "Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented\n\n[default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.json ./**/*.jsonc]";
+
 pub(super) fn is_unimplemented_document_extension(extension: &str) -> bool {
     matches!(extension, "yaml" | "yml" | "md" | "markdown")
 }
