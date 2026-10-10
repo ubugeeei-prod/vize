@@ -3,6 +3,7 @@
  */
 export interface PaletteApiResponse {
   title: string;
+  componentTagName?: string;
   controls: PaletteControl[];
   groups: string[];
   json: string;

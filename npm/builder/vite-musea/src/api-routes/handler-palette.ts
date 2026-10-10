@@ -13,6 +13,8 @@ import {
   resolveReadableArtPath,
 } from "../component-source.js";
 import { loadNative, analyzeSfcFallback } from "../native-loader.js";
+import { parseScriptSetupForArt } from "../art-module.js";
+import { resolveArtComponent } from "../art-component.js";
 import { analyzeScriptComponent } from "../script-component-analysis.js";
 import { decodeUrlComponent, HttpError, isVueSourcePath } from "../security.js";
 
@@ -29,6 +31,7 @@ type PaletteControl = {
 
 type PaletteResponse = {
   title: string;
+  componentTagName?: string;
   controls: PaletteControl[];
   groups: string[];
   json: string;
@@ -74,6 +77,13 @@ export async function handleArtPalette(
         typescript: "",
       };
     }
+
+    palette.componentTagName = resolveArtComponent(
+      art,
+      artPath,
+      art.scriptSetupContent ? parseScriptSetupForArt(art.scriptSetupContent) : null,
+      { root: ctx.config.root, scanRoots: ctx.scanRoots },
+    ).componentTagName;
 
     const resolvedComponentPath = resolveComponentSourcePath(
       art,
