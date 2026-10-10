@@ -2,7 +2,7 @@
 title: Viteプラグイン
 ---
 
-<!-- Generated translation; source: guide/vite-plugin.md -->
+<!-- Reviewed translation; source: guide/vite-plugin.md; scope: native configuration guidance -->
 
 # Vite プラグイン
 
@@ -88,23 +88,15 @@ Vite Plus プロジェクトの場合は、Vite Plus クライアント タイ�
 }
 ```
 
-Vite+ では helper の `compiler`、通常の Vite では `vize({ ... })` にコンパイラ設定を置きます。
-[設定ガイド](./configuration.md)に、統合ごとの設定場所をまとめています。
+## ネイティブ設定を共有する
 
-## 単独 CLI/LSP と共有する設定（任意）
-
-CLI/LSP と同じ設定を読み込む場合は、`vize` の `defineConfig` と `vize.config.*` を使います。
-その helper を import する場合は、`vize` を直接の依存関係に追加してください。
-[単独設定リファレンス](./configuration-reference.md)に、ファイル検索、TypeScript/JSON/PKL の
-例とスコープ別設定を残しています。Vite+ の統合タスクは `vite.config.ts` の helper を使います。
+Vite+ では統合用の `compiler`、通常の Vite ではプラグインのオプションを使います。CLI・エディターと共有するネイティブ設定は、同じ Vite 設定のトップレベルの `vize` にまとめます。対応する記法、検索規則、リリース状況は[設定ガイド](./configuration.md)を参照してください。専用設定の形式も必要な場合に利用できます。
 
 <span id="compiler-options"></span>
 
 ## コンパイラ オプション
 
-`vize()` に渡される直接オプションは、`vize.config.*` をオーバーライドします。
-完全な優先順位は直接プラグイン オプション、次にインライン `config`、次に `vize.config.*`、そして
-デフォルト。
+`vize()` に直接渡したオプションが優先され、次にインラインの `config`、検出したプロジェクト設定、既定値の順になります。同じディレクトリでは `vize.config.*` が Vite 設定より優先されます。`config: false` で自動検索を無効にできます。
 
 ```ts
 vize({
@@ -269,3 +261,5 @@ export default defineNuxtConfig({
 - プラグインは、コンパイルされたすべての CSS をモジュールとしてインポートするための `virtual:vize-styles` をサポートしています
 - `.jsx`/`.tsx` Vue コンポーネントは、同じプラグインを通じて自動的にコンパイルされます。[JSX & TSX](./jsx.md) ガイドを参照してください。
 - 実験的なロールアップ / webpack / esbuild / Rspack のサポートについては、[実験的なバンドラー統合](./unplugin.md) を参照してください。
+
+<span id="単独-cli-lsp-と共有する設定-任意"></span>

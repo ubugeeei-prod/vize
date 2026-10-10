@@ -1,92 +1,70 @@
 ---
 title: Primeiros passos
+description: Adicione o Vize ao Vue com sua configuração Vite e seu projeto TypeScript.
 ---
 
-<!-- Generated translation; source: getting-started.md -->
+<!-- Reviewed translation; source: getting-started.md -->
 
 # Primeiros passos
 
-> **⚠️ Em desenvolvimento:** o Vize está em desenvolvimento ativo e ainda não está pronto para uso
-> em produção. As APIs e os limites entre pacotes podem mudar sem aviso prévio.
+Adicione o Vize ao aplicativo Vue 3 com [Vite+](https://viteplus.dev/guide/install). Mantenha as opções das ferramentas em `vite.config.ts` e o projeto TypeScript em `tsconfig.json`. O Vize está em desenvolvimento; confira o [nível de suporte](./stability.md) antes de adotá-lo.
 
-O Vize (_/viːz/_) é uma cadeia de ferramentas Vue.js nativa em Rust. Ele reúne compilação, lint,
-formatação, verificação de tipos, diagnósticos no editor e exploração de componentes em um único
-workspace, mantendo cada recurso disponível por meio de pacotes e comandos específicos.
+## 1. Instalar a integração
 
-| Necessidade                                                             | Ponto de entrada recomendado |
-| ----------------------------------------------------------------------- | ---------------------------- |
-| Compilar SFCs Vue no Vite                                               | `@vizejs/vite-plugin`        |
-| Compilar SFCs Vue no Nuxt                                               | `@vizejs/nuxt`               |
-| Executar lint, formatação e verificação de tipos por scripts do projeto | `vize`                       |
-| Combinar os diagnósticos do Vize com o Oxlint                           | `oxlint-plugin-vize`         |
-| Explorar e testar componentes                                           | `@vizejs/vite-plugin-musea`  |
-| Avaliar recursos de editor                                              | VS Code, Zed ou `vize lsp`   |
-
-## Configurar um projeto existente
-
-Execute o inicializador interativo na raiz do projeto:
+Em um projeto Vue existente com Vite+ instalado:
 
 ```bash
-vpx vize init
+vp install -D @vizejs/vite-plugin
 ```
 
-O `vpx` faz parte do [Vite+](https://viteplus.dev/guide/install). Instale o Vite+ primeiro se o
-comando não estiver disponível no shell.
+A integração usa a versão Vite+ do projeto (0.2.3 ou posterior). Para Vite convencional, veja a [migração do plugin](./guide/migration.md#vite-plugin); para Nuxt, veja a [integração Nuxt](./integrations/nuxt.md).
 
-Antes de escrever qualquer arquivo, o `vize init` detecta Vite, Vite+ ou Nuxt, o gerenciador de
-pacotes, TypeScript, o comando de lint ativo e a configuração existente do Vize. Você escolhe quais
-partes serão configuradas:
+## 2. Atualizar `vite.config.ts`
 
-- o plugin do Vite ou o módulo do Nuxt
-- o plugin do Oxlint, no arquivo de configuração realmente lido pelo comando de lint ativo
-- scripts de projeto para `vize fmt` e `vize check`
-- configurações compartilhadas em `vize.config.*`
-- uma recomendação de extensão para o VS Code
+A função adiciona o compilador do Vize e as tarefas nativas de verificação. Remova a importação do plugin Vue anterior e `vue()` de `plugins`; mantenha aliases, servidor, testes e outros plugins. O [guia de migração](./guide/migration.md) mostra os exemplos completos antes e depois.
 
-Visualize todas as alterações propostas em arquivos e dependências sem gravá-las:
+```ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+
+export default defineConfig({});
+```
+
+## 3. Compilar e verificar o aplicativo
 
 ```bash
-vpx vize init --dry-run
+vp dev
+vp build
+vp run check
 ```
 
-Em CI ou outro ambiente não interativo, selecione os recursos explicitamente:
+`vp run check` combina a verificação de tipos Vue, lint e formatação com Oxlint e Oxfmt. Use tarefas específicas durante o desenvolvimento:
 
 ```bash
-vpx vize init --yes --lint --bundler --fmt --typecheck --editor
+vp run typecheck
+vp run lint
+vp run fmt:check
 ```
 
-Consulte [Project Setup (em inglês)](../guide/init.md) para conhecer as regras de detecção, todas as
-opções, as garantias de idempotência e os casos em que o inicializador se recusa deliberadamente a
-editar um arquivo.
+Aplique correções com `vp run check -- --fix`. Use `vp run` para as tarefas geradas do Vize: `vp check`, `vp lint` e `vp fmt` executam as ferramentas próprias do Vite+. O Vize preserva scripts existentes e gera `vize:<nome>` em caso de conflito; veja [nomes e substituições](./guide/vite-plus.md#tasks).
 
-## Escolher uma configuração manual
+## Escolher o próximo passo
 
-Prefira a configuração manual quando precisar preservar uma configuração existente ou adotar uma
-parte do Vize por vez:
+- [Configurar uma regra ou opção do compilador](./guide/configuration.md).
+- [Migrar ferramentas existentes](./guide/migration.md) com exemplos completos antes e depois.
+- [Entender um diagnóstico lint](./rules/all.md) com exemplos Vue incorretos e corrigidos.
+- [Explorar os componentes](./guide/ui/index.md), suas receitas e sua API.
+- [Visualizar os componentes com Musea](./guide/musea.md).
+- [Configurar o editor](./guide/vite-plus-editor.md) com opções nativas compartilhadas.
 
-- [Plugin do Vite](./guide/vite-plugin.md) — compilação nativa de SFCs Vue no Vite
-- [Integração com Nuxt](./integrations/nuxt.md) — caminho compatível pelo pipeline Vite do Nuxt
-- [Scripts de pacote e CLI](./guide/cli.md) — `vize build`, `fmt`, `lint`, `check`, `ready` e a CLI
-  Rust completa
+> [!NOTE]
+> A descoberta da configuração Vite pela CLI e pelo editor nativos, assim como o init sem arquivo específico, está em preparação para a próxima versão. Até lá, as ferramentas nativas publicadas ainda usam o formato específico existente para opções compartilhadas personalizadas. A [referência](./guide/configuration-reference.md) descreve esse formato.
 
-O Vite é a integração recomendada com bundlers. Os pacotes unplugin e Rspack continuam
-experimentais; o escopo atual está em [Outros bundlers](./guide/unplugin.md).
+## Usar o Vize sem Vite+
 
-## Continuar pelos guias específicos
+A [CLI independente](./guide/cli.md) oferece `vize lint`, `vize fmt` e `vize check`. Execute na raiz do pacote de destino e mantenha o projeto TypeScript em `tsconfig.json`. Os comandos nativos podem compartilhar o objeto `vize` no nível superior de `vite.config.*`; veja a [configuração da CLI](./guide/configuration.md#standalone-cli) para a busca e seus limites atuais.
 
-Esta página é intencionalmente apenas uma orientação. Para detalhes de configuração e integração,
-use os guias específicos como fonte de referência:
+Confira o plano interativo com `vpx vize init --dry-run` e execute `vpx vize init` para escolher os recursos. O [guia de configuração inicial](./guide/init.md) explica a detecção e os limites de edição. O init usa as opções do projeto e os valores padrão, sem criar uma configuração específica do Vize.
 
-- [Configuração](./guide/configuration.md) — `vize.config.*`, opções do compilador, verificação de
-  tipos e configurações do Musea
-- [Análise estática](./guide/static-analysis.md) — modelo de lint e verificação de tipos
-- [Documentação de regras](./rules/index.md) — diagnósticos concretos e exemplos
-- [Plugin do Oxlint](./guide/oxlint.md) — predefinições, opções e o arquivo de configuração que cada
-  comando realmente lê
-- [VS Code e outros editores](./integrations/vscode.md) — perfil opcional do editor e configuração LSP
-- [JSX e TSX](./guide/jsx.md) — componentes Vue escritos fora de SFCs `.vue`
-- [Musea](./guide/musea.md) — exemplos de componentes, documentação, tokens, a11y e VRT
-
-Enquanto a integração do Vize com editores for experimental, continue usando o
-[`vuejs/language-tools`](https://github.com/vuejs/language-tools) oficial no desenvolvimento Vue do
-dia a dia.
+<span id="configurar-um-projeto-existente"></span>
+<span id="escolher-uma-configuração-manual"></span>
+<span id="continuar-pelos-guias-específicos"></span>

@@ -1,12 +1,16 @@
 ---
-title: Standalone Configuration Reference
+title: Shared Configuration Reference
 ---
 
-# Standalone Configuration Reference
+<span id="standalone-configuration-reference"></span>
 
-Vize uses `vize.config.*` for shared npm package commands, Vite plugin, and Rust CLI settings.
+# Shared Configuration Reference
+
+Prefer existing `vite.config.*` and `tsconfig.json`; see [Configuration](./configuration.md). This page documents the native settings and optional dedicated formats.
 
 ## Config Files
+
+Vite config is discovered when no dedicated config exists in the same nearest project directory. The CLI also accepts an explicit `--config`; direct plugin options and explicit editor feature switches take precedence. Config-relative paths use the config directory. For package scopes, use `vize.entries` and the target package's TypeScript project.
 
 The npm package commands and `@vizejs/vite-plugin` load these files from the project root in this priority order:
 

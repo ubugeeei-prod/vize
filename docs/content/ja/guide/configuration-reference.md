@@ -1,12 +1,18 @@
 ---
-title: 単独 CLI の設定リファレンス
+title: 共通設定のリファレンス
 ---
 
-# 単独 CLI の設定リファレンス
+<!-- Reviewed translation; source: guide/configuration-reference.md; scope: introduction and discovery -->
 
-Vize は、共有 npm パッケージ コマンド、Vite プラグイン、および Rust CLI 設定に `vize.config.*` を使用します。
+<span id="単独-cli-の設定リファレンス"></span>
+
+# 共通設定のリファレンス
+
+まずは既存の `vite.config.*` と `tsconfig.json` を使ってください。[設定ガイド](./configuration.md)で導入方法を説明しています。このページでは、共通のネイティブ設定と、必要な場合に使える専用設定をまとめます。
 
 ## 設定ファイル
+
+最も近いプロジェクトの同じディレクトリに専用設定がない場合は、Vite の設定を読み込みます。CLI の `--config` で明示することもできます。プラグインに直接渡したオプションやエディターで明示した機能の設定が優先されます。設定内の相対パスは設定ファイルのディレクトリを基準に解決します。パッケージの対象範囲は `vize.entries` と、そのパッケージの TypeScript プロジェクトで指定します。
 
 npm パッケージ コマンドと `@vizejs/vite-plugin` は、このファイルのプロジェクト ルートからこれらのファイルをロードします。
 優先順位:

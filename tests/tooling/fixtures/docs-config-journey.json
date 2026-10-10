@@ -1,0 +1,307 @@
+{
+  "base": "fe3934d8a24c7d2fe0d26b2ca095d61c90f49b1f",
+  "documents": [
+    {
+      "file": "docs/content/getting-started.md",
+      "headings": [
+        "getting-started",
+        "1-install-the-integration",
+        "2-update-vite-config-ts",
+        "3-build-and-check-your-app",
+        "choose-your-next-step",
+        "use-vize-without-vite"
+      ],
+      "code": []
+    },
+    {
+      "file": "docs/content/guide/configuration.md",
+      "headings": [
+        "configuration",
+        "vite-configuration",
+        "change-one-rule",
+        "lint-rule-options",
+        "choose-which-features-to-adopt",
+        "ordinary-vite",
+        "standalone-cli",
+        "detailed-reference"
+      ],
+      "code": []
+    },
+    {
+      "file": "docs/content/guide/vite-plugin.md",
+      "headings": [
+        "vite-plugin",
+        "start-with-vite",
+        "drop-in-scope",
+        "installation",
+        "basic-usage",
+        "typescript-vue-imports",
+        "optional-standalone-shared-config",
+        "compiler-options",
+        "how-it-works",
+        "compilation-pipeline",
+        "comparison",
+        "advanced-features",
+        "batch-pre-compilation",
+        "static-asset-rewriting",
+        "define-replacement",
+        "per-environment-isolation",
+        "nuxt-compatibility",
+        "notes"
+      ],
+      "code": []
+    },
+    {
+      "file": "docs/content/ja/getting-started.md",
+      "headings": [
+        "はじめる",
+        "1-統合パッケージをインストールする",
+        "2-vite-config-ts-を変更する",
+        "3-アプリをビルド-検査する",
+        "次にやりたいこと",
+        "vite-なしで利用する"
+      ],
+      "code": []
+    },
+    {
+      "file": "docs/content/ja/guide/configuration.md",
+      "headings": [
+        "設定",
+        "vite-の設定",
+        "ルールを1つ変更する",
+        "lint-rule-options",
+        "導入する機能を選ぶ",
+        "通常の-vite",
+        "単独-cli",
+        "詳細リファレンス"
+      ],
+      "code": []
+    },
+    {
+      "file": "docs/content/ja/guide/vite-plugin.md",
+      "headings": [
+        "vite-プラグイン",
+        "vite-から始める",
+        "置き換えの対応範囲",
+        "インストール",
+        "基本的な使い方",
+        "typescript-vue-インポート",
+        "単独-cli-lsp-と共有する設定-任意",
+        "コンパイラ-オプション",
+        "仕組み",
+        "コンパイル-パイプライン",
+        "比較",
+        "高度な機能",
+        "バッチプリコンパイル",
+        "静的アセットの書き換え",
+        "置換の定義",
+        "環境ごとの分離",
+        "nuxt-の互換性",
+        "注意事項"
+      ],
+      "code": []
+    },
+    {
+      "file": "docs/content/fr/getting-started.md",
+      "headings": [
+        "bien-démarrer",
+        "configurer-un-projet-existant",
+        "choisir-une-configuration-manuelle",
+        "consulter-les-guides-spécialisés"
+      ],
+      "code": []
+    },
+    {
+      "file": "docs/content/fr/guide/configuration.md",
+      "headings": [
+        "configuration",
+        "fichiers-de-configuration",
+        "configuration-typescript",
+        "résolution-de-type-vue",
+        "entrées-expérimentales-sur-le-plat",
+        "configuration-pkl",
+        "configuration-json",
+        "options-du-compilateur",
+        "syntaxe-des-modèles",
+        "mode-de-sortie-jsx-tsx",
+        "directives-par-composant",
+        "préséance",
+        "diagnostic",
+        "dialecte-vue",
+        "options-d-analyse-statique",
+        "musea-options"
+      ],
+      "code": [
+        "import { defineConfig } from \"vize\";\n\nexport default defineConfig(({ command, mode, isSsrBuild }) => ({\n  compiler: {\n    sourceMap: mode !== \"production\",\n    ssr: isSsrBuild,\n    vapor: false,\n    customRenderer: false,\n    templateSyntax: \"standard\",\n  },\n  vite: {\n    include: [/\\.vue$/],\n    exclude: [/node_modules/],\n    scanPatterns: [\"src/**/*.vue\"],\n    ignorePatterns: [\"node_modules/**\", \"dist/**\", \".git/**\"],\n  },\n  linter: {\n    enabled: command !== \"build\",\n    preset: \"happy-path\",\n  },\n  typeChecker: {\n    enabled: true,\n    strict: true,\n  },\n  formatter: {\n    printWidth: 100,\n    singleQuote: false,\n  },\n  lsp: {\n    lint: true,\n    typecheck: false,\n    editor: false,\n    formatting: false,\n  },\n  musea: {\n    include: [\"src/**/*.art.vue\"],\n    basePath: \"/__musea__\",\n  },\n}));",
+        "export default defineConfig({\n  formatter: {\n    printWidth: 100,\n  },\n  entries: [\n    {\n      name: \"web app\",\n      basePath: \"apps/web\",\n      files: [\"src/**/*.vue\"],\n      typeChecker: {\n        tsconfig: \"tsconfig.app.json\",\n      },\n    },\n    {\n      name: \"ui package\",\n      basePath: \"packages/ui\",\n      files: [\"src/**/*.vue\"],\n      formatter: {\n        singleQuote: true,\n      },\n    },\n  ],\n});",
+        "amends \"node_modules/vize/pkl/vize.pkl\"\n\ncompiler {\n  sourceMap = true\n  vapor = false\n  customRenderer = false\n  templateSyntax = \"standard\"\n}\n\nvite {\n  scanPatterns = new Listing {\n    \"src/**/*.vue\"\n  }\n}\n\nlinter {\n  preset = \"happy-path\"\n}\n\ntypeChecker {\n  enabled = true\n  strict = true\n}\n\nentries = new Listing {\n  new ConfigEntry {\n    name = \"web app\"\n    basePath = \"apps/web\"\n    files = new Listing { \"src/**/*.vue\" }\n    typeChecker {\n      tsconfig = \"tsconfig.app.json\"\n    }\n  }\n}\n\nlsp {\n  lint = true\n  typecheck = false\n  editor = false\n  formatting = false\n}",
+        "{\n  \"$schema\": \"./node_modules/vize/schemas/vize.config.schema.json\",\n  \"compiler\": {\n    \"sourceMap\": true,\n    \"vapor\": false,\n    \"customRenderer\": false,\n    \"templateSyntax\": \"standard\"\n  },\n  \"vite\": {\n    \"scanPatterns\": [\"src/**/*.vue\"]\n  },\n  \"linter\": {\n    \"preset\": \"happy-path\"\n  },\n  \"typeChecker\": {\n    \"enabled\": true,\n    \"strict\": true\n  },\n  \"musea\": {\n    \"include\": [\"src/**/*.art.vue\"],\n    \"basePath\": \"/__musea__\"\n  }\n}",
+        "import { defineConfig } from \"vite\";\nimport vize from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  plugins: [\n    vize({\n      vapor: true,\n      sourceMap: true,\n      customRenderer: true,\n      templateSyntax: \"standard\",\n    }),\n  ],\n});",
+        "<template>\n  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->\n  <div v-for=\"(item in items\">{{ item }}</div>\n\n  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->\n  <div v-for=\"item) in items\">{{ item }}</div>\n\n  <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->\n  <div />\n</template>",
+        "// vize.config.ts\nimport { defineConfig } from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  compiler: {\n    // Default every .jsx/.tsx component to Vapor output.\n    jsxMode: \"vapor\",\n  },\n});",
+        "// Compiled to Vapor regardless of the configured default.\nconst Fast = () => {\n  \"use vue:vapor\";\n  return <div class=\"fast\" />;\n};\n\n// Compiled to Virtual DOM regardless of the configured default.\nconst Classic = () => {\n  \"use vue:vdom\";\n  return <div class=\"classic\" />;\n};",
+        "// vize.config: { compiler: { jsxMode: \"vapor\" } }\n\n// No directive -> takes the configured default (Vapor here).\nexport const Dashboard = () => <main>{/* ... */}</main>;\n\n// Opts back into Virtual DOM just for this component.\nexport const LegacyWidget = () => {\n  \"use vue:vdom\";\n  return <aside>{/* ... */}</aside>;\n};",
+        "{\n  \"dialect\": \"petite-vue\"\n}",
+        "export default defineConfig({\n  linter: {\n    enabled: true,\n    preset: \"opinionated\",\n    rules: {\n      \"vue/require-v-for-key\": \"error\",\n      \"vue/no-v-html\": \"warn\",\n    },\n  },\n});",
+        "export default defineConfig({\n  typeChecker: {\n    enabled: true,\n    strict: true,\n    checkProps: true,\n    checkEmits: true,\n    checkTemplateBindings: true,\n    // Vue 3 Options API template bindings; default-on (matches vue-tsc).\n    optionsApi: true,\n  },\n});",
+        "{\n  \"typeChecker\": {\n    \"servers\": 1\n  }\n}",
+        "export default defineConfig({\n  musea: {\n    include: [\"src/**/*.art.vue\"],\n    exclude: [\"node_modules/**\", \"dist/**\"],\n    basePath: \"/__musea__\",\n    storybookCompat: false,\n    inlineArt: false,\n  },\n});"
+      ]
+    },
+    {
+      "file": "docs/content/fr/guide/vite-plugin.md",
+      "headings": [
+        "vite-plugin",
+        "installation",
+        "usage-de-base",
+        "importations-typescript-vue",
+        "configuration-partagée",
+        "options-du-compilateur",
+        "comment-ça-fonctionne",
+        "compilation-pipeline",
+        "comparaison",
+        "fonctionnalités-avancées",
+        "précompilation-par-lots",
+        "réécriture-d-actifs-statiques",
+        "définir-le-remplacement",
+        "isolement-par-environnement",
+        "compatibilité-nuxt",
+        "notes"
+      ],
+      "code": []
+    },
+    {
+      "file": "docs/content/pt-BR/getting-started.md",
+      "headings": [
+        "primeiros-passos",
+        "configurar-um-projeto-existente",
+        "escolher-uma-configuração-manual",
+        "continuar-pelos-guias-específicos"
+      ],
+      "code": []
+    },
+    {
+      "file": "docs/content/pt-BR/guide/configuration.md",
+      "headings": [
+        "configuração",
+        "arquivos-de-configuração",
+        "configuração-do-typescript",
+        "resolução-do-tipo-de-vue",
+        "entradas-experimentais-em-flat",
+        "configuração-pkl",
+        "configuração-json",
+        "opções-do-compilador",
+        "sintaxe-do-template",
+        "modo-de-saída-jsx-tsx",
+        "diretivas-por-componente",
+        "precedência",
+        "diagnósticos",
+        "dialeto-vue",
+        "opções-de-análise-estática",
+        "opções-de-musea"
+      ],
+      "code": [
+        "import { defineConfig } from \"vize\";\n\nexport default defineConfig(({ command, mode, isSsrBuild }) => ({\n  compiler: {\n    sourceMap: mode !== \"production\",\n    ssr: isSsrBuild,\n    vapor: false,\n    customRenderer: false,\n    templateSyntax: \"standard\",\n  },\n  vite: {\n    include: [/\\.vue$/],\n    exclude: [/node_modules/],\n    scanPatterns: [\"src/**/*.vue\"],\n    ignorePatterns: [\"node_modules/**\", \"dist/**\", \".git/**\"],\n  },\n  linter: {\n    enabled: command !== \"build\",\n    preset: \"happy-path\",\n  },\n  typeChecker: {\n    enabled: true,\n    strict: true,\n  },\n  formatter: {\n    printWidth: 100,\n    singleQuote: false,\n  },\n  lsp: {\n    lint: true,\n    typecheck: false,\n    editor: false,\n    formatting: false,\n  },\n  musea: {\n    include: [\"src/**/*.art.vue\"],\n    basePath: \"/__musea__\",\n  },\n}));",
+        "export default defineConfig({\n  formatter: {\n    printWidth: 100,\n  },\n  entries: [\n    {\n      name: \"web app\",\n      basePath: \"apps/web\",\n      files: [\"src/**/*.vue\"],\n      typeChecker: {\n        tsconfig: \"tsconfig.app.json\",\n      },\n    },\n    {\n      name: \"ui package\",\n      basePath: \"packages/ui\",\n      files: [\"src/**/*.vue\"],\n      formatter: {\n        singleQuote: true,\n      },\n    },\n  ],\n});",
+        "amends \"node_modules/vize/pkl/vize.pkl\"\n\ncompiler {\n  sourceMap = true\n  vapor = false\n  customRenderer = false\n  templateSyntax = \"standard\"\n}\n\nvite {\n  scanPatterns = new Listing {\n    \"src/**/*.vue\"\n  }\n}\n\nlinter {\n  preset = \"happy-path\"\n}\n\ntypeChecker {\n  enabled = true\n  strict = true\n}\n\nentries = new Listing {\n  new ConfigEntry {\n    name = \"web app\"\n    basePath = \"apps/web\"\n    files = new Listing { \"src/**/*.vue\" }\n    typeChecker {\n      tsconfig = \"tsconfig.app.json\"\n    }\n  }\n}\n\nlsp {\n  lint = true\n  typecheck = false\n  editor = false\n  formatting = false\n}",
+        "{\n  \"$schema\": \"./node_modules/vize/schemas/vize.config.schema.json\",\n  \"compiler\": {\n    \"sourceMap\": true,\n    \"vapor\": false,\n    \"customRenderer\": false,\n    \"templateSyntax\": \"standard\"\n  },\n  \"vite\": {\n    \"scanPatterns\": [\"src/**/*.vue\"]\n  },\n  \"linter\": {\n    \"preset\": \"happy-path\"\n  },\n  \"typeChecker\": {\n    \"enabled\": true,\n    \"strict\": true\n  },\n  \"musea\": {\n    \"include\": [\"src/**/*.art.vue\"],\n    \"basePath\": \"/__musea__\"\n  }\n}",
+        "import { defineConfig } from \"vite\";\nimport vize from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  plugins: [\n    vize({\n      vapor: true,\n      sourceMap: true,\n      customRenderer: true,\n      templateSyntax: \"standard\",\n    }),\n  ],\n});",
+        "<template>\n  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->\n  <div v-for=\"(item in items\">{{ item }}</div>\n\n  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->\n  <div v-for=\"item) in items\">{{ item }}</div>\n\n  <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->\n  <div />\n</template>",
+        "// vize.config.ts\nimport { defineConfig } from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  compiler: {\n    // Default every .jsx/.tsx component to Vapor output.\n    jsxMode: \"vapor\",\n  },\n});",
+        "// Compiled to Vapor regardless of the configured default.\nconst Fast = () => {\n  \"use vue:vapor\";\n  return <div class=\"fast\" />;\n};\n\n// Compiled to Virtual DOM regardless of the configured default.\nconst Classic = () => {\n  \"use vue:vdom\";\n  return <div class=\"classic\" />;\n};",
+        "// vize.config: { compiler: { jsxMode: \"vapor\" } }\n\n// No directive -> takes the configured default (Vapor here).\nexport const Dashboard = () => <main>{/* ... */}</main>;\n\n// Opts back into Virtual DOM just for this component.\nexport const LegacyWidget = () => {\n  \"use vue:vdom\";\n  return <aside>{/* ... */}</aside>;\n};",
+        "{\n  \"dialect\": \"petite-vue\"\n}",
+        "export default defineConfig({\n  linter: {\n    enabled: true,\n    preset: \"opinionated\",\n    rules: {\n      \"vue/require-v-for-key\": \"error\",\n      \"vue/no-v-html\": \"warn\",\n    },\n  },\n});",
+        "export default defineConfig({\n  typeChecker: {\n    enabled: true,\n    strict: true,\n    checkProps: true,\n    checkEmits: true,\n    checkTemplateBindings: true,\n    // Vue 3 Options API template bindings; default-on (matches vue-tsc).\n    optionsApi: true,\n  },\n});",
+        "{\n  \"typeChecker\": {\n    \"servers\": 1\n  }\n}",
+        "export default defineConfig({\n  musea: {\n    include: [\"src/**/*.art.vue\"],\n    exclude: [\"node_modules/**\", \"dist/**\"],\n    basePath: \"/__musea__\",\n    storybookCompat: false,\n    inlineArt: false,\n  },\n});"
+      ]
+    },
+    {
+      "file": "docs/content/pt-BR/guide/vite-plugin.md",
+      "headings": [
+        "vite-plugin",
+        "instalação",
+        "uso-básico",
+        "importações-do-typescript-vue",
+        "configuração-compartilhada",
+        "opções-do-compilador",
+        "como-funciona",
+        "pipeline-de-compilação",
+        "comparação",
+        "recursos-avançados",
+        "pré-compilação-por-lote",
+        "reescrita-de-ativos-estáticos",
+        "defina-substituição",
+        "isolamento-por-ambiente",
+        "compatibilidade-nuxt",
+        "notas"
+      ],
+      "code": []
+    },
+    {
+      "file": "docs/content/zh-CN/getting-started.md",
+      "headings": ["入门指南", "设置现有项目", "选择手动配置", "继续阅读专题指南"],
+      "code": []
+    },
+    {
+      "file": "docs/content/zh-CN/guide/configuration.md",
+      "headings": [
+        "配置",
+        "配置文件",
+        "typescript-配置",
+        "vue类型解析",
+        "实验平面作品",
+        "pkl-配置",
+        "json-配置",
+        "编译器选项",
+        "模板语法",
+        "jsx-和-tsx-输出模式",
+        "每个组件指令",
+        "优先权",
+        "诊断",
+        "vue方言",
+        "静态分析选项",
+        "博物馆选项"
+      ],
+      "code": [
+        "import { defineConfig } from \"vize\";\n\nexport default defineConfig(({ command, mode, isSsrBuild }) => ({\n  compiler: {\n    sourceMap: mode !== \"production\",\n    ssr: isSsrBuild,\n    vapor: false,\n    customRenderer: false,\n    templateSyntax: \"standard\",\n  },\n  vite: {\n    include: [/\\.vue$/],\n    exclude: [/node_modules/],\n    scanPatterns: [\"src/**/*.vue\"],\n    ignorePatterns: [\"node_modules/**\", \"dist/**\", \".git/**\"],\n  },\n  linter: {\n    enabled: command !== \"build\",\n    preset: \"happy-path\",\n  },\n  typeChecker: {\n    enabled: true,\n    strict: true,\n  },\n  formatter: {\n    printWidth: 100,\n    singleQuote: false,\n  },\n  lsp: {\n    lint: true,\n    typecheck: false,\n    editor: false,\n    formatting: false,\n  },\n  musea: {\n    include: [\"src/**/*.art.vue\"],\n    basePath: \"/__musea__\",\n  },\n}));",
+        "export default defineConfig({\n  formatter: {\n    printWidth: 100,\n  },\n  entries: [\n    {\n      name: \"web app\",\n      basePath: \"apps/web\",\n      files: [\"src/**/*.vue\"],\n      typeChecker: {\n        tsconfig: \"tsconfig.app.json\",\n      },\n    },\n    {\n      name: \"ui package\",\n      basePath: \"packages/ui\",\n      files: [\"src/**/*.vue\"],\n      formatter: {\n        singleQuote: true,\n      },\n    },\n  ],\n});",
+        "amends \"node_modules/vize/pkl/vize.pkl\"\n\ncompiler {\n  sourceMap = true\n  vapor = false\n  customRenderer = false\n  templateSyntax = \"standard\"\n}\n\nvite {\n  scanPatterns = new Listing {\n    \"src/**/*.vue\"\n  }\n}\n\nlinter {\n  preset = \"happy-path\"\n}\n\ntypeChecker {\n  enabled = true\n  strict = true\n}\n\nentries = new Listing {\n  new ConfigEntry {\n    name = \"web app\"\n    basePath = \"apps/web\"\n    files = new Listing { \"src/**/*.vue\" }\n    typeChecker {\n      tsconfig = \"tsconfig.app.json\"\n    }\n  }\n}\n\nlsp {\n  lint = true\n  typecheck = false\n  editor = false\n  formatting = false\n}",
+        "{\n  \"$schema\": \"./node_modules/vize/schemas/vize.config.schema.json\",\n  \"compiler\": {\n    \"sourceMap\": true,\n    \"vapor\": false,\n    \"customRenderer\": false,\n    \"templateSyntax\": \"standard\"\n  },\n  \"vite\": {\n    \"scanPatterns\": [\"src/**/*.vue\"]\n  },\n  \"linter\": {\n    \"preset\": \"happy-path\"\n  },\n  \"typeChecker\": {\n    \"enabled\": true,\n    \"strict\": true\n  },\n  \"musea\": {\n    \"include\": [\"src/**/*.art.vue\"],\n    \"basePath\": \"/__musea__\"\n  }\n}",
+        "import { defineConfig } from \"vite\";\nimport vize from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  plugins: [\n    vize({\n      vapor: true,\n      sourceMap: true,\n      customRenderer: true,\n      templateSyntax: \"standard\",\n    }),\n  ],\n});",
+        "<template>\n  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->\n  <div v-for=\"(item in items\">{{ item }}</div>\n\n  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->\n  <div v-for=\"item) in items\">{{ item }}</div>\n\n  <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->\n  <div />\n</template>",
+        "// vize.config.ts\nimport { defineConfig } from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  compiler: {\n    // Default every .jsx/.tsx component to Vapor output.\n    jsxMode: \"vapor\",\n  },\n});",
+        "// Compiled to Vapor regardless of the configured default.\nconst Fast = () => {\n  \"use vue:vapor\";\n  return <div class=\"fast\" />;\n};\n\n// Compiled to Virtual DOM regardless of the configured default.\nconst Classic = () => {\n  \"use vue:vdom\";\n  return <div class=\"classic\" />;\n};",
+        "// vize.config: { compiler: { jsxMode: \"vapor\" } }\n\n// No directive -> takes the configured default (Vapor here).\nexport const Dashboard = () => <main>{/* ... */}</main>;\n\n// Opts back into Virtual DOM just for this component.\nexport const LegacyWidget = () => {\n  \"use vue:vdom\";\n  return <aside>{/* ... */}</aside>;\n};",
+        "{\n  \"dialect\": \"petite-vue\"\n}",
+        "export default defineConfig({\n  linter: {\n    enabled: true,\n    preset: \"opinionated\",\n    rules: {\n      \"vue/require-v-for-key\": \"error\",\n      \"vue/no-v-html\": \"warn\",\n    },\n  },\n});",
+        "export default defineConfig({\n  typeChecker: {\n    enabled: true,\n    strict: true,\n    checkProps: true,\n    checkEmits: true,\n    checkTemplateBindings: true,\n    // Vue 3 Options API template bindings; default-on (matches vue-tsc).\n    optionsApi: true,\n  },\n});",
+        "{\n  \"typeChecker\": {\n    \"servers\": 1\n  }\n}",
+        "export default defineConfig({\n  musea: {\n    include: [\"src/**/*.art.vue\"],\n    exclude: [\"node_modules/**\", \"dist/**\"],\n    basePath: \"/__musea__\",\n    storybookCompat: false,\n    inlineArt: false,\n  },\n});"
+      ]
+    },
+    {
+      "file": "docs/content/zh-CN/guide/vite-plugin.md",
+      "headings": [
+        "vite-插件",
+        "安装",
+        "基本用法",
+        "typescript-vue-导入",
+        "共享配置",
+        "编译器选项",
+        "工作原理",
+        "合辑流程",
+        "比较",
+        "高级功能",
+        "批次预编译",
+        "静态资产重写",
+        "定义替代",
+        "按环境隔离",
+        "nuxt-兼容性",
+        "注释"
+      ],
+      "code": []
+    }
+  ]
+}

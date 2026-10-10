@@ -1,12 +1,16 @@
 ---
 title: 設定
-description: Vite+ は vite.config.ts、単独コマンドは vize.config.ts で設定する。
+description: 既存の Vite 設定と TypeScript プロジェクトで Vize を設定する。
 ---
+
+<!-- Reviewed translation; source: guide/configuration.md -->
 
 # 設定
 
-Vite+ プロジェクトでは、統合 helper を使って **`vite.config.ts`** に Vize の設定をまとめます。
-必要な項目だけ追加してください。デフォルトで利用する場合、別の設定ファイルは不要です。
+Vize の設定は `vite.config.ts` に、TypeScript のプロジェクト設定は `tsconfig.json` にまとめます。既定の設定で使う場合、専用の Vize 設定ファイルは不要です。
+
+> [!NOTE]
+> ネイティブ CLI・エディターの Vite 設定の読み込みと、専用設定を作らない init は、次のリリースに向けて準備中です。それまでは、公開済みのネイティブツールで共通設定を変更するには既存の専用形式を使います。[リファレンス](./configuration-reference.md)にその形式をまとめています。
 
 ## Vite+ の設定
 
@@ -21,26 +25,19 @@ export default defineConfig({
 });
 ```
 
-設定は、その設定を使うツールごとに分けます。
-
 | 設定場所 | 対象 | 実行 |
 | --- | --- | --- |
 | `compiler` | Vue のコンパイル | `vp dev`, `vp build` |
-| `lint.vize` | Vize の Vue ルール | `vp run lint` |
-| その他の `lint` | Oxlint | `vp run lint` |
-| `fmt.vize` | Vize の Vue フォーマット | `vp run fmt:check` |
-| その他の `fmt` | Oxfmt | `vp run fmt:check` |
-| `typecheck` | ネイティブ Vue 型チェック | `vp run typecheck` |
-| `pack.vize` | Vue ライブラリの型宣言 | `vp run pack` |
+| `lint.vize` | Vue の lint ルール | `vp run lint` |
+| `fmt.vize` | Vue のフォーマット | `vp run fmt:check` |
+| `typecheck` | Vue の型チェック | `vp run typecheck` |
+| `pack.vize` | ライブラリの型宣言 | `vp run pack` |
 
-`vp run check` でまとめて検査できます。組み込みの `vp check`・`vp lint`・`vp fmt` は
-Vite+ 自身の動作を維持するため、Vize には生成されたタスクを使います。
-既存スクリプトがある場合、生成タスクは `vize:<名前>` になります。
-[タスク名と統合オプション](./vite-plus.md#tasks)を参照してください。
+まとめて検査するには `vp run check` を使います。組み込みの `vp check`・`vp lint`・`vp fmt` は Vite+ 自身の動作を維持します。既存スクリプトがある場合、生成タスクは `vize:<名前>` になります。[タスク名と上書き](./vite-plus.md#tasks)を参照してください。
 
 ## ルールを1つ変更する
 
-Vize のルールは `lint.vize.rules`、Oxlint のルールは `lint.rules` に設定します。
+Vue のルールは `lint.vize.rules`、Oxlint のルールは `lint.rules` に指定します。[ルールのオプション](../rules/options.md)で設定値を、[ルール一覧](../rules/all.md)で具体例を確認できます。
 
 ```ts
 export default defineConfig({
@@ -51,70 +48,47 @@ export default defineConfig({
 });
 ```
 
-[ルールと具体例](../rules/all.md)から選べます。この統合では Vize と Oxlint が一緒に動作するため、
-`oxlint-plugin-vize` を別途登録する必要はありません。
-
-### Lint Rule Options
-
-ルールごとの設定値と具体例は [ルール オプション](../rules/options.md)を参照してください。
-
 ## 導入する機能を選ぶ
 
-`compiler`・`typecheck`・`lint.vize`・`fmt.vize` を `false` にすると、その機能を無効化できます。
-例えば `compiler: false` なら既存の Vue コンパイラプラグインを使い続けます。
-その他の Vite+ 設定も、同じ `vite.config.ts` に残してください。
-
-Vue ファイルは Vize、その他は Oxfmt がフォーマットします。
-`fmt.ignorePatterns` は両方に適用されます。
-[担当範囲と重複の扱い](./vite-plus.md#lint-and-formatter-ownership)を参照してください。
+`compiler`・`typecheck`・`lint.vize`・`fmt.vize` を `false` にすると、その機能を無効にできます。Vue は Vize、その他のファイルは Oxfmt がフォーマットします。[担当範囲と重複の扱い](./vite-plus.md#lint-and-formatter-ownership)も確認してください。
 
 ## 通常の Vite
 
-`vite.config.ts` の plugin オプションで設定します。
+コンパイルにはプラグインを使い、CLI やエディターと共有する設定はトップレベルの `vize` に置きます。プラグインの import で Vite の設定の型も追加されます。
 
 ```ts
 import { defineConfig } from "vite";
 import vize from "@vizejs/vite-plugin";
 
 export default defineConfig({
-  plugins: [vize({ sourceMap: true })],
+  plugins: [vize()],
+  vize: {
+    linter: { preset: "essential" },
+    formatter: { printWidth: 100 },
+    typeChecker: { strict: true },
+  },
 });
 ```
-
-[Vite プラグインのオプション](./vite-plugin.md#compiler-options)を参照してください。
-CLI や LSP と設定を共有する場合に限り、単独の共有設定も利用できます。
 
 <span id="standalone-cli"></span>
 
 ## 単独 CLI
 
-単独コマンドや設定 helper を使う場合は `vize` をインストールします。
+`vize` をインストールし、対象パッケージのルートから実行します。CLI も `vite.config.*` と TypeScript プロジェクトを読み込みます。Vite+ の `compiler`・`typecheck`・`lint.vize`・`fmt.vize` もネイティブコマンド用に変換されます。トップレベルの `vize` に明示した設定は、この変換より優先されます。
 
 ```bash
 vp install -D vize
 vp exec vize check
 ```
 
-設定場所は **`vize.config.ts`** です。
+設定の検索は、最も近い `package.json`・`tsconfig.json`・`jsconfig.json` のあるディレクトリで止まります。モノリポジトリでは対象パッケージから実行するか `vize.entries` を使い、エディターのワークスペースフォルダーも明示してください。ファイルごとの入れ子の Vite 設定の自動検出と、単独 CLI での `vite.root` の同等対応は開発中です。
 
-```ts
-import { defineConfig } from "vize";
+## 専用設定ファイルを使う場合
 
-export default defineConfig({
-  linter: { preset: "essential" },
-  formatter: { printWidth: 100 },
-  typeChecker: { strict: true },
-});
-```
+既存の `vize.config.*` も使えます。同じディレクトリでは Vite の設定より優先されます。CLI の `--config` でファイルを明示できます。プラグインに直接渡したオプションやエディターで明示した機能の設定は、共通設定より優先されます。`config: false` でプラグインの自動読み込みを無効にできます。
 
-単独設定の `linter`・`formatter`・`typeChecker` は、Vite+ の `lint.vize`・`fmt.vize`・`typecheck`
-とは名前が異なります。[CLI ガイド](./cli.md)で実行方法を確認してください。
+<span id="lint-rule-options"></span>
 
 ## 詳細リファレンス
 
-[単独 CLI の設定リファレンス](./configuration-reference.md)に設定ファイルの検索・優先順位、
-JSON/PKL、スコープ別の設定、全コンパイラオプション、テンプレート構文、Vue の型解決、
-LSP・Musea の設定を残しています。型宣言やエディター設定は [Vite+ 統合](./vite-plus.md)を参照してください。
-
-実験的なコンパイラ機能は明示的に有効化します。[Experimentals](./experimentals.md)で
-対応する項目と現在の範囲を確認してください。
+[共通設定のリファレンス](./configuration-reference.md)に、検索規則、専用の TypeScript・JSON・PKL 設定、スコープ別の設定、Vue の型解決、LSP・Musea の設定をまとめています。コンパイラの設定と構文は[コンパイラのリファレンス](./compiler-configuration-reference.md)、実験的な機能は [Experimentals](./experimentals.md)を参照してください。

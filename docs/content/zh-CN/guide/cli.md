@@ -2,7 +2,7 @@
 title: CLI
 ---
 
-<!-- Generated translation; source: guide/cli.md -->
+<!-- Reviewed translation; source: guide/cli.md; scope: native configuration guidance -->
 
 # CLI 参考
 
@@ -69,7 +69,7 @@ cargo install --path crates/vize --force --locked
 | 构建、格式化、lint、检查、准备和升级的脚本打包     | `vp run vize:*` 来自 NPM 包 |
 | 跨`.vue`、`.ts`、`.tsx`和`.d.ts`的项目支持类型检查 | 锈蚀`vize check`            |
 | LSP、IDE设置、`check-server`和配置文件伪影         | 锈`vize`二进制              |
-| 共享 Vite 插件、npm 包命令和 Rust CLI 设置         | `vize.config.*`             |
+| 共享 Vite 插件、npm 包命令和 Rust CLI 设置         | [Vite config](./configuration.md#standalone-cli)             |
 
 ## 命令
 
