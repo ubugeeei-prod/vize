@@ -32,7 +32,10 @@ const { values } = parseArgs({
 });
 const dist = path.resolve(values.dir);
 const output = path.resolve(values.output);
-const routes = values.routes?.split(",") ?? navigationRenderRoutes;
+const routes = values.routes?.split(",") ?? [
+  ...navigationRenderRoutes,
+  ...["zh-CN", "pt-BR", "fr"].map((locale) => `/${locale}/rules/vue`),
+];
 const workers = parseRenderWorkers(values.workers);
 const jobs = createRenderJobs(routes);
 const startedAt = new Date().toISOString();

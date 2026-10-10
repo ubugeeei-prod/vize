@@ -4,6 +4,7 @@ import { purposeJa } from "./purpose-ja.ts";
 import { resolve } from "node:path";
 import { exampleLinks } from "./example-links.ts";
 import { accessibilityIntroductions } from "./accessibility-introductions.ts";
+import { generateVueCategoryPages } from "./vue-category-render.ts";
 const categories: readonly [string, string, string, (name: string) => boolean][] = [
   ["vue", "Vue rules", "Vue ルール", (name) => name.startsWith("vue/")],
   [
@@ -50,6 +51,7 @@ export function generateCategoryPages(
   checking: boolean,
 ) {
   for (const [file, en, jp, select] of categories) {
+    if (file === "vue") continue;
     for (const locale of ["", "ja/"]) {
       const ja = Boolean(locale);
       const title = ja ? jp : en;
@@ -113,6 +115,7 @@ export function generateCategoryPages(
       } else writeFileSync(path, text);
     }
   }
+  generateVueCategoryPages(root, rules, checking);
   // Keep previous accessibility group URLs useful while all details use one route per rule.
   const groups = {
     core: [

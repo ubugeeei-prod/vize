@@ -21,14 +21,14 @@ vp install -D @vizejs/musea-mcp-server
 
 ### With Claude Desktop
 
-Add to `claude_desktop_config.json`:
+Add to `claude_desktop_config.json`. Replace the executable and project paths with absolute paths; the server uses the installed package from that project:
 
 ```json
 {
   "mcpServers": {
     "musea": {
-      "command": "vp",
-      "args": ["dlx", "@vizejs/musea-mcp-server", "--project", "/path/to/project"]
+      "command": "/absolute/path/to/vp",
+      "args": ["-C", "/absolute/path/to/project", "exec", "musea-mcp", "/absolute/path/to/project"]
     }
   }
 }
@@ -37,7 +37,7 @@ Add to `claude_desktop_config.json`:
 ### Standalone
 
 ```bash
-vp dlx @vizejs/musea-mcp-server --project ./my-vue-app
+vp exec musea-mcp /absolute/path/to/project
 ```
 
 ## MCP Tools
@@ -75,7 +75,7 @@ For Musea-specific workflows, check whether the assistant:
 - read tokens before suggesting visual values
 - reported missing metadata instead of guessing
 
-The full MCP guide includes a longer reproducibility workflow and prompt template:
+The MCP guide covers client setup, concrete requests, and available tools:
 [docs/content/integrations/mcp.md](https://github.com/ubugeeei-prod/vize/blob/main/docs/content/integrations/mcp.md)
 
 ## License

@@ -1,5 +1,6 @@
 file	spelling
 npm/builder/vite-musea/gallery/components/GalleryLayout.vue	@pointerdown.stop.prevent
+npm/builder/vite-musea/gallery/components/HostedVrtConnection.vue	@submit.prevent
 npm/builder/vite-musea/gallery/components/PropsPanel.vue	@keyup.enter
 npm/builder/vite-musea/gallery/components/PropsPanel.vue	@keyup.enter
 npm/builder/vite-musea/gallery/components/ResizeHandle.vue	@pointerdown.stop.prevent

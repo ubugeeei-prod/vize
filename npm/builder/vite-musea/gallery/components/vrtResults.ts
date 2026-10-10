@@ -1,4 +1,5 @@
 export interface VrtResult {
+  images?: Record<string, string>;
   artPath: string;
   variantName: string;
   viewport: string;

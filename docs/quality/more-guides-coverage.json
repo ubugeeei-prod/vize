@@ -7,19 +7,19 @@
       "route": "/architecture/crates",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Complete Japanese body reviewed against English commands, table cells and diagrams; natural terminology and original anchors retained; fresh browser and deployed review remain pending."
     },
     {
       "route": "/architecture/language-engineering-practices",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Japanese complete body reviewed against the retained English source, with all commands, external references and published anchors preserved; fresh browser and deployed acceptance remain pending."
     },
     {
       "route": "/architecture/overview",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Complete Japanese body reviewed against English commands, table cells and diagrams; natural terminology and original anchors retained; fresh browser and deployed review remain pending."
     },
     {
       "route": "/architecture/performance",
@@ -37,7 +37,7 @@
       "route": "/architecture/source-guide",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Complete Japanese body reviewed against English commands, table cells and diagrams; natural terminology and original anchors retained; fresh browser and deployed review remain pending."
     },
     {
       "route": "/contributing",
@@ -55,7 +55,7 @@
       "route": "/guide/auto-imports",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Complete Japanese body reviewed against source syntax-mode/package-resolution or resolver contracts, retaining every full published example and native fragment; fresh browser and deployed acceptance remain pending."
     },
     {
       "route": "/guide/check-performance",
@@ -67,7 +67,7 @@
       "route": "/guide/cli",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Japanese command body reviewed against the complete source reference, retaining every published full example and native fragment; the unchanged shared-configuration entry is excluded until its separate source integration. Fresh browser and deployed acceptance remain pending."
     },
     {
       "route": "/guide/compiler-inspector",
@@ -189,7 +189,7 @@
       "route": "/guide/troubleshooting",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Complete Japanese body reviewed against source syntax-mode/package-resolution or resolver contracts, retaining every full published example and native fragment; fresh browser and deployed acceptance remain pending."
     },
     {
       "route": "/guide/vite-plus-editor",
@@ -207,13 +207,13 @@
       "route": "/guide/wasm",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Both locales correct lint-only locale support and replace an unattributed size estimate with an exact-artifact measurement recipe, retaining every full example and heading. The complete Japanese body belongs to #8452; genuine composition and fresh browser/deployed acceptance remain pending."
     },
     {
       "route": "/integrations/mcp",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Client setup and full English/Japanese body reviewed against current primary client docs and server implementation; fresh browser and deployed acceptance remain pending."
     },
     {
       "route": "/philosophy",

@@ -147,7 +147,7 @@ The gallery UI and dev-server integration for Musea live in the JavaScript packa
 
 ## Naming Convention
 
-Vize crates are named after **art and sculpture terminology**, reflecting how each component shapes and transforms Vue code. This naming system is more than aesthetic — it encodes the role and relationships between crates. See [Philosophy](../philosophy.md) for the full rationale.
+The existing product crates are named after **art and sculpture terminology**, reflecting how each component shapes and transforms Vue code. This naming system is more than aesthetic — it encodes the role and relationships between crates. See [Philosophy](../philosophy.md) for the full rationale.
 
 | Name         | Origin       | Art Analogy                                              | Technical Role                                                                 |
 | ------------ | ------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------ |

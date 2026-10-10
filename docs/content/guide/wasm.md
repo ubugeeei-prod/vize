@@ -166,7 +166,7 @@ wasm-bindgen \
 
 ## Internationalization
 
-All WASM APIs that produce diagnostics (lint, compile errors) support localized messages:
+The `locale` option on `lintSfc` localizes lint diagnostics. The supported languages are:
 
 | Code | Language          |
 | ---- | ----------------- |
@@ -174,7 +174,7 @@ All WASM APIs that produce diagnostics (lint, compile errors) support localized 
 | `ja` | Japanese (日本語) |
 | `zh` | Chinese (中文)    |
 
-Pass the `locale` option to any API that produces diagnostics:
+Pass `locale` when calling `lintSfc`. `CompilerOptions` does not include `locale`; compilation and parsing use their existing diagnostic messages:
 
 ```javascript
 const result = lintSfc(source, {
@@ -187,7 +187,9 @@ console.log(result.diagnostics);
 
 ## Bundle Size
 
-The WASM module includes the full Vue compiler pipeline (parser, semantic analyzer, code generator) compiled to WebAssembly. The gzipped bundle size is approximately **1.5 MB**, which is suitable for non-critical-path loading (e.g., loaded after the page is interactive).
+The WASM module includes the Vue compiler pipeline (parser, semantic analyzer, code generator). The compressed size depends on the build and generated artifact. After following the source-build recipe, run `gzip -c npm/wasm/vize_vitrine_bg.wasm | wc -c` to measure the gzip size of that exact module in bytes.
+
+For interactive pages, load it after the page is ready or when the user first needs the compiler.
 
 For production use, consider lazy-loading the WASM module:
 
