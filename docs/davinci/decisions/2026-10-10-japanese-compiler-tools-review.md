@@ -23,3 +23,9 @@ Exact-source Actions, complete desktop/mobile reading paths, inherited
 full Docs, protected native Stack delivery and deployed reading verification
 remain required. This slice grants no site-wide prose completion, compiler
 feature implementation or installed-release acceptance; #8372 remains open.
+
+After the first three Japanese layers actually merged, this layer rebases from
+the refreshed reference parent on delivered `65ab25da5b`. Move only its canonical
+clause beside that parent in the existing product tracking paragraph; retain
+all foreign rows, full examples and support boundaries. Fresh Actions and
+coupled consumer-default reconciliation remain required before admission.
