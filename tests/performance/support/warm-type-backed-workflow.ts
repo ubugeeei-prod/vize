@@ -2,14 +2,12 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-
 import { aliasHostPaths } from "./warm-type-backed-alias-host.ts";
 import { unqualifiedReceiptPaths } from "./warm-type-backed-build-receipt-extension.ts";
 import { finiteCut } from "./warm-type-backed-cut.ts";
 import { gitBodyDigest, qualifyPathHostMove } from "./warm-type-backed-path-host.ts";
 import { qualifyTimingHostMove } from "./warm-type-backed-timing-host.ts";
 import { htmlHoverPaths } from "./warm-type-backed-html-hover-host.ts";
-
 import {
   driverRoot,
   git,
@@ -17,13 +15,11 @@ import {
   sha256,
   sourceIdentity,
 } from "./warm-type-backed-source.ts";
-
 const output = path.join(process.env.RUNNER_TEMP!, "warm-pair");
 const before = path.join(process.env.RUNNER_TEMP!, "warm-before");
 assert.equal(process.platform, "linux");
 assert.ok(process.env.RUNNER_TEMP && process.env.GITHUB_WORKSPACE);
 assert.equal(fs.realpathSync(process.env.GITHUB_WORKSPACE), driverRoot);
-
 if (process.argv[2] === "prepare") {
   const driver = sourceIdentity(driverRoot);
   assert.ok(
@@ -199,6 +195,12 @@ if (process.argv[2] === "prepare") {
     "crates/vize/tests/lsp_bound_event_casing_cli.rs",
     "crates/vize/tests/lsp_bound_event_casing_cli/application.rs",
     "crates/vize/tests/lsp_bound_event_casing_cli/session.rs",
+    "crates/vize_maestro/src/ide/definition/import_resolver.rs",
+    "crates/vize_maestro/src/ide/definition/service/import_target.rs",
+    "crates/vize_maestro/src/ide/definition/import_resolver_tests.rs",
+    "crates/vize_maestro/src/server/handlers/tests.rs",
+    "crates/vize_maestro/src/server/handlers/tests/open_buffer_alias.rs",
+    "crates/vize/tests/lsp_open_buffer_alias_definition_cli.rs",
   ]);
   const harnessOnly = !cut && production.length === 0;
   if (harnessOnly) {

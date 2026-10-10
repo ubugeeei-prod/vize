@@ -1,0 +1,36 @@
+{
+  "argv": [
+    "/private/tmp/vize-lsp-next-correctness-readonly-20261009/whole-corpus-before/alias-corpus-test-v3",
+    "alias_component_definitions_keep_complete",
+    "--nocapture",
+    "--test-threads=1"
+  ],
+  "exitCode": 101,
+  "rows": [
+    {
+      "file": "/private/tmp/vize-lsp-next-correctness-readonly-20261009/whole-corpus-before/capture-v3/process-62611/open-buffer-alias-definitions.json",
+      "newline": "\r\n",
+      "responses": 14,
+      "mismatches": [
+        "aliasOpen",
+        "fallbackOpenPreferred"
+      ],
+      "exitSuccess": true,
+      "actualExecutable": "/tmp/vize-css-jsx-routing-target-20261008/debug/vize"
+    },
+    {
+      "file": "/private/tmp/vize-lsp-next-correctness-readonly-20261009/whole-corpus-before/capture-v3/process-62724/open-buffer-alias-definitions.json",
+      "newline": "\n",
+      "responses": 14,
+      "mismatches": [
+        "aliasOpen",
+        "fallbackOpenPreferred"
+      ],
+      "exitSuccess": true,
+      "actualExecutable": "/tmp/vize-css-jsx-routing-target-20261008/debug/vize"
+    }
+  ],
+  "binaryBeforeSha256": "e0f42e98c2a33a35d5e284f02725cec1470fceffbbbd8d89d219c40e0f8a76d6",
+  "binaryAfterSha256": "e0f42e98c2a33a35d5e284f02725cec1470fceffbbbd8d89d219c40e0f8a76d6",
+  "scope": "Actual archived native BEFORE provider. Test-only consumer compile; no product rebuild, patches or current-main qualification."
+}
