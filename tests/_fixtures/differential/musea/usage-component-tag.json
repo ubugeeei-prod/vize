@@ -1,0 +1,57 @@
+{
+  "componentSource": "<script setup lang=\"ts\">\nimport { toRaw, useAttrs } from 'vue';\ndefineOptions({ inheritAttrs: false });\nconst props = defineProps<{\n  label?: string;\n  constructor?: string;\n  hasOwnProperty?: string;\n}>();\nconst attrs = useAttrs();\nconst currentProps = () => Object.fromEntries(Object.entries(toRaw(props)).filter(([, value]) => value !== undefined));\n</script>\n<template><output>{{ JSON.stringify({ props: currentProps(), attrs: { ...attrs } }) }}</output></template>",
+  "editedLabel": "Native title probe",
+  "editedConstructor": "literal constructor",
+  "editedHasOwnProperty": "literal hasOwnProperty",
+  "customName": "scope.name",
+  "customValue": "literal custom",
+  "reservedValue": {
+    "retained": true
+  },
+  "cases": [
+    {
+      "name": "import alias with display title",
+      "filename": "alias.art.vue",
+      "title": "Props / Probe",
+      "scriptSetup": "import { default as AliasButton } from './base-button.vue';\ndefineArt(AliasButton, { title: 'Props / Probe' });",
+      "componentTagName": "AliasButton",
+      "propsInterface": "PropsProbe",
+      "inline": false
+    },
+    {
+      "name": "ordinary title and import",
+      "filename": "ordinary.art.vue",
+      "title": "BaseButton",
+      "scriptSetup": "import BaseButton from './base-button.vue';\ndefineArt(BaseButton, { title: 'BaseButton' });",
+      "componentTagName": "BaseButton",
+      "propsInterface": "BaseButton",
+      "inline": false
+    },
+    {
+      "name": "source argument with display title",
+      "filename": "source.art.vue",
+      "title": "Buttons / Source",
+      "scriptSetup": "defineArt('./base-button.vue', { title: 'Buttons / Source' });",
+      "componentTagName": "BaseButton",
+      "propsInterface": "ButtonsSource",
+      "inline": false
+    },
+    {
+      "name": "component attribute with display title",
+      "filename": "attribute.art.vue",
+      "title": "Buttons / Attribute",
+      "componentAttribute": "./base-button.vue",
+      "componentTagName": "BaseButton",
+      "propsInterface": "ButtonsAttribute",
+      "inline": false
+    },
+    {
+      "name": "inline Self with display title",
+      "filename": "InlineProbe.vue",
+      "title": "Inline / Probe",
+      "componentTagName": "MuseaComponent",
+      "propsInterface": "InlineProbe",
+      "inline": true
+    }
+  ]
+}
