@@ -11,6 +11,7 @@ import {
 } from "./theme-render-assertions.ts";
 import { verifyCommandTabs } from "./command-tab-render-assertions.ts";
 import type { MeasureRenderPhase, RenderJob } from "./navigation-render-concurrency.ts";
+import { usesInstalledCjkFont } from "./japanese-font-usage.ts";
 
 type FontUsage = { familyName: string; glyphCount: number };
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -148,9 +149,7 @@ export async function verifyNavigationRenderJob(
       );
       if (process.platform === "linux") {
         assert(
-          japaneseFonts.some(
-            (font) => /Noto Sans CJK/.test(font.familyName) && font.glyphCount > 0,
-          ),
+          usesInstalledCjkFont(japaneseFonts),
           `${route}: Japanese text did not use installed CJK fonts: ${JSON.stringify(fontPacket)}`,
         );
       }

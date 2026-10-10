@@ -41,3 +41,17 @@ observed font packet in failure diagnostics. A monospace CJK mismatch is a
 source-based hypothesis until fresh actual browser execution identifies the
 family. Any acceptance correction requires that exact observation and a
 narrow successor regression; earlier qualified editorial heads stay intact.
+
+Exact diagnostic Docs run [38035664076](https://github.com/ubugeeei-prod/vize/actions/runs/38035664076)
+at source `4c13c6d03f77068c364df7facfc5718f60e9cd01` observed the raw packet
+`{"fonts":[{"familyName":"Noto Sans Mono CJK JP","postScriptName":"NotoSansMonoCJKjp-Regular","isCustomFont":false,"glyphCount":2}]}`
+for the unchanged first Japanese publication label. Retain that complete packet
+as the regression fixture. Keep the original proportional CJK acceptance and
+admit only this observed literal monospace family with positive glyphs and
+`isCustomFont: false`. Missing, wrong, custom, plain Mono, other Mono CJK
+families and zero-glyph packets must not pass. Keep all original selection,
+typed-packet, positive-glyph and raw diagnostic checks. This is a font-gate
+correction, not new editorial or deployment qualification; the successor
+still requires fresh exact Actions and actual bounded/full browser execution.
+
+After the first three native Japanese Stack layers actually merged, rebase this remaining child once onto the genuinely refreshed philosophy parent. Move only the owned canonical review/font clause to the existing product-tracking paragraph, preserving every incoming record and the complete observed packet, helper, glyph assertions, negative controls, reviewed articles and original custody. Fresh exact-head Actions and Docs are required; earlier qualification remains historical.
