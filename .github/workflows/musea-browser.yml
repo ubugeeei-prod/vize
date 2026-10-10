@@ -52,6 +52,7 @@ jobs:
       - name: Build the exact source native binding and gallery
         run: |
           vp run --filter './npm/native' build:ci
+          vp run --filter './npm/cli' build
           vp run --filter './npm/builder/vite' build
           vp run --filter './npm/builder/vite-musea' build
       - name: Verify actual native inline component rendering and globals
