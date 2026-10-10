@@ -1172,7 +1172,7 @@ Proibir o atributo `functional` no `<template>` de um SFC
 [Incorreto](#vue-no-deprecated-functional-template-bad) · [Correto](#vue-no-deprecated-functional-template-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -1735,7 +1735,7 @@ Proibir modificadores numéricos obsoletos de `keyCode` em `v-on`
 [Incorreto](#vue-no-deprecated-v-on-number-modifiers-bad) · [Correto](#vue-no-deprecated-v-on-number-modifiers-good)
 
 Severidade padrão: `error`  
-Predefinições: _none_  
+Predefinições: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
 Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
@@ -6585,7 +6585,7 @@ Severidade padrão: `error`
 Predefinições: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correção automática: Nenhuma; revise a alteração sugerida  
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra  
-Opções: Sem opções específicas da regra. A severidade e a seleção de predefinições são configuráveis.
+Opções: Consulte as [opções tipadas e os valores padrão](/rules/options.md).
 
 **Configuração (Vite+)**
 

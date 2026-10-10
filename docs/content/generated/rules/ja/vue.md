@@ -1170,7 +1170,7 @@ SFC の template で削除済みの functional 属性を検出します。
 [悪い例](#vue-no-deprecated-functional-template-bad) · [良い例](#vue-no-deprecated-functional-template-good)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -1733,7 +1733,7 @@ v-on の削除済み数値 keyCode modifier を検出します。
 [悪い例](#vue-no-deprecated-v-on-number-modifiers-bad) · [良い例](#vue-no-deprecated-v-on-number-modifiers-good)
 
 既定の重大度: `error`  
-プリセット: _none_  
+プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
@@ -6583,7 +6583,7 @@ v-slot の適用先・宣言・modifier を検査します。
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
 適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
-オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
+オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
 

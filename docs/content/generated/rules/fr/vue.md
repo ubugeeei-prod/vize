@@ -1171,7 +1171,7 @@ Interdire l’attribut `functional` sur le `<template>` d’un SFC
 [Mauvais](#vue-no-deprecated-functional-template-bad) · [Bon](#vue-no-deprecated-functional-template-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -1734,7 +1734,7 @@ Interdire les modificateurs numériques obsolètes `keyCode` sur `v-on`
 [Mauvais](#vue-no-deprecated-v-on-number-modifiers-bad) · [Bon](#vue-no-deprecated-v-on-number-modifiers-good)
 
 Gravité par défaut: `error`  
-Préréglages: _none_  
+Préréglages: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
 Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
@@ -6584,7 +6584,7 @@ Gravité par défaut: `error`
 Préréglages: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Correction automatique: Aucune ; examinez la modification proposée  
 Champ d’application: Templates et blocs des SFC Vue, avec le contexte du script requis par la règle  
-Options: Aucune option propre à la règle. La gravité et le choix des préréglages sont configurables.
+Options: Consultez les [options typées et leurs valeurs par défaut](/rules/options.md).
 
 **Configuration (Vite+)**
 

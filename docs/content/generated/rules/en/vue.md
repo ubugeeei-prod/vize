@@ -1170,7 +1170,7 @@ Disallow the `functional` attribute on the SFC `<template>`
 [Bad](#vue-no-deprecated-functional-template-bad) · [Good](#vue-no-deprecated-functional-template-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -1733,7 +1733,7 @@ Disallow deprecated numeric `keyCode` modifiers on `v-on`
 [Bad](#vue-no-deprecated-v-on-number-modifiers-bad) · [Good](#vue-no-deprecated-v-on-number-modifiers-good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.
@@ -6583,7 +6583,7 @@ Default severity: `error`
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Options: See [typed options and defaults](options.md).
 
 **Configuration (Vite+)**
 

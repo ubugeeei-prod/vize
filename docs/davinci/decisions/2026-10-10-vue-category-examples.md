@@ -97,3 +97,17 @@ category child beside it when that child rebases. No rule, example, locale,
 rendering assertion or whole-page capture is removed. Earlier source and
 Docs receipts remain historical; the refreshed heads require fresh complete
 Actions, protected queue and actual deployed acceptance.
+
+## Composition with delivered preset and options metadata
+
+The exact old top Docs run completed all 180 desktop/mobile routes and all
+1,419 Open Graph frames; all five Vue routes retained 104 rules and 416 complete
+source blocks per device. These receipts qualify the old heads only.
+
+Actual current main delivered preset membership for two deprecated Vue rules
+and typed `valid-v-slot` options. The old category child conflicts with three
+translated whole-rule tables because it replaces those tables with complete
+same-page indexes. Rebase both genuine layers onto that actual main once and
+regenerate with the unchanged metadata producer. All 416 original complete Vue
+code blocks remain byte-identical in each locale. Both layers require their
+own fresh source and full Docs Actions, protected merge, and deployed acceptance.

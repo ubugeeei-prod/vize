@@ -1171,7 +1171,7 @@ vp run lint
 [错误示例](#vue-no-deprecated-functional-template-bad) · [正确示例](#vue-no-deprecated-functional-template-good)
 
 默认严重程度: `error`  
-预设: _none_  
+预设: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -1734,7 +1734,7 @@ vp run lint
 [错误示例](#vue-no-deprecated-v-on-number-modifiers-bad) · [正确示例](#vue-no-deprecated-v-on-number-modifiers-good)
 
 默认严重程度: `error`  
-预设: _none_  
+预设: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
 选项: 没有规则专属选项。可以配置严重程度和预设。
@@ -6584,7 +6584,7 @@ vp run lint
 预设: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自动修复: 无；请检查建议的修改  
 适用范围: Vue SFC 模板和代码块，包括规则所需的脚本上下文  
-选项: 没有规则专属选项。可以配置严重程度和预设。
+选项: 参见[类型化选项和默认值](/rules/options.md)。
 
 **配置（Vite+）**
 
