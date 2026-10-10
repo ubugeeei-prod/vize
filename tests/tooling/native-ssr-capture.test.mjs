@@ -46,6 +46,7 @@ void test("authentic SSR source dependencies require an affected PR capture", ()
     "tests/tooling/native-sfc-scriptless-ssr-reference.test.ts",
     "tests/tooling/native-sfc-setup-ssr-reference.test.ts",
     "tests/tooling/l4-native-ssr-reference.test.ts",
+    "tests/tooling/native-ssr-static-class-reference.test.ts",
     "tests/tooling/l4-selected-ssr-reference.test.ts",
     "tests/tooling/support/native-sfc-ssr-reference.ts",
     "tests/tooling/support/native-sfc-setup-ssr-reference.ts",

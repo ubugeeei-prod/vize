@@ -190,8 +190,7 @@ impl<'facts, 'owner, 'arena> SsrBuilder<'facts, 'owner, 'arena> {
             }
             if matches!(
                 name,
-                "class"
-                    | "style"
+                "style"
                     | "key"
                     | "ref"
                     | "is"

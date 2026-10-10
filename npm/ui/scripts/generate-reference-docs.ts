@@ -26,6 +26,7 @@ import {
 } from "./reference-docs/composables.ts";
 import { GENERATED_NOTICE, blocks, frontmatter } from "./reference-docs/markdown.ts";
 import { renderUiFamilyPage, uiIndexRows } from "./reference-docs/ui.ts";
+import { composableHub } from "./reference-docs/composable-examples.ts";
 import { uiHub } from "./reference-docs/ui-hub.ts";
 
 const uiRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -131,6 +132,7 @@ export function renderReferenceDocs(): Map<string, string> {
         GENERATED_NOTICE,
         `# ${composableTitle}`,
         composableIntro,
+        composableHub(locale, linkPrefix("composables")),
         composableIndexRows(
           composableRoot,
           composables,

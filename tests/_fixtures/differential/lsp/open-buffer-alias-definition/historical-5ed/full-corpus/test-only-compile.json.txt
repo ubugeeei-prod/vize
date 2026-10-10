@@ -1,0 +1,60 @@
+{
+  "scope": "test-only compilation against retained actual CLI dependencies; no product rebuild or source qualification",
+  "argv": [
+    "/Users/ubugeeei/.rustup/toolchains/1.99.0-aarch64-apple-darwin/bin/rustc",
+    "--edition=2024",
+    "--test",
+    "--cfg",
+    "feature=\"maestro\"",
+    "-L",
+    "dependency=/tmp/vize-css-jsx-routing-target-20261008/debug/deps",
+    "--extern",
+    "serde_json=/tmp/vize-css-jsx-routing-target-20261008/debug/deps/libserde_json-cfbc033696b52fc2.rlib",
+    "--extern",
+    "sha2=/tmp/vize-css-jsx-routing-target-20261008/debug/deps/libsha2-8fac483f423e5ba2.rlib",
+    "--extern",
+    "tempfile=/tmp/vize-css-jsx-routing-target-20261008/debug/deps/libtempfile-0357df6557f78a66.rlib",
+    "--extern",
+    "vize_l0=/tmp/vize-css-jsx-routing-target-20261008/debug/deps/libvize_l0-7eafdc96541a7e6e.rlib",
+    "--extern",
+    "vize_carton=/tmp/vize-css-jsx-routing-target-20261008/debug/deps/libvize_carton-7719dcb59862fc5a.rlib",
+    "--extern",
+    "url=/tmp/vize-css-jsx-routing-target-20261008/debug/deps/liburl-07720b637e88418e.rlib",
+    "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-lsp-open-buffer-alias-definition-20261009/crates/vize/tests/lsp_open_buffer_alias_definition_cli.rs",
+    "-o",
+    "/private/tmp/vize-lsp-next-correctness-readonly-20261009/whole-corpus-before/alias-corpus-test-v3"
+  ],
+  "libraries": [
+    {
+      "name": "serde_json",
+      "path": "/tmp/vize-css-jsx-routing-target-20261008/debug/deps/libserde_json-cfbc033696b52fc2.rlib",
+      "sha256": "57a16076a5ef1b5ed79e97ca5406466037296934e62e46034de6b08581719f8d"
+    },
+    {
+      "name": "sha2",
+      "path": "/tmp/vize-css-jsx-routing-target-20261008/debug/deps/libsha2-8fac483f423e5ba2.rlib",
+      "sha256": "e4bd20b293ac0f292e04768026b36cce35db4809e931fb75fd0b64c1a9793a82"
+    },
+    {
+      "name": "tempfile",
+      "path": "/tmp/vize-css-jsx-routing-target-20261008/debug/deps/libtempfile-0357df6557f78a66.rlib",
+      "sha256": "30f89c61ff2d80fc319c936692b6abeb9be66b4024c368da6fe979468ca8223a"
+    },
+    {
+      "name": "vize_l0",
+      "path": "/tmp/vize-css-jsx-routing-target-20261008/debug/deps/libvize_l0-7eafdc96541a7e6e.rlib",
+      "sha256": "58bc977586f82ee1c1f584240f7d3af9dc13c4bd28983a7bfbaa3eb75c90d6c3"
+    },
+    {
+      "name": "vize_carton",
+      "path": "/tmp/vize-css-jsx-routing-target-20261008/debug/deps/libvize_carton-7719dcb59862fc5a.rlib",
+      "sha256": "766382dc017000e3d41cf3a07c52ff2acd083cfbea6e96c2376222d50921fb05"
+    },
+    {
+      "name": "url",
+      "path": "/tmp/vize-css-jsx-routing-target-20261008/debug/deps/liburl-07720b637e88418e.rlib",
+      "sha256": "5d74d12c3808edc9ab7a39aa254f473bb095bd603df82058a8e0a397db1d5a2d"
+    }
+  ],
+  "testSourceSha256": "cdc667794ad1ec0d3a1b4083c141c18d06803f259f0bf935386efd2ae5013133"
+}

@@ -1,0 +1,88 @@
+{
+  "artifactH": "3390cb6044d53d655a9d64e112d2618375cff5ca",
+  "actualMain": "b41811e3b33676f68a0843a693c9ed4898f2e86a",
+  "paths": [
+    {
+      "path": "crates/vize_glyph/src/style.rs",
+      "sourceArtifactSHA256": "42f4d9b0e90359faeab4f3e26fa3c3370f44681e191966e0d447f411478fb335",
+      "actualMainSHA256": "42f4d9b0e90359faeab4f3e26fa3c3370f44681e191966e0d447f411478fb335",
+      "byteIdentical": true
+    },
+    {
+      "path": "crates/vize_glyph/src/style_chunk.rs",
+      "sourceArtifactSHA256": "64e7f0ec3e7f8ed06e1698e6a2be1166db4e6be2e13b807f2e14cec6958d20fb",
+      "actualMainSHA256": "64e7f0ec3e7f8ed06e1698e6a2be1166db4e6be2e13b807f2e14cec6958d20fb",
+      "byteIdentical": true
+    },
+    {
+      "path": "crates/vize_glyph/src/style/color.rs",
+      "sourceArtifactSHA256": "3a6b44de5b572937f9d1140cfb04b6dd31f6c458dae19ea2d3f12190a5dbd31b",
+      "actualMainSHA256": "3a6b44de5b572937f9d1140cfb04b6dd31f6c458dae19ea2d3f12190a5dbd31b",
+      "byteIdentical": true
+    },
+    {
+      "path": "crates/vize_glyph/src/formatter/style_block.rs",
+      "sourceArtifactSHA256": "4e91e8d57e5e183ae5f9befe0b0d512810a9f1ec1c5e3b9331ec2bb6b19c4477",
+      "actualMainSHA256": "4e91e8d57e5e183ae5f9befe0b0d512810a9f1ec1c5e3b9331ec2bb6b19c4477",
+      "byteIdentical": true
+    },
+    {
+      "path": "crates/vize_vitrine/src/napi/format.rs",
+      "sourceArtifactSHA256": "0c21ebeab3cf20a3245b37e548699c23de53798fa3ea198588a8970cb2d7fc69",
+      "actualMainSHA256": "0c21ebeab3cf20a3245b37e548699c23de53798fa3ea198588a8970cb2d7fc69",
+      "byteIdentical": true
+    },
+    {
+      "path": "crates/vize_vitrine/src/napi/sfc/css.rs",
+      "sourceArtifactSHA256": "13ceded5b546d42ef25cf0d5e6300ae5f5eebacc94c6a651cfe88883227f296a",
+      "actualMainSHA256": "13ceded5b546d42ef25cf0d5e6300ae5f5eebacc94c6a651cfe88883227f296a",
+      "byteIdentical": true
+    },
+    {
+      "path": "crates/vize_vitrine/src/napi/lint.rs",
+      "sourceArtifactSHA256": "ac9fad1e967b1c6b58cece4a51341cee1559cd5c0cb72f144b3d1fb577408a8f",
+      "actualMainSHA256": "ac9fad1e967b1c6b58cece4a51341cee1559cd5c0cb72f144b3d1fb577408a8f",
+      "byteIdentical": true
+    },
+    {
+      "path": "crates/vize_patina/src/rules/css.rs",
+      "sourceArtifactSHA256": "2ef4a1692fac24e0f9cbe0b0f7757173e65e19c142741c4d2111b5d3aaaaab6a",
+      "actualMainSHA256": "2ef4a1692fac24e0f9cbe0b0f7757173e65e19c142741c4d2111b5d3aaaaab6a",
+      "byteIdentical": true
+    },
+    {
+      "path": "crates/vize_patina/src/rules/a11y/no_redundant_roles.rs",
+      "sourceArtifactSHA256": "6124fbcee66c0e4800248132de36e8da163ef0066739fa5ce2117a7afe08090c",
+      "actualMainSHA256": "6124fbcee66c0e4800248132de36e8da163ef0066739fa5ce2117a7afe08090c",
+      "byteIdentical": true
+    },
+    {
+      "path": "crates/vize_atelier_sfc/src/css/parser/engine_boundary.rs",
+      "sourceArtifactSHA256": "afce6fe932b9d55c8b1bd317793640185ec32a176703c52edeb03b4538f08749",
+      "actualMainSHA256": "afce6fe932b9d55c8b1bd317793640185ec32a176703c52edeb03b4538f08749",
+      "byteIdentical": true
+    }
+  ],
+  "packages": {
+    "lightningcss": {
+      "byteIdentical": true,
+      "CargoLockBlockSHA256": "ce4954dae65f188548876142784c3c89a13e6712347d5907302b063d443c24c3",
+      "block": "\nname = \"lightningcss\"\nversion = \"1.0.0-alpha.72\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"d31b760f96e8fdfe1d0c295e4bf76c503d6f15d2d470d53bd8cd1f7aa8c7d934\"\ndependencies = [\n \"ahash 0.8.12\",\n \"bitflags 2.13.1\",\n \"const-str\",\n \"cssparser\",\n \"cssparser-color\",\n \"dashmap 5.5.3\",\n \"data-encoding\",\n \"getrandom 0.3.4\",\n \"indexmap\",\n \"itertools 0.10.5\",\n \"lazy_static\",\n \"lightningcss-derive\",\n \"parcel_selectors\",\n \"parcel_sourcemap\",\n \"pastey\",\n \"pathdiff\",\n \"rayon\",\n \"serde\",\n \"serde-content\",\n \"smallvec\",\n \"static-self\",\n]\n\n"
+    },
+    "cssparser-color": {
+      "byteIdentical": true,
+      "CargoLockBlockSHA256": "e8f4a480d14fbf3113064d2cfc730922e8f3555cf47180635bf7694f2538d21c",
+      "block": "\nname = \"cssparser-color\"\nversion = \"0.5.0\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"bbaa233e1dcd9c13a5d3e3a8a2c0f5a727bac380398345dbcb31db4597edc86b\"\ndependencies = [\n \"cssparser\",\n]\n\n"
+    },
+    "parcel_sourcemap": {
+      "byteIdentical": true,
+      "CargoLockBlockSHA256": "829abe84a67da486f60d856927b7f09e657a21788fcd2a1c83fc671b742324b1",
+      "block": "\nname = \"parcel_sourcemap\"\nversion = \"2.1.1\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"485b74d7218068b2b7c0e3ff12fbc61ae11d57cb5d8224f525bd304c6be05bbb\"\ndependencies = [\n \"base64-simd 0.7.0\",\n \"data-url\",\n \"rkyv\",\n \"serde\",\n \"serde_json\",\n \"vlq\",\n]\n\n"
+    },
+    "rkyv": {
+      "byteIdentical": true,
+      "CargoLockBlockSHA256": "ff6eac92550f9eb5c189f5793ddb966a3eed532d807c36e41f39c900f27cfa80",
+      "block": "\nname = \"rkyv\"\nversion = \"0.7.46\"\nsource = \"registry+https://github.com/rust-lang/crates.io-index\"\nchecksum = \"2297bf9c81a3f0dc96bc9521370b88f054168c29826a75e89c55ff196e7ed6a1\"\ndependencies = [\n \"bitvec\",\n \"bytecheck\",\n \"bytes\",\n \"hashbrown 0.12.3\",\n \"ptr_meta\",\n \"rend\",\n \"rkyv_derive\",\n \"seahash\",\n \"tinyvec\",\n \"uuid\",\n]\n\n"
+    }
+  }
+}

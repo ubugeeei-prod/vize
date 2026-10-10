@@ -1,8 +1,9 @@
+#[cfg(feature = "napi")]
 use napi_derive::napi;
 use std::path::PathBuf;
 
 /// Lint options for NAPI
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
 pub struct LintOptionsNapi {
     /// Output format: "text", "ansi", "plain", "json", "stylish", "markdown", "html", or "agent"
@@ -24,7 +25,7 @@ pub struct LintOptionsNapi {
 }
 
 /// Lint result for NAPI
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 pub struct LintResultNapi {
     /// Formatted output string
     pub output: String,
@@ -39,7 +40,7 @@ pub struct LintResultNapi {
 }
 
 /// Single-file Patina lint options for NAPI
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
 pub struct PatinaLintOptionsNapi {
     /// Filename used for diagnostics
@@ -73,21 +74,21 @@ pub struct PatinaLintOptionsNapi {
 }
 
 /// No-mutating-props options for NAPI
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
 pub struct NoMutatingPropsOptionsNapi {
     pub shallow_only: Option<bool>,
 }
 
 /// SFC element order options for NAPI
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
 pub struct SfcElementOrderOptionsNapi {
     pub order: Option<Vec<serde_json::Value>>,
 }
 
 /// HTML self-closing options for NAPI
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
 pub struct HtmlSelfClosingOptionsNapi {
     pub html: Option<HtmlSelfClosingHtmlOptionsNapi>,
@@ -96,7 +97,7 @@ pub struct HtmlSelfClosingOptionsNapi {
 }
 
 /// HTML-family self-closing options for NAPI
-#[napi(object)]
+#[cfg_attr(feature = "napi", napi(object))]
 #[derive(Default)]
 pub struct HtmlSelfClosingHtmlOptionsNapi {
     pub r#void: Option<String>,

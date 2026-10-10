@@ -45,7 +45,7 @@ pub use strip_comments::strip_vize_comments;
 
 use vize_l0::FxHashSet;
 
-use lightningcss::stylesheet::{ParserOptions, StyleSheet};
+use lightningcss::stylesheet::StyleSheet;
 use memchr::memmem;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -361,7 +361,7 @@ impl CssLinter {
         };
 
         // Parse CSS with lightning-css
-        let stylesheet = match StyleSheet::parse(source, ParserOptions::default()) {
+        let stylesheet = match crate::rules::css_engine::parse_stylesheet(source) {
             Ok(ss) => ss,
             Err(_) => {
                 // If parsing fails, skip CSS linting

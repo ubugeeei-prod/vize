@@ -1,0 +1,114 @@
+{
+  "cases": [
+    {
+      "id": "exact-clean",
+      "paths": {
+        "@x": ["./exact.tsx"],
+        "@x*": ["./wildcard*.tsx"]
+      },
+      "exact": "string",
+      "wildcard": "number",
+      "before": 2322,
+      "after": null,
+      "beforeMirror": "wildcard.ts",
+      "afterMirror": "exact.ts",
+      "cliFiles": ["App.tsx", "exact.tsx"]
+    },
+    {
+      "id": "exact-broken",
+      "paths": {
+        "@x": ["./exact.tsx"],
+        "@x*": ["./wildcard*.tsx"]
+      },
+      "exact": "number",
+      "wildcard": "string",
+      "before": null,
+      "after": 2322,
+      "beforeMirror": "wildcard.ts",
+      "afterMirror": "exact.ts",
+      "cliFiles": ["App.tsx", "exact.tsx"]
+    },
+    {
+      "id": "exact-equal-rank",
+      "paths": {
+        "@*": ["./wildcard*.tsx"],
+        "@x": ["./exact.tsx"]
+      },
+      "exact": "string",
+      "wildcard": "number",
+      "before": 2322,
+      "after": null,
+      "beforeMirror": "wildcardx.ts",
+      "afterMirror": "exact.ts",
+      "cliFiles": ["App.tsx", "exact.tsx"]
+    },
+    {
+      "id": "exact-target-array-fallback",
+      "paths": {
+        "@x": ["./missing.tsx", "./exact.tsx"],
+        "@x*": ["./wildcard*.tsx"]
+      },
+      "exact": "number",
+      "wildcard": "string",
+      "before": null,
+      "after": 2322,
+      "beforeMirror": "wildcard.ts",
+      "afterMirror": "exact.ts",
+      "cliFiles": ["App.tsx", "exact.tsx"]
+    },
+    {
+      "id": "selected-exact-missing",
+      "paths": {
+        "@x": ["./missing.tsx"],
+        "@x*": ["./wildcard*.tsx"]
+      },
+      "exact": "string",
+      "wildcard": "number",
+      "before": 2322,
+      "after": 2307,
+      "beforeMirror": "wildcard.ts",
+      "afterMirror": null,
+      "cliFiles": ["App.tsx", "wildcard.tsx"]
+    },
+    {
+      "id": "selected-longer-wildcard-missing",
+      "paths": {
+        "@*": ["./generic*.tsx"],
+        "@x*": ["./missing*.tsx"]
+      },
+      "exact": "string",
+      "wildcard": "number",
+      "before": 2322,
+      "after": 2307,
+      "beforeMirror": "genericx.ts",
+      "afterMirror": null,
+      "cliFiles": ["App.tsx", "genericx.tsx"]
+    },
+    {
+      "id": "unaffected-exact-clean",
+      "paths": {
+        "@x": ["./exact.tsx"]
+      },
+      "exact": "string",
+      "wildcard": "number",
+      "before": null,
+      "after": null,
+      "beforeMirror": "exact.ts",
+      "afterMirror": "exact.ts",
+      "cliFiles": ["App.tsx", "exact.tsx"]
+    },
+    {
+      "id": "unaffected-exact-broken",
+      "paths": {
+        "@x": ["./exact.tsx"]
+      },
+      "exact": "number",
+      "wildcard": "string",
+      "before": 2322,
+      "after": 2322,
+      "beforeMirror": "exact.ts",
+      "afterMirror": "exact.ts",
+      "cliFiles": ["App.tsx", "exact.tsx"]
+    }
+  ]
+}

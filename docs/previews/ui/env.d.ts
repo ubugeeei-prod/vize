@@ -1,3 +1,5 @@
+declare module "*.css" {}
+
 declare module "virtual:vize-ui-examples" {
   import type { Component } from "vue";
 
@@ -9,4 +11,5 @@ declare module "virtual:vize-ui-examples" {
       load: () => Promise<{ default: Component }>;
     }
   >;
+  export const composables: Record<string, (typeof examples)[string] & { ssrHtml: string }>;
 }

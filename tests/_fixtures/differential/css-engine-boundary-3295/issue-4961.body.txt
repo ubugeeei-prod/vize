@@ -1,0 +1,12 @@
+Fuzz target `css_parse` found a crash, timeout, or OOM reproducer.
+
+- Workflow run: https://github.com/ubugeeei-prod/vize/actions/runs/32932217923
+- Artifact: `fuzz-reproducers-css_parse`
+- Commit: `5481407dd2b2b643afa6ff0966133eeb31f7ec88`
+
+Download the artifact from the workflow run and replay it locally with:
+
+```sh
+cd tests/fuzz
+cargo +nightly fuzz run css_parse artifacts/css_parse/<reproducer>
+```

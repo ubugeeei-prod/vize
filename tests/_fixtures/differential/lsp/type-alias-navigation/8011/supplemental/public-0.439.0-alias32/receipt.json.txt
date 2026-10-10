@@ -1,0 +1,19 @@
+{
+  "schema": "vize-complete-installed-lsp-evidence-archive-v1",
+  "scope": "alias32",
+  "success": true,
+  "completeSessions": 32,
+  "rawReceiptSha256": "9d60a23e14f694d9092288324c9851082075bbb87a695d2d43e340e3619b2712",
+  "archiveSha256": "f5da459270a404fbd86efcb8ffda5f195668be3f25ba8f50ffcdd59efcec15dd",
+  "archiveBytes": 678209,
+  "regularFileCount": 464,
+  "symlinkCount": 32,
+  "runnerSourceHead": "fb402f3b73afb4933ba6e1881dd545773c85820b",
+  "publicSource": {
+    "C": "26031a4fbb30a1e86511919bafc7035b08440ef3",
+    "H": "a26243855bcf81005049252a6e71b6dd55e457f1",
+    "tag": "v0.439.0",
+    "R": "38011924629"
+  },
+  "sourceMerge": "f20f9d9c7f952ab9617344a68b6626dc14886185"
+}

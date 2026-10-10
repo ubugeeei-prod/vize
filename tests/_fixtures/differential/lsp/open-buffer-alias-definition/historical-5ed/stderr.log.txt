@@ -1,0 +1,56 @@
+2026-10-08T15:24:02.395604Z  INFO vize_maestro: Starting vize_maestro LSP server
+2026-10-08T15:24:02.410821Z  INFO vize_maestro::server::state::config: Loaded format config from /private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/vize.config.json
+2026-10-08T15:24:02.410906Z  INFO vize_maestro::server::state::config: Loaded linter config from /private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/vize.config.json
+2026-10-08T15:24:02.411051Z  INFO vize_maestro::server::state::config: Loaded global types config from /private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/vize.config.json
+2026-10-08T15:24:02.411168Z  INFO salsa::runtime: new_revision: R1 -> R2
+2026-10-08T15:24:02.411238Z  INFO vize_maestro::server::state::config: Loaded type checker config from /private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/vize.config.json
+2026-10-08T15:24:02.411293Z  INFO vize_maestro::server::state::config: Loaded LSP config from /private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/vize.config.json: LspFeatureConfig { lint: false, typecheck: false, ecosystem: true, options_api: true, legacy_vue2: false, completion: true, signature_help: true, hover: true, definition: true, references: true, document_symbols: true, workspace_symbols: true, code_actions: true, rename: true, formatting: false, code_lens: true, semantic_tokens: true, document_links: true, folding_ranges: true, inlay_hints: true, file_rename: true, auto_insert: false, cross_file: false }
+2026-10-08T15:24:02.411807Z  INFO vize_maestro::server::state::config: Loaded LSP config from initializationOptions: LspFeatureConfig { lint: false, typecheck: false, ecosystem: true, options_api: true, legacy_vue2: false, completion: true, signature_help: true, hover: true, definition: true, references: true, document_symbols: true, workspace_symbols: true, code_actions: true, rename: true, formatting: false, code_lens: true, semantic_tokens: true, document_links: true, folding_ranges: true, inlay_hints: true, file_rename: true, auto_insert: false, cross_file: false }
+2026-10-08T15:24:02.411868Z  INFO vize_maestro::server::handlers: Setting workspace root: "/private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project"
+2026-10-08T15:24:02.417123Z  INFO salsa::function::execute: sfc_descriptor(Id(180)): executing query
+2026-10-08T15:24:02.424165Z  INFO vize_maestro::ide::diagnostics::service: collect: script parser diagnostics: 0
+2026-10-08T15:24:02.424304Z  INFO vize_maestro::ide::diagnostics::service: collect: template parser diagnostics: 0
+2026-10-08T15:24:02.424325Z  INFO vize_maestro::ide::diagnostics::service: collect: sfc compile diagnostics: 0
+2026-10-08T15:24:02.424339Z  INFO vize_maestro::ide::diagnostics::service: collect: patina lint diagnostics skipped (disabled by config)
+2026-10-08T15:24:02.424825Z  INFO vize_maestro::ide::diagnostics::service: collect: ecosystem editor diagnostics: 0
+2026-10-08T15:24:02.424843Z  INFO vize_maestro::ide::diagnostics::service: collect: type checker diagnostics skipped (disabled by config)
+2026-10-08T15:24:02.424877Z  INFO vize_maestro::ide::diagnostics::native: collect_async: file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue
+2026-10-08T15:24:02.424893Z  INFO vize_maestro::ide::diagnostics::native: sync diagnostics count: 0
+2026-10-08T15:24:02.424908Z  INFO vize_maestro::ide::diagnostics::native: collect_async: Corsa diagnostics skipped (disabled by config)
+2026-10-08T15:24:02.424996Z  INFO vize_maestro::server::diagnostic_publishing: publishing collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue version 1
+2026-10-08T15:24:02.425040Z  INFO vize_maestro::server::diagnostic_publishing: cached collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue version 1
+2026-10-08T15:24:02.425056Z  INFO vize_maestro::server::diagnostic_publishing: sending collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue version 1
+2026-10-08T15:24:02.425213Z  INFO vize_maestro::server::diagnostic_publishing: sent collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue version 1
+2026-10-08T15:24:02.427534Z  INFO salsa::function::execute: sfc_descriptor(Id(181)): executing query
+2026-10-08T15:24:02.431932Z  INFO vize_maestro::ide::diagnostics::service: collect: script parser diagnostics: 0
+2026-10-08T15:24:02.431966Z  INFO vize_maestro::ide::diagnostics::service: collect: template parser diagnostics: 0
+2026-10-08T15:24:02.432037Z  INFO vize_maestro::ide::diagnostics::service: collect: sfc compile diagnostics: 0
+2026-10-08T15:24:02.432049Z  INFO vize_maestro::ide::diagnostics::service: collect: patina lint diagnostics skipped (disabled by config)
+2026-10-08T15:24:02.432162Z  INFO vize_maestro::ide::diagnostics::service: collect: ecosystem editor diagnostics: 0
+2026-10-08T15:24:02.432175Z  INFO vize_maestro::ide::diagnostics::service: collect: type checker diagnostics skipped (disabled by config)
+2026-10-08T15:24:02.432190Z  INFO vize_maestro::ide::diagnostics::native: collect_async: file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue
+2026-10-08T15:24:02.432202Z  INFO vize_maestro::ide::diagnostics::native: sync diagnostics count: 0
+2026-10-08T15:24:02.432216Z  INFO vize_maestro::ide::diagnostics::native: collect_async: Corsa diagnostics skipped (disabled by config)
+2026-10-08T15:24:02.432233Z  INFO vize_maestro::server::diagnostic_publishing: publishing collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue version 1
+2026-10-08T15:24:02.432255Z  INFO vize_maestro::server::diagnostic_publishing: cached collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue version 1
+2026-10-08T15:24:02.432270Z  INFO vize_maestro::server::diagnostic_publishing: sending collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue version 1
+2026-10-08T15:24:02.432299Z  INFO vize_maestro::server::diagnostic_publishing: sent collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue version 1
+2026-10-08T15:24:02.432914Z  INFO vize_maestro::server::state::corsa: Skipping Corsa bridge initialization because LSP typecheck is disabled
+2026-10-08T15:24:02.435697Z  INFO salsa::function::execute: sfc_descriptor(Id(182)): executing query
+2026-10-08T15:24:02.437049Z  INFO vize_maestro::ide::diagnostics::service: collect: script parser diagnostics: 0
+2026-10-08T15:24:02.437079Z  INFO vize_maestro::ide::diagnostics::service: collect: template parser diagnostics: 0
+2026-10-08T15:24:02.437096Z  INFO vize_maestro::ide::diagnostics::service: collect: sfc compile diagnostics: 0
+2026-10-08T15:24:02.437105Z  INFO vize_maestro::ide::diagnostics::service: collect: patina lint diagnostics skipped (disabled by config)
+2026-10-08T15:24:02.437185Z  INFO vize_maestro::ide::diagnostics::service: collect: ecosystem editor diagnostics: 0
+2026-10-08T15:24:02.437195Z  INFO vize_maestro::ide::diagnostics::service: collect: type checker diagnostics skipped (disabled by config)
+2026-10-08T15:24:02.437207Z  INFO vize_maestro::ide::diagnostics::native: collect_async: file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue
+2026-10-08T15:24:02.437218Z  INFO vize_maestro::ide::diagnostics::native: sync diagnostics count: 0
+2026-10-08T15:24:02.437231Z  INFO vize_maestro::ide::diagnostics::native: collect_async: Corsa diagnostics skipped (disabled by config)
+2026-10-08T15:24:02.437243Z  INFO vize_maestro::server::diagnostic_publishing: publishing collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue version 1
+2026-10-08T15:24:02.437282Z  INFO vize_maestro::server::diagnostic_publishing: cached collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue version 1
+2026-10-08T15:24:02.437296Z  INFO vize_maestro::server::diagnostic_publishing: sending collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue version 1
+2026-10-08T15:24:02.437320Z  INFO vize_maestro::server::diagnostic_publishing: sent collected diagnostics for file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue version 1
+2026-10-08T15:24:02.437579Z  INFO vize_maestro::server::state::corsa: Skipping Corsa bridge initialization because LSP typecheck is disabled
+2026-10-08T15:24:02.439505Z  INFO tower_lsp::service::layers: shutdown request received, shutting down
+2026-10-08T15:24:02.439674Z  INFO tower_lsp::service::layers: exit notification received, stopping
+2026-10-08T15:24:02.439718Z  INFO vize_maestro: LSP exit notification handled; stopping transport

@@ -1,0 +1,177 @@
+{
+  "empty": {
+    "error_count": 0,
+    "warning_count": 0,
+    "diagnostics": []
+  },
+  "warning": {
+    "error_count": 0,
+    "warning_count": 1,
+    "diagnostics": [
+      {
+        "rule_name": "vue/no-v-html",
+        "severity": "warning",
+        "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "start": 34,
+        "end": 50,
+        "help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  },
+  "warning-error-severity": {
+    "error_count": 1,
+    "warning_count": 0,
+    "diagnostics": [
+      {
+        "rule_name": "vue/no-v-html",
+        "severity": "error",
+        "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "start": 34,
+        "end": 50,
+        "help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  },
+  "warning-no-help": {
+    "error_count": 0,
+    "warning_count": 1,
+    "diagnostics": [
+      {
+        "rule_name": "vue/no-v-html",
+        "severity": "warning",
+        "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "start": 34,
+        "end": 50,
+        "help": null,
+        "labels": [],
+        "fix": null
+      }
+    ]
+  },
+  "duplicate-error": {
+    "error_count": 1,
+    "warning_count": 0,
+    "diagnostics": [
+      {
+        "rule_name": "vue/no-duplicate-attributes",
+        "severity": "error",
+        "message": "Duplicate attribute 'id'",
+        "start": 41,
+        "end": 47,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  },
+  "duplicate-warning": {
+    "error_count": 0,
+    "warning_count": 1,
+    "diagnostics": [
+      {
+        "rule_name": "vue/no-duplicate-attributes",
+        "severity": "warning",
+        "message": "Duplicate attribute 'id'",
+        "start": 41,
+        "end": 47,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  },
+  "unicode-crlf-engine-order": {
+    "error_count": 1,
+    "warning_count": 1,
+    "diagnostics": [
+      {
+        "rule_name": "vue/no-duplicate-attributes",
+        "severity": "error",
+        "message": "Duplicate attribute 'id'",
+        "start": 70,
+        "end": 76,
+        "help": "Remove the duplicate attribute",
+        "labels": [],
+        "fix": null
+      },
+      {
+        "rule_name": "vue/no-v-html",
+        "severity": "warning",
+        "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "start": 46,
+        "end": 62,
+        "help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  },
+  "attribute-always": {
+    "error_count": 1,
+    "warning_count": 0,
+    "diagnostics": [
+      {
+        "rule_name": "vue/attribute-hyphenation",
+        "severity": "error",
+        "message": "Attribute should be hyphenated",
+        "start": 37,
+        "end": 47,
+        "help": "Use kebab-case for attribute names",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  },
+  "attribute-never": {
+    "error_count": 1,
+    "warning_count": 0,
+    "diagnostics": [
+      {
+        "rule_name": "vue/attribute-hyphenation",
+        "severity": "error",
+        "message": "Attribute should not be hyphenated",
+        "start": 48,
+        "end": 59,
+        "help": "Use camelCase or a single-word attribute name instead of kebab-case.",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  },
+  "japanese-warning": {
+    "error_count": 0,
+    "warning_count": 1,
+    "diagnostics": [
+      {
+        "rule_name": "vue/no-v-html",
+        "severity": "warning",
+        "message": "v-htmlはXSS攻撃につながる可能性があります。ユーザー提供のコンテンツでの使用は避けてください",
+        "start": 34,
+        "end": 50,
+        "help": "テキスト補間{{ }}またはサニタイゼーションライブラリの使用を検討してください",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  },
+  "directive-unsuppressed-second": {
+    "error_count": 0,
+    "warning_count": 1,
+    "diagnostics": [
+      {
+        "rule_name": "vue/no-v-html",
+        "severity": "warning",
+        "message": "v-html can lead to XSS attacks. Avoid using it with user-provided content",
+        "start": 111,
+        "end": 127,
+        "help": "**Security Risk:** `v-html` renders raw HTML and can execute malicious scripts from user input.\n\n**Alternatives:**\n\n1. Use text interpolation (auto-escaped):\n```vue\n<p>{{ userContent }}</p>\n```\n\n2. Use a sanitization library:\n```ts\nimport DOMPurify from 'dompurify'\nconst safeHtml = DOMPurify.sanitize(userInput)\n```\n\n3. Use a markdown renderer with XSS protection\n\n**If you must use v-html:**\n- Never use with user-provided content\n- Only use with trusted, static content",
+        "labels": [],
+        "fix": null
+      }
+    ]
+  }
+}

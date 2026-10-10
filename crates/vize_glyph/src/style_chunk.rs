@@ -44,16 +44,16 @@ fn format_chunk_once(
     layout: &mut Option<super::rule_layout::RuleLayout>,
     collect_layout: bool,
 ) -> Result<String, FormatError> {
-    let stylesheet = StyleSheet::parse(trimmed, ParserOptions::default())
-        .map_err(|e| FormatError::StyleFormatError(e.to_compact_string()))?;
+    let stylesheet =
+        super::engine_boundary::catch(|| StyleSheet::parse(trimmed, ParserOptions::default()))?
+            .map_err(|e| FormatError::StyleFormatError(e.to_compact_string()))?;
     let indent_width = options.tab_width;
     let printer_options = PrinterOptions {
         minify: false,
         ..Default::default()
     };
 
-    let result = stylesheet
-        .to_css(printer_options)
+    let result = super::engine_boundary::catch(|| stylesheet.to_css(printer_options))?
         .map_err(|e| FormatError::StyleFormatError(e.to_compact_string()))?;
 
     // lightningcss omits leading zeroes even with minify disabled; Oxfmt keeps

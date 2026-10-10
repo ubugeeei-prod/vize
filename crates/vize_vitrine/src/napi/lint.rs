@@ -19,6 +19,14 @@ use super::lint_fix::{lint_file_with_optional_fix, lint_source};
 mod empty_result;
 mod file_collection;
 mod lint_options;
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "private original HTML operation awaits its public child"
+    )
+)]
+mod oxlint_html;
 mod rule_metadata;
 use lint_options::{
     LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_patina_rule_options,
