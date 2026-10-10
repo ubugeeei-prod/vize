@@ -4,6 +4,7 @@ import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   GitHub,
+  preparationMetadata,
   sha256,
   stableJson,
   terminalPagesMetadata,
@@ -83,7 +84,7 @@ async function prepare() {
   };
   const metadata = await api.json<{ id: number }>("");
   assert.equal(metadata.id, event.repository.id, "Trusted event repository");
-  const current = await ownPublisher(metadata.id);
+  const current = await preparationMetadata(() => ownPublisher(metadata.id), metadata.id);
   const preparation = current.job.steps.filter(
     (step) => step.name === "Validate completed build and actual Pages publication floor",
   );
