@@ -31,9 +31,14 @@ introduced.
   automatically selected public Corsa 7.0.2. Incompatible arrow, function and
   destructured callbacks incorrectly pass; correct and untyped callbacks
   pass, while an independent number-body error still reports TS2339.
-- Source CLI acceptance uses complete authored diagnostic packets and the
-  unchanged inferred-slot contract with explicit JSX enabled. Source Actions,
-  merge queue acceptance, actual merge and a public release remain required.
+- All nine source CLI diagnostic/control packets pass with genuine public
+  Corsa 7.0.2, including complete messages, authored coordinates, counts,
+  compiler options and program membership. The unchanged inferred-slot
+  five-file public contract also passes with explicit JSX enabled; its
+  original `@ts-expect-error` and complete clean diagnostic oracle are retained.
+  Both required-native Rust laws run on Actions and retain raw stdout, stderr
+  and process outcomes. Current-head Actions, merge queue acceptance, actual
+  merge and a public release remain required.
 
 Broader JSX contracts, multiple/rest slot parameters and generic callback
 signatures remain unfinished under #1497. This slice does not qualify the
