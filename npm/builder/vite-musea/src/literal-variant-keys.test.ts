@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { runInThisContext } from "node:vm";
 import { generateGalleryGlobalsScript } from "./gallery/globals.ts";
 
 void test("ordinary static preview script bytes stay unchanged", () => {
@@ -29,7 +30,10 @@ void test("literal preview keys survive safe embedding and inherited URLs cannot
     staticPreviews: { "/src/Keys.art.vue": authored },
   });
   assert.equal(script.includes("</script>"), false);
-  Function("window", script)(windowData);
+  const apply = runInThisContext(`(window) => {${script}}`) as (
+    window: Record<string, unknown>,
+  ) => void;
+  apply(windowData);
   const previews = windowData.__MUSEA_STATIC_PREVIEWS__ as Record<string, Record<string, string>>;
   const urls = previews["/src/Keys.art.vue"];
   assert.deepEqual(Object.keys(urls), Object.keys(authored));
