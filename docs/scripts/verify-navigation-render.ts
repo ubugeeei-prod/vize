@@ -107,7 +107,9 @@ try {
       (close) => phase("context-close", close),
     );
     completedCaptures += 1;
-    console.log(`Verified ${job.device} ${job.route}; ${completedCaptures} route captures complete`);
+    console.log(
+      `Verified ${job.device} ${job.route}; ${completedCaptures} route captures complete`,
+    );
     return report;
   });
   reports = collectRenderReceipts(jobs, results);
