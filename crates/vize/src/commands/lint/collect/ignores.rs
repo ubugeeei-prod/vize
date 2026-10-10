@@ -2,7 +2,9 @@
 
 use std::path::{Path, PathBuf};
 
-use super::node_modules_ignore::nested_node_modules_ignore;
+use super::{
+    absolute_config_dir, canonical_ignore_path, node_modules_ignore::nested_node_modules_ignore,
+};
 use crate::config;
 
 pub(super) fn expand_entry_ignore_patterns(
@@ -19,11 +21,7 @@ pub(super) fn expand_entry_ignore_patterns(
 fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: &Path) -> PathBuf {
     let pattern = Path::new(ignore.pattern.as_str());
     if pattern.is_absolute() {
-        return if pattern.exists() {
-            vize_carton::path::canonicalize_non_verbatim(pattern)
-        } else {
-            pattern.to_path_buf()
-        };
+        return canonical_ignore_path(pattern);
     }
 
     let config_dir = absolute_config_dir(config_dir);
@@ -37,9 +35,4 @@ fn resolve_entry_ignore_pattern(ignore: &config::ConfigEntryIgnore, config_dir: 
         Some(base_path) => config_dir.join(base_path).join(pattern),
         None => config_dir.join(pattern),
     }
-}
-
-fn absolute_config_dir(config_dir: &Path) -> PathBuf {
-    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    crate::lint_plan::matcher::absolute_path(config_dir, &cwd)
 }

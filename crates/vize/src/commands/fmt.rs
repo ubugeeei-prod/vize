@@ -33,6 +33,9 @@ use patterns::FORMAT_EXTENSIONS_DISPLAY;
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct FmtArgs {
     /// Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented.
+    #[arg(
+        help = "Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented\n\n[default: ./**/*.vue ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.json ./**/*.jsonc]"
+    )]
     pub patterns: Vec<String>,
 
     /// Check formatting without writing (exit with error if files need formatting)
