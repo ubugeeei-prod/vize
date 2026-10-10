@@ -212,7 +212,6 @@ jobs:
           VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
           VIZE_TOOLING_TEST_TIER: "pr"
           VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
-          VIZE_PTY_EVIDENCE: ${{ runner.temp }}/release-terminal
         run: vp run --workspace-root test:scripts:pr
       - name: Execute original selected-template DOM modules
         if: ${{ github.event_name == 'merge_group' && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 }}
@@ -230,15 +229,7 @@ jobs:
           VIZE_TOOLING_TEST_PLAN: ${{ runner.temp }}/tooling-plan.json
           VIZE_TOOLING_TEST_TIER: "merge"
           VIZE_TOOLING_TEST_SHARD: ${{ format('{0}/{1}', matrix.index, matrix.total) }}
-          VIZE_PTY_EVIDENCE: ${{ runner.temp }}/release-terminal
         run: vp run --workspace-root test:scripts:planned
-      - name: Preserve controlling-terminal lifecycle evidence
-        if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: release-terminal-${{ github.sha }}-${{ matrix.index }}
-          path: ${{ runner.temp }}/release-terminal.*.jsonl
-          if-no-files-found: ignore
       - uses: ./.github/actions/upload-formatter-api-corpus-evidence
         if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' }}
         with:

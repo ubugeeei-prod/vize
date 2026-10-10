@@ -25,9 +25,9 @@ class LifecycleEvidence:
         if evidence_path:
             self.destination = open(f"{evidence_path}.{os.getpid()}.jsonl", "x")
 
-    def record(self, event: str, force: bool = False) -> None:
+    def record(self, event: str, force: bool = False, failure: bool = False) -> None:
         now = time.monotonic()
-        if not self.destination or self.records >= 128:
+        if (not self.destination and not failure) or self.records >= 128:
             return
         if not force and now < self.next_snapshot:
             return
@@ -69,8 +69,12 @@ class LifecycleEvidence:
         record = {"event": event, "elapsed": round(now - self.started, 3),
                   "child": self.child_pid, "foreground": foreground,
                   "processes": sorted(processes, key=lambda process: process["pid"])}
-        self.destination.write(json.dumps(record) + "\n")
-        self.destination.flush()
+        if self.destination:
+            self.destination.write(json.dumps(record) + "\n")
+            self.destination.flush()
+        if failure:
+            sys.stderr.write("PTY lifecycle: " + json.dumps(record) + "\n")
+            sys.stderr.flush()
         self.records += 1
 
     def close(self) -> None:
@@ -126,7 +130,7 @@ def main() -> int:
     status = None
     while status is None:
         if time.monotonic() >= deadline:
-            evidence.record("deadline", force=True)
+            evidence.record("deadline", force=True, failure=True)
             terminate_process_group(child_pid)
             evidence.record("terminated", force=True)
             evidence.close()
