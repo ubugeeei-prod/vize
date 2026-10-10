@@ -42,10 +42,10 @@ Options API の `data` がオブジェクトリテラルであり、Vue 3 では
 ```vue
 <script lang="ts">
 export default {
-// `data` must be a function in Vue 3, not an object literal.
-data: {
-count: 0
-}
+  // `data` must be a function in Vue 3, not an object literal.
+  data: {
+    count: 0
+  }
 }
 </script>
 ```
@@ -57,9 +57,9 @@ count: 0
 ```vue
 <script lang="ts">
 export default {
-data() {
-return { count: 0 }
-}
+  data() {
+    return { count: 0 }
+  }
 }
 </script>
 ```

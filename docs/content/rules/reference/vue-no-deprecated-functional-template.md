@@ -41,7 +41,7 @@ The SFC template has the removed functional attribute and reads the old props co
 
 ```vue
 <template functional>
-<div>{{ props.msg }}</div>
+  <div>{{ props.msg }}</div>
 </template>
 ```
 
@@ -51,7 +51,7 @@ The ordinary template omits functional and reads the component binding msg direc
 
 ```vue
 <template>
-<div>{{ msg }}</div>
+  <div>{{ msg }}</div>
 </template>
 ```
 

@@ -42,14 +42,14 @@ The object-form `ref` and `$foo`, plus the array-form `key`, are reserved prop n
 ```vue
 <script lang="ts">
 export default {
-props: {
-ref: String,   // reserved
-$foo: Number    // `$`-prefixed names are reserved
-}
+  props: {
+    ref: String,   // reserved
+    $foo: Number    // `$`-prefixed names are reserved
+  }
 }
 
 export default {
-props: ['key']    // reserved (array form)
+  props: ['key']    // reserved (array form)
 }
 </script>
 ```
@@ -61,10 +61,10 @@ The ordinary prop names `name` and `refValue` avoid the reserved names in both s
 ```vue
 <script lang="ts">
 export default {
-props: {
-name: String,
-refValue: Number
-}
+  props: {
+    name: String,
+    refValue: Number
+  }
 }
 </script>
 ```

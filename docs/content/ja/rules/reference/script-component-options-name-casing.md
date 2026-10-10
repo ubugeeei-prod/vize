@@ -42,7 +42,7 @@ vp run lint
 ```vue
 <script lang="ts">
 export default {
-name: 'my-component' // kebab-case
+  name: 'my-component' // kebab-case
 }
 </script>
 ```
@@ -54,7 +54,7 @@ name: 'my-component' // kebab-case
 ```vue
 <script lang="ts">
 export default {
-name: 'MyComponent'
+  name: 'MyComponent'
 }
 </script>
 ```

@@ -42,12 +42,12 @@ Number と Boolean の props に型の合わないスカラー既定値を付け
 ```vue
 <script lang="ts">
 export default {
-props: {
-count: { type: Number, default: '0' },     // string default for Number
-enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
-items: { type: Array, default: [] },        // literal must be a factory
-config: { type: Object, default: {} }       // literal must be a factory
-}
+  props: {
+    count: { type: Number, default: '0' },     // string default for Number
+    enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
+    items: { type: Array, default: [] },        // literal must be a factory
+    config: { type: Object, default: {} }       // literal must be a factory
+  }
 }
 </script>
 ```
@@ -59,13 +59,13 @@ config: { type: Object, default: {} }       // literal must be a factory
 ```vue
 <script lang="ts">
 export default {
-props: {
-count: { type: Number, default: 0 },
-enabled: { type: Boolean, default: false },
-items: { type: Array, default: () => [] },
-config: { type: Object, default: () => ({}) },
-label: { type: [String, Number], default: '' }
-}
+  props: {
+    count: { type: Number, default: 0 },
+    enabled: { type: Boolean, default: false },
+    items: { type: Array, default: () => [] },
+    config: { type: Object, default: () => ({}) },
+    label: { type: [String, Number], default: '' }
+  }
 }
 </script>
 ```

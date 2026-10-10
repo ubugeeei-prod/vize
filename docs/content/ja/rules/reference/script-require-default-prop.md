@@ -42,11 +42,11 @@ vp run lint
 ```vue
 <script lang="ts">
 export default {
-props: {
-// optional, non-Boolean, no default
-name: String,
-age: { type: Number },
-}
+  props: {
+    // optional, non-Boolean, no default
+    name: String,
+    age: { type: Number },
+  }
 }
 </script>
 ```
@@ -58,11 +58,11 @@ age: { type: Number },
 ```vue
 <script lang="ts">
 export default {
-props: {
-name: { type: String, default: '' },
-enabled: Boolean,                 // Boolean defaults to false
-id: { type: Number, required: true },
-}
+  props: {
+    name: { type: String, default: '' },
+    enabled: Boolean,                 // Boolean defaults to false
+    id: { type: Number, required: true },
+  }
 }
 </script>
 ```

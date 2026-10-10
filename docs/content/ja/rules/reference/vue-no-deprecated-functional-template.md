@@ -41,7 +41,7 @@ SFC の template に廃止された functional を指定し、旧来の props �
 
 ```vue
 <template functional>
-<div>{{ props.msg }}</div>
+  <div>{{ props.msg }}</div>
 </template>
 ```
 
@@ -51,7 +51,7 @@ functional を取り除き、コンポーネントの msg を直接参照しま�
 
 ```vue
 <template>
-<div>{{ msg }}</div>
+  <div>{{ msg }}</div>
 </template>
 ```
 

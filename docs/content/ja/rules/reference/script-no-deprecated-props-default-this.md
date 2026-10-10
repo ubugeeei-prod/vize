@@ -42,21 +42,21 @@ prop の既定値関数と validator が `this` を参照していますが、Vu
 ```vue
 <script lang="ts">
 export default {
-props: {
-size: {
-type: Number,
-// `this` is not the component instance in Vue 3.
-default() {
-return this.defaultSize
-}
-},
-value: {
-type: Number,
-validator() {
-return this.value > 0
-}
-}
-}
+  props: {
+    size: {
+      type: Number,
+      // `this` is not the component instance in Vue 3.
+      default() {
+        return this.defaultSize
+      }
+    },
+    value: {
+      type: Number,
+      validator() {
+        return this.value > 0
+      }
+    }
+  }
 }
 </script>
 ```
@@ -68,21 +68,21 @@ return this.value > 0
 ```vue
 <script lang="ts">
 export default {
-props: {
-size: {
-type: Number,
-// Vue 3 passes the raw props as the first argument instead.
-default(props) {
-return props.baseSize
-}
-},
-value: {
-type: Number,
-validator(value) {
-return value > 0
-}
-}
-}
+  props: {
+    size: {
+      type: Number,
+      // Vue 3 passes the raw props as the first argument instead.
+      default(props) {
+        return props.baseSize
+      }
+    },
+    value: {
+      type: Number,
+      validator(value) {
+        return value > 0
+      }
+    }
+  }
 }
 </script>
 ```

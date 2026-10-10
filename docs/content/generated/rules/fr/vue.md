@@ -1205,7 +1205,7 @@ Le template du SFC possède l’attribut functional supprimé et lit l’ancien 
 
 ```vue annotate="remove:1,2"
 <template functional>
-<div>{{ props.msg }}</div>
+  <div>{{ props.msg }}</div>
 </template>
 ```
 
@@ -1217,7 +1217,7 @@ Le template ordinaire omet functional et lit directement la liaison msg du compo
 
 ```vue annotate="add:1,2"
 <template>
-<div>{{ msg }}</div>
+  <div>{{ msg }}</div>
 </template>
 ```
 
@@ -1266,7 +1266,7 @@ Un div natif utilise l’ancien attribut is sans préfixe pour demander un compo
 
 ```vue annotate="remove:2"
 <template>
-<div is="MyComponent" />
+  <div is="MyComponent" />
 </template>
 ```
 
@@ -1278,8 +1278,8 @@ Un composant dynamique utilise :is ; la syntaxe sur un élément natif utilise e
 
 ```vue annotate="add:2,3"
 <template>
-<component :is="MyComponent" />
-<div is="vue:MyComponent" />
+  <component :is="MyComponent" />
+  <div is="vue:MyComponent" />
 </template>
 ```
 
@@ -1389,7 +1389,7 @@ RouterLink utilise la prop tag supprimée pour demander un élément button.
 
 ```vue annotate="remove:2"
 <template>
-<router-link to="/home" tag="button">Home</router-link>
+  <router-link to="/home" tag="button">Home</router-link>
 </template>
 ```
 
@@ -1401,9 +1401,9 @@ Le slot fournit navigate à un bouton explicitement écrit dans le template.
 
 ```vue annotate="add:2,3,4"
 <template>
-<router-link to="/home" v-slot="{ navigate }">
-<button @click="navigate">Home</button>
-</router-link>
+  <router-link to="/home" v-slot="{ navigate }">
+    <button @click="navigate">Home</button>
+  </router-link>
 </template>
 ```
 
@@ -1513,10 +1513,10 @@ Le slot header est sélectionné au moyen de l’ancien attribut slot.
 
 ```vue annotate="remove:3,4"
 <template>
-<Foo>
-<template slot="header"><h1>Title</h1></template>
-<div :slot="name">Title</div>
-</Foo>
+  <Foo>
+    <template slot="header"><h1>Title</h1></template>
+    <div :slot="name">Title</div>
+  </Foo>
 </template>
 ```
 
@@ -1528,9 +1528,9 @@ v-slot:header sélectionne explicitement le slot header avec la directive actuel
 
 ```vue annotate="add:3"
 <template>
-<Foo>
-<template v-slot:header><h1>Title</h1></template>
-</Foo>
+  <Foo>
+    <template v-slot:header><h1>Title</h1></template>
+  </Foo>
 </template>
 ```
 
@@ -1971,7 +1971,7 @@ Chaque bloc conservé contient du balisage, des déclarations de script ou des d
 
 ```vue annotate="add:1,2,3,5,6,7,9,10"
 <template>
-<div>Hello</div>
+  <div>Hello</div>
 </template>
 
 <script setup>
@@ -2748,7 +2748,7 @@ La racine du composant elle-même apparaît et disparaît sous le contrôle de v
 
 ```vue annotate="remove:2"
 <template>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </template>
 ```
 
@@ -2760,9 +2760,9 @@ Un div externe stable reste la racine, tandis que le paragraphe imbriqué porte 
 
 ```vue annotate="add:2,3,4"
 <template>
-<div>
-<p v-if="show">content</p>
-</div>
+  <div>
+    <p v-if="show">content</p>
+  </div>
 </template>
 ```
 
@@ -4863,7 +4863,7 @@ L’enfant statique à l’intérieur de `<Transition>` n’a ni visibilité con
 ```vue annotate="remove:3"
 <template>
 <transition>
-<div>content</div>
+  <div>content</div>
 </transition>
 </template>
 ```
@@ -4877,7 +4877,7 @@ L’enfant statique à l’intérieur de `<Transition>` n’a ni visibilité con
 ```vue annotate="add:3"
 <template>
 <transition>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </transition>
 </template>
 ```
@@ -5856,7 +5856,7 @@ Un `<template>` imbriqué ordinaire occupe la racine du template sans directive 
 
 ```vue annotate="remove:2"
 <template>
-<template>content</template>
+  <template>content</template>
 </template>
 ```
 
@@ -5868,7 +5868,7 @@ Le `<div>` est un élément racine qui peut être affiché. Cet exemple n’impo
 
 ```vue annotate="add:2"
 <template>
-<div>content</div>
+  <div>content</div>
 </template>
 ```
 

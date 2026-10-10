@@ -46,9 +46,9 @@ const count = ref(0)
 const user = reactive({ name: '' })
 
 export default {
-setup() {
-return { count, user }
-}
+  setup() {
+    return { count, user }
+  }
 }
 </script>
 ```
@@ -69,15 +69,15 @@ const API_URL = 'https://api.example.com'
 
 // Functions that create state are fine
 function createState() {
-return reactive({ count: 0 })
+  return reactive({ count: 0 })
 }
 
 export default {
-setup() {
-// Create state inside setup
-const count = ref(0)
-return { count }
-}
+  setup() {
+    // Create state inside setup
+    const count = ref(0)
+    return { count }
+  }
 }
 </script>
 ```

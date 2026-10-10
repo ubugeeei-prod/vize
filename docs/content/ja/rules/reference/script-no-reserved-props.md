@@ -42,14 +42,14 @@ vp run lint
 ```vue
 <script lang="ts">
 export default {
-props: {
-ref: String,   // reserved
-$foo: Number    // `$`-prefixed names are reserved
-}
+  props: {
+    ref: String,   // reserved
+    $foo: Number    // `$`-prefixed names are reserved
+  }
 }
 
 export default {
-props: ['key']    // reserved (array form)
+  props: ['key']    // reserved (array form)
 }
 </script>
 ```
@@ -61,10 +61,10 @@ props: ['key']    // reserved (array form)
 ```vue
 <script lang="ts">
 export default {
-props: {
-name: String,
-refValue: Number
-}
+  props: {
+    name: String,
+    refValue: Number
+  }
 }
 </script>
 ```

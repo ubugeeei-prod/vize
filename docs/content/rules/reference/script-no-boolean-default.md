@@ -42,11 +42,11 @@ Both `disabled` and `checked` declare a `default` on a prop whose sole construct
 ```vue
 <script lang="ts">
 export default {
-props: {
-// Boolean props already default to false; an explicit default is confusing.
-disabled: { type: Boolean, default: true },
-checked: { type: Boolean, default: false }
-}
+  props: {
+    // Boolean props already default to false; an explicit default is confusing.
+    disabled: { type: Boolean, default: true },
+    checked: { type: Boolean, default: false }
+  }
 }
 </script>
 ```
@@ -58,15 +58,15 @@ The Boolean-only props omit `default`, using Vue’s implicit false value. The `
 ```vue
 <script lang="ts">
 export default {
-props: {
-// No explicit default: defaults to false.
-disabled: { type: Boolean },
-disabled2: Boolean,
-// Union type may legitimately need a default.
-value: { type: [Boolean, String], default: '' },
-// Non-Boolean prop.
-count: { type: Number, default: 0 }
-}
+  props: {
+    // No explicit default: defaults to false.
+    disabled: { type: Boolean },
+    disabled2: Boolean,
+    // Union type may legitimately need a default.
+    value: { type: [Boolean, String], default: '' },
+    // Non-Boolean prop.
+    count: { type: Number, default: 0 }
+  }
 }
 </script>
 ```
