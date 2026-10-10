@@ -47,8 +47,10 @@ async function unusedPort(): Promise<number> {
 
 async function capture(page: Page): Promise<CaptureResponse> {
   const response = page.waitForResponse((item) => item.url().endsWith("/api/run-vrt"));
-  await page.getByRole("button", { name: "Run VRT", exact: true }).click();
-  const actual = await response;
+  const [actual] = await Promise.all([
+    response,
+    page.getByRole("button", { name: "Run VRT", exact: true }).click(),
+  ]);
   assert.equal(actual.status(), 200);
   const data = (await actual.json()) as CaptureResponse;
   assert.equal(data.success, true, JSON.stringify(data));
@@ -103,6 +105,11 @@ void test(
       await preview.getByRole("button", { name: "Left", exact: true }).waitFor();
       assert.equal(await preview.locator("museacomponent").count(), 0);
       await page.getByRole("button", { name: "VRT", exact: true }).click();
+      const documentToken = await page.evaluate(() => {
+        const token = crypto.randomUUID();
+        Reflect.set(window, "__vrtApiDocument", token);
+        return token;
+      });
       const first = await capture(page);
       observations.push({ phase: "configured-initial", data: first });
       await writeFile(path.join(output, "initial.json"), JSON.stringify(first, null, 2));
@@ -119,12 +126,19 @@ void test(
       assert.equal(repeated.summary.passed, 1);
       assert.equal(repeated.results[0].diffPercentage, 0);
       assert.equal(repeated.results[0].snapshotPath, first.results[0].snapshotPath);
+      assert.equal(
+        await page.evaluate(() => Reflect.get(window, "__vrtApiDocument")),
+        documentToken,
+      );
+      const reloaded = page.waitForEvent("framenavigated", (frame) => frame === page.mainFrame());
       await writeFile(artPath, authored.replace("#0000ff", "#00ff00"));
+      await reloaded;
       await page.waitForFunction(async (artPath) => {
         const response = await fetch(`/__musea__/api/arts/${encodeURIComponent(artPath)}`);
         const art = await response.json();
         return art.variants[0].template.includes("#00ff00");
       }, artPath);
+      await page.getByRole("button", { name: "VRT", exact: true }).click();
       const changed = await capture(page);
       observations.push({ phase: "configured-threshold", data: changed });
       assert.equal(changed.summary.total, 1);

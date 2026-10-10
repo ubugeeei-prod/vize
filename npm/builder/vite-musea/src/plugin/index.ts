@@ -152,6 +152,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
 
     configureServer(devServer) {
       server = devServer;
+      devServer.watcher.unwatch(path.resolve(config.root, ".vize/reports"));
 
       registerMiddleware(devServer, {
         basePath,
