@@ -84,3 +84,12 @@ separately against the actual HTTP flags. Every new API/CLI phase pins all
 counters and result flags. All original controls stay intact;24 source/custody
 laws, lint and syntax are preparation checks only, with installed runtime
 still unexecuted.
+
+The [6097697571 source-admission correction](https://github.com/ubugeeei-prod/vize/issues/8501#issuecomment-6097697571)
+registers exactly the two complete VRT law import closures: 36 release contracts,
+31 scoped and the same five broad unresolved controls. All original selection
+vectors remain unchanged. A typed optional acquired Browser owner preserves
+launch, observer arguments and cleanup. Fresh type-aware, zero-warning and
+formal Actions gates remain required. The first included public campaign stays
+unaccepted until the unchanged 30-minute workflow succeeds and records total
+runtime and margin; installed runtime remains unexecuted.

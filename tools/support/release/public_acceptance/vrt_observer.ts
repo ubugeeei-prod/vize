@@ -12,7 +12,7 @@ rejectOverrides();
 const [version, output] = process.argv.slice(2);
 assert.ok(version && output);
 const e = await evidence(path.join(path.dirname(output), "musea-vrt"));
-let browser: Browser | undefined;
+const owned: { browser?: Browser } = {};
 let fixture: VrtFixture | undefined;
 let provider: ReturnType<typeof publicNative> | undefined;
 let failure: unknown;
@@ -29,7 +29,7 @@ try {
   });
   stage = "public-chromium";
   const { chromium } = await import("playwright");
-  browser = await chromium.launch({ headless: true });
+  const browser = (owned.browser = await chromium.launch({ headless: true }));
   stage = "configured-public-api";
   await observeVrtApi(browser, fixture, e);
   stage = "mandatory-public-hosted-cli-and-audits";
@@ -48,7 +48,7 @@ try {
 } finally {
   try {
     await cleanup(e, "observer-cleanup", [
-      { name: "chromium", run: async () => browser?.close() },
+      { name: "chromium", run: async () => owned.browser?.close() },
       {
         name: "physical-project",
         run: async () => {
