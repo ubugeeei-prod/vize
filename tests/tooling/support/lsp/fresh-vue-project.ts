@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { TestContext } from "node:test";
+import { binaryRelativePath } from "../../../differential/build-receipt.ts";
 import { requireTypecheckDependency, resolveTypecheckRuntime } from "../typecheck-dependency.ts";
 import { readPolicyFixture } from "./fresh-capability-policy.ts";
 import { root, testOutputRoot } from "./paths.ts";
@@ -38,7 +39,10 @@ export async function withFreshVueProject(
   const workspaces = path.join(output, "workspaces");
   fs.mkdirSync(workspaces, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(workspaces, `${label}-`));
-  const session = new LspSession();
+  const session = new LspSession({
+    repoRoot: root,
+    binary: process.env.VIZE_LSP_BIN ?? path.join(root, binaryRelativePath()),
+  });
   const publications: unknown[] = [];
   session.notificationObservers.push((method, params) => {
     publications.push({ method, params });

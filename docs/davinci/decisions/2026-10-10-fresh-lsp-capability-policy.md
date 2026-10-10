@@ -47,6 +47,15 @@ the temporary workspace URI. Notification waiters do not select by diagnostic
 contents. No dedicated configuration, synthetic Vue shim or explicit JSX opt-in
 is added to these witnesses.
 
+The new fresh-project witness explicitly binds the existing receipted current
+source executable and retains all raw protocol streams. Selected PR tooling does
+not globally require source binding, so the generic session may otherwise select
+a cached debug executable before the current CI executable. The original two
+invalid publications returned empty diagnostics in source Actions at `22b145`;
+this is retained as a failed observation. A fresh bound run must distinguish the
+launch issue from a native diagnostic regression without changing any input,
+expected packet, or notification predicate.
+
 The local observations distinguish capability/prop witnesses from release
 qualification. The original complete default-capability test still reproduces
 the intentional policy difference; the fresh successor and historical/explicit
@@ -73,4 +82,3 @@ Vize does not infer framework ownership from JSX syntax. If one project mixes Re
 disable Vize JSX checking and use each framework's checker for those files. Vue SFC checking remains
 available. See the [fresh default qualification record](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md)
 for the unchanged historical controls and remaining native gates.
-
