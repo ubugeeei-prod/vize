@@ -14,6 +14,8 @@ use crate::tokenizer::QuoteType;
 
 use super::{CurrentAttribute, CurrentDirective, Parser};
 
+mod head;
+
 impl<'a> Parser<'a> {
     /// Process attribute name
     pub(super) fn on_attrib_name_impl(&mut self, start: usize, end: usize) {
@@ -30,7 +32,7 @@ impl<'a> Parser<'a> {
     }
 
     /// Process the end of a full attribute or directive head.
-    pub(super) fn on_attrib_name_end_impl(&mut self, end: usize) {
+    pub(in crate::parser) fn on_attrib_name_end_impl(&mut self, end: usize) {
         if let Some(ref mut attr) = self.current_attr {
             attr.name_end = end;
         }
