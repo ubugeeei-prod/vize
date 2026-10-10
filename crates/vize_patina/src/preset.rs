@@ -141,6 +141,8 @@ pub(crate) const fn builtin_css_rule_names(preset: LintPreset) -> &'static [&'st
 #[cfg(test)]
 mod default_correctness_tests;
 #[cfg(test)]
+mod default_migration_tests;
+#[cfg(test)]
 mod eslint_vue_rule_map_tests;
 #[cfg(test)]
 mod no_with_defaults_tests;
