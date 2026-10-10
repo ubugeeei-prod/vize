@@ -6,7 +6,8 @@ import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 import type { Browser } from "playwright";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
-import { ruleRenderRoutes, verifyRenderedRulePackets } from "./rule-render-assertions.ts";
+import { verifyRenderedRulePackets } from "./rule-render-assertions.ts";
+import { navigationRenderRoutes } from "./navigation-render-routes.ts";
 import { capturePageRender } from "./capture-page-render.ts";
 import type { PageCapture } from "./capture-page-render.ts";
 import { verifyCaptureRenderControls } from "./capture-render-controls.ts";
@@ -82,30 +83,7 @@ const { values } = parseArgs({
 });
 const dist = path.resolve(values.dir);
 const output = path.resolve(values.output);
-const pages = [
-  "/",
-  "/getting-started",
-  "/guide/configuration",
-  "/guide/migration",
-  "/guide/vite-plus",
-  "/guide/vite-plugin",
-  "/guide/configuration-reference",
-  "/guide/compiler-configuration-reference",
-  ...ruleRenderRoutes,
-];
-const routes = values.routes?.split(",") ?? [
-  ...pages.flatMap((route) => [route, `/ja${route}`]),
-<<<<<<< HEAD
-  ...["", "/ja", "/zh-CN", "/pt-BR", "/fr"].flatMap((locale) => [
-    `${locale}/philosophy`,
-    `${locale}/guide/content-mapper`,
-  ]),
-=======
-  "/zh-CN/getting-started",
-  "/pt-BR/getting-started",
-  "/fr/getting-started",
->>>>>>> 4a17da1bab (feat(docs): add accessible package manager command tabs)
-];
+const routes = values.routes?.split(",") ?? navigationRenderRoutes;
 const types: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",
