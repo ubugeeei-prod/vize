@@ -22,6 +22,7 @@ export const FRESH_INIT_MATRIX = [
   { packageManager: "yarn", shape: "vite-vue-ts" },
   { packageManager: "bun", shape: "vite-vue-ts" },
   { packageManager: "vp", shape: "vite-plus-vue-ts" },
+  { packageManager: "yarn", shape: "vite-vue-js-checkjs" },
 ];
 
 const APP_TITLE_CLEAN = 'const title: string = "vize";';
