@@ -152,6 +152,10 @@ void test(
         page.on("console", (message) => {
           if (message.type() === "error") consoleErrors.push(message.text());
         });
+        page.on("requestfailed", (request) => {
+          if (request.url().startsWith(origin + "/"))
+            httpErrors.push(`${request.failure()?.errorText}: ${request.url()}`);
+        });
         page.on(
           "response",
           createPackedGalleryHttpObserver({
