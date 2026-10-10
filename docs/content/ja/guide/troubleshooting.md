@@ -2,7 +2,7 @@
 title: トラブルシューティング
 ---
 
-<!-- Reviewed translation; source: guide/troubleshooting.md; scope: introduction, headings and reading order -->
+<!-- Reviewed translation; source: guide/troubleshooting.md; scope: complete document -->
 
 # トラブルシューティング
 
@@ -20,7 +20,7 @@ title: トラブルシューティング
 `compiler.templateSyntax` のデフォルト値は `"standard"` です。修復できる構文上の問題には
 警告を出し、有効なテンプレートに書き換えます。
 
-一般的な移行ケースは、非 void HTML 要素の自己終了構文です。
+移行時によくあるのは、終了タグが必要な HTML 要素を自己終了タグで書いているケースです。
 
 ```vue
 <template>
@@ -29,11 +29,9 @@ title: トラブルシューティング
 </template>
 ```
 
-`<div />` および `<span />` は有効な自己終了 HTML 要素ではありません。標準モードでは次のように書き換えられます。
-空の要素 (`<div></div>` および `<span></span>` に相当) があり、警告が生成されます。ストリクトモード
-それらをエラーとして報告します。 Quirks モードでは、警告なしで自動的に閉じるリーフとして保持されます。
+`<div />` と `<span />` は、HTML の自己終了要素としては有効ではありません。standard モードはこれらを `<div></div>` と `<span></span>` に相当する空の要素へ書き換え、警告を出します。strict モードはエラーとして報告します。quirks モードは警告を出さず、子を持たない自己終了要素として扱います。
 
-明示的な終了タグを記述することを好みます。
+できるだけ終了タグを明示してください。
 
 ```vue
 <template>
@@ -42,7 +40,7 @@ title: トラブルシューティング
 </template>
 ```
 
-移行時にモードを明示的に選択します。
+移行時には、必要なモードを明示的に選べます。
 
 ```ts
 import vize from "@vizejs/vite-plugin";
@@ -56,15 +54,12 @@ export default {
 };
 ```
 
-無効な構文で失敗するには `"strict"` を使用します。プロジェクトが構文を受け入れる Vue に依存している場合は `"quirks"` を使用します。
-タグは自己終了リーフとして使用されます。有効な void 要素 (`<input />`、`<img />`、`<br />`、および
-`<meta />` には癖は必要ありません。
+無効な構文で処理を失敗させたい場合は `"strict"` を使います。Vue がこうしたタグを自己終了要素として受け入れる動作にプロジェクトが依存している場合は、`"quirks"` を選んでください。
+`<input />`、`<img />`、`<br />`、`<meta />` のような有効な void 要素には、quirks モードは必要ありません。
 
 ## ネイティブタイプのパッケージ解決
 
-`vize check` は、バンドルされたものを使用する前に、チェックされたプロジェクトから Vue および Vite タイプのパッケージを解決します。
-フォールバックのため、プロジェクト独自の `vue`、`@vue/runtime-dom`、`@vue`、および `vite` バージョンが
-生成された仮想プロジェクト。通常とは異なるパッケージ マネージャー レイアウトの場合は、`VIZE_VUE_PACKAGE` を設定します。
-`VIZE_VUE_NAMESPACE_PACKAGE`、`VIZE_VUE_RUNTIME_DOM_PACKAGE`、または `VIZE_VITE_PACKAGE` を明示的に指定する
-パッケージのルート。 `VIZE_RUNTIME_NODE_MODULES` は、1 つ以上の `node_modules` ルートを
-フォールバック検索パス。
+`vize check` は、型チェック対象のプロジェクトから Vue と Vite の型パッケージを解決し、見つからない場合にバンドル済みの型へフォールバックします。生成する仮想プロジェクトには、プロジェクト自身の `vue`、`@vue/runtime-dom`、`@vue`、`vite` のバージョンが反映されます。
+
+通常とは異なるパッケージマネージャーの配置では、`VIZE_VUE_PACKAGE`、`VIZE_VUE_NAMESPACE_PACKAGE`、`VIZE_VUE_RUNTIME_DOM_PACKAGE`、`VIZE_VITE_PACKAGE` にパッケージのルートを明示できます。
+`VIZE_RUNTIME_NODE_MODULES` には、フォールバック先として検索する 1 つ以上の `node_modules` ルートを指定できます。

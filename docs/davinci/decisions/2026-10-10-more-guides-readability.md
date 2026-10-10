@@ -280,3 +280,23 @@ The first fresh composed Docs run rejected the Doctor link with HTTP 404: this s
 Japanese Doctor page. The CLI now labels and links the existing English reference. The original
 full browser-link assertion remains unchanged; every incoming fence and native fragment is retained.
 Layers six through eight require fresh source qualification after this correction.
+
+## Complete Japanese migration and auto-import bodies
+
+A separate seventh worktree finishes two short bodies already covered by the revised More routes.
+Troubleshooting still fragmented the standard/strict/quirks behavior and rendered quirks as a
+personal quirk, and its package-resolution sentence no longer explained project-first lookup and
+fallback. The natural Japanese review keeps all three complete examples and all environment
+variables, with the current English syntax and native package-resolution boundaries unchanged.
+
+The auto-import body was already natural but omitted English Nuxt registration APIs and helper
+examples, generated global declaration scope, and the concrete local-source path. Those contracts
+are restored without replacing its existing contextual Vite snippet or changing resolver options,
+local fallback, package-version ownership, or generated-catalogue behavior. All three full published
+examples remain byte-for-byte intact. The complete translation preservation markers apply to these
+two reviewed bodies only, and all eight incoming native fragments remain exactly once.
+
+Both published-example/source-contract checks failed before this review and now pass. The existing
+28-route desktop/mobile renderer covers these pages, but local source/native review supplies no
+new-head Actions, protected admission, release, or deployed credit. Earlier qualifying heads stay
+immutable; fresh source/browser and whole More acceptance remain required for #8365.
