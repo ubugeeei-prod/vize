@@ -228,6 +228,9 @@ impl ServerState {
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
     pub fn load_workspace_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        if !loaded.valid {
+            return;
+        }
         self.apply_project_formatting_default(loaded.source_path.as_deref());
         if loaded.source_path.is_none() {
             self.apply_config_features(loaded.features);
@@ -263,6 +266,9 @@ impl ServerState {
     /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
     pub fn load_lsp_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        if !loaded.valid {
+            return;
+        }
         self.apply_project_formatting_default(loaded.source_path.as_deref());
         if loaded.source_path.is_none() {
             self.apply_config_features(loaded.features);
