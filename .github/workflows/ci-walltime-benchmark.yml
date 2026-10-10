@@ -1,0 +1,153 @@
+name: CI walltime comparison
+run-name: CI walltime comparison @ ${{ github.sha }}
+on:
+  pull_request:
+    types: [opened, reopened, labeled]
+  workflow_dispatch:
+    inputs:
+      component:
+        description: Compare serial and concurrent execution on the same source
+        type: choice
+        options: [all, js, docs, rust, native]
+        default: all
+permissions: { contents: read }
+concurrency:
+  group: ci-walltime-${{ github.sha }}-${{ inputs.component || 'all' }}
+  cancel-in-progress: false
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  CARGO_TERM_COLOR: always
+jobs:
+  js:
+    if: ${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'js')) }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    env: { CARGO_BUILD_JOBS: "12" }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: ./.github/actions/setup-js-package-tests
+      - name: Build and qualify the same native binary once
+        run: vp run --workspace-root test:js
+      - name: Serial complete original-project qualification
+        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode serial --phase-walltime target/ci-walltime/js-serial.json
+      - name: Concurrent complete original-project qualification
+        if: ${{ !cancelled() }}
+        run: node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --phase-walltime target/ci-walltime/js-concurrent.json
+      - name: Preserve both complete qualifications and timings
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-walltime-js-${{ github.sha }}
+          path: |
+            target/ci-walltime/
+            target/oxlint-original-project-transport/
+          if-no-files-found: error
+          retention-days: 14
+  docs:
+    if: ${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'docs')) }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: docs-napi
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: ./.github/actions/setup-moonbit
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install identical Docs dependencies and rendering fonts
+        run: |
+          moon run --target native tools/moon/cmd/github/vp_install -- --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends fonts-noto-cjk
+      - name: Build the same native packages and Docs once
+        run: |
+          rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
+          vp run --no-cache --filter './docs' build
+      - name: Serial complete navigation proof
+        run: vp node docs/scripts/verify-navigation-render.ts --workers 1 --output docs-render-evidence/ci-walltime/serial
+      - name: Concurrent complete navigation proof
+        if: ${{ !cancelled() }}
+        run: vp node docs/scripts/verify-navigation-render.ts --workers 2 --output docs-render-evidence/ci-walltime/concurrent
+      - name: Preserve both complete render proofs and timings
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-walltime-docs-${{ github.sha }}
+          path: docs-render-evidence/ci-walltime/
+          if-no-files-found: error
+          retention-days: 14
+  rust:
+    if: ${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'rust')) }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 90
+    env:
+      CARGO_BUILD_JOBS: "12"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+      VIZE_TEST_REQUIRE_TSGO: "1"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: true }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: clippy-test
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with: { tool: cargo-nextest@0.9.146 }
+      - name: Install the existing Pkl fixture runtime
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - name: Compile identical full-workspace test binaries once
+        run: |
+          cargo test --locked --workspace --no-run
+          mkdir -p target/ci-walltime
+          cargo nextest list --locked --workspace --profile full --message-format json > target/ci-walltime/rust-selected-tests.json
+      - name: Serial full workspace including doctests
+        run: node tools/support/compat/github/run-rust-workspace-tests.mjs --runner cargo --output target/ci-walltime/rust-cargo.json
+      - name: Concurrent full workspace including doctests
+        if: ${{ !cancelled() }}
+        run: node tools/support/compat/github/run-rust-workspace-tests.mjs --runner nextest --output target/ci-walltime/rust-nextest.json
+      - name: Preserve both workspace timings and complete nextest results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-walltime-rust-${{ github.sha }}
+          path: |
+            target/ci-walltime/
+            target/nextest/full/
+          if-no-files-found: error
+          retention-days: 14
+  native:
+    if: ${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'native')) }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ github.sha }}" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: false, run-install: false }
+      - uses: ./.github/actions/setup-moonbit
+      - name: Compare actual native publisher scheduling with controlled child waits
+        env:
+          VIZE_PUBLISH_BENCHMARK_RECEIPT: target/ci-walltime/native-controlled.json
+        run: node --test --test-name-pattern='controlled platform publish benchmark' tests/tooling/moonbit-publish-concurrency-benchmark.test.ts
+      - name: Preserve controlled publisher benchmark
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-walltime-native-${{ github.sha }}
+          path: target/ci-walltime/
+          if-no-files-found: error
+          retention-days: 14
