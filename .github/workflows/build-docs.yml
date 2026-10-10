@@ -79,6 +79,9 @@ jobs:
       - name: Verify static analysis reading flows
         run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/static-analysis,/ja/guide/static-analysis --output docs-render-evidence/static-analysis
 
+      - name: Verify reviewed reference reading flows
+        run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/compiler-configuration-reference,/ja/guide/compiler-configuration-reference,/guide/experimentals-reference,/ja/guide/experimentals-reference --output docs-render-evidence/ja-references
+
       - name: Verify rendered navigation and adoption guides
         run: vp node docs/scripts/verify-navigation-render.ts
 
