@@ -1,0 +1,30 @@
+{
+  "errorCount": 1,
+  "fileCount": 1,
+  "files": [
+    {
+      "diagnostics": [
+        "error:1:14 [TS2322] Type 'string' is not assignable to type 'number'."
+      ],
+      "file": "src/invalid.ts"
+    }
+  ],
+  "programs": [
+    {
+      "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "noEmit": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext"
+      },
+      "files": [
+        "src/invalid.ts"
+      ],
+      "root": ".",
+      "tsconfig": "tsconfig.json"
+    }
+  ],
+  "warningCount": 0
+}

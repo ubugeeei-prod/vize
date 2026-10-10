@@ -1,0 +1,83 @@
+{
+  "app": {
+    "directory": true
+  },
+  "app/absolute": {
+    "directory": true
+  },
+  "app/absolute/DropItem.ts": {
+    "text": "export const count: number = 'wrong';\n"
+  },
+  "app/absolute/DropItem.vue": {
+    "text": "<script setup lang=\"ts\">\nconst message=\"hello\"\n</script>\n<template><my-widget>  two  spaces  </my-widget><p>{{ message }}</p></template>\n"
+  },
+  "app/absolute/KeepItem.ts": {
+    "text": "export const count: number = 'wrong';\n"
+  },
+  "app/absolute/KeepItem.vue": {
+    "text": "<script setup lang=\"ts\">\nconst message = 'hello';\n</script>\n\n<template>\n  <my-widget> two  spaces </my-widget><p>{{ message }}</p>\n</template>\n"
+  },
+  "app/generated": {
+    "directory": true
+  },
+  "app/generated/DropItem.ts": {
+    "text": "export const count: number = 'wrong';\n"
+  },
+  "app/generated/DropItem.vue": {
+    "text": "<script setup lang=\"ts\">\nconst message=\"hello\"\n</script>\n<template><my-widget>  two  spaces  </my-widget><p>{{ message }}</p></template>\n"
+  },
+  "app/generated/KeepItem.ts": {
+    "text": "export const count: number = 'wrong';\n"
+  },
+  "app/generated/KeepItem.vue": {
+    "text": "<script setup lang=\"ts\">\nconst message = 'hello';\n</script>\n\n<template>\n  <my-widget> two  spaces </my-widget><p>{{ message }}</p>\n</template>\n"
+  },
+  "app/src": {
+    "directory": true
+  },
+  "app/src/App.vue": {
+    "text": "<script setup lang=\"ts\">\nconst message = 'hello';\n</script>\n\n<template>\n  <my-widget> two  spaces </my-widget><p>{{ message }}</p>\n</template>\n"
+  },
+  "app/src/Ignored.vue": {
+    "text": "<template>\n  <img src=\"app.png\" />\n</template>\n"
+  },
+  "app/src/Image.vue": {
+    "text": "<template>\n  <img src=\"app.png\" />\n</template>\n"
+  },
+  "app/src/[id].ts": {
+    "text": "export const count: number = 'wrong';\n"
+  },
+  "app/src/[id].vue": {
+    "text": "<script setup lang=\"ts\">\nconst message=\"hello\"\n</script>\n<template><my-widget>  two  spaces  </my-widget><p>{{ message }}</p></template>\n"
+  },
+  "app/src/id.ts": {
+    "text": "export const count: number = 'wrong';\n"
+  },
+  "app/src/id.vue": {
+    "text": "<script setup lang=\"ts\">\nconst message = 'hello';\n</script>\n\n<template>\n  <my-widget> two  spaces </my-widget><p>{{ message }}</p>\n</template>\n"
+  },
+  "app/src/valid.ts": {
+    "text": "export const count: number = 1;\n"
+  },
+  "app/tsconfig.json": {
+    "text": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"skipLibCheck\": true\n  },\n  \"include\": [\"src/**/*.ts\", \"generated/**/*.ts\", \"absolute/**/*.ts\"]\n}\n"
+  },
+  "package.json": {
+    "text": "{\"type\":\"module\"}"
+  },
+  "src": {
+    "directory": true
+  },
+  "src/Decoy.vue": {
+    "text": "<template><img src=\"app.png\" /></template>\n"
+  },
+  "src/invalid.ts": {
+    "text": "export const count: number = 'wrong';\n"
+  },
+  "tsconfig.json": {
+    "text": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"skipLibCheck\": true\n  },\n  \"include\": [\"src/**/*.ts\"]\n}\n"
+  },
+  "vite.config.mjs": {
+    "text": "import { fileURLToPath } from \"node:url\";\n\nexport default {\n  root: \"app\",\n  vize: {\n    basePath: \"elsewhere\",\n    ignores: [\n      \"generated/**\",\n      \"!generated/KeepItem.*\",\n      String.raw`src/\\[id\\].*`,\n      fileURLToPath(new URL(\"./app/absolute/**\", import.meta.url)),\n      \"!absolute/KeepItem.*\",\n    ],\n    linter: { preset: \"essential\", rules: { \"a11y/alt-text\": \"error\" } },\n    formatter: { singleQuote: true },\n    typeChecker: { tsconfig: \"tsconfig.json\" },\n  },\n};\n"
+  }
+}

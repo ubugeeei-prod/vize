@@ -1,0 +1,5 @@
+{
+  "Decoy.js": {
+    "text": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { src: \"app.png\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"img\", _hoisted_1))\n}"
+  }
+}
