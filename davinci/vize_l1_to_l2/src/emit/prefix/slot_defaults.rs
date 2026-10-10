@@ -1,8 +1,8 @@
 //! `codegen::slots::params::prefix_slot_defaults`, ported: default
 //! values inside a slot-props destructuring pattern get `_ctx.` on their
 //! free identifiers (`{ item = defaultItem }` →
-//! `{ item = _ctx.defaultItem }`), in every mode — the shipped codegen
-//! runs it unconditionally and knows no binding metadata there.
+//! `{ item = _ctx.defaultItem }`). Inline immutable setup bindings use the
+//! existing scope context; all other binding/default policies stay unchanged.
 
 use alloc::vec::Vec as StdVec;
 
@@ -17,12 +17,16 @@ use vize_l0::expression_guard::expression_is_safe_to_parse;
 use vize_l0::{Allocator, String};
 
 use super::globals::is_global_allowed;
+use super::scope::PrefixScope;
 use crate::emit::js_comment::RawJs;
 
 /// Borrowed when nothing was rewritten: a pattern without `=` has no
 /// default to prefix, so the default lane (the allocation gate's window)
 /// never parses it.
-pub(in crate::emit) fn prefix_slot_defaults(source: &str) -> RawJs<'_> {
+pub(in crate::emit) fn prefix_slot_defaults<'source>(
+    source: &'source str,
+    scope: &PrefixScope<'_>,
+) -> RawJs<'source> {
     if !source.contains('=') || !expression_is_safe_to_parse(source) {
         return RawJs::Borrowed(source);
     }
@@ -46,6 +50,7 @@ pub(in crate::emit) fn prefix_slot_defaults(source: &str) -> RawJs<'_> {
         collect_binding_names(&param.pattern, &mut slot_params);
     }
     let mut visitor = SlotDefaultPrefixVisitor {
+        scope,
         local_scopes: alloc::vec![slot_params],
         offset: 1,
         insertions: StdVec::new(),
@@ -70,13 +75,14 @@ pub(in crate::emit) fn prefix_slot_defaults(source: &str) -> RawJs<'_> {
     RawJs::Owned(result)
 }
 
-struct SlotDefaultPrefixVisitor {
+struct SlotDefaultPrefixVisitor<'scope, 'bindings> {
+    scope: &'scope PrefixScope<'bindings>,
     local_scopes: StdVec<StdVec<String>>,
     offset: u32,
     insertions: StdVec<(usize, String)>,
 }
 
-impl SlotDefaultPrefixVisitor {
+impl SlotDefaultPrefixVisitor<'_, '_> {
     fn push_scope(&mut self) {
         self.local_scopes.push(StdVec::new());
     }
@@ -90,6 +96,10 @@ impl SlotDefaultPrefixVisitor {
             .iter()
             .rev()
             .any(|scope| scope.iter().any(|local| local.as_str() == name))
+    }
+
+    fn should_prefix(&self, name: &str) -> bool {
+        !self.is_local(name) && !is_global_allowed(name) && !self.scope.reads_constant_binding(name)
     }
 
     fn collect_function_params(&mut self, params: &oxc_ast::ast::FormalParameters<'_>) {
@@ -109,10 +119,10 @@ impl SlotDefaultPrefixVisitor {
     }
 }
 
-impl<'a> Visit<'a> for SlotDefaultPrefixVisitor {
+impl<'a> Visit<'a> for SlotDefaultPrefixVisitor<'_, '_> {
     fn visit_identifier_reference(&mut self, ident: &oxc_ast::ast::IdentifierReference<'a>) {
         let name = ident.name.as_str();
-        if !self.is_local(name) && !is_global_allowed(name) {
+        if self.should_prefix(name) {
             self.push_prefix(ident.span.start);
         }
     }
@@ -122,7 +132,7 @@ impl<'a> Visit<'a> for SlotDefaultPrefixVisitor {
             && let oxc_ast::ast::PropertyKey::StaticIdentifier(ident) = &prop.key
         {
             let name = ident.name.as_str();
-            if !self.is_local(name) && !is_global_allowed(name) {
+            if self.should_prefix(name) {
                 let pos = ident.span.end.saturating_sub(self.offset) as usize;
                 let mut suffix = String::with_capacity(name.len() + 8);
                 suffix.push_str(": _ctx.");
@@ -166,7 +176,10 @@ impl<'a> Visit<'a> for SlotDefaultPrefixVisitor {
     }
 }
 
-fn collect_default_rewrites(pattern: &BindingPattern<'_>, visitor: &mut SlotDefaultPrefixVisitor) {
+fn collect_default_rewrites(
+    pattern: &BindingPattern<'_>,
+    visitor: &mut SlotDefaultPrefixVisitor<'_, '_>,
+) {
     match pattern {
         BindingPattern::BindingIdentifier(_) => {}
         BindingPattern::ObjectPattern(obj) => {
@@ -217,7 +230,13 @@ fn collect_binding_names(pattern: &BindingPattern<'_>, names: &mut StdVec<String
 
 #[cfg(test)]
 mod tests {
-    use super::prefix_slot_defaults;
+    use super::PrefixScope;
+    use super::prefix_slot_defaults as prefix_slot_defaults_in;
+    use crate::emit::js_comment::RawJs;
+
+    fn prefix_slot_defaults(source: &str) -> RawJs<'_> {
+        prefix_slot_defaults_in(source, &PrefixScope::default())
+    }
 
     #[test]
     fn defaults_get_ctx_and_params_stay_local() {
@@ -233,3 +252,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod setup_bindings_tests;

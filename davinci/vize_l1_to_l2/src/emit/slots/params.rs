@@ -83,7 +83,7 @@ pub(super) fn emit_slot_params(
                 return Err(EmitError::unsupported(Reason::PrefixExpressionRejected));
             }
             cx.buf.push("(");
-            let processed = crate::emit::prefix::prefix_slot_defaults(text.as_str());
+            let processed = crate::emit::prefix::prefix_slot_defaults(text.as_str(), &cx.scope);
             if let Some((leading, trailing)) = content
                 .and_then(|content| content.params.as_ref().map(|expr| (content, expr)))
                 .and_then(|(content, expr)| {

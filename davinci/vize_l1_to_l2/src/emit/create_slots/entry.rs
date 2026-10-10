@@ -259,7 +259,7 @@ fn emit_params(cx: &mut EmitCx<'_>, content: &SlotContentOp<'_>) -> Result<(), E
                 return Err(EmitError::unsupported(Reason::PrefixExpressionRejected));
             }
             cx.buf.push("(");
-            let processed = crate::emit::prefix::prefix_slot_defaults(expr.source());
+            let processed = crate::emit::prefix::prefix_slot_defaults(expr.source(), &cx.scope);
             if let Some((leading, trailing)) =
                 authored_expr_padding(cx.source, content.span, expr.source(), expr.span())
             {

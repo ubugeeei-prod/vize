@@ -1,0 +1,151 @@
+{
+  "schema": "vize.typed-slot-closure.authored-cases",
+  "version": 1,
+  "cases": [
+    {
+      "id": "alias",
+      "filename": "typed-closure-alias.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => { globalThis.__typedSlotRecords.push(value) }; const fallback = \"fallback\"; type ListItem<T> = { item: T; index: number; even: boolean; odd: boolean };</script><template><Panel v-slot=\"{ item: row }: { item: string }\"><button id=\"slot\" @click=\"record(row)\">{{ row }}</button></Panel><button id=\"outside\" @click=\"record('outside')\">outside</button></template>",
+      "initialSlotPayload": {
+        "item": "A"
+      },
+      "updatedSlotPayload": {
+        "item": "B"
+      },
+      "authoredExpectedInitialSlotRecord": "A",
+      "authoredExpectedUpdatedSlotRecord": "B",
+      "expectedInitialSlotText": "A",
+      "expectedUpdatedSlotText": "B",
+      "expectedOutsideInitialRecord": "outside",
+      "expectedOutsideUpdatedRecord": "outside",
+      "expectedSavedInitialCallbackRecord": "A",
+      "expectedFixedInsideHandlerStable": false,
+      "expectedOutsideHandlerStable": true
+    },
+    {
+      "id": "multiple",
+      "filename": "typed-closure-multiple.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => { globalThis.__typedSlotRecords.push(value) }; const fallback = \"fallback\"; type ListItem<T> = { item: T; index: number; even: boolean; odd: boolean };</script><template><Panel><template #default=\"{ item, index, even, odd }: ListItem<string>\"><button id=\"slot\" @click=\"record({ item, index, even, odd })\">{{ item }}</button></template></Panel><button id=\"outside\" @click=\"record('outside')\">outside</button></template>",
+      "initialSlotPayload": {
+        "item": "A",
+        "index": 0,
+        "even": true,
+        "odd": false
+      },
+      "updatedSlotPayload": {
+        "item": "B",
+        "index": 1,
+        "even": false,
+        "odd": true
+      },
+      "authoredExpectedInitialSlotRecord": {
+        "item": "A",
+        "index": 0,
+        "even": true,
+        "odd": false
+      },
+      "authoredExpectedUpdatedSlotRecord": {
+        "item": "B",
+        "index": 1,
+        "even": false,
+        "odd": true
+      },
+      "expectedInitialSlotText": "A",
+      "expectedUpdatedSlotText": "B",
+      "expectedOutsideInitialRecord": "outside",
+      "expectedOutsideUpdatedRecord": "outside",
+      "expectedSavedInitialCallbackRecord": {
+        "item": "A",
+        "index": 0,
+        "even": true,
+        "odd": false
+      },
+      "expectedFixedInsideHandlerStable": false,
+      "expectedOutsideHandlerStable": true
+    },
+    {
+      "id": "tuple",
+      "filename": "typed-closure-tuple.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => { globalThis.__typedSlotRecords.push(value) }; const fallback = \"fallback\"; type ListItem<T> = { item: T; index: number; even: boolean; odd: boolean };</script><template><Panel v-slot=\"[item]: [string]\"><button id=\"slot\" @click=\"record(item)\">{{ item }}</button></Panel><button id=\"outside\" @click=\"record('outside')\">outside</button></template>",
+      "initialSlotPayload": [
+        "A"
+      ],
+      "updatedSlotPayload": [
+        "B"
+      ],
+      "authoredExpectedInitialSlotRecord": "A",
+      "authoredExpectedUpdatedSlotRecord": "B",
+      "expectedInitialSlotText": "A",
+      "expectedUpdatedSlotText": "B",
+      "expectedOutsideInitialRecord": "outside",
+      "expectedOutsideUpdatedRecord": "outside",
+      "expectedSavedInitialCallbackRecord": "A",
+      "expectedFixedInsideHandlerStable": false,
+      "expectedOutsideHandlerStable": true
+    },
+    {
+      "id": "default",
+      "filename": "typed-closure-default.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => { globalThis.__typedSlotRecords.push(value) }; const fallback = \"fallback\"; type ListItem<T> = { item: T; index: number; even: boolean; odd: boolean };</script><template><Panel v-slot=\"{ item = fallback }: { item?: string }\"><button id=\"slot\" @click=\"record(item)\">{{ item }}</button></Panel><button id=\"outside\" @click=\"record('outside')\">outside</button></template>",
+      "initialSlotPayload": {},
+      "updatedSlotPayload": {
+        "item": "B"
+      },
+      "authoredExpectedInitialSlotRecord": "fallback",
+      "authoredExpectedUpdatedSlotRecord": "B",
+      "expectedInitialSlotText": "fallback",
+      "expectedUpdatedSlotText": "B",
+      "expectedOutsideInitialRecord": "outside",
+      "expectedOutsideUpdatedRecord": "outside",
+      "expectedSavedInitialCallbackRecord": "fallback",
+      "expectedFixedInsideHandlerStable": false,
+      "expectedOutsideHandlerStable": true
+    },
+    {
+      "id": "slot-event-name",
+      "filename": "typed-closure-slot-event-name.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => { globalThis.__typedSlotRecords.push(value) }; const fallback = \"fallback\"; type ListItem<T> = { item: T; index: number; even: boolean; odd: boolean };</script><template><Panel v-slot=\"{ $event }: { $event: string }\"><button id=\"slot\" @click=\"() => record($event)\">{{ $event }}</button></Panel><button id=\"outside\" @click=\"record($event)\">outside</button></template>",
+      "initialSlotPayload": {
+        "$event": "A"
+      },
+      "updatedSlotPayload": {
+        "$event": "B"
+      },
+      "authoredExpectedInitialSlotRecord": "A",
+      "authoredExpectedUpdatedSlotRecord": "B",
+      "expectedInitialSlotText": "A",
+      "expectedUpdatedSlotText": "B",
+      "expectedOutsideInitialRecord": {
+        "type": "click",
+        "phase": "initial"
+      },
+      "expectedOutsideUpdatedRecord": {
+        "type": "click",
+        "phase": "updated"
+      },
+      "expectedSavedInitialCallbackRecord": "A",
+      "expectedFixedInsideHandlerStable": false,
+      "expectedOutsideHandlerStable": true
+    },
+    {
+      "id": "unscoped-control",
+      "filename": "typed-closure-unscoped-control.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => { globalThis.__typedSlotRecords.push(value) }; const fallback = \"fallback\"; type ListItem<T> = { item: T; index: number; even: boolean; odd: boolean };</script><template><Panel><button id=\"slot\" @click=\"record('unscoped')\">unscoped</button></Panel><button id=\"outside\" @click=\"record('outside')\">outside</button></template>",
+      "initialSlotPayload": {
+        "item": "A"
+      },
+      "updatedSlotPayload": {
+        "item": "B"
+      },
+      "authoredExpectedInitialSlotRecord": "unscoped",
+      "authoredExpectedUpdatedSlotRecord": "unscoped",
+      "expectedInitialSlotText": "unscoped",
+      "expectedUpdatedSlotText": "unscoped",
+      "expectedOutsideInitialRecord": "outside",
+      "expectedOutsideUpdatedRecord": "outside",
+      "expectedSavedInitialCallbackRecord": "unscoped",
+      "expectedFixedInsideHandlerStable": true,
+      "expectedOutsideHandlerStable": true
+    }
+  ]
+}

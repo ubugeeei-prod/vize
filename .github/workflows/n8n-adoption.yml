@@ -23,6 +23,8 @@ on:
       - tests/_fixtures/differential/compiler/legacy-slot-binding-handoff-8142/**
       - tests/_fixtures/differential/compiler/slot-parameter-entities-8142/**
       - tests/tooling/support/slot-parameter-entity-runtime.mjs
+      - tests/_fixtures/differential/compiler/slot-default-setup-bindings-8142/**
+      - tests/tooling/support/slot-default-setup-bindings-runtime*.mjs
       - tests/tooling/support/n8n-compiler-*.mjs
       - tests/tooling/support/n8n-default-slot-loop*.mjs
       - tests/_fixtures/differential/compiler/n8n-*/**
@@ -143,6 +145,13 @@ jobs:
         run: cargo test --locked --profile ci -p vize_atelier_core --features legacy --test legacy_template_sugar --test legacy_slot_binding_handoff_8142 -- --nocapture
       - name: Verify source SFC default-slot runtime and iterator laws
         run: cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test n8n_default_slot_loops --test slot_parameter_entities_8142 -- --nocapture
+      - name: Install pinned TypeScript consumer for the original typed slot controls
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Verify whole inline setup default parameters and original typed callback runtime laws
+        run: |
+          cargo test --locked --profile ci -p vize_atelier_core --lib inline_immutable_setup_defaults_keep_exact_authored_parameter_packets -- --nocapture
+          cargo test --locked --profile ci -p vize_l1_to_l2 --lib inline_immutable_setup_defaults_keep_exact_authored_parameter_packets -- --nocapture
+          cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test slot_default_setup_bindings_8142 -- --nocapture
       - name: Verify every n8n compiler regression and changed-source refusal
         env:
           VIZE_N8N_CONTROL_PACKET_DIR: ${{ github.workspace }}/target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}/authored
@@ -173,6 +182,13 @@ jobs:
         with:
           name: n8n-slot-entity-runtime-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/differential/slot-parameter-entities-8142
+          if-no-files-found: error
+      - name: Upload all original typed slot compiler and runtime packets
+        if: ${{ !cancelled() && hashFiles('target/differential/slot-default-setup-bindings-8142/compiler-packets.json') != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: n8n-slot-default-setup-bindings-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/differential/slot-default-setup-bindings-8142
           if-no-files-found: error
 
   authored-editor:

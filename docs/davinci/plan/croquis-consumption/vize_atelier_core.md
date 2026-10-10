@@ -25,4 +25,4 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `BindingType`       |     1 |    11 |
 | `ReactiveKind`      |     1 |     4 |
 | `is_event_local`    |     1 |     1 |
-| `is_global_allowed` |     4 |    10 |
+| `is_global_allowed` |     4 |     9 |

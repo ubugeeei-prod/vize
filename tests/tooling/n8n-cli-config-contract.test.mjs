@@ -22,6 +22,7 @@ void test("compiler fixture-only and runtime-only changes trigger the full n8n c
   const directories = [
     "tests/_fixtures/differential/compiler/legacy-slot-binding-handoff-8142/",
     "tests/_fixtures/differential/compiler/slot-parameter-entities-8142/",
+    "tests/_fixtures/differential/compiler/slot-default-setup-bindings-8142/",
   ];
   const inputs = directories.flatMap((directory) =>
     fs
@@ -29,7 +30,11 @@ void test("compiler fixture-only and runtime-only changes trigger the full n8n c
       .filter((entry) => fs.statSync(new URL(directory + entry, root)).isFile())
       .map((entry) => directory + entry),
   );
-  inputs.push("tests/tooling/support/slot-parameter-entity-runtime.mjs");
+  inputs.push(
+    "tests/tooling/support/slot-parameter-entity-runtime.mjs",
+    "tests/tooling/support/slot-default-setup-bindings-runtime.mjs",
+    "tests/tooling/support/slot-default-setup-bindings-runtime-host.mjs",
+  );
   const matches = (file) => filters.some((filter) => path.posix.matchesGlob(file, filter));
   assert.deepEqual(
     inputs.map((file) => [file, matches(file)]),
