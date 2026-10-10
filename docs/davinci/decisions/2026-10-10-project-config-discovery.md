@@ -50,7 +50,9 @@ tool-section overrides over inherited native settings.
 Fresh editor projects expose formatting with the existing recommended editor
 profile. Project `languageServer`/`lsp` switches override defaults; explicit
 editor switches override project settings. Dedicated projects retain formatter
-opt-in behavior.
+opt-in behavior. The experimental JSX capability also respects the effective
+typecheck switch, so an explicit disabled editor profile advertises it as off.
+Original disabled-profile protocol oracles remain unchanged.
 
 ## Qualification and remaining boundaries
 
@@ -58,6 +60,11 @@ Public CLI/LSP, packaged initializer and editor regressions qualify customized
 settings, defaults, positive/negative controls, explicit overrides, dedicated
 compatibility and monorepo package boundaries. Combined source Actions and
 protected queue qualification are required before actual delivery.
+
+Fresh JSX defaults additionally depend on retaining authored TSX slot-parameter
+annotations in the native typecheck-only lowering path. The existing complete
+public TSX contract oracle must pass unchanged; a configuration test cannot
+qualify a native diagnostic false negative.
 
 The LSP retains one process-wide capability/type-checker profile. Root scoped
 entries and explicit workspace folders provide monorepo policies. Automatic
