@@ -121,3 +121,10 @@ verifier. Compose the genuine parent once, retaining every incoming route and
 control, all five localized Vue routes, both devices/themes and complete pixels.
 All 104-rule/416-block controls remain unchanged. Old runs are historical;
 the composed source requires fresh full Actions, protected and deployed proof.
+
+## Delivered renderer worker composition
+
+The genuine actual `a936260f7c` composition retains the delivered bounded
+renderer. The entrypoint keeps the three additional Vue locale routes, and the
+moved page owner keeps the five-locale palette guard. Every original authored
+packet, capture, clipboard, font, navigation and refusal assertion is retained.
