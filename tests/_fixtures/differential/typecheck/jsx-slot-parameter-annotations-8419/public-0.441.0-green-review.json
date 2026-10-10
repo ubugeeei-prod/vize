@@ -3389,10 +3389,10 @@
   ],
   "success": true,
   "originalCheckedAt": "2026-10-10T10:55:20.694441+00:00",
-  "originalReviewerTask": "/root/lsp_delivery/event_slot_review",
+  "originalReviewerTask": "root/lsp_delivery/event_slot_review",
   "representation": {
     "kind": "portable derivative of sealed original execution records",
-    "transformation": "Only the listed physical-root byte prefixes are replaced. No execution-time normalization is claimed.",
+    "transformation": "Only the listed physical-root byte prefixes are replaced in sealed archive members. The original reviewer task is displayed without its namespace-leading slash. No execution-time normalization is claimed.",
     "placeholders": [
       {
         "placeholder": "<USER_HOME>",
@@ -3450,5 +3450,6 @@
     "noPhysicalRootsInPortableRepresentation": true,
     "deterministicArchiveBytes": true,
     "newExecutionOrInstall": false
-  }
+  },
+  "originalReviewerTaskRepresentation": "canonical collaboration task name; namespace-leading slash omitted for portable display"
 }
