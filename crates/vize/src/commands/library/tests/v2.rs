@@ -39,15 +39,52 @@ fn init_detects_the_layout_and_writes_the_lib_section() {
             .contains("allowImportingTsExtensions")
     );
     assert!(!project.path("vize.config.json").exists());
+    assert!(!project.path("vite.config.mjs").exists());
 
     project.run(&["init", "--ui-dir", "src/ui"]).unwrap();
-    let config: serde_json::Value =
-        serde_json::from_str(&project.read("vize.config.json")).unwrap();
-    assert_eq!(config["lib"]["uiDir"], "src/ui");
-    assert_eq!(config["lib"]["composableDir"], "src/composables/vize");
+    let text = project.read("vite.config.mjs");
+    let config: serde_json::Value = serde_json::from_str(
+        text.trim()
+            .strip_prefix("export default ")
+            .unwrap()
+            .strip_suffix(';')
+            .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(config["vize"]["lib"]["uiDir"], "src/ui");
+    assert_eq!(
+        config["vize"]["lib"]["composableDir"],
+        "src/composables/vize"
+    );
+    assert!(!project.path("vize.config.json").exists());
 
     let again = project.json(&[], &["init"]);
     assert_eq!(again["action"], "unchanged");
+
+    ui_v1(&project.registry("ui"));
+    project.run_with(&["ui"], &["pull", "id"]).unwrap();
+    assert!(project.path("src/ui/foundations/id/id.ts").is_file());
+}
+
+#[test]
+fn init_keeps_existing_vite_config_and_suggests_the_vize_lib_section() {
+    let project = Project::new();
+    let source = "export default { plugins: [], server: { port: 5173 } };\n";
+    project.write("vite.config.mts", source);
+
+    let report = project.json(&[], &["init"]);
+    assert_eq!(report["action"], "manual");
+    assert_eq!(report["configPath"], "vite.config.mts");
+    assert!(
+        report["hints"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|hint| { hint.as_str().unwrap().contains("vize: { lib: { uiDir:") })
+    );
+    assert_eq!(project.read("vite.config.mts"), source);
+    assert!(!project.path("vize.config.json").exists());
+    assert!(!project.path("vite.config.mjs").exists());
 }
 
 #[test]

@@ -29,9 +29,61 @@ function createNuxt(rootDir: string) {
   };
 }
 
-void test("a missing vize config adds no project rules", async (t) => {
+void test("a project without configuration adds no project rules", async (t) => {
   const root = await temporaryRoot(t, "vize-nuxt-project-rules-missing-");
   assert.equal(await readProjectLintRules(root, unexpectedPreset), undefined);
+});
+
+void test("Vite shared lint settings work without a dedicated Vize config", async (t) => {
+  const root = await temporaryRoot(t, "vize-nuxt-project-rules-vite-");
+  await writeFile(
+    path.join(root, "vite.config.mjs"),
+    `
+    export default { vize: { linter: { preset: "essential", typeAware: true,
+      rules: { "vize/vue/require-v-for-key": "off" }
+    } } };
+  `,
+  );
+  const seen: Array<{ preset: VizeRuleConfigPreset; typeAware: boolean }> = [];
+  const rules = await readProjectLintRules(root, async (preset, typeAware) => {
+    seen.push({ preset, typeAware });
+    return { "vue/require-v-for-key": "error", "vue/no-array-index-key": "error" };
+  });
+  assert.deepEqual(seen, [{ preset: "essential", typeAware: true }]);
+  assert.deepEqual(rules, { "vue/require-v-for-key": "off", "vue/no-array-index-key": "error" });
+});
+
+void test("Nuxt reads nearest shared settings in a monorepo and preserves dedicated precedence", async (t) => {
+  const root = await temporaryRoot(t, "vize-nuxt-project-rules-monorepo-");
+  const app = path.join(root, "packages/app");
+  await mkdir(app, { recursive: true });
+  await writeFile(
+    path.join(root, "vite.config.mjs"),
+    `
+    export default { vize: { linter: { rules: { "vue/require-v-for-key": "error" } } } };
+  `,
+  );
+  assert.deepEqual(await readProjectLintRules(app, unexpectedPreset), {
+    "vue/require-v-for-key": "error",
+  });
+  await writeFile(
+    path.join(app, "vite.config.mjs"),
+    `
+    export default { vize: { linter: { rules: { "vue/require-v-for-key": "warn" } } } };
+  `,
+  );
+  assert.deepEqual(await readProjectLintRules(app, unexpectedPreset), {
+    "vue/require-v-for-key": "warn",
+  });
+  await writeFile(
+    path.join(app, "vize.config.json"),
+    JSON.stringify({
+      linter: { rules: { "vue/require-v-for-key": "off" } },
+    }),
+  );
+  assert.deepEqual(await readProjectLintRules(app, unexpectedPreset), {
+    "vue/require-v-for-key": "off",
+  });
 });
 
 void test("an essential preset is expanded and explicit rules win", async (t) => {

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "registryKind": "vize-lib",
+  "package": {
+    "name": "@vizejs/ui",
+    "version": "1.0.0"
+  },
+  "kind": "ui",
+  "filesDirectory": "files",
+  "defaultTargetDirectory": "src/components/vize",
+  "items": [
+    {
+      "name": "button",
+      "kind": "ui",
+      "title": "Button",
+      "description": "No dedicated config CLI fixture",
+      "aliases": [],
+      "packageSubpath": "./button",
+      "entry": "button.ts",
+      "files": [
+        {
+          "path": "button.ts",
+          "role": "module",
+          "sha256": "4dccadb6ee454a00bd5d2817fcdf543b38b51955cb7890bf1c11056afd332765",
+          "size": 28
+        }
+      ],
+      "registryDependencies": [],
+      "dependencies": [],
+      "contentHash": "a7609c62fef628a9db16b94a0d377841038b83ffb52160b0ac04c0d1426ddf5d"
+    }
+  ]
+}
