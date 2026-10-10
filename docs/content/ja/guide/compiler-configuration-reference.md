@@ -2,35 +2,38 @@
 title: コンパイラ設定リファレンス
 ---
 
+<!-- Reviewed translation; source: guide/compiler-configuration-reference.md -->
+
 # コンパイラ設定リファレンス
 
-統合ごとの設定場所は[設定ガイド](./configuration.md)を参照してください。
-単独設定の検索・スコープ・解析項目は[単独リファレンス](./configuration-reference.md)に記載しています。
+共通の設定ファイルの場所は[設定ガイド](./configuration.md)を参照してください。
+単独ファイルの検索、スコープ、解析の設定は[単独リファレンス](./configuration-reference.md)に記載しています。
 
-## コンパイラ オプション
+<span id="コンパイラ-オプション"></span>
 
-これらのオプションは `compiler` の下にあります。これらはスキーマでサポートされており、`defineConfig` を通じて共有されます。そうではない
-すべての統合はまだすべてのフィールドを消費します。
+## コンパイラオプション
 
-| オプション          | 値                                          | 共通用途                                                                |
-| ------------------- | ------------------------------------------- | ----------------------------------------------------------------------- |
-| `sourceMap`         | `boolean`                                   | Vite プラグインでソース マップを有効にする                              |
-| `ssr`               | `boolean`                                   | Vite の SSR ビルド フラグに依存しない場合の SSR 用のコンパイル          |
-| `vapor`             | `boolean`                                   | Vapor モードのコンパイルを有効にする                                    |
-| `jsxMode`           | `"vdom"` または `"vapor"`                   | `.jsx`/`.tsx` コンポーネントのデフォルトの出力バックエンド              |
-| `customRenderer`    | `boolean`                                   | 小文字の非 HTML タグをカスタム レンダラー要素として扱う                 |
-| `customElements`    | `string[]`                                  | カスタム要素としてコンパイルするタグパターン（TresJS は `Tres*`）       |
-| `templateSyntax`    | `"standard"`、`"strict"`、または `"quirks"` | テンプレート構文の警告、エラー、または Vue-quirk 処理を選択します。     |
-| `scriptExt`         | `"ts"` または `"js"`                        | npm build コマンドで TS 出力を保存するか、JS にダウンコンパイルします。 |
-| `mode`              | `"module"` または `"function"`              | 下位レベルのコンパイラ出力モード                                        |
-| `prefixIdentifiers` | `boolean`                                   | テンプレート識別子の先頭に `_ctx` を付けます。                          |
-| `hoistStatic`       | `boolean`                                   | 静的ノードのホイスティングを制御する                                    |
-| `cacheHandlers`     | `boolean`                                   | イベント ハンドラーのキャッシュを制御する                               |
-| `isTs`              | `boolean`                                   | スクリプト ブロックを TypeScript として解析する                         |
-| `runtimeModuleName` | `string`                                    | ランタイムインポートモジュールをオーバーライドする                      |
-| `runtimeGlobalName` | `string`                                    | 関数/IIFE スタイルの出力のランタイム グローバルをオーバーライドする     |
+以下は `defineConfig` の `compiler` に指定するオプションです。統合によっては、すべての項目を利用するわけではありません。
 
-Vite プロジェクトの場合、直接プラグイン オプションが共有設定をオーバーライドします。
+| オプション          | 値                                   | 主な用途                                                                         |
+| ------------------- | ------------------------------------ | -------------------------------------------------------------------------------- |
+| `sourceMap`         | `boolean`                            | Vite プラグインでソースマップを有効にする                                        |
+| `ssr`               | `boolean`                            | Vite の SSR ビルドフラグに依存せず、SSR 用にコンパイルする                       |
+| `vapor`             | `boolean`                            | Vapor モードのコンパイルを有効にする                                             |
+| `jsxMode`           | `"vdom"` または `"vapor"`            | `.jsx`/`.tsx` コンポーネントの既定の出力バックエンドを選ぶ                       |
+| `customRenderer`    | `boolean`                            | 小文字の非 HTML タグをカスタムレンダラーの要素として扱う                         |
+| `customElements`    | `string[]`                           | カスタム要素としてコンパイルするタグのパターンを指定する（TresJS では `Tres*`）  |
+| `templateSyntax`    | `"standard"`、`"strict"`、`"quirks"` | テンプレート構文に対して、警告、エラー、Vue の互換動作のいずれを使うか選ぶ       |
+| `scriptExt`         | `"ts"` または `"js"`                 | npm の build コマンドで TypeScript 出力を保持するか、JavaScript に変換するか選ぶ |
+| `mode`              | `"module"` または `"function"`       | 低レベルのコンパイラ出力モードを選ぶ                                             |
+| `prefixIdentifiers` | `boolean`                            | テンプレート内の識別子に `_ctx` を付ける                                         |
+| `hoistStatic`       | `boolean`                            | 静的ノードのホイスティングを制御する                                             |
+| `cacheHandlers`     | `boolean`                            | イベントハンドラーのキャッシュを制御する                                         |
+| `isTs`              | `boolean`                            | スクリプトブロックを TypeScript として解析する                                   |
+| `runtimeModuleName` | `string`                             | ランタイムのインポート元モジュールを上書きする                                   |
+| `runtimeGlobalName` | `string`                             | 関数形式または IIFE 形式の出力で使うランタイムのグローバル名を上書きする         |
+
+Vite プロジェクトでは、プラグインに直接指定したオプションが共通設定より優先されます。
 
 ```ts
 import { defineConfig } from "vite";
@@ -48,25 +51,25 @@ export default defineConfig({
 });
 ```
 
-Experimental Vue RFC と backend flag は top-level `experimentals` に置きます。flag 一覧、opt-in の値、
-alias、優先順位は [Experimentals](./experimentals.md) を参照してください。省略、`false`、`null` は無効です。
+実験的な Vue RFC とバックエンドのフラグは、最上位の `experimentals` に指定します。
+[実験機能](./experimentals.md)を参照してください。キーを省略した場合と、`false` または `null` を指定した場合は無効です。
 
 ## テンプレートの構文
 
-`compiler.templateSyntax` のデフォルトは `"standard"` です。
+`compiler.templateSyntax` の既定値は `"standard"` です。
 
-- `"standard"` は、回復可能な無効な構文を受け入れ、警告を発し、有効な出力に書き換えます。
-- `"strict"` は、無効な構文をコンパイル エラーとして報告します。
-- `"quirks"` は、追加の警告なしでテンプレート構文の互換性の問題を保持します。
+- `"standard"` は修復できる不正な構文を受け入れ、警告を出したうえで有効な出力に書き換えます。
+- `"strict"` は不正な構文をコンパイルエラーとして報告します。
+- `"quirks"` は追加の警告を出さず、Vue が許容するテンプレート構文の互換動作を維持します。
 
-既知のケースは次のとおりです。
+対象となる既知のケースは次のとおりです。
 
-- `v-for` のエイリアスに一致しない端括弧が含まれています。 Vue は先頭の `(` または末尾の `)` を削除します
-  `value`、`key`、および `index` を分割する前のエイリアスから。標準モードと厳密モードのレポート
-  これらのエイリアスは不正な形式ですが、quirk モードは Vue を反映します。
-- `<div />` や `<span />` など、自己終了構文で記述された非 void HTML 要素。
-  標準モードでは警告が発せられ、空の要素として書き換えられますが、厳密モードではエラーが発生し、互換モードでは保持されます。
-  それらは自己閉鎖葉として機能します。
+- `v-for` のエイリアスの先頭または末尾に、対応する括弧のない `(` または `)` がある場合。
+  Vue は `value`、`key`、`index` に分割する前に、その括弧を取り除きます。
+  standard と strict は不正なエイリアスとして報告し、quirks は Vue と同じ動作をします。
+- `<div />` や `<span />` のように、終了タグが必要な HTML 要素を自己終了構文で書いた場合。
+  standard は警告を出して空の要素に書き換え、strict はエラーにします。
+  quirks は自己終了する葉ノードとして保持します。
 
 ```text
 <template>
@@ -81,22 +84,21 @@ alias、優先順位は [Experimentals](./experimentals.md) を参照してく�
 </template>
 ```
 
-Vue のアップストリーム実装:
+Vue 本体の実装:
 
 - [`forAliasRE`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571)
-- [`stripParensRE` 中の `parseForExpression`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530)
+- [`parseForExpression` の `stripParensRE`](https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530)
 
-無効な場合の HTML 厳密モードの動作については、[トラブルシューティング](./troubleshooting.md) を参照してください。
-自己終了タグ。
+不正な自己終了タグに対する HTML の strict モードの動作は、[トラブルシューティング](./troubleshooting.md)を参照してください。
 
 ## JSX および TSX 出力モード
 
-> 完全なオーサリング API、スコープ付きスタイル、型チェック、エディターのサポート、制限事項については、
-> [JSX および TSX ガイド](./jsx.md)。このセクションでは、出力モードの構成キーのみを説明します。
+> コンポーネントの記述 API、スコープ付きスタイル、型チェック、エディター対応、制限事項は、
+> [JSX および TSX ガイド](./jsx.md)を参照してください。この節では、出力モードの設定項目を説明します。
 
-Vize は、`.jsx`/`.tsx` Vue コンポーネントを仮想 DOM またはいずれかにコンパイルします。
-[蒸気](https://blog.vuejs.org/posts/vue-vapor)出力。 `compiler.jsxMode` は**グローバルを選択します
-明示的にオプトインしないコンポーネントの場合はデフォルト**。デフォルトは `"vdom"` です。
+Vize は `.jsx`/`.tsx` の Vue コンポーネントを Virtual DOM または [Vapor](https://blog.vuejs.org/posts/vue-vapor) にコンパイルします。
+`compiler.jsxMode` は、コンポーネント自身が出力モードを指定していない場合の**共通の既定値**を選びます。
+既定値は `"vdom"` です。
 
 ```ts
 // vize.config.ts
@@ -110,14 +112,14 @@ export default defineConfig({
 });
 ```
 
-`jsxMode` は `compiler.vapor` から独立しています: `vapor` は `.vue` SFC の Vapor を切り替えますが、`jsxMode`
-JSX/TSX のデフォルトのバックエンドを制御します。プロジェクトは、JSX をデフォルトで使用しながら、SFC を VDOM 上に維持できます。
-蒸気、またはその逆。 Vite プラグインは、`jsxMode` をプラグイン オプションとして直接受け入れます。
-共有設定をオーバーライドします。
+`jsxMode` と `compiler.vapor` は独立した設定です。`vapor` は `.vue` SFC の Vapor 出力を切り替え、
+`jsxMode` は JSX/TSX の既定のバックエンドを選びます。
+SFC は VDOM のまま、JSX の既定値を Vapor にすることも、その逆も可能です。
+Vite プラグインに `jsxMode` を直接指定すると、共通設定を上書きできます。
 
 ### コンポーネントごとのディレクティブ
 
-個々のコンポーネントは、`"use strict"` をミラーリングするディレクティブ プロローグでデフォルトをオーバーライドします。
+`"use strict"` と同じように、コンポーネントの関数本体の先頭にディレクティブを書くと、既定値を上書きできます。
 
 ```tsx
 // Compiled to Vapor regardless of the configured default.
@@ -133,7 +135,7 @@ const Classic = () => {
 };
 ```
 
-各コンポーネントは独立してルーティングされるため、**単一のモジュールで両方のバックエンドを混在させることができます**。
+各コンポーネントの出力先は個別に決まるため、**同じモジュール内で両方のバックエンドを使えます**。
 
 ```tsx
 // vize.config: { compiler: { jsxMode: "vapor" } }
@@ -150,22 +152,22 @@ export const LegacyWidget = () => {
 
 ### 優先順位
 
-コンポーネントの出力モードは次の順序で解決されます。
+コンポーネントの出力モードは、次の順に決まります。
 
 1. コンポーネントごとの `"use vue:vapor"` / `"use vue:vdom"` ディレクティブ。
-2. 設定からの `compiler.jsxMode` のデフォルト (またはプラグインの `jsxMode` オプション)。
-3. 組み込みフォールバック、`"vdom"`。
+2. 共通設定の `compiler.jsxMode`、またはプラグインの `jsxMode` オプション。
+3. 組み込みの既定値である `"vdom"`。
 
 ### 診断
 
-`"use vue:"` で始まるが、既知のモードを指定していないディレクティブ (次のようなタイプミス)
-`"use vue:vdomx"`) は、サイレントに無視されるのではなくコンパイル エラーとして報告され、2 つの競合する
-1 つのコンポーネント内のモード ディレクティブ (`"use vue:vapor"` の後に `"use vue:vdom"`) も同様です。
-診断されました。 `"use strict"` などの無関係なプロローグはそのまま残されます。
+`"use vue:"` で始まるディレクティブで、`"use vue:vdomx"` のように未対応のモードを指定すると、
+コンパイルエラーとして報告されます。
+同じコンポーネントに `"use vue:vapor"` と `"use vue:vdom"` のような競合するディレクティブがある場合もエラーです。
+`"use strict"` などの無関係なディレクティブはそのまま保持されます。
 
 ## Vue の方言
 
-`dialect` は、スタンドアロン HTML ドキュメントの Vue 方言プロファイルを選択します (`.html`/`.htm`)。
+`dialect` は単独の HTML ドキュメント（`.html`/`.htm`）で使う Vue の方言を選びます。
 
 ```json
 {
@@ -173,12 +175,11 @@ export const LegacyWidget = () => {
 }
 ```
 
-- `"vue"` は、スタンドアロン HTML ドキュメントをプレーンな Vue-from-CDN ドキュメントとして扱います。
-- `"petite-vue"` は、スタンドアロン HTML ドキュメントを
-  [プチビュー](https://github.com/vuejs/petite-vue) 方言 (`v-scope`/`v-effect`)
-  補完機能と petite-vue 対応 IDE 機能)。
+- `"vue"` は単独の HTML ドキュメントを、CDN から Vue を読み込む通常の Vue ドキュメントとして扱います。
+- `"petite-vue"` は [petite-vue](https://github.com/vuejs/petite-vue) の方言を選び、
+  `v-scope` / `v-effect` の補完と petite-vue に対応した IDE 機能を有効にします。
 
-キーが存在しない場合、方言はドキュメントごとに構造的に検出されます: `<script src>`
-petite-vue パッケージ、`petite-vue` のインライン ES インポート、または `PetiteVue.createApp` に解決します。
-電話する。コメントや散文での petite-vue の言及は方言を切り替えることはなく、単一ファイルで行われます。
-コンポーネントは常に標準の Vue 言語を使用します。
+キーを省略した場合は、ドキュメントの構造から自動判定します。
+petite-vue パッケージを指す `<script src>`、`petite-vue` のインライン ES インポート、
+または `PetiteVue.createApp` の呼び出しが判定の対象です。
+コメントや本文に petite-vue と書くだけでは方言は切り替わりません。SFC は常に標準の Vue の方言を使います。

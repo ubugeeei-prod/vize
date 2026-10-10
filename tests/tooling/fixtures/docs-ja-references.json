@@ -1,0 +1,67 @@
+{
+  "base": "0af8ed716b77611aff8035385328bc0da181de77",
+  "pages": [
+    {
+      "file": "docs/content/ja/guide/compiler-configuration-reference.md",
+      "headings": [
+        "コンパイラ設定リファレンス",
+        "コンパイラ-オプション",
+        "テンプレートの構文",
+        "jsx-および-tsx-出力モード",
+        "コンポーネントごとのディレクティブ",
+        "優先順位",
+        "診断",
+        "vue-の方言"
+      ],
+      "code": [
+        "import { defineConfig } from \"vite\";\nimport vize from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  plugins: [\n    vize({\n      vapor: true,\n      sourceMap: true,\n      customRenderer: true,\n      templateSyntax: \"standard\",\n    }),\n  ],\n});",
+        "<template>\n  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->\n  <div v-for=\"(item in items\">{{ item }}</div>\n\n  <!-- Standard/strict reject this. Quirk mode compiles it as `item in items`. -->\n  <div v-for=\"item) in items\">{{ item }}</div>\n\n  <!-- Standard warns and rewrites this as `<div></div>`. Strict errors. Quirk keeps it as a leaf. -->\n  <div />\n</template>",
+        "// vize.config.ts\nimport { defineConfig } from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  compiler: {\n    // Default every .jsx/.tsx component to Vapor output.\n    jsxMode: \"vapor\",\n  },\n});",
+        "// Compiled to Vapor regardless of the configured default.\nconst Fast = () => {\n  \"use vue:vapor\";\n  return <div class=\"fast\" />;\n};\n\n// Compiled to Virtual DOM regardless of the configured default.\nconst Classic = () => {\n  \"use vue:vdom\";\n  return <div class=\"classic\" />;\n};",
+        "// vize.config: { compiler: { jsxMode: \"vapor\" } }\n\n// No directive -> takes the configured default (Vapor here).\nexport const Dashboard = () => <main>{/* ... */}</main>;\n\n// Opts back into Virtual DOM just for this component.\nexport const LegacyWidget = () => {\n  \"use vue:vdom\";\n  return <aside>{/* ... */}</aside>;\n};",
+        "{\n  \"dialect\": \"petite-vue\"\n}"
+      ],
+      "links": [
+        "./configuration.md",
+        "./configuration-reference.md",
+        "./experimentals.md",
+        "https://github.com/vuejs/core/blob/main/packages/compiler-core/src/utils.ts#L571",
+        "https://github.com/vuejs/core/blob/main/packages/compiler-core/src/parser.ts#L493-L530",
+        "./troubleshooting.md",
+        "./jsx.md",
+        "https://blog.vuejs.org/posts/vue-vapor",
+        "https://github.com/vuejs/petite-vue"
+      ]
+    },
+    {
+      "file": "docs/content/ja/guide/experimentals-reference.md",
+      "headings": [
+        "experimentals-reference",
+        "entry-points",
+        "flag-contracts",
+        "direct-api-fields",
+        "config-recipes",
+        "failure-examples",
+        "slot-cardinality",
+        "implementation-coverage",
+        "release-safety-checklist"
+      ],
+      "code": [
+        "import {\n  compile,\n  compileSfc,\n  compileSfcBatchWithResults,\n  compileVapor,\n  parseTemplate,\n} from \"@vizejs/native\";\n\ncompile(templateSource, {\n  experimentalInTagComments: true,\n  experimentalPatternedTemplate: true,\n  experimentalSelfComponent: true,\n  experimentalServerScript: true,\n  componentName: \"TreeNode\",\n});\n\ncompileVapor(templateSource, {\n  experimentalInTagComments: true,\n  experimentalPatternedTemplate: true,\n  experimentalSelfComponent: true,\n  componentName: \"TreeNode\",\n});\n\nparseTemplate(templateSource, {\n  experimentalInTagComments: true,\n});\n\ncompileSfc(sfcSource, {\n  filename: \"TreeNode.vue\",\n  experimentalInTagComments: true,\n  experimentalPatternedTemplate: true,\n  experimentalSelfComponent: true,\n  experimentalStrictSlotChildren: true,\n  experimentalServerScript: true,\n});\n\ncompileSfcBatchWithResults(files, {\n  experimentalInTagComments: true,\n  experimentalPatternedTemplate: true,\n  experimentalSelfComponent: true,\n  experimentalStrictSlotChildren: true,\n  experimentalServerScript: true,\n});",
+        "import { defineConfig } from \"vize\";\n\nexport default defineConfig({\n  experimentals: {\n    inTagComment: true,\n  },\n});",
+        "import { defineConfig } from \"vite\";\nimport vize from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  plugins: [\n    vize({\n      experimentals: {\n        inTagComment: false,\n        patternedTemplate: null,\n      },\n    }),\n  ],\n});",
+        "compile(templateSource, {\n  experimentalInTagComments: resolvedExperimentals.inTagComments,\n  experimentalPatternedTemplate: resolvedExperimentals.patternedTemplate,\n});",
+        "<template v-match=\"status\"></template>\n\n<template v-match=\"status\">\n  <p v-when:ready=\"'ready'\">Ready</p>\n  <p v-when.once=\"'ready'\">Ready again</p>\n</template>",
+        "<template>\n  <LegacySelect :label=\"'// this is an attribute value, not an in-tag comment'\" />\n\n  <LegacySelect\n    :// not a directive argument comment\n    selected-id=\"abc\"\n  />\n</template>"
+      ],
+      "links": [
+        "./experimentals.md",
+        "./experimentals-vue-rfcs.md",
+        "https://github.com/vuejs/rfcs/pull/823",
+        "https://github.com/vuejs/rfcs/pull/833",
+        "https://github.com/vuejs/rfcs/pull/734",
+        "https://github.com/vuejs/rfcs/pull/831"
+      ]
+    }
+  ]
+}
