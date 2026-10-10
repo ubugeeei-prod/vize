@@ -37,7 +37,7 @@ impl MaestroServer {
         &self,
         params: DocumentHighlightParams,
     ) -> Result<Vec<DocumentHighlight>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
         server
             .navigation
@@ -52,7 +52,7 @@ impl MaestroServer {
         &self,
         params: DocumentHighlightParams,
     ) -> Result<Vec<DocumentHighlight>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
         server
             .navigation
@@ -66,7 +66,7 @@ impl MaestroServer {
         &self,
         params: GotoDefinitionParams,
     ) -> Result<Vec<Location>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
         server
             .navigation
@@ -81,7 +81,7 @@ impl MaestroServer {
         &self,
         params: ReferenceParams,
     ) -> Result<Vec<Location>> {
-        let server = self.for_document(&params.text_document_position.text_document.uri);
+        let server = self.for_pos(&params.text_document_position).await;
         let request = params.text_document_position;
         server
             .navigation
@@ -106,7 +106,7 @@ impl MaestroServer {
         &self,
         params: GotoDefinitionParams,
     ) -> Result<Option<Location>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         let request = params.text_document_position_params;
         server
             .navigation
@@ -118,7 +118,7 @@ impl MaestroServer {
     }
 
     pub(super) async fn native_references(&self, params: ReferenceParams) -> Result<Vec<Location>> {
-        let server = self.for_document(&params.text_document_position.text_document.uri);
+        let server = self.for_pos(&params.text_document_position).await;
         let request = params.text_document_position;
         server
             .navigation

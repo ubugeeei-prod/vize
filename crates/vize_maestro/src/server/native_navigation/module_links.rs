@@ -11,7 +11,7 @@ impl MaestroServer {
         &self,
         params: DocumentLinkParams,
     ) -> Result<Vec<DocumentLink>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         server
             .navigation
             .as_ref()

@@ -69,51 +69,54 @@ impl ServerState {
             return owner.document_project_state(uri).or(Some(owner));
         }
         loop {
-            let root = match self.project_contexts.routes.get(uri) {
-                Some(root) => {
-                    let cached = self
-                        .project_contexts
-                        .contexts
-                        .lock()
-                        .get(root.value())
-                        .cloned();
-                    if let Some(context) = cached {
-                        drop(root);
-                        if let Some(state) = context.initialize(self) {
-                            return Some(state);
-                        }
-                        continue;
-                    }
-                    if self.is_primary_boundary(&root) {
-                        return None;
-                    }
-                    root.clone()
-                }
-                None => {
-                    let path = uri.to_file_path().ok()?;
-                    let root = self.document_context_root(&path)?;
-                    self.project_contexts
-                        .routes
-                        .insert(uri.clone(), root.clone());
-                    root
-                }
-            };
-            let context = {
-                let mut contexts = self.project_contexts.contexts.lock();
-                if !contexts.contains_key(&root) && self.is_primary_boundary(&root) {
-                    return None;
-                }
-                contexts
-                    .entry(root.clone())
-                    .or_insert_with(|| Arc::new(registry::ProjectContext::new(root)))
-                    .clone()
-            };
-            // Node evaluation and virtual source warmup hold only this package's
-            // initialization cell, never the global registry mutex.
+            let context = self.document_project_context(uri)?;
             if let Some(state) = context.initialize(self) {
                 return Some(state);
             }
         }
+    }
+
+    fn document_project_context(&self, uri: &Url) -> Option<Arc<registry::ProjectContext>> {
+        if self.project_contexts.shutting_down.load(Ordering::Acquire) {
+            return None;
+        }
+        let root = match self.project_contexts.routes.get(uri) {
+            Some(root) => {
+                let cached = self
+                    .project_contexts
+                    .contexts
+                    .lock()
+                    .get(root.value())
+                    .cloned();
+                if let Some(context) = cached {
+                    drop(root);
+                    return Some(context);
+                }
+                if self.is_primary_boundary(&root) {
+                    return None;
+                }
+                root.clone()
+            }
+            None => {
+                let path = uri.to_file_path().ok()?;
+                let root = self.document_context_root(&path)?;
+                self.project_contexts
+                    .routes
+                    .insert(uri.clone(), root.clone());
+                root
+            }
+        };
+        let context = {
+            let mut contexts = self.project_contexts.contexts.lock();
+            if !contexts.contains_key(&root) && self.is_primary_boundary(&root) {
+                return None;
+            }
+            contexts
+                .entry(root.clone())
+                .or_insert_with(|| Arc::new(registry::ProjectContext::new(root)))
+                .clone()
+        };
+        Some(context)
     }
 
     fn is_primary_boundary(&self, root: &Path) -> bool {
@@ -172,7 +175,7 @@ impl ServerState {
         states.push(self.clone());
         let mut dependents = states
             .iter()
-            .filter(|state| !state.project_context_retired() && state.is_lsp_typecheck_enabled())
+            .filter(|state| !state.project_context_retired())
             .flat_map(|state| super::super::importers::open_typecheck_dependents(state, uri))
             .collect::<Vec<_>>();
         dependents.sort();
@@ -296,9 +299,13 @@ fn is_config_marker(path: &Path) -> bool {
         })
 }
 
+#[cfg(test)]
+mod async_tests;
+mod asynchronous;
 mod capabilities;
 mod current;
 mod paths;
+mod pool;
 mod registry;
 #[cfg(test)]
 mod tests;

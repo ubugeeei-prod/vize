@@ -207,6 +207,8 @@ fn explicit_initialization_flags_win_over_each_nested_project() {
     finish(lsp);
 }
 
+#[path = "nested_lsp/executor.rs"]
+mod executor;
 #[path = "nested_lsp/format_oracle.rs"]
 mod format_oracle;
 #[path = "nested_lsp/ignores.rs"]

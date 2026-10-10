@@ -11,13 +11,14 @@ use tower_lsp::{
     jsonrpc::{Error, Result},
     lsp_types::{DocumentChangeOperation, DocumentChanges, RenameFilesParams, Url, WorkspaceEdit},
 };
+use vize_l0::FxHashSet;
 
 impl FileRenameService {
     pub(crate) async fn will_rename_project_files(
         owner: &Arc<ServerState>,
         params: &RenameFilesParams,
     ) -> Result<Option<WorkspaceEdit>> {
-        let mut states = owner.current_project_states();
+        let mut states = owner.current_project_states_async().await;
         states.sort_by_key(|state| state.get_workspace_root());
         let native = futures::future::try_join_all(states.into_iter().map(|state| async move {
             if !state.lsp_features().file_rename {
@@ -29,7 +30,7 @@ impl FileRenameService {
                 return Err(Error::content_modified());
             }
             if let Some(native) = &mut native {
-                retain_owned_edits(native, |uri| owns_uri(owner, &state, uri));
+                retain_project_owned_edits(owner, &state, native).await;
             }
             Ok(native)
         }))
@@ -38,7 +39,13 @@ impl FileRenameService {
         for native in native {
             edit = merge_workspace_edits(edit, native);
         }
-        let manual = manual::collect_project_import_rename_edits(owner, &params.files);
+        let worker_owner = owner.clone();
+        let files = params.files.clone();
+        let manual = ServerState::project_background(move || {
+            manual::collect_project_import_rename_edits(&worker_owner, &files)
+        })
+        .await
+        .ok_or_else(Error::internal_error)?;
         let mut edit = merge_workspace_edits(edit, manual);
         if let Some(edit) = &mut edit {
             deduplicate::edits(edit);
@@ -54,11 +61,27 @@ impl FileRenameService {
     }
 }
 
-fn owns_uri(owner: &Arc<ServerState>, state: &Arc<ServerState>, uri: &Url) -> bool {
-    let current = owner
-        .document_project_state(uri)
-        .unwrap_or_else(|| owner.current_primary_project_state());
-    current.lsp_features().file_rename && Arc::ptr_eq(&current, state)
+async fn retain_project_owned_edits(
+    owner: &Arc<ServerState>,
+    state: &Arc<ServerState>,
+    edit: &mut WorkspaceEdit,
+) {
+    let mut targets = FxHashSet::default();
+    retain_owned_edits(edit, |uri| {
+        targets.insert(uri.clone());
+        true
+    });
+    let mut owned = FxHashSet::default();
+    for uri in targets {
+        let current = match owner.document_project_state_async(&uri).await {
+            Some(current) => current,
+            None => owner.current_primary_project_state_async().await,
+        };
+        if current.lsp_features().file_rename && Arc::ptr_eq(&current, state) {
+            owned.insert(uri);
+        }
+    }
+    retain_owned_edits(edit, |uri| owned.contains(uri));
 }
 
 fn retain_owned_edits(edit: &mut WorkspaceEdit, mut owns: impl FnMut(&Url) -> bool) {

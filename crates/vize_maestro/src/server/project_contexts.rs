@@ -8,7 +8,7 @@
 )]
 
 use std::ops::Deref;
-use tower_lsp::lsp_types::Url;
+use tower_lsp::lsp_types::{TextDocumentPositionParams, Url};
 
 use super::MaestroServer;
 
@@ -38,6 +38,12 @@ impl Deref for DocumentServer<'_> {
 }
 
 impl MaestroServer {
+    pub(super) async fn for_pos(
+        &self,
+        position: &TextDocumentPositionParams,
+    ) -> DocumentServer<'_> {
+        self.for_document(&position.text_document.uri).await
+    }
     #[cfg(feature = "native")]
     pub(super) fn with_project_state(&self, state: std::sync::Arc<super::ServerState>) -> Self {
         Self {
@@ -55,9 +61,9 @@ impl MaestroServer {
         }
     }
 
-    pub(super) fn for_document(&self, uri: &Url) -> DocumentServer<'_> {
+    pub(super) async fn for_document(&self, uri: &Url) -> DocumentServer<'_> {
         #[cfg(feature = "native")]
-        if let Some(state) = self.state.document_project_state(uri) {
+        if let Some(state) = self.state.document_project_state_async(uri).await {
             return DocumentServer::Project(self.with_project_state(state));
         }
         #[cfg(not(feature = "native"))]

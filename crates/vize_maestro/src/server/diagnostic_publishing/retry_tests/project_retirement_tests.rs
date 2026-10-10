@@ -40,7 +40,7 @@ fn retired_unstamped_lint_and_empty_packets_cannot_publish_or_update_hover_cache
             typ: FileChangeType::CHANGED,
         }]);
         assert!(affected.contains(&(fixture.app.clone(), 2)));
-        let fresh = old.for_document(&fixture.app);
+        let fresh = futures::executor::block_on(old.for_document(&fixture.app));
         assert!(!fresh.state.project_context_retired());
         let observed = diagnostics(drain(
             &mut fixture.socket,

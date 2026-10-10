@@ -18,7 +18,7 @@ impl MaestroServer {
         &self,
         params: DocumentHighlightParams,
     ) -> Result<Option<Vec<DocumentHighlight>>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         if !server.state.lsp_features().references {
             return Ok(None);
         }
@@ -42,7 +42,7 @@ impl MaestroServer {
         &self,
         params: DocumentSymbolParams,
     ) -> Result<Option<DocumentSymbolResponse>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         if !server.state.lsp_features().document_symbols {
             return Ok(None);
         }
@@ -56,7 +56,7 @@ impl MaestroServer {
         &self,
         params: SemanticTokensParams,
     ) -> Result<Option<SemanticTokensResult>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         Ok(super::super::semantic_tokens::full(&server.state, &params))
     }
 
@@ -64,7 +64,7 @@ impl MaestroServer {
         &self,
         params: SemanticTokensRangeParams,
     ) -> Result<Option<SemanticTokensRangeResult>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         Ok(super::super::semantic_tokens::range(&server.state, &params))
     }
 
@@ -72,7 +72,7 @@ impl MaestroServer {
         &self,
         params: CodeLensParams,
     ) -> Result<Option<Vec<CodeLens>>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         if !server.state.lsp_features().code_lens {
             return Ok(None);
         }
@@ -83,7 +83,7 @@ impl MaestroServer {
         &self,
         params: DocumentLinkParams,
     ) -> Result<Option<Vec<DocumentLink>>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         if !server.state.lsp_features().document_links {
             return Ok(None);
         }
@@ -106,7 +106,7 @@ impl MaestroServer {
         &self,
         params: DocumentColorParams,
     ) -> Result<Vec<ColorInformation>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         if !server.state.lsp_features().document_links {
             return Ok(Vec::new());
         }
@@ -120,7 +120,7 @@ impl MaestroServer {
         &self,
         params: ColorPresentationParams,
     ) -> Result<Vec<ColorPresentation>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         if !server.state.lsp_features().document_links {
             return Ok(Vec::new());
         }
@@ -131,7 +131,7 @@ impl MaestroServer {
         &self,
         params: FoldingRangeParams,
     ) -> Result<Option<Vec<FoldingRange>>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         if !server.state.lsp_features().folding_ranges {
             return Ok(None);
         }
@@ -145,7 +145,7 @@ impl MaestroServer {
         &self,
         params: SelectionRangeParams,
     ) -> Result<Option<Vec<SelectionRange>>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         if !server.state.lsp_features().folding_ranges {
             return Ok(None);
         }

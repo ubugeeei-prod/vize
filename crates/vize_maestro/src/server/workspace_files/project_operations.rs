@@ -7,7 +7,7 @@ use super::{
 };
 
 pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFilesParams) {
-    let states = server.state.current_project_states();
+    let states = server.state.current_project_states_async().await;
     let mut dependents = Vec::new();
     // The registered workspace inventory is a shared lightweight controller;
     // it remains valid across primary runtime retirement.
@@ -29,7 +29,7 @@ pub(super) async fn did_create_files(server: &MaestroServer, params: &CreateFile
 }
 
 pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFilesParams) {
-    let states = server.state.current_project_states();
+    let states = server.state.current_project_states_async().await;
     let mut dependents = Vec::new();
     for state in states {
         let mut affected = versioned_open_typecheck_dependents(
@@ -51,7 +51,8 @@ pub(super) async fn did_delete_files(server: &MaestroServer, params: &DeleteFile
 }
 
 pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFilesParams) {
-    let states = server.state.current_project_states();
+    let renamed = FileRenameService::did_rename_project_files(&server.state, params);
+    let states = server.state.current_project_states_async().await;
     let mut dependents = Vec::new();
     for state in states {
         dependents.extend(versioned_open_typecheck_dependents(
@@ -70,17 +71,17 @@ pub(super) async fn did_rename_files(server: &MaestroServer, params: &RenameFile
         invalidate_corsa_disk_state(&state);
     }
     record_renames(&server.state, params);
-    let renamed = FileRenameService::did_rename_project_files(&server.state, params);
     dependents.sort();
     dependents.dedup();
     publish_versioned_dependents(server, dependents).await;
     for (old, new) in renamed {
         server.client.publish_diagnostics(old, vec![], None).await;
         if let Some(version) = server.state.documents.version(&new) {
-            server
-                .for_document(&new)
-                .publish_diagnostics_if_version(&new, version)
-                .await;
+            let current = server.for_document(&new).await;
+            if let Some(source) = server.state.documents.text(&new) {
+                current.state.update_virtual_docs(&new, &source);
+            }
+            current.publish_diagnostics_if_version(&new, version).await;
         }
     }
 }

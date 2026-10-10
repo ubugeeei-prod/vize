@@ -19,6 +19,7 @@ impl MaestroServer {
                 continue;
             };
             self.for_document(&uri)
+                .await
                 .publish_diagnostics_if_version(&uri, version)
                 .await;
         }

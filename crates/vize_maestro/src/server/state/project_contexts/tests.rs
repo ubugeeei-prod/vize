@@ -3,7 +3,7 @@ use super::*;
 use tower_lsp::lsp_types::{FileChangeType, FileEvent};
 use vize_l0::cstr;
 
-fn fixture() -> (tempfile::TempDir, Arc<ServerState>, Url, Url) {
+pub(super) fn fixture() -> (tempfile::TempDir, Arc<ServerState>, Url, Url) {
     let fixture = tempfile::tempdir().unwrap();
     let root = fixture.path();
     std::fs::write(

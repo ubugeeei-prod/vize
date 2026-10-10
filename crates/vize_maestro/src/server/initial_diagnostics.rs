@@ -220,8 +220,12 @@ fn run_worker(
             // non-empty feedback before the delayed native type pass.
             let sync_job = { pending.lock().take_sync() };
             if let Some((uri, version)) = sync_job {
-                let project = worker.for_document(&uri);
-                crate::runtime::block_on(project.publish_initial_sync_diagnostics(&uri, version));
+                crate::runtime::block_on(async {
+                    let project = worker.for_document(&uri).await;
+                    project
+                        .publish_initial_sync_diagnostics(&uri, version)
+                        .await;
+                });
                 continue;
             }
             let Some(not_before) = pending.lock().next_not_before() else {
@@ -244,7 +248,7 @@ fn run_worker(
                 job.version
             );
             crate::runtime::block_on(async {
-                let project = worker.for_document(&uri);
+                let project = worker.for_document(&uri).await;
                 project
                     .publish_diagnostics_if_version(&uri, job.version)
                     .await;

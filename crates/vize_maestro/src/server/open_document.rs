@@ -14,6 +14,17 @@ impl MaestroServer {
         self.state
             .documents
             .open(uri.clone(), content.clone(), version, language_id);
+        let project = self.for_document(&uri).await;
+        project.finish_open_document(uri, version).await;
+    }
+
+    async fn finish_open_document(&self, uri: tower_lsp::lsp_types::Url, version: i32) {
+        if self.state.documents.version(&uri) != Some(version) {
+            return;
+        }
+        let Some(content) = self.state.documents.text(&uri) else {
+            return;
+        };
         #[cfg(feature = "experimental-source-navigation")]
         self.notify_native_navigation(&uri);
         self.state.update_virtual_docs(&uri, &content);
@@ -34,7 +45,16 @@ impl MaestroServer {
 
     pub(super) async fn close_document(&self, params: DidCloseTextDocumentParams) {
         let uri = params.text_document.uri;
-        self.state.close_document(&uri);
+        self.state.documents.close(&uri);
+        let project = self.for_document(&uri).await;
+        project.finish_close_document(uri).await;
+    }
+
+    async fn finish_close_document(&self, uri: tower_lsp::lsp_types::Url) {
+        if self.state.documents.contains(&uri) {
+            return;
+        }
+        self.state.forget_closed_document(&uri);
         #[cfg(feature = "experimental-source-navigation")]
         self.notify_native_navigation(&uri);
 

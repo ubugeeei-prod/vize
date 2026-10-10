@@ -227,8 +227,13 @@ pub struct ServerState {
 
 impl ServerState {
     /// Close a document and release any cached Corsa overlay immediately.
+    #[cfg(test)]
     pub(crate) fn close_document(&self, uri: &Url) {
         self.documents.close(uri);
+        self.forget_closed_document(uri);
+    }
+
+    pub(crate) fn forget_closed_document(&self, uri: &Url) {
         self.lint_hover_cache.remove(uri);
         self.resident.close_document(uri);
         #[cfg(feature = "native")]

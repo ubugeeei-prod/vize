@@ -28,7 +28,7 @@ struct AutoInsertChange {
 
 impl MaestroServer {
     pub(super) async fn auto_insert(&self, params: AutoInsertParams) -> Result<Option<String>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         server
             .native_request(async {
                 if !server.state.lsp_features().auto_insert || params.change.range_length != 0 {

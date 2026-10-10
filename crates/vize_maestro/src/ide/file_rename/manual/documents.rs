@@ -13,16 +13,14 @@ pub(in crate::ide::file_rename) fn rename_project_open_documents(
         let Some(new) = apply_all_uri_renames(&old, &targets).filter(|new| *new != old) else {
             continue;
         };
-        let previous = owner
-            .document_project_state(&old)
-            .unwrap_or_else(|| owner.current_primary_project_state());
-        if previous.rename_document(&old, new.clone()) {
-            previous.remove_virtual_docs(&old);
-            let current = owner
-                .document_project_state(&new)
-                .unwrap_or_else(|| owner.current_primary_project_state());
-            if let Some(source) = owner.documents.text(&new) {
-                current.update_virtual_docs(&new, &source);
+        if owner.rename_document(&old, new.clone()) {
+            // Move the shared buffer before any destination config can await.
+            // Old owners need cleanup, never a new config evaluation.
+            let mut states = owner.cached_project_states();
+            states.push(owner.clone());
+            for state in states {
+                state.forget_closed_document(&old);
+                state.remove_virtual_docs(&old);
             }
             renamed.push((old, new));
         }

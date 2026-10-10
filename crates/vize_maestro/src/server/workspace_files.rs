@@ -221,6 +221,7 @@ async fn publish_versioned_dependents(
     for (dependent, version) in dependents {
         server
             .for_document(&dependent)
+            .await
             .publish_diagnostics_if_version(&dependent, version)
             .await;
     }

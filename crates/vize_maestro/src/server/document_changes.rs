@@ -17,6 +17,14 @@ impl MaestroServer {
         if !self.state.documents.apply_changes(uri, changes, version) {
             return;
         }
+        let project = self.for_document(uri).await;
+        project.publish_changed_document(uri, version).await;
+    }
+
+    async fn publish_changed_document(&self, uri: &Url, version: i32) {
+        if self.state.documents.version(uri) != Some(version) {
+            return;
+        }
         #[cfg(feature = "experimental-source-navigation")]
         self.notify_native_navigation(uri);
 
@@ -67,5 +75,4 @@ impl MaestroServer {
             version
         );
     }
-
 }

@@ -105,6 +105,7 @@ impl ServerState {
         }
     }
 
+    #[cfg(test)]
     pub(crate) fn current_project_states(self: &Arc<Self>) -> Vec<Arc<Self>> {
         if let Some(owner) = self
             .project_contexts

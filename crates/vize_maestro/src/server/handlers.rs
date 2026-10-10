@@ -107,37 +107,33 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn did_open(&self, params: DidOpenTextDocumentParams) {
-        let server = self.for_document(&params.text_document.uri);
-        server.open_document(params).await;
+        self.open_document(params).await;
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
-        let server = self.for_document(&params.text_document.uri);
         let uri = params.text_document.uri;
         let version = params.text_document.version;
-        server
-            .apply_document_changes(&uri, params.content_changes, version)
+        self.apply_document_changes(&uri, params.content_changes, version)
             .await;
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         let uri = params.text_document.uri;
         server.publish_saved_diagnostics(&uri).await;
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
-        let server = self.for_document(&params.text_document.uri);
-        server.close_document(params).await;
+        self.close_document(params).await;
     }
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         server.native_request(server.hover_request(params)).await
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
-        let server = self.for_document(&params.text_document_position.text_document.uri);
+        let server = self.for_pos(&params.text_document_position).await;
         server
             .native_request(server.completion_request(params))
             .await
@@ -151,7 +147,10 @@ impl LanguageServer for MaestroServer {
             .and_then(|data| data.get("uri"))
             .and_then(serde_json::Value::as_str)
             .and_then(|uri| tower_lsp::lsp_types::Url::parse(uri).ok());
-        let server = uri.as_ref().map(|uri| self.for_document(uri));
+        let server = match &uri {
+            Some(uri) => Some(self.for_document(uri).await),
+            None => None,
+        };
         let server = server.as_deref().unwrap_or(self);
         server
             .native_request(async {
@@ -163,63 +162,63 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn signature_help(&self, params: SigHelpParams) -> Result<Option<SigHelp>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         server
             .native_request(async { signature_help::signature_help(&server, params).await })
             .await
     }
 
     async fn goto_definition(&self, params: DefParams) -> Result<Option<DefResponse>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         server
             .native_request(async { navigation::goto_definition(&server, params).await })
             .await
     }
 
     async fn goto_type_definition(&self, params: TypeDefParams) -> Result<Option<TypeDefResponse>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         server
             .native_request(async { navigation::goto_type_definition(&server, params).await })
             .await
     }
 
     async fn goto_declaration(&self, params: DeclParams) -> Result<Option<DeclResponse>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         server
             .native_request(async { navigation::goto_declaration(&server, params).await })
             .await
     }
 
     async fn goto_implementation(&self, params: ImplParams) -> Result<Option<ImplResponse>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         server
             .native_request(async { navigation::goto_implementation(&server, params).await })
             .await
     }
 
     async fn prepare_call_hierarchy(&self, params: CHPrepareParams) -> Result<Option<CHItems>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         server
             .native_request(async { call_hierarchy::prepare(&server, params).await })
             .await
     }
 
     async fn incoming_calls(&self, params: CHIncomingParams) -> Result<Option<CHIncomingResponse>> {
-        let server = self.for_document(&params.item.uri);
+        let server = self.for_document(&params.item.uri).await;
         server
             .native_request(async { call_hierarchy::incoming(&server, params).await })
             .await
     }
 
     async fn outgoing_calls(&self, params: CHOutgoingParams) -> Result<Option<CHOutgoingResponse>> {
-        let server = self.for_document(&params.item.uri);
+        let server = self.for_document(&params.item.uri).await;
         server
             .native_request(async { call_hierarchy::outgoing(&server, params).await })
             .await
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
-        let server = self.for_document(&params.text_document_position.text_document.uri);
+        let server = self.for_pos(&params.text_document_position).await;
         server
             .native_request(async { references::references(&server, params).await })
             .await
@@ -240,7 +239,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         server
             .native_request(async { Ok(super::code_actions::code_actions(&server, &params).await) })
             .await
@@ -250,14 +249,14 @@ impl LanguageServer for MaestroServer {
         &self,
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         server
             .native_request(server.prepare_rename_request(params))
             .await
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
-        let server = self.for_document(&params.text_document_position.text_document.uri);
+        let server = self.for_pos(&params.text_document_position).await;
         server.native_request(server.rename_request(params)).await
     }
 
@@ -311,7 +310,7 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         server
             .native_request(server.inlay_hint_request(params))
             .await
@@ -354,12 +353,12 @@ impl LanguageServer for MaestroServer {
         &self,
         params: LinkedEditingRangeParams,
     ) -> Result<Option<LinkedEditingRanges>> {
-        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        let server = self.for_pos(&params.text_document_position_params).await;
         linked_editing::linked_editing_range(&server, params).await
     }
 
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         formatting::formatting(&server, params).await
     }
 
@@ -369,7 +368,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentRangeFormattingParams,
     ) -> Result<Option<Vec<TextEdit>>> {
-        let server = self.for_document(&params.text_document.uri);
+        let server = self.for_document(&params.text_document.uri).await;
         formatting::range_formatting(&server, params).await
     }
 
@@ -379,7 +378,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentOnTypeFormattingParams,
     ) -> Result<Option<Vec<TextEdit>>> {
-        let server = self.for_document(&params.text_document_position.text_document.uri);
+        let server = self.for_pos(&params.text_document_position).await;
         formatting::on_type_formatting(&server, params).await
     }
 }

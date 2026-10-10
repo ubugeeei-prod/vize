@@ -68,6 +68,7 @@ impl MaestroServer {
             }
             tracing::info!("refreshing importer {} for {}", importer, uri);
             self.for_document(&importer)
+                .await
                 .publish_diagnostics(&importer)
                 .await;
             tracing::info!("refreshed importer {} for {}", importer, uri);

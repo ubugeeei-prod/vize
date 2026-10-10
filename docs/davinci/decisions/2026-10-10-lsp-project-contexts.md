@@ -93,9 +93,38 @@ requiring complete TS2322, TS2307, and clean notifications at the retained URI
 and version. Unit controls cover lazy primary replacement, global filtering
 before the result limit, and request refusal during and across routing mutation.
 
-Synchronous lazy config evaluation still needs a genuine transport control for
-a slow cold package alongside a warm unrelated request. Package-local locking
-proves registry isolation; it alone does not prove executor freedom.
+Foreground dispatch awaits one shared initialization future per boundary and
+generation. Two lazily started process-wide config workers consume a bounded
+async queue; no document creates its own thread. Warm contexts reuse their
+initialized state immediately. Config evaluation and virtual-source warmup
+remain one operation. Workspace symbol collection retains its existing worker;
+manual rename scanning uses the bounded config workers.
+Existing synchronous bulk traversal workers retain package-local once cells;
+the queue limit counts submitted jobs, not their existing traversal threads.
+Queue admission holds its mutex only while polling. A stored, canceled shared
+initializer cannot retain that lock while waiting for capacity; popping a job
+wakes all capacity waiters. A saturated-queue control leaves one admission
+future pending and proves a fresh admission succeeds after a slot is freed.
+
+The shared future and queued job capture weak context/registry references,
+avoiding cycles when a request is canceled before consuming its result. A
+running initializer holds its owner only while evaluating that config. Shutdown
+retires all generations; queued work skips retired cells, and late results are
+discarded. Worker failure logs and uses the existing synchronous configuration
+path so an unrelated fallback profile never replaces the target's policy.
+
+Reverse importer discovery retains all initialized, live owner indexes even
+when native type checking is disabled. Each discovered importer is refreshed
+through its own current policy. This preserves bookkeeping and lint/parser
+refreshes without starting disabled Corsa sessions.
+
+Open/change/close/rename record the authoritative source mutation before awaiting the
+project, then prepare only the current version through the resolved owner.
+This preserves same-document notification order while a config import is slow;
+a canceled or superseded opener cannot restore its previous text.
+Rename cleans initialized old caches without evaluating their configs, then
+prepares its destination asynchronously. Native import edits resolve ownership
+asynchronously too.
 
 Boundary and config-watch matching resolve physical file identities, including
 the nearest existing ancestor of new buffers. Registered workspace spelling
@@ -103,7 +132,18 @@ selects one cache key; notifications retain the editor's authored URI. An actual
 rename control exposed incorrect root-policy fallback between `/private/var`
 and `/var` spellings before this correction. Symlink/new-buffer and config-watch
 controls preserve the same package owner and retire it on an aliased watch.
-The separate async dispatch follow-up carries the held-import transport control.
+
+The genuine JSON-RPC latch control first failed because a cold package's Node
+import blocked a warm sibling's completion. With async dispatch, the sibling's
+whole completion envelope arrives before releasing the import; pending requests
+then format the latest unsaved source and reuse one evaluation. Additional
+transport controls require shutdown before releasing Node and retain later
+destination edits when moving an open buffer into a cold package. State
+controls prove eight concurrent targets share one owner, 48 queued jobs finish
+with at most two active workers, and a canceled pending initializer retains no
+registry/owner cycle after shutdown and probe completion. These are observed
+correctness and fairness laws; hosted timings remain separate from the 10x
+type-checker performance target.
 
 Current-source Actions, the protected queue, actual merge, and installed release
 replay remain required. Source preparation alone does not close #8371.
