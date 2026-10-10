@@ -82,7 +82,7 @@ export function validateEnvelopes7502(packet: any) {
             `<template>${fixture.source}</template>${envelope.suffix}`,
           );
           assert.equal(row.nativeSourceSha256, hash7502(row.nativeSource));
-          custody7502({ ...row, disposition: "lower-refusal" });
+          custody7502(row, "lower-refusal");
           const original = row.observation;
           assert.equal(original.selected, null);
           assert.equal(original.file, null);

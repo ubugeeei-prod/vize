@@ -1,5 +1,5 @@
 name: Native original attribute values
-description: Capture current source twice and execute fixed-oracle DOM, SSR and Vapor components
+description: Qualify pinned original history and the strict current class successor
 runs:
   using: composite
   steps:
@@ -12,18 +12,21 @@ runs:
         VIZE_NATIVE_ATTRIBUTE_VALUES_7502_CAPTURE: ${{ runner.temp }}/native-attribute-values-7502/first.capture.json
         VIZE_NATIVE_ATTRIBUTE_VALUES_7502_BUILD_RECEIPT: ${{ runner.temp }}/native-attribute-values-7502/build-receipt.json
         VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR: ${{ runner.temp }}/native-attribute-values-7502
+        VIZE_NATIVE_ATTRIBUTE_VALUES_7502_HISTORY_RECEIPT: ${{ runner.temp }}/native-attribute-values-7502/history-receipt.json
       run: |
         set -euo pipefail
         mkdir -p "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR"
         set +e
+        vp node tests/tooling/support/native-attribute-values-7502-history.ts "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR" > "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/history.stdout.txt" 2> "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/history.stderr.txt"
+        history_status=$?
         vp node tests/tooling/support/native-attribute-values-7502-build.ts "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR" > "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/hosted-build.stdout.txt" 2> "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/hosted-build.stderr.txt"
         build_status=$?
         vp node tests/tooling/support/native-attribute-values-7502-judge.ts > "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/judge.stdout.txt" 2> "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/judge.stderr.txt"
         judge_status=$?
         set -e
-        printf '{"buildExitStatus":%d,"judgeExitStatus":%d}\n' "$build_status" "$judge_status" > "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/action-processes.json"
-        cat "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/hosted-build.stdout.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/hosted-build.stderr.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/judge.stdout.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/judge.stderr.txt"
-        if [[ "$build_status" -ne 0 || "$judge_status" -ne 0 ]]; then exit 1; fi
+        printf '{"historyExitStatus":%d,"buildExitStatus":%d,"judgeExitStatus":%d}\n' "$history_status" "$build_status" "$judge_status" > "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/action-processes.json"
+        cat "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/history.stdout.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/history.stderr.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/hosted-build.stdout.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/hosted-build.stderr.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/judge.stdout.txt" "$VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR/judge.stderr.txt"
+        if [[ "$history_status" -ne 0 || "$build_status" -ne 0 || "$judge_status" -ne 0 ]]; then exit 1; fi
     - name: Upload complete native attribute build, custody and runtime evidence
       if: ${{ always() }}
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

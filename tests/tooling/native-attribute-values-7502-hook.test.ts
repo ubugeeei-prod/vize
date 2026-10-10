@@ -41,12 +41,15 @@ test("genuine value producers, consumers, writers and capture dependencies quali
     "crates/vize_atelier_sfc/tests/native_attribute_values_7502/custody.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/original_inputs.json",
     "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v2.json",
     "tests/tooling/native-attribute-values-7502-reference.test.ts",
     "tests/tooling/native-attribute-values-7502-hook.test.ts",
     "tests/tooling/support/native-attribute-values-7502-runtime.ts",
     "tests/tooling/support/native-attribute-values-7502-build.ts",
     "tests/tooling/support/native-attribute-values-7502-judge.ts",
     "tests/tooling/support/native-attribute-values-7502-source.ts",
+    "tests/tooling/support/native-attribute-values-7502-history.ts",
+    "tests/tooling/support/native-attribute-values-7502-history-protocol.ts",
     "npm/ui/package.json",
     "npm/plugin-sdk/sandbox.js",
     "pnpm-lock.yaml",
@@ -110,6 +113,7 @@ test("the dedicated action preserves both failing processes and all evidence", (
   for (const [key, suffix] of [
     ["CAPTURE", "/first.capture.json"],
     ["BUILD_RECEIPT", "/build-receipt.json"],
+    ["HISTORY_RECEIPT", "/history-receipt.json"],
     ["EVIDENCE_DIR", ""],
   ])
     assert(
@@ -122,10 +126,12 @@ test("the dedicated action preserves both failing processes and all evidence", (
   assert.match(run, /set -euo pipefail/);
   assert.match(
     run,
-    /set \+e[\s\S]*vp node tests\/tooling\/support\/native-attribute-values-7502-build\.ts[\s\S]*build_status=\$\?[\s\S]*vp node tests\/tooling\/support\/native-attribute-values-7502-judge\.ts[\s\S]*judge_status=\$\?[\s\S]*set -e/,
+    /set \+e[\s\S]*vp node tests\/tooling\/support\/native-attribute-values-7502-history\.ts[\s\S]*history_status=\$\?[\s\S]*vp node tests\/tooling\/support\/native-attribute-values-7502-build\.ts[\s\S]*build_status=\$\?[\s\S]*vp node tests\/tooling\/support\/native-attribute-values-7502-judge\.ts[\s\S]*judge_status=\$\?[\s\S]*set -e/,
   );
   for (const file of [
     "hosted-build.stdout.txt",
+    "history.stdout.txt",
+    "history.stderr.txt",
     "hosted-build.stderr.txt",
     "judge.stdout.txt",
     "judge.stderr.txt",
@@ -134,7 +140,7 @@ test("the dedicated action preserves both failing processes and all evidence", (
     assert(run.includes(file), file);
   assert.match(
     run,
-    /if \[\[ "\$build_status" -ne 0 \|\| "\$judge_status" -ne 0 \]\]; then exit 1; fi/,
+    /if \[\[ "\$history_status" -ne 0 \|\| "\$build_status" -ne 0 \|\| "\$judge_status" -ne 0 \]\]; then exit 1; fi/,
   );
   const upload = action.split("    - name: Upload complete native attribute")[1];
   assert(upload);

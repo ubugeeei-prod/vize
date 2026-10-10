@@ -4,7 +4,11 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { environment7502 } from "./native-attribute-values-7502-loader.ts";
-import { hash7502, loadInputs7502 } from "./native-attribute-values-7502-inputs.ts";
+import {
+  disposition7502,
+  hash7502,
+  loadInputs7502,
+} from "./native-attribute-values-7502-inputs.ts";
 import { validateCapture7502 } from "./native-attribute-values-7502-oracle.ts";
 import { primary7502 } from "./native-attribute-values-7502-primary.ts";
 
@@ -174,7 +178,7 @@ export async function runtime7502(packet: any, mode: "development" | "production
         authority: "primary-only/no-native-credit",
       });
       for (const row of packet.rows.filter(
-        (entry: any) => entry.id === fixture.id && entry.disposition === "positive",
+        (entry: any) => entry.id === fixture.id && disposition7502(entry) === "positive",
       )) {
         const loaded = await load(row.result.code, row.target);
         if (row.target === "ssr") {
@@ -218,10 +222,10 @@ export async function runtime7502(packet: any, mode: "development" | "production
       }
     }
     assert.equal(controls.length, 14);
-    assert.equal(executions.length, 72);
+    assert.equal(executions.length, 76);
     return {
       schema: "vize.native-attribute-values-7502.runtime",
-      version: 1,
+      version: 2,
       mode,
       capturedFromRust: true,
       acceptance: "unreviewed",
@@ -229,8 +233,9 @@ export async function runtime7502(packet: any, mode: "development" | "production
       counts: {
         originalControls: 14,
         knownIncorrectRc9Clients: 9,
-        positiveNativeExecutions: 72,
-        lowerRefusalOutcomes: 12,
+        positiveNativeExecutions: 76,
+        lowerRefusalOutcomes: 6,
+        targetRefusalOutcomes: 2,
       },
       controls,
       executions,
