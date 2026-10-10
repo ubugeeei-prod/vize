@@ -151,7 +151,7 @@ export async function verifyNavigationRenderJob(
           japaneseFonts.some(
             (font) => /Noto Sans CJK/.test(font.familyName) && font.glyphCount > 0,
           ),
-          `${route}: Japanese text did not use installed CJK fonts: ${JSON.stringify(japaneseFonts)}`,
+          `${route}: Japanese text did not use installed CJK fonts: ${JSON.stringify(fontPacket)}`,
         );
       }
       await session.detach();
