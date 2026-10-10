@@ -23,26 +23,32 @@ export async function assertHostedVrtStyles(page: Page) {
       "max-width",
       "height",
     ];
-    const read = (element: Element) => {
-      const computed = getComputedStyle(element);
-      return Object.fromEntries(properties.map((name) => [name, computed.getPropertyValue(name)]));
+    const observers = {
+      read(this: void, element: Element) {
+        const computed = getComputedStyle(element);
+        return Object.fromEntries(
+          properties.map((name) => [name, computed.getPropertyValue(name)]),
+        );
+      },
+      find(this: void, selector: string) {
+        const element = panel.querySelector(selector);
+        if (!element) throw new Error(`Missing authored VRT element: ${selector}`);
+        return element;
+      },
+      scopedAttributes(this: void, element: Element) {
+        return [...element.attributes]
+          .map((attribute) => attribute.name)
+          .filter((name) => name.startsWith("data-v-"));
+      },
+      visit(this: void, rules: CSSRuleList) {
+        for (const rule of rules) {
+          if (rule instanceof CSSStyleRule) selectors.push(rule.selectorText);
+          if (rule instanceof CSSGroupingRule) visit(rule.cssRules);
+        }
+      },
     };
-    const find = (selector: string) => {
-      const element = panel.querySelector(selector);
-      if (!element) throw new Error(`Missing authored VRT element: ${selector}`);
-      return element;
-    };
-    const scopedAttributes = (element: Element) =>
-      [...element.attributes]
-        .map((attribute) => attribute.name)
-        .filter((name) => name.startsWith("data-v-"));
+    const { read, find, scopedAttributes, visit } = observers;
     const selectors: string[] = [];
-    const visit = (rules: CSSRuleList) => {
-      for (const rule of rules) {
-        if (rule instanceof CSSStyleRule) selectors.push(rule.selectorText);
-        if (rule instanceof CSSGroupingRule) visit(rule.cssRules);
-      }
-    };
     for (const sheet of document.styleSheets) {
       if (sheet.href && new URL(sheet.href).origin !== location.origin) continue;
       visit(sheet.cssRules);

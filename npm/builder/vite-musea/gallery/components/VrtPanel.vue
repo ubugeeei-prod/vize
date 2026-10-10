@@ -122,7 +122,7 @@ async function runTest() {
         </div>
       </div>
 
-      <VrtResults :results="results" />
+      <VrtResults :results />
     </template>
   </div>
 </template>
