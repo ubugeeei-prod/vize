@@ -7,6 +7,9 @@ use super::super::{
 use super::PathAliasResolver;
 use std::path::{Path, PathBuf};
 
+#[path = "imports_aliases_selection_tests.rs"]
+mod selection;
+
 fn write(root: &Path, rel: &str, contents: &str) -> PathBuf {
     let path = root.join(rel);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();

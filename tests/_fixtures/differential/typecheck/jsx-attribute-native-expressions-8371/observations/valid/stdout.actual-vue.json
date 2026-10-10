@@ -1,0 +1,37 @@
+{
+  "files": [
+    {
+      "file": "Consumer.tsx",
+      "diagnostics": []
+    },
+    {
+      "file": "Host.vue",
+      "diagnostics": []
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "jsx": "preserve",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2022",
+        "types": [
+          "vue/jsx"
+        ]
+      },
+      "files": [
+        "Consumer.tsx",
+        "Host.vue",
+        "node_modules/vue/jsx.d.ts"
+      ]
+    }
+  ],
+  "errorCount": 0,
+  "warningCount": 0,
+  "fileCount": 2
+}

@@ -43,10 +43,7 @@ impl PathAliasResolver {
         resolve_base: impl Fn(&Path, &mut CanonicalPathCache, ImportFileOptions) -> Option<PathBuf>,
     ) -> Option<PathBuf> {
         let options = options.into();
-        for alias in &self.aliases {
-            let Some(matched) = alias.match_specifier(specifier) else {
-                continue;
-            };
+        if let Some((alias, matched)) = self.selected_alias(specifier) {
             for target in &alias.targets {
                 let target = if target.contains('*') {
                     alias.base_dir.join(target.replace('*', matched))
@@ -76,10 +73,7 @@ impl PathAliasResolver {
     ) -> (Option<PathBuf>, Vec<PathBuf>) {
         let options = options.into();
         let mut inputs = Vec::new();
-        for alias in &self.aliases {
-            let Some(matched) = alias.match_specifier(specifier) else {
-                continue;
-            };
+        if let Some((alias, matched)) = self.selected_alias(specifier) {
             for target in &alias.targets {
                 let target = if target.contains('*') {
                     alias.base_dir.join(target.replace('*', matched))
@@ -100,6 +94,22 @@ impl PathAliasResolver {
             return (resolved, inputs);
         }
         (None, inputs)
+    }
+
+    fn selected_alias<'a>(&'a self, specifier: &'a str) -> Option<(&'a PathAlias, &'a str)> {
+        let mut selected: Option<(&PathAlias, &str)> = None;
+        for alias in &self.aliases {
+            let Some(matched) = alias.match_specifier(specifier) else {
+                continue;
+            };
+            if !alias.has_wildcard {
+                return Some((alias, matched));
+            }
+            if selected.is_none_or(|(current, _)| alias.prefix.len() > current.prefix.len()) {
+                selected = Some((alias, matched));
+            }
+        }
+        selected
     }
 
     pub(super) fn package_resolution_context(

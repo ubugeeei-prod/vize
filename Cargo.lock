@@ -329,6 +329,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "bytecount"
+version = "0.6.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "175812e0be2bccb6abe50bb8d566126198344f707e304f45c648fd8f2cc0365e"
+
+[[package]]
 name = "byteorder"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2325,6 +2331,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "oxc-miette"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "330e07b3807046e0afa8fcc94f1fe976e93831b370d148bfe1168cb53da1b913"
+dependencies = [
+ "bytecount",
+ "memchr",
+ "owo-colors",
+ "textwrap",
+ "unicode-segmentation",
+ "unicode-width",
+]
+
+[[package]]
 name = "oxc-miette-derive"
 version = "3.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2433,7 +2453,7 @@ version = "0.142.0"
 source = "git+https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1fa9f0412d06ec6908b58cd395b826cf7f"
 dependencies = [
  "cow-utils",
- "oxc-miette",
+ "oxc-miette 3.0.1",
  "percent-encoding",
 ]
 
@@ -2552,7 +2572,7 @@ version = "0.142.0"
 source = "git+https://github.com/oxc-project/oxc?rev=fc702c1fa9f0412d06ec6908b58cd395b826cf7f#fc702c1fa9f0412d06ec6908b58cd395b826cf7f"
 dependencies = [
  "compact_str",
- "oxc-miette",
+ "oxc-miette 3.0.1",
  "oxc_allocator",
  "oxc_ast_macros",
  "oxc_estree",
@@ -2637,6 +2657,20 @@ dependencies = [
  "oxc_str",
  "oxc_syntax",
  "rustc-hash",
+]
+
+[[package]]
+name = "oxlint_html_renderer186"
+version = "0.0.0"
+dependencies = [
+ "bytecount",
+ "itoa",
+ "memchr",
+ "oxc_span",
+ "smallvec",
+ "textwrap",
+ "unicode-segmentation",
+ "unicode-width",
 ]
 
 [[package]]
@@ -5052,10 +5086,13 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
+ "oxc-miette 4.0.0",
  "oxc_codegen",
  "oxc_sourcemap",
  "oxc_span",
+ "oxlint_html_renderer186",
  "rayon",
+ "regex",
  "serde",
  "serde-wasm-bindgen",
  "serde_json",

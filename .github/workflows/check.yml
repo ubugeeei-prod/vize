@@ -21,9 +21,7 @@ concurrency:
   group: check-v3-${{ github.workflow }}-${{ (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') && format('full-{0}', github.sha) || (github.event.pull_request.number || github.ref) }}
   cancel-in-progress: true
 permissions: { contents: read }
-env:
-  CARGO_TERM_COLOR: always
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
   allocation-ownership-diagnostic:
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/ci/vapor-allocation-ownership-20261004' && inputs.allocation-ownership-diagnostic }}
@@ -186,8 +184,7 @@ jobs:
         run: rust-script tools/commands/ci/npm-audit.rs
       - name: Install cargo-audit
         uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
-        with:
-          tool: cargo-audit
+        with: { tool: cargo-audit }
       - name: Audit Rust dependencies
         run: cargo audit --deny warnings
   node-engine-compat:
@@ -439,6 +436,9 @@ jobs:
       - name: Test
         env: { VIZE_TEST_REQUIRE_TSGO: "1" }
         uses: ./.github/actions/test-rust-workspace-differential
+      - name: Preserve full-workspace test results and walltime
+        if: ${{ always() }}
+        uses: ./.github/actions/upload-rust-full-workspace-results
       - uses: ./.github/actions/retain-sfc-runtime
         if: ${{ always() }}
   coverage:

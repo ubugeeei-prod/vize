@@ -233,7 +233,7 @@ const hasSlotContent = computed(() => {
 
 const usageCode = computed(() => {
   if (!palette.value) return "";
-  const componentName = palette.value.title || "Component";
+  const componentName = palette.value.componentTagName || palette.value.title || "Component";
   const propsStr = usagePropsAttributes(mergedValues.value);
   const templateOnly = (() => {
     if (!propsStr && !hasSlotContent.value) {

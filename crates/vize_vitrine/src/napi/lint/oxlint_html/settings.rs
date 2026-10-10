@@ -38,10 +38,10 @@ pub(super) fn project(root: &Value) -> Result<ProjectedSettings, String> {
         };
         resolved.locale = locale.into();
     }
-    if let Some(type_aware) = vize.get("typeAware") {
-        if type_aware.as_bool() != Some(false) {
-            return Err("/settings/vize/typeAware requires false".into());
-        }
+    if let Some(type_aware) = vize.get("typeAware")
+        && type_aware.as_bool() != Some(false)
+    {
+        return Err("/settings/vize/typeAware requires false".into());
     }
     if let Some(show_help) = vize.get("showHelp") {
         let Some(show_help) = show_help.as_bool() else {
