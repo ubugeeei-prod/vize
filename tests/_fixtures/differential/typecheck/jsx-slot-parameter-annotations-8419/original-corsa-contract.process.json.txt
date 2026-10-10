@@ -1,0 +1,11 @@
+{
+  "exitCode": 1,
+  "args": [
+    "/private/tmp/vize-lsp439-20261010-fb402f3b/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+    "--strict",
+    "--pretty",
+    "false",
+    "--noEmit",
+    "contract.ts"
+  ]
+}

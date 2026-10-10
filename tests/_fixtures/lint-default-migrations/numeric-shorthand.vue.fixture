@@ -1,0 +1,1 @@
+<template><button type="button" @keyup.13="submit">Submit</button></template>

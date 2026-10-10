@@ -59,6 +59,8 @@
   "vue/valid-v-slot.value_help": "Add a slot parameter value or use a child <template #default> without a value",
   "vue/valid-v-slot.invalid_modifier": "v-slot without a slot argument does not support modifiers",
   "vue/valid-v-slot.modifier_help": "Remove the modifier from the v-slot directive",
+  "vue/valid-v-slot.dynamic_scope": "Dynamic slot name cannot reference a binding declared by the same slot",
+  "vue/valid-v-slot.dynamic_scope_help": "Use a binding from the enclosing scope to choose the slot name",
   "vue/valid-v-slot.help": "Use v-slot on a component or a template element inside a component",
   "vue/no-use-v-else-with-v-for.description": "Disallow using v-else-if or v-else on the same element as v-for",
   "vue/no-use-v-else-with-v-for.message": "Unexpected `{directive}` and `v-for` on the same element. Move `{directive}` to a wrapper element instead.",

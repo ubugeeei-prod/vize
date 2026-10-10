@@ -32,6 +32,55 @@ pub fn extract_identifier_refs_with_witness(source: &str) -> Option<(Vec<Identif
     checked::checked_references_with_witness(source)
 }
 
+/// Demand complete lexical reads from the node's own retained AST, without a
+/// fallback parse or the legacy comment-stripping view.
+#[doc(hidden)]
+pub fn extract_identifier_refs_retained_only(
+    source: &str,
+    retained: &JsExpression<'_>,
+) -> Option<Vec<IdentifierRef>> {
+    if retained.raw != source {
+        return None;
+    }
+    let (references, complete) = ast::retained_references(retained.ast, true);
+    complete.then_some(references)
+}
+
+#[cfg(test)]
+mod retained_only_tests {
+    use super::extract_identifier_refs_retained_only;
+    use oxc_allocator::Allocator;
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
+    use vize_relief::JsExpression;
+
+    #[test]
+    fn retained_reads_preserve_comments_lexical_scope_and_mismatch_refusal() {
+        let allocator = Allocator::default();
+        for (source, expected) in [
+            ("slot/* outer */.name", vec!["slot"]),
+            ("/[/*]/.test(slot)", vec!["slot"]),
+            ("(function(slot) { return slot })(name)", vec!["name"]),
+            ("(function() { return slot })()", vec!["slot"]),
+        ] {
+            let ast = Parser::new(&allocator, source, SourceType::ts())
+                .parse_expression()
+                .unwrap();
+            let retained = JsExpression {
+                ast: &ast,
+                raw: source,
+            };
+            let references = extract_identifier_refs_retained_only(source, &retained).unwrap();
+            let names: Vec<_> = references
+                .iter()
+                .map(|reference| reference.name.as_str())
+                .collect();
+            assert_eq!(names, expected, "{source}");
+            assert!(extract_identifier_refs_retained_only("other", &retained).is_none());
+        }
+    }
+}
+
 use vize_carton::{CompactString, profile};
 use vize_relief::JsExpression;
 

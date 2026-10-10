@@ -25,6 +25,7 @@ pub(super) const SEMANTIC_TEMPLATE_RULES: &[&str] = &[
 ];
 
 pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
+    "vue/no-deprecated-functional-template",
     "ssr/no-browser-globals-in-ssr",
     "vue/no-mutating-props",
     "vue/no-reserved-component-names",

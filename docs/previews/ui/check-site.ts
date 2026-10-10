@@ -4,12 +4,21 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { parseArgs } from "node:util";
 import type { AddressInfo } from "node:net";
 
 import { resolvePuppeteerExecutablePath } from "../../browser-path.js";
+import { captureComposablePreviews } from "./capture-composables.ts";
+import { previewComposableExamples } from "./build-config.ts";
 
 const docsRoot = path.resolve(import.meta.dirname, "../..");
 const root = path.join(docsRoot, "dist");
+const { values } = parseArgs({
+  options: {
+    site: { type: "string" },
+    output: { type: "string", default: "docs-render-evidence/component-previews" },
+  },
+});
 const require = createRequire(path.join(docsRoot, "package.json"));
 const mime: Record<string, string> = {
   ".html": "text/html",
@@ -46,7 +55,8 @@ await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
 const { chromium } = require("playwright") as typeof import("playwright");
 const browser = await chromium.launch({ executablePath: resolvePuppeteerExecutablePath() });
 try {
-  const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  const base =
+    values.site?.replace(/\/$/, "") ?? `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   const checkedLinks = new Set<string>();
   for (const width of [1440, 390]) {
     const page = await browser.newPage({
@@ -63,10 +73,36 @@ try {
         "/ja/guide/ui-styles/",
         "/guide/musea/",
         "/ja/guide/musea/",
+        "/guide/composables/",
+        "/ja/guide/composables/",
+        ...previewComposableExamples.map((example) => `/guide/composables/${example.name}/`),
       ]) {
         const response = await page.goto(`${base}${route}`, { waitUntil: "domcontentloaded" });
         assert.equal(response!.status(), 200, route);
         assert.ok(await page.locator("h1").first().textContent(), `${route}: heading`);
+        const example = previewComposableExamples.find(
+          (item) => route === `/guide/composables/${item.name}/`,
+        );
+        if (example != null) {
+          const source = await page.locator("main pre code").allTextContents();
+          assert.ok(
+            source.some((packet) => packet.trim() === example.source.trim()),
+            `${route}: displayed complete source equals compiled live SFC`,
+          );
+          const frameElement = page.locator(`iframe[src*="composable=${example.name}"]`);
+          assert.equal(await frameElement.count(), 1, `${route}: live preview`);
+          await frameElement.scrollIntoViewIfNeeded();
+          const frame = page.frameLocator(`iframe[src*="composable=${example.name}"]`);
+          await frame.locator(`html[data-preview-ready="${example.name}"]`).waitFor();
+          assert.equal(
+            await frame.locator("html").getAttribute("data-preview-source-sha256"),
+            example.sourceSha256,
+          );
+          assert.equal(
+            await frame.locator("html").getAttribute("data-preview-hydration-retained"),
+            "true",
+          );
+        }
         assert.equal(
           await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
           true,
@@ -110,8 +146,13 @@ try {
     }
   }
   assert.ok(checkedLinks.size > 0, "generated main content must contain local links");
+  await captureComposablePreviews(
+    browser,
+    `${base}/component-previews/app/`,
+    path.resolve(values.output),
+  );
   process.stdout.write(
-    `Verified 8 generated component-documentation routes at desktop/mobile widths and ${checkedLinks.size} local links\n`,
+    `Verified ${10 + previewComposableExamples.length} generated component/composable documentation routes at desktop/mobile widths and ${checkedLinks.size} local links\n`,
   );
 } finally {
   await browser.close();

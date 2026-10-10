@@ -112,9 +112,22 @@ export function renderUiFamilyPage(packageRoot: string, entry: UiFamilyCatalogEn
   );
   const usage =
     importNames.length === 0
-      ? ""
+      ? blocks(
+          "## Minimal setup",
+          "Use a Vue 3.5+ project. Install the package, then import the functions and types documented in the API below from this entry.",
+          "```bash\nvp install @vizejs/ui\n```",
+          `Public entry: \`@vizejs/ui${subpath}\`. See [Vite+ integration](../vite-plus.md) for project setup.`,
+        )
       : [
-          "## Usage",
+          "## Minimal setup",
+          "",
+          "Use a Vue 3.5+ project with Vue SFC compilation configured (see [Vite+ integration](../vite-plus.md)).",
+          "",
+          "```bash",
+          "vp install @vizejs/ui",
+          "```",
+          "",
+          'Add the public import below to `<script setup lang="ts">`. Components provide behavior without styles; the preview uses optional [Paper styles](../ui-styles.md).',
           "",
           "```ts",
           `import { ${importNames.join(", ")} } from "@vizejs/ui${subpath}";`,

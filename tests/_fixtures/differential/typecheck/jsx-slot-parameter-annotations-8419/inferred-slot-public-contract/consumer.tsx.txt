@@ -1,0 +1,15 @@
+/// <reference types="vue/jsx" />
+import Child from './Child.vue';
+import Generic from './Generic.vue';
+import type { ComponentSlots } from 'vue-component-type-helpers';
+type Equal<A, B> = (<T>() => T extends A ? 1 : 2) extends (<T>() => T extends B ? 1 : 2) ? true : false;
+type Assert<T extends true> = T;
+type Slots = ComponentSlots<typeof Child>;
+type Row = Assert<Equal<Parameters<NonNullable<Slots['row']>>[0], { item: { id: number } }>>;
+type Nested = Assert<Equal<Parameters<NonNullable<Slots['nested']>>[0], { value: string }>>;
+type Empty = Assert<Equal<Parameters<NonNullable<Slots['empty']>>[0], {}>>;
+type GenericSlots = ComponentSlots<typeof Generic<number>>;
+type GenericValue = Assert<Equal<Parameters<NonNullable<GenericSlots['default']>>[0], { value: number }>>;
+const child = <Child rows={[]}>{{ activator: props => props.isActive.valueOf(), row: props => props.item.id.toFixed(), nested: props => props.value.toUpperCase() }}</Child>;
+// @ts-expect-error
+const wrong = <Child rows={[]}>{{ activator: (props: { isActive: string }) => props.isActive }}</Child>;

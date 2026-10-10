@@ -32,7 +32,61 @@ browser evidence records the source and successful scenarios. It does not claim
 that every component has been audited for accessibility or every advanced
 variant has been exercised.
 
-After SSG completes, `check-site.ts` checks eight generated English/Japanese
+After SSG completes, `check-site.ts` checks generated English/Japanese
 documentation routes, their local links and images, and an embedded Button's
 state update at desktop/mobile widths. The production docs build runs both
 browser checks with its normal OG-image configuration.
+
+## Composable examples
+
+Sixteen complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
+bounded quantities, debounced local search, blur validation, undo/redo, and
+pagination, plus async results, interval/timeout controls, browser storage,
+media queries, document focus, form submission, multistep navigation, bounded
+selection, and cyclic tips. Their displayed source and compiled preview are byte-identical,
+with a SHA-256 identity exposed by each iframe. They use public composable
+imports and can be copied into a Vue 3.5+ project. The preview shell's CSS is
+optional presentation; the examples themselves use native controls.
+
+`build-ui-previews.ts` typechecks those SFCs against workspace sources before
+compilation. `prerender-composables.ts` uses the existing Vue/Vite configuration
+and actual Vue server renderer. A fresh plugin instance builds the browser app.
+The client hydrates the matching markup; the checks require all initial
+elements and complete markup to survive hydration, without warnings or errors.
+
+`capture-composables.ts` runs every example at 720px and 360px in both initial
+and interacted states. It checks keyboard activation/blur, state boundaries,
+debounce timing/flush/cancel, validation, undo/redo/batching, and pagination.
+The effect groups in `interactions-async-effects.ts` and
+`interactions-browser-effects.ts` also check producer rejection/retry and stale
+completion, start/pause/reset, replace/cancel/single delivery, actual storage
+across reload/reset, actual matchMedia at resized viewports and changed queries,
+and actual document focus through Tab/programmatic focus/blur.
+Browser clock control advances the actual timers deterministically; browser
+hosts are not replaced with mocks. `interactions-form-state.ts` checks validation
+and reset, step boundaries and preserved input, stable selected keys after data
+replacement, and cyclic list boundaries. Sixty-four real PNGs and a JSON receipt record source hashes, image hashes,
+and individual interaction results under the ignored
+`public/component-previews/composables/` build output. Each reference page
+offers initial/after images in a native disclosure alongside its live preview.
+
+`capture-unavailable-storage.ts` additionally launches actual Chromium with
+localStorage disabled, without replacing the host. Its two mobile captures and
+separate receipt prove that keyboard selection still changes in-tab state and
+reload returns to the default. The storage page shows that fallback capture.
+Field status reports only recorded validation until the next blur. The batching
+law uses meaningful whitespace trimming and requires Undo to restore it exactly.
+
+After the real SSG build, `check-site.ts` verifies twenty-six routes at desktop
+and mobile widths, including the sixteen exact displayed SFC packets and their
+iframe identities, then runs the unchanged composable interaction checks.
+The existing Docs Actions build executes both paths. To check deployed content:
+
+```bash
+vp node docs/previews/ui/check-site.ts --site https://vizejs.dev --output docs-render-evidence/deployed-composables
+```
+
+The supplied deployed URL must expose the expected source hashes; an older
+deployment fails instead of receiving current-source credit. These sixteen
+examples are a bounded acceptance slice, not complete live coverage of the
+composable catalogue. #8374 and the broader #6101 remain open for that work.

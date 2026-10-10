@@ -133,25 +133,71 @@ export function collectVersions({
 export const UNRECORDED_PROVENANCE_LINE =
   "Versions and backend readiness: not recorded — this artifact predates tools/benchmarks/scripts/benchmark-provenance.mjs and cannot be reproduced from itself.";
 
-export function renderProvenanceLines(data) {
+const TOOL_LABELS = {
+  vize: "Vize",
+  tsgo: "tsgo",
+  vueTsc: "vue-tsc",
+  verterTsc: "verter-tsc",
+  golar: "Golar",
+  typescript: "TypeScript (vue-tsc)",
+  vue: "Vue",
+  eslint: "ESLint",
+  prettier: "Prettier",
+  node: "Node.js",
+};
+
+export const PROVENANCE_LABELS = {
+  en: ["Tool versions and binary checksums", "Tool", "Version", "Binary SHA-256"],
+  ja: ["ツールのバージョンとバイナリのチェックサム", "ツール", "バージョン", "バイナリ SHA-256"],
+  "zh-CN": ["工具版本与二进制校验和", "工具", "版本", "二进制 SHA-256"],
+  fr: ["Versions des outils et sommes de contrôle", "Outil", "Version", "SHA-256 du binaire"],
+  "pt-BR": ["Versões das ferramentas e checksums", "Ferramenta", "Versão", "SHA-256 do binário"],
+};
+
+function code(value) {
+  if (value == null) return "n/a";
+  const escaped = String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("|", "&#124;")
+    .replace(/[\\`*_[\]{}~]/g, (character) => `&#${character.charCodeAt(0)};`)
+    .replaceAll("\n", "&#10;")
+    .replaceAll("\r", "&#13;");
+  return `<code>${escaped}</code>`;
+}
+
+export function renderProvenanceLines(data, locale = "en") {
   const versions = data.versions;
   const backend = data.backend;
   if (versions == null || backend == null) {
     return [UNRECORDED_PROVENANCE_LINE];
   }
-  const show = (value) => (value == null ? "n/a" : `\`${value}\``);
+  const [summary, ...headers] = Object.hasOwn(PROVENANCE_LABELS, locale)
+    ? PROVENANCE_LABELS[locale]
+    : PROVENANCE_LABELS.en;
+  const binaries = data.binaries ?? {};
+  const keys = [
+    ...new Set([...Object.keys(TOOL_LABELS), ...Object.keys(versions), ...Object.keys(binaries)]),
+  ];
   const lines = [
-    `Versions: vize ${show(versions.vize)} · tsgo ${show(versions.tsgo)} · vue-tsc ${show(versions.vueTsc)} (typescript ${show(versions.typescript)}) · verter-tsc ${show(versions.verterTsc)} · Golar ${show(versions.golar)} · vue ${show(versions.vue)} · eslint ${show(versions.eslint)} · prettier ${show(versions.prettier)} · node ${show(versions.node)}`,
+    '<details class="benchmark-provenance">',
+    `<summary>${summary}</summary>`,
+    "",
+    `| ${headers.join(" | ")} |`,
+    "| --- | --- | --- |",
+    ...keys.map(
+      (key) =>
+        `| ${Object.hasOwn(TOOL_LABELS, key) ? TOOL_LABELS[key] : code(key)} | ${code(versions[key])} | ${code(binaries[key])} |`,
+    ),
+    "",
   ];
   lines.push(
-    `Binaries (sha256): ${Object.entries(data.binaries ?? {})
-      .map(([label, sha256]) => `${label} ${show(sha256)}`)
-      .join(" ")}`,
-  );
-  lines.push(
     backend.ready
-      ? `Backend: native TypeScript engine ready at ${show(backend.corsaPath)}. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).`
-      : `Backend: native TypeScript engine NOT ready (${backend.reason}); no type-check timing may be published from this artifact.`,
+      ? `Backend: native TypeScript engine ready at ${code(backend.corsaPath)}. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).`
+      : `Backend: native TypeScript engine NOT ready (${code(backend.reason)}); no type-check timing may be published from this artifact.`,
+    "",
+    "</details>",
   );
   return lines;
 }

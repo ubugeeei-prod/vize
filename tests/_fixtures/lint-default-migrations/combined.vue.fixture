@@ -1,0 +1,1 @@
+<template functional><button type="button" @keyup.13.stop="submit">Submit</button></template>

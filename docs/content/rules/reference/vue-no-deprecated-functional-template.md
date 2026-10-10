@@ -9,7 +9,7 @@ Disallow the `functional` attribute on the SFC `<template>`
 [Bad](#bad) · [Good](#good)
 
 Default severity: `error`  
-Presets: _none_  
+Presets: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
 Options: No rule-specific options. Severity and preset selection are configurable.

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Host from './Host.vue';
+defineProps<{ rows: { id: number }[] }>();
+</script><template>
+<slot name="activator" :isActive="false" />
+<div v-for="row in rows"><slot name="row" :item="row" /></div>
+<Host v-slot="{ item }"><slot name="nested" :value="item.name" /></Host>
+<slot name="empty" />
+</template>
