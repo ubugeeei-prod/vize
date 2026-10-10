@@ -96,7 +96,7 @@ jobs:
             child_pid="${core##*.}"
             packet="$RUNNER_TEMP/mounted-child-custody/$child_pid-0-start.json"
             executable="$(node -e 'process.stdout.write(JSON.parse(require("node:fs").readFileSync(process.argv[1], "utf8")).executable.retained)' "$packet")"
-            gdb --batch -ex 'set pagination off' -ex 'info sharedlibrary' -ex 'thread apply all bt full' "$executable" "$core" > "$core.backtrace" 2>&1
+            gdb --batch -iex "set sysroot $RUNNER_TEMP/mounted-child-custody/sysroot" -ex 'set pagination off' -ex 'info sharedlibrary' -ex 'thread apply all bt full' "$executable" "$core" > "$core.backtrace" 2>&1
           done
       - name: Preserve every original outcome and physical image
         if: ${{ always() }}
