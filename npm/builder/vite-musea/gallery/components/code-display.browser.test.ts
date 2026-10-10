@@ -11,6 +11,8 @@ import { checkPaletteReplacement } from "./palette-replacement.browser-fixtures"
 import { checkCopiedPropNames } from "./props-usage-names.browser-fixtures";
 import { checkCopiedProps } from "./props-usage.browser-fixtures.ts";
 import { registerUsageCodeContracts } from "../../src/usage-code-contracts.ts";
+import { registerPreviewPropsBrowserTest } from "./preview-props.browser-fixtures";
+import { registerPropEditorCancellationTest } from "./prop-editor-cancellation.browser-fixtures";
 
 registerUsageCodeContracts();
 
@@ -330,3 +332,6 @@ await test(
     }
   },
 );
+
+await registerPreviewPropsBrowserTest();
+await registerPropEditorCancellationTest();
