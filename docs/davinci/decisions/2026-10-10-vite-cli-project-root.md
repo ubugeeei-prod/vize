@@ -75,3 +75,12 @@ public CLI JavaScript exports before invoking the freshly built native CLI, so
 workspace samples importing `defineConfig` from `vize` have the same available
 exports as an installed package. The failing unbuilt-export receipt remains
 evidence of that prerequisite; config errors and their diagnostics stay strict.
+
+The original build/lint/fmt help snapshots retain their complete displayed
+fallback globs while argument parsing leaves omitted inputs empty. An explicit
+fallback-looking glob remains authored input and therefore keeps invocation-root
+selection. Checked explicit paths retain the original `config file not found`
+message. The unchanged absolute-ignore canonicalization and config-directory
+primitives stay in the existing lint discovery filesystem host; the extracted
+ignore policy calls that host. All original finite path-host counts, 59-write
+move replay, mixed-owner rejection and negative provider controls stay unchanged.

@@ -217,6 +217,35 @@ mod tests {
         }
     }
 
+    #[test]
+    fn displayed_defaults_do_not_hide_whether_inputs_were_authored() {
+        for command in ["build", "lint", "fmt"] {
+            #[cfg(not(feature = "glyph"))]
+            if command == "fmt" {
+                continue;
+            }
+            for authored in [false, true] {
+                let mut argv = vec!["vize", command];
+                if authored {
+                    argv.push("./**/*.vue");
+                }
+                let cli = Cli::try_parse_from(argv).unwrap();
+                let patterns = match cli.command.unwrap() {
+                    Commands::Build(args) => args.patterns,
+                    Commands::Lint(args) => args
+                        .patterns
+                        .into_iter()
+                        .map(|value| value.to_string())
+                        .collect(),
+                    #[cfg(feature = "glyph")]
+                    Commands::Fmt(args) => args.patterns,
+                    _ => panic!("expected file discovery command"),
+                };
+                assert_eq!(patterns, if authored { vec!["./**/*.vue"] } else { vec![] });
+            }
+        }
+    }
+
     fn command_help(command_name: &str) -> String {
         let mut command = Cli::command();
         let subcommand = command.find_subcommand_mut(command_name).unwrap();

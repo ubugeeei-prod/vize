@@ -7,6 +7,9 @@ use vize_l0::String;
 #[derive(Args)]
 pub struct LintArgs {
     /// Glob pattern(s) to match files supported by vize lint
+    #[arg(
+        help = "Glob pattern(s) to match files supported by vize lint\n\n[default: ./**/*.vue ./**/*.html ./**/*.htm ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx]"
+    )]
     pub patterns: Vec<String>,
 
     /// Automatically fix problems when diagnostics provide safe text edits

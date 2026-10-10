@@ -328,3 +328,16 @@ fn lint_glob_match_options() -> MatchOptions {
 #[cfg(test)]
 #[path = "collect_tests.rs"]
 mod tests;
+
+fn absolute_config_dir(config_dir: &Path) -> PathBuf {
+    let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    crate::lint_plan::matcher::absolute_path(config_dir, &cwd)
+}
+
+fn canonical_ignore_path(pattern: &Path) -> PathBuf {
+    if pattern.exists() {
+        vize_carton::path::canonicalize_non_verbatim(pattern)
+    } else {
+        pattern.to_path_buf()
+    }
+}
