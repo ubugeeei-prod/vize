@@ -132,6 +132,9 @@ impl ResolvedLinterRuleGroups {
                 if let Some(style) = rule_options.attribute_hyphenation() {
                     linter = linter.with_attribute_hyphenation(attribute_hyphenation_style(style));
                 }
+                if let Some(allow) = rule_options.valid_v_slot_allow_modifiers() {
+                    linter = linter.with_valid_v_slot_allow_modifiers(allow);
+                }
                 #[cfg(not(target_arch = "wasm32"))]
                 {
                     linter = linter.with_corsa_path(configured_corsa_path.clone());
