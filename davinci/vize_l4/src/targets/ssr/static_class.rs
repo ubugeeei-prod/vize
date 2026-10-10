@@ -1,15 +1,29 @@
 //! Vue's static class spelling from the retained, already decoded attribute.
 
-use alloc::{borrow::Cow, string::String};
+use vize_l0::String;
 use vize_l2::op::Attribute;
 
-pub(super) fn value<'a>(attribute: &Attribute<'a>) -> Cow<'a, str> {
+pub(super) enum Value<'a> {
+    Borrowed(&'a str),
+    Normalized(String),
+}
+
+impl Value<'_> {
+    pub(super) fn as_str(&self) -> &str {
+        match self {
+            Self::Borrowed(value) => value,
+            Self::Normalized(value) => value.as_str(),
+        }
+    }
+}
+
+pub(super) fn value<'a>(attribute: &Attribute<'a>) -> Value<'a> {
     normalize(attribute.name, attribute.value.unwrap_or_default())
 }
 
-pub(super) fn normalize<'a>(name: &str, value: &'a str) -> Cow<'a, str> {
+pub(super) fn normalize<'a>(name: &str, value: &'a str) -> Value<'a> {
     if name != "class" {
-        return Cow::Borrowed(value);
+        return Value::Borrowed(value);
     }
     // Vue condenses only its five HTML whitespace characters, then applies
     // ECMAScript trim. Rust's Unicode whitespace includes U+0085 and excludes
@@ -23,7 +37,7 @@ pub(super) fn normalize<'a>(name: &str, value: &'a str) -> Cow<'a, str> {
         unchanged
     });
     if unchanged {
-        return Cow::Borrowed(value);
+        return Value::Borrowed(value);
     }
     let mut normalized = String::with_capacity(value.len());
     let mut previous_space = false;
@@ -36,7 +50,7 @@ pub(super) fn normalize<'a>(name: &str, value: &'a str) -> Cow<'a, str> {
         }
         previous_space = space;
     }
-    Cow::Owned(normalized)
+    Value::Normalized(normalized)
 }
 
 fn html_space(byte: u8) -> bool {
@@ -62,32 +76,38 @@ fn trim_space(character: char) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::{Value, normalize};
 
     #[test]
     fn canonical_classes_and_ordinary_values_keep_borrowed_storage() {
         assert!(matches!(
             normalize("class", "ready active"),
-            Cow::Borrowed(_)
+            Value::Borrowed(_)
         ));
         assert!(matches!(
             normalize("title", " a\t b "),
-            Cow::Borrowed(" a\t b ")
+            Value::Borrowed(" a\t b ")
         ));
         assert!(matches!(
             normalize("class", "\u{feff}ready\u{feff}"),
-            Cow::Borrowed("ready")
+            Value::Borrowed("ready")
         ));
     }
 
     #[test]
     fn html_condensation_and_ecmascript_trim_preserve_other_class_characters() {
-        assert_eq!(normalize("class", " a\t b\nc\rd\u{c}e "), "a b c d e");
-        assert_eq!(normalize("class", "\u{a0}a\u{85}b\u{feff}"), "a\u{85}b");
         assert_eq!(
-            normalize("class", "a\u{a0}b\u{feff}c\u{200b}d"),
+            normalize("class", " a\t b\nc\rd\u{c}e ").as_str(),
+            "a b c d e"
+        );
+        assert_eq!(
+            normalize("class", "\u{a0}a\u{85}b\u{feff}").as_str(),
+            "a\u{85}b"
+        );
+        assert_eq!(
+            normalize("class", "a\u{a0}b\u{feff}c\u{200b}d").as_str(),
             "a\u{a0}b\u{feff}c\u{200b}d"
         );
-        assert_eq!(normalize("class", "a\u{b}b"), "a\u{b}b");
+        assert_eq!(normalize("class", "a\u{b}b").as_str(), "a\u{b}b");
     }
 }

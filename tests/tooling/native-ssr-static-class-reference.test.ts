@@ -54,6 +54,7 @@ test("static class rows append to byte-identical original eleven SSR references"
 });
 
 const capturePath = process.env.VIZE_L4_SSR_NATIVE_CAPTURE;
+const runtimeMode = process.env.NODE_ENV === "production" ? "production" : "development";
 test(
   "source-built static class components retain every original map anchor and actual SSR fallthrough",
   { skip: !capturePath && process.env.VIZE_L4_SSR_REQUIRE_NATIVE !== "1" },
@@ -114,11 +115,12 @@ test(
     const runtimePath = process.env.VIZE_L4_SSR_RUNTIME_CAPTURE;
     if (runtimePath) {
       fs.writeFileSync(
-        `${runtimePath}.static-class.json`,
+        `${runtimePath}.static-class.${runtimeMode}.json`,
         JSON.stringify(
           {
             modules: captures.length,
             classModules: classIds.length,
+            runtimeMode,
             nativeWholeExecutions: captures.length * 3,
             nativeDirectExecutions: captures.length * 3,
             officialWholeExecutions: captures.length * 3,

@@ -170,7 +170,7 @@ fn encode<L: LinkSink>(
                                 write::property(&mut writer, attribute.name, attribute.span);
                                 writer.push(": ");
                                 let value = static_class::value(attribute);
-                                write::quoted(&mut writer, &value, attribute.span);
+                                write::quoted(&mut writer, value.as_str(), attribute.span);
                             }
                             if multiline {
                                 writer.deindent();
@@ -192,7 +192,7 @@ fn encode<L: LinkSink>(
                             if let Some(value) = attribute.value {
                                 let value = static_class::normalize(attribute.name, value);
                                 writer.push("=\"");
-                                write::template(&mut writer, &value, attribute.span, true);
+                                write::template(&mut writer, value.as_str(), attribute.span, true);
                                 writer.push("\"");
                             }
                         }

@@ -11,7 +11,7 @@ five-character HTML whitespace condensation followed by ECMAScript trimming.
 Interior non-HTML whitespace remains authored class content. U+0085 is not
 trimmed; U+FEFF is trimmed at an edge. Rust's Unicode whitespace predicate
 cannot express this contract. Already-normalized values and ordinary attributes
-keep borrowed storage; normalization allocates only when condensation is needed.
+keep borrowed storage; condensation alone prepares an owned CompactString buffer.
 
 Single roots reuse actual `mergeProps` and server-renderer fallthrough helpers.
 Nested and fragment elements write normalized escaped literals. Bare and empty
@@ -27,7 +27,8 @@ references, whose whole parsed fixture packet has an independent immutable hash.
 Fresh Rust captures require exact whole-function bytes in both writer sinks,
 complete source maps and original links. The existing mandatory hosted SSR
 action executes all twenty-five prepared components through actual Vue SSR
-under three fallthrough contexts and compares complete official HTML. A separate
+under three fallthrough contexts in both development and production runtimes
+and compares complete official HTML. A separate
 map judge requires every segment-bearing original anchor and both UTF-8 ends;
 removing class links must fail. Runtime packets retain source, module, map,
 link and primary reference hashes. Missing native capture fails closed.
@@ -40,3 +41,9 @@ scoped-style class integration, default compiler replacement and #6880 remain
 unfinished. No legacy-backed output, upstream writes, budget change or
 unmeasured performance claim is introduced. Exact-source Actions, protected
 full suites and actual merge are required before delivery.
+
+Initial source `7880ca760` / Check `38025854674` passed the complete new
+source-built native SSR capture/runtime/map step. Its Rust Clippy gate rejected
+our standard String buffer. The successor uses L0 CompactString with a borrowed
+value variant, preserving every authored input, official module, map and output
+expectation. Fresh successor source/protected qualification remains required.

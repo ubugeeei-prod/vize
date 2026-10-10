@@ -15,6 +15,7 @@ runs:
       run: |
         cargo test --locked --profile ci -p vize_l4 --test native_ssr --test native_ssr_roles --test native_selected_ssr -- --nocapture
         vp node --test tests/tooling/l4-native-ssr-reference.test.ts tests/tooling/l4-selected-ssr-reference.test.ts tests/tooling/native-ssr-static-class-reference.test.ts
+        NODE_ENV=production vp node --test tests/tooling/native-ssr-static-class-reference.test.ts
     - name: Test fresh whole scriptless SFC SSR modules
       id: native-sfc-ssr
       shell: bash
@@ -44,7 +45,8 @@ runs:
           ${{ runner.temp }}/native-ssr-modules.json
           ${{ runner.temp }}/native-ssr-modules.json.refusals.json
           ${{ runner.temp }}/native-ssr-runtime.json
-          ${{ runner.temp }}/native-ssr-runtime.json.static-class.json
+          ${{ runner.temp }}/native-ssr-runtime.json.static-class.development.json
+          ${{ runner.temp }}/native-ssr-runtime.json.static-class.production.json
           ${{ runner.temp }}/native-selected-ssr-modules.json
           ${{ runner.temp }}/native-selected-ssr-runtime.json
           ${{ runner.temp }}/native-sfc-ssr-modules.json
