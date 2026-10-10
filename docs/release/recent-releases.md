@@ -2,6 +2,15 @@
 
 Selected changes from actual public releases. The [complete release history](https://github.com/ubugeeei-prod/vize/releases) contains every public release and comparison.
 
+## [0.440.0] - 2026-10-10
+
+### Fixed
+
+- Resolve Vue component selectors in the public native compiler API ([#8360](https://github.com/ubugeeei-prod/vize/pull/8360)).
+- Retain language-server definitions for open Vue files reached through path aliases, while preserving disk-file precedence ([#8326](https://github.com/ubugeeei-prod/vize/pull/8326)).
+
+[Release notes](https://github.com/ubugeeei-prod/vize/releases/tag/v0.440.0) · [Complete changes since 0.439.0](https://github.com/ubugeeei-prod/vize/compare/v0.439.0...v0.440.0)
+
 ## [0.439.0] - 2026-10-10
 
 ### Added

@@ -3,7 +3,7 @@
 Related tracker: [#6239](https://github.com/ubugeeei-prod/vize/issues/6239).
 
 The root changelog's latest dated entry was 0.362.0 even after 0.435.0 and
-0.439.0 were published. Add short, grouped summaries for those two actual
+0.439.0 were published. Add short, grouped summaries for those actual
 releases in `docs/release/recent-releases.md`, linking every selected change to
 its merged PR and every summary to the complete public comparison. The root
 changelog links these summaries above its unchanged historical entries and
@@ -15,6 +15,7 @@ unrelated historical restructuring.
 
 | Version | Public release date (UTC) | Tagged commit                              | Comparison                                                                              |
 | ------- | ------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| 0.440.0 | 2026-10-10                | `bf2cd911c268605588b2ceedbc011e36c79d113c` | [0.439.0 to 0.440.0](https://github.com/ubugeeei-prod/vize/compare/v0.439.0...v0.440.0) |
 | 0.439.0 | 2026-10-10                | `a26243855bcf81005049252a6e71b6dd55e457f1` | [0.435.0 to 0.439.0](https://github.com/ubugeeei-prod/vize/compare/v0.435.0...v0.439.0) |
 | 0.435.0 | 2026-10-06                | `51f3778473a17cecfb31c6238207418c2232c299` | [0.434.0 to 0.435.0](https://github.com/ubugeeei-prod/vize/compare/v0.434.0...v0.435.0) |
 
@@ -49,3 +50,19 @@ This documentation was rebased onto that actual delivered source, preserving eve
 incoming canonical decision byte and only its existing release-summary clause. Attribution of
 the earlier timeout to that deadlock remains unproved. Require fresh exact-head
 Actions for this rebased PR before queue admission; the old failure is not waived.
+
+The published 0.440.0 release appeared at `2026-10-10T07:25:24Z` while this
+PR qualified. Its exact 0.439.0-to-0.440.0 comparison contains release
+metadata and the two delivered fixes #8360 and #8326; the much larger
+0.435.0-to-0.440.0 generated release list is cumulative context. Add only
+those two changes to the new summary. This does not rewrite the public
+release, infer registry or native qualification, or claim the historical
+backfill is complete.
+
+Actual protected main `1078a8242b2d3afdf40c5345579fa600fcb9dfeb` records the
+0.440 public delivery beside release tooling on canonical row 331. A real
+merge-tree projection exposed a collision with the earlier summary clause.
+Rebase onto that actual signed main and move only the owned summary clause
+to the existing publication paragraph, retaining every incoming decision
+byte. Require fresh exact-head Actions and a clean current queue projection
+before independent admission; the prior `aad6fd8` green remains historical.
