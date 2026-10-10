@@ -1,0 +1,33 @@
+{
+  "source": "938bc0ffdc805f204cd98ae95218716766145905",
+  "pages": [
+    {
+      "name": "troubleshooting",
+      "blocks": [
+        "```vue\n<template>\n  <div />\n  <span />\n</template>\n```",
+        "```vue\n<template>\n  <div></div>\n  <span></span>\n</template>\n```",
+        "```ts\nimport vize from \"@vizejs/vite-plugin\";\n\nexport default {\n  plugins: [\n    vize({\n      templateSyntax: \"standard\",\n    }),\n  ],\n};\n```"
+      ],
+      "ids": [
+        "トラブルシューティング",
+        "テンプレート構文モード",
+        "ネイティブタイプのパッケージ解決"
+      ]
+    },
+    {
+      "name": "auto-imports",
+      "blocks": [
+        "```ts\n// nuxt.config.ts\nexport default defineNuxtConfig({\n  modules: [\"@vizejs/nuxt\"],\n  vize: {\n    ui: { prefix: \"Vz\", exclude: [\"tooltip\"] },\n    composables: true,\n  },\n});\n```",
+        "```ts\nimport Components from \"unplugin-vue-components/vite\";\nimport AutoImport from \"unplugin-auto-import/vite\";\nimport { VizeUiResolver, VizeUiComposablesResolver } from \"@vizejs/ui/resolver\";\nimport { VizeComposableResolver } from \"@vizejs/composable/resolver\";\n\n// 既存の plugins 配列に追加\nComponents({ resolvers: [VizeUiResolver({ prefix: \"Vz\" })] });\nAutoImport({ resolvers: [VizeUiComposablesResolver(), VizeComposableResolver()] });\n```",
+        "```ts\nVizeUiResolver({ source: \"local\" }); // ./vize-lib.lock.json を読む\nVizeComposableResolver({ source: \"local\", root: projectRoot, lockfile: \"vize-lib.lock.json\" });\n```"
+      ],
+      "ids": [
+        "自動インポート",
+        "nuxt",
+        "vite",
+        "コピーしたソースを使う",
+        "カタログの更新-開発者向け"
+      ]
+    }
+  ]
+}

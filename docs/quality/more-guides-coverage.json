@@ -55,7 +55,7 @@
       "route": "/guide/auto-imports",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Complete Japanese body reviewed against source syntax-mode/package-resolution or resolver contracts, retaining every full published example and native fragment; fresh browser and deployed acceptance remain pending."
     },
     {
       "route": "/guide/check-performance",
@@ -189,7 +189,7 @@
       "route": "/guide/troubleshooting",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Complete Japanese body reviewed against source syntax-mode/package-resolution or resolver contracts, retaining every full published example and native fragment; fresh browser and deployed acceptance remain pending."
     },
     {
       "route": "/guide/vite-plus-editor",
