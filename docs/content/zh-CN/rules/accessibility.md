@@ -1,312 +1,45 @@
 ---
-title: 无障碍规则
+title: "无障碍规则"
 ---
-
-<!-- Generated translation; source: rules/accessibility.md -->
 
 # 无障碍规则
 
-无障碍规则是Patina单文件模板规则。他们能追上难以追上的加价
-与辅助技术或键盘导航结合使用。
-
-## `a11y/img-alt`
-
-需要在`<img>`上有个`alt`属性。
-
-默认严重程度：`warning`
-预设：无（需显式启用）
-
-缺点：
-
-```vue
-<template>
-  <img src="/avatar.png" />
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <img src="/avatar.png" alt="User avatar" />
-</template>
-```
-
-## `a11y/alt-text`
-
-需要替代文本的媒体元素。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <input type="image" src="/submit.png" />
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <input type="image" src="/submit.png" alt="Submit" />
-</template>
-```
-
-## `a11y/click-events-have-key-events`
-
-报告在没有键盘处理器时，会点击非原生交互元素的处理程序。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <div role="button" @click="save">Save</div>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <button type="button" @click="save">Save</button>
-</template>
-```
-
-## `a11y/interactive-supports-focus`
-
-需要带有交互角色的元素才能被聚焦。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <span role="button" @click="open">Open</span>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <button type="button" @click="open">Open</button>
-</template>
-```
-
-## `a11y/label-has-for`
-
-要求标签必须与表单控制关联。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <label>Email</label>
-  <input id="email" />
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-</template>
-```
-
-## `a11y/form-control-has-label`
-
-要求控件具有可见或程序化标签。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <input type="search" />
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <label>
-    Search
-    <input type="search" />
-  </label>
-</template>
-```
-
-## `a11y/no-aria-hidden-on-focusable`
-
-报告了可聚焦的元素，隐藏在辅助技术之外。
-
-默认严重程度：`error`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <button aria-hidden="true" @click="close">Close</button>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <button aria-label="Close" @click="close">Close</button>
-</template>
-```
-
-## `a11y/no-static-element-interactions`
-
-报告静态元素上的鼠标或键盘处理器。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <section @click="select">Select</section>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <button type="button" @click="select">Select</button>
-</template>
-```
-
-## `a11y/tabindex-no-positive`
-
-报告正值`tabindex`是因为它们创建了难以预测的自定义制表顺序。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <button tabindex="3">Save</button>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <button>Save</button>
-</template>
-```
-
-## `a11y/anchor-is-valid`
-
-要求锚点必须有有效的链路目标。
-静态`href`值在方案归一化后检查，因此`JaVaScRiPt:`并用HTML解码
-`java&#x0A;script:`中的控制字符仍然会被报告，同时类似的非匹配方案
-允许留下。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <a href="#" @click="open">Open</a>
-  <a href="JaVaScRiPt:void(0)">Open</a>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <button type="button" @click="open">Open</button>
-  <a href="/docs/javascript:void">Docs</a>
-</template>
-```
-
-## 额外的无障碍规则
-
-`a11y/anchor-has-content`要求锚点元素包含可访问的内容。默认值：`warning`。
-预设：`happy-path`、`nuxt`、`opinionated`。
-
-`a11y/aria-props`禁止无效的ARIA属性。默认值：`error`。预设：`happy-path`，
-`nuxt`，`opinionated`。
-
-`a11y/aria-role`要求有效的、非抽象的ARIA角色。默认值：`error`。预设：`happy-path`，
-`nuxt`，`opinionated`。
-
-`a11y/aria-unsupported-elements`禁止在不支持ARIA属性的元素上添加属性。
-默认值：`error`。预设：`happy-path`、`nuxt`、`opinionated`。
-
-`a11y/heading-has-content`需要标题元素以包含易于理解的内容。默认值：`warning`。
-预设：`happy-path`、`nuxt`、`opinionated`。
-
-`a11y/heading-levels`不允许跳过航向等级。默认值：`warning`。预设：`nuxt`，
-`opinionated`。
-
-`a11y/iframe-has-title`要求`<iframe>`有`title`。默认值：`warning`。预设：
-`happy-path`，`nuxt`，`opinionated`。
-
-`a11y/landmark-roles`验证了具有里程碑意义的角色定位和独特性。默认值：`warning`。
-预设：`nuxt`，`opinionated`。
-
-`a11y/media-has-caption`需要为媒体元素提供说明。默认值：`warning`。预设：
-`happy-path`，`nuxt`，`opinionated`。
-
-`a11y/mouse-events-have-key-events`需要对焦和使用鼠标操作时的模糊操作。
-默认值：`warning`。预设：`happy-path`、`nuxt`、`opinionated`。
-
-`a11y/no-access-key`不允许`accesskey`属性。默认：`warning`。预设：
-`happy-path`，`nuxt`，`opinionated`。
-
-`a11y/no-autofocus`不允许`autofocus`。默认：`warning`。预设：`happy-path`，`nuxt`，
-`opinionated`。
-
-`a11y/no-distracting-elements`禁止`<marquee>`和`<blink>`等干扰性元素。
-默认值：`warning`。预设：`happy-path`、`nuxt`、`opinionated`。
-
-`a11y/no-i-for-icon`不鼓励将`<i>`仅作为图标元素使用。默认：`warning`。预设：
-`happy-path`，`nuxt`，`opinionated`。
-
-`a11y/no-redundant-roles`禁止重复本地语义的ARIA角色。默认：
-`warning`。预设：`happy-path`、`nuxt`、`opinionated`。
-
-`a11y/no-refer-to-non-existent-id`报告了ARIA对缺失身份证的提及。默认值：`warning`。
-预设：`happy-path`、`nuxt`、`opinionated`。
-
-`a11y/no-role-presentation-on-focusable`不允许`role="presentation"`或`role="none"` on
-可聚焦元素。默认值：`error`。预设：`happy-path`、`nuxt`、`opinionated`。
-
-`a11y/placeholder-label-option`需要在占位符的`<option>`值上被禁用或隐藏。
-默认：`warning`。预设：`nuxt`，`opinionated`。
-
-`a11y/role-has-required-aria-props`要求角色包含其必需的ARIA属性。
-默认值：`warning`。预设：`happy-path`、`nuxt`、`opinionated`。
-
-`a11y/use-list`建议为项目符号状文本提供列表元素。默认值：`warning`。预设：`nuxt`，
-`opinionated`。
+本页集中列出所有相关规则的用途、配置、错误示例和正确示例，无需跳转页面查看对照。高亮行标示修改；复制代码时保留完整源代码。每条规则注明适用范围和当前支持限制；规范示例并不保证当前实现会产生诊断。
+
+<span id="额外的无障碍规则"></span>
+
+| 规则 | 示例 | 用途 |
+| --- | --- | --- |
+| [`a11y/alt-text`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-alt-text) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-alt-text-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-alt-text-good) | 要求媒体元素提供替代文本 |
+| [`a11y/anchor-has-content`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-anchor-has-content) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-anchor-has-content-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-anchor-has-content-good) | 要求锚点元素具有可访问的内容 |
+| [`a11y/anchor-is-valid`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-anchor-is-valid) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-anchor-is-valid-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-anchor-is-valid-good) | 要求锚点元素具有有效的 href |
+| [`a11y/aria-props`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-aria-props) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-aria-props-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-aria-props-good) | 禁止无效的 ARIA 属性 |
+| [`a11y/aria-role`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-aria-role) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-aria-role-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-aria-role-good) | 具有 ARIA 角色的元素必须使用有效的非抽象 ARIA 角色 |
+| [`a11y/aria-unsupported-elements`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-aria-unsupported-elements) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-aria-unsupported-elements-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-aria-unsupported-elements-good) | 禁止在不支持 ARIA 的元素上使用 ARIA 属性 |
+| [`a11y/click-events-have-key-events`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-click-events-have-key-events) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-click-events-have-key-events-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-click-events-have-key-events-good) | 要求点击事件配有键盘事件处理器 |
+| [`a11y/form-control-has-label`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-form-control-has-label) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-form-control-has-label-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-form-control-has-label-good) | 要求表单控件具有相关联的标签 |
+| [`a11y/heading-has-content`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-heading-has-content) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-heading-has-content-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-heading-has-content-good) | 要求标题元素具有可访问的内容 |
+| [`a11y/heading-levels`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-heading-levels) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-heading-levels-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-heading-levels-good) | 禁止跳过标题层级 |
+| [`a11y/iframe-has-title`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-iframe-has-title) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-iframe-has-title-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-iframe-has-title-good) | 要求 iframe 元素具有 title 属性 |
+| [`a11y/img-alt`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-img-alt) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-img-alt-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-img-alt-good) | 要求图片提供 alt 属性，以支持无障碍访问 |
+| [`a11y/interactive-supports-focus`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-interactive-supports-focus) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-interactive-supports-focus-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-interactive-supports-focus-good) | 要求具有交互角色的元素可获得焦点 |
+| [`a11y/label-has-for`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-label-has-for) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-label-has-for-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-label-has-for-good) | 要求标签具有相关联的表单控件 |
+| [`a11y/landmark-roles`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-landmark-roles) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-landmark-roles-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-landmark-roles-good) | 验证地标角色的位置及唯一性 |
+| [`a11y/media-has-caption`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-media-has-caption) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-media-has-caption-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-media-has-caption-good) | 要求媒体元素具有字幕 |
+| [`a11y/mouse-events-have-key-events`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-mouse-events-have-key-events) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-mouse-events-have-key-events-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-mouse-events-have-key-events-good) | 要求鼠标事件配有 focus/blur 事件 |
+| [`a11y/no-access-key`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-access-key) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-access-key-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-access-key-good) | 禁止使用 accesskey 属性 |
+| [`a11y/no-aria-hidden-on-focusable`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-aria-hidden-on-focusable) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-aria-hidden-on-focusable-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-aria-hidden-on-focusable-good) | 禁止在可获得焦点的元素上使用 aria-hidden="true" |
+| [`a11y/no-autofocus`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-autofocus) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-autofocus-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-autofocus-good) | 禁止使用 autofocus 属性 |
+| [`a11y/no-distracting-elements`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-distracting-elements) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-distracting-elements-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-distracting-elements-good) | 禁止 &lt;marquee&gt; 和 &lt;blink&gt; 等分散注意力的元素 |
+| [`a11y/no-i-for-icon`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-i-for-icon) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-i-for-icon-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-i-for-icon-good) | 禁止使用 &lt;i&gt; 元素表示图标 |
+| [`a11y/no-redundant-roles`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-redundant-roles) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-redundant-roles-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-redundant-roles-good) | 禁止多余的 ARIA 角色 |
+| [`a11y/no-refer-to-non-existent-id`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-refer-to-non-existent-id) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-refer-to-non-existent-id-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-refer-to-non-existent-id-good) | 禁止引用不存在的 ID |
+| [`a11y/no-role-presentation-on-focusable`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-role-presentation-on-focusable) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-role-presentation-on-focusable-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-role-presentation-on-focusable-good) | 禁止在可获得焦点的元素上使用 role="presentation" 或 role="none" |
+| [`a11y/no-static-element-interactions`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-static-element-interactions) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-static-element-interactions-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-no-static-element-interactions-good) | 禁止在静态元素上设置事件处理器 |
+| [`a11y/placeholder-label-option`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-placeholder-label-option) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-placeholder-label-option-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-placeholder-label-option-good) | 要求 select 的占位选项具有 disabled 或 hidden |
+| [`a11y/role-has-required-aria-props`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-role-has-required-aria-props) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-role-has-required-aria-props-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-role-has-required-aria-props-good) | 要求 ARIA 角色具有必需属性 |
+| [`a11y/tabindex-no-positive`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-tabindex-no-positive) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-tabindex-no-positive-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-tabindex-no-positive-good) | 禁止正数 tabindex 值 |
+| [`a11y/use-list`](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-use-list) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-use-list-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#a11y-use-list-good) | 建议为类似项目符号的文本使用列表元素 |
+| [`vue/use-unique-element-ids`](https://vizejs.dev/zh-CN/rules/accessibility.html#vue-use-unique-element-ids) | [错误示例](https://vizejs.dev/zh-CN/rules/accessibility.html#vue-use-unique-element-ids-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/accessibility.html#vue-use-unique-element-ids-good) | 要求使用 useId() 生成唯一元素 ID，而不是静态字面量 |
+
+[全部规则](./all.md) · [规则选项](/rules/options.md) · [ESLint 迁移对应表](/rules/migration.md) · [项目检查](./cross-file.md) · [组件间属性传递](/rules/project/vue-cross-file-attrs-fallthrough.md)

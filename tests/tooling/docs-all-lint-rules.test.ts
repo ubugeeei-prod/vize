@@ -24,6 +24,7 @@ const { parseSync } = require("@babel/core") as {
 const tsSyntax: unknown = require("@babel/plugin-syntax-typescript");
 import { parse as parseSfc, compileScript } from "vue-computed-inlay-oracle/compiler-sfc";
 import { crossMetadata } from "../../docs/scripts/rules/project-metadata.ts";
+import { verifyCompleteCategorySources } from "./support/docs-category-sources.ts";
 
 const root = resolve(import.meta.dirname, "../..");
 const read = (path: string) => readFileSync(resolve(root, path), "utf8");
@@ -178,7 +179,10 @@ await test("migration retains all mapped, divergent and unsupported ESLint ident
 });
 
 function codeBlocks(page: string) {
-  return [...page.matchAll(/```\w+\n[\s\S]*?\n```/g)].map((match) => match[0]);
+  return [...page.matchAll(/```(\w+)[^\n]*\n([\s\S]*?)\n```/g)].map((match) => [
+    match[1],
+    match[2],
+  ]);
 }
 
 await test("project references retain every code and distinguish actual CLI producers", () => {
@@ -193,15 +197,18 @@ await test("project references retain every code and distinguish actual CLI prod
   for (const locale of ["", "ja/"]) {
     const index = read(`docs/content/${locale}rules/cross-file.md`);
     const all = read(`docs/content/${locale}rules/all.md`);
-    const rows = [...index.matchAll(/^\| \[`([^`]+)`\]\(\.\/project\/([^)]*)\)/gm)];
+    const rows = [
+      ...index.matchAll(
+        /^\| \[`([^`]+)`\]\(https:\/\/vizejs\.dev\/(?:ja\/)?rules\/cross-file\.html#([^)]*)\)/gm,
+      ),
+    ];
     assert.equal(rows.length, 66);
-    for (const [_, id, path] of rows) {
+    for (const [_, id, slug] of rows) {
+      const path = `${slug}.md`;
       const page = read(`docs/content/${locale}rules/project/${path}`);
       assert.ok(page.includes(`# \`${id}\``), id);
-      const [bad, good] = locale ? ["悪い", "良い"] : ["bad", "good"];
-      assert.ok(index.includes(`./project/${path}#${bad}`), `${id}: direct Bad link`);
-      assert.ok(index.includes(`./project/${path}#${good}`), `${id}: direct Good link`);
-      const slug = path.slice(0, -3);
+      assert.ok(index.includes(`#${slug}-bad`), `${id}: same-page Bad link`);
+      assert.ok(index.includes(`#${slug}-good`), `${id}: same-page Good link`);
       assert.ok(all.includes(`#${slug}-bad`), `${id}: same-page Bad link`);
       assert.ok(all.includes(`#${slug}-good`), `${id}: same-page Good link`);
       for (const label of locale
@@ -229,11 +236,12 @@ await test("both catalogue pages retain all 317 complete reference examples and 
     ["ja/", "ja"],
   ]) {
     const catalogue = read(`docs/content/generated/rules/${generated}/all.md`);
-    const targets = [...catalogue.matchAll(/<span id="([^"\n]+)"><\/span>\n\n### `([^`]+)`/g)];
+    const targets = [...catalogue.matchAll(/^### `([^`]+)`$/gm)];
     assert.equal(targets.length, 317);
     assert.equal(new Set(targets.map((match) => match[1])).size, 317);
     for (let index = 0; index < targets.length; index += 1) {
-      const [_, slug, id] = targets[index];
+      const [, id] = targets[index];
+      const slug = id.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
       const section = catalogue.slice(targets[index].index, targets[index + 1]?.index);
       const directories = ["reference", "project"].filter((directory) =>
         existsSync(resolve(root, `docs/content/${locale}rules/${directory}/${slug}.md`)),
@@ -259,11 +267,17 @@ await test("both catalogue pages retain all 317 complete reference examples and 
       }
     }
     const anchors = new Set(
-      [...catalogue.matchAll(/<span id="([^"\n]+)"><\/span>/g)].map((match) => match[1]),
+      [...catalogue.matchAll(/<span id="([^"\n]+)"><\/span>/g)]
+        .map((match) => match[1])
+        .concat(targets.map((match) => match[1].replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase())),
     );
     for (const [, anchor] of catalogue.matchAll(/\]\(#([^)]*)\)/g))
       assert.ok(anchors.has(anchor), `${locale}: missing same-page ${anchor}`);
   }
+});
+
+await test("all category and cross-file reader routes retain complete current source packets", () => {
+  verifyCompleteCategorySources(root);
 });
 
 await test("all five Vue categories keep every rule and whole Bad/Good source on the current page", () => {

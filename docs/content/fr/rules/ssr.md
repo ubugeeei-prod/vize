@@ -1,71 +1,15 @@
 ---
-title: Règles SSR
+title: "Règles SSR"
 ---
-
-<!-- Generated translation; source: rules/ssr.md -->
 
 # Règles SSR
 
-Ces règles couvrent les codes et modèles qui peuvent perturber le rendu serveur ou l’hydratation. Ils sont
-documentés séparément des règles HTML et Vapor car le mode défaillance est la frontière serveur/
-client.
+Chaque règle présente sur cette page son objectif, sa configuration et ses exemples complets Mauvais et Bon, accompagnés de leurs explications. Les lignes surlignées montrent les modifications ; le code copié conserve la source complète. Les limites de prise en charge actuelles sont précisées avant les exemples concernés.
 
-## `ssr/no-browser-globals-in-ssr`
 
-Rapporte des globals uniquement du navigateur dans le code qui peuvent s’exécuter pendant le SSR.
+| Règle | Exemples | Objectif |
+| --- | --- | --- |
+| [`ssr/no-browser-globals-in-ssr`](https://vizejs.dev/fr/rules/ssr.html#ssr-no-browser-globals-in-ssr) | [Mauvais](https://vizejs.dev/fr/rules/ssr.html#ssr-no-browser-globals-in-ssr-bad) · [Bon](https://vizejs.dev/fr/rules/ssr.html#ssr-no-browser-globals-in-ssr-good) | Interdire les variables globales propres au navigateur dans un contexte SSR |
+| [`ssr/no-hydration-mismatch`](https://vizejs.dev/fr/rules/ssr.html#ssr-no-hydration-mismatch) | [Mauvais](https://vizejs.dev/fr/rules/ssr.html#ssr-no-hydration-mismatch-bad) · [Bon](https://vizejs.dev/fr/rules/ssr.html#ssr-no-hydration-mismatch-good) | Interdire les valeurs non déterministes qui causent des divergences d’hydratation |
 
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<script setup lang="ts">
-const width = window.innerWidth;
-</script>
-```
-
-Bon :
-
-```vue
-<script setup lang="ts">
-const width = ref(0);
-
-onMounted(() => {
-  width.value = window.innerWidth;
-});
-</script>
-```
-
-Les vérifications de garde telles que `typeof window === "undefined"` sont autorisées car le formulaire d’identifiant `typeof`
-direct est sécurisé lors du rendu du serveur. Les chaînes de caractères, commentaires et lettres régulières sont également
-ignorés lorsqu’ils contiennent des noms comme `window` ou `document`. Accéder à un membre comme
-`typeof window.innerWidth` rapporte toujours, car cela évalue le navigateur globalement.
-
-## `ssr/no-hydration-mismatch`
-
-Rapporte des valeurs de modèles non déterministes qui peuvent différer entre le rendu serveur et l’hydratation
-client.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<template>
-  <p>{{ Math.random() }}</p>
-</template>
-```
-
-Bon :
-
-```vue
-<script setup lang="ts">
-const seed = useState("seed", () => "stable");
-</script>
-
-<template>
-  <p>{{ seed }}</p>
-</template>
-```
+[Toutes les règles](./all.md) · [Options des règles](/rules/options.md) · [Correspondance de migration ESLint](/rules/migration.md) · [Vérifications du projet](./cross-file.md) · [Attributs entre composants](/rules/project/vue-cross-file-attrs-fallthrough.md)

@@ -4,12 +4,15 @@ import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Page } from "playwright";
 import { verifyRenderedVueRulePackets } from "./vue-rule-render-assertions.ts";
+import { verifyRenderedCategoryPackets } from "./category-rule-render-assertions.ts";
+import { categoryFiles } from "./rules/catalogue-routes.ts";
+import { catalogueSubgroups } from "./rules/catalogue-subgroups.ts";
 
 export const ruleRenderRoutes = [
   "/rules/all",
   "/rules/vue",
-  "/rules/petite-vue",
-  "/rules/ecosystem",
+  ...categoryFiles.map((file) => `/rules/${file}`),
+  "/rules/cross-file",
   "/rules/reference/script-define-props-destructuring",
   "/rules/reference/a11y-form-control-has-label",
   "/rules/project/vize-croquis-cf-array-mutation",
@@ -20,6 +23,15 @@ const root = resolve(import.meta.dirname, "../..");
 export async function verifyRenderedRulePackets(page: Page, route: string) {
   if (/^\/(?:ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/vue$/.test(route))
     return verifyRenderedVueRulePackets(page, route);
+  const category = route.match(/^\/(ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/([^/]+)$/);
+  if (
+    category &&
+    (categoryFiles.includes(category[2] as (typeof categoryFiles)[number]) ||
+      category[2] === "cross-file" ||
+      (category[1] && category[1] !== "ja/" && category[2] === "all") ||
+      (!category[1] && category[2] in catalogueSubgroups))
+  )
+    return verifyRenderedCategoryPackets(page, route);
   if (!/^\/(?:ja\/)?rules\/all$/.test(route)) return null;
   const ja = route.startsWith("/ja/");
   const locale = ja ? "ja/" : "";
@@ -59,7 +71,10 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
       let current: string | undefined;
       const content = document.querySelector(".content");
       if (!content) throw new Error("Inline rule catalogue requires its content authority");
-      for (const element of content.querySelectorAll("span[id], pre code")) {
+      const contentIds = [...content.querySelectorAll("[id]")].map((element) => element.id);
+      if (new Set(contentIds).size !== contentIds.length)
+        throw new Error("Inline rule catalogue contains duplicate IDs");
+      for (const element of content.querySelectorAll("h3[id], pre code")) {
         const id = ids.get(element.id);
         if (id !== undefined) {
           current = id;

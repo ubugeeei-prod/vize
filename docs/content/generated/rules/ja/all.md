@@ -345,8 +345,6 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 
 ## 単一ファイルの例
 
-<span id="petite-vue-no-unsupported-directive"></span>
-
 ### `petite-vue/no-unsupported-directive`
 
 petite-vue が対応しないディレクティブを検出します。
@@ -386,7 +384,7 @@ vp run lint
 
 `v-memo`、`v-slot:header`、カスタムの `v-my-directive` は petite-vue の対応ディレクティブ一覧にありません。petite-vue の script によって、この HTML が対象の方言として判定されます。
 
-```html
+```html annotate="remove:3,4,5"
 <!doctype html>
 <html><body>
 <div v-memo="[a, b]"></div>
@@ -402,7 +400,7 @@ vp run lint
 
 対応している `v-scope`、`v-effect`、`v-if`、`v-bind`、`v-on` を使い、未対応のディレクティブへの依存を取り除きます。
 
-```html
+```html annotate="add:3,4"
 <!doctype html>
 <html><body>
 <div v-scope="{ count: 0 }" v-effect="console.log(count)"></div>
@@ -414,8 +412,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/no_unsupported_directive.rs#L43) · [全ルール](all.md)
-
-<span id="petite-vue-valid-v-effect"></span>
 
 ### `petite-vue/valid-v-effect`
 
@@ -456,7 +452,7 @@ vp run lint
 
 各 `v-effect` の値が未指定、空文字、空白のみであり、実行する式がありません。
 
-```html
+```html annotate="remove:3,4,5"
 <!doctype html>
 <html><body>
 <div v-effect></div>
@@ -472,7 +468,7 @@ vp run lint
 
 一方は `el.textContent` を更新し、もう一方は `count` を増やす式を指定しています。このルールが確認するのは式が空でないことであり、処理内容の妥当性ではありません。
 
-```html
+```html annotate="add:3,4"
 <!doctype html>
 <html><body>
 <div v-effect="el.textContent = count"></div>
@@ -484,8 +480,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_effect.rs#L35) · [全ルール](all.md)
-
-<span id="petite-vue-valid-v-scope"></span>
 
 ### `petite-vue/valid-v-scope`
 
@@ -526,7 +520,7 @@ vp run lint
 
 値を持つ四つの `v-scope` は識別子、関数呼び出し、算術式、数値であり、いずれもオブジェクトリテラルではありません。
 
-```html
+```html annotate="remove:3,4,5,6"
 <!doctype html>
 <html><body>
 <div v-scope="count"></div>
@@ -543,7 +537,7 @@ vp run lint
 
 値を省略した `v-scope` はルートスコープを使います。ほかは括弧付きのものも含めてオブジェクトリテラルであり、このルールで許可されます。
 
-```html
+```html annotate="add:3,4,5,6"
 <!doctype html>
 <html><body>
 <div v-scope></div>
@@ -557,8 +551,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_scope.rs#L46) · [全ルール](all.md)
-
-<span id="vue-multi-word-component-names"></span>
 
 ### `vue/multi-word-component-names`
 
@@ -623,8 +615,6 @@ Item.vue は一つの語だけのコンポーネント名です。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L34) · [全ルール](all.md)
 
-<span id="vue-no-child-content"></span>
-
 ### `vue/no-child-content`
 
 v-html / v-text と子コンテンツを同時に指定する箇所を検出します。
@@ -664,7 +654,7 @@ vp run lint
 
 v-text が p の内容を置き換えるため、中に書いた fallback の文字を表示できません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <p v-text="message">Fallback text</p>
 </template>
@@ -676,7 +666,7 @@ v-text が p の内容を置き換えるため、中に書いた fallback の文
 
 子の文字を取り除き、p の内容を v-text だけで指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <p v-text="message" />
 </template>
@@ -685,8 +675,6 @@ v-text が p の内容を置き換えるため、中に書いた fallback の文
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_child_content.rs#L30) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-filter"></span>
 
 ### `vue/no-deprecated-filter`
 
@@ -727,7 +715,7 @@ vp run lint
 
 capitalize を適用するために、廃止された filter のパイプ構文を使っています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 {{ message | capitalize }}
 </template>
@@ -739,7 +727,7 @@ capitalize を適用するために、廃止された filter のパイプ構文�
 
 通常の式で capitalize(message) を呼び出します。
 
-```vue
+```vue annotate="add:2"
 <template>
 {{ capitalize(message) }}
 </template>
@@ -748,8 +736,6 @@ capitalize を適用するために、廃止された filter のパイプ構文�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L53) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-functional-template"></span>
 
 ### `vue/no-deprecated-functional-template`
 
@@ -790,7 +776,7 @@ vp run lint
 
 SFC の template に廃止された functional を指定し、旧来の props の参照を使っています。
 
-```vue
+```vue annotate="remove:1,2"
 <template functional>
 <div>{{ props.msg }}</div>
 </template>
@@ -802,7 +788,7 @@ SFC の template に廃止された functional を指定し、旧来の props �
 
 functional を取り除き、コンポーネントの msg を直接参照します。
 
-```vue
+```vue annotate="add:1,2"
 <template>
 <div>{{ msg }}</div>
 </template>
@@ -811,8 +797,6 @@ functional を取り除き、コンポーネントの msg を直接参照しま�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs#L57) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-html-element-is"></span>
 
 ### `vue/no-deprecated-html-element-is`
 
@@ -853,7 +837,7 @@ vp run lint
 
 標準の div で、接頭辞がない旧来の is 属性から Vue コンポーネントを指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div is="MyComponent" />
 </template>
@@ -865,7 +849,7 @@ vp run lint
 
 動的な component では :is を使い、標準要素では vue: の接頭辞を明示します。
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <component :is="MyComponent" />
 <div is="vue:MyComponent" />
@@ -875,8 +859,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs#L39) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-inline-template"></span>
 
 ### `vue/no-deprecated-inline-template`
 
@@ -917,7 +899,7 @@ vp run lint
 
 Card に渡す内容に、廃止された inline-template を指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <Card inline-template><p>Details</p></Card>
 </template>
@@ -929,7 +911,7 @@ Card に渡す内容に、廃止された inline-template を指定していま�
 
 inline-template を取り除き、同じ内容を通常の形で渡します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <Card><p>Details</p></Card>
 </template>
@@ -938,8 +920,6 @@ inline-template を取り除き、同じ内容を通常の形で渡します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-router-link-tag-prop"></span>
 
 ### `vue/no-deprecated-router-link-tag-prop`
 
@@ -980,7 +960,7 @@ vp run lint
 
 RouterLink の廃止された tag で button を指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <router-link to="/home" tag="button">Home</router-link>
 </template>
@@ -992,7 +972,7 @@ RouterLink の廃止された tag で button を指定しています。
 
 slot から navigate を受け取り、明示的に記述した button で実行します。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
 <router-link to="/home" v-slot="{ navigate }">
 <button @click="navigate">Home</button>
@@ -1003,8 +983,6 @@ slot から navigate を受け取り、明示的に記述した button で実行
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs#L37) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-scope-attribute"></span>
 
 ### `vue/no-deprecated-scope-attribute`
 
@@ -1045,7 +1023,7 @@ vp run lint
 
 slot の template に、廃止された scope で props を宣言しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <Card><template scope="props">{{ props.name }}</template></Card>
 </template>
@@ -1057,7 +1035,7 @@ slot の template に、廃止された scope で props を宣言しています
 
 現在の default slot のディレクティブで、同じ props を受け取ります。
 
-```vue
+```vue annotate="add:2"
 <template>
 <Card><template #default="props">{{ props.name }}</template></Card>
 </template>
@@ -1066,8 +1044,6 @@ slot の template に、廃止された scope で props を宣言しています
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-slot-attribute"></span>
 
 ### `vue/no-deprecated-slot-attribute`
 
@@ -1108,7 +1084,7 @@ vp run lint
 
 旧来の slot 属性で header の slot を選んでいます。
 
-```vue
+```vue annotate="remove:3,4"
 <template>
 <Foo>
 <template slot="header"><h1>Title</h1></template>
@@ -1123,7 +1099,7 @@ vp run lint
 
 現在の v-slot:header で header の slot を指定します。
 
-```vue
+```vue annotate="add:3"
 <template>
 <Foo>
 <template v-slot:header><h1>Title</h1></template>
@@ -1134,8 +1110,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-slot-scope-attribute"></span>
 
 ### `vue/no-deprecated-slot-scope-attribute`
 
@@ -1176,7 +1150,7 @@ vp run lint
 
 廃止された slot-scope で slot の props を受け取っています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <Card><template slot-scope="props">{{ props.name }}</template></Card>
 </template>
@@ -1188,7 +1162,7 @@ vp run lint
 
 #default で同じ props を受け取り、slot-scope を取り除きます。
 
-```vue
+```vue annotate="add:2"
 <template>
 <Card><template #default="props">{{ props.name }}</template></Card>
 </template>
@@ -1197,8 +1171,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs#L33) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-v-bind-sync"></span>
 
 ### `vue/no-deprecated-v-bind-sync`
 
@@ -1239,7 +1211,7 @@ vp run lint
 
 .camel と組み合わせたものも含め、廃止された .sync を使っています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <MyComponent :title.sync="title" />
 <MyComponent v-bind:title.sync="title" />
@@ -1253,7 +1225,7 @@ vp run lint
 
 一方向なら通常の title のバインディング、更新の受け取りが必要なら v-model:title を使います。
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <MyComponent :title="title" />
 <MyComponent v-model:title="title" />
@@ -1263,8 +1235,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-v-on-native-modifier"></span>
 
 ### `vue/no-deprecated-v-on-native-modifier`
 
@@ -1305,7 +1275,7 @@ vp run lint
 
 コンポーネントのイベントに、廃止された .native を指定しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <MyComponent @click.native="handler" />
 <MyComponent v-on:click.native="handler" />
@@ -1319,7 +1289,7 @@ vp run lint
 
 .native を取り除き、.stop などの他の modifier は残します。
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <MyComponent @click="handler" />
 <MyComponent @click.stop="handler" />
@@ -1329,8 +1299,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) · [全ルール](all.md)
-
-<span id="vue-no-deprecated-v-on-number-modifiers"></span>
 
 ### `vue/no-deprecated-v-on-number-modifiers`
 
@@ -1371,7 +1339,7 @@ vp run lint
 
 キーを、廃止された数値コード 13 と 27 で指定しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <input @keyup.13="submit" />
 <input v-on:keyup.27="cancel" />
@@ -1385,7 +1353,7 @@ vp run lint
 
 キーの名前を使い、enter と esc の modifier に変更します。
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <input @keyup.enter="submit" />
 <input @keyup.esc="cancel" />
@@ -1395,8 +1363,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs#L43) · [全ルール](all.md)
-
-<span id="vue-no-dupe-v-else-if"></span>
 
 ### `vue/no-dupe-v-else-if`
 
@@ -1437,7 +1403,7 @@ vp run lint
 
 最初と同じ ready の条件を else-if に書き、後の分岐に到達できません。
 
-```vue
+```vue annotate="remove:3"
 <template>
   <p v-if="status === 'ready'">Ready</p>
   <p v-else-if="status === 'ready'">Still ready</p>
@@ -1450,7 +1416,7 @@ vp run lint
 
 二つ目で別の loading の状態を検査し、else-if に到達できる条件にします。
 
-```vue
+```vue annotate="add:3"
 <template>
   <p v-if="status === 'ready'">Ready</p>
   <p v-else-if="status === 'loading'">Loading</p>
@@ -1460,8 +1426,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs#L34) · [全ルール](all.md)
-
-<span id="vue-no-duplicate-attributes"></span>
 
 ### `vue/no-duplicate-attributes`
 
@@ -1502,7 +1466,7 @@ vp run lint
 
 一つの button に class を二回指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button class="primary" class="large">Save</button>
 </template>
@@ -1514,7 +1478,7 @@ vp run lint
 
 二つのクラスを一つの class 属性にまとめます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <button class="primary large">Save</button>
 </template>
@@ -1523,8 +1487,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L31) · [全ルール](all.md)
-
-<span id="vue-no-multiple-template-root"></span>
 
 ### `vue/no-multiple-template-root`
 
@@ -1567,7 +1529,7 @@ vp run lint
 
 単一ルートを要求する設定で、テンプレートのルートに p が二つ並んでいます。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <p>First</p>
 <p>Second</p>
@@ -1580,7 +1542,7 @@ vp run lint
 
 section で囲み、ルートを一つにします。単一ルートの契約が必要な場合にだけ有効にする規約です。
 
-```vue
+```vue annotate="add:2"
 <template>
 <section><p>First</p><p>Second</p></section>
 </template>
@@ -1589,8 +1551,6 @@ section で囲み、ルートを一つにします。単一ルートの契約が
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L27) · [全ルール](all.md)
-
-<span id="vue-no-mutating-props"></span>
 
 ### `vue/no-mutating-props`
 
@@ -1631,7 +1591,7 @@ vp run lint
 
 props.count の加算で、親から受け取った値を直接変更しています。
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 const props = defineProps<{ count: number }>();
 
@@ -1645,7 +1605,7 @@ props.count++;
 
 次の値を update:count で通知し、prop の変更は親が行う形にします。
 
-```vue
+```vue annotate="add:3,5,6,7"
 <script setup lang="ts">
 const props = defineProps<{ count: number }>();
 const emit = defineEmits<{ "update:count": [value: number] }>();
@@ -1659,8 +1619,6 @@ function increment() {
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_mutating_props.rs#L42) · [全ルール](all.md)
-
-<span id="vue-no-reserved-component-names"></span>
 
 ### `vue/no-reserved-component-names`
 
@@ -1701,7 +1659,7 @@ vp run lint
 
 コンポーネント名の button が、標準の HTML 要素名と競合しています。
 
-```vue
+```vue annotate="remove:1,2,3,4"
 <script>
 export default {
   name: "button",
@@ -1715,7 +1673,7 @@ export default {
 
 標準の button と重複しない、アプリの AppButton の名前を指定します。
 
-```vue
+```vue annotate="add:1,2,4,5,6,7,8,9"
 <script setup lang="ts">
 defineOptions({ name: "AppButton" });
 </script>
@@ -1730,8 +1688,6 @@ defineOptions({ name: "AppButton" });
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_reserved_component_names.rs#L45) · [全ルール](all.md)
-
-<span id="vue-no-template-key"></span>
 
 ### `vue/no-template-key`
 
@@ -1772,7 +1728,7 @@ vp run lint
 
 繰り返しではない template に key を指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <template :key="section"><div>Details</div></template>
 </template>
@@ -1784,7 +1740,7 @@ vp run lint
 
 template の v-for に key を付け、繰り返す各 fragment を識別します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <template v-for="item in items" :key="item.id"><div>{{ item.name }}</div></template>
 </template>
@@ -1793,8 +1749,6 @@ template の v-for に key を付け、繰り返す各 fragment を識別しま�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_key.rs#L31) · [全ルール](all.md)
-
-<span id="vue-no-textarea-mustache"></span>
 
 ### `vue/no-textarea-mustache`
 
@@ -1835,7 +1789,7 @@ vp run lint
 
 textarea の値をバインドせず、子の補間に message を記述しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <textarea>{{ message }}</textarea>
 </template>
@@ -1847,7 +1801,7 @@ textarea の値をバインドせず、子の補間に message を記述して�
 
 v-model で、編集する textarea の値と message を関連付けます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <textarea v-model="message"></textarea>
 </template>
@@ -1856,8 +1810,6 @@ v-model で、編集する textarea の値と message を関連付けます。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_textarea_mustache.rs#L26) · [全ルール](all.md)
-
-<span id="vue-no-unused-components"></span>
 
 ### `vue/no-unused-components`
 
@@ -1898,7 +1850,7 @@ vp run lint
 
 UserAvatar をコンポーネントとして import していますが、テンプレートで使っていません。
 
-```vue
+```vue annotate="remove:6"
 <script setup lang="ts">
 import UserAvatar from "./UserAvatar.vue";
 </script>
@@ -1914,7 +1866,7 @@ import UserAvatar from "./UserAvatar.vue";
 
 import した UserAvatar をテンプレートで表示し、user を渡します。
 
-```vue
+```vue annotate="add:6"
 <script setup lang="ts">
 import UserAvatar from "./UserAvatar.vue";
 </script>
@@ -1927,8 +1879,6 @@ import UserAvatar from "./UserAvatar.vue";
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_components.rs#L46) · [全ルール](all.md)
-
-<span id="vue-no-unused-vars"></span>
 
 ### `vue/no-unused-vars`
 
@@ -1969,7 +1919,7 @@ vp run lint
 
 ループで使わない index と、slot で使わない foo を宣言しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <li v-for="(item, index) in items" :key="item.id">{{ item.name }}</li>
   <template v-slot="{ foo }">
@@ -1984,7 +1934,7 @@ vp run lint
 
 index を参照するか、意図して使わない _index にし、slot は data を表示します。index の key は使用の例であり、項目の安定した識別子として推奨するものではありません。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
   <li v-for="(item, _index) in items" :key="item.id">{{ item.name }}</li>
@@ -1997,8 +1947,6 @@ index を参照するか、意図して使わない _index にし、slot は dat
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L48) · [全ルール](all.md)
-
-<span id="vue-no-use-v-if-with-v-for"></span>
 
 ### `vue/no-use-v-if-with-v-for`
 
@@ -2039,7 +1987,7 @@ vp run lint
 
 同じ li に v-if と v-for を指定し、ループの変数で表示条件を検査しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <li v-for="item in items" v-if="item.visible" :key="item.id">
     {{ item.name }}
@@ -2053,7 +2001,7 @@ vp run lint
 
 computed で表示する項目を先に絞り込み、テンプレートはその配列を繰り返します。
 
-```vue
+```vue annotate="add:1,2,3,4,6"
 <script setup lang="ts">
 const visibleItems = computed(() => items.filter((item) => item.visible));
 </script>
@@ -2068,8 +2016,6 @@ const visibleItems = computed(() => items.filter((item) => item.visible));
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35) · [全ルール](all.md)
-
-<span id="vue-no-useless-template-attributes"></span>
 
 ### `vue/no-useless-template-attributes`
 
@@ -2110,7 +2056,7 @@ vp run lint
 
 条件付きの template に class を指定していますが、この構造用の wrapper は DOM 要素を表示しません。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <section><template v-if="ready" class="notice"><p>Ready</p></template></section>
 </template>
@@ -2122,7 +2068,7 @@ vp run lint
 
 実際に表示する p に class を移し、構造を指定する template の v-if は残します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <section><template v-if="ready"><p class="notice">Ready</p></template></section>
 </template>
@@ -2131,8 +2077,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_useless_template_attributes.rs#L32) · [全ルール](all.md)
-
-<span id="vue-no-v-for-template-key-on-child"></span>
 
 ### `vue/no-v-for-template-key-on-child`
 
@@ -2173,7 +2117,7 @@ vp run lint
 
 繰り返す template に key がなく、子の p に指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <template v-for="item in items"><p :key="item.id">{{ item.name }}</p></template>
 </template>
@@ -2185,7 +2129,7 @@ vp run lint
 
 template の v-for に key を移し、繰り返す fragment 全体を識別します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <template v-for="item in items" :key="item.id"><p>{{ item.name }}</p></template>
 </template>
@@ -2194,8 +2138,6 @@ template の v-for に key を移し、繰り返す fragment 全体を識別し�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs#L30) · [全ルール](all.md)
-
-<span id="vue-no-v-html"></span>
 
 ### `vue/no-v-html`
 
@@ -2236,7 +2178,7 @@ vp run lint
 
 v-html で content を通常の文字ではなく HTML として扱っています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <article v-html="content" />
 </template>
@@ -2248,7 +2190,7 @@ v-html で content を通常の文字ではなく HTML として扱っていま�
 
 mustache の補間で、HTML を挿入せず content をエスケープした文字として表示します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <article>{{ content }}</article>
 </template>
@@ -2257,8 +2199,6 @@ mustache の補間で、HTML を挿入せず content をエスケープした文
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_html.rs#L51) · [全ルール](all.md)
-
-<span id="vue-no-v-text-v-html-on-component"></span>
 
 ### `vue/no-v-text-v-html-on-component`
 
@@ -2299,7 +2239,7 @@ vp run lint
 
 コンポーネントに、要素の内容を置き換える v-html や v-text を指定しています。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <MyComponent v-html="content" />
   <MyComponent v-text="content" />
@@ -2312,7 +2252,7 @@ vp run lint
 
 標準の HTML 要素にはディレクティブを使えます。MyComponent には default slot から内容を渡します。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <div v-html="content"></div>
   <component is="div" v-html="content" />
@@ -2323,8 +2263,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs#L33) · [全ルール](all.md)
-
-<span id="vue-permitted-contents"></span>
 
 ### `vue/permitted-contents`
 
@@ -2365,7 +2303,7 @@ vp run lint
 
 p にブロックを入れ、tbody を省略し、操作要素を入れ子にするか、ul に div を直接入れています。
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <template>
   <p><div>block in a paragraph</div></p>
   <table><tr><td>row without tbody</td></tr></table>
@@ -2380,7 +2318,7 @@ p にブロックを入れ、tbody を省略し、操作要素を入れ子にす
 
 p はインラインの内容、table は tbody、ul は li を使います。独自の MyItem は既知の標準の ul の子として検査されません。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <p><span>inline in a paragraph</span></p>
   <table><tbody><tr><td>cell</td></tr></tbody></table>
@@ -2391,8 +2329,6 @@ p はインラインの内容、table は tbody、ul は li を使います。�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/permitted_contents.rs#L56) · [全ルール](all.md)
-
-<span id="vue-require-component-is"></span>
 
 ### `vue/require-component-is`
 
@@ -2433,7 +2369,7 @@ vp run lint
 
 動的な `<component>` に `is` がなく、描画するコンポーネントを選べません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <component />
 </template>
@@ -2445,7 +2381,7 @@ vp run lint
 
 `:is="currentComponent"` で描画対象を指定します。対象は実行時に変更できます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <component :is="currentComponent" />
 </template>
@@ -2454,8 +2390,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_component_is.rs#L27) · [全ルール](all.md)
-
-<span id="vue-require-toggle-inside-transition"></span>
 
 ### `vue/require-toggle-inside-transition`
 
@@ -2496,7 +2430,7 @@ vp run lint
 
 `<Transition>` 内の静的な子に表示の切り替えや動的な選択がなく、enter / leave が発生する条件がありません。
 
-```vue
+```vue annotate="remove:3"
 <template>
 <transition>
 <div>content</div>
@@ -2510,7 +2444,7 @@ vp run lint
 
 `v-if="show"` で子の有無を切り替え、enter / leave の対象にします。
 
-```vue
+```vue annotate="add:3"
 <template>
 <transition>
 <div v-if="show">content</div>
@@ -2521,8 +2455,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_toggle_inside_transition.rs#L48) · [全ルール](all.md)
-
-<span id="vue-require-v-for-key"></span>
 
 ### `vue/require-v-for-key`
 
@@ -2563,7 +2495,7 @@ vp run lint
 
 繰り返す `<li>` に key がなく、一覧更新時に対応する項目を識別できません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <li v-for="item in items">{{ item.name }}</li>
 </template>
@@ -2575,7 +2507,7 @@ vp run lint
 
 `:key="item.id"` で、現在の位置ではなく項目の識別子を各ノードに付けます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <li v-for="item in items" :key="item.id">{{ item.name }}</li>
 </template>
@@ -2584,8 +2516,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L35) · [全ルール](all.md)
-
-<span id="vue-use-v-on-exact"></span>
 
 ### `vue/use-v-on-exact`
 
@@ -2626,7 +2556,7 @@ vp run lint
 
 通常の click handler も Ctrl-click で動くため、別の `.ctrl` handler と重複します。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button type="button" @click="handleClick" @click.ctrl="handleCtrlClick">
     Save
@@ -2640,7 +2570,7 @@ vp run lint
 
 `.exact` で通常の handler を修飾キーのない click に限定し、Ctrl 専用の handler と分けます。
 
-```vue
+```vue annotate="add:2,3,4,5,6"
 <template>
   <button
     type="button"
@@ -2655,8 +2585,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L28) · [全ルール](all.md)
-
-<span id="vue-valid-attribute-name"></span>
 
 ### `vue/valid-attribute-name`
 
@@ -2701,7 +2629,7 @@ vp run lint
 
 `my"attr` の引用符で属性名が壊れています。この例の診断は `parser/template` で、別のルール診断の生成を約束するものではありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div my"attr="value"></div>
 </template>
@@ -2713,7 +2641,7 @@ vp run lint
 
 `my-attr` は正しい属性名で、テンプレート parser が属性と値を読み取れます。
 
-```vue
+```vue annotate="add:2"
 <template>
 <div my-attr="value"></div>
 </template>
@@ -2722,8 +2650,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_attribute_name.rs#L27) · [全ルール](all.md)
-
-<span id="vue-valid-template-root"></span>
 
 ### `vue/valid-template-root`
 
@@ -2764,7 +2690,7 @@ vp run lint
 
 描画上の役割を与える directive がない通常の `<template>` を、テンプレートのルートに置いています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <template>content</template>
 </template>
@@ -2776,7 +2702,7 @@ vp run lint
 
 描画される `<div>` をルートにします。Vue 3 の fragment 全般を一つのルートに制限する例ではありません。
 
-```vue
+```vue annotate="add:2"
 <template>
 <div>content</div>
 </template>
@@ -2785,8 +2711,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82) · [全ルール](all.md)
-
-<span id="vue-valid-v-bind"></span>
 
 ### `vue/valid-v-bind`
 
@@ -2827,7 +2751,7 @@ vp run lint
 
 引数のない `v-bind` に object 式がなく、空の引数形式には属性名がありません。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <div v-bind></div>
   <div :></div>
@@ -2840,7 +2764,7 @@ vp run lint
 
 属性と式を指定するか object を binding します。Vue 3.4 以降では `:loading` の同名省略形も使えます。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <div :class="panelClass"></div>
   <div v-bind="{ class: panelClass }"></div>
@@ -2851,8 +2775,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30) · [全ルール](all.md)
-
-<span id="vue-valid-v-cloak"></span>
 
 ### `vue/valid-v-cloak`
 
@@ -2893,7 +2815,7 @@ vp run lint
 
 値・引数・修飾子を受け取らない `v-cloak` に、それらを指定しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div v-cloak="foo"></div>
 <div v-cloak:arg></div>
@@ -2907,7 +2829,7 @@ vp run lint
 
 値のない `v-cloak` を使います。mount 後に Vue が属性を除くまで CSS で非表示にできます。
 
-```vue
+```vue annotate="add:2"
 <template>
 <div v-cloak></div>
 </template>
@@ -2916,8 +2838,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27) · [全ルール](all.md)
-
-<span id="vue-valid-v-else"></span>
 
 ### `vue/valid-v-else`
 
@@ -2958,7 +2878,7 @@ vp run lint
 
 `v-else` に式を渡す、`v-if` と併用する、直前の条件分岐がない、といった不正な組み合わせです。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <div v-else="ready"></div>
   <div v-else v-if="ready"></div>
@@ -2972,7 +2892,7 @@ vp run lint
 
 対応する `v-if` の直後に、値のない `v-else` を置きます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <div v-if="ready"></div>
   <div v-else></div>
@@ -2982,8 +2902,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L32) · [全ルール](all.md)
-
-<span id="vue-valid-v-for"></span>
 
 ### `vue/valid-v-for`
 
@@ -3024,7 +2942,7 @@ vp run lint
 
 繰り返し式がないか、対応していない `.stop` 修飾子を付けています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div v-for></div>
   <div v-for=""></div>
@@ -3038,7 +2956,7 @@ vp run lint
 
 `item in items` や `(item, index) of items` の完全な式と、例の key を使います。
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div v-for="item in items" :key="item.id"></div>
   <div v-for="(item, index) of items" :key="index"></div>
@@ -3048,8 +2966,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L31) · [全ルール](all.md)
-
-<span id="vue-valid-v-html"></span>
 
 ### `vue/valid-v-html`
 
@@ -3090,7 +3006,7 @@ vp run lint
 
 `v-html` の式がないか、対応していない引数・修飾子を指定しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div v-html></div>
 <div v-html:arg="foo"></div>
@@ -3104,7 +3020,7 @@ vp run lint
 
 `v-html="html"` で正しい式を渡します。構文が正しくても HTML の無害化や未信頼の内容の安全性は保証されません。
 
-```vue
+```vue annotate="add:2"
 <template>
 <div v-html="html"></div>
 </template>
@@ -3113,8 +3029,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) · [全ルール](all.md)
-
-<span id="vue-valid-v-if"></span>
 
 ### `vue/valid-v-if`
 
@@ -3155,7 +3069,7 @@ vp run lint
 
 条件式がないか、同じノードに `v-if` と else directive を併記しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div v-if></div>
   <div v-if=""></div>
@@ -3169,7 +3083,7 @@ vp run lint
 
 `ready` や `count > 0` の式を各 `v-if` に指定し、競合する else directive を除きます。
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div v-if="ready"></div>
   <div v-if="count > 0"></div>
@@ -3179,8 +3093,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_if.rs#L29) · [全ルール](all.md)
-
-<span id="vue-valid-v-memo"></span>
 
 ### `vue/valid-v-memo`
 
@@ -3221,7 +3133,7 @@ vp run lint
 
 値のない `v-memo` では、サブツリーを再利用する判断に必要な依存式を渡せません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div v-memo></div>
 </template>
@@ -3233,7 +3145,7 @@ vp run lint
 
 `v-memo="[valueA, valueB]"` でメモ化に使う依存配列を渡します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <div v-memo="[valueA, valueB]">{{ label }}</div>
 </template>
@@ -3242,8 +3154,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_memo.rs#L27) · [全ルール](all.md)
-
-<span id="vue-valid-v-model"></span>
 
 ### `vue/valid-v-model`
 
@@ -3284,7 +3194,7 @@ vp run lint
 
 ネイティブの `<div>` は `v-model` のフォーム要素ではなく、値のない input の directive には書き込み先の式がありません。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <div v-model="value"></div>
   <input v-model />
@@ -3297,7 +3207,7 @@ vp run lint
 
 input、select、textarea、カスタム コンポーネントを例の書き込み可能な変数に binding します。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <input v-model="value" />
   <select v-model="selected"></select>
@@ -3309,8 +3219,6 @@ input、select、textarea、カスタム コンポーネントを例の書き込
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36) · [全ルール](all.md)
-
-<span id="vue-valid-v-on"></span>
 
 ### `vue/valid-v-on`
 
@@ -3351,7 +3259,7 @@ vp run lint
 
 イベント引数または必要な handler / object 式がありません。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div v-on></div>
   <div @></div>
@@ -3365,7 +3273,7 @@ vp run lint
 
 イベントと handler を指定するか、引数なしの `v-on` に listener object を渡します。
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div @click="handleClick"></div>
   <div v-on="{ click: handleClick }"></div>
@@ -3375,8 +3283,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) · [全ルール](all.md)
-
-<span id="vue-valid-v-once"></span>
 
 ### `vue/valid-v-once`
 
@@ -3417,7 +3323,7 @@ vp run lint
 
 一度だけ描画する印である `v-once` に、値・引数・修飾子を渡しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div v-once="foo"></div>
 <div v-once:arg></div>
@@ -3431,7 +3337,7 @@ vp run lint
 
 値のない `v-once` で、サブツリーを一度だけ描画する対象にします。
 
-```vue
+```vue annotate="add:2"
 <template>
 <div v-once></div>
 </template>
@@ -3440,8 +3346,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) · [全ルール](all.md)
-
-<span id="vue-valid-v-show"></span>
 
 ### `vue/valid-v-show`
 
@@ -3482,7 +3386,7 @@ vp run lint
 
 `v-show` に表示条件の式がないか、display を変更する DOM 要素のない `<template>` に付けています。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <div v-show></div>
   <template v-show="ready"><div></div></template>
@@ -3495,7 +3399,7 @@ vp run lint
 
 `<div>` のような描画される要素に表示条件を指定します。
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div v-show="ready"></div>
   <div v-show="count > 0"></div>
@@ -3505,8 +3409,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_show.rs#L28) · [全ルール](all.md)
-
-<span id="vue-valid-v-slot"></span>
 
 ### `vue/valid-v-slot`
 
@@ -3547,7 +3449,7 @@ vp run lint
 
 ネイティブの `<div>` に slot directive を付けるか、他の default / 名前付き slot 宣言と競合させています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div v-slot:header></div>
   <MyComponent v-slot v-slot:header />
@@ -3561,7 +3463,7 @@ vp run lint
 
 default slot はコンポーネント上、名前付き slot は子の `<template #header>` に宣言します。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <MyComponent v-slot="{ item }">{{ item }}</MyComponent>
   <MyComponent>
@@ -3573,8 +3475,6 @@ default slot はコンポーネント上、名前付き slot は子の `<templat
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) · [全ルール](all.md)
-
-<span id="vue-valid-v-text"></span>
 
 ### `vue/valid-v-text`
 
@@ -3615,7 +3515,7 @@ vp run lint
 
 `v-text` に文字列の式がないか、対応していない引数・修飾子を指定しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div v-text></div>
 <div v-text:arg="foo"></div>
@@ -3629,7 +3529,7 @@ vp run lint
 
 `v-text="msg"` は構文として有効です。別の `vue/no-v-text` は mustache の使用を推奨する場合があります。
 
-```vue
+```vue annotate="add:2"
 <template>
 <div v-text="msg"></div>
 </template>
@@ -3638,8 +3538,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) · [全ルール](all.md)
-
-<span id="vue-attribute-hyphenation"></span>
 
 ### `vue/attribute-hyphenation`
 
@@ -3680,7 +3578,7 @@ vp run lint
 
 コンポーネントの属性名を camelCase の firstName にしています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <UserCard firstName="Ada" />
 </template>
@@ -3692,7 +3590,7 @@ vp run lint
 
 first-name に変更し、ハイフンで区切る既定の属性名の方針に合わせます。
 
-```vue
+```vue annotate="add:2"
 <template>
 <UserCard first-name="Ada" />
 </template>
@@ -3701,8 +3599,6 @@ first-name に変更し、ハイフンで区切る既定の属性名の方針に
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L35) · [全ルール](all.md)
-
-<span id="vue-component-definition-name-casing"></span>
 
 ### `vue/component-definition-name-casing`
 
@@ -3767,8 +3663,6 @@ vp run lint
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L36) · [全ルール](all.md)
 
-<span id="vue-html-quotes"></span>
-
 ### `vue/html-quotes`
 
 HTML 属性値の引用符を揃えます。
@@ -3808,7 +3702,7 @@ vp run lint
 
 属性の値にシングルクォートを使うか、クォートを省略しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div class='foo'></div>
   <div class=foo></div>
@@ -3822,7 +3716,7 @@ vp run lint
 
 通常の属性とディレクティブの式をダブルクォートで囲みます。
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div class="foo"></div>
   <div v-if="ready"></div>
@@ -3832,8 +3726,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/html_quotes.rs#L53) · [全ルール](all.md)
-
-<span id="vue-html-self-closing"></span>
 
 ### `vue/html-self-closing`
 
@@ -3874,7 +3766,7 @@ vp run lint
 
 空のコンポーネントを閉じタグの組で書き、img と br に既定の自己終了の表記を使っていません。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <MyComponent></MyComponent>
   <img>
@@ -3888,7 +3780,7 @@ vp run lint
 
 コンポーネントと void 要素を自己終了にします。内容がある div は閉じタグを残します。
 
-```vue
+```vue annotate="add:2,3,4,5,6,7"
 <template>
   <MyComponent />
   <div></div>
@@ -3902,8 +3794,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L30) · [全ルール](all.md)
-
-<span id="vue-mustache-interpolation-spacing"></span>
 
 ### `vue/mustache-interpolation-spacing`
 
@@ -3944,7 +3834,7 @@ vp run lint
 
 補間の式と区切りの間で、片側または両側の空白がありません。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div>{{text}}</div>
   <div>{{ text}}</div>
@@ -3958,7 +3848,7 @@ vp run lint
 
 式と mustache の開始・終了の両方の区切りに空白を入れます。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <div>{{ text }}</div>
   <div>{{ foo.bar }}</div>
@@ -3969,8 +3859,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L35) · [全ルール](all.md)
-
-<span id="vue-no-multi-spaces"></span>
 
 ### `vue/no-multi-spaces`
 
@@ -4011,7 +3899,7 @@ vp run lint
 
 属性同士や、要素名と最初の属性の間に空白が二つあります。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <div  class="panel"></div>
   <div class="panel"  id="main"></div>
@@ -4024,7 +3912,7 @@ vp run lint
 
 同じ class と id 属性を保ち、属性間の連続した空白を一つの空白に揃えます。
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div class="panel"></div>
   <div class="panel" id="main"></div>
@@ -4034,8 +3922,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multi_spaces.rs#L26) · [全ルール](all.md)
-
-<span id="vue-no-template-shadow"></span>
 
 ### `vue/no-template-shadow`
 
@@ -4078,7 +3964,7 @@ vp run lint
 
 内側の v-for でも item を宣言し、外側の item を隠しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div v-for="item in items" :key="item.id"><span v-for="item in item.children" :key="item.id">{{ item.name }}</span></div>
 </template>
@@ -4090,7 +3976,7 @@ vp run lint
 
 内側は child に変更し、外側の item と内側の child を分けます。
 
-```vue
+```vue annotate="add:2"
 <template>
 <div v-for="item in items" :key="item.id"><span v-for="child in item.children" :key="child.id">{{ child.name }}</span></div>
 </template>
@@ -4099,8 +3985,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_shadow.rs#L34) · [全ルール](all.md)
-
-<span id="vue-no-unused-properties"></span>
 
 ### `vue/no-unused-properties`
 
@@ -4157,7 +4041,7 @@ defineProps<{ title: string; description: string }>();
 
 宣言した両方の prop をテンプレートで参照します。
 
-```vue
+```vue annotate="add:7"
 <script setup lang="ts">
 defineProps<{ title: string; description: string }>();
 </script>
@@ -4171,8 +4055,6 @@ defineProps<{ title: string; description: string }>();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_properties.rs#L94) · [全ルール](all.md)
-
-<span id="vue-prop-name-casing"></span>
 
 ### `vue/prop-name-casing`
 
@@ -4215,7 +4097,7 @@ vp run lint
 
 宣言した prop の user_name をアンダースコア区切りにしています。
 
-```vue
+```vue annotate="remove:2,4"
 <script setup lang="ts">
 defineProps<{ user_name: string }>();
 </script>
@@ -4228,7 +4110,7 @@ defineProps<{ user_name: string }>();
 
 宣言とテンプレートの参照を、camelCase の userName に揃えます。
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 defineProps<{ userName: string }>();
 </script>
@@ -4238,8 +4120,6 @@ defineProps<{ userName: string }>();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/prop_name_casing.rs#L50) · [全ルール](all.md)
-
-<span id="vue-v-bind-style"></span>
 
 ### `vue/v-bind-style`
 
@@ -4280,7 +4160,7 @@ vp run lint
 
 `v-bind:class` が長い形式で、設定したコロン省略形の規約に合いません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div v-bind:class="panelClass"></div>
 </template>
@@ -4292,7 +4172,7 @@ vp run lint
 
 同じ式を `:class` にします。値の型ではなく directive の書き方を検査するルールです。
 
-```vue
+```vue annotate="add:2"
 <template>
   <div :class="panelClass"></div>
 </template>
@@ -4301,8 +4181,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L30) · [全ルール](all.md)
-
-<span id="vue-v-on-style"></span>
 
 ### `vue/v-on-style`
 
@@ -4343,7 +4221,7 @@ vp run lint
 
 `v-on:click` が長い形式で、このルールの省略形に合いません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div v-on:click="handleClick"></div>
 </template>
@@ -4355,7 +4233,7 @@ vp run lint
 
 handler を変えずに `@click` の省略形を使います。
 
-```vue
+```vue annotate="add:2"
 <template>
   <div @click="handleClick"></div>
 </template>
@@ -4364,8 +4242,6 @@ handler を変えずに `@click` の省略形を使います。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_on_style.rs#L28) · [全ルール](all.md)
-
-<span id="vue-v-slot-style"></span>
 
 ### `vue/v-slot-style`
 
@@ -4406,7 +4282,7 @@ vp run lint
 
 コンポーネントで `#default`、template で `v-slot:header` を使い、場所ごとの規約と逆になっています。
 
-```vue
+```vue annotate="remove:2,4"
 <template>
   <MyComponent #default="props">{{ props.item }}</MyComponent>
   <MyComponent>
@@ -4421,7 +4297,7 @@ vp run lint
 
 コンポーネントの default slot は `v-slot`、template の名前付き slot は `#header` にします。
 
-```vue
+```vue annotate="add:2,4"
 <template>
   <MyComponent v-slot="props">{{ props.item }}</MyComponent>
   <MyComponent>
@@ -4433,8 +4309,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_slot_style.rs#L41) · [全ルール](all.md)
-
-<span id="ssr-no-browser-globals-in-ssr"></span>
 
 ### `ssr/no-browser-globals-in-ssr`
 
@@ -4475,7 +4349,7 @@ vp run lint
 
 setup の実行時に `window.innerWidth` を直接読みますが、サーバー上のコンポーネント実行時には `window` が存在しません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const width = window.innerWidth;
 </script>
@@ -4487,7 +4361,7 @@ const width = window.innerWidth;
 
 初期の幅をサーバーでも扱える ref の値にし、ブラウザー API の参照を SSR の setup ではなくクライアントで実行する `onMounted` に移します。
 
-```vue
+```vue annotate="add:2,3,4,5,6"
 <script setup lang="ts">
 const width = ref(0);
 
@@ -4500,8 +4374,6 @@ onMounted(() => {
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs#L158) · [全ルール](all.md)
-
-<span id="ssr-no-hydration-mismatch"></span>
 
 ### `ssr/no-hydration-mismatch`
 
@@ -4542,7 +4414,7 @@ vp run lint
 
 テンプレートが描画時に `Math.random()` を評価し、同じ段落でもサーバーとクライアントで異なるテキストになり得ます。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <p>{{ Math.random() }}</p>
 </template>
@@ -4554,7 +4426,7 @@ vp run lint
 
 新たな乱数ではなく、安定した `seed` の状態を段落に描画します。この Nuxt 形式の例では `useState` が状態を共有し、初期値も定数 `"stable"` です。
 
-```vue
+```vue annotate="add:1,2,3,4,6"
 <script setup lang="ts">
 const seed = useState("seed", () => "stable");
 </script>
@@ -4567,8 +4439,6 @@ const seed = useState("seed", () => "stable");
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_hydration_mismatch.rs#L122) · [全ルール](all.md)
-
-<span id="vue-a11y-img-alt"></span>
 
 ### `vue/a11y-img-alt`
 
@@ -4609,7 +4479,7 @@ vp run lint
 
 静的な画像にも src をバインドする画像にも alt がありません。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <img src="/photo.jpg" />
 <img :src="photo" />
@@ -4622,7 +4492,7 @@ vp run lint
 
 情報のある画像には説明、装飾には空の alt、動的な画像には説明のバインディングを指定します。
 
-```vue
+```vue annotate="add:2,3,4,5,6,7,8,9"
 <template>
 <!-- Informative image -->
 <img src="/photo.jpg" alt="Team photo from company retreat" />
@@ -4638,8 +4508,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/a11y_img_alt.rs#L33) · [全ルール](all.md)
-
-<span id="vue-attribute-order"></span>
 
 ### `vue/attribute-order`
 
@@ -4680,7 +4548,7 @@ vp run lint
 
 構造を決める v-if と通常の id 属性より前に、イベントを指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div @click="onClick" v-if="show" id="main"></div>
 </template>
@@ -4692,7 +4560,7 @@ vp run lint
 
 v-if、id、イベントの順に並べ、ルールの順序に合わせます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <div v-if="show" id="main" @click="onClick"></div>
 </template>
@@ -4701,8 +4569,6 @@ v-if、id、イベントの順に並べ、ルールの順序に合わせます�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_order.rs#L36) · [全ルール](all.md)
-
-<span id="vue-component-name-in-template-casing"></span>
 
 ### `vue/component-name-in-template-casing`
 
@@ -4743,7 +4609,7 @@ vp run lint
 
 PascalCase の方針に対し、コンポーネントを kebab-case と camelCase で記述しています。
 
-```vue
+```vue annotate="remove:5,6"
 <script setup>
 import MyComponent from "./MyComponent.vue";
 </script>
@@ -4759,7 +4625,7 @@ import MyComponent from "./MyComponent.vue";
 
 MyComponent を PascalCase で記述します。標準の slot は小文字のままです。
 
-```vue
+```vue annotate="add:5,6,7"
 <script setup>
 import MyComponent from "./MyComponent.vue";
 </script>
@@ -4773,8 +4639,6 @@ import MyComponent from "./MyComponent.vue";
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs#L31) · [全ルール](all.md)
-
-<span id="vue-html-button-has-type"></span>
 
 ### `vue/html-button-has-type`
 
@@ -4815,7 +4679,7 @@ vp run lint
 
 一つは type を省略し、もう一つは対応しない foo を指定しています。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <button>Click</button>
 <button type="foo">Click</button>
@@ -4828,7 +4692,7 @@ vp run lint
 
 button、submit、reset を明示します。バインドする type は動的な値として扱います。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
 <button type="button">Click</button>
 <button type="submit">Save</button>
@@ -4840,8 +4704,6 @@ button、submit、reset を明示します。バインドする type は動的�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_button_has_type.rs#L39) · [全ルール](all.md)
-
-<span id="vue-max-template-complexity"></span>
 
 ### `vue/max-template-complexity`
 
@@ -4886,7 +4748,7 @@ vp run lint
 
 親が記述する分岐、ループ、slot の内容、式の条件で 13 と 25 になり、既定の閾値 11 と 16 を超えています。
 
-```vue
+```vue annotate="remove:1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
 <script setup lang="ts">
 defineProps<{ rows: Row[] }>();
 </script>
@@ -4915,7 +4777,7 @@ defineProps<{ rows: Row[] }>();
 
 描画を RowList に分け、親には v-if を一つ残します。親自身の値は 2 と 1 になります。
 
-```vue
+```vue annotate="add:2"
 <template>
   <RowList v-if="ready" :rows="rows" />
 </template>
@@ -4924,8 +4786,6 @@ defineProps<{ rows: Row[] }>();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/max_template_complexity.rs#L56) · [全ルール](all.md)
-
-<span id="vue-no-array-index-key"></span>
 
 ### `vue/no-array-index-key`
 
@@ -4966,7 +4826,7 @@ vp run lint
 
 現在の配列の位置を key に使い、並び替えで項目の識別子が変わります。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
 </template>
@@ -4978,7 +4838,7 @@ vp run lint
 
 item.id を key に使い、位置が変わっても項目の識別子を維持します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <li v-for="item in items" :key="item.id">{{ item.name }}</li>
 </template>
@@ -4987,8 +4847,6 @@ item.id を key に使い、位置が変わっても項目の識別子を維持�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs#L32) · [全ルール](all.md)
-
-<span id="vue-no-bare-strings-in-template"></span>
 
 ### `vue/no-bare-strings-in-template`
 
@@ -5029,7 +4887,7 @@ vp run lint
 
 表示する文字や名前を指定する属性に、翻訳を通さない文字列を直接書いています。
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <template>
 <div>hello</div>
 <img alt="a cat" />
@@ -5044,7 +4902,7 @@ vp run lint
 
 翻訳する内容を $t で取得します。記号だけ、数値だけの内容は例外です。
 
-```vue
+```vue annotate="add:2,3,4,5,6"
 <template>
 <div>{{ $t('hello') }}</div>
 <img :alt="$t('cat')" />
@@ -5057,8 +4915,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47) · [全ルール](all.md)
-
-<span id="vue-no-boolean-attr-value"></span>
 
 ### `vue/no-boolean-attr-value`
 
@@ -5099,7 +4955,7 @@ vp run lint
 
 boolean の disabled と checked に、不要な文字列の値を指定しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <input disabled="disabled" />
   <input checked="checked" />
@@ -5113,7 +4969,7 @@ boolean の disabled と checked に、不要な文字列の値を指定して�
 
 値を付けず、boolean 属性があることだけで同じ状態を表します。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <input disabled />
   <input checked />
@@ -5124,8 +4980,6 @@ boolean の disabled と checked に、不要な文字列の値を指定して�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L36) · [全ルール](all.md)
-
-<span id="vue-no-empty-component-block"></span>
 
 ### `vue/no-empty-component-block`
 
@@ -5166,7 +5020,7 @@ vp run lint
 
 template、script、style のブロックが空か、空白だけです。
 
-```vue
+```vue annotate="remove:1,3,5"
 <template></template>
 
 <script></script>
@@ -5181,7 +5035,7 @@ template、script、style のブロックが空か、空白だけです。
 
 残すブロックには、マークアップ、script の宣言、style の宣言を入れます。
 
-```vue
+```vue annotate="add:1,2,3,5,6,7,9,10"
 <template>
 <div>Hello</div>
 </template>
@@ -5198,8 +5052,6 @@ const message = "Hello";
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs#L42) · [全ルール](all.md)
-
-<span id="vue-no-inline-style"></span>
 
 ### `vue/no-inline-style`
 
@@ -5240,7 +5092,7 @@ vp run lint
 
 静的な style 属性に色の宣言を直接書いています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div style="color: red">Text</div>
 </template>
@@ -5252,7 +5104,7 @@ vp run lint
 
 固定した色にはクラスを使います。ratio に依存する幅の動的な style は、静的属性の検査の対象外です。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <div class="text-red">Text</div>
   <span :class="{ 'text-red': isRed }">Text</span>
@@ -5263,8 +5115,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_inline_style.rs#L33) · [全ルール](all.md)
-
-<span id="vue-no-invalid-html-attribute"></span>
 
 ### `vue/no-invalid-html-attribute`
 
@@ -5305,7 +5155,7 @@ vp run lint
 
 a の rel に、stylesheet の link 要素向けの stylesheet を指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <a href="/guide" rel="stylesheet">Guide</a>
 </template>
@@ -5317,7 +5167,7 @@ a の rel に、stylesheet の link 要素向けの stylesheet を指定して�
 
 a の rel に、ヘルプへの参照を表す help を指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <a href="/guide" rel="help">Guide</a>
 </template>
@@ -5326,8 +5176,6 @@ a の rel に、ヘルプへの参照を表す help を指定します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs#L12) · [全ルール](all.md)
-
-<span id="vue-no-lone-template"></span>
 
 ### `vue/no-lone-template`
 
@@ -5368,7 +5216,7 @@ vp run lint
 
 内側の template に、構造や slot を指定する役割がありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div><template><p>Details</p></template></div>
 </template>
@@ -5380,7 +5228,7 @@ vp run lint
 
 不要な template を取り除き、div に p を直接入れます。
 
-```vue
+```vue annotate="add:2"
 <template>
 <div><p>Details</p></div>
 </template>
@@ -5389,8 +5237,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_lone_template.rs#L32) · [全ルール](all.md)
-
-<span id="vue-no-multiple-objects-in-class"></span>
 
 ### `vue/no-multiple-objects-in-class`
 
@@ -5431,7 +5277,7 @@ vp run lint
 
 class の配列に、まとめられる object literal を二つ直接指定しています。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <div :class="[{ a }, { b }]"></div>
 <div :class="[{ active: isActive }, { error: hasError }]"></div>
@@ -5444,7 +5290,7 @@ class の配列に、まとめられる object literal を二つ直接指定し�
 
 条件を一つの object にまとめます。object 一つと文字列の組、literal ではない要素の配列は許可されます。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
 <div :class="{ a, b }"></div>
 <div :class="[{ active: isActive }, 'static']"></div>
@@ -5455,8 +5301,6 @@ class の配列に、まとめられる object literal を二つ直接指定し�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_multiple_objects_in_class.rs#L33) · [全ルール](all.md)
-
-<span id="vue-no-negated-v-if-condition"></span>
 
 ### `vue/no-negated-v-if-condition`
 
@@ -5510,7 +5354,7 @@ v-else と対になる v-if を、否定した条件で始めています。
 
 先に正の ok の条件を使います。条件を反転する際は分岐の内容も入れ替えます。単独の否定の v-if や !== の比較は許可されます。
 
-```vue
+```vue annotate="add:2,3,4,6,7"
 <template>
 <div v-if="ok">B</div>
 <div v-else>A</div>
@@ -5525,8 +5369,6 @@ v-else と対になる v-if を、否定した条件で始めています。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs#L37) · [全ルール](all.md)
-
-<span id="vue-no-non-component-keep-alive-child"></span>
 
 ### `vue/no-non-component-keep-alive-child`
 
@@ -5567,7 +5409,7 @@ vp run lint
 
 KeepAlive の条件付きの子が UserCard ではなく、標準の div になっています。
 
-```vue
+```vue annotate="remove:3"
 <template>
   <KeepAlive>
     <div v-if="ready">
@@ -5583,7 +5425,7 @@ KeepAlive の条件付きの子が UserCard ではなく、標準の div にな�
 
 最初の例は UserCard を条件付きの子にします。v-show の wrapper はこの条件付きの子の検査の対象外を示す例で、標準要素がキャッシュされるという意味ではありません。
 
-```vue
+```vue annotate="add:3,4,5,6"
 <template>
   <KeepAlive>
     <UserCard v-if="ready" />
@@ -5599,8 +5441,6 @@ KeepAlive の条件付きの子が UserCard ではなく、標準の div にな�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L14) · [全ルール](all.md)
-
-<span id="vue-no-preprocessor-lang"></span>
 
 ### `vue/no-preprocessor-lang`
 
@@ -5645,7 +5485,7 @@ vp run lint
 
 style の lang に SCSS を指定しています。preprocessor を使わない規約の例で、現在の SFC 検査はこのルールを生成しません。
 
-```vue
+```vue annotate="remove:2"
 <template><p>Notice</p></template>
 <style lang="scss">
 .notice { color: red; }
@@ -5658,7 +5498,7 @@ style の lang に SCSS を指定しています。preprocessor を使わない�
 
 同じ CSS から preprocessor の lang を取り除きます。規約の修正例で、現在の実行結果の診断の違いを示すものではありません。
 
-```vue
+```vue annotate="add:2"
 <template><p>Notice</p></template>
 <style>
 .notice { color: red; }
@@ -5668,8 +5508,6 @@ style の lang に SCSS を指定しています。preprocessor を使わない�
 良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) · [全ルール](all.md)
-
-<span id="vue-no-root-v-if"></span>
 
 ### `vue/no-root-v-if`
 
@@ -5710,7 +5548,7 @@ vp run lint
 
 コンポーネントのルート自体を v-if で表示・非表示にしています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div v-if="show">content</div>
 </template>
@@ -5722,7 +5560,7 @@ vp run lint
 
 外側の div をルートとして残し、内側の p に表示条件を指定します。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
 <div>
 <p v-if="show">content</p>
@@ -5733,8 +5571,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_root_v_if.rs#L40) · [全ルール](all.md)
-
-<span id="vue-no-script-non-standard-lang"></span>
 
 ### `vue/no-script-non-standard-lang`
 
@@ -5779,7 +5615,7 @@ vp run lint
 
 lang=coffee で CoffeeScript の構文を使っています。現在の SFC 検査はこの言語に対して、このカタログのルールを生成しません。
 
-```vue
+```vue annotate="remove:1,2"
 <script lang="coffee">
 count = 0
 </script>
@@ -5792,7 +5628,7 @@ count = 0
 
 lang=ts と通常の TypeScript の宣言を使い、意図した言語の方針を示します。
 
-```vue
+```vue annotate="add:1,2"
 <script lang="ts">
 const count = 0;
 </script>
@@ -5802,8 +5638,6 @@ const count = 0;
 良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_script_non_standard_lang.rs#L44) · [全ルール](all.md)
-
-<span id="vue-no-src-attribute"></span>
 
 ### `vue/no-src-attribute`
 
@@ -5844,7 +5678,7 @@ vp run lint
 
 SFC の template、script、style を src の外部ファイルに分けています。
 
-```vue
+```vue annotate="remove:1,2,3"
 <template src="./template.html"></template>
 <script src="./script.ts"></script>
 <style src="./style.css"></style>
@@ -5856,7 +5690,7 @@ SFC の template、script、style を src の外部ファイルに分けてい�
 
 各ブロックに内容を記述し、外部の src 属性を使いません。
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,7,8,9,10,11,12,13"
 <template>
   <p>Hello</p>
 </template>
@@ -5875,8 +5709,6 @@ p {
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_src_attribute.rs#L16) · [全ルール](all.md)
-
-<span id="vue-no-static-inline-styles"></span>
 
 ### `vue/no-static-inline-styles`
 
@@ -5917,7 +5749,7 @@ vp run lint
 
 p の style 属性に、変化しない色を直接指定しています。
 
-```vue
+```vue annotate="remove:1,2,3"
 <template>
 <p style="color: red">Notice</p>
 </template>
@@ -5929,7 +5761,7 @@ p の style 属性に、変化しない色を直接指定しています。
 
 notice のクラスと scoped の CSS に、変化しない色を移します。
 
-```vue
+```vue annotate="add:1,2"
 <template><p class="notice">Notice</p></template>
 <style scoped>.notice { color: red; }</style>
 ```
@@ -5937,8 +5769,6 @@ notice のクラスと scoped の CSS に、変化しない色を移します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_static_inline_styles.rs#L15) · [全ルール](all.md)
-
-<span id="vue-no-template-lang"></span>
 
 ### `vue/no-template-lang`
 
@@ -5983,7 +5813,7 @@ vp run lint
 
 template の lang に Pug を指定しています。HTML のみを使う規約の例で、現在の SFC 検査はこの ID を検出しません。
 
-```vue
+```vue annotate="remove:1,2"
 <template lang="pug">
 p Notice
 </template>
@@ -5995,7 +5825,7 @@ p Notice
 
 lang を取り除き、通常の HTML の p を直接記述します。規約の例で、現在の SFC の診断を約束するものではありません。
 
-```vue
+```vue annotate="add:1,2"
 <template>
 <p>Notice</p>
 </template>
@@ -6004,8 +5834,6 @@ lang を取り除き、通常の HTML の p を直接記述します。規約の
 良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) · [全ルール](all.md)
-
-<span id="vue-no-template-target-blank"></span>
 
 ### `vue/no-template-target-blank`
 
@@ -6046,7 +5874,7 @@ vp run lint
 
 外部リンクを target=_blank で開きますが、必要な rel の保護がありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <a href="https://example.com" target="_blank">x</a>
 </template>
@@ -6058,7 +5886,7 @@ vp run lint
 
 同じリンクに noopener noreferrer を指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <a href="https://example.com" target="_blank" rel="noopener noreferrer">x</a>
 </template>
@@ -6067,8 +5895,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_target_blank.rs#L33) · [全ルール](all.md)
-
-<span id="vue-no-undefined-refs"></span>
 
 ### `vue/no-undefined-refs`
 
@@ -6109,7 +5935,7 @@ vp run lint
 
 script は message しか宣言していませんが、テンプレートが missing を参照しています。
 
-```vue
+```vue annotate="remove:2"
 <script setup>const message = "Hello";</script>
 <template>{{ missing }}</template>
 ```
@@ -6120,7 +5946,7 @@ script は message しか宣言していませんが、テンプレートが mis
 
 script setup で宣言済みの message を補間で参照し、未定義の名前を取り除きます。
 
-```vue
+```vue annotate="add:2"
 <script setup>const message = "Hello";</script>
 <template>{{ message }}</template>
 ```
@@ -6128,8 +5954,6 @@ script setup で宣言済みの message を補間で参照し、未定義の名�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_undefined_refs.rs#L14) · [全ルール](all.md)
-
-<span id="vue-no-unsafe-url"></span>
 
 ### `vue/no-unsafe-url`
 
@@ -6170,7 +5994,7 @@ vp run lint
 
 a の移動先に、実行可能な javascript: のスキームを使っています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <a href="javascript:alert(1)">Continue</a>
 </template>
@@ -6182,7 +6006,7 @@ a の移動先に、実行可能な javascript: のスキームを使ってい�
 
 実行可能な URL を除き、通常のローカルの移動先 /next に変更します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <a href="/next">Continue</a>
 </template>
@@ -6191,8 +6015,6 @@ a の移動先に、実行可能な javascript: のスキームを使ってい�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsafe_url.rs#L55) · [全ルール](all.md)
-
-<span id="vue-no-unsandboxed-iframe"></span>
 
 ### `vue/no-unsandboxed-iframe`
 
@@ -6233,7 +6055,7 @@ vp run lint
 
 iframe に sandbox がなく、機能の制限を指定していません。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <iframe src="/embed"></iframe>
 </template>
@@ -6245,7 +6067,7 @@ iframe に sandbox がなく、機能の制限を指定していません。
 
 sandbox で制限し、script が必要な場合にだけ allow-scripts を明示します。
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <iframe src="/embed" sandbox></iframe>
 <iframe src="/embed" sandbox="allow-scripts"></iframe>
@@ -6255,8 +6077,6 @@ sandbox で制限し、script が必要な場合にだけ allow-scripts を明�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsandboxed_iframe.rs#L32) · [全ルール](all.md)
-
-<span id="vue-no-unused-refs"></span>
 
 ### `vue/no-unused-refs`
 
@@ -6297,7 +6117,7 @@ vp run lint
 
 テンプレートの unused の ref に対応する script の参照がありません。
 
-```vue
+```vue annotate="remove:1,3"
 <template><input ref="unused" /></template>
 <script setup>
 const x = 1
@@ -6310,7 +6130,7 @@ const x = 1
 
 inputEl のテンプレート ref に、script setup の同じ名前の ref を対応させます。
 
-```vue
+```vue annotate="add:1,3,4"
 <template><input ref="inputEl" /></template>
 <script setup>
 import { ref } from 'vue'
@@ -6321,8 +6141,6 @@ const inputEl = ref(null)
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_unused_refs.rs#L60) · [全ルール](all.md)
-
-<span id="vue-no-unused-setup-bindings"></span>
 
 ### `vue/no-unused-setup-bindings`
 
@@ -6363,7 +6181,7 @@ vp run lint
 
 script setup の message をテンプレートで使っていません。
 
-```vue
+```vue annotate="remove:2"
 <script setup>const message = "Hello";</script>
 <template><p>Welcome</p></template>
 ```
@@ -6374,7 +6192,7 @@ script setup の message をテンプレートで使っていません。
 
 script setup で宣言した message を p の補間で参照し、未使用の宣言を残しません。
 
-```vue
+```vue annotate="add:2"
 <script setup>const message = "Hello";</script>
 <template><p>{{ message }}</p></template>
 ```
@@ -6382,8 +6200,6 @@ script setup で宣言した message を p の補間で参照し、未使用の�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/unused_setup_bindings.rs#L19) · [全ルール](all.md)
-
-<span id="vue-no-use-v-else-with-v-for"></span>
 
 ### `vue/no-use-v-else-with-v-for`
 
@@ -6424,7 +6240,7 @@ vp run lint
 
 同じ p に v-else と v-for を指定しています。
 
-```vue
+```vue annotate="remove:3"
 <template>
 <p v-if="ready">Ready</p>
 <p v-else v-for="item in items" :key="item.id">{{ item.name }}</p>
@@ -6437,7 +6253,7 @@ vp run lint
 
 template に v-else を分け、その子の p に v-for を指定します。
 
-```vue
+```vue annotate="add:3"
 <template>
 <p v-if="ready">Ready</p>
 <template v-else><p v-for="item in items" :key="item.id">{{ item.name }}</p></template>
@@ -6447,8 +6263,6 @@ template に v-else を分け、その子の p に v-for を指定します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_else_with_v_for.rs#L19) · [全ルール](all.md)
-
-<span id="vue-no-useless-mustaches"></span>
 
 ### `vue/no-useless-mustaches`
 
@@ -6489,7 +6303,7 @@ vp run lint
 
 補間の内容が固定の文字列だけで、式の評価が不要です。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div>{{ 'x' }}</div>
 <div>{{ "x" }}</div>
@@ -6503,7 +6317,7 @@ vp run lint
 
 固定の文字は直接書きます。変数、値を埋め込む template string、区切りの空白の補間は残します。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
 <div>x</div>
 <div>{{ x }}</div>
@@ -6515,8 +6329,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_mustaches.rs#L37) · [全ルール](all.md)
-
-<span id="vue-no-useless-v-bind"></span>
 
 ### `vue/no-useless-v-bind`
 
@@ -6557,7 +6369,7 @@ vp run lint
 
 foo に固定の文字列か、補間がない template string をバインドしています。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <div :foo="'bar'"></div>
 <div :foo="`bar`"></div>
@@ -6570,7 +6382,7 @@ foo に固定の文字列か、補間がない template string をバインド�
 
 固定の値は静的な属性にし、変数や補間がある値はバインディングを残します。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
 <div foo="bar"></div>
 <div :foo="bar"></div>
@@ -6581,8 +6393,6 @@ foo に固定の文字列か、補間がない template string をバインド�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs#L29) · [全ルール](all.md)
-
-<span id="vue-no-v-text"></span>
 
 ### `vue/no-v-text`
 
@@ -6623,7 +6433,7 @@ vp run lint
 
 要素の内容を v-text のディレクティブで指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div v-text="message"></div>
 </template>
@@ -6635,7 +6445,7 @@ vp run lint
 
 同じ文字のバインディングを、要素の内容の mustache で指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <div>{{ message }}</div>
 </template>
@@ -6644,8 +6454,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs#L31) · [全ルール](all.md)
-
-<span id="vue-prefer-props-shorthand"></span>
 
 ### `vue/prefer-props-shorthand`
 
@@ -6686,7 +6494,7 @@ vp run lint
 
 ハイフン区切りに対応する camelCase も含め、属性と対応する変数名を式に重複して書いています。
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <template>
   <MyComponent :foo="foo" />
   <MyComponent :user-name="userName" />
@@ -6701,7 +6509,7 @@ vp run lint
 
 Vue 3.4 以降の同名の省略形で式を省きます。bar のように別の変数を渡す式は明示します。
 
-```vue
+```vue annotate="add:2,3,4,5,6"
 <template>
   <MyComponent :foo />
   <MyComponent :user-name />
@@ -6714,8 +6522,6 @@ Vue 3.4 以降の同名の省略形で式を省きます。bar のように別�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs#L39) · [全ルール](all.md)
-
-<span id="vue-prefer-true-attribute-shorthand"></span>
 
 ### `vue/prefer-true-attribute-shorthand`
 
@@ -6756,7 +6562,7 @@ vp run lint
 
 標準の boolean 属性 disabled に、固定の true をバインドしています。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <input :disabled="true" />
 </template>
@@ -6768,7 +6574,7 @@ vp run lint
 
 標準の boolean 属性は省略形にします。false のバインディングやコンポーネントの prop は値を残します。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
 <input disabled />
 <input :disabled="false" />
@@ -6780,8 +6586,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L38) · [全ルール](all.md)
-
-<span id="vue-require-component-registration"></span>
 
 ### `vue/require-component-registration`
 
@@ -6832,7 +6636,7 @@ vp run lint
 
 `MissingWidget` は登録されておらず、設定したグローバル コンポーネント一覧にもありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <MissingWidget />
 </template>
@@ -6844,7 +6648,7 @@ vp run lint
 
 `MyButton` は例の `globals` に含まれます。既知のグローバル登録を検査対象から除く設定で、import や登録そのものは行いません。
 
-```vue
+```vue annotate="add:2"
 <template>
 <MyButton />
 </template>
@@ -6853,8 +6657,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L56) · [全ルール](all.md)
-
-<span id="vue-require-scoped-style"></span>
 
 ### `vue/require-scoped-style`
 
@@ -6895,7 +6697,7 @@ vp run lint
 
 `.button` の style にスコープがなく、他のコンポーネントの一致する要素にも作用します。
 
-```vue
+```vue annotate="remove:1"
 <style>
 .button {
   color: red;
@@ -6909,7 +6711,7 @@ vp run lint
 
 同じセレクタと宣言に `scoped` を付け、Vue のコンポーネント スコープを適用します。
 
-```vue
+```vue annotate="add:1"
 <style scoped>
 .button {
   color: red;
@@ -6920,8 +6722,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_scoped_style.rs#L49) · [全ルール](all.md)
-
-<span id="vue-scoped-event-names"></span>
 
 ### `vue/scoped-event-names`
 
@@ -6962,7 +6762,7 @@ vp run lint
 
 `playAudio`、`pauseAudio`、`reloadAudio` は camelCase の末尾に対象を付けており、このルールのコロン区切りの規約に合いません。
 
-```vue
+```vue annotate="remove:3,4,5"
 <template>
   <AudioPlayer
     @playAudio="play"
@@ -6978,7 +6778,7 @@ vp run lint
 
 `audio:play`、`audio:pause`、`audio:reload` に `audio:` のスコープを明示します。emit 側も同じ名前に合わせます。
 
-```vue
+```vue annotate="add:3,4,5"
 <template>
   <AudioPlayer
     @audio:play="play"
@@ -6991,8 +6791,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs#L30) · [全ルール](all.md)
-
-<span id="vue-sfc-element-order"></span>
 
 ### `vue/sfc-element-order`
 
@@ -7033,7 +6831,7 @@ vp run lint
 
 style が script より前にあり、設定した SFC ブロック順に合いません。
 
-```vue
+```vue annotate="remove:2,6,7,8"
 <style scoped>
 .panel {
   color: red;
@@ -7050,7 +6848,7 @@ const label = "Save";
 
 script → template → style の順に並べます。型付きオプションで別の順序を選べます。
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,7,8,10"
 <script setup lang="ts">
 const label = "Save";
 </script>
@@ -7069,8 +6867,6 @@ p {
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/sfc_element_order.rs#L50) · [全ルール](all.md)
-
-<span id="vue-single-style-block"></span>
 
 ### `vue/single-style-block`
 
@@ -7111,7 +6907,7 @@ vp run lint
 
 panel と title の scoped スタイルを二つの style ブロックに分けています。
 
-```vue
+```vue annotate="remove:5,6,7"
 <style scoped>
 .panel {
   color: red;
@@ -7145,8 +6941,6 @@ panel と title の scoped スタイルを二つの style ブロックに分け�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/single_style_block.rs#L41) · [全ルール](all.md)
-
-<span id="vue-slot-name-casing"></span>
 
 ### `vue/slot-name-casing`
 
@@ -7187,7 +6981,7 @@ vp run lint
 
 名前付きスロット `mySlot` が camelCase で、ハイフン区切りの規約に合いません。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <MyCard><template #mySlot>Content</template></MyCard>
 </template>
@@ -7199,7 +6993,7 @@ vp run lint
 
 `#my-slot` を kebab-case にします。受け取る slot の名前も合わせます。
 
-```vue
+```vue annotate="add:2"
 <template>
 <MyCard><template #my-slot>Content</template></MyCard>
 </template>
@@ -7208,8 +7002,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L34) · [全ルール](all.md)
-
-<span id="vue-this-in-template"></span>
 
 ### `vue/this-in-template`
 
@@ -7250,7 +7042,7 @@ vp run lint
 
 テンプレートで直接使える binding を `this.message`、`this.className`、`this.handleClick` と明示的に参照しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div>{{ this.message }}</div>
 <div :class="this.className"></div>
@@ -7264,7 +7056,7 @@ vp run lint
 
 `message`、`className`、`handleClick` を直接使います。文字列 `'this.is.a.string'` はメンバー参照ではないため残します。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
 <div>{{ message }}</div>
 <div :class="className"></div>
@@ -7276,8 +7068,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs#L33) · [全ルール](all.md)
-
-<span id="vue-v-on-event-hyphenation"></span>
 
 ### `vue/v-on-event-hyphenation`
 
@@ -7318,7 +7108,7 @@ vp run lint
 
 カスタム コンポーネントの listener がハイフン区切りではなく `@myEvent` です。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <MyComponent @myEvent="handler" />
 <MyComponent v-on:myEvent="handler" />
@@ -7331,7 +7121,7 @@ vp run lint
 
 `@my-event` に変更します。例のネイティブ要素の listener と動的なイベント引数はこの検査の対象外です。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
 <MyComponent @my-event="handler" />
 <div @myEvent="handler" />
@@ -7342,8 +7132,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L35) · [全ルール](all.md)
-
-<span id="vue-v-on-handler-style"></span>
 
 ### `vue/v-on-handler-style`
 
@@ -7384,7 +7172,7 @@ vp run lint
 
 イベント属性の中に変更処理や複数の文を直接記述しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <button @click="count++"></button>
 <button @click="doThis(); doThat()"></button>
@@ -7398,7 +7186,7 @@ vp run lint
 
 handler の参照を使うか、インライン処理が必要なら arrow / function 式で関数の境界を明示します。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
 <button @click="handler"></button>
 <button @click="foo.bar"></button>
@@ -7410,8 +7198,6 @@ handler の参照を使うか、インライン処理が必要なら arrow / fun
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33) · [全ルール](all.md)
-
-<span id="vue-warn-custom-block"></span>
 
 ### `vue/warn-custom-block`
 
@@ -7452,7 +7238,7 @@ vp run lint
 
 SFC に `<i18n>` のカスタム ブロックがあり、通常の template / script / style 処理とは別の連携が必要です。
 
-```vue
+```vue annotate="remove:1,2,3,4"
 <i18n>
 { "en": { "hello": "Hello" } }
 </i18n>
@@ -7468,7 +7254,7 @@ SFC に `<i18n>` のカスタム ブロックがあり、通常の template / sc
 
 標準の template と script setup を使います。この任意の移植性警告は、カスタム ブロック全般が Vue で無効という意味ではありません。
 
-```vue
+```vue annotate="add:4,5,6,7"
 <template>
   <p>{{ hello }}</p>
 </template>
@@ -7481,8 +7267,6 @@ const hello = "Hello";
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs#L50) · [全ルール](all.md)
-
-<span id="vue-warn-custom-directive"></span>
 
 ### `vue/warn-custom-directive`
 
@@ -7523,7 +7307,7 @@ vp run lint
 
 `v-focus`、`v-mask`、`v-click-outside` はプロジェクト固有の directive 実装を必要とし、この任意の規約で警告されます。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <input v-focus />
   <input v-mask="'###-####'" />
@@ -7537,7 +7321,7 @@ vp run lint
 
 組み込みの `v-if`、`v-model`、`v-on` を使います。規約を無効にすれば、正しく登録した custom directive は有効な Vue として使えます。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <div v-if="ready"></div>
   <input v-model="value" />
@@ -7548,8 +7332,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs#L44) · [全ルール](all.md)
-
-<span id="a11y-alt-text"></span>
 
 ### `a11y/alt-text`
 
@@ -7590,7 +7372,7 @@ vp run lint
 
 画像の送信ボタンには URL しかなく、操作を説明する `alt` がありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <input type="image" src="/submit.png" />
 </template>
@@ -7602,7 +7384,7 @@ vp run lint
 
 `alt="Submit search"` を追加し、検索を送信する操作の名前を指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <input type="image" src="/submit.png" alt="Submit search" />
 </template>
@@ -7611,8 +7393,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/alt_text.rs#L33) · [全ルール](all.md)
-
-<span id="a11y-anchor-has-content"></span>
 
 ### `a11y/anchor-has-content`
 
@@ -7653,7 +7433,7 @@ vp run lint
 
 `/settings` へのリンクが空で、移動先を説明する内容がありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <a href="/settings"></a>
 </template>
@@ -7665,7 +7445,7 @@ vp run lint
 
 同じリンクに `Settings` の文字を入れ、移動先を示します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <a href="/settings">Settings</a>
 </template>
@@ -7674,8 +7454,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L16) · [全ルール](all.md)
-
-<span id="a11y-anchor-is-valid"></span>
 
 ### `a11y/anchor-is-valid`
 
@@ -7716,7 +7494,7 @@ vp run lint
 
 一つ目は操作に `#` を使い、二つ目は JavaScript URL を使っています。どちらも通常の移動先を持つリンクではありません。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <a href="#" @click="openPanel">Open panel</a>
   <a href="JaVaScRiPt:void(0)">Run action</a>
@@ -7729,7 +7507,7 @@ vp run lint
 
 `openPanel` は button で実行し、リンクには実際の移動先 `/docs/javascript-urls` を指定します。
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <button type="button" @click="openPanel">Open panel</button>
   <a href="/docs/javascript-urls">JavaScript URL guide</a>
@@ -7739,8 +7517,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_is_valid.rs#L30) · [全ルール](all.md)
-
-<span id="a11y-aria-props"></span>
 
 ### `a11y/aria-props`
 
@@ -7781,7 +7557,7 @@ vp run lint
 
 `aria-lable` は綴りが誤っており、対応する ARIA 属性ではありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button aria-lable="Save changes">Save</button>
 </template>
@@ -7793,7 +7569,7 @@ vp run lint
 
 正しい `aria-label` に変更してボタンの名前を指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <button aria-label="Save changes">Save</button>
 </template>
@@ -7802,8 +7578,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_props.rs#L18) · [全ルール](all.md)
-
-<span id="a11y-aria-role"></span>
 
 ### `a11y/aria-role`
 
@@ -7844,7 +7618,7 @@ vp run lint
 
 `datepicker` は認識される ARIA role ではありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <section role="datepicker">...</section>
 </template>
@@ -7856,7 +7630,7 @@ vp run lint
 
 認識される `dialog` を使い、日付を選択する領域の名前も指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <section role="dialog" aria-label="Choose a date">...</section>
 </template>
@@ -7865,8 +7639,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_role.rs#L21) · [全ルール](all.md)
-
-<span id="a11y-aria-unsupported-elements"></span>
 
 ### `a11y/aria-unsupported-elements`
 
@@ -7907,7 +7679,7 @@ vp run lint
 
 ARIA 属性を使えない `meta` に `aria-hidden` を指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <meta charset="utf-8" aria-hidden="true" />
 </template>
@@ -7919,7 +7691,7 @@ ARIA 属性を使えない `meta` に `aria-hidden` を指定しています。
 
 ARIA 属性だけを取り除き、文字コードの宣言は維持します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <meta charset="utf-8" />
 </template>
@@ -7928,8 +7700,6 @@ ARIA 属性だけを取り除き、文字コードの宣言は維持します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs#L18) · [全ルール](all.md)
-
-<span id="a11y-click-events-have-key-events"></span>
 
 ### `a11y/click-events-have-key-events`
 
@@ -7972,7 +7742,7 @@ vp run lint
 
 通常の `div` に click handler だけを指定し、キーボード操作に対応していません。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div @click="activate">Activate</div>
 </template>
@@ -7984,7 +7754,7 @@ vp run lint
 
 同じ `activate` を button に指定し、標準のキーボード操作を使います。
 
-```vue
+```vue annotate="add:2"
 <template>
 <button @click="activate">Activate</button>
 </template>
@@ -7993,8 +7763,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L17) · [全ルール](all.md)
-
-<span id="a11y-form-control-has-label"></span>
 
 ### `a11y/form-control-has-label`
 
@@ -8035,7 +7803,7 @@ vp run lint
 
 検索欄に入力内容を説明する label がありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <input type="search" />
 </template>
@@ -8047,7 +7815,7 @@ vp run lint
 
 入力欄を label で囲み、`Search` の文字と関連付けます。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <label>
     Search
@@ -8059,8 +7827,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/form_control_has_label.rs#L19) · [全ルール](all.md)
-
-<span id="a11y-heading-has-content"></span>
 
 ### `a11y/heading-has-content`
 
@@ -8101,7 +7867,7 @@ vp run lint
 
 `h2` の見出しレベルはありますが、見出しの内容が空です。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <h2></h2>
 </template>
@@ -8113,7 +7879,7 @@ vp run lint
 
 同じ `h2` に `Billing settings` の内容を入れます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <h2>Billing settings</h2>
 </template>
@@ -8122,8 +7888,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L17) · [全ルール](all.md)
-
-<span id="a11y-heading-levels"></span>
 
 ### `a11y/heading-levels`
 
@@ -8164,7 +7928,7 @@ vp run lint
 
 見出しが `h1` から `h3` に飛び、レベル 2 を省略しています。
 
-```vue
+```vue annotate="remove:3"
 <template>
   <h1>Account</h1>
   <h3>Billing</h3>
@@ -8177,7 +7941,7 @@ vp run lint
 
 請求設定の見出しを `h2` にし、階層を順に並べます。
 
-```vue
+```vue annotate="add:3"
 <template>
   <h1>Account</h1>
   <h2>Billing</h2>
@@ -8187,8 +7951,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/heading_levels.rs#L34) · [全ルール](all.md)
-
-<span id="a11y-iframe-has-title"></span>
 
 ### `a11y/iframe-has-title`
 
@@ -8229,7 +7991,7 @@ vp run lint
 
 決済画面の iframe に URL はありますが、内容を説明する title がありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <iframe src="/checkout"></iframe>
 </template>
@@ -8241,7 +8003,7 @@ vp run lint
 
 `title="Checkout preview"` で iframe の内容を説明します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <iframe src="/checkout" title="Checkout preview"></iframe>
 </template>
@@ -8250,8 +8012,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/iframe_has_title.rs#L15) · [全ルール](all.md)
-
-<span id="a11y-img-alt"></span>
 
 ### `a11y/img-alt`
 
@@ -8292,7 +8052,7 @@ vp run lint
 
 アバター画像に `alt` 属性がなく、画像の代替テキストを確認できません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <img src="/avatar.png" />
 </template>
@@ -8304,7 +8064,7 @@ vp run lint
 
 `alt="User avatar"` で画像の代わりとなる文字を指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <img src="/avatar.png" alt="User avatar" />
 </template>
@@ -8313,8 +8073,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/img_alt.rs#L16) · [全ルール](all.md)
-
-<span id="a11y-interactive-supports-focus"></span>
 
 ### `a11y/interactive-supports-focus`
 
@@ -8355,7 +8113,7 @@ vp run lint
 
 span に button の role と click handler を付けても、キーボードでフォーカスできる要素にはなりません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <span role="button" @click="open">Open</span>
 </template>
@@ -8367,7 +8125,7 @@ span に button の role と click handler を付けても、キーボードで�
 
 フォーカスできる標準の button に変更し、同じ `open` を実行します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <button type="button" @click="open">Open</button>
 </template>
@@ -8376,8 +8134,6 @@ span に button の role と click handler を付けても、キーボードで�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L31) · [全ルール](all.md)
-
-<span id="a11y-label-has-for"></span>
 
 ### `a11y/label-has-for`
 
@@ -8418,7 +8174,7 @@ vp run lint
 
 離れた label に for がなく、入力欄を囲んでもいないため関連付けがありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <label>Email</label>
   <input id="email" />
@@ -8431,7 +8187,7 @@ vp run lint
 
 `for="email"` を入力欄の ID と一致させて関連付けます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <label for="email">Email</label>
   <input id="email" />
@@ -8441,8 +8197,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L27) · [全ルール](all.md)
-
-<span id="a11y-landmark-roles"></span>
 
 ### `a11y/landmark-roles`
 
@@ -8483,7 +8237,7 @@ vp run lint
 
 同じテンプレートに main が二つあり、主要な領域が重複しています。
 
-```vue
+```vue annotate="remove:3"
 <template>
   <main>Dashboard</main>
   <main>Settings</main>
@@ -8496,7 +8250,7 @@ vp run lint
 
 Dashboard を main として残し、Settings を名前付きの nav に変更します。
 
-```vue
+```vue annotate="add:3"
 <template>
   <main>Dashboard</main>
   <nav aria-label="Settings">...</nav>
@@ -8506,8 +8260,6 @@ Dashboard を main として残し、Settings を名前付きの nav に変更�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/landmark_roles.rs#L44) · [全ルール](all.md)
-
-<span id="a11y-media-has-caption"></span>
 
 ### `a11y/media-has-caption`
 
@@ -8548,7 +8300,7 @@ vp run lint
 
 動画に再生操作はありますが、字幕の track がありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <video src="/demo.mp4" controls />
 </template>
@@ -8560,7 +8312,7 @@ vp run lint
 
 同じ動画に `kind="captions"` の track を追加して英語の字幕を指定します。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <video src="/demo.mp4" controls>
     <track kind="captions" src="/demo.en.vtt" srclang="en" label="English" />
@@ -8571,8 +8323,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/media_has_caption.rs#L30) · [全ルール](all.md)
-
-<span id="a11y-mouse-events-have-key-events"></span>
 
 ### `a11y/mouse-events-have-key-events`
 
@@ -8613,7 +8363,7 @@ vp run lint
 
 プレビューの表示切り替えを mouseenter と mouseleave だけに指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
 </template>
@@ -8625,7 +8375,7 @@ vp run lint
 
 フォーカスできる button で、同じ操作を focus と blur からも実行します。
 
-```vue
+```vue annotate="add:2,3,4,5,6,7,8,9,10"
 <template>
   <button
     type="button"
@@ -8642,8 +8392,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs#L30) · [全ルール](all.md)
-
-<span id="a11y-no-access-key"></span>
 
 ### `a11y/no-access-key`
 
@@ -8684,7 +8432,7 @@ vp run lint
 
 `accesskey="s"` がブラウザーや支援技術のショートカットと競合する可能性があります。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button accesskey="s">Save</button>
 </template>
@@ -8696,7 +8444,7 @@ vp run lint
 
 accesskey を取り除き、通常の Save ボタンは残します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <button>Save</button>
 </template>
@@ -8705,8 +8453,6 @@ accesskey を取り除き、通常の Save ボタンは残します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L19) · [全ルール](all.md)
-
-<span id="a11y-no-aria-hidden-on-focusable"></span>
 
 ### `a11y/no-aria-hidden-on-focusable`
 
@@ -8747,7 +8493,7 @@ vp run lint
 
 フォーカスできる Close ボタンを `aria-hidden="true"` でアクセシビリティ ツリーから隠しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button aria-hidden="true" @click="close">Close</button>
 </template>
@@ -8759,7 +8505,7 @@ vp run lint
 
 ボタンを隠さず、Close の aria-label を指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <button aria-label="Close" @click="close">Close</button>
 </template>
@@ -8768,8 +8514,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19) · [全ルール](all.md)
-
-<span id="a11y-no-autofocus"></span>
 
 ### `a11y/no-autofocus`
 
@@ -8810,7 +8554,7 @@ vp run lint
 
 検索の入力欄に autofocus があり、表示時に利用者の操作なしでフォーカスを要求します。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <input autofocus name="query" />
 </template>
@@ -8822,7 +8566,7 @@ vp run lint
 
 autofocus を取り除き、検索欄はそのまま残します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <input name="query" />
 </template>
@@ -8831,8 +8575,6 @@ autofocus を取り除き、検索欄はそのまま残します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_autofocus.rs#L19) · [全ルール](all.md)
-
-<span id="a11y-no-distracting-elements"></span>
 
 ### `a11y/no-distracting-elements`
 
@@ -8873,7 +8615,7 @@ vp run lint
 
 marquee を使って文字を自動的に動かしています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <marquee>Limited offer</marquee>
 </template>
@@ -8885,7 +8627,7 @@ marquee を使って文字を自動的に動かしています。
 
 同じ案内を p に入れ、自動的に動く要素を使いません。
 
-```vue
+```vue annotate="add:2"
 <template>
   <p>Limited offer</p>
 </template>
@@ -8894,8 +8636,6 @@ marquee を使って文字を自動的に動かしています。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_distracting_elements.rs#L16) · [全ルール](all.md)
-
-<span id="a11y-no-i-for-icon"></span>
 
 ### `a11y/no-i-for-icon`
 
@@ -8936,7 +8676,7 @@ vp run lint
 
 アイコンを i で表示しており、アイコンだけの操作を説明する文字がありません。
 
-```vue
+```vue annotate="remove:3"
 <template>
   <button>
     <i class="material-icons">delete</i>
@@ -8950,7 +8690,7 @@ vp run lint
 
 装飾の span でアイコンを隠し、別の `Delete item` の文字で操作を説明します。
 
-```vue
+```vue annotate="add:3,4"
 <template>
   <button>
     <span class="material-icons" aria-hidden="true">delete</span>
@@ -8962,8 +8702,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_i_for_icon.rs#L35) · [全ルール](all.md)
-
-<span id="a11y-no-redundant-roles"></span>
 
 ### `a11y/no-redundant-roles`
 
@@ -9004,7 +8742,7 @@ vp run lint
 
 button は元から button の役割を持つため、同じ role を重複して指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button role="button">Save</button>
 </template>
@@ -9016,7 +8754,7 @@ button は元から button の役割を持つため、同じ role を重複し�
 
 重複する role を取り除き、HTML の標準の役割を使います。
 
-```vue
+```vue annotate="add:2"
 <template>
   <button>Save</button>
 </template>
@@ -9025,8 +8763,6 @@ button は元から button の役割を持つため、同じ role を重複し�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_redundant_roles/report.rs#L31) · [全ルール](all.md)
-
-<span id="a11y-no-refer-to-non-existent-id"></span>
 
 ### `a11y/no-refer-to-non-existent-id`
 
@@ -9079,7 +8815,7 @@ aria-labelledby が save-label を参照していますが、その ID の要素
 
 一致する ID の span を追加し、ボタンの名前を参照できるようにします。
 
-```vue
+```vue annotate="add:2"
 <template>
   <span id="save-label">Save changes</span>
   <button aria-labelledby="save-label">Save</button>
@@ -9089,8 +8825,6 @@ aria-labelledby が save-label を参照していますが、その ID の要素
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L37) · [全ルール](all.md)
-
-<span id="a11y-no-role-presentation-on-focusable"></span>
 
 ### `a11y/no-role-presentation-on-focusable`
 
@@ -9131,7 +8865,7 @@ vp run lint
 
 focus できる Billing のリンクに role=presentation を指定し、操作可能なリンクの役割と矛盾させています。ブラウザはこの presentation の指定を無視する必要があります。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <a href="/billing" role="presentation">Billing</a>
 </template>
@@ -9143,7 +8877,7 @@ focus できる Billing のリンクに role=presentation を指定し、操作�
 
 矛盾する presentation の指定を除き、Billing への標準のリンクの役割を使います。
 
-```vue
+```vue annotate="add:2"
 <template>
   <a href="/billing">Billing</a>
 </template>
@@ -9152,8 +8886,6 @@ focus できる Billing のリンクに role=presentation を指定し、操作�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_role_presentation_on_focusable.rs#L19) · [全ルール](all.md)
-
-<span id="a11y-no-static-element-interactions"></span>
 
 ### `a11y/no-static-element-interactions`
 
@@ -9194,7 +8926,7 @@ vp run lint
 
 操作の役割がない section に Enter キーの操作を指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <section @keydown.enter="select">Select</section>
 </template>
@@ -9206,7 +8938,7 @@ vp run lint
 
 同じ Enter キーの操作を標準の button に指定し、要素自体に操作の意味を持たせます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <button type="button" @keydown.enter="select">Select</button>
 </template>
@@ -9215,8 +8947,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L31) · [全ルール](all.md)
-
-<span id="a11y-placeholder-label-option"></span>
 
 ### `a11y/placeholder-label-option`
 
@@ -9257,7 +8987,7 @@ vp run lint
 
 空の値を持つ案内の option が、国の選択肢と同じように選択できる状態です。
 
-```vue
+```vue annotate="remove:3"
 <template>
   <select v-model="country">
     <option value="">Choose a country</option>
@@ -9272,7 +9002,7 @@ vp run lint
 
 disabled を追加し、案内を Japan の選択肢と区別します。
 
-```vue
+```vue annotate="add:3"
 <template>
   <select v-model="country">
     <option value="" disabled>Choose a country</option>
@@ -9284,8 +9014,6 @@ disabled を追加し、案内を Japan の選択肢と区別します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [全ルール](all.md)
-
-<span id="a11y-role-has-required-aria-props"></span>
 
 ### `a11y/role-has-required-aria-props`
 
@@ -9326,7 +9054,7 @@ vp run lint
 
 checkbox の role に、選択状態を示す aria-checked がありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <span role="checkbox">Receive updates</span>
 </template>
@@ -9338,7 +9066,7 @@ checkbox の role に、選択状態を示す aria-checked がありません。
 
 `aria-checked="false"` を追加し、checkbox に必要な状態を指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <span role="checkbox" aria-checked="false">Receive updates</span>
 </template>
@@ -9347,8 +9075,6 @@ checkbox の role に、選択状態を示す aria-checked がありません。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs#L30) · [全ルール](all.md)
-
-<span id="a11y-tabindex-no-positive"></span>
 
 ### `a11y/tabindex-no-positive`
 
@@ -9389,7 +9115,7 @@ vp run lint
 
 正の tabindex 3 で、通常の操作要素より先に独自のフォーカス順を作っています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button tabindex="3">Save</button>
 </template>
@@ -9401,7 +9127,7 @@ vp run lint
 
 正の tabindex を取り除き、button の標準のフォーカス順を使います。
 
-```vue
+```vue annotate="add:2"
 <template>
   <button>Save</button>
 </template>
@@ -9410,8 +9136,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs#L16) · [全ルール](all.md)
-
-<span id="a11y-use-list"></span>
 
 ### `a11y/use-list`
 
@@ -9452,7 +9176,7 @@ vp run lint
 
 タスクを p と文字のハイフンで並べており、リストの要素を使っていません。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <p>- First task</p>
   <p>- Second task</p>
@@ -9465,7 +9189,7 @@ vp run lint
 
 同じタスクを ul と li に入れ、リストとして表します。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <ul>
     <li>First task</li>
@@ -9477,8 +9201,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/use_list.rs#L36) · [全ルール](all.md)
-
-<span id="vue-use-unique-element-ids"></span>
 
 ### `vue/use-unique-element-ids`
 
@@ -9519,7 +9241,7 @@ vp run lint
 
 固定の `email` ID がコンポーネントの各インスタンスで重複し、複数表示時に label の参照先が曖昧になります。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <label for="email">Email</label>
   <input id="email" />
@@ -9532,7 +9254,7 @@ vp run lint
 
 `useId()` の `emailId` を label の `for` と input の `id` の両方に binding します。
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,8,9"
 <script setup>
 import { useId } from "vue";
 
@@ -9548,8 +9270,6 @@ const emailId = useId();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs#L52) · [全ルール](all.md)
-
-<span id="html-deprecated-attr"></span>
 
 ### `html/deprecated-attr`
 
@@ -9590,7 +9310,7 @@ vp run lint
 
 p に見た目を指定する旧来の align 属性を使っています。
 
-```vue
+```vue annotate="remove:1,2,3"
 <template>
 <p align="center">Notice</p>
 </template>
@@ -9602,7 +9322,7 @@ p に見た目を指定する旧来の align 属性を使っています。
 
 クラスと text-align: center で、配置を CSS に移します。
 
-```vue
+```vue annotate="add:1,2"
 <template><p class="notice">Notice</p></template>
 <style scoped>.notice { text-align: center; }</style>
 ```
@@ -9610,8 +9330,6 @@ p に見た目を指定する旧来の align 属性を使っています。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_attr.rs#L32) · [全ルール](all.md)
-
-<span id="html-deprecated-element"></span>
 
 ### `html/deprecated-element`
 
@@ -9652,7 +9370,7 @@ vp run lint
 
 旧来の見た目のための center 要素を使っています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <center>Profile</center>
 </template>
@@ -9664,7 +9382,7 @@ vp run lint
 
 内容は残し、section とスタイル用のクラスに置き換えます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <section class="profile">Profile</section>
 </template>
@@ -9673,8 +9391,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_element.rs#L33) · [全ルール](all.md)
-
-<span id="html-id-duplication"></span>
 
 ### `html/id-duplication`
 
@@ -9715,7 +9431,7 @@ vp run lint
 
 入力欄と説明の p が同じ email の ID を使い、label の参照先が重複しています。
 
-```vue
+```vue annotate="remove:3,4"
 <template>
   <label for="email">Email</label>
   <input id="email" />
@@ -9729,7 +9445,7 @@ vp run lint
 
 入力欄は email、説明は email-help に分け、aria-describedby で説明を参照します。
 
-```vue
+```vue annotate="add:3,4"
 <template>
   <label for="email">Email</label>
   <input id="email" aria-describedby="email-help" />
@@ -9740,8 +9456,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/id_duplication.rs#L36) · [全ルール](all.md)
-
-<span id="html-no-consecutive-br"></span>
 
 ### `html/no-consecutive-br`
 
@@ -9782,7 +9496,7 @@ vp run lint
 
 一つの p の中に br を二つ続けて入れ、ブロック間の余白を作っています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <p>First line<br /><br />Second block</p>
 </template>
@@ -9794,7 +9508,7 @@ vp run lint
 
 内容を別の p に分け、連続した br を使いません。
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <p>First line</p>
   <p>Second block</p>
@@ -9804,8 +9518,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_consecutive_br.rs#L30) · [全ルール](all.md)
-
-<span id="html-no-dupe-style-properties"></span>
 
 ### `html/no-dupe-style-properties`
 
@@ -9846,7 +9558,7 @@ vp run lint
 
 静的な style の中で同じプロパティを重複させています。margin と MARGIN も同じプロパティとして扱われます。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <div style="color: red; color: blue">text</div>
 <div style="margin: 0; MARGIN: 1px">text</div>
@@ -9859,7 +9571,7 @@ vp run lint
 
 静的な style では color と background を分けます。動的な style バインディングはこの静的属性の検査の対象外です。
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <div style="color: red; background: blue">text</div>
 <div :style="{ color: a, color: b }">text</div>
@@ -9869,8 +9581,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_dupe_style_properties.rs#L37) · [全ルール](all.md)
-
-<span id="html-no-duplicate-class"></span>
 
 ### `html/no-duplicate-class`
 
@@ -9911,7 +9621,7 @@ vp run lint
 
 静的な class の中に btn が二回あります。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div class="btn btn primary">click</div>
 </template>
@@ -9923,7 +9633,7 @@ vp run lint
 
 btn は一回だけ残し、別の primary と合わせて指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <div class="btn primary">click</div>
 </template>
@@ -9932,8 +9642,6 @@ btn は一回だけ残し、別の primary と合わせて指定します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_duplicate_class.rs#L32) · [全ルール](all.md)
-
-<span id="html-no-duplicate-dt"></span>
 
 ### `html/no-duplicate-dt`
 
@@ -9974,7 +9682,7 @@ vp run lint
 
 同じ dl に API の用語を二回指定しています。
 
-```vue
+```vue annotate="remove:5"
 <template>
   <dl>
     <dt>API</dt>
@@ -10004,8 +9712,6 @@ API の dt を一つにし、その後に二つの dd を並べます。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_duplicate_dt.rs#L41) · [全ルール](all.md)
-
-<span id="html-no-empty-palpable-content"></span>
 
 ### `html/no-empty-palpable-content`
 
@@ -10046,7 +9752,7 @@ vp run lint
 
 p、li、td がいずれも空で、意味のある内容がありません。
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <p></p>
   <li></li>
@@ -10060,7 +9766,7 @@ p、li、td がいずれも空で、意味のある内容がありません。
 
 p は文字、li は補間で内容を入れ、空の td には aria-label で名前を指定します。
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <p>Overview</p>
   <li>{{ item.label }}</li>
@@ -10071,8 +9777,6 @@ p は文字、li は補間で内容を入れ、空の td には aria-label で�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32) · [全ルール](all.md)
-
-<span id="html-require-datetime"></span>
 
 ### `html/require-datetime`
 
@@ -10113,7 +9817,7 @@ vp run lint
 
 time に人が読む日付だけがあり、機械が読む datetime がありません。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <time>May 13, 2026</time>
 </template>
@@ -10125,7 +9829,7 @@ time に人が読む日付だけがあり、機械が読む datetime があり�
 
 `datetime="2026-05-13"` に対応する日付を指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <time datetime="2026-05-13">May 13, 2026</time>
 </template>
@@ -10134,8 +9838,6 @@ time に人が読む日付だけがあり、機械が読む datetime があり�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/require_datetime.rs#L34) · [全ルール](all.md)
-
-<span id="type-no-floating-promises"></span>
 
 ### `type/no-floating-promises`
 
@@ -10179,7 +9881,7 @@ vp run lint
 
 async の `save` は Promise を返しますが、単独の `save()` 呼び出しが await も return もせず、意図的に捨てる指定もありません。
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 async function save(): Promise<void> {}
 save();
@@ -10192,7 +9894,7 @@ save();
 
 `void save()` で実行結果を意図的に捨てる指定をし、このルールの条件を満たします。結果を破棄する明示的な印であり、rejection を処理するものではありません。
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 async function save(): Promise<void> {}
 void save();
@@ -10202,8 +9904,6 @@ void save();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs#L13) · [全ルール](all.md)
-
-<span id="type-no-reactivity-loss"></span>
 
 ### `type/no-reactivity-loss`
 
@@ -10247,7 +9947,7 @@ vp run lint
 
 `const count = state.count` がリアクティブなプロパティから数値のスナップショットを取り、その後の `state.count` の更新が変数へ反映されなくなります。
 
-```vue
+```vue annotate="remove:2,4"
 <script setup lang="ts">
 import { reactive } from "vue";
 const state = reactive({ count: 0 });
@@ -10261,7 +9961,7 @@ const count = state.count;
 
 `toRef(state, "count")` で現在のプリミティブ値をコピーせず、`count` を元のリアクティブなプロパティにつなげます。
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 import { reactive, toRef } from "vue";
 const state = reactive({ count: 0 });
@@ -10272,8 +9972,6 @@ const count = toRef(state, "count");
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12) · [全ルール](all.md)
-
-<span id="type-no-unsafe-template-binding"></span>
 
 ### `type/no-unsafe-template-binding`
 
@@ -10317,7 +10015,7 @@ vp run lint
 
 補間する `value` の型を明示的に `any` とし、チェッカーがテンプレートの binding を安全な具体的な型として確認できません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const value: any = "Hello";
 </script>
@@ -10330,7 +10028,7 @@ const value: any = "Hello";
 
 型注釈を `string` に変え、描画する値を変えずに、同じ補間へ検査できる具体的な型を与えます。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const value: string = "Hello";
 </script>
@@ -10340,8 +10038,6 @@ const value: string = "Hello";
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs#L12) · [全ルール](all.md)
-
-<span id="type-require-typed-emits"></span>
 
 ### `type/require-typed-emits`
 
@@ -10385,7 +10081,7 @@ vp run lint
 
 配列だけの `defineEmits(["save"])` はイベント名を宣言するだけで、型付きの payload 契約がありません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 defineEmits(["save"]);
 </script>
@@ -10397,7 +10093,7 @@ defineEmits(["save"]);
 
 `defineEmits<{ save: [] }>()` で空の payload タプルを持つ型付きの `save` イベントを宣言し、payload の引数を受け取らないことを明示します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineEmits<{ save: [] }>();
 </script>
@@ -10406,8 +10102,6 @@ defineEmits<{ save: [] }>();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54) · [全ルール](all.md)
-
-<span id="type-require-typed-props"></span>
 
 ### `type/require-typed-props`
 
@@ -10451,7 +10145,7 @@ vp run lint
 
 配列だけの `defineProps(["title"])` は `title` の名前だけを宣言し、型を指定していません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 defineProps(["title"]);
 </script>
@@ -10463,7 +10157,7 @@ defineProps(["title"]);
 
 `defineProps<{ title: string }>()` で、名前だけの実行時宣言に代えて `title` の string 型を明示します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineProps<{ title: string }>();
 </script>
@@ -10472,8 +10166,6 @@ defineProps<{ title: string }>();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) · [全ルール](all.md)
-
-<span id="type-strict-boolean-expressions"></span>
 
 ### `type/strict-boolean-expressions`
 
@@ -10519,7 +10211,7 @@ vp run lint
 
 `if (count)` が nullable な数値の truthiness に依存し、明示的な真偽値の検査を使っていません。ゼロと未指定も同じ偽として扱います。
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 const count: number | undefined = undefined;
 if (count) console.log(count);
@@ -10532,7 +10224,7 @@ if (count) console.log(count);
 
 `count !== undefined && count > 0` で存在と正の値を別々に検査し、省略可能な値を絞り込んだうえで明示的な真偽値の条件を作ります。
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 const count: number | undefined = undefined;
 if (count !== undefined && count > 0) console.log(count);
@@ -10542,8 +10234,6 @@ if (count !== undefined && count > 0) console.log(count);
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/strict_boolean_expressions.rs#L7) · [全ルール](all.md)
-
-<span id="script-no-get-current-instance"></span>
 
 ### `script/no-get-current-instance`
 
@@ -10584,7 +10274,7 @@ vp run lint
 
 Vapor を指定した setup が `getCurrentInstance` をインポートして呼び出し、Vapor 向けコンポーネントでこのルールが禁止するインスタンス API に依存しています。
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts" vapor>
 import { getCurrentInstance } from "vue";
 const instance = getCurrentInstance();
@@ -10597,7 +10287,7 @@ const instance = getCurrentInstance();
 
 `inject("app-config")` で明示的に提供された設定を受け取り、`getCurrentInstance` のインポートも呼び出しも使いません。
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts" vapor>
 import { inject } from "vue";
 const appConfig = inject("app-config");
@@ -10607,8 +10297,6 @@ const appConfig = inject("app-config");
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_get_current_instance.rs#L38) · [全ルール](all.md)
-
-<span id="script-no-next-tick"></span>
 
 ### `script/no-next-tick`
 
@@ -10649,7 +10337,7 @@ vp run lint
 
 Vapor 向けコンポーネントが `nextTick` をインポートして await し、この移行ルールが拒否する DOM 更新待ちの依存を作っています。
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts" vapor>
 import { nextTick } from "vue";
 await nextTick();
@@ -10662,7 +10350,7 @@ await nextTick();
 
 `useTemplateRef` で input を取得し、`onMounted` でフォーカスします。例の `nextTick` への依存を、明示的なマウント時の処理に置き換えます。
 
-```vue
+```vue annotate="add:2,3,4,6"
 <script setup lang="ts" vapor>
 import { onMounted, useTemplateRef } from "vue";
 const input = useTemplateRef<HTMLInputElement>("input");
@@ -10674,8 +10362,6 @@ onMounted(() => { input.value?.focus(); });
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_next_tick.rs#L40) · [全ルール](all.md)
-
-<span id="script-no-options-api"></span>
 
 ### `script/no-options-api`
 
@@ -10716,7 +10402,7 @@ vp run lint
 
 default export のオブジェクトに Options API の `data()` を宣言しており、このルールが禁止するコンポーネントオプションの形式です。
 
-```vue
+```vue annotate="remove:1,2,3,4,5,6"
 <script lang="ts">
 export default {
   data() {
@@ -10732,7 +10418,7 @@ export default {
 
 状態を Vapor の `<script setup>` 内の Composition API `ref` に移し、Options API のオブジェクトと `data` オプションを取り除きます。
 
-```vue
+```vue annotate="add:1,2"
 <script setup lang="ts" vapor>
 const count = ref(0);
 </script>
@@ -10741,8 +10427,6 @@ const count = ref(0);
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_options_api.rs#L43) · [全ルール](all.md)
-
-<span id="vapor-no-inline-template"></span>
 
 ### `vapor/no-inline-template`
 
@@ -10783,7 +10467,7 @@ vp run lint
 
 LegacyCard の内部のマークアップに inline-template を使っています。
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <LegacyCard inline-template>
     <p>Profile</p>
@@ -10797,7 +10481,7 @@ LegacyCard の内部のマークアップに inline-template を使っていま�
 
 同じマークアップを default slot として渡します。
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <LegacyCard>
     <template #default>
@@ -10810,8 +10494,6 @@ LegacyCard の内部のマークアップに inline-template を使っていま�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs#L31) · [全ルール](all.md)
-
-<span id="vapor-no-vue-lifecycle-events"></span>
 
 ### `vapor/no-vue-lifecycle-events`
 
@@ -10852,7 +10534,7 @@ vp run lint
 
 input にテンプレートの @vue:mounted を指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <input @vue:mounted="focusInput" />
 </template>
@@ -10864,7 +10546,7 @@ input にテンプレートの @vue:mounted を指定しています。
 
 script の onMounted からテンプレートの ref を参照し、input にフォーカスします。
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,7,8,10"
 <script setup lang="ts" vapor>
 const input = useTemplateRef<HTMLInputElement>("input");
 
@@ -10881,8 +10563,6 @@ onMounted(() => {
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs#L34) · [全ルール](all.md)
-
-<span id="vapor-prefer-static-class"></span>
 
 ### `vapor/prefer-static-class`
 
@@ -10923,7 +10603,7 @@ vp run lint
 
 変化しないクラスの文字列をバインディングで評価しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <section :class="'panel panel-primary'">Profile</section>
 </template>
@@ -10935,7 +10615,7 @@ vp run lint
 
 同じ panel のクラスを静的な class 属性に指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <section class="panel panel-primary">Profile</section>
 </template>
@@ -10944,8 +10624,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L31) · [全ルール](all.md)
-
-<span id="vapor-require-vapor-attribute"></span>
 
 ### `vapor/require-vapor-attribute`
 
@@ -10990,7 +10668,7 @@ vp run lint
 
 script setup に Vapor の指定がありません。これは規約を示す例で、現在の空の callback は診断を生成しません。
 
-```vue
+```vue annotate="remove:1"
 <script setup>
 const count = 0;
 </script>
@@ -11003,7 +10681,7 @@ const count = 0;
 
 vapor を追加して Vapor のコンパイルを選択します。修正方針を示す例であり、現在の linter がこのルールを検出するという意味ではありません。
 
-```vue
+```vue annotate="add:1"
 <script setup vapor>
 const count = 0;
 </script>
@@ -11013,8 +10691,6 @@ const count = 0;
 良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs#L17) · [全ルール](all.md)
-
-<span id="ecosystem-nuxt-prefer-nuxt-link"></span>
 
 ### `ecosystem/nuxt-prefer-nuxt-link`
 
@@ -11055,7 +10731,7 @@ vp run lint
 
 Nuxt の内部ページへの移動に通常の a を使っています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <a href="/settings">Settings</a>
 </template>
@@ -11067,7 +10743,7 @@ Nuxt の内部ページへの移動に通常の a を使っています。
 
 同じ移動先を NuxtLink に指定し、Nuxt のルーターを使います。
 
-```vue
+```vue annotate="add:2"
 <template>
   <NuxtLink to="/settings">Settings</NuxtLink>
 </template>
@@ -11076,8 +10752,6 @@ Nuxt の内部ページへの移動に通常の a を使っています。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs#L14) · [全ルール](all.md)
-
-<span id="ecosystem-pinia-prefer-store-to-refs"></span>
 
 ### `ecosystem/pinia-prefer-store-to-refs`
 
@@ -11118,7 +10792,7 @@ vp run lint
 
 store から name を直接分割代入し、リアクティブな store の読み取りから値を切り離しています。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const { name } = useUserStore();
 </script>
@@ -11130,7 +10804,7 @@ const { name } = useUserStore();
 
 store は保持し、storeToRefs で name のリアクティブな参照を取り出します。
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const store = useUserStore();
 const { name } = storeToRefs(store);
@@ -11140,8 +10814,6 @@ const { name } = storeToRefs(store);
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs#L20) · [全ルール](all.md)
-
-<span id="ecosystem-router-link-require-to"></span>
 
 ### `ecosystem/router-link-require-to`
 
@@ -11184,7 +10856,7 @@ vp run lint
 
 nav の内側の RouterLink に to がなく、ルートの属性継承にも頼れません。
 
-```vue
+```vue annotate="remove:2"
 <template>
 <nav><RouterLink>Settings</RouterLink></nav>
 </template>
@@ -11196,7 +10868,7 @@ nav の内側の RouterLink に to がなく、ルートの属性継承にも頼
 
 内部のリンクに `to="/settings"` で移動先を明示します。
 
-```vue
+```vue annotate="add:2"
 <template>
 <nav><RouterLink to="/settings">Settings</RouterLink></nav>
 </template>
@@ -11205,8 +10877,6 @@ nav の内側の RouterLink に to がなく、ルートの属性継承にも頼
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L14) · [全ルール](all.md)
-
-<span id="ecosystem-void-link-require-href"></span>
 
 ### `ecosystem/void-link-require-href`
 
@@ -11247,7 +10917,7 @@ vp run lint
 
 @void/vue から import した Link に href がありません。
 
-```vue
+```vue annotate="remove:6"
 <script setup>
 import { Link } from "@void/vue";
 </script>
@@ -11263,7 +10933,7 @@ import { Link } from "@void/vue";
 
 同じ Link の href に設定画面の移動先を指定します。
 
-```vue
+```vue annotate="add:6"
 <script setup>
 import { Link } from "@void/vue";
 </script>
@@ -11276,8 +10946,6 @@ import { Link } from "@void/vue";
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_require_href.rs#L13) · [全ルール](all.md)
-
-<span id="ecosystem-void-link-valid-method"></span>
 
 ### `ecosystem/void-link-valid-method`
 
@@ -11318,7 +10986,7 @@ vp run lint
 
 DELETE の操作に、ページ移動のリクエスト向けの prefetch を指定しています。
 
-```vue
+```vue annotate="remove:6"
 <script setup>
 import { Link } from "@void/vue";
 </script>
@@ -11334,7 +11002,7 @@ import { Link } from "@void/vue";
 
 prefetch を取り除き、DELETE のリクエストを事前取得しない形にします。
 
-```vue
+```vue annotate="add:6"
 <script setup>
 import { Link } from "@void/vue";
 </script>
@@ -11347,8 +11015,6 @@ import { Link } from "@void/vue";
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_valid_method.rs#L14) · [全ルール](all.md)
-
-<span id="ecosystem-vue-i18n-no-missing-key"></span>
 
 ### `ecosystem/vue-i18n-no-missing-key`
 
@@ -11389,7 +11055,7 @@ vp run lint
 
 テンプレートは auth.missing を参照しますが、ローカルの英語メッセージには auth.login しかありません。
 
-```vue
+```vue annotate="remove:1"
 <template>{{ $t("auth.missing") }}</template>
 
 <i18n lang="json">
@@ -11403,7 +11069,7 @@ vp run lint
 
 ローカルのメッセージにある auth.login を参照します。
 
-```vue
+```vue annotate="add:1"
 <template>{{ $t("auth.login") }}</template>
 
 <i18n lang="json">
@@ -11414,8 +11080,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs#L17) · [全ルール](all.md)
-
-<span id="ecosystem-vue-router-prefer-named-link"></span>
 
 ### `ecosystem/vue-router-prefer-named-link`
 
@@ -11456,7 +11120,7 @@ vp run lint
 
 RouterLink の移動先をルート名ではなく、文字列のパスで指定しています。
 
-```vue
+```vue annotate="remove:2"
 <template>
   <RouterLink to="/settings">Settings</RouterLink>
 </template>
@@ -11468,7 +11132,7 @@ RouterLink の移動先をルート名ではなく、文字列のパスで指定
 
 バインドする route のオブジェクトに settings の name を指定します。
 
-```vue
+```vue annotate="add:2"
 <template>
   <RouterLink :to="{ name: 'settings' }">Settings</RouterLink>
 </template>
@@ -11477,8 +11141,6 @@ RouterLink の移動先をルート名ではなく、文字列のパスで指定
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/vue_router_prefer_named_link.rs#L15) · [全ルール](all.md)
-
-<span id="ecosystem-vue-router-prefer-named-push"></span>
 
 ### `ecosystem/vue-router-prefer-named-push`
 
@@ -11519,7 +11181,7 @@ vp run lint
 
 router.push に、現在の URL 表記に結び付く文字列のパスを渡しています。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 router.push("/settings");
 </script>
@@ -11531,7 +11193,7 @@ router.push("/settings");
 
 settings のルート名を持つオブジェクトを router.push に渡します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 router.push({ name: "settings" });
 </script>
@@ -11540,8 +11202,6 @@ router.push({ name: "settings" });
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_router_prefer_named_push.rs#L19) · [全ルール](all.md)
-
-<span id="ecosystem-vue-test-utils-no-html-snapshot"></span>
 
 ### `ecosystem/vue-test-utils-no-html-snapshot`
 
@@ -11582,7 +11242,7 @@ vp run lint
 
 期待する振る舞いを検査する代わりに、wrapper の HTML 全体を snapshot にしています。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 expect(wrapper.html()).toMatchSnapshot();
 </script>
@@ -11594,7 +11254,7 @@ expect(wrapper.html()).toMatchSnapshot();
 
 表示された文字に Saved が含まれることを直接検査します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 expect(wrapper.text()).toContain("Saved");
 </script>
@@ -11603,8 +11263,6 @@ expect(wrapper.text()).toContain("Saved");
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_test_utils_no_html_snapshot.rs#L15) · [全ルール](all.md)
-
-<span id="css-no-display-none"></span>
 
 ### `css/no-display-none`
 
@@ -11645,7 +11303,7 @@ vp run lint
 
 ローカルの p を `.message` の CSS で非表示にし、テンプレートに表示条件を指定していません。
 
-```vue
+```vue annotate="remove:2,4,5,6,7,8,9"
 <template>
   <p class="message">Saved</p>
 </template>
@@ -11663,7 +11321,7 @@ vp run lint
 
 同じ p に `v-show="isSaved"` で表示条件を指定し、display: none を取り除きます。
 
-```vue
+```vue annotate="add:2"
 <template>
   <p v-show="isSaved" class="message">Saved</p>
 </template>
@@ -11672,8 +11330,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27) · [全ルール](all.md)
-
-<span id="css-no-hardcoded-values"></span>
 
 ### `css/no-hardcoded-values`
 
@@ -11714,7 +11370,7 @@ vp run lint
 
 button の余白と色に数値や 16 進の色を直接指定しています。
 
-```vue
+```vue annotate="remove:3,4"
 <style scoped>
 .button {
   padding: 12px 16px;
@@ -11729,7 +11385,7 @@ button の余白と色に数値や 16 進の色を直接指定しています。
 
 余白と色を名前付きのカスタムプロパティで参照し、トークンとして管理できる形にします。
 
-```vue
+```vue annotate="add:3,4"
 <style scoped>
 .button {
   padding: var(--space-3) var(--space-4);
@@ -11741,8 +11397,6 @@ button の余白と色に数値や 16 進の色を直接指定しています。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L30) · [全ルール](all.md)
-
-<span id="css-no-id-selectors"></span>
 
 ### `css/no-id-selectors`
 
@@ -11783,7 +11437,7 @@ vp run lint
 
 `#submit` で ID セレクターにスタイルを結び付けています。
 
-```vue
+```vue annotate="remove:2"
 <style scoped>
 #submit {
   font-weight: 600;
@@ -11797,7 +11451,7 @@ vp run lint
 
 再利用できる `.submit` のクラスを使い、ID セレクターを取り除きます。
 
-```vue
+```vue annotate="add:2"
 <style scoped>
 .submit {
   font-weight: 600;
@@ -11808,8 +11462,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19) · [全ルール](all.md)
-
-<span id="css-no-important"></span>
 
 ### `css/no-important`
 
@@ -11850,7 +11502,7 @@ vp run lint
 
 color に `!important` を付け、通常のカスケードの優先順位を上書きしています。
 
-```vue
+```vue annotate="remove:3"
 <style scoped>
 .button {
   color: red !important;
@@ -11864,7 +11516,7 @@ color に `!important` を付け、通常のカスケードの優先順位を上
 
 important を使わず、カスタムプロパティから色を参照します。
 
-```vue
+```vue annotate="add:3"
 <style scoped>
 .button {
   color: var(--button-color);
@@ -11875,8 +11527,6 @@ important を使わず、カスタムプロパティから色を参照します�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L14) · [全ルール](all.md)
-
-<span id="css-no-utility-classes"></span>
 
 ### `css/no-utility-classes`
 
@@ -11917,7 +11567,7 @@ vp run lint
 
 `.flex`、`.mt-4`、`.text-center` のように、個々の見た目を名前にしたクラスを定義しています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <style scoped>
 .flex { display: flex; }
 .mt-4 { margin-top: 1rem; }
@@ -11931,7 +11581,7 @@ vp run lint
 
 コンポーネント固有の `.my-component` にスタイルをまとめます。
 
-```vue
+```vue annotate="add:2"
 <style scoped>
 .my-component { display: flex; margin-top: 1rem; }
 </style>
@@ -11940,8 +11590,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_utility_classes.rs#L37) · [全ルール](all.md)
-
-<span id="css-no-v-bind-performance"></span>
 
 ### `css/no-v-bind-performance`
 
@@ -11982,7 +11630,7 @@ vp run lint
 
 変化する offset を SFC の CSS の v-bind() で参照しています。
 
-```vue
+```vue annotate="remove:1,2,3,4,5"
 <style scoped>
 .card {
   transform: translateX(v-bind(offset));
@@ -11996,7 +11644,7 @@ vp run lint
 
 変化する transform を要素の style バインディングに直接指定します。
 
-```vue
+```vue annotate="add:1,2,3"
 <template>
   <article :style="{ transform: `translateX(${offset}px)` }" class="card" />
 </template>
@@ -12005,8 +11653,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_v_bind_performance.rs#L20) · [全ルール](all.md)
-
-<span id="css-prefer-logical-properties"></span>
 
 ### `css/prefer-logical-properties`
 
@@ -12047,7 +11693,7 @@ vp run lint
 
 margin-left は文字の方向に関係なく物理的な左側を指定します。
 
-```vue
+```vue annotate="remove:3"
 <style scoped>
 .panel {
   margin-left: 1rem;
@@ -12061,7 +11707,7 @@ margin-left は文字の方向に関係なく物理的な左側を指定しま�
 
 margin-inline-start を使い、インライン方向の開始側に余白を指定します。
 
-```vue
+```vue annotate="add:3"
 <style scoped>
 .panel {
   margin-inline-start: 1rem;
@@ -12072,8 +11718,6 @@ margin-inline-start を使い、インライン方向の開始側に余白を指
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15) · [全ルール](all.md)
-
-<span id="css-prefer-nested-selectors"></span>
 
 ### `css/prefer-nested-selectors`
 
@@ -12114,7 +11758,7 @@ vp run lint
 
 平らなルールの `.card .title` に、親のセレクターを含めて指定しています。
 
-```vue
+```vue annotate="remove:2"
 <style scoped>
 .card .title { color: red; }
 </style>
@@ -12126,7 +11770,7 @@ vp run lint
 
 `.card` の中に `.title` を入れ、親子のスタイルを一緒に管理します。
 
-```vue
+```vue annotate="add:2"
 <style scoped>
 .card { .title { color: red; } }
 </style>
@@ -12135,8 +11779,6 @@ vp run lint
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_nested_selectors.rs#L14) · [全ルール](all.md)
-
-<span id="css-prefer-slotted"></span>
 
 ### `css/prefer-slotted`
 
@@ -12177,7 +11819,7 @@ vp run lint
 
 scoped の CSS で、渡された要素ではなく slot の出口を対象にしています。
 
-```vue
+```vue annotate="remove:2"
 <style scoped>
 slot { color: red; }
 </style>
@@ -12189,7 +11831,7 @@ slot { color: red; }
 
 :slotted(.label) を使い、slot から渡される label の要素を対象にします。
 
-```vue
+```vue annotate="add:2"
 <style scoped>
 :slotted(.label) { color: red; }
 </style>
@@ -12198,8 +11840,6 @@ slot { color: red; }
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34) · [全ルール](all.md)
-
-<span id="css-require-font-display"></span>
 
 ### `css/require-font-display`
 
@@ -12255,7 +11895,7 @@ font-face にフォントの参照先はありますが、font-display の方針
 
 font-display: swap を追加し、フォールバックからフォントを表示する方針を指定します。
 
-```vue
+```vue annotate="add:5"
 <style>
 @font-face {
   font-family: "Inter";
@@ -12268,8 +11908,6 @@ font-display: swap を追加し、フォールバックからフォントを表�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13) · [全ルール](all.md)
-
-<span id="musea-no-empty-variant"></span>
 
 ### `musea/no-empty-variant`
 
@@ -12310,7 +11948,7 @@ vp run lint
 
 primary の名前がある variant が空で、プレビューする内容がありません。
 
-```vue
+```vue annotate="remove:2"
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
 </art>
@@ -12322,7 +11960,7 @@ primary の名前がある variant が空で、プレビューする内容があ
 
 variant の中に primary の Button と Save の内容を入れます。
 
-```vue
+```vue annotate="add:2,3,4"
 <art title="Button" component="./Button.vue">
   <variant name="primary">
     <Button tone="primary">Save</Button>
@@ -12333,8 +11971,6 @@ variant の中に primary の Button と Save の内容を入れます。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/no_empty_variant.rs#L8) · [全ルール](all.md)
-
-<span id="musea-prefer-design-tokens"></span>
 
 ### `musea/prefer-design-tokens`
 
@@ -12390,7 +12026,7 @@ art の例で、設定した primary のデザイントークンではなく、�
 
 `Button.art.vue`
 
-```vue
+```vue annotate="remove:6"
 <art title="Button" component="Button">
 <variant name="Primary"><Button /></variant>
 </art>
@@ -12409,7 +12045,7 @@ art の例で、設定した primary のデザイントークンではなく、�
 
 `Button.art.vue`
 
-```vue
+```vue annotate="add:6"
 <art title="Button" component="Button">
 <variant name="Primary"><Button /></variant>
 </art>
@@ -12423,8 +12059,6 @@ art の例で、設定した primary のデザイントークンではなく、�
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32) · [全ルール](all.md)
-
-<span id="musea-require-component"></span>
 
 ### `musea/require-component`
 
@@ -12465,7 +12099,7 @@ vp run lint
 
 art に title はありますが、プレビューする component の指定がありません。
 
-```vue
+```vue annotate="remove:1"
 <art title="Button">
   <variant name="primary" />
 </art>
@@ -12477,7 +12111,7 @@ art に title はありますが、プレビューする component の指定が�
 
 defineArt で ./Button.vue を art の component として指定します。
 
-```vue
+```vue annotate="add:1,2,3,4,5"
 <script setup>
 defineArt("./Button.vue", { title: "Button" });
 </script>
@@ -12490,8 +12124,6 @@ defineArt("./Button.vue", { title: "Button" });
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_component.rs#L11) · [全ルール](all.md)
-
-<span id="musea-require-title"></span>
 
 ### `musea/require-title`
 
@@ -12532,7 +12164,7 @@ vp run lint
 
 art に Button.vue の指定はありますが、title がありません。
 
-```vue
+```vue annotate="remove:1"
 <art component="./Button.vue">
   <variant name="primary" />
 </art>
@@ -12544,7 +12176,7 @@ art に Button.vue の指定はありますが、title がありません。
 
 defineArt のオプションに Button の title を指定します。
 
-```vue
+```vue annotate="add:1,2,3,4,5"
 <script setup>
 defineArt("./Button.vue", { title: "Button" });
 </script>
@@ -12557,8 +12189,6 @@ defineArt("./Button.vue", { title: "Button" });
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31) · [全ルール](all.md)
-
-<span id="musea-unique-variant-names"></span>
 
 ### `musea/unique-variant-names`
 
@@ -12599,7 +12229,7 @@ vp run lint
 
 同じ art の二つの variant に primary の名前を使っています。
 
-```vue
+```vue annotate="remove:3"
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
   <variant name="primary" />
@@ -12612,7 +12242,7 @@ vp run lint
 
 primary と secondary の別々の名前を指定します。
 
-```vue
+```vue annotate="add:3"
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
   <variant name="secondary" />
@@ -12622,8 +12252,6 @@ primary と secondary の別々の名前を指定します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10) · [全ルール](all.md)
-
-<span id="musea-valid-variant"></span>
 
 ### `musea/valid-variant`
 
@@ -12664,7 +12292,7 @@ vp run lint
 
 プレビューを識別する variant の name がありません。
 
-```vue
+```vue annotate="remove:2"
 <art title="Button" component="./Button.vue">
   <variant />
 </art>
@@ -12676,7 +12304,7 @@ vp run lint
 
 variant に primary の name を指定します。
 
-```vue
+```vue annotate="add:2"
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
 </art>
@@ -12685,8 +12313,6 @@ variant に primary の name を指定します。
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8) · [全ルール](all.md)
-
-<span id="script-component-options-name-casing"></span>
 
 ### `script/component-options-name-casing`
 
@@ -12727,7 +12353,7 @@ vp run lint
 
 コンポーネントの `name: 'my-component'` が kebab-case です。このルールは文字列リテラルのコンポーネント名に PascalCase を求めます。
 
-```vue
+```vue annotate="remove:3"
 <script lang="ts">
 export default {
 name: 'my-component' // kebab-case
@@ -12741,7 +12367,7 @@ name: 'my-component' // kebab-case
 
 `MyComponent` は大文字で始まり、英数字だけで構成されるため、名前の検査条件を満たします。
 
-```vue
+```vue annotate="add:3"
 <script lang="ts">
 export default {
 name: 'MyComponent'
@@ -12752,8 +12378,6 @@ name: 'MyComponent'
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44) · [全ルール](all.md)
-
-<span id="script-custom-event-name-casing"></span>
 
 ### `script/custom-event-name-casing`
 
@@ -12794,7 +12418,7 @@ vp run lint
 
 emit する文字列 `my-event` にハイフンが含まれ、既定の camelCase イベント命名規則に違反しています。
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 const emit = defineEmits(['my-event'])
 emit('my-event')         // kebab-case → report
@@ -12807,7 +12431,7 @@ emit('my-event')         // kebab-case → report
 
 宣言と呼び出しの両方を `myEvent` にそろえ、イベント名の一致を保ったまま既定の命名規則を満たします。kebab-case に設定した場合の期待値は異なります。
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const emit = defineEmits(['myEvent'])
 emit('myEvent')
@@ -12817,8 +12441,6 @@ emit('myEvent')
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61) · [全ルール](all.md)
-
-<span id="script-define-emits-declaration"></span>
 
 ### `script/define-emits-declaration`
 
@@ -12859,7 +12481,7 @@ vp run lint
 
 `defineEmits(["change"])` は実行時の配列による宣言です。このスタイルルールは型ベースの宣言を推奨します。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const emit = defineEmits(["change"]);
 emit("change", 1);
@@ -12872,7 +12494,7 @@ emit("change", 1);
 
 `defineEmits<{ change: [id: number] }>()` で宣言を型引数へ移し、`emit("change", 1)` が渡す数値のペイロードも明示します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const emit = defineEmits<{ change: [id: number] }>();
 emit("change", 1);
@@ -12882,8 +12504,6 @@ emit("change", 1);
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_emits_declaration.rs#L39) · [全ルール](all.md)
-
-<span id="script-define-macros-order"></span>
 
 ### `script/define-macros-order`
 
@@ -12924,7 +12544,7 @@ vp run lint
 
 `defineProps` が `defineModel` より先にありますが、定められたマクロ順序では `defineModel` が先です。
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 // defineProps before defineModel (out of canonical order)
 const props = defineProps<{ count: number }>()
@@ -12938,7 +12558,7 @@ const model = defineModel<string>()
 
 宣言を `defineOptions`、`defineModel`、`defineProps`、`defineEmits`、`defineSlots` の順に並べ、無関係な実行時処理より前に置きます。
 
-```vue
+```vue annotate="add:2,4,5,6"
 <script setup lang="ts">
 defineOptions({ name: 'MyComponent' })
 const model = defineModel<string>()
@@ -12951,8 +12571,6 @@ defineSlots<{ default(props: {}): any }>()
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) · [全ルール](all.md)
-
-<span id="script-define-props-declaration"></span>
 
 ### `script/define-props-declaration`
 
@@ -12993,7 +12611,7 @@ vp run lint
 
 `defineProps({ title: String })` は実行時オブジェクトを渡しており、このルールが推奨する型ベースの props 宣言と異なります。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const props = defineProps({ title: String });
 console.log(props.title);
@@ -13006,7 +12624,7 @@ console.log(props.title);
 
 `defineProps<{ title: string }>()` の型引数で `title` を宣言し、実行時の宣言引数を使わずに `props.title` の参照を保ちます。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const props = defineProps<{ title: string }>();
 console.log(props.title);
@@ -13016,8 +12634,6 @@ console.log(props.title);
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_declaration.rs#L40) · [全ルール](all.md)
-
-<span id="script-define-props-destructuring"></span>
 
 ### `script/define-props-destructuring`
 
@@ -13058,7 +12674,7 @@ vp run lint
 
 `defineProps` の結果を分割代入せず、単一の `props` 変数に代入しており、既定の分割代入の推奨に従っていません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const props = defineProps<{ foo: string }>()
 </script>
@@ -13070,7 +12686,7 @@ const props = defineProps<{ foo: string }>()
 
 オブジェクトパターンで `foo` と `bar` を直接取り出し、省略可能な `bar` に既定値を付けます。Vue 3.5 以降のリアクティブな props 分割代入を前提とし、設定を `never` にした場合は逆の形式を推奨します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 </script>
@@ -13079,8 +12695,6 @@ const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29) · [全ルール](all.md)
-
-<span id="script-no-arrow-functions-in-watch"></span>
 
 ### `script/no-arrow-functions-in-watch`
 
@@ -13121,7 +12735,7 @@ vp run lint
 
 Options API の watcher `value` と `other.handler` がアロー関数です。アロー関数の `this` は外側から引き継がれ、コンポーネントインスタンスとして束縛されません。
 
-```vue
+```vue annotate="remove:4,5,9"
 <script lang="ts">
 export default {
 watch: {
@@ -13143,7 +12757,7 @@ handler: () => {}
 
 両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントに束縛できるようにします。オブジェクト形式の `deep: true` オプションも維持できます。
 
-```vue
+```vue annotate="add:4,8,9"
 <script lang="ts">
 export default {
 watch: {
@@ -13162,8 +12776,6 @@ deep: true
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) · [全ルール](all.md)
-
-<span id="script-no-async-in-computed"></span>
 
 ### `script/no-async-in-computed`
 
@@ -13204,7 +12816,7 @@ vp run lint
 
 `computed` の getter が `async` であり、fetch の結果を同期的な計算値ではなく Promise として返します。
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <script setup lang="ts">
 import { computed } from "vue";
 const data = computed(async () => {
@@ -13220,7 +12832,7 @@ const data = computed(async () => {
 
 非同期の fetch を `watch` に移し、結果を `data.value` に保存します。クリーンアップで古い要求を中止し、無効になったコールバックが古い結果を書き込むのを防ぎます。async な computed getter は残りません。
 
-```vue
+```vue annotate="add:2,3,4,5,6,7,8,9,10,11"
 <script setup lang="ts">
 import { ref, watch } from "vue";
 const query = ref("");
@@ -13239,8 +12851,6 @@ watch(query, async (value, _oldValue, onCleanup) => {
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_async_in_computed.rs#L46) · [全ルール](all.md)
-
-<span id="script-no-boolean-default"></span>
 
 ### `script/no-boolean-default`
 
@@ -13281,7 +12891,7 @@ vp run lint
 
 `disabled` と `checked` は、単独の型が `Boolean` である prop に `default` を指定しています。明示的な `false` もこのルールの対象です。
 
-```vue
+```vue annotate="remove:4,5,6"
 <script lang="ts">
 export default {
 props: {
@@ -13299,7 +12909,7 @@ checked: { type: Boolean, default: false }
 
 Boolean のみの props では `default` を省き、Vue の暗黙の false を使います。`[Boolean, String]` の共用型と Number の prop は、この検査が単独の `Boolean` コンストラクターに限られることを示します。
 
-```vue
+```vue annotate="add:4,5,6,7,8,9,10"
 <script lang="ts">
 export default {
 props: {
@@ -13318,8 +12928,6 @@ count: { type: Number, default: 0 }
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) · [全ルール](all.md)
-
-<span id="script-no-deep-destructure-in-props"></span>
 
 ### `script/no-deep-destructure-in-props`
 
@@ -13360,7 +12968,7 @@ vp run lint
 
 代入パターンが `user` の内部まで進んで `name` を取り出し、既定で許される浅い props 分割代入の深さを超えています。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const { user: { name } } = defineProps<{ user: { name: string } }>();
 </script>
@@ -13372,7 +12980,7 @@ const { user: { name } } = defineProps<{ user: { name: string } }>();
 
 props オブジェクトを保ち、computed の getter で `props.user.name` を参照します。深い代入パターンを使わず、入れ子の参照を明示します。
 
-```vue
+```vue annotate="add:2,3,4"
 <script setup lang="ts">
 import { computed } from "vue";
 const props = defineProps<{ user: { name: string } }>();
@@ -13383,8 +12991,6 @@ const userName = computed(() => props.user.name);
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [全ルール](all.md)
-
-<span id="script-no-deprecated-data-object-declaration"></span>
 
 ### `script/no-deprecated-data-object-declaration`
 
@@ -13425,7 +13031,7 @@ vp run lint
 
 Options API の `data` がオブジェクトリテラルであり、Vue 3 では受け付けない Vue 2 の形式です。
 
-```vue
+```vue annotate="remove:3,4,5"
 <script lang="ts">
 export default {
 // `data` must be a function in Vue 3, not an object literal.
@@ -13442,7 +13048,7 @@ count: 0
 
 `data()` が新しい `{ count: 0 }` を返すようにし、Vue 3 が求める関数形式のデータ宣言にします。
 
-```vue
+```vue annotate="add:3,4"
 <script lang="ts">
 export default {
 data() {
@@ -13455,8 +13061,6 @@ return { count: 0 }
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) · [全ルール](all.md)
-
-<span id="script-no-deprecated-destroyed-lifecycle"></span>
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
@@ -13497,7 +13101,7 @@ vp run lint
 
 タイマーの後片付けに、Vue 3 で削除された Vue 2 のライフサイクルオプション `beforeDestroy` を使っています。
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { beforeDestroy() { clearTimeout(this.timer); } };
 </script>
@@ -13509,7 +13113,7 @@ export default { beforeDestroy() { clearTimeout(this.timer); } };
 
 フック名を `beforeUnmount` に変え、後片付けの本体を Vue 3 のライフサイクル名で保ちます。
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { beforeUnmount() { clearTimeout(this.timer); } };
 </script>
@@ -13518,8 +13122,6 @@ export default { beforeUnmount() { clearTimeout(this.timer); } };
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17) · [全ルール](all.md)
-
-<span id="script-no-deprecated-dollar-listeners-api"></span>
 
 ### `script/no-deprecated-dollar-listeners-api`
 
@@ -13560,7 +13162,7 @@ vp run lint
 
 メンバー参照と引数の裸の参照がいずれも `$listeners` を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。
 
-```vue
+```vue annotate="remove:2,3,4"
 <script setup lang="ts">
 const handlers = this.$listeners
 const forwarded = ctx.$listeners
@@ -13574,7 +13176,7 @@ emit('input', $listeners)
 
 参照を `this.$attrs` と setup コンテキストの `ctx.attrs` に移し、削除されたリスナー API を置き換えます。例の参照元は、それぞれのコンポーネントコンテキストで用意されている必要があります。
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const handlers = this.$attrs
 const forwarded = ctx.attrs
@@ -13584,8 +13186,6 @@ const forwarded = ctx.attrs
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [全ルール](all.md)
-
-<span id="script-no-deprecated-dollar-scopedslots-api"></span>
 
 ### `script/no-deprecated-dollar-scopedslots-api`
 
@@ -13626,7 +13226,7 @@ vp run lint
 
 `this.$scopedSlots`、`ctx.$scopedSlots`、裸の `$scopedSlots` 参照が、Vue 3 で削除された Vue 2 の scoped slot API を使っています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <script setup lang="ts">
 const header = this.$scopedSlots.header
 const footer = ctx.$scopedSlots.footer
@@ -13640,7 +13240,7 @@ render($scopedSlots.default)
 
 `$scopedSlots` を `$slots` に置き換え、統合された slot API を使います。この例は削除された API 名の置換を示すもので、参照元の setup コンテキストを作る例ではありません。
 
-```vue
+```vue annotate="add:2,3,4"
 <script setup lang="ts">
 const header = this.$slots.header
 const footer = ctx.$slots.footer
@@ -13651,8 +13251,6 @@ render($slots.default)
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) · [全ルール](all.md)
-
-<span id="script-no-deprecated-events-api"></span>
 
 ### `script/no-deprecated-events-api`
 
@@ -13693,7 +13291,7 @@ vp run lint
 
 `$on`、`$once`、`$off` の呼び出しが、Vue 3 で削除されたインスタンスのイベントバスメソッドを使っています。
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <script setup lang="ts">
 this.$on('event', handler)
 this.$once('event', handler)
@@ -13708,7 +13306,7 @@ emitter.$off('event')
 
 有効な `$emit` は維持し、イベントバスへの購読は外部 emitter の `on` に移します。親へのイベント送信と外部イベントバスを別々の API で表します。
 
-```vue
+```vue annotate="add:2,3,4,5,6,7,8"
 <script setup lang="ts">
 // $emit is still valid in Vue 3
 this.$emit('event', payload)
@@ -13723,8 +13321,6 @@ emitter.on('event', handler)
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) · [全ルール](all.md)
-
-<span id="script-no-deprecated-props-default-this"></span>
 
 ### `script/no-deprecated-props-default-this`
 
@@ -13765,7 +13361,7 @@ vp run lint
 
 prop の既定値関数と validator が `this` を参照していますが、Vue 3 ではこれらの関数からコンポーネントインスタンスに依存できません。
 
-```vue
+```vue annotate="remove:6,7,8,13,14"
 <script lang="ts">
 export default {
 props: {
@@ -13793,7 +13389,7 @@ return this.value > 0
 
 既定値関数は引数の `props.baseSize` を使い、validator は引数の `value` を検査します。どちらも利用できないインスタンスの `this` に依存しなくなります。
 
-```vue
+```vue annotate="add:6,7,8,13,14"
 <script lang="ts">
 export default {
 props: {
@@ -13818,8 +13414,6 @@ return value > 0
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) · [全ルール](all.md)
-
-<span id="script-no-dupe-keys"></span>
 
 ### `script/no-dupe-keys`
 
@@ -13860,7 +13454,7 @@ vp run lint
 
 `foo` が props と data の両方に、`bar` が computed と methods の両方に宣言され、コンポーネントインスタンス上の同じキーを取り合っています。
 
-```vue
+```vue annotate="remove:5,8,9,10,11"
 <script lang="ts">
 export default {
 props: ['foo'],
@@ -13883,7 +13477,7 @@ bar() {} // duplicate of computed `bar`
 
 prop、data、computed に別々の名前 `foo`、`bar`、`baz` を使い、オプション間の重複を取り除きます。
 
-```vue
+```vue annotate="add:5,8"
 <script lang="ts">
 export default {
 props: ['foo'],
@@ -13900,8 +13494,6 @@ baz() { return 2 }
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L52) · [全ルール](all.md)
-
-<span id="script-no-duplicate-attr-inheritance"></span>
 
 ### `script/no-duplicate-attr-inheritance`
 
@@ -13942,7 +13534,7 @@ vp run lint
 
 明示的な `inheritAttrs: true` が Vue の既定動作を繰り返しています。このルールは、ルートの `$attrs` 展開が例にない場合もこの冗長なリテラルを報告します。
 
-```vue
+```vue annotate="remove:2,3"
 <script lang="ts">
 defineOptions({ inheritAttrs: true })
 export default { inheritAttrs: true }
@@ -13955,7 +13547,7 @@ export default { inheritAttrs: true }
 
 `inheritAttrs: false` は継承を無効にする指定であり、空のオプションは既定の継承を暗黙に使います。どちらも冗長な `true` を指定しません。
 
-```vue
+```vue annotate="add:2,3"
 <script lang="ts">
 defineOptions({ inheritAttrs: false }) // intentional opt-out
 export default {}                      // default inheritance, unstated
@@ -13965,8 +13557,6 @@ export default {}                      // default inheritance, unstated
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L73) · [全ルール](all.md)
-
-<span id="script-no-export-in-script-setup"></span>
 
 ### `script/no-export-in-script-setup`
 
@@ -14007,7 +13597,7 @@ vp run lint
 
 `export const count` が `<script setup>` からモジュールの値をエクスポートしようとしています。このブロックでは実行時の export は禁止されています。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 export const count = 1;
 </script>
@@ -14019,7 +13609,7 @@ export const count = 1;
 
 `export` を取り除き、`count` をモジュールの export ではなく setup の変数にします。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const count = 1;
 </script>
@@ -14028,8 +13618,6 @@ const count = 1;
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) · [全ルール](all.md)
-
-<span id="script-no-import-compiler-macros"></span>
 
 ### `script/no-import-compiler-macros`
 
@@ -14070,7 +13658,7 @@ vp run lint
 
 `vue` から `defineProps` と `defineEmits` をインポートしていますが、これらは `<script setup>` で直接使えるコンパイラーマクロです。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 import { defineProps, defineEmits } from "vue";
 const props = defineProps<{ title: string }>();
@@ -14094,8 +13682,6 @@ const emit = defineEmits<{ save: [id: number] }>();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_import_compiler_macros.rs#L39) · [全ルール](all.md)
-
-<span id="script-no-internal-imports"></span>
 
 ### `script/no-internal-imports`
 
@@ -14136,7 +13722,7 @@ vp run lint
 
 両方の import が Vue の公開エントリーポイントではなく内部の `dist` ファイルを参照し、コンポーネントをビルド成果物のパスに依存させています。
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
 import { bar } from 'vue/dist/vue.esm-bundler'
@@ -14149,7 +13735,7 @@ import { bar } from 'vue/dist/vue.esm-bundler'
 
 必要なヘルパーを `vue` からインポートし、内部の配布ファイルの配置への依存を取り除きます。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 </script>
@@ -14158,8 +13744,6 @@ import { ref, computed } from 'vue'
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) · [全ルール](all.md)
-
-<span id="script-no-multiple-slot-args"></span>
 
 ### `script/no-multiple-slot-args`
 
@@ -14200,7 +13784,7 @@ vp run lint
 
 slot 呼び出しが複数の位置引数、または個数不明の引数展開を渡しています。Vue の slot は位置引数の列ではなく、一つの props オブジェクトを受け取ります。
 
-```vue
+```vue annotate="remove:2,3,4,5,6"
 <script setup lang="ts">
 slots.default(foo, bar)
 $slots.header(a, b)
@@ -14216,7 +13800,7 @@ slots.default(...args)
 
 `{ foo, bar }` でデータを一つの引数にまとめます。`slotProps` を渡す呼び出しと引数を省いた呼び出しも、対応する slot 呼び出し形式に収まります。
 
-```vue
+```vue annotate="add:2,3,4"
 <script setup lang="ts">
 slots.default({ foo, bar })
 slots.default(slotProps)
@@ -14227,8 +13811,6 @@ slots.default()
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_multiple_slot_args.rs#L61) · [全ルール](all.md)
-
-<span id="script-no-potential-component-option-typo"></span>
 
 ### `script/no-potential-component-option-typo`
 
@@ -14269,7 +13851,7 @@ vp run lint
 
 オプション名が既知の `methods` から一文字欠けた `method` になり、意図したメソッド宣言として扱われません。
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { method: { save() {} } };
 </script>
@@ -14281,7 +13863,7 @@ export default { method: { save() {} } };
 
 キーを `methods` に修正し、`save()` を既知のコンポーネントオプション内に置きます。
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { methods: { save() {} } };
 </script>
@@ -14290,8 +13872,6 @@ export default { methods: { save() {} } };
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19) · [全ルール](all.md)
-
-<span id="script-no-reactive-destructure"></span>
 
 ### `script/no-reactive-destructure`
 
@@ -14332,7 +13912,7 @@ vp run lint
 
 `const { count, name } = state` が `reactive` オブジェクトからプリミティブ値をコピーし、その後のプロパティ更新とのつながりを失います。
 
-```vue
+```vue annotate="remove:2,4"
 <script setup lang="ts">
 import { reactive } from "vue";
 const state = reactive({ count: 0, name: "Ada" });
@@ -14346,7 +13926,7 @@ const { count, name } = state;
 
 `toRefs(state)` を分割代入して `count` と `name` の ref を作り、それぞれを元のリアクティブなプロパティにつなげます。
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 import { reactive, toRefs } from "vue";
 const state = reactive({ count: 0, name: "Ada" });
@@ -14357,8 +13937,6 @@ const { count, name } = toRefs(state);
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43) · [全ルール](all.md)
-
-<span id="script-no-ref-as-operand"></span>
 
 ### `script/no-ref-as-operand`
 
@@ -14399,7 +13977,7 @@ vp run lint
 
 `count + 1` は ref が包む数値ではなく、ref オブジェクトそのものを算術演算の対象にしています。
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { ref } from "vue";
 const count = ref(0);
@@ -14413,7 +13991,7 @@ const next = count + 1;
 
 `count.value + 1` で内側の数値を取り出してから加算します。script の演算では ref の値を明示的に参照します。
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { ref } from "vue";
 const count = ref(0);
@@ -14424,8 +14002,6 @@ const next = count.value + 1;
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_ref_as_operand.rs#L41) · [全ルール](all.md)
-
-<span id="script-no-required-prop-with-default"></span>
 
 ### `script/no-required-prop-with-default`
 
@@ -14466,7 +14042,7 @@ vp run lint
 
 `title` に必須指定と `"Untitled"` の既定値を同時に付け、必須の入力という契約と未指定時の代替値を併記しています。
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { props: { title: { type: String, required: true, default: "Untitled" } } };
 </script>
@@ -14478,7 +14054,7 @@ export default { props: { title: { type: String, required: true, default: "Untit
 
 `required: true` を除いて `title` を任意入力にし、`"Untitled"` を未指定時の既定値として残します。
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { props: { title: { type: String, default: "Untitled" } } };
 </script>
@@ -14487,8 +14063,6 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [全ルール](all.md)
-
-<span id="script-no-reserved-identifiers"></span>
 
 ### `script/no-reserved-identifiers`
 
@@ -14529,7 +14103,7 @@ vp run lint
 
 変数名 `__props`、`__emit`、`__sfc__` が Vue コンパイラーの生成コード用に予約された識別子と重なっています。
 
-```vue
+```vue annotate="remove:2,3,4"
 <script setup lang="ts">
 const __props = { name: "Ada" };
 const __emit = () => {};
@@ -14543,7 +14117,7 @@ const __sfc__ = {};
 
 通常の名前 `props`、`emit`、`componentData` を使い、props と emits の宣言を保ったまま生成用識別子との重複を避けます。
 
-```vue
+```vue annotate="add:2,3,4"
 <script setup lang="ts">
 const props = defineProps<{ name: string }>();
 const emit = defineEmits<{ save: [] }>();
@@ -14554,8 +14128,6 @@ const componentData = {};
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_identifiers.rs#L49) · [全ルール](all.md)
-
-<span id="script-no-reserved-keys"></span>
 
 ### `script/no-reserved-keys`
 
@@ -14596,7 +14168,7 @@ vp run lint
 
 data の `$el` が Vue 組み込みのインスタンスプロパティと重なり、予約された `$` 接頭辞も使っています。
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { data() { return { $el: "custom" }; } };
 </script>
@@ -14608,7 +14180,7 @@ export default { data() { return { $el: "custom" }; } };
 
 アプリケーションのデータ名を `elementLabel` に変え、組み込みのインスタンス API と予約接頭辞を避けます。
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { data() { return { elementLabel: "custom" }; } };
 </script>
@@ -14617,8 +14189,6 @@ export default { data() { return { elementLabel: "custom" }; } };
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L32) · [全ルール](all.md)
-
-<span id="script-no-reserved-props"></span>
 
 ### `script/no-reserved-props`
 
@@ -14659,7 +14229,7 @@ vp run lint
 
 オブジェクト形式の `ref` と `$foo`、配列形式の `key` は予約された prop 名です。`ref` と `key` はフレームワーク用であり、`$` で始まる名前も拒否されます。
 
-```vue
+```vue annotate="remove:4,5,6,8,9,10"
 <script lang="ts">
 export default {
 props: {
@@ -14680,7 +14250,7 @@ props: ['key']    // reserved (array form)
 
 通常の prop 名 `name` と `refValue` に変え、予約された名前と接頭辞を避けます。
 
-```vue
+```vue annotate="add:4,5"
 <script lang="ts">
 export default {
 props: {
@@ -14694,8 +14264,6 @@ refValue: Number
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53) · [全ルール](all.md)
-
-<span id="script-no-restricted-globals"></span>
 
 ### `script/no-restricted-globals`
 
@@ -14736,7 +14304,7 @@ vp run lint
 
 既定で制限されるグローバル `process`、`localStorage`、`sessionStorage` を直接参照し、設定やストレージ用の明示的なヘルパーを通していません。
 
-```vue
+```vue annotate="remove:2,3,4"
 <script setup lang="ts">
 const flag = process.env.FEATURE_FLAG
 const token = localStorage.getItem('auth.token')
@@ -14750,7 +14318,7 @@ sessionStorage.setItem('view.scroll', String(window.scrollY))
 
 `useFeatureFlag`、`authStorage.read`、`viewStorage.write` に移し、制限対象のグローバルの直接参照を除きます。残る `window.scrollY` はこのルールの既定の制限対象ではなく、SSR の安全性は別途確認が必要です。
 
-```vue
+```vue annotate="add:2,3,4,5,6,7"
 <script setup lang="ts">
 // Use a typed config helper that distinguishes server vs. client.
 const flag = useFeatureFlag('FEATURE_FLAG')
@@ -14764,8 +14332,6 @@ viewStorage.write('view.scroll', String(window.scrollY))
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_globals.rs#L57) · [全ルール](all.md)
-
-<span id="script-no-restricted-members"></span>
 
 ### `script/no-restricted-members`
 
@@ -14818,7 +14384,7 @@ vp run lint
 
 `ruleOptions` に `{ object: "window", property: "localStorage" }` を設定した場合、`window.localStorage` は禁止されたオブジェクトとメンバーの組み合わせです。このルールに既定の禁止メンバーはありません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const token = window.localStorage.getItem("token");
 </script>
@@ -14830,7 +14396,7 @@ const token = window.localStorage.getItem("token");
 
 `authStorage.read("token")` でアプリケーションのストレージヘルパーに処理を任せ、設定で禁止した `window.localStorage` を参照しなくなります。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const token = authStorage.read("token");
 </script>
@@ -14839,8 +14405,6 @@ const token = authStorage.read("token");
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_members.rs#L53) · [全ルール](all.md)
-
-<span id="script-no-side-effects-in-computed-properties"></span>
 
 ### `script/no-side-effects-in-computed-properties`
 
@@ -14881,7 +14445,7 @@ vp run lint
 
 `doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらも値を導出すべき getter が元の状態を変更しています。
 
-```vue
+```vue annotate="remove:8,9,12"
 <script lang="ts">
 export default {
 data() {
@@ -14906,7 +14470,7 @@ return this.items.reverse() // side effect: mutates the array
 
 `doubled` は代入せず乗算結果を返します。`reversed` は配列をコピーしてから反転し、getter が元のコンポーネント状態を変更しないようにします。
 
-```vue
+```vue annotate="add:8,11"
 <script lang="ts">
 export default {
 data() {
@@ -14927,8 +14491,6 @@ return [...this.items].reverse() // operate on a copy
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L70) · [全ルール](all.md)
-
-<span id="script-no-top-level-ref-in-script"></span>
 
 ### `script/no-top-level-ref-in-script`
 
@@ -14969,7 +14531,7 @@ vp run lint
 
 通常の `<script>` がモジュール直下で `count` と `user` を初期化しています。SSR では、この状態がコンポーネントインスタンスやリクエスト間で共有され得ます。
 
-```vue
+```vue annotate="remove:1,2,4,8"
 <script>
 // This state is shared across all requests in SSR!
 const count = ref(0)
@@ -14989,7 +14551,7 @@ return { count, user }
 
 script setup の ref はコンポーネントごとに初期化されます。通常の script には定数、状態を作る関数、`setup()` 内で作る ref を置き、モジュール直下でリアクティブな状態を作りません。
 
-```vue
+```vue annotate="add:1,2,4,6,7,8,9,10,11,12,13,14,17,18,19"
 <script setup>
 // Script setup creates fresh state per request
 const count = ref(0)
@@ -15017,8 +14579,6 @@ return { count }
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs#L63) · [全ルール](all.md)
-
-<span id="script-no-unstable-nested-components"></span>
 
 ### `script/no-unstable-nested-components`
 
@@ -15059,7 +14619,7 @@ vp run lint
 
 親の `setup()` 内で `defineComponent` を呼び、setup が実行されるたびに新しい `Child` のコンポーネント定義を作っています。
 
-```vue
+```vue annotate="remove:3"
 <script lang="ts">
 import { defineComponent } from "vue";
 export default { setup() { const Child = defineComponent({ render() { return null; } }); return { Child }; } };
@@ -15072,7 +14632,7 @@ export default { setup() { const Child = defineComponent({ render() { return nul
 
 `Child` の定義をモジュール直下に移し、`setup()` は作り直さず既存の定義を返すようにします。
 
-```vue
+```vue annotate="add:3,4"
 <script lang="ts">
 import { defineComponent } from "vue";
 const Child = defineComponent({ render() { return null; } });
@@ -15083,8 +14643,6 @@ export default { setup() { return { Child }; } };
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) · [全ルール](all.md)
-
-<span id="script-no-unused-emit-declarations"></span>
 
 ### `script/no-unused-emit-declarations`
 
@@ -15125,7 +14683,7 @@ vp run lint
 
 `defineEmits` は `change` と `unused` を宣言していますが、受け取った `emit` 関数が送信する文字列イベントは `change` だけです。
 
-```vue
+```vue annotate="remove:2,4"
 <script setup lang="ts">
 const emit = defineEmits(['change', 'unused'])
 emit('change')
@@ -15139,7 +14697,7 @@ emit('change')
 
 `unused` を除き、イベント宣言を実際の送信にそろえます。この例では emit の参照を外部へ渡していないため、ローカルの使用状況から判断できます。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const emit = defineEmits(['change'])
 emit('change')
@@ -15149,8 +14707,6 @@ emit('change')
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs#L74) · [全ルール](all.md)
-
-<span id="script-no-use-computed-property-like-method"></span>
 
 ### `script/no-use-computed-property-like-method`
 
@@ -15191,7 +14747,7 @@ vp run lint
 
 `this.total()` は computed getter の公開する値を関数として呼び出しています。この getter が返す `3` は呼び出せません。
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { computed: { total() { return 3; } }, methods: { log() { console.log(this.total()); } } };
 </script>
@@ -15203,7 +14759,7 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 
 呼び出しの括弧を除いて `this.total` とし、`log` から計算済みの数値を参照します。
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { computed: { total() { return 3; } }, methods: { log() { console.log(this.total); } } };
 </script>
@@ -15212,8 +14768,6 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) · [全ルール](all.md)
-
-<span id="script-no-with-defaults"></span>
 
 ### `script/no-with-defaults`
 
@@ -15254,7 +14808,7 @@ vp run lint
 
 型付きの props 宣言を `withDefaults` で包んで `count` と `name` の既定値を指定しており、ここで推奨する Vue 3.5 以降の分割代入の既定値を使っていません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });
 </script>
@@ -15266,7 +14820,7 @@ const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { c
 
 分割代入の変数に `count = 0` と `name = "Ada"` を直接指定し、`withDefaults` のラッパーを取り除きます。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string }>();
 </script>
@@ -15275,8 +14829,6 @@ const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) · [全ルール](all.md)
-
-<span id="script-prefer-computed"></span>
 
 ### `script/prefer-computed`
 
@@ -15319,7 +14871,7 @@ vp run lint
 
 watcher が `count` から求めた値を別の ref `doubled` に書き込むだけであり、派生状態を手作業で同期しています。
 
-```vue
+```vue annotate="remove:2,4,5"
 <script setup lang="ts">
 import { ref, watch } from "vue";
 const count = ref(0);
@@ -15334,7 +14886,7 @@ watch(count, (value) => { doubled.value = value * 2; });
 
 `computed(() => count.value * 2)` で導出を直接表し、書き込み可能な追加 ref と同期用 watcher を取り除きます。
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 import { ref, computed } from "vue";
 const count = ref(0);
@@ -15345,8 +14897,6 @@ const doubled = computed(() => count.value * 2);
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) · [全ルール](all.md)
-
-<span id="script-prefer-define-options"></span>
 
 ### `script/prefer-define-options`
 
@@ -15387,7 +14937,7 @@ vp run lint
 
 通常の script の処理が `name` と `inheritAttrs` だけを持つオブジェクトの export に限られ、`defineOptions` で表せるオプションだけを宣言しています。
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { name: 'MyComponent', inheritAttrs: false }
 </script>
@@ -15399,7 +14949,7 @@ export default { name: 'MyComponent', inheritAttrs: false }
 
 例の `data()` が実際の Options API の処理を持つため、オプションだけの script を対象とする慎重な提案の範囲外になります。この Good は許可される例外を示します。直接移行する場合は `<script setup>` 内で `defineOptions({ name: 'MyComponent', inheritAttrs: false })` を使います。
 
-```vue
+```vue annotate="add:2,3,4,5,6"
 <script lang="ts">
 // Real options logic — keep the plain script.
 export default {
@@ -15412,8 +14962,6 @@ data() { return { count: 0 } },
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) · [全ルール](all.md)
-
-<span id="script-prefer-import-from-vue"></span>
 
 ### `script/prefer-import-from-vue`
 
@@ -15454,7 +15002,7 @@ vp run lint
 
 `ref` と `h` を公開パッケージ `vue` ではなく、内部の `@vue/runtime-core` と `@vue/runtime-dom` からインポートしています。
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 import { ref } from '@vue/runtime-core'
 import { h } from '@vue/runtime-dom'
@@ -15467,7 +15015,7 @@ import { h } from '@vue/runtime-dom'
 
 両ヘルパーを `vue` からまとめてインポートし、内部パッケージではなく公開エントリーポイントを使います。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 import { ref, h } from 'vue'
 </script>
@@ -15476,8 +15024,6 @@ import { ref, h } from 'vue'
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [全ルール](all.md)
-
-<span id="script-prefer-ref-over-reactive"></span>
 
 ### `script/prefer-ref-over-reactive`
 
@@ -15518,7 +15064,7 @@ vp run lint
 
 状態を `reactive` で作り、この意見を持つルールが推奨する ref を使っていません。これはスタイルの推奨を示す例であり、reactive オブジェクト自体が不正という意味ではありません。
 
-```vue
+```vue annotate="remove:2,3,4,5,6"
 <script setup lang="ts">
 // reactive requires careful handling to avoid losing reactivity
 const state = reactive({
@@ -15534,7 +15080,7 @@ name: 'foo'
 
 スカラーとオブジェクトの状態をどちらも `ref` で作ります。関連するフィールドを個別の ref に分ける例も含め、推奨する状態の作成形式にそろえます。
 
-```vue
+```vue annotate="add:2,3,4,5,6,7,8,9,10,11"
 <script setup lang="ts">
 // ref is more explicit and safer
 const count = ref(0)
@@ -15552,8 +15098,6 @@ const userAge = ref(20)
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs#L44) · [全ルール](all.md)
-
-<span id="script-prefer-use-attrs"></span>
 
 ### `script/prefer-use-attrs`
 
@@ -15594,7 +15138,7 @@ vp run lint
 
 `setup` がコンテキスト引数の分割代入で `attrs` を受け取っています。このルールは Composition API のヘルパーへの置換を求めます。
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { setup(_props, { attrs }) { console.log(attrs.class); } };
 </script>
@@ -15606,7 +15150,7 @@ export default { setup(_props, { attrs }) { console.log(attrs.class); } };
 
 setup 内で `useAttrs()` から `attrs` を取得し、第二引数に依存せず `attrs.class` の参照を保ちます。
 
-```vue
+```vue annotate="add:2,3"
 <script lang="ts">
 import { useAttrs } from "vue";
 export default { setup() { const attrs = useAttrs(); console.log(attrs.class); } };
@@ -15616,8 +15160,6 @@ export default { setup() { const attrs = useAttrs(); console.log(attrs.class); }
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_attrs.rs#L44) · [全ルール](all.md)
-
-<span id="script-prefer-use-id"></span>
 
 ### `script/prefer-use-id`
 
@@ -15658,7 +15200,7 @@ vp run lint
 
 `id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で変わり得ます。ID の名前を持つこの変数が、ルールの認識する生成箇所です。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const id = `input-${Math.random()}`;
 </script>
@@ -15671,7 +15213,7 @@ const id = `input-${Math.random()}`;
 
 Vue 3.5 以降の `useId()` で識別子を作り、`:for` と `:id` は同じ変数を参照し続けます。ランダムな値の生成を取り除きます。
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { useId } from "vue";
 const id = useId();
@@ -15682,8 +15224,6 @@ const id = useId();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) · [全ルール](all.md)
-
-<span id="script-prefer-use-slots"></span>
 
 ### `script/prefer-use-slots`
 
@@ -15724,7 +15264,7 @@ vp run lint
 
 `setup` がコンテキスト引数から `slots` を分割代入で取り出しており、このルールが置換を推奨する参照形式です。
 
-```vue
+```vue annotate="remove:2,4"
 <script lang="ts">
 import { defineComponent, h } from "vue";
 export default defineComponent({
@@ -15739,7 +15279,7 @@ export default defineComponent({
 
 setup 内で `useSlots()` から slot を取得し、コンテキスト引数を使わずに render 関数と default slot の任意の呼び出しを保ちます。
 
-```vue
+```vue annotate="add:2,4,5,6,7"
 <script lang="ts">
 import { defineComponent, h, useSlots } from "vue";
 export default defineComponent({
@@ -15754,8 +15294,6 @@ export default defineComponent({
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_slots.rs#L44) · [全ルール](all.md)
-
-<span id="script-prefer-use-template-ref"></span>
 
 ### `script/prefer-use-template-ref`
 
@@ -15796,7 +15334,7 @@ vp run lint
 
 null で初期化した `input` の ref がテンプレートのリテラル `ref="input"` と対応し、通常の nullable なデータではなく要素参照であることが分かります。
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 import { ref } from 'vue'
 const input = ref<HTMLInputElement | null>(null)
@@ -15812,7 +15350,7 @@ const input = ref<HTMLInputElement | null>(null)
 
 Vue 3.5 以降の `useTemplateRef<HTMLInputElement>('input')` でテンプレート参照を明示します。対応する要素参照のない `error = ref(null)` は通常のデータであり、このルールの対象外です。
 
-```vue
+```vue annotate="add:2,3,4,5,6,10"
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
 // Paired with the template ref below.
@@ -15829,8 +15367,6 @@ const error = ref(null)
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75) · [全ルール](all.md)
-
-<span id="script-require-default-prop"></span>
 
 ### `script/require-default-prop`
 
@@ -15871,7 +15407,7 @@ vp run lint
 
 `name` と `age` は必須でない Boolean 以外の実行時 props で、未指定時の既定値がありません。
 
-```vue
+```vue annotate="remove:4,5,6"
 <script lang="ts">
 export default {
 props: {
@@ -15889,7 +15425,7 @@ age: { type: Number },
 
 `name` に `default: ''` を付けます。`enabled` は Boolean の暗黙の false を使い、必須の `id` には代替値が不要であるため、二つの除外条件も示しています。
 
-```vue
+```vue annotate="add:4,5,6"
 <script lang="ts">
 export default {
 props: {
@@ -15904,8 +15440,6 @@ id: { type: Number, required: true },
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L58) · [全ルール](all.md)
-
-<span id="script-require-explicit-emits"></span>
 
 ### `script/require-explicit-emits`
 
@@ -15946,7 +15480,7 @@ vp run lint
 
 受け取った emit 関数が `save` を送信しますが、`defineEmits([])` にはそのイベントが宣言されていません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const emit = defineEmits([]);
 emit("save");
@@ -15959,7 +15493,7 @@ emit("save");
 
 宣言に `"save"` を追加し、送信する文字列イベントをコンポーネントの明示的なイベント契約に含めます。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const emit = defineEmits(["save"]);
 emit("save");
@@ -15969,8 +15503,6 @@ emit("save");
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L61) · [全ルール](all.md)
-
-<span id="script-require-explicit-slots"></span>
 
 ### `script/require-explicit-slots`
 
@@ -16011,7 +15543,7 @@ vp run lint
 
 型付きの `defineProps<{ id: number }>()` により TypeScript の構文があることが分かりますが、setup が `defineSlots` の宣言なしに `useSlots()` を使い、参照する slot の明示的な契約がありません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const props = defineProps<{ id: number }>()
 const slots = useSlots()
@@ -16024,7 +15556,7 @@ const slots = useSlots()
 
 `defineSlots` で `msg: string` を props に持つ `default` slot を宣言し、`useSlots()` と明示的な型付き slot 契約を併記します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineSlots<{ default(props: { msg: string }): unknown }>()
 const slots = useSlots()
@@ -16034,8 +15566,6 @@ const slots = useSlots()
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) · [全ルール](all.md)
-
-<span id="script-require-function-return-type"></span>
 
 ### `script/require-function-return-type`
 
@@ -16076,7 +15606,7 @@ vp run lint
 
 `add` と `greet` は引数の型を指定していますが、戻り値の型を省略しています。この明示的な型指定の規則では、戻り値の推論だけでは条件を満たしません。
 
-```vue
+```vue annotate="remove:2,6"
 <script setup lang="ts">
 const add = (a: number, b: number) => {
 return a + b
@@ -16094,7 +15624,7 @@ return `Hello, ${name}`
 
 `add` に `: number`、`greet` に `: string` を付け、本体を変えずに戻り値の契約を明示します。
 
-```vue
+```vue annotate="add:2,6"
 <script setup lang="ts">
 const add = (a: number, b: number): number => {
 return a + b
@@ -16109,8 +15639,6 @@ return `Hello, ${name}`
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) · [全ルール](all.md)
-
-<span id="script-require-prop-type-constructor"></span>
 
 ### `script/require-prop-type-constructor`
 
@@ -16151,7 +15679,7 @@ vp run lint
 
 props の実行時の型に文字列 `"String"` と `"Number"` を使い、コンストラクターの配列にも文字列を入れています。これらの文字列はコンストラクター関数ではありません。
 
-```vue
+```vue annotate="remove:4,5,6,7"
 <script lang="ts">
 export default {
 props: {
@@ -16170,7 +15698,7 @@ id: { type: ["String", "Number"] }
 
 型を実際の `String` と `Number` の識別子にし、共用型の配列も `[String, Number]` に変えます。
 
-```vue
+```vue annotate="add:4,5,6"
 <script lang="ts">
 export default {
 props: {
@@ -16185,8 +15713,6 @@ id: { type: [String, Number] }
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L59) · [全ルール](all.md)
-
-<span id="script-require-prop-types"></span>
 
 ### `script/require-prop-types`
 
@@ -16227,7 +15753,7 @@ vp run lint
 
 配列の要素は `status` という名前だけを宣言し、`null` の値と空の descriptor にも実行時の prop 型がありません。
 
-```vue
+```vue annotate="remove:3,4,5,6,8,9"
 <script lang="ts">
 export default {
 props: ['status']            // array form: no types
@@ -16248,7 +15774,7 @@ other: {}                  // empty descriptor: no type
 
 `status: String` で省略形式のコンストラクターを指定し、`other` の descriptor に `type: Number` を付けます。両方の props が型の宣言を持つようになります。
 
-```vue
+```vue annotate="add:4,5"
 <script lang="ts">
 export default {
 props: {
@@ -16262,8 +15788,6 @@ other: { type: Number, default: 0 }
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) · [全ルール](all.md)
-
-<span id="script-require-symbol-provide"></span>
 
 ### `script/require-symbol-provide`
 
@@ -16304,7 +15828,7 @@ vp run lint
 
 `provide` と `inject` が `'user'`、`'theme'` のような文字列キーを使い、同じ綴りを使うほかの provider と衝突し得ます。
 
-```vue
+```vue annotate="remove:1,2,3,4,6,7"
 <script setup lang="ts">
 // String keys can collide
 provide('user', user)
@@ -16321,7 +15845,7 @@ provide('theme', { dark: true })
 
 共有する `UserKey` を `Symbol` で作り、`InjectionKey<User>` の型を付けます。両呼び出しに同じキーを渡し、文字列リテラルを使わないようにします。
 
-```vue
+```vue annotate="add:1,2,3,5,6,7,8,9"
 <script lang="ts">
 // Define injection key with Symbol
 export const UserKey: InjectionKey<User> = Symbol('user')
@@ -16337,8 +15861,6 @@ const user = inject(UserKey)
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_symbol_provide.rs#L39) · [全ルール](all.md)
-
-<span id="script-require-typed-object-prop"></span>
 
 ### `script/require-typed-object-prop`
 
@@ -16379,7 +15901,7 @@ vp run lint
 
 裸の `Object` と `Array` は広い実行時の分類しか表さず、`user` や `items` の要素の形を明示する静的な型がありません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const props = defineProps({ user: Object, items: { type: Array } });
 </script>
@@ -16391,7 +15913,7 @@ const props = defineProps({ user: Object, items: { type: Array } });
 
 `PropType<User>` と `PropType<User[]>` を付け、実行時のコンストラクターを保ったままオブジェクトと要素の型を指定します。
 
-```vue
+```vue annotate="add:2,3,4,5,6,7"
 <script setup lang="ts">
 import type { PropType } from "vue";
 interface User { name: string }
@@ -16405,8 +15927,6 @@ const props = defineProps({
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs#L63) · [全ルール](all.md)
-
-<span id="script-require-typed-ref"></span>
 
 ### `script/require-typed-ref`
 
@@ -16447,7 +15967,7 @@ vp run lint
 
 インポートした `ref` に型引数がなく、引数なし、`null`、`undefined` からは将来代入する値の型を推論できません。
 
-```vue
+```vue annotate="remove:4,5,6"
 <script setup lang="ts">
 import { ref } from 'vue'
 
@@ -16463,7 +15983,7 @@ const c = ref(undefined)  // Ref<undefined>
 
 型引数で string と nullable な User の ref を指定します。`ref(0)` には具体的な数値の初期値があり、型推論を使えます。
 
-```vue
+```vue annotate="add:4,5,6"
 <script setup lang="ts">
 import { ref } from 'vue'
 
@@ -16476,8 +15996,6 @@ const c = ref(0)          // inferred Ref<number>
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_typed_ref.rs#L55) · [全ルール](all.md)
-
-<span id="script-require-valid-default-prop"></span>
 
 ### `script/require-valid-default-prop`
 
@@ -16518,7 +16036,7 @@ vp run lint
 
 Number と Boolean の props に型の合わないスカラー既定値を付け、Array と Object には factory ではなく共有されるリテラル値を使っています。
 
-```vue
+```vue annotate="remove:4,5,6,7"
 <script lang="ts">
 export default {
 props: {
@@ -16537,7 +16055,7 @@ config: { type: Object, default: {} }       // literal must be a factory
 
 スカラーの既定値を `0` と `false` にし、配列とオブジェクトの既定値を新しい値を返す関数にします。`[String, Number]` の文字列既定値は、宣言した型の一つに合うため許可されます。
 
-```vue
+```vue annotate="add:4,5,6,7,8"
 <script lang="ts">
 export default {
 props: {
@@ -16554,8 +16072,6 @@ label: { type: [String, Number], default: '' }
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs#L68) · [全ルール](all.md)
-
-<span id="script-return-in-computed-property"></span>
 
 ### `script/return-in-computed-property`
 
@@ -16596,7 +16112,7 @@ vp run lint
 
 ブロック形式の computed getter が `1 + 2` を計算するだけで返さず、computed の値が undefined になります。
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 import { computed } from "vue";
 const total = computed(() => { 1 + 2; });
@@ -16609,7 +16125,7 @@ const total = computed(() => { 1 + 2; });
 
 `return 1 + 2` で式を getter の戻り値にします。このルールは式文だけでなく、getter 自身の値を返す return を確認します。
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 import { computed } from "vue";
 const total = computed(() => { return 1 + 2; });
@@ -16619,8 +16135,6 @@ const total = computed(() => { return 1 + 2; });
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/return_in_computed_property.rs#L31) · [全ルール](all.md)
-
-<span id="script-return-in-emits-validator"></span>
 
 ### `script/return-in-emits-validator`
 
@@ -16663,7 +16177,7 @@ vp run lint
 
 `submit` の validator が payload をログ出力するだけで検査結果を返さず、ブロックの結果が undefined になります。
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { emits: { submit: (payload: unknown) => { console.log(payload); } } };
 </script>
@@ -16675,7 +16189,7 @@ export default { emits: { submit: (payload: unknown) => { console.log(payload); 
 
 `return payload != null` を追加し、値を返さず終了する代わりに payload の真偽値の検査結果を返します。
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { emits: { submit: (payload: unknown) => { return payload != null; } } };
 </script>
@@ -16684,8 +16198,6 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) · [全ルール](all.md)
-
-<span id="script-valid-define-emits"></span>
 
 ### `script/valid-define-emits`
 
@@ -16726,7 +16238,7 @@ vp run lint
 
 同じ `defineEmits` に型引数と実行時配列 `["save"]` の両方を渡し、併用できない二つの宣言形式を混ぜています。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 defineEmits<{ save: [] }>(["save"]);
 </script>
@@ -16738,7 +16250,7 @@ defineEmits<{ save: [] }>(["save"]);
 
 実行時の引数を除き、`save` の宣言を型ベースの一つの形式に統一します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineEmits<{ save: [] }>();
 </script>
@@ -16747,8 +16259,6 @@ defineEmits<{ save: [] }>();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_emits.rs#L45) · [全ルール](all.md)
-
-<span id="script-valid-define-options"></span>
 
 ### `script/valid-define-options`
 
@@ -16789,7 +16299,7 @@ vp run lint
 
 最初の呼び出しが専用マクロで宣言すべき `props` を `defineOptions` に入れています。後続の呼び出しはマクロを繰り返し、オブジェクトでない引数も渡しています。禁止された形式と呼び出し回数の制約を示す例です。
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <script setup lang="ts">
 defineOptions({ props: ['foo'] })   // use defineProps instead
 defineOptions({ name: 'Foo' })
@@ -16804,7 +16314,7 @@ defineOptions('Foo')                // not an object literal
 
 `defineOptions` を一度だけ呼び、通常の対応オプション `name` と `inheritAttrs` を持つオブジェクトを渡します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineOptions({ name: 'Foo', inheritAttrs: false })
 </script>
@@ -16813,8 +16323,6 @@ defineOptions({ name: 'Foo', inheritAttrs: false })
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_options.rs#L41) · [全ルール](all.md)
-
-<span id="script-valid-define-props"></span>
 
 ### `script/valid-define-props`
 
@@ -16855,7 +16363,7 @@ vp run lint
 
 同じ `defineProps` に型引数 `{ title: string }` と実行時引数 `{ title: String }` の両方を渡しています。コンパイラーはこの併用を許可しません。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 defineProps<{ title: string }>({ title: String });
 </script>
@@ -16867,7 +16375,7 @@ defineProps<{ title: string }>({ title: String });
 
 実行時オブジェクトを除き、二つの形式を併用せず `title` の型ベースの宣言だけを残します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineProps<{ title: string }>();
 </script>
@@ -16876,8 +16384,6 @@ defineProps<{ title: string }>();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_props.rs#L44) · [全ルール](all.md)
-
-<span id="script-valid-next-tick"></span>
 
 ### `script/valid-next-tick`
 
@@ -16918,7 +16424,7 @@ vp run lint
 
 インポートした `nextTick()` をコールバックなしの式文で呼び、返された Promise を無視しています。DOM 更新後まで待つ処理がありません。
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 import { nextTick } from "vue";
 nextTick();
@@ -16931,7 +16437,7 @@ nextTick();
 
 `await nextTick()` で Promise を使い、後続の setup 処理へ進む前に次の DOM 更新を明示的に待ちます。
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 import { nextTick } from "vue";
 await nextTick();
@@ -16941,8 +16447,6 @@ await nextTick();
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_next_tick.rs#L55) · [全ルール](all.md)
-
-<span id="nuxt-no-nuxt-config-test-key"></span>
 
 ### `nuxt/no-nuxt-config-test-key`
 
@@ -16985,7 +16489,7 @@ vp run lint
 
 `nuxt.config.ts`
 
-```ts
+```ts annotate="remove:1"
 export default defineNuxtConfig({ test: true });
 ```
 
@@ -16997,15 +16501,13 @@ export default defineNuxtConfig({ test: true });
 
 `nuxt.config.ts`
 
-```ts
+```ts annotate="add:1"
 export default defineNuxtConfig({});
 ```
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_nuxt_config_test_key.rs#L16) · [全ルール](all.md)
-
-<span id="nuxt-no-page-meta-runtime-values"></span>
 
 ### `nuxt/no-page-meta-runtime-values`
 
@@ -17046,7 +16548,7 @@ vp run lint
 
 `definePageMeta` のオブジェクトを作る際に `useRoute()` を即座に評価しています。メタデータはマクロによって setup の実行時コンテキストの外へ巻き上げられます。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 definePageMeta({ title: useRoute() });
 </script>
@@ -17058,7 +16560,7 @@ definePageMeta({ title: useRoute() });
 
 `validate` にコールバックを渡し、`useRoute().params.id` の評価をその実行時まで遅らせます。このルールは関数本体内の遅延評価と、メタデータの即時評価を区別します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 definePageMeta({ validate: () => Boolean(useRoute().params.id) });
 </script>
@@ -17067,8 +16569,6 @@ definePageMeta({ validate: () => Boolean(useRoute().params.id) });
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_page_meta_runtime_values.rs#L25) · [全ルール](all.md)
-
-<span id="nuxt-nuxt-config-keys-order"></span>
 
 ### `nuxt/nuxt-config-keys-order`
 
@@ -17111,7 +16611,7 @@ vp run lint
 
 `nuxt.config.ts`
 
-```ts
+```ts annotate="remove:1"
 export default defineNuxtConfig({ ssr: true, modules: [] });
 ```
 
@@ -17123,15 +16623,13 @@ export default defineNuxtConfig({ ssr: true, modules: [] });
 
 `nuxt.config.ts`
 
-```ts
+```ts annotate="add:1"
 export default defineNuxtConfig({ modules: [], ssr: true });
 ```
 
 良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/nuxt_config_keys_order.rs#L24) · [全ルール](all.md)
-
-<span id="nuxt-prefer-import-meta"></span>
 
 ### `nuxt/prefer-import-meta`
 
@@ -17172,7 +16670,7 @@ vp run lint
 
 `process.client` は旧形式の Nuxt 環境フラグであり、このルールは `import.meta` への移行を求めます。
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 if (process.client) console.log("browser");
 </script>
@@ -17184,7 +16682,7 @@ if (process.client) console.log("browser");
 
 `import.meta.client` に置き換え、ブラウザー側だけで実行する分岐を新しい環境フラグで表します。
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 if (import.meta.client) console.log("browser");
 </script>
@@ -17196,8 +16694,6 @@ if (import.meta.client) console.log("browser");
 
 
 ## プロジェクトの例
-
-<span id="ecosystem-vue-router-unknown-route"></span>
 
 ### `ecosystem/vue-router-unknown-route`
 
@@ -17274,7 +16770,7 @@ export const router = createRouter({
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17291,7 +16787,7 @@ router.push({ name: "user-posts", params: { userId: "1", postId: "2" } });
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17303,8 +16799,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="ecosystem-vue-router-extra-param"></span>
 
 ### `ecosystem/vue-router-extra-param`
 
@@ -17381,7 +16875,7 @@ export const router = createRouter({
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17398,7 +16892,7 @@ params から `tab` を除き、path の key だけを渡します。タブ選�
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17410,8 +16904,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="ecosystem-vue-router-param-type"></span>
 
 ### `ecosystem/vue-router-param-type`
 
@@ -17488,7 +16980,7 @@ export const router = createRouter({
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17505,7 +16997,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: ["2"] } });
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17517,8 +17009,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="ecosystem-vue-router-missing-param"></span>
 
 ### `ecosystem/vue-router-missing-param`
 
@@ -17595,7 +17085,7 @@ export const router = createRouter({
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17612,7 +17102,7 @@ router.push({ name: "user-post", params: { userId: "1" } });
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17624,8 +17114,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="html-cross-component-nesting"></span>
 
 ### `html/cross-component-nesting`
 
@@ -17679,7 +17167,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -17700,7 +17188,7 @@ import Child from "./Child.vue";
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -17716,8 +17204,6 @@ import Child from "./Child.vue";
 良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vue-cross-file-attrs-fallthrough"></span>
 
 ### `vue/cross-file-attrs-fallthrough`
 
@@ -17780,7 +17266,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:1"
 <template><main>Content</main><aside>Help</aside></template>
 ```
 
@@ -17801,15 +17287,13 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:1"
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
 良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-array-mutation"></span>
 
 ### `vize:croquis/cf/array-mutation`
 
@@ -17869,7 +17353,7 @@ export default Vue.extend({
 
 `replace-first.ts`
 
-```ts
+```ts annotate="remove:2"
 export function replaceFirst(items: string[], next: string): void {
   items[0] = next;
 }
@@ -17884,7 +17368,7 @@ export function replaceFirst(items: string[], next: string): void {
 
 `replace-first.ts`
 
-```ts
+```ts annotate="add:2"
 export function replaceFirst(items: string[], next: string): void {
   items.splice(0, 1, next);
 }
@@ -17896,8 +17380,6 @@ export function replaceFirst(items: string[], next: string): void {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-async-boundary"></span>
 
 ### `vize:croquis/cf/async-boundary`
 
@@ -17976,7 +17458,7 @@ const query = ref("");
 
 `SearchResults.vue`
 
-```vue
+```vue annotate="remove:10,11"
 <script setup lang="ts">
 import { load, type Result } from "./api";
 import { ref, watch } from "vue";
@@ -18016,7 +17498,7 @@ const query = ref("");
 
 `SearchResults.vue`
 
-```vue
+```vue annotate="add:10,11,12,13,14,15,16,17,18,19,20"
 <script setup lang="ts">
 import { load, type Result } from "./api";
 import { ref, watch } from "vue";
@@ -18049,8 +17531,6 @@ watch(
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/race_conditions/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-async-no-suspense"></span>
 
 ### `vize:croquis/cf/async-no-suspense`
 
@@ -18094,7 +17574,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -18118,7 +17598,7 @@ const greeting = await Promise.resolve("Hello");
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -18141,8 +17621,6 @@ const greeting = await Promise.resolve("Hello");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/boundary.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-browser-api-ssr"></span>
 
 ### `vize:croquis/cf/browser-api-ssr`
 
@@ -18196,7 +17674,7 @@ setup 中に `window.innerWidth` を読み、ブラウザの `window` がない 
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const width = window.innerWidth;
 </script>
@@ -18211,7 +17689,7 @@ server で安全な値の ref を作り、client mount 後の `onMounted` 内で
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,3,4"
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 const width = ref(0);
@@ -18227,8 +17705,6 @@ onMounted(() => { width.value = window.innerWidth; });
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/boundary.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-circular-dep"></span>
 
 ### `vize:croquis/cf/circular-dep`
 
@@ -18294,7 +17770,7 @@ export const bPrefix = 'B';
 
 `a.ts`
 
-```ts
+```ts annotate="remove:1,2"
 import { bLabel } from './b';
 export const aLabel = 'A' + bLabel;
 
@@ -18302,7 +17778,7 @@ export const aLabel = 'A' + bLabel;
 
 `b.ts`
 
-```ts
+```ts annotate="remove:1,2"
 import { aLabel } from './a';
 export const bLabel = 'B' + aLabel;
 
@@ -18316,7 +17792,7 @@ export const bLabel = 'B' + aLabel;
 
 `a.ts`
 
-```ts
+```ts annotate="add:1,2"
 import { bPrefix } from './labels';
 export const aLabel = 'A' + bPrefix;
 
@@ -18324,7 +17800,7 @@ export const aLabel = 'A' + bPrefix;
 
 `b.ts`
 
-```ts
+```ts annotate="add:1,2"
 import { aPrefix } from './labels';
 export const bLabel = 'B' + aPrefix;
 
@@ -18335,8 +17811,6 @@ export const bLabel = 'B' + aPrefix;
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-circular-reactive-dependency"></span>
 
 ### `vize:croquis/cf/circular-reactive-dependency`
 
@@ -18417,7 +17891,7 @@ App が count（A）を保持して provide します。CycleView は nextCount�
 
 `CycleView.vue`
 
-```vue
+```vue annotate="remove:2,6"
 <script setup lang="ts">
 import { computed, inject, watch } from 'vue';
 import { countKey } from './count-key';
@@ -18428,7 +17902,7 @@ watch(nextCount, value => { count.value = value; }, { immediate: true });
 <template><p>{{ nextCount }}</p></template>
 ```
 
-```text
+```text annotate="remove:2"
 Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B; B -> A
 ```
@@ -18441,7 +17915,7 @@ B の値を A に書き戻す watch を取り除きます。count は App が保
 
 `CycleView.vue`
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import { countKey } from './count-key';
@@ -18451,7 +17925,7 @@ const nextCount = computed(() => count.value + 1); // B: the derived consumer.
 <template><p>{{ nextCount }}</p></template>
 ```
 
-```text
+```text annotate="add:2"
 Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B
 ```
@@ -18463,8 +17937,6 @@ Tracked flows: A -> B
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/cross_file_reactivity/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-closure-captures-reactive"></span>
 
 ### `vize:croquis/cf/closure-captures-reactive`
 
@@ -18524,7 +17996,7 @@ const shown = computed(read);
 
 `reader.ts`
 
-```ts
+```ts annotate="remove:3,4"
 import type { Ref } from 'vue';
 export function makeReader(count: Ref<number>): () => number {
   const captured = count.value;
@@ -18541,7 +18013,7 @@ export function makeReader(count: Ref<number>): () => number {
 
 `reader.ts`
 
-```ts
+```ts annotate="add:3"
 import type { Ref } from 'vue';
 export function makeReader(count: Ref<number>): () => number {
   return () => count.value;
@@ -18554,8 +18026,6 @@ export function makeReader(count: Ref<number>): () => number {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-composable-outside-setup"></span>
 
 ### `vize:croquis/cf/composable-outside-setup`
 
@@ -18614,7 +18084,7 @@ const title = useTitle();
 
 `use-title.ts`
 
-```ts
+```ts annotate="remove:2,3,4"
 import { onMounted, ref } from 'vue';
 const title = ref('Before mount');
 onMounted(() => { title.value = 'Mounted'; });
@@ -18630,7 +18100,7 @@ export function useTitle() { return title; }
 
 `use-title.ts`
 
-```ts
+```ts annotate="add:2,3,4,5,6"
 import { onMounted, ref } from 'vue';
 export function useTitle() {
   const title = ref('Before mount');
@@ -18645,8 +18115,6 @@ export function useTitle() {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-computed-side-effects"></span>
 
 ### `vize:croquis/cf/computed-side-effects`
 
@@ -18703,7 +18171,7 @@ const { count, doubled, lastCalculated } = useDouble();
 
 `use-double.ts`
 
-```ts
+```ts annotate="remove:1,5,6,7,8,9"
 import { computed, ref } from 'vue';
 export function useDouble() {
   const count = ref(0);
@@ -18726,7 +18194,7 @@ getter は導出した数値だけを返します。`count` の変更時に `las
 
 `use-double.ts`
 
-```ts
+```ts annotate="add:1,5,6"
 import { computed, ref, watch } from 'vue';
 export function useDouble() {
   const count = ref(0);
@@ -18743,8 +18211,6 @@ export function useDouble() {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-deep-import"></span>
 
 ### `vize:croquis/cf/deep-import`
 
@@ -18837,7 +18303,7 @@ entry が単純な値を `level-one`、`level-two`、`level-three` 経由で読�
 
 `entry.ts`
 
-```ts
+```ts annotate="remove:1"
 export { label } from './level-one';
 
 ```
@@ -18850,7 +18316,7 @@ export { label } from './level-one';
 
 `entry.ts`
 
-```ts
+```ts annotate="add:1"
 export { label } from './public-api';
 
 ```
@@ -18860,8 +18326,6 @@ export { label } from './public-api';
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-destructuring-breaks-reactivity"></span>
 
 ### `vize:croquis/cf/destructuring-breaks-reactivity`
 
@@ -18930,7 +18394,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 const props = defineProps<{ item: { name: string } }>();
 const { item } = props;
@@ -18960,7 +18424,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="add:2,3,5"
 <script setup lang="ts">
 import { toRef } from "vue";
 
@@ -18980,8 +18444,6 @@ const item = toRef(props, "item");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-di-outside-setup"></span>
 
 ### `vize:croquis/cf/di-outside-setup`
 
@@ -19051,7 +18513,7 @@ const theme = useTheme();
 
 `main.ts`
 
-```ts
+```ts annotate="remove:1,2,3,4,5,6"
 import { createApp } from 'vue';
 import App from './App.vue';
 import { provideTheme } from './theme';
@@ -19081,7 +18543,7 @@ App の setup で子を描画する前に provider を呼び、子が祖先コ�
 
 `App.vue`
 
-```vue
+```vue annotate="add:3,4"
 <script setup lang="ts">
 import ThemedText from './ThemedText.vue';
 import { provideTheme } from './theme';
@@ -19099,8 +18561,6 @@ provideTheme();
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-dom-access-without-next-tick"></span>
 
 ### `vize:croquis/cf/dom-access-without-next-tick`
 
@@ -19152,7 +18612,7 @@ export function readLabel(node: HTMLElement | null): string {
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2,7"
 <script setup lang="ts">
 import { ref } from 'vue';
 import { readLabel } from './read-label';
@@ -19179,7 +18639,7 @@ function increment() {
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,7,9"
 <script setup lang="ts">
 import { nextTick, ref } from 'vue';
 import { readLabel } from './read-label';
@@ -19204,8 +18664,6 @@ async function increment() {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-duplicate-id"></span>
 
 ### `vize:croquis/cf/duplicate-id`
 
@@ -19273,7 +18731,7 @@ import ShippingAddress from "./ShippingAddress.vue";
 
 `ShippingAddress.vue`
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <label for="postal-code">Shipping postal code</label>
   <input id="postal-code" />
@@ -19282,7 +18740,7 @@ import ShippingAddress from "./ShippingAddress.vue";
 
 `BillingAddress.vue`
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <label for="postal-code">Billing postal code</label>
   <input id="postal-code" />
@@ -19311,7 +18769,7 @@ import ShippingAddress from "./ShippingAddress.vue";
 
 `ShippingAddress.vue`
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,8,9"
 <script setup lang="ts">
 import { useId } from "vue";
 
@@ -19326,7 +18784,7 @@ const postalCodeId = useId();
 
 `BillingAddress.vue`
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,8,9"
 <script setup lang="ts">
 import { useId } from "vue";
 
@@ -19346,8 +18804,6 @@ const postalCodeId = useId();
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/element_id.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-event-listener-leak"></span>
 
 ### `vize:croquis/cf/event-listener-leak`
 
@@ -19404,7 +18860,7 @@ const width = useWidth();
 
 `use-width.ts`
 
-```ts
+```ts annotate="remove:1"
 import { onMounted, ref } from 'vue';
 export function useWidth() {
   const width = ref(0);
@@ -19423,7 +18879,7 @@ export function useWidth() {
 
 `use-width.ts`
 
-```ts
+```ts annotate="add:1,6"
 import { onMounted, onUnmounted, ref } from 'vue';
 export function useWidth() {
   const width = ref(0);
@@ -19440,8 +18896,6 @@ export function useWidth() {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-event-modifier"></span>
 
 ### `vize:croquis/cf/event-modifier`
 
@@ -19481,7 +18935,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -19506,7 +18960,7 @@ emit("save");
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -19530,8 +18984,6 @@ emit("save");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/event_bubbling.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-hydration-risk"></span>
 
 ### `vize:croquis/cf/hydration-risk`
 
@@ -19594,7 +19046,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:2,4"
 <script setup lang="ts">
 import { ref } from "vue";
 const props = defineProps<{ count: number }>();
@@ -19620,7 +19072,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 import { toRef } from "vue";
 const props = defineProps<{ count: number }>();
@@ -19638,8 +19090,6 @@ const count = toRef(props, "count");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-inherit-attrs-unused"></span>
 
 ### `vize:croquis/cf/inherit-attrs-unused`
 
@@ -19688,7 +19138,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false });
 </script>
@@ -19712,7 +19162,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false });
 </script>
@@ -19726,8 +19176,6 @@ defineOptions({ inheritAttrs: false });
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/fallthrough.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-inject-without-symbol"></span>
 
 ### `vize:croquis/cf/inject-without-symbol`
 
@@ -19789,7 +19237,7 @@ export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="remove:6"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -19805,7 +19253,7 @@ provide("theme", theme);
 
 `ThemeLabel.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { inject } from "vue";
 
@@ -19821,7 +19269,7 @@ const theme = inject("theme");
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="add:4,7"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -19838,7 +19286,7 @@ provide(ThemeKey, theme);
 
 `ThemeLabel.vue`
 
-```vue
+```vue annotate="add:3,5"
 <script setup lang="ts">
 import { inject } from "vue";
 import { ThemeKey } from "./keys/theme";
@@ -19854,8 +19302,6 @@ const theme = inject(ThemeKey);
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/keys.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-injected-async-mutation-race"></span>
 
 ### `vize:croquis/cf/injected-async-mutation-race`
 
@@ -19941,7 +19387,7 @@ export const StoreKey: InjectionKey<Store> = Symbol("store");
 
 `StoreProvider.vue`
 
-```vue
+```vue annotate="remove:12"
 <script setup lang="ts">
 import { provide, reactive } from "vue";
 import CountLoader from "./CountLoader.vue";
@@ -19960,7 +19406,7 @@ provide(StoreKey, store);
 
 `CountLoader.vue`
 
-```vue
+```vue annotate="remove:3,4,6,9,10"
 <script setup lang="ts">
 import { loadCount } from "./api";
 import { inject, ref, watch } from "vue";
@@ -19995,7 +19441,7 @@ export const StoreKey: InjectionKey<Store> = Symbol("store");
 
 `StoreProvider.vue`
 
-```vue
+```vue annotate="add:9,10,11,12,16"
 <script setup lang="ts">
 import { provide, reactive } from "vue";
 import CountLoader from "./CountLoader.vue";
@@ -20018,7 +19464,7 @@ function applyLoadedCount(count: number) {
 
 `CountLoader.vue`
 
-```vue
+```vue annotate="add:3,5,8,9,10,11,12,13,14,15,16,17,18"
 <script setup lang="ts">
 import { loadCount } from "./api";
 import { ref, watch } from "vue";
@@ -20048,8 +19494,6 @@ watch(query, async (value, _oldValue, onCleanup) => {
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/race_conditions/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-lifecycle-outside-setup"></span>
 
 ### `vize:croquis/cf/lifecycle-outside-setup`
 
@@ -20102,7 +19546,7 @@ entry がアプリのマウント前に `installTitle()` を呼び、有効な�
 
 `main.ts`
 
-```ts
+```ts annotate="remove:1,2,3,4,5,6"
 import { createApp } from 'vue';
 import App from './App.vue';
 import { installTitle } from './install-title';
@@ -20113,7 +19557,7 @@ createApp(App).mount('#app');
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 
 </script>
@@ -20132,7 +19576,7 @@ createApp(App).mount('#app');
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { installTitle } from './install-title';
 installTitle();
@@ -20149,8 +19593,6 @@ installTitle();
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-lifecycle-without-cleanup"></span>
 
 ### `vize:croquis/cf/lifecycle-without-cleanup`
 
@@ -20190,7 +19632,7 @@ mount 時に window の resize listener を登録しますが、unmount 時に�
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 import { onMounted } from "vue";
 const resize = () => {};
@@ -20207,7 +19649,7 @@ onMounted(() => { window.addEventListener("resize", resize); });
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,5"
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
 const resize = () => {};
@@ -20224,8 +19666,6 @@ onUnmounted(() => { window.removeEventListener("resize", resize); });
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/setup_context.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-missing-required-prop"></span>
 
 ### `vize:croquis/cf/missing-required-prop`
 
@@ -20265,7 +19705,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -20289,7 +19729,7 @@ const props = defineProps<{ title: string }>();
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -20312,8 +19752,6 @@ const props = defineProps<{ title: string }>();
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/props_validation.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-missing-suspense"></span>
 
 ### `vize:croquis/cf/missing-suspense`
 
@@ -20369,7 +19807,7 @@ const message = await Promise.resolve('Ready');
 
 `App.vue`
 
-```vue
+```vue annotate="remove:6"
 <script setup lang="ts">
 import AsyncCard from './AsyncCard.vue';
 </script>
@@ -20388,7 +19826,7 @@ App が非同期の子を `Suspense` で包み、子の setup が完了するま
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,7"
 <script setup lang="ts">
 import { Suspense } from 'vue';
 import AsyncCard from './AsyncCard.vue';
@@ -20405,8 +19843,6 @@ import AsyncCard from './AsyncCard.vue';
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-module-scope-reactive"></span>
 
 ### `vize:croquis/cf/module-scope-reactive`
 
@@ -20478,7 +19914,7 @@ const { count } = createCounter();
 
 `counter.ts`
 
-```ts
+```ts annotate="remove:2,3"
 import { ref } from 'vue';
 const count = ref(0);
 export function createCounter() { return { count }; }
@@ -20493,7 +19929,7 @@ export function createCounter() { return { count }; }
 
 `counter.ts`
 
-```ts
+```ts annotate="add:2,3,4,5"
 import { ref } from 'vue';
 export function createCounter() {
   const count = ref(0);
@@ -20507,8 +19943,6 @@ export function createCounter() {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-multi-root-attrs"></span>
 
 ### `vize:croquis/cf/multi-root-attrs`
 
@@ -20557,7 +19991,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:1"
 <template><main>Content</main><aside>Help</aside></template>
 ```
 
@@ -20578,7 +20012,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:1"
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
@@ -20589,8 +20023,6 @@ import Child from "./Child.vue";
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/fallthrough.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-mutated-after-escape"></span>
 
 ### `vize:croquis/cf/mutated-after-escape`
 
@@ -20661,7 +20093,7 @@ archive は `publish` に渡した同じオブジェクトを保持します。�
 
 `profile.ts`
 
-```ts
+```ts annotate="remove:5"
 import { reactive } from 'vue';
 import { publish } from './archive';
 export function publishProfile(): void {
@@ -20680,7 +20112,7 @@ export function publishProfile(): void {
 
 `profile.ts`
 
-```ts
+```ts annotate="add:5"
 import { reactive } from 'vue';
 import { publish } from './archive';
 export function publishProfile(): void {
@@ -20696,8 +20128,6 @@ export function publishProfile(): void {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-non-reactive-provide"></span>
 
 ### `vize:croquis/cf/non-reactive-provide`
 
@@ -20757,7 +20187,7 @@ export const ThemeKey = Symbol("theme");
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="remove:2,6"
 <script setup lang="ts">
 import { provide } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -20797,7 +20227,7 @@ export const ThemeKey = Symbol("theme");
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="add:2,6"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -20830,8 +20260,6 @@ const theme = inject(ThemeKey);
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/cross_file_reactivity/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-non-unique-id"></span>
 
 ### `vize:croquis/cf/non-unique-id`
 
@@ -20885,7 +20313,7 @@ createApp(Root).mount("#app");
 
 `ResultsList.vue`
 
-```vue
+```vue annotate="remove:6"
 <script setup lang="ts">
 const results = [{ id: "first", title: "First result" }, { id: "second", title: "Second result" }];
 </script>
@@ -20904,7 +20332,7 @@ const results = [{ id: "first", title: "First result" }, { id: "second", title: 
 
 `ResultsList.vue`
 
-```vue
+```vue annotate="add:6"
 <script setup lang="ts">
 const results = [{ id: "first", title: "First result" }, { id: "second", title: "Second result" }];
 </script>
@@ -20922,8 +20350,6 @@ const results = [{ id: "first", title: "First result" }, { id: "second", title: 
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/element_id.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-object-identity-comparison"></span>
 
 ### `vize:croquis/cf/object-identity-comparison`
 
@@ -20979,7 +20405,7 @@ export function makeUser() {
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { makeUser } from './user';
 const { raw, proxy } = makeUser();
@@ -21000,7 +20426,7 @@ const sameRecord = proxy === raw;
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { makeUser } from './user';
 const { raw, proxy } = makeUser();
@@ -21018,8 +20444,6 @@ const sameRecord = proxy.id === raw.id;
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-pinia-getter"></span>
 
 ### `vize:croquis/cf/pinia-getter`
 
@@ -21076,7 +20500,7 @@ export const useCounterStore = defineStore('counter', {
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { useCounterStore } from './counter-store';
 const store = useCounterStore();
@@ -21097,7 +20521,7 @@ const doubled = store.doubled;
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,5"
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { useCounterStore } from './counter-store';
@@ -21116,8 +20540,6 @@ const { doubled } = storeToRefs(store);
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-prop-type-mismatch"></span>
 
 ### `vize:croquis/cf/prop-type-mismatch`
 
@@ -21157,7 +20579,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -21181,7 +20603,7 @@ const props = defineProps<{ title: string }>();
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -21204,8 +20626,6 @@ const props = defineProps<{ title: string }>();
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/props_validation.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-provide-inject-type"></span>
 
 ### `vize:croquis/cf/provide-inject-type`
 
@@ -21272,7 +20692,7 @@ provide("title", "Hello" as string);
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 import { inject } from "vue";
 const title = inject<number>("title");
@@ -21299,7 +20719,7 @@ provide("title", "Hello" as string);
 
 `Child.vue`
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 import { inject } from "vue";
 const title = inject<string>("title");
@@ -21314,8 +20734,6 @@ const title = inject<string>("title");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/analysis/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-provide-without-symbol"></span>
 
 ### `vize:croquis/cf/provide-without-symbol`
 
@@ -21369,7 +20787,7 @@ createApp(Root).mount("#app");
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="remove:5,6"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -21385,7 +20803,7 @@ provide("theme", theme);
 
 `ThemeLabel.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { inject } from "vue";
 
@@ -21401,7 +20819,7 @@ const theme = inject("theme");
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="add:4,6,7"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -21418,7 +20836,7 @@ provide(ThemeKey, theme);
 
 `ThemeLabel.vue`
 
-```vue
+```vue annotate="add:3,5"
 <script setup lang="ts">
 import { inject } from "vue";
 import { ThemeKey } from "./keys/theme";
@@ -21429,7 +20847,7 @@ const theme = inject(ThemeKey);
 
 `keys/theme.ts`
 
-```ts
+```ts annotate="add:1,2,3,4,5,6,7"
 import type { InjectionKey, Ref } from "vue";
 
 export interface Theme {
@@ -21446,8 +20864,6 @@ export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/keys.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-reactive-export"></span>
 
 ### `vize:croquis/cf/reactive-export`
 
@@ -21492,7 +20908,7 @@ createApp(App).mount('#app');
 
 `state.ts`
 
-```ts
+```ts annotate="remove:2"
 import { reactive } from 'vue';
 export const state = reactive({ count: 0 });
 
@@ -21500,7 +20916,7 @@ export const state = reactive({ count: 0 });
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 import { state } from './state';
 </script>
@@ -21519,7 +20935,7 @@ import { state } from './state';
 
 `state.ts`
 
-```ts
+```ts annotate="add:2"
 import { reactive } from 'vue';
 export function createState() { return reactive({ count: 0 }); }
 
@@ -21527,7 +20943,7 @@ export function createState() { return reactive({ count: 0 }); }
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { createState } from './state';
 const state = createState();
@@ -21544,8 +20960,6 @@ const state = createState();
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-reactivity-outside-setup"></span>
 
 ### `vize:croquis/cf/reactivity-outside-setup`
 
@@ -21617,7 +21031,7 @@ const { count, doubled } = useCounter();
 
 `use-counter.ts`
 
-```ts
+```ts annotate="remove:2,3,4"
 import { computed, ref } from 'vue';
 const count = ref(0);
 const doubled = computed(() => count.value * 2);
@@ -21633,7 +21047,7 @@ export function useCounter() { return { count, doubled }; }
 
 `use-counter.ts`
 
-```ts
+```ts annotate="add:2,3,4,5,6"
 import { computed, ref } from 'vue';
 export function useCounter() {
   const count = ref(0);
@@ -21648,8 +21062,6 @@ export function useCounter() {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-reassignment-breaks-reactivity"></span>
 
 ### `vize:croquis/cf/reassignment-breaks-reactivity`
 
@@ -21718,7 +21130,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="remove:5,6,7"
 <script setup lang="ts">
 import { toRef } from "vue";
 
@@ -21752,7 +21164,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="add:5"
 <script setup lang="ts">
 import { toRef } from "vue";
 
@@ -21768,8 +21180,6 @@ const user = toRef(props, "user");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-reference-escapes-scope"></span>
 
 ### `vize:croquis/cf/reference-escapes-scope`
 
@@ -21824,7 +21234,7 @@ export function remembered(): Ref<number> | number | undefined { return saved; }
 
 `App.vue`
 
-```vue
+```vue annotate="remove:5"
 <script setup lang="ts">
 import { ref } from 'vue';
 import { remember } from './saved';
@@ -21846,7 +21256,7 @@ cache に現在の通常の数値を渡し、コンポーネントが持つ ref 
 
 `App.vue`
 
-```vue
+```vue annotate="add:5"
 <script setup lang="ts">
 import { ref } from 'vue';
 import { remember } from './saved';
@@ -21865,8 +21275,6 @@ remember(count.value);
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-setup-context-violation"></span>
 
 ### `vize:croquis/cf/setup-context-violation`
 
@@ -21906,7 +21314,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:1,4,6"
 <script lang="ts">
 import { ref } from "vue";
 const count = ref(0);
@@ -21923,7 +21331,7 @@ script setup に移し、各インスタンスが count を持ち、テンプレ
 
 `App.vue`
 
-```vue
+```vue annotate="add:1,5"
 <script setup lang="ts">
 import { ref } from "vue";
 const count = ref(0);
@@ -21938,8 +21346,6 @@ const count = ref(0);
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/setup_context.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-shallow-deep-access"></span>
 
 ### `vize:croquis/cf/shallow-deep-access`
 
@@ -21996,7 +21402,7 @@ const profile = makeProfile();
 
 `profile.ts`
 
-```ts
+```ts annotate="remove:1,2"
 import { shallowReactive } from 'vue';
 export function makeProfile() { return shallowReactive({ user: { name: 'Ada' } }); }
 
@@ -22010,7 +21416,7 @@ export function makeProfile() { return shallowReactive({ user: { name: 'Ada' } }
 
 `profile.ts`
 
-```ts
+```ts annotate="add:1,2"
 import { reactive } from 'vue';
 export function makeProfile() { return reactive({ user: { name: 'Ada' } }); }
 
@@ -22021,8 +21427,6 @@ export function makeProfile() { return reactive({ user: { name: 'Ada' } }); }
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-spread-breaks-reactivity"></span>
 
 ### `vize:croquis/cf/spread-breaks-reactivity`
 
@@ -22091,7 +21495,7 @@ const user = reactive({ name: "Ada", role: "admin" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 const props = defineProps<{ user: { name: string; role: string } }>();
 const copiedUser = { ...props.user };
@@ -22121,7 +21525,7 @@ const user = reactive({ name: "Ada", role: "admin" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="add:2,3,5"
 <script setup lang="ts">
 import { toRef } from "vue";
 
@@ -22137,8 +21541,6 @@ const user = toRef(props, "user");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-suspense-no-fallback"></span>
 
 ### `vize:croquis/cf/suspense-no-fallback`
 
@@ -22196,7 +21598,7 @@ Suspense の境界に非同期の子がありますが fallback がなく、こ�
 
 `App.vue`
 
-```vue
+```vue annotate="remove:7"
 <script setup lang="ts">
 import { Suspense } from 'vue';
 import AsyncCard from './AsyncCard.vue';
@@ -22216,7 +21618,7 @@ import AsyncCard from './AsyncCard.vue';
 
 `App.vue`
 
-```vue
+```vue annotate="add:7"
 <script setup lang="ts">
 import { Suspense } from 'vue';
 import AsyncCard from './AsyncCard.vue';
@@ -22233,8 +21635,6 @@ import AsyncCard from './AsyncCard.vue';
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-template-ref-timing"></span>
 
 ### `vize:croquis/cf/template-ref-timing`
 
@@ -22284,7 +21684,7 @@ export function focusInput(input: HTMLInputElement | null): void { input?.focus(
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2,5"
 <script setup lang="ts">
 import { ref } from 'vue';
 import { focusInput } from './focus-input';
@@ -22306,7 +21706,7 @@ focusInput(input.value);
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,5"
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { focusInput } from './focus-input';
@@ -22325,8 +21725,6 @@ onMounted(() => { focusInput(input.value); });
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-toraw-mutation"></span>
 
 ### `vize:croquis/cf/toraw-mutation`
 
@@ -22383,7 +21781,7 @@ const profile = makeProfile();
 
 `profile.ts`
 
-```ts
+```ts annotate="remove:1,4,5"
 import { reactive, toRaw } from 'vue';
 export function makeProfile() { return reactive({ name: 'Ada' }); }
 export function rename(profile: { name: string }): void {
@@ -22401,7 +21799,7 @@ export function rename(profile: { name: string }): void {
 
 `profile.ts`
 
-```ts
+```ts annotate="add:1,4"
 import { reactive } from 'vue';
 export function makeProfile() { return reactive({ name: 'Ada' }); }
 export function rename(profile: { name: string }): void {
@@ -22415,8 +21813,6 @@ export function rename(profile: { name: string }): void {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-uncaught-error"></span>
 
 ### `vize:croquis/cf/uncaught-error`
 
@@ -22496,7 +21892,7 @@ const input = "{";
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 import { onErrorCaptured } from "vue";
 import Child from "./Child.vue";
@@ -22521,8 +21917,6 @@ const input = "{";
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/boundary.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-undeclared-emit"></span>
 
 ### `vize:croquis/cf/undeclared-emit`
 
@@ -22571,7 +21965,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const emit = defineEmits<{ cancel: [] }>();
 emit("save");
@@ -22596,7 +21990,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const emit = defineEmits<{ save: [] }>();
 emit("save");
@@ -22611,8 +22005,6 @@ emit("save");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/emit.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-undeclared-prop"></span>
 
 ### `vize:croquis/cf/undeclared-prop`
 
@@ -22652,7 +22044,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -22676,7 +22068,7 @@ const props = defineProps<{ title: string }>();
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -22699,8 +22091,6 @@ const props = defineProps<{ title: string }>();
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/props_validation.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-undefined-slot"></span>
 
 ### `vize:croquis/cf/undefined-slot`
 
@@ -22756,7 +22146,7 @@ App が `footer` slot を渡しますが、Card が宣言して描画するの�
 
 `App.vue`
 
-```vue
+```vue annotate="remove:6"
 <script setup lang="ts">
 import Card from './Card.vue';
 </script>
@@ -22775,7 +22165,7 @@ import Card from './Card.vue';
 
 `App.vue`
 
-```vue
+```vue annotate="add:6"
 <script setup lang="ts">
 import Card from './Card.vue';
 </script>
@@ -22791,8 +22181,6 @@ import Card from './Card.vue';
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-unhandled-event"></span>
 
 ### `vize:croquis/cf/unhandled-event`
 
@@ -22841,7 +22229,7 @@ import Wrapper from "./Wrapper.vue";
 
 `Wrapper.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -22875,7 +22263,7 @@ import Wrapper from "./Wrapper.vue";
 
 `Wrapper.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -22899,8 +22287,6 @@ emit("save");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/event_bubbling.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-unmatched-inject"></span>
 
 ### `vize:croquis/cf/unmatched-inject`
 
@@ -23007,7 +22393,7 @@ export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,4,5,6,7"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -23040,8 +22426,6 @@ const theme = inject(ThemeKey);
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/analysis/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-unmatched-listener"></span>
 
 ### `vize:croquis/cf/unmatched-listener`
 
@@ -23090,7 +22474,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const emit = defineEmits<{ cancel: [] }>();
 </script>
@@ -23114,7 +22498,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const emit = defineEmits<{ save: [] }>();
 emit("save");
@@ -23129,8 +22513,6 @@ emit("save");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/emit.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-unregistered-component"></span>
 
 ### `vize:croquis/cf/unregistered-component`
 
@@ -23188,7 +22570,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="add:1,2,3"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -23208,8 +22590,6 @@ import Child from "./Child.vue";
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/component_resolution.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-unresolved-import"></span>
 
 ### `vize:croquis/cf/unresolved-import`
 
@@ -23249,7 +22629,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 import Child from "./Missing.vue";
 </script>
@@ -23270,7 +22650,7 @@ import Child from "./Missing.vue";
 
 `App.vue`
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -23290,8 +22670,6 @@ import Child from "./Child.vue";
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/component_resolution.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-unused-attrs"></span>
 
 ### `vize:croquis/cf/unused-attrs`
 
@@ -23340,7 +22718,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:1"
 <template><main>Content</main><aside>Help</aside></template>
 ```
 
@@ -23361,7 +22739,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:1"
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
@@ -23372,8 +22750,6 @@ import Child from "./Child.vue";
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/fallthrough.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-unused-emit"></span>
 
 ### `vize:croquis/cf/unused-emit`
 
@@ -23446,7 +22822,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 const emit = defineEmits<{ save: [] }>();
 emit("save");
@@ -23461,8 +22837,6 @@ emit("save");
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/emit.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-unused-provide"></span>
 
 ### `vize:croquis/cf/unused-provide`
 
@@ -23541,7 +22915,7 @@ provide(ThemeKey, theme);
 
 `Dashboard.vue`
 
-```vue
+```vue annotate="remove:2"
 <template>
   <h1>Dashboard</h1>
 </template>
@@ -23572,7 +22946,7 @@ provide(ThemeKey, theme);
 
 `Dashboard.vue`
 
-```vue
+```vue annotate="add:1,2,3,4,6"
 <script setup lang="ts">
 import ThemeLabel from "./ThemeLabel.vue";
 </script>
@@ -23584,7 +22958,7 @@ import ThemeLabel from "./ThemeLabel.vue";
 
 `ThemeLabel.vue`
 
-```vue
+```vue annotate="add:1,2,3,4,5,6"
 <script setup lang="ts">
 import { inject } from "vue";
 import { ThemeKey } from "./keys/theme";
@@ -23600,8 +22974,6 @@ const theme = inject(ThemeKey);
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/analysis.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-value-extraction-breaks-reactivity"></span>
 
 ### `vize:croquis/cf/value-extraction-breaks-reactivity`
 
@@ -23670,7 +23042,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 const { item } = defineProps<{ item: { name: string } }>();
 const itemSnapshot = item;
@@ -23700,7 +23072,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="add:2,3,5"
 <script setup lang="ts">
 import { computed } from "vue";
 
@@ -23716,8 +23088,6 @@ const itemView = computed(() => item);
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-watch-can-be-computed"></span>
 
 ### `vize:croquis/cf/watch-can-be-computed`
 
@@ -23776,7 +23146,7 @@ watcher は外部への副作用を行わず、二つ目の書き込み可能な
 
 `use-double.ts`
 
-```ts
+```ts annotate="remove:1,4,5"
 import { ref, watch } from 'vue';
 export function useDouble() {
   const count = ref(0);
@@ -23795,7 +23165,7 @@ computed の getter で同じ導出を直接表し、手作業の同期と追加
 
 `use-double.ts`
 
-```ts
+```ts annotate="add:1,4"
 import { computed, ref } from 'vue';
 export function useDouble() {
   const count = ref(0);
@@ -23810,8 +23180,6 @@ export function useDouble() {
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-watcheffect-async"></span>
 
 ### `vize:croquis/cf/watcheffect-async`
 
@@ -23890,7 +23258,7 @@ const query = ref("");
 
 `SearchResults.vue`
 
-```vue
+```vue annotate="remove:3,8,9,10"
 <script setup lang="ts">
 import { load, type Result } from "./api";
 import { ref, watchEffect } from "vue";
@@ -23927,7 +23295,7 @@ const query = ref("");
 
 `SearchResults.vue`
 
-```vue
+```vue annotate="add:3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22"
 <script setup lang="ts">
 import { load, type Result } from "./api";
 import { ref, watch } from "vue";
@@ -23960,8 +23328,6 @@ watch(
 [生成元](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/race_conditions/diagnostics.rs)
 
 [ファイル間ルール一覧](cross-file.md)
-
-<span id="vize-croquis-cf-watcher-outside-setup"></span>
 
 ### `vize:croquis/cf/watcher-outside-setup`
 
@@ -24033,7 +23399,7 @@ watcher をいずれの Observer の setup 内でもなくモジュールの読�
 
 `use-observer.ts`
 
-```ts
+```ts annotate="remove:2,3,4,5"
 import { ref, watch } from 'vue';
 const count = ref(0);
 const observed = ref(0);
@@ -24050,7 +23416,7 @@ setup からの同期的な呼び出しごとに、`useObserver` 内で個別の
 
 `use-observer.ts`
 
-```ts
+```ts annotate="add:2,3,4,5,6,7"
 import { ref, watch } from 'vue';
 export function useObserver() {
   const count = ref(0);

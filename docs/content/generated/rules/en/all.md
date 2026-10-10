@@ -345,8 +345,6 @@ These project entries supplement the 251 single-file catalog entries above. Each
 
 ## Single-file examples
 
-<span id="petite-vue-no-unsupported-directive"></span>
-
 ### `petite-vue/no-unsupported-directive`
 
 Disallow directives that petite-vue does not support
@@ -386,7 +384,7 @@ vp run lint
 
 `v-memo`, `v-slot:header`, and the custom `v-my-directive` are absent from petite-vue’s supported directive list. The petite-vue script marks this HTML as the relevant dialect.
 
-```html
+```html annotate="remove:3,4,5"
 <!doctype html>
 <html><body>
 <div v-memo="[a, b]"></div>
@@ -402,7 +400,7 @@ vp run lint
 
 The replacement uses supported `v-scope`, `v-effect`, `v-if`, `v-bind`, and `v-on` syntax instead of relying on unsupported directives.
 
-```html
+```html annotate="add:3,4"
 <!doctype html>
 <html><body>
 <div v-scope="{ count: 0 }" v-effect="console.log(count)"></div>
@@ -414,8 +412,6 @@ The replacement uses supported `v-scope`, `v-effect`, `v-if`, `v-bind`, and `v-o
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/no_unsupported_directive.rs#L43) · [All rules](all.md)
-
-<span id="petite-vue-valid-v-effect"></span>
 
 ### `petite-vue/valid-v-effect`
 
@@ -456,7 +452,7 @@ vp run lint
 
 Each `v-effect` has no executable expression: its value is missing, empty, or only whitespace.
 
-```html
+```html annotate="remove:3,4,5"
 <!doctype html>
 <html><body>
 <div v-effect></div>
@@ -472,7 +468,7 @@ Each `v-effect` has no executable expression: its value is missing, empty, or on
 
 Both `v-effect` values contain an expression: one updates `el.textContent`, and the other increments `count`. This rule checks for a nonempty expression, not the effect’s business logic.
 
-```html
+```html annotate="add:3,4"
 <!doctype html>
 <html><body>
 <div v-effect="el.textContent = count"></div>
@@ -484,8 +480,6 @@ Both `v-effect` values contain an expression: one updates `el.textContent`, and 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_effect.rs#L35) · [All rules](all.md)
-
-<span id="petite-vue-valid-v-scope"></span>
 
 ### `petite-vue/valid-v-scope`
 
@@ -526,7 +520,7 @@ vp run lint
 
 The four nonempty `v-scope` values are an identifier, a call, arithmetic, and a number; none parses as an object literal.
 
-```html
+```html annotate="remove:3,4,5,6"
 <!doctype html>
 <html><body>
 <div v-scope="count"></div>
@@ -543,7 +537,7 @@ The four nonempty `v-scope` values are an identifier, a call, arithmetic, and a 
 
 A valueless `v-scope` uses the root scope. The other values are object literals, including the parenthesized object, which the rule accepts.
 
-```html
+```html annotate="add:3,4,5,6"
 <!doctype html>
 <html><body>
 <div v-scope></div>
@@ -557,8 +551,6 @@ A valueless `v-scope` uses the root scope. The other values are object literals,
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_scope.rs#L46) · [All rules](all.md)
-
-<span id="vue-multi-word-component-names"></span>
 
 ### `vue/multi-word-component-names`
 
@@ -623,8 +615,6 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L34) · [All rules](all.md)
 
-<span id="vue-no-child-content"></span>
-
 ### `vue/no-child-content`
 
 Disallow child content when using v-html or v-text
@@ -664,7 +654,7 @@ vp run lint
 
 v-text replaces the paragraph content, so the authored fallback text cannot survive that directive.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <p v-text="message">Fallback text</p>
 </template>
@@ -676,7 +666,7 @@ v-text replaces the paragraph content, so the authored fallback text cannot surv
 
 Removing the child text leaves v-text as the single source of paragraph content.
 
-```vue
+```vue annotate="add:2"
 <template>
   <p v-text="message" />
 </template>
@@ -685,8 +675,6 @@ Removing the child text leaves v-text as the single source of paragraph content.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_child_content.rs#L30) · [All rules](all.md)
-
-<span id="vue-no-deprecated-filter"></span>
 
 ### `vue/no-deprecated-filter`
 
@@ -727,7 +715,7 @@ vp run lint
 
 The pipe uses the removed Vue filter syntax to apply capitalize.
 
-```vue
+```vue annotate="remove:2"
 <template>
 {{ message | capitalize }}
 </template>
@@ -739,7 +727,7 @@ The pipe uses the removed Vue filter syntax to apply capitalize.
 
 Calling capitalize(message) applies the transformation as an ordinary expression.
 
-```vue
+```vue annotate="add:2"
 <template>
 {{ capitalize(message) }}
 </template>
@@ -748,8 +736,6 @@ Calling capitalize(message) applies the transformation as an ordinary expression
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L53) · [All rules](all.md)
-
-<span id="vue-no-deprecated-functional-template"></span>
 
 ### `vue/no-deprecated-functional-template`
 
@@ -790,7 +776,7 @@ vp run lint
 
 The SFC template has the removed functional attribute and reads the old props context.
 
-```vue
+```vue annotate="remove:1,2"
 <template functional>
 <div>{{ props.msg }}</div>
 </template>
@@ -802,7 +788,7 @@ The SFC template has the removed functional attribute and reads the old props co
 
 The ordinary template omits functional and reads the component binding msg directly.
 
-```vue
+```vue annotate="add:1,2"
 <template>
 <div>{{ msg }}</div>
 </template>
@@ -811,8 +797,6 @@ The ordinary template omits functional and reads the component binding msg direc
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs#L57) · [All rules](all.md)
-
-<span id="vue-no-deprecated-html-element-is"></span>
 
 ### `vue/no-deprecated-html-element-is`
 
@@ -853,7 +837,7 @@ vp run lint
 
 A native div uses the old unprefixed is attribute to request a Vue component.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div is="MyComponent" />
 </template>
@@ -865,7 +849,7 @@ A native div uses the old unprefixed is attribute to request a Vue component.
 
 A dynamic component uses :is; the native-element spelling explicitly uses the vue: prefix.
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <component :is="MyComponent" />
 <div is="vue:MyComponent" />
@@ -875,8 +859,6 @@ A dynamic component uses :is; the native-element spelling explicitly uses the vu
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs#L39) · [All rules](all.md)
-
-<span id="vue-no-deprecated-inline-template"></span>
 
 ### `vue/no-deprecated-inline-template`
 
@@ -917,7 +899,7 @@ vp run lint
 
 Card uses the deprecated inline-template attribute for its supplied content.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <Card inline-template><p>Details</p></Card>
 </template>
@@ -929,7 +911,7 @@ Card uses the deprecated inline-template attribute for its supplied content.
 
 The same content is passed normally without the inline-template attribute.
 
-```vue
+```vue annotate="add:2"
 <template>
 <Card><p>Details</p></Card>
 </template>
@@ -938,8 +920,6 @@ The same content is passed normally without the inline-template attribute.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20) · [All rules](all.md)
-
-<span id="vue-no-deprecated-router-link-tag-prop"></span>
 
 ### `vue/no-deprecated-router-link-tag-prop`
 
@@ -980,7 +960,7 @@ vp run lint
 
 RouterLink uses the removed tag prop to request a button element.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <router-link to="/home" tag="button">Home</router-link>
 </template>
@@ -992,7 +972,7 @@ RouterLink uses the removed tag prop to request a button element.
 
 The slot provides navigate to an explicitly authored button.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
 <router-link to="/home" v-slot="{ navigate }">
 <button @click="navigate">Home</button>
@@ -1003,8 +983,6 @@ The slot provides navigate to an explicitly authored button.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs#L37) · [All rules](all.md)
-
-<span id="vue-no-deprecated-scope-attribute"></span>
 
 ### `vue/no-deprecated-scope-attribute`
 
@@ -1045,7 +1023,7 @@ vp run lint
 
 The slot template declares props through the deprecated scope attribute.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <Card><template scope="props">{{ props.name }}</template></Card>
 </template>
@@ -1057,7 +1035,7 @@ The slot template declares props through the deprecated scope attribute.
 
 The default-slot directive declares the same props binding through current slot syntax.
 
-```vue
+```vue annotate="add:2"
 <template>
 <Card><template #default="props">{{ props.name }}</template></Card>
 </template>
@@ -1066,8 +1044,6 @@ The default-slot directive declares the same props binding through current slot 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38) · [All rules](all.md)
-
-<span id="vue-no-deprecated-slot-attribute"></span>
 
 ### `vue/no-deprecated-slot-attribute`
 
@@ -1108,7 +1084,7 @@ vp run lint
 
 The header slot is selected through the old slot attribute.
 
-```vue
+```vue annotate="remove:3,4"
 <template>
 <Foo>
 <template slot="header"><h1>Title</h1></template>
@@ -1123,7 +1099,7 @@ The header slot is selected through the old slot attribute.
 
 v-slot:header explicitly selects the header slot with the current directive.
 
-```vue
+```vue annotate="add:3"
 <template>
 <Foo>
 <template v-slot:header><h1>Title</h1></template>
@@ -1134,8 +1110,6 @@ v-slot:header explicitly selects the header slot with the current directive.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) · [All rules](all.md)
-
-<span id="vue-no-deprecated-slot-scope-attribute"></span>
 
 ### `vue/no-deprecated-slot-scope-attribute`
 
@@ -1176,7 +1150,7 @@ vp run lint
 
 The template receives slot props through the deprecated slot-scope attribute.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <Card><template slot-scope="props">{{ props.name }}</template></Card>
 </template>
@@ -1188,7 +1162,7 @@ The template receives slot props through the deprecated slot-scope attribute.
 
 The #default directive receives those props without slot-scope.
 
-```vue
+```vue annotate="add:2"
 <template>
 <Card><template #default="props">{{ props.name }}</template></Card>
 </template>
@@ -1197,8 +1171,6 @@ The #default directive receives those props without slot-scope.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs#L33) · [All rules](all.md)
-
-<span id="vue-no-deprecated-v-bind-sync"></span>
 
 ### `vue/no-deprecated-v-bind-sync`
 
@@ -1239,7 +1211,7 @@ vp run lint
 
 The bindings use the removed .sync modifier, including its combination with .camel.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <MyComponent :title.sync="title" />
 <MyComponent v-bind:title.sync="title" />
@@ -1253,7 +1225,7 @@ The bindings use the removed .sync modifier, including its combination with .cam
 
 Use an ordinary one-way title binding or v-model:title when an update channel is required.
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <MyComponent :title="title" />
 <MyComponent v-model:title="title" />
@@ -1263,8 +1235,6 @@ Use an ordinary one-way title binding or v-model:title when an update channel is
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) · [All rules](all.md)
-
-<span id="vue-no-deprecated-v-on-native-modifier"></span>
 
 ### `vue/no-deprecated-v-on-native-modifier`
 
@@ -1305,7 +1275,7 @@ vp run lint
 
 The component handlers use the removed .native event modifier.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <MyComponent @click.native="handler" />
 <MyComponent v-on:click.native="handler" />
@@ -1319,7 +1289,7 @@ The component handlers use the removed .native event modifier.
 
 The handlers omit .native and preserve other event modifiers such as .stop.
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <MyComponent @click="handler" />
 <MyComponent @click.stop="handler" />
@@ -1329,8 +1299,6 @@ The handlers omit .native and preserve other event modifiers such as .stop.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) · [All rules](all.md)
-
-<span id="vue-no-deprecated-v-on-number-modifiers"></span>
 
 ### `vue/no-deprecated-v-on-number-modifiers`
 
@@ -1371,7 +1339,7 @@ vp run lint
 
 The keyboard handlers identify keys by the removed numeric codes 13 and 27.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <input @keyup.13="submit" />
 <input v-on:keyup.27="cancel" />
@@ -1385,7 +1353,7 @@ The keyboard handlers identify keys by the removed numeric codes 13 and 27.
 
 The handlers use the named enter and esc key modifiers.
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <input @keyup.enter="submit" />
 <input @keyup.esc="cancel" />
@@ -1395,8 +1363,6 @@ The handlers use the named enter and esc key modifiers.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs#L43) · [All rules](all.md)
-
-<span id="vue-no-dupe-v-else-if"></span>
 
 ### `vue/no-dupe-v-else-if`
 
@@ -1437,7 +1403,7 @@ vp run lint
 
 The else-if repeats the ready condition already tested by the first branch, making that later branch unreachable.
 
-```vue
+```vue annotate="remove:3"
 <template>
   <p v-if="status === 'ready'">Ready</p>
   <p v-else-if="status === 'ready'">Still ready</p>
@@ -1450,7 +1416,7 @@ The else-if repeats the ready condition already tested by the first branch, maki
 
 The second branch tests loading, a distinct state that can reach the else-if.
 
-```vue
+```vue annotate="add:3"
 <template>
   <p v-if="status === 'ready'">Ready</p>
   <p v-else-if="status === 'loading'">Loading</p>
@@ -1460,8 +1426,6 @@ The second branch tests loading, a distinct state that can reach the else-if.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs#L34) · [All rules](all.md)
-
-<span id="vue-no-duplicate-attributes"></span>
 
 ### `vue/no-duplicate-attributes`
 
@@ -1502,7 +1466,7 @@ vp run lint
 
 The same button declares class twice instead of one combined class value.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button class="primary" class="large">Save</button>
 </template>
@@ -1514,7 +1478,7 @@ The same button declares class twice instead of one combined class value.
 
 Both class tokens appear in a single class attribute.
 
-```vue
+```vue annotate="add:2"
 <template>
   <button class="primary large">Save</button>
 </template>
@@ -1523,8 +1487,6 @@ Both class tokens appear in a single class attribute.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L31) · [All rules](all.md)
-
-<span id="vue-no-multiple-template-root"></span>
 
 ### `vue/no-multiple-template-root`
 
@@ -1567,7 +1529,7 @@ vp run lint
 
 The opt-in single-root convention sees two sibling paragraphs at the template root.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <p>First</p>
 <p>Second</p>
@@ -1580,7 +1542,7 @@ The opt-in single-root convention sees two sibling paragraphs at the template ro
 
 A section wraps the paragraphs into one root; enable this convention only when a single-root contract is intended.
 
-```vue
+```vue annotate="add:2"
 <template>
 <section><p>First</p><p>Second</p></section>
 </template>
@@ -1589,8 +1551,6 @@ A section wraps the paragraphs into one root; enable this convention only when a
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L27) · [All rules](all.md)
-
-<span id="vue-no-mutating-props"></span>
 
 ### `vue/no-mutating-props`
 
@@ -1631,7 +1591,7 @@ vp run lint
 
 Incrementing props.count writes directly to a value supplied by the parent.
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 const props = defineProps<{ count: number }>();
 
@@ -1645,7 +1605,7 @@ props.count++;
 
 The component emits update:count with the next value, leaving the parent responsible for updating the prop.
 
-```vue
+```vue annotate="add:3,5,6,7"
 <script setup lang="ts">
 const props = defineProps<{ count: number }>();
 const emit = defineEmits<{ "update:count": [value: number] }>();
@@ -1659,8 +1619,6 @@ function increment() {
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_mutating_props.rs#L42) · [All rules](all.md)
-
-<span id="vue-no-reserved-component-names"></span>
 
 ### `vue/no-reserved-component-names`
 
@@ -1701,7 +1659,7 @@ vp run lint
 
 The component name button conflicts with a native HTML element name.
 
-```vue
+```vue annotate="remove:1,2,3,4"
 <script>
 export default {
   name: "button",
@@ -1715,7 +1673,7 @@ export default {
 
 AppButton is an application component name and does not reuse the native button name.
 
-```vue
+```vue annotate="add:1,2,4,5,6,7,8,9"
 <script setup lang="ts">
 defineOptions({ name: "AppButton" });
 </script>
@@ -1730,8 +1688,6 @@ defineOptions({ name: "AppButton" });
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_reserved_component_names.rs#L45) · [All rules](all.md)
-
-<span id="vue-no-template-key"></span>
 
 ### `vue/no-template-key`
 
@@ -1772,7 +1728,7 @@ vp run lint
 
 A non-loop template wrapper has a key even though it is not the keyed iteration boundary.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <template :key="section"><div>Details</div></template>
 </template>
@@ -1784,7 +1740,7 @@ A non-loop template wrapper has a key even though it is not the keyed iteration 
 
 The key belongs to a template v-for iteration, where it identifies each repeated fragment.
 
-```vue
+```vue annotate="add:2"
 <template>
 <template v-for="item in items" :key="item.id"><div>{{ item.name }}</div></template>
 </template>
@@ -1793,8 +1749,6 @@ The key belongs to a template v-for iteration, where it identifies each repeated
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_key.rs#L31) · [All rules](all.md)
-
-<span id="vue-no-textarea-mustache"></span>
 
 ### `vue/no-textarea-mustache`
 
@@ -1835,7 +1789,7 @@ vp run lint
 
 The textarea places message in child interpolation instead of binding its value.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <textarea>{{ message }}</textarea>
 </template>
@@ -1847,7 +1801,7 @@ The textarea places message in child interpolation instead of binding its value.
 
 v-model binds the editable textarea value to message.
 
-```vue
+```vue annotate="add:2"
 <template>
   <textarea v-model="message"></textarea>
 </template>
@@ -1856,8 +1810,6 @@ v-model binds the editable textarea value to message.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_textarea_mustache.rs#L26) · [All rules](all.md)
-
-<span id="vue-no-unused-components"></span>
 
 ### `vue/no-unused-components`
 
@@ -1898,7 +1850,7 @@ vp run lint
 
 UserAvatar is imported as a component but the template never renders it.
 
-```vue
+```vue annotate="remove:6"
 <script setup lang="ts">
 import UserAvatar from "./UserAvatar.vue";
 </script>
@@ -1914,7 +1866,7 @@ import UserAvatar from "./UserAvatar.vue";
 
 The template renders the imported UserAvatar and passes the user binding.
 
-```vue
+```vue annotate="add:6"
 <script setup lang="ts">
 import UserAvatar from "./UserAvatar.vue";
 </script>
@@ -1927,8 +1879,6 @@ import UserAvatar from "./UserAvatar.vue";
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_components.rs#L46) · [All rules](all.md)
-
-<span id="vue-no-unused-vars"></span>
 
 ### `vue/no-unused-vars`
 
@@ -1969,7 +1919,7 @@ vp run lint
 
 The loop declares an unused index and the slot declares foo without referencing it.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <li v-for="(item, index) in items" :key="item.id">{{ item.name }}</li>
   <template v-slot="{ foo }">
@@ -1984,7 +1934,7 @@ The loop declares an unused index and the slot declares foo without referencing 
 
 The examples consume index or mark it intentionally unused as _index, and the slot renders data. Index keys are only a usage example here, not a recommendation for stable item identity.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
   <li v-for="(item, _index) in items" :key="item.id">{{ item.name }}</li>
@@ -1997,8 +1947,6 @@ The examples consume index or mark it intentionally unused as _index, and the sl
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L48) · [All rules](all.md)
-
-<span id="vue-no-use-v-if-with-v-for"></span>
 
 ### `vue/no-use-v-if-with-v-for`
 
@@ -2039,7 +1987,7 @@ vp run lint
 
 The same list element combines v-if and v-for and tests visibility through the loop binding.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <li v-for="item in items" v-if="item.visible" :key="item.id">
     {{ item.name }}
@@ -2053,7 +2001,7 @@ The same list element combines v-if and v-for and tests visibility through the l
 
 A computed collection filters the visible items before the template iterates over them.
 
-```vue
+```vue annotate="add:1,2,3,4,6"
 <script setup lang="ts">
 const visibleItems = computed(() => items.filter((item) => item.visible));
 </script>
@@ -2068,8 +2016,6 @@ const visibleItems = computed(() => items.filter((item) => item.visible));
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35) · [All rules](all.md)
-
-<span id="vue-no-useless-template-attributes"></span>
 
 ### `vue/no-useless-template-attributes`
 
@@ -2110,7 +2056,7 @@ vp run lint
 
 The conditional template has a class, but this structural wrapper does not render a DOM element to receive it.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <section><template v-if="ready" class="notice"><p>Ready</p></template></section>
 </template>
@@ -2122,7 +2068,7 @@ The conditional template has a class, but this structural wrapper does not rende
 
 The class moves to the paragraph that actually renders while v-if stays on the structural template.
 
-```vue
+```vue annotate="add:2"
 <template>
 <section><template v-if="ready"><p class="notice">Ready</p></template></section>
 </template>
@@ -2131,8 +2077,6 @@ The class moves to the paragraph that actually renders while v-if stays on the s
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_useless_template_attributes.rs#L32) · [All rules](all.md)
-
-<span id="vue-no-v-for-template-key-on-child"></span>
 
 ### `vue/no-v-for-template-key-on-child`
 
@@ -2173,7 +2117,7 @@ vp run lint
 
 The child paragraph has the key while the template iteration itself has no key.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <template v-for="item in items"><p :key="item.id">{{ item.name }}</p></template>
 </template>
@@ -2185,7 +2129,7 @@ The child paragraph has the key while the template iteration itself has no key.
 
 The key moves to template v-for, identifying the complete repeated fragment.
 
-```vue
+```vue annotate="add:2"
 <template>
 <template v-for="item in items" :key="item.id"><p>{{ item.name }}</p></template>
 </template>
@@ -2194,8 +2138,6 @@ The key moves to template v-for, identifying the complete repeated fragment.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs#L30) · [All rules](all.md)
-
-<span id="vue-no-v-html"></span>
 
 ### `vue/no-v-html`
 
@@ -2236,7 +2178,7 @@ vp run lint
 
 v-html interprets content as HTML rather than ordinary text.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <article v-html="content" />
 </template>
@@ -2248,7 +2190,7 @@ v-html interprets content as HTML rather than ordinary text.
 
 Mustache interpolation displays content as escaped text instead of injecting HTML.
 
-```vue
+```vue annotate="add:2"
 <template>
   <article>{{ content }}</article>
 </template>
@@ -2257,8 +2199,6 @@ Mustache interpolation displays content as escaped text instead of injecting HTM
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_html.rs#L51) · [All rules](all.md)
-
-<span id="vue-no-v-text-v-html-on-component"></span>
 
 ### `vue/no-v-text-v-html-on-component`
 
@@ -2299,7 +2239,7 @@ vp run lint
 
 The component tag receives v-html or v-text, which replaces element content rather than supplying component slots.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <MyComponent v-html="content" />
   <MyComponent v-text="content" />
@@ -2312,7 +2252,7 @@ The component tag receives v-html or v-text, which replaces element content rath
 
 Native HTML targets can receive the directives; MyComponent receives its content through the default slot.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <div v-html="content"></div>
   <component is="div" v-html="content" />
@@ -2323,8 +2263,6 @@ Native HTML targets can receive the directives; MyComponent receives its content
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs#L33) · [All rules](all.md)
-
-<span id="vue-permitted-contents"></span>
 
 ### `vue/permitted-contents`
 
@@ -2365,7 +2303,7 @@ vp run lint
 
 The examples put block content in p, omit the table body, nest interactive controls, or put a div directly inside ul.
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <template>
   <p><div>block in a paragraph</div></p>
   <table><tr><td>row without tbody</td></tr></table>
@@ -2380,7 +2318,7 @@ The examples put block content in p, omit the table body, nest interactive contr
 
 The examples use inline paragraph content, an explicit tbody, and li children. The custom MyItem is not treated as a known native ul child.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <p><span>inline in a paragraph</span></p>
   <table><tbody><tr><td>cell</td></tr></tbody></table>
@@ -2391,8 +2329,6 @@ The examples use inline paragraph content, an explicit tbody, and li children. T
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/permitted_contents.rs#L56) · [All rules](all.md)
-
-<span id="vue-require-component-is"></span>
 
 ### `vue/require-component-is`
 
@@ -2433,7 +2369,7 @@ vp run lint
 
 The dynamic `<component>` has no `is` target, so Vue cannot choose a component to render.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <component />
 </template>
@@ -2445,7 +2381,7 @@ The dynamic `<component>` has no `is` target, so Vue cannot choose a component t
 
 `:is="currentComponent"` supplies the component selection; the binding may change at runtime.
 
-```vue
+```vue annotate="add:2"
 <template>
   <component :is="currentComponent" />
 </template>
@@ -2454,8 +2390,6 @@ The dynamic `<component>` has no `is` target, so Vue cannot choose a component t
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_component_is.rs#L27) · [All rules](all.md)
-
-<span id="vue-require-toggle-inside-transition"></span>
 
 ### `vue/require-toggle-inside-transition`
 
@@ -2496,7 +2430,7 @@ vp run lint
 
 The static child inside `<Transition>` has no conditional visibility or dynamic selection to trigger an enter/leave change.
 
-```vue
+```vue annotate="remove:3"
 <template>
 <transition>
 <div>content</div>
@@ -2510,7 +2444,7 @@ The static child inside `<Transition>` has no conditional visibility or dynamic 
 
 `v-if="show"` changes whether the child exists, giving the transition an enter/leave boundary.
 
-```vue
+```vue annotate="add:3"
 <template>
 <transition>
 <div v-if="show">content</div>
@@ -2521,8 +2455,6 @@ The static child inside `<Transition>` has no conditional visibility or dynamic 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_toggle_inside_transition.rs#L48) · [All rules](all.md)
-
-<span id="vue-require-v-for-key"></span>
 
 ### `vue/require-v-for-key`
 
@@ -2563,7 +2495,7 @@ vp run lint
 
 Each repeated `<li>` lacks a key that identifies its corresponding item during list updates.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <li v-for="item in items">{{ item.name }}</li>
 </template>
@@ -2575,7 +2507,7 @@ Each repeated `<li>` lacks a key that identifies its corresponding item during l
 
 `:key="item.id"` gives each repeated node the item's identity rather than its current position.
 
-```vue
+```vue annotate="add:2"
 <template>
   <li v-for="item in items" :key="item.id">{{ item.name }}</li>
 </template>
@@ -2584,8 +2516,6 @@ Each repeated `<li>` lacks a key that identifies its corresponding item during l
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L35) · [All rules](all.md)
-
-<span id="vue-use-v-on-exact"></span>
 
 ### `vue/use-v-on-exact`
 
@@ -2626,7 +2556,7 @@ vp run lint
 
 The plain click handler can also run on Ctrl-click, overlapping the separate `.ctrl` handler.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button type="button" @click="handleClick" @click.ctrl="handleCtrlClick">
     Save
@@ -2640,7 +2570,7 @@ The plain click handler can also run on Ctrl-click, overlapping the separate `.c
 
 `.exact` limits the ordinary click handler to clicks without modifier keys; the Ctrl-specific handler remains separate.
 
-```vue
+```vue annotate="add:2,3,4,5,6"
 <template>
   <button
     type="button"
@@ -2655,8 +2585,6 @@ The plain click handler can also run on Ctrl-click, overlapping the separate `.c
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L28) · [All rules](all.md)
-
-<span id="vue-valid-attribute-name"></span>
 
 ### `vue/valid-attribute-name`
 
@@ -2701,7 +2629,7 @@ vp run lint
 
 The quote inside `my"attr` makes the attribute name malformed. This example produces the parser's `parser/template` diagnostic rather than promising a separate rule diagnostic.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div my"attr="value"></div>
 </template>
@@ -2713,7 +2641,7 @@ The quote inside `my"attr` makes the attribute name malformed. This example prod
 
 `my-attr` is a well-formed attribute name, so the template parser can read the attribute and its value.
 
-```vue
+```vue annotate="add:2"
 <template>
 <div my-attr="value"></div>
 </template>
@@ -2722,8 +2650,6 @@ The quote inside `my"attr` makes the attribute name malformed. This example prod
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_attribute_name.rs#L27) · [All rules](all.md)
-
-<span id="vue-valid-template-root"></span>
 
 ### `vue/valid-template-root`
 
@@ -2764,7 +2690,7 @@ vp run lint
 
 A plain nested `<template>` occupies the template root without a directive that gives it a rendering role.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <template>content</template>
 </template>
@@ -2776,7 +2702,7 @@ A plain nested `<template>` occupies the template root without a directive that 
 
 The `<div>` is a renderable root element. This example does not impose a universal single-root restriction on Vue 3 fragments.
 
-```vue
+```vue annotate="add:2"
 <template>
 <div>content</div>
 </template>
@@ -2785,8 +2711,6 @@ The `<div>` is a renderable root element. This example does not impose a univers
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82) · [All rules](all.md)
-
-<span id="vue-valid-v-bind"></span>
 
 ### `vue/valid-v-bind`
 
@@ -2827,7 +2751,7 @@ vp run lint
 
 The bare `v-bind` has no object expression, and the empty argument form has no attribute name.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <div v-bind></div>
   <div :></div>
@@ -2840,7 +2764,7 @@ The bare `v-bind` has no object expression, and the empty argument form has no a
 
 Provide an attribute and expression, bind an object, or use Vue 3.4+ same-name shorthand such as `:loading`.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <div :class="panelClass"></div>
   <div v-bind="{ class: panelClass }"></div>
@@ -2851,8 +2775,6 @@ Provide an attribute and expression, bind an object, or use Vue 3.4+ same-name s
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30) · [All rules](all.md)
-
-<span id="vue-valid-v-cloak"></span>
 
 ### `vue/valid-v-cloak`
 
@@ -2893,7 +2815,7 @@ vp run lint
 
 `v-cloak` is given a value, argument, or modifier even though it accepts none of those.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div v-cloak="foo"></div>
 <div v-cloak:arg></div>
@@ -2907,7 +2829,7 @@ vp run lint
 
 Use bare `v-cloak`; CSS can hide the element until Vue removes that attribute after mounting.
 
-```vue
+```vue annotate="add:2"
 <template>
 <div v-cloak></div>
 </template>
@@ -2916,8 +2838,6 @@ Use bare `v-cloak`; CSS can hide the element until Vue removes that attribute af
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27) · [All rules](all.md)
-
-<span id="vue-valid-v-else"></span>
 
 ### `vue/valid-v-else`
 
@@ -2958,7 +2878,7 @@ vp run lint
 
 The examples give `v-else` an expression, combine it with `v-if`, or omit its adjacent preceding conditional branch.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <div v-else="ready"></div>
   <div v-else v-if="ready"></div>
@@ -2972,7 +2892,7 @@ The examples give `v-else` an expression, combine it with `v-if`, or omit its ad
 
 Place bare `v-else` immediately after the corresponding `v-if` branch.
 
-```vue
+```vue annotate="add:2"
 <template>
   <div v-if="ready"></div>
   <div v-else></div>
@@ -2982,8 +2902,6 @@ Place bare `v-else` immediately after the corresponding `v-if` branch.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L32) · [All rules](all.md)
-
-<span id="vue-valid-v-for"></span>
 
 ### `vue/valid-v-for`
 
@@ -3024,7 +2942,7 @@ vp run lint
 
 The loops omit their iteration expression or add an unsupported `.stop` modifier.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div v-for></div>
   <div v-for=""></div>
@@ -3038,7 +2956,7 @@ The loops omit their iteration expression or add an unsupported `.stop` modifier
 
 Use `item in items` or `(item, index) of items` with a complete iteration expression and the shown keys.
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div v-for="item in items" :key="item.id"></div>
   <div v-for="(item, index) of items" :key="index"></div>
@@ -3048,8 +2966,6 @@ Use `item in items` or `(item, index) of items` with a complete iteration expres
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L31) · [All rules](all.md)
-
-<span id="vue-valid-v-html"></span>
 
 ### `vue/valid-v-html`
 
@@ -3090,7 +3006,7 @@ vp run lint
 
 `v-html` lacks its expression or uses an argument/modifier that this directive does not support.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div v-html></div>
 <div v-html:arg="foo"></div>
@@ -3104,7 +3020,7 @@ vp run lint
 
 `v-html="html"` supplies a valid expression. Syntax validity does not sanitize HTML or make untrusted content safe.
 
-```vue
+```vue annotate="add:2"
 <template>
 <div v-html="html"></div>
 </template>
@@ -3113,8 +3029,6 @@ vp run lint
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) · [All rules](all.md)
-
-<span id="vue-valid-v-if"></span>
 
 ### `vue/valid-v-if`
 
@@ -3155,7 +3069,7 @@ vp run lint
 
 The conditions omit an expression or combine `v-if` with an else directive on the same node.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div v-if></div>
   <div v-if=""></div>
@@ -3169,7 +3083,7 @@ The conditions omit an expression or combine `v-if` with an else directive on th
 
 Each `v-if` has a nonempty condition such as `ready` or `count > 0`, without an incompatible else directive.
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div v-if="ready"></div>
   <div v-if="count > 0"></div>
@@ -3179,8 +3093,6 @@ Each `v-if` has a nonempty condition such as `ready` or `count > 0`, without an 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_if.rs#L29) · [All rules](all.md)
-
-<span id="vue-valid-v-memo"></span>
 
 ### `vue/valid-v-memo`
 
@@ -3221,7 +3133,7 @@ vp run lint
 
 Bare `v-memo` gives Vue no dependency expression for deciding when to reuse the subtree.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div v-memo></div>
 </template>
@@ -3233,7 +3145,7 @@ Bare `v-memo` gives Vue no dependency expression for deciding when to reuse the 
 
 `v-memo="[valueA, valueB]"` supplies the dependency array used for memoization.
 
-```vue
+```vue annotate="add:2"
 <template>
   <div v-memo="[valueA, valueB]">{{ label }}</div>
 </template>
@@ -3242,8 +3154,6 @@ Bare `v-memo` gives Vue no dependency expression for deciding when to reuse the 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_memo.rs#L27) · [All rules](all.md)
-
-<span id="vue-valid-v-model"></span>
 
 ### `vue/valid-v-model`
 
@@ -3284,7 +3194,7 @@ vp run lint
 
 A native `<div>` cannot use `v-model` as a form control, and a bare input directive has no writable target expression.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <div v-model="value"></div>
   <input v-model />
@@ -3297,7 +3207,7 @@ A native `<div>` cannot use `v-model` as a form control, and a bare input direct
 
 Bind the input, select, textarea, or custom component to the shown writable variables.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <input v-model="value" />
   <select v-model="selected"></select>
@@ -3309,8 +3219,6 @@ Bind the input, select, textarea, or custom component to the shown writable vari
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36) · [All rules](all.md)
-
-<span id="vue-valid-v-on"></span>
 
 ### `vue/valid-v-on`
 
@@ -3351,7 +3259,7 @@ vp run lint
 
 The listener forms omit an event argument or their required handler/object expression.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div v-on></div>
   <div @></div>
@@ -3365,7 +3273,7 @@ The listener forms omit an event argument or their required handler/object expre
 
 Use an event with its handler, or pass a listener object to argument-free `v-on`.
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div @click="handleClick"></div>
   <div v-on="{ click: handleClick }"></div>
@@ -3375,8 +3283,6 @@ Use an event with its handler, or pass a listener object to argument-free `v-on`
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) · [All rules](all.md)
-
-<span id="vue-valid-v-once"></span>
 
 ### `vue/valid-v-once`
 
@@ -3417,7 +3323,7 @@ vp run lint
 
 `v-once` has a value, argument, or modifier, although this directive is a value-free render-once marker.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div v-once="foo"></div>
 <div v-once:arg></div>
@@ -3431,7 +3337,7 @@ vp run lint
 
 Bare `v-once` marks the subtree for one-time rendering without unsupported syntax.
 
-```vue
+```vue annotate="add:2"
 <template>
 <div v-once></div>
 </template>
@@ -3440,8 +3346,6 @@ Bare `v-once` marks the subtree for one-time rendering without unsupported synta
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) · [All rules](all.md)
-
-<span id="vue-valid-v-show"></span>
 
 ### `vue/valid-v-show`
 
@@ -3482,7 +3386,7 @@ vp run lint
 
 `v-show` lacks its visibility expression or is placed on a `<template>` that has no DOM element whose display can be changed.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <div v-show></div>
   <template v-show="ready"><div></div></template>
@@ -3495,7 +3399,7 @@ vp run lint
 
 Apply the visibility expression to a rendered element such as `<div>`.
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div v-show="ready"></div>
   <div v-show="count > 0"></div>
@@ -3505,8 +3409,6 @@ Apply the visibility expression to a rendered element such as `<div>`.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_show.rs#L28) · [All rules](all.md)
-
-<span id="vue-valid-v-slot"></span>
 
 ### `vue/valid-v-slot`
 
@@ -3547,7 +3449,7 @@ vp run lint
 
 The slot directive is on a native `<div>` or conflicts with other default/named slot declarations.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div v-slot:header></div>
   <MyComponent v-slot v-slot:header />
@@ -3561,7 +3463,7 @@ The slot directive is on a native `<div>` or conflicts with other default/named 
 
 Declare a component's default slot on that component, or its named slot on a child `<template #header>`.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <MyComponent v-slot="{ item }">{{ item }}</MyComponent>
   <MyComponent>
@@ -3573,8 +3475,6 @@ Declare a component's default slot on that component, or its named slot on a chi
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) · [All rules](all.md)
-
-<span id="vue-valid-v-text"></span>
 
 ### `vue/valid-v-text`
 
@@ -3615,7 +3515,7 @@ vp run lint
 
 `v-text` lacks its text expression or uses an unsupported argument/modifier.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div v-text></div>
 <div v-text:arg="foo"></div>
@@ -3629,7 +3529,7 @@ vp run lint
 
 `v-text="msg"` is syntactically valid. The separate `vue/no-v-text` style rule can still prefer interpolation.
 
-```vue
+```vue annotate="add:2"
 <template>
 <div v-text="msg"></div>
 </template>
@@ -3638,8 +3538,6 @@ vp run lint
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) · [All rules](all.md)
-
-<span id="vue-attribute-hyphenation"></span>
 
 ### `vue/attribute-hyphenation`
 
@@ -3680,7 +3578,7 @@ vp run lint
 
 The component attribute uses the camelCase spelling firstName.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <UserCard firstName="Ada" />
 </template>
@@ -3692,7 +3590,7 @@ The component attribute uses the camelCase spelling firstName.
 
 The first-name spelling follows the configured hyphenated component-attribute convention.
 
-```vue
+```vue annotate="add:2"
 <template>
 <UserCard first-name="Ada" />
 </template>
@@ -3701,8 +3599,6 @@ The first-name spelling follows the configured hyphenated component-attribute co
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L35) · [All rules](all.md)
-
-<span id="vue-component-definition-name-casing"></span>
 
 ### `vue/component-definition-name-casing`
 
@@ -3767,8 +3663,6 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L36) · [All rules](all.md)
 
-<span id="vue-html-quotes"></span>
-
 ### `vue/html-quotes`
 
 Enforce quotes style of HTML attributes
@@ -3808,7 +3702,7 @@ vp run lint
 
 The attributes use single quotes or no quotes instead of the double-quote convention.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div class='foo'></div>
   <div class=foo></div>
@@ -3822,7 +3716,7 @@ The attributes use single quotes or no quotes instead of the double-quote conven
 
 Both ordinary attributes and directive expressions use double quotes.
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div class="foo"></div>
   <div v-if="ready"></div>
@@ -3832,8 +3726,6 @@ Both ordinary attributes and directive expressions use double quotes.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/html_quotes.rs#L53) · [All rules](all.md)
-
-<span id="vue-html-self-closing"></span>
 
 ### `vue/html-self-closing`
 
@@ -3874,7 +3766,7 @@ vp run lint
 
 The empty component uses a closing pair, while void img and br elements omit the configured self-closing spelling.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <MyComponent></MyComponent>
   <img>
@@ -3888,7 +3780,7 @@ The empty component uses a closing pair, while void img and br elements omit the
 
 The component and void elements use self-closing syntax; a div with content retains its closing tag.
 
-```vue
+```vue annotate="add:2,3,4,5,6,7"
 <template>
   <MyComponent />
   <div></div>
@@ -3902,8 +3794,6 @@ The component and void elements use self-closing syntax; a div with content reta
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L30) · [All rules](all.md)
-
-<span id="vue-mustache-interpolation-spacing"></span>
 
 ### `vue/mustache-interpolation-spacing`
 
@@ -3944,7 +3834,7 @@ vp run lint
 
 The text interpolation is missing a space at one or both delimiter boundaries.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <div>{{text}}</div>
   <div>{{ text}}</div>
@@ -3958,7 +3848,7 @@ The text interpolation is missing a space at one or both delimiter boundaries.
 
 Spaces separate the expression from both opening and closing mustache delimiters.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <div>{{ text }}</div>
   <div>{{ foo.bar }}</div>
@@ -3969,8 +3859,6 @@ Spaces separate the expression from both opening and closing mustache delimiters
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L35) · [All rules](all.md)
-
-<span id="vue-no-multi-spaces"></span>
 
 ### `vue/no-multi-spaces`
 
@@ -4011,7 +3899,7 @@ vp run lint
 
 Two spaces separate attributes or the element name and the first attribute.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <div  class="panel"></div>
   <div class="panel"  id="main"></div>
@@ -4024,7 +3912,7 @@ Two spaces separate attributes or the element name and the first attribute.
 
 Single spaces separate the same attributes.
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <div class="panel"></div>
   <div class="panel" id="main"></div>
@@ -4034,8 +3922,6 @@ Single spaces separate the same attributes.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multi_spaces.rs#L26) · [All rules](all.md)
-
-<span id="vue-no-template-shadow"></span>
 
 ### `vue/no-template-shadow`
 
@@ -4078,7 +3964,7 @@ vp run lint
 
 The inner v-for declares item again and hides the outer item binding inside the nested loop.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div v-for="item in items" :key="item.id"><span v-for="item in item.children" :key="item.id">{{ item.name }}</span></div>
 </template>
@@ -4090,7 +3976,7 @@ The inner v-for declares item again and hides the outer item binding inside the 
 
 The inner loop declares child, leaving item available for the outer row and child for the nested row.
 
-```vue
+```vue annotate="add:2"
 <template>
 <div v-for="item in items" :key="item.id"><span v-for="child in item.children" :key="child.id">{{ child.name }}</span></div>
 </template>
@@ -4099,8 +3985,6 @@ The inner loop declares child, leaving item available for the outer row and chil
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_shadow.rs#L34) · [All rules](all.md)
-
-<span id="vue-no-unused-properties"></span>
 
 ### `vue/no-unused-properties`
 
@@ -4157,7 +4041,7 @@ defineProps<{ title: string; description: string }>();
 
 Both declared props are referenced by the template.
 
-```vue
+```vue annotate="add:7"
 <script setup lang="ts">
 defineProps<{ title: string; description: string }>();
 </script>
@@ -4171,8 +4055,6 @@ defineProps<{ title: string; description: string }>();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_properties.rs#L94) · [All rules](all.md)
-
-<span id="vue-prop-name-casing"></span>
 
 ### `vue/prop-name-casing`
 
@@ -4215,7 +4097,7 @@ vp run lint
 
 The declared prop name user_name uses underscore-separated spelling.
 
-```vue
+```vue annotate="remove:2,4"
 <script setup lang="ts">
 defineProps<{ user_name: string }>();
 </script>
@@ -4228,7 +4110,7 @@ defineProps<{ user_name: string }>();
 
 The declaration and its template reference use the camelCase name userName.
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 defineProps<{ userName: string }>();
 </script>
@@ -4238,8 +4120,6 @@ defineProps<{ userName: string }>();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/prop_name_casing.rs#L50) · [All rules](all.md)
-
-<span id="vue-v-bind-style"></span>
 
 ### `vue/v-bind-style`
 
@@ -4280,7 +4160,7 @@ vp run lint
 
 `v-bind:class` uses the long form where the configured binding style requires the colon shorthand.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div v-bind:class="panelClass"></div>
 </template>
@@ -4292,7 +4172,7 @@ vp run lint
 
 `:class` retains the same expression with the required shorthand; this rule concerns spelling rather than the value's type.
 
-```vue
+```vue annotate="add:2"
 <template>
   <div :class="panelClass"></div>
 </template>
@@ -4301,8 +4181,6 @@ vp run lint
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L30) · [All rules](all.md)
-
-<span id="vue-v-on-style"></span>
 
 ### `vue/v-on-style`
 
@@ -4343,7 +4221,7 @@ vp run lint
 
 `v-on:click` uses the long event-listener form where the rule requires shorthand.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div v-on:click="handleClick"></div>
 </template>
@@ -4355,7 +4233,7 @@ vp run lint
 
 `@click` keeps the same handler while using the configured shorthand.
 
-```vue
+```vue annotate="add:2"
 <template>
   <div @click="handleClick"></div>
 </template>
@@ -4364,8 +4242,6 @@ vp run lint
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_on_style.rs#L28) · [All rules](all.md)
-
-<span id="vue-v-slot-style"></span>
 
 ### `vue/v-slot-style`
 
@@ -4406,7 +4282,7 @@ vp run lint
 
 The component uses `#default` and the template uses `v-slot:header`, opposite to the rule's context-specific styles.
 
-```vue
+```vue annotate="remove:2,4"
 <template>
   <MyComponent #default="props">{{ props.item }}</MyComponent>
   <MyComponent>
@@ -4421,7 +4297,7 @@ The component uses `#default` and the template uses `v-slot:header`, opposite to
 
 Use `v-slot` for the component's default slot and `#header` for the template's named slot.
 
-```vue
+```vue annotate="add:2,4"
 <template>
   <MyComponent v-slot="props">{{ props.item }}</MyComponent>
   <MyComponent>
@@ -4433,8 +4309,6 @@ Use `v-slot` for the component's default slot and `#header` for the template's n
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_slot_style.rs#L41) · [All rules](all.md)
-
-<span id="ssr-no-browser-globals-in-ssr"></span>
 
 ### `ssr/no-browser-globals-in-ssr`
 
@@ -4475,7 +4349,7 @@ vp run lint
 
 Setup reads `window.innerWidth` immediately, although `window` does not exist when the component runs on the server.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const width = window.innerWidth;
 </script>
@@ -4487,7 +4361,7 @@ const width = window.innerWidth;
 
 The initial width is a server-safe ref value, and the browser access moves into `onMounted`, which runs on the client rather than during SSR setup.
 
-```vue
+```vue annotate="add:2,3,4,5,6"
 <script setup lang="ts">
 const width = ref(0);
 
@@ -4500,8 +4374,6 @@ onMounted(() => {
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs#L158) · [All rules](all.md)
-
-<span id="ssr-no-hydration-mismatch"></span>
 
 ### `ssr/no-hydration-mismatch`
 
@@ -4542,7 +4414,7 @@ vp run lint
 
 The template evaluates `Math.random()` during rendering, so the server and client can produce different text for the same paragraph.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <p>{{ Math.random() }}</p>
 </template>
@@ -4554,7 +4426,7 @@ The template evaluates `Math.random()` during rendering, so the server and clien
 
 The paragraph renders the stable `seed` state instead of a fresh random result. In this Nuxt-style example, `useState` supplies the shared state and the initializer is the constant `"stable"`.
 
-```vue
+```vue annotate="add:1,2,3,4,6"
 <script setup lang="ts">
 const seed = useState("seed", () => "stable");
 </script>
@@ -4567,8 +4439,6 @@ const seed = useState("seed", () => "stable");
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_hydration_mismatch.rs#L122) · [All rules](all.md)
-
-<span id="vue-a11y-img-alt"></span>
 
 ### `vue/a11y-img-alt`
 
@@ -4609,7 +4479,7 @@ vp run lint
 
 Neither the static image nor the dynamically sourced image supplies an alt attribute.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <img src="/photo.jpg" />
 <img :src="photo" />
@@ -4622,7 +4492,7 @@ Neither the static image nor the dynamically sourced image supplies an alt attri
 
 Informative images get descriptive alt text, decoration gets an empty alt, and the dynamic image binds its description.
 
-```vue
+```vue annotate="add:2,3,4,5,6,7,8,9"
 <template>
 <!-- Informative image -->
 <img src="/photo.jpg" alt="Team photo from company retreat" />
@@ -4638,8 +4508,6 @@ Informative images get descriptive alt text, decoration gets an empty alt, and t
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/a11y_img_alt.rs#L33) · [All rules](all.md)
-
-<span id="vue-attribute-order"></span>
 
 ### `vue/attribute-order`
 
@@ -4680,7 +4548,7 @@ vp run lint
 
 The event handler appears before the structural v-if directive and ordinary id attribute.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div @click="onClick" v-if="show" id="main"></div>
 </template>
@@ -4692,7 +4560,7 @@ The event handler appears before the structural v-if directive and ordinary id a
 
 v-if comes first, followed by id and then the event handler, following the rule ordering.
 
-```vue
+```vue annotate="add:2"
 <template>
   <div v-if="show" id="main" @click="onClick"></div>
 </template>
@@ -4701,8 +4569,6 @@ v-if comes first, followed by id and then the event handler, following the rule 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_order.rs#L36) · [All rules](all.md)
-
-<span id="vue-component-name-in-template-casing"></span>
 
 ### `vue/component-name-in-template-casing`
 
@@ -4743,7 +4609,7 @@ vp run lint
 
 The component is written in kebab-case and camelCase under the PascalCase convention.
 
-```vue
+```vue annotate="remove:5,6"
 <script setup>
 import MyComponent from "./MyComponent.vue";
 </script>
@@ -4759,7 +4625,7 @@ import MyComponent from "./MyComponent.vue";
 
 MyComponent uses PascalCase; native slot syntax remains lowercase.
 
-```vue
+```vue annotate="add:5,6,7"
 <script setup>
 import MyComponent from "./MyComponent.vue";
 </script>
@@ -4773,8 +4639,6 @@ import MyComponent from "./MyComponent.vue";
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs#L31) · [All rules](all.md)
-
-<span id="vue-html-button-has-type"></span>
 
 ### `vue/html-button-has-type`
 
@@ -4815,7 +4679,7 @@ vp run lint
 
 One button omits type and another supplies the unsupported foo type.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <button>Click</button>
 <button type="foo">Click</button>
@@ -4828,7 +4692,7 @@ One button omits type and another supplies the unsupported foo type.
 
 Buttons specify button, submit, or reset; a bound type is treated as dynamic.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
 <button type="button">Click</button>
 <button type="submit">Save</button>
@@ -4840,8 +4704,6 @@ Buttons specify button, submit, or reset; a bound type is treated as dynamic.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_button_has_type.rs#L39) · [All rules](all.md)
-
-<span id="vue-max-template-complexity"></span>
 
 ### `vue/max-template-complexity`
 
@@ -4886,7 +4748,7 @@ vp run lint
 
 The parent-authored branches, loop, slot content, and expression decisions produce scores of 13 and 25, above the default limits 11 and 16.
 
-```vue
+```vue annotate="remove:1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
 <script setup lang="ts">
 defineProps<{ rows: Row[] }>();
 </script>
@@ -4915,7 +4777,7 @@ defineProps<{ rows: Row[] }>();
 
 The parent template delegates rendering to RowList and keeps one v-if; its own scores are 2 and 1.
 
-```vue
+```vue annotate="add:2"
 <template>
   <RowList v-if="ready" :rows="rows" />
 </template>
@@ -4924,8 +4786,6 @@ The parent template delegates rendering to RowList and keeps one v-if; its own s
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/max_template_complexity.rs#L56) · [All rules](all.md)
-
-<span id="vue-no-array-index-key"></span>
 
 ### `vue/no-array-index-key`
 
@@ -4966,7 +4826,7 @@ vp run lint
 
 The list key is its current index, so item identity changes when the list is reordered.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <li v-for="(item, index) in items" :key="index">{{ item.name }}</li>
 </template>
@@ -4978,7 +4838,7 @@ The list key is its current index, so item identity changes when the list is reo
 
 The key comes from item.id, preserving the identity of each item across position changes.
 
-```vue
+```vue annotate="add:2"
 <template>
 <li v-for="item in items" :key="item.id">{{ item.name }}</li>
 </template>
@@ -4987,8 +4847,6 @@ The key comes from item.id, preserving the identity of each item across position
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs#L32) · [All rules](all.md)
-
-<span id="vue-no-bare-strings-in-template"></span>
 
 ### `vue/no-bare-strings-in-template`
 
@@ -5029,7 +4887,7 @@ vp run lint
 
 Visible text and naming attributes embed untranslated strings directly in the template.
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <template>
 <div>hello</div>
 <img alt="a cat" />
@@ -5044,7 +4902,7 @@ Visible text and naming attributes embed untranslated strings directly in the te
 
 Translatable content calls $t; the punctuation and numeric-only examples are allowed exceptions.
 
-```vue
+```vue annotate="add:2,3,4,5,6"
 <template>
 <div>{{ $t('hello') }}</div>
 <img :alt="$t('cat')" />
@@ -5057,8 +4915,6 @@ Translatable content calls $t; the punctuation and numeric-only examples are all
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47) · [All rules](all.md)
-
-<span id="vue-no-boolean-attr-value"></span>
 
 ### `vue/no-boolean-attr-value`
 
@@ -5099,7 +4955,7 @@ vp run lint
 
 The boolean disabled and checked attributes redundantly contain string values.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <input disabled="disabled" />
   <input checked="checked" />
@@ -5113,7 +4969,7 @@ The boolean disabled and checked attributes redundantly contain string values.
 
 The presence of each boolean attribute expresses the same enabled state without a value.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <input disabled />
   <input checked />
@@ -5124,8 +4980,6 @@ The presence of each boolean attribute expresses the same enabled state without 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L36) · [All rules](all.md)
-
-<span id="vue-no-empty-component-block"></span>
 
 ### `vue/no-empty-component-block`
 
@@ -5166,7 +5020,7 @@ vp run lint
 
 The template, script, and style blocks contain no meaningful content.
 
-```vue
+```vue annotate="remove:1,3,5"
 <template></template>
 
 <script></script>
@@ -5181,7 +5035,7 @@ The template, script, and style blocks contain no meaningful content.
 
 Each retained block contains actual markup, script declarations, or style declarations.
 
-```vue
+```vue annotate="add:1,2,3,5,6,7,9,10"
 <template>
 <div>Hello</div>
 </template>
@@ -5198,8 +5052,6 @@ const message = "Hello";
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs#L42) · [All rules](all.md)
-
-<span id="vue-no-inline-style"></span>
 
 ### `vue/no-inline-style`
 
@@ -5240,7 +5092,7 @@ vp run lint
 
 The static style attribute embeds the color declaration in the element.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div style="color: red">Text</div>
 </template>
@@ -5252,7 +5104,7 @@ The static style attribute embeds the color declaration in the element.
 
 Classes express the fixed color; the ratio-dependent width remains a dynamic style binding, outside the static-attribute check.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <div class="text-red">Text</div>
   <span :class="{ 'text-red': isRed }">Text</span>
@@ -5263,8 +5115,6 @@ Classes express the fixed color; the ratio-dependent width remains a dynamic sty
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_inline_style.rs#L33) · [All rules](all.md)
-
-<span id="vue-no-invalid-html-attribute"></span>
 
 ### `vue/no-invalid-html-attribute`
 
@@ -5305,7 +5155,7 @@ vp run lint
 
 The anchor uses stylesheet as a rel value, although that value belongs to stylesheet link elements.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <a href="/guide" rel="stylesheet">Guide</a>
 </template>
@@ -5317,7 +5167,7 @@ The anchor uses stylesheet as a rel value, although that value belongs to styles
 
 The anchor uses help, a rel value appropriate for a linked help resource.
 
-```vue
+```vue annotate="add:2"
 <template>
 <a href="/guide" rel="help">Guide</a>
 </template>
@@ -5326,8 +5176,6 @@ The anchor uses help, a rel value appropriate for a linked help resource.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs#L12) · [All rules](all.md)
-
-<span id="vue-no-lone-template"></span>
 
 ### `vue/no-lone-template`
 
@@ -5368,7 +5216,7 @@ vp run lint
 
 The inner template has no directive or slot role that gives it a structural purpose.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div><template><p>Details</p></template></div>
 </template>
@@ -5380,7 +5228,7 @@ The inner template has no directive or slot role that gives it a structural purp
 
 Removing the unnecessary wrapper leaves the paragraph directly inside div.
 
-```vue
+```vue annotate="add:2"
 <template>
 <div><p>Details</p></div>
 </template>
@@ -5389,8 +5237,6 @@ Removing the unnecessary wrapper leaves the paragraph directly inside div.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_lone_template.rs#L32) · [All rules](all.md)
-
-<span id="vue-no-multiple-objects-in-class"></span>
 
 ### `vue/no-multiple-objects-in-class`
 
@@ -5431,7 +5277,7 @@ vp run lint
 
 A class array contains two top-level object literals that can be merged.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <div :class="[{ a }, { b }]"></div>
 <div :class="[{ active: isActive }, { error: hasError }]"></div>
@@ -5444,7 +5290,7 @@ A class array contains two top-level object literals that can be merged.
 
 One object contains the class conditions; arrays with one object and a string or with non-literal entries remain allowed.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
 <div :class="{ a, b }"></div>
 <div :class="[{ active: isActive }, 'static']"></div>
@@ -5455,8 +5301,6 @@ One object contains the class conditions; arrays with one object and a string or
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_multiple_objects_in_class.rs#L33) · [All rules](all.md)
-
-<span id="vue-no-negated-v-if-condition"></span>
 
 ### `vue/no-negated-v-if-condition`
 
@@ -5510,7 +5354,7 @@ The paired v-if and v-else branches begin with a negated condition.
 
 A positive ok condition comes first; when inverting a condition, place the original opposite branch first. A lone negated v-if and !== comparisons remain allowed.
 
-```vue
+```vue annotate="add:2,3,4,6,7"
 <template>
 <div v-if="ok">B</div>
 <div v-else>A</div>
@@ -5525,8 +5369,6 @@ A positive ok condition comes first; when inverting a condition, place the origi
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs#L37) · [All rules](all.md)
-
-<span id="vue-no-non-component-keep-alive-child"></span>
 
 ### `vue/no-non-component-keep-alive-child`
 
@@ -5567,7 +5409,7 @@ vp run lint
 
 KeepAlive conditionally wraps a native div rather than directly caching UserCard.
 
-```vue
+```vue annotate="remove:3"
 <template>
   <KeepAlive>
     <div v-if="ready">
@@ -5583,7 +5425,7 @@ KeepAlive conditionally wraps a native div rather than directly caching UserCard
 
 The first example makes UserCard the conditional child. The v-show wrapper illustrates a shape outside this conditional-child check, not a promise that the native wrapper is cached.
 
-```vue
+```vue annotate="add:3,4,5,6"
 <template>
   <KeepAlive>
     <UserCard v-if="ready" />
@@ -5599,8 +5441,6 @@ The first example makes UserCard the conditional child. The v-show wrapper illus
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L14) · [All rules](all.md)
-
-<span id="vue-no-preprocessor-lang"></span>
 
 ### `vue/no-preprocessor-lang`
 
@@ -5645,7 +5485,7 @@ vp run lint
 
 The style block selects SCSS with lang. This describes the intended no-preprocessor convention; the current SFC path does not emit this rule.
 
-```vue
+```vue annotate="remove:2"
 <template><p>Notice</p></template>
 <style lang="scss">
 .notice { color: red; }
@@ -5658,7 +5498,7 @@ The style block selects SCSS with lang. This describes the intended no-preproces
 
 The same CSS declarations omit the preprocessor lang. This is the convention repair, not an executable Bad/Good diagnostic difference today.
 
-```vue
+```vue annotate="add:2"
 <template><p>Notice</p></template>
 <style>
 .notice { color: red; }
@@ -5668,8 +5508,6 @@ The same CSS declarations omit the preprocessor lang. This is the convention rep
 Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) · [All rules](all.md)
-
-<span id="vue-no-root-v-if"></span>
 
 ### `vue/no-root-v-if`
 
@@ -5710,7 +5548,7 @@ vp run lint
 
 The component root itself appears and disappears under v-if.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div v-if="show">content</div>
 </template>
@@ -5722,7 +5560,7 @@ The component root itself appears and disappears under v-if.
 
 A stable outer div remains the root while the nested paragraph carries the visibility condition.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
 <div>
 <p v-if="show">content</p>
@@ -5733,8 +5571,6 @@ A stable outer div remains the root while the nested paragraph carries the visib
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_root_v_if.rs#L40) · [All rules](all.md)
-
-<span id="vue-no-script-non-standard-lang"></span>
 
 ### `vue/no-script-non-standard-lang`
 
@@ -5779,7 +5615,7 @@ vp run lint
 
 The script uses CoffeeScript syntax under lang=coffee. The current SFC path does not emit this catalog rule for that language.
 
-```vue
+```vue annotate="remove:1,2"
 <script lang="coffee">
 count = 0
 </script>
@@ -5792,7 +5628,7 @@ count = 0
 
 The script uses an ordinary TypeScript declaration with lang=ts, illustrating the intended language convention.
 
-```vue
+```vue annotate="add:1,2"
 <script lang="ts">
 const count = 0;
 </script>
@@ -5802,8 +5638,6 @@ const count = 0;
 Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_script_non_standard_lang.rs#L44) · [All rules](all.md)
-
-<span id="vue-no-src-attribute"></span>
 
 ### `vue/no-src-attribute`
 
@@ -5844,7 +5678,7 @@ vp run lint
 
 The SFC blocks delegate their template, script, and style content to src files.
 
-```vue
+```vue annotate="remove:1,2,3"
 <template src="./template.html"></template>
 <script src="./script.ts"></script>
 <style src="./style.css"></style>
@@ -5856,7 +5690,7 @@ The SFC blocks delegate their template, script, and style content to src files.
 
 Each SFC block contains its own content without an external src attribute.
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,7,8,9,10,11,12,13"
 <template>
   <p>Hello</p>
 </template>
@@ -5875,8 +5709,6 @@ p {
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_src_attribute.rs#L16) · [All rules](all.md)
-
-<span id="vue-no-static-inline-styles"></span>
 
 ### `vue/no-static-inline-styles`
 
@@ -5917,7 +5749,7 @@ vp run lint
 
 The paragraph carries the constant color declaration in its style attribute.
 
-```vue
+```vue annotate="remove:1,2,3"
 <template>
 <p style="color: red">Notice</p>
 </template>
@@ -5929,7 +5761,7 @@ The paragraph carries the constant color declaration in its style attribute.
 
 A notice class and scoped stylesheet hold the constant color outside the template attribute.
 
-```vue
+```vue annotate="add:1,2"
 <template><p class="notice">Notice</p></template>
 <style scoped>.notice { color: red; }</style>
 ```
@@ -5937,8 +5769,6 @@ A notice class and scoped stylesheet hold the constant color outside the templat
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_static_inline_styles.rs#L15) · [All rules](all.md)
-
-<span id="vue-no-template-lang"></span>
 
 ### `vue/no-template-lang`
 
@@ -5983,7 +5813,7 @@ vp run lint
 
 The template selects Pug through lang. This is an intended HTML-only convention; the current SFC path does not diagnose this catalog ID.
 
-```vue
+```vue annotate="remove:1,2"
 <template lang="pug">
 p Notice
 </template>
@@ -5995,7 +5825,7 @@ p Notice
 
 An ordinary HTML template omits lang and uses the paragraph directly. This illustrates the convention without claiming a current SFC finding.
 
-```vue
+```vue annotate="add:1,2"
 <template>
 <p>Notice</p>
 </template>
@@ -6004,8 +5834,6 @@ An ordinary HTML template omits lang and uses the paragraph directly. This illus
 Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) · [All rules](all.md)
-
-<span id="vue-no-template-target-blank"></span>
 
 ### `vue/no-template-target-blank`
 
@@ -6046,7 +5874,7 @@ vp run lint
 
 The external link opens a new browsing context without the expected rel protection.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <a href="https://example.com" target="_blank">x</a>
 </template>
@@ -6058,7 +5886,7 @@ The external link opens a new browsing context without the expected rel protecti
 
 The same link includes noopener noreferrer alongside target=_blank.
 
-```vue
+```vue annotate="add:2"
 <template>
 <a href="https://example.com" target="_blank" rel="noopener noreferrer">x</a>
 </template>
@@ -6067,8 +5895,6 @@ The same link includes noopener noreferrer alongside target=_blank.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_target_blank.rs#L33) · [All rules](all.md)
-
-<span id="vue-no-undefined-refs"></span>
 
 ### `vue/no-undefined-refs`
 
@@ -6109,7 +5935,7 @@ vp run lint
 
 The template reads missing, although the script declares only message.
 
-```vue
+```vue annotate="remove:2"
 <script setup>const message = "Hello";</script>
 <template>{{ missing }}</template>
 ```
@@ -6120,7 +5946,7 @@ The template reads missing, although the script declares only message.
 
 The interpolation reads the existing message binding.
 
-```vue
+```vue annotate="add:2"
 <script setup>const message = "Hello";</script>
 <template>{{ message }}</template>
 ```
@@ -6128,8 +5954,6 @@ The interpolation reads the existing message binding.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_undefined_refs.rs#L14) · [All rules](all.md)
-
-<span id="vue-no-unsafe-url"></span>
 
 ### `vue/no-unsafe-url`
 
@@ -6170,7 +5994,7 @@ vp run lint
 
 The anchor destination begins with the executable javascript: scheme.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <a href="javascript:alert(1)">Continue</a>
 </template>
@@ -6182,7 +6006,7 @@ The anchor destination begins with the executable javascript: scheme.
 
 The anchor uses the ordinary local /next navigation destination.
 
-```vue
+```vue annotate="add:2"
 <template>
 <a href="/next">Continue</a>
 </template>
@@ -6191,8 +6015,6 @@ The anchor uses the ordinary local /next navigation destination.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsafe_url.rs#L55) · [All rules](all.md)
-
-<span id="vue-no-unsandboxed-iframe"></span>
 
 ### `vue/no-unsandboxed-iframe`
 
@@ -6233,7 +6055,7 @@ vp run lint
 
 The embedded frame has no sandbox attribute limiting its capabilities.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <iframe src="/embed"></iframe>
 </template>
@@ -6245,7 +6067,7 @@ The embedded frame has no sandbox attribute limiting its capabilities.
 
 sandbox applies restrictions; allow-scripts explicitly opts into that one capability when needed.
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <iframe src="/embed" sandbox></iframe>
 <iframe src="/embed" sandbox="allow-scripts"></iframe>
@@ -6255,8 +6077,6 @@ sandbox applies restrictions; allow-scripts explicitly opts into that one capabi
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsandboxed_iframe.rs#L32) · [All rules](all.md)
-
-<span id="vue-no-unused-refs"></span>
 
 ### `vue/no-unused-refs`
 
@@ -6297,7 +6117,7 @@ vp run lint
 
 The template declares the unused ref name with no corresponding script reference binding.
 
-```vue
+```vue annotate="remove:1,3"
 <template><input ref="unused" /></template>
 <script setup>
 const x = 1
@@ -6310,7 +6130,7 @@ const x = 1
 
 The inputEl template ref has a same-named ref binding in script setup.
 
-```vue
+```vue annotate="add:1,3,4"
 <template><input ref="inputEl" /></template>
 <script setup>
 import { ref } from 'vue'
@@ -6321,8 +6141,6 @@ const inputEl = ref(null)
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_unused_refs.rs#L60) · [All rules](all.md)
-
-<span id="vue-no-unused-setup-bindings"></span>
 
 ### `vue/no-unused-setup-bindings`
 
@@ -6363,7 +6181,7 @@ vp run lint
 
 The script setup message binding is never read by the template.
 
-```vue
+```vue annotate="remove:2"
 <script setup>const message = "Hello";</script>
 <template><p>Welcome</p></template>
 ```
@@ -6374,7 +6192,7 @@ The script setup message binding is never read by the template.
 
 The paragraph interpolates message, using the declared binding.
 
-```vue
+```vue annotate="add:2"
 <script setup>const message = "Hello";</script>
 <template><p>{{ message }}</p></template>
 ```
@@ -6382,8 +6200,6 @@ The paragraph interpolates message, using the declared binding.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/unused_setup_bindings.rs#L19) · [All rules](all.md)
-
-<span id="vue-no-use-v-else-with-v-for"></span>
 
 ### `vue/no-use-v-else-with-v-for`
 
@@ -6424,7 +6240,7 @@ vp run lint
 
 The else branch and v-for iteration are attached to the same paragraph.
 
-```vue
+```vue annotate="remove:3"
 <template>
 <p v-if="ready">Ready</p>
 <p v-else v-for="item in items" :key="item.id">{{ item.name }}</p>
@@ -6437,7 +6253,7 @@ The else branch and v-for iteration are attached to the same paragraph.
 
 A separate template owns v-else, and its child paragraph owns v-for.
 
-```vue
+```vue annotate="add:3"
 <template>
 <p v-if="ready">Ready</p>
 <template v-else><p v-for="item in items" :key="item.id">{{ item.name }}</p></template>
@@ -6447,8 +6263,6 @@ A separate template owns v-else, and its child paragraph owns v-for.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_else_with_v_for.rs#L19) · [All rules](all.md)
-
-<span id="vue-no-useless-mustaches"></span>
 
 ### `vue/no-useless-mustaches`
 
@@ -6489,7 +6303,7 @@ vp run lint
 
 The interpolation contains only a constant string and does not need expression evaluation.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div>{{ 'x' }}</div>
 <div>{{ "x" }}</div>
@@ -6503,7 +6317,7 @@ The interpolation contains only a constant string and does not need expression e
 
 Literal text is written directly; variable expressions, interpolated template strings, and intentional separator whitespace remain interpolation cases.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
 <div>x</div>
 <div>{{ x }}</div>
@@ -6515,8 +6329,6 @@ Literal text is written directly; variable expressions, interpolated template st
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_mustaches.rs#L37) · [All rules](all.md)
-
-<span id="vue-no-useless-v-bind"></span>
 
 ### `vue/no-useless-v-bind`
 
@@ -6557,7 +6369,7 @@ vp run lint
 
 The foo binding evaluates a constant quoted string or a template string without interpolation.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <div :foo="'bar'"></div>
 <div :foo="`bar`"></div>
@@ -6570,7 +6382,7 @@ The foo binding evaluates a constant quoted string or a template string without 
 
 The constant value becomes a static attribute; variable and interpolated values retain their binding.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
 <div foo="bar"></div>
 <div :foo="bar"></div>
@@ -6581,8 +6393,6 @@ The constant value becomes a static attribute; variable and interpolated values 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs#L29) · [All rules](all.md)
-
-<span id="vue-no-v-text"></span>
 
 ### `vue/no-v-text`
 
@@ -6623,7 +6433,7 @@ vp run lint
 
 The div's content is supplied through the v-text directive.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div v-text="message"></div>
 </template>
@@ -6635,7 +6445,7 @@ The div's content is supplied through the v-text directive.
 
 Mustache interpolation expresses the same text binding directly in the element content.
 
-```vue
+```vue annotate="add:2"
 <template>
 <div>{{ message }}</div>
 </template>
@@ -6644,8 +6454,6 @@ Mustache interpolation expresses the same text binding directly in the element c
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs#L31) · [All rules](all.md)
-
-<span id="vue-prefer-props-shorthand"></span>
 
 ### `vue/prefer-props-shorthand`
 
@@ -6686,7 +6494,7 @@ vp run lint
 
 Each binding repeats the corresponding variable name, including the camelCase equivalent of a hyphenated argument.
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <template>
   <MyComponent :foo="foo" />
   <MyComponent :user-name="userName" />
@@ -6701,7 +6509,7 @@ Each binding repeats the corresponding variable name, including the camelCase eq
 
 Vue 3.4+ same-name binding shorthand removes the repeated expressions; a different source variable such as bar remains explicit.
 
-```vue
+```vue annotate="add:2,3,4,5,6"
 <template>
   <MyComponent :foo />
   <MyComponent :user-name />
@@ -6714,8 +6522,6 @@ Vue 3.4+ same-name binding shorthand removes the repeated expressions; a differe
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs#L39) · [All rules](all.md)
-
-<span id="vue-prefer-true-attribute-shorthand"></span>
 
 ### `vue/prefer-true-attribute-shorthand`
 
@@ -6756,7 +6562,7 @@ vp run lint
 
 A native boolean disabled attribute binds the constant true value.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <input :disabled="true" />
 </template>
@@ -6768,7 +6574,7 @@ A native boolean disabled attribute binds the constant true value.
 
 The native attribute uses its boolean shorthand. False bindings and component props retain their explicit values.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
 <input disabled />
 <input :disabled="false" />
@@ -6780,8 +6586,6 @@ The native attribute uses its boolean shorthand. False bindings and component pr
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L38) · [All rules](all.md)
-
-<span id="vue-require-component-registration"></span>
 
 ### `vue/require-component-registration`
 
@@ -6832,7 +6636,7 @@ vp run lint
 
 `MissingWidget` is neither registered nor included in the configured global-component allowlist.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <MissingWidget />
 </template>
@@ -6844,7 +6648,7 @@ vp run lint
 
 `MyButton` is listed in the example's `globals` option. That option exempts a known global component; it does not register or import it.
 
-```vue
+```vue annotate="add:2"
 <template>
 <MyButton />
 </template>
@@ -6853,8 +6657,6 @@ vp run lint
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L56) · [All rules](all.md)
-
-<span id="vue-require-scoped-style"></span>
 
 ### `vue/require-scoped-style`
 
@@ -6895,7 +6697,7 @@ vp run lint
 
 The `.button` style is unscoped and can affect matching elements outside this component.
 
-```vue
+```vue annotate="remove:1"
 <style>
 .button {
   color: red;
@@ -6909,7 +6711,7 @@ The `.button` style is unscoped and can affect matching elements outside this co
 
 Adding `scoped` applies Vue's component scope to the same selector and declarations.
 
-```vue
+```vue annotate="add:1"
 <style scoped>
 .button {
   color: red;
@@ -6920,8 +6722,6 @@ Adding `scoped` applies Vue's component scope to the same selector and declarati
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_scoped_style.rs#L49) · [All rules](all.md)
-
-<span id="vue-scoped-event-names"></span>
 
 ### `vue/scoped-event-names`
 
@@ -6962,7 +6762,7 @@ vp run lint
 
 `playAudio`, `pauseAudio`, and `reloadAudio` encode their scope as camel-case suffixes rather than the rule's colon-separated event convention.
 
-```vue
+```vue annotate="remove:3,4,5"
 <template>
   <AudioPlayer
     @playAudio="play"
@@ -6978,7 +6778,7 @@ vp run lint
 
 `audio:play`, `audio:pause`, and `audio:reload` share an explicit `audio:` scope. The emitting component must use the same names.
 
-```vue
+```vue annotate="add:3,4,5"
 <template>
   <AudioPlayer
     @audio:play="play"
@@ -6991,8 +6791,6 @@ vp run lint
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs#L30) · [All rules](all.md)
-
-<span id="vue-sfc-element-order"></span>
 
 ### `vue/sfc-element-order`
 
@@ -7033,7 +6831,7 @@ vp run lint
 
 The style block precedes the script block, contrary to the configured SFC block order.
 
-```vue
+```vue annotate="remove:2,6,7,8"
 <style scoped>
 .panel {
   color: red;
@@ -7050,7 +6848,7 @@ const label = "Save";
 
 The blocks follow script → template → style. Projects can choose a different order through this rule's typed option.
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,7,8,10"
 <script setup lang="ts">
 const label = "Save";
 </script>
@@ -7069,8 +6867,6 @@ p {
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/sfc_element_order.rs#L50) · [All rules](all.md)
-
-<span id="vue-single-style-block"></span>
 
 ### `vue/single-style-block`
 
@@ -7111,7 +6907,7 @@ vp run lint
 
 The component splits its scoped panel and title styles across two style blocks.
 
-```vue
+```vue annotate="remove:5,6,7"
 <style scoped>
 .panel {
   color: red;
@@ -7145,8 +6941,6 @@ Both selectors stay scoped in one style block, satisfying the single-block conve
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/single_style_block.rs#L41) · [All rules](all.md)
-
-<span id="vue-slot-name-casing"></span>
 
 ### `vue/slot-name-casing`
 
@@ -7187,7 +6981,7 @@ vp run lint
 
 The named slot `mySlot` uses camelCase where the rule requires a hyphenated name.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <MyCard><template #mySlot>Content</template></MyCard>
 </template>
@@ -7199,7 +6993,7 @@ The named slot `mySlot` uses camelCase where the rule requires a hyphenated name
 
 `#my-slot` uses kebab-case. Rename the corresponding slot outlet to the same name.
 
-```vue
+```vue annotate="add:2"
 <template>
 <MyCard><template #my-slot>Content</template></MyCard>
 </template>
@@ -7208,8 +7002,6 @@ The named slot `mySlot` uses camelCase where the rule requires a hyphenated name
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L34) · [All rules](all.md)
-
-<span id="vue-this-in-template"></span>
 
 ### `vue/this-in-template`
 
@@ -7250,7 +7042,7 @@ vp run lint
 
 Template expressions explicitly access `this.message`, `this.className`, and `this.handleClick`, although Vue exposes those bindings directly.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <div>{{ this.message }}</div>
 <div :class="this.className"></div>
@@ -7264,7 +7056,7 @@ Template expressions explicitly access `this.message`, `this.className`, and `th
 
 Use `message`, `className`, and `handleClick` directly. The literal string `'this.is.a.string'` stays unchanged because it is not a member access.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
 <div>{{ message }}</div>
 <div :class="className"></div>
@@ -7276,8 +7068,6 @@ Use `message`, `className`, and `handleClick` directly. The literal string `'thi
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs#L33) · [All rules](all.md)
-
-<span id="vue-v-on-event-hyphenation"></span>
 
 ### `vue/v-on-event-hyphenation`
 
@@ -7318,7 +7108,7 @@ vp run lint
 
 The custom component listener uses `@myEvent` instead of a hyphenated event name.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <MyComponent @myEvent="handler" />
 <MyComponent v-on:myEvent="handler" />
@@ -7331,7 +7121,7 @@ The custom component listener uses `@myEvent` instead of a hyphenated event name
 
 `@my-event` uses the required custom-event spelling. Native-element listeners and dynamic event arguments shown below are outside this check.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
 <MyComponent @my-event="handler" />
 <div @myEvent="handler" />
@@ -7342,8 +7132,6 @@ The custom component listener uses `@myEvent` instead of a hyphenated event name
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L35) · [All rules](all.md)
-
-<span id="vue-v-on-handler-style"></span>
 
 ### `vue/v-on-handler-style`
 
@@ -7384,7 +7172,7 @@ vp run lint
 
 The handlers put mutations and multiple statements directly in the event attribute.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
 <button @click="count++"></button>
 <button @click="doThis(); doThat()"></button>
@@ -7398,7 +7186,7 @@ The handlers put mutations and multiple statements directly in the event attribu
 
 Use a handler reference, or an arrow/function expression when inline logic is needed. The function boundary makes the handler form explicit.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
 <button @click="handler"></button>
 <button @click="foo.bar"></button>
@@ -7410,8 +7198,6 @@ Use a handler reference, or an arrow/function expression when inline logic is ne
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33) · [All rules](all.md)
-
-<span id="vue-warn-custom-block"></span>
 
 ### `vue/warn-custom-block`
 
@@ -7452,7 +7238,7 @@ vp run lint
 
 The SFC contains an `<i18n>` custom block, which needs an external integration beyond ordinary template/script/style processing.
 
-```vue
+```vue annotate="remove:1,2,3,4"
 <i18n>
 { "en": { "hello": "Hello" } }
 </i18n>
@@ -7468,7 +7254,7 @@ The SFC contains an `<i18n>` custom block, which needs an external integration b
 
 The example uses standard template and script-setup blocks. This optional portability warning does not mean every custom block is invalid Vue.
 
-```vue
+```vue annotate="add:4,5,6,7"
 <template>
   <p>{{ hello }}</p>
 </template>
@@ -7481,8 +7267,6 @@ const hello = "Hello";
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs#L50) · [All rules](all.md)
-
-<span id="vue-warn-custom-directive"></span>
 
 ### `vue/warn-custom-directive`
 
@@ -7523,7 +7307,7 @@ vp run lint
 
 `v-focus`, `v-mask`, and `v-click-outside` require project-specific directive implementations that this optional convention flags.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <input v-focus />
   <input v-mask="'###-####'" />
@@ -7537,7 +7321,7 @@ vp run lint
 
 The example uses built-in `v-if`, `v-model`, and `v-on`. A correctly registered custom directive can still be valid Vue when this policy is disabled.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <div v-if="ready"></div>
   <input v-model="value" />
@@ -7548,8 +7332,6 @@ The example uses built-in `v-if`, `v-model`, and `v-on`. A correctly registered 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs#L44) · [All rules](all.md)
-
-<span id="a11y-alt-text"></span>
 
 ### `a11y/alt-text`
 
@@ -7590,7 +7372,7 @@ vp run lint
 
 The image submit control supplies only its image URL; it has no `alt` text describing the action.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <input type="image" src="/submit.png" />
 </template>
@@ -7602,7 +7384,7 @@ The image submit control supplies only its image URL; it has no `alt` text descr
 
 `alt="Submit search"` gives the image control an accessible name that describes submitting the search.
 
-```vue
+```vue annotate="add:2"
 <template>
   <input type="image" src="/submit.png" alt="Submit search" />
 </template>
@@ -7611,8 +7393,6 @@ The image submit control supplies only its image URL; it has no `alt` text descr
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/alt_text.rs#L33) · [All rules](all.md)
-
-<span id="a11y-anchor-has-content"></span>
 
 ### `a11y/anchor-has-content`
 
@@ -7653,7 +7433,7 @@ vp run lint
 
 The `/settings` link has no text or other naming content, so its destination has no accessible description.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <a href="/settings"></a>
 </template>
@@ -7665,7 +7445,7 @@ The `/settings` link has no text or other naming content, so its destination has
 
 The visible `Settings` text supplies content for the same destination link.
 
-```vue
+```vue annotate="add:2"
 <template>
   <a href="/settings">Settings</a>
 </template>
@@ -7674,8 +7454,6 @@ The visible `Settings` text supplies content for the same destination link.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L16) · [All rules](all.md)
-
-<span id="a11y-anchor-is-valid"></span>
 
 ### `a11y/anchor-is-valid`
 
@@ -7716,7 +7494,7 @@ vp run lint
 
 The first anchor uses `#` for an action; the second uses a JavaScript URL. Neither provides an ordinary navigation destination.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <a href="#" @click="openPanel">Open panel</a>
   <a href="JaVaScRiPt:void(0)">Run action</a>
@@ -7729,7 +7507,7 @@ The first anchor uses `#` for an action; the second uses a JavaScript URL. Neith
 
 A native button performs `openPanel`, while the remaining anchor has the real `/docs/javascript-urls` destination.
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <button type="button" @click="openPanel">Open panel</button>
   <a href="/docs/javascript-urls">JavaScript URL guide</a>
@@ -7739,8 +7517,6 @@ A native button performs `openPanel`, while the remaining anchor has the real `/
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_is_valid.rs#L30) · [All rules](all.md)
-
-<span id="a11y-aria-props"></span>
 
 ### `a11y/aria-props`
 
@@ -7781,7 +7557,7 @@ vp run lint
 
 `aria-lable` is misspelled and is not a supported ARIA attribute.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button aria-lable="Save changes">Save</button>
 </template>
@@ -7793,7 +7569,7 @@ vp run lint
 
 The supported `aria-label` attribute supplies the button name.
 
-```vue
+```vue annotate="add:2"
 <template>
   <button aria-label="Save changes">Save</button>
 </template>
@@ -7802,8 +7578,6 @@ The supported `aria-label` attribute supplies the button name.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_props.rs#L18) · [All rules](all.md)
-
-<span id="a11y-aria-role"></span>
 
 ### `a11y/aria-role`
 
@@ -7844,7 +7618,7 @@ vp run lint
 
 `datepicker` is not a recognized ARIA role for this section.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <section role="datepicker">...</section>
 </template>
@@ -7856,7 +7630,7 @@ vp run lint
 
 The section uses the recognized `dialog` role and a label describing the date selection.
 
-```vue
+```vue annotate="add:2"
 <template>
   <section role="dialog" aria-label="Choose a date">...</section>
 </template>
@@ -7865,8 +7639,6 @@ The section uses the recognized `dialog` role and a label describing the date se
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_role.rs#L21) · [All rules](all.md)
-
-<span id="a11y-aria-unsupported-elements"></span>
 
 ### `a11y/aria-unsupported-elements`
 
@@ -7907,7 +7679,7 @@ vp run lint
 
 The metadata element carries `aria-hidden`, although `meta` does not support ARIA attributes.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <meta charset="utf-8" aria-hidden="true" />
 </template>
@@ -7919,7 +7691,7 @@ The metadata element carries `aria-hidden`, although `meta` does not support ARI
 
 Removing the ARIA attribute leaves the charset declaration intact.
 
-```vue
+```vue annotate="add:2"
 <template>
   <meta charset="utf-8" />
 </template>
@@ -7928,8 +7700,6 @@ Removing the ARIA attribute leaves the charset declaration intact.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs#L18) · [All rules](all.md)
-
-<span id="a11y-click-events-have-key-events"></span>
 
 ### `a11y/click-events-have-key-events`
 
@@ -7972,7 +7742,7 @@ vp run lint
 
 The non-interactive `div` has a click handler but no keyboard event handling.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div @click="activate">Activate</div>
 </template>
@@ -7984,7 +7754,7 @@ The non-interactive `div` has a click handler but no keyboard event handling.
 
 A native `button` provides keyboard activation for the same `activate` handler.
 
-```vue
+```vue annotate="add:2"
 <template>
 <button @click="activate">Activate</button>
 </template>
@@ -7993,8 +7763,6 @@ A native `button` provides keyboard activation for the same `activate` handler.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L17) · [All rules](all.md)
-
-<span id="a11y-form-control-has-label"></span>
 
 ### `a11y/form-control-has-label`
 
@@ -8035,7 +7803,7 @@ vp run lint
 
 The search input has no label identifying what the user should enter.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <input type="search" />
 </template>
@@ -8047,7 +7815,7 @@ The search input has no label identifying what the user should enter.
 
 Wrapping the input in a label associates the visible `Search` text with the control.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <label>
     Search
@@ -8059,8 +7827,6 @@ Wrapping the input in a label associates the visible `Search` text with the cont
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/form_control_has_label.rs#L19) · [All rules](all.md)
-
-<span id="a11y-heading-has-content"></span>
 
 ### `a11y/heading-has-content`
 
@@ -8101,7 +7867,7 @@ vp run lint
 
 The `h2` contributes a heading level but has no heading content.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <h2></h2>
 </template>
@@ -8113,7 +7879,7 @@ The `h2` contributes a heading level but has no heading content.
 
 `Billing settings` supplies the content of the existing level-two heading.
 
-```vue
+```vue annotate="add:2"
 <template>
   <h2>Billing settings</h2>
 </template>
@@ -8122,8 +7888,6 @@ The `h2` contributes a heading level but has no heading content.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L17) · [All rules](all.md)
-
-<span id="a11y-heading-levels"></span>
 
 ### `a11y/heading-levels`
 
@@ -8164,7 +7928,7 @@ vp run lint
 
 The heading sequence jumps directly from `h1` to `h3`, skipping level two.
 
-```vue
+```vue annotate="remove:3"
 <template>
   <h1>Account</h1>
   <h3>Billing</h3>
@@ -8177,7 +7941,7 @@ The heading sequence jumps directly from `h1` to `h3`, skipping level two.
 
 Changing the billing heading to `h2` preserves a consecutive heading hierarchy.
 
-```vue
+```vue annotate="add:3"
 <template>
   <h1>Account</h1>
   <h2>Billing</h2>
@@ -8187,8 +7951,6 @@ Changing the billing heading to `h2` preserves a consecutive heading hierarchy.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/heading_levels.rs#L34) · [All rules](all.md)
-
-<span id="a11y-iframe-has-title"></span>
 
 ### `a11y/iframe-has-title`
 
@@ -8229,7 +7991,7 @@ vp run lint
 
 The checkout frame has a source URL but no `title` describing the embedded content.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <iframe src="/checkout"></iframe>
 </template>
@@ -8241,7 +8003,7 @@ The checkout frame has a source URL but no `title` describing the embedded conte
 
 `title="Checkout preview"` names the content of that frame.
 
-```vue
+```vue annotate="add:2"
 <template>
   <iframe src="/checkout" title="Checkout preview"></iframe>
 </template>
@@ -8250,8 +8012,6 @@ The checkout frame has a source URL but no `title` describing the embedded conte
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/iframe_has_title.rs#L15) · [All rules](all.md)
-
-<span id="a11y-img-alt"></span>
 
 ### `a11y/img-alt`
 
@@ -8292,7 +8052,7 @@ vp run lint
 
 The avatar image is missing its `alt` attribute.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <img src="/avatar.png" />
 </template>
@@ -8304,7 +8064,7 @@ The avatar image is missing its `alt` attribute.
 
 `alt="User avatar"` supplies a text alternative for the avatar.
 
-```vue
+```vue annotate="add:2"
 <template>
   <img src="/avatar.png" alt="User avatar" />
 </template>
@@ -8313,8 +8073,6 @@ The avatar image is missing its `alt` attribute.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/img_alt.rs#L16) · [All rules](all.md)
-
-<span id="a11y-interactive-supports-focus"></span>
 
 ### `a11y/interactive-supports-focus`
 
@@ -8355,7 +8113,7 @@ vp run lint
 
 Giving a `span` the button role and a click handler does not make the element keyboard-focusable.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <span role="button" @click="open">Open</span>
 </template>
@@ -8367,7 +8125,7 @@ Giving a `span` the button role and a click handler does not make the element ke
 
 The native button is focusable and retains the same `open` action.
 
-```vue
+```vue annotate="add:2"
 <template>
   <button type="button" @click="open">Open</button>
 </template>
@@ -8376,8 +8134,6 @@ The native button is focusable and retains the same `open` action.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L31) · [All rules](all.md)
-
-<span id="a11y-label-has-for"></span>
 
 ### `a11y/label-has-for`
 
@@ -8418,7 +8174,7 @@ vp run lint
 
 The separate label is neither associated through `for` nor wrapped around the input.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <label>Email</label>
   <input id="email" />
@@ -8431,7 +8187,7 @@ The separate label is neither associated through `for` nor wrapped around the in
 
 `for="email"` matches the input ID and explicitly associates the two elements.
 
-```vue
+```vue annotate="add:2"
 <template>
   <label for="email">Email</label>
   <input id="email" />
@@ -8441,8 +8197,6 @@ The separate label is neither associated through `for` nor wrapped around the in
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L27) · [All rules](all.md)
-
-<span id="a11y-landmark-roles"></span>
 
 ### `a11y/landmark-roles`
 
@@ -8483,7 +8237,7 @@ vp run lint
 
 Two `main` elements declare duplicate main landmarks in the same template.
 
-```vue
+```vue annotate="remove:3"
 <template>
   <main>Dashboard</main>
   <main>Settings</main>
@@ -8496,7 +8250,7 @@ Two `main` elements declare duplicate main landmarks in the same template.
 
 The dashboard remains the main landmark; the settings area becomes a named navigation landmark.
 
-```vue
+```vue annotate="add:3"
 <template>
   <main>Dashboard</main>
   <nav aria-label="Settings">...</nav>
@@ -8506,8 +8260,6 @@ The dashboard remains the main landmark; the settings area becomes a named navig
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/landmark_roles.rs#L44) · [All rules](all.md)
-
-<span id="a11y-media-has-caption"></span>
 
 ### `a11y/media-has-caption`
 
@@ -8548,7 +8300,7 @@ vp run lint
 
 The video has playback controls but no caption track.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <video src="/demo.mp4" controls />
 </template>
@@ -8560,7 +8312,7 @@ The video has playback controls but no caption track.
 
 A `track` with `kind="captions"` supplies the English captions for the same video.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <video src="/demo.mp4" controls>
     <track kind="captions" src="/demo.en.vtt" srclang="en" label="English" />
@@ -8571,8 +8323,6 @@ A `track` with `kind="captions"` supplies the English captions for the same vide
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/media_has_caption.rs#L30) · [All rules](all.md)
-
-<span id="a11y-mouse-events-have-key-events"></span>
 
 ### `a11y/mouse-events-have-key-events`
 
@@ -8613,7 +8363,7 @@ vp run lint
 
 Preview visibility changes only through mouse enter and leave handlers.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <div @mouseenter="showPreview" @mouseleave="hidePreview">Preview</div>
 </template>
@@ -8625,7 +8375,7 @@ Preview visibility changes only through mouse enter and leave handlers.
 
 The same preview actions run on focus and blur, and the button can receive keyboard focus.
 
-```vue
+```vue annotate="add:2,3,4,5,6,7,8,9,10"
 <template>
   <button
     type="button"
@@ -8642,8 +8392,6 @@ The same preview actions run on focus and blur, and the button can receive keybo
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs#L30) · [All rules](all.md)
-
-<span id="a11y-no-access-key"></span>
 
 ### `a11y/no-access-key`
 
@@ -8684,7 +8432,7 @@ vp run lint
 
 The `accesskey="s"` shortcut may conflict with browser or assistive-technology shortcuts.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button accesskey="s">Save</button>
 </template>
@@ -8696,7 +8444,7 @@ The `accesskey="s"` shortcut may conflict with browser or assistive-technology s
 
 Removing `accesskey` keeps the ordinary Save button available.
 
-```vue
+```vue annotate="add:2"
 <template>
   <button>Save</button>
 </template>
@@ -8705,8 +8453,6 @@ Removing `accesskey` keeps the ordinary Save button available.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L19) · [All rules](all.md)
-
-<span id="a11y-no-aria-hidden-on-focusable"></span>
 
 ### `a11y/no-aria-hidden-on-focusable`
 
@@ -8747,7 +8493,7 @@ vp run lint
 
 The focusable Close button is hidden from the accessibility tree with `aria-hidden="true"`.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button aria-hidden="true" @click="close">Close</button>
 </template>
@@ -8759,7 +8505,7 @@ The focusable Close button is hidden from the accessibility tree with `aria-hidd
 
 The button remains exposed and receives a `Close` label instead of being hidden.
 
-```vue
+```vue annotate="add:2"
 <template>
   <button aria-label="Close" @click="close">Close</button>
 </template>
@@ -8768,8 +8514,6 @@ The button remains exposed and receives a `Close` label instead of being hidden.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19) · [All rules](all.md)
-
-<span id="a11y-no-autofocus"></span>
 
 ### `a11y/no-autofocus`
 
@@ -8810,7 +8554,7 @@ vp run lint
 
 The input requests automatic focus when it appears.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <input autofocus name="query" />
 </template>
@@ -8822,7 +8566,7 @@ The input requests automatic focus when it appears.
 
 Removing `autofocus` avoids this automatic focus request while retaining the query input.
 
-```vue
+```vue annotate="add:2"
 <template>
   <input name="query" />
 </template>
@@ -8831,8 +8575,6 @@ Removing `autofocus` avoids this automatic focus request while retaining the que
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_autofocus.rs#L19) · [All rules](all.md)
-
-<span id="a11y-no-distracting-elements"></span>
 
 ### `a11y/no-distracting-elements`
 
@@ -8873,7 +8615,7 @@ vp run lint
 
 The `marquee` element introduces automatically moving text.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <marquee>Limited offer</marquee>
 </template>
@@ -8885,7 +8627,7 @@ The `marquee` element introduces automatically moving text.
 
 A paragraph displays the same offer without the distracting marquee element.
 
-```vue
+```vue annotate="add:2"
 <template>
   <p>Limited offer</p>
 </template>
@@ -8894,8 +8636,6 @@ A paragraph displays the same offer without the distracting marquee element.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_distracting_elements.rs#L16) · [All rules](all.md)
-
-<span id="a11y-no-i-for-icon"></span>
 
 ### `a11y/no-i-for-icon`
 
@@ -8936,7 +8676,7 @@ vp run lint
 
 The icon is rendered through `i`, whose text semantics do not describe an icon-only action.
 
-```vue
+```vue annotate="remove:3"
 <template>
   <button>
     <i class="material-icons">delete</i>
@@ -8950,7 +8690,7 @@ The icon is rendered through `i`, whose text semantics do not describe an icon-o
 
 A decorative span hides the icon glyph, while the separate `Delete item` text names the button action.
 
-```vue
+```vue annotate="add:3,4"
 <template>
   <button>
     <span class="material-icons" aria-hidden="true">delete</span>
@@ -8962,8 +8702,6 @@ A decorative span hides the icon glyph, while the separate `Delete item` text na
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_i_for_icon.rs#L35) · [All rules](all.md)
-
-<span id="a11y-no-redundant-roles"></span>
 
 ### `a11y/no-redundant-roles`
 
@@ -9004,7 +8742,7 @@ vp run lint
 
 The native button already has the button role, so `role="button"` repeats its implicit semantics.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button role="button">Save</button>
 </template>
@@ -9016,7 +8754,7 @@ The native button already has the button role, so `role="button"` repeats its im
 
 Removing the repeated role keeps the button semantics supplied by HTML.
 
-```vue
+```vue annotate="add:2"
 <template>
   <button>Save</button>
 </template>
@@ -9025,8 +8763,6 @@ Removing the repeated role keeps the button semantics supplied by HTML.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_redundant_roles/report.rs#L31) · [All rules](all.md)
-
-<span id="a11y-no-refer-to-non-existent-id"></span>
 
 ### `a11y/no-refer-to-non-existent-id`
 
@@ -9079,7 +8815,7 @@ vp run lint
 
 Adding the matching span resolves the reference and provides the button label.
 
-```vue
+```vue annotate="add:2"
 <template>
   <span id="save-label">Save changes</span>
   <button aria-labelledby="save-label">Save</button>
@@ -9089,8 +8825,6 @@ Adding the matching span resolves the reference and provides the button label.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L37) · [All rules](all.md)
-
-<span id="a11y-no-role-presentation-on-focusable"></span>
 
 ### `a11y/no-role-presentation-on-focusable`
 
@@ -9131,7 +8865,7 @@ vp run lint
 
 The focusable billing link requests role=presentation, which conflicts with its interactive link role; browsers must ignore that presentation request.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <a href="/billing" role="presentation">Billing</a>
 </template>
@@ -9143,7 +8877,7 @@ The focusable billing link requests role=presentation, which conflicts with its 
 
 Remove the conflicting presentation request and rely on the native link role and billing destination.
 
-```vue
+```vue annotate="add:2"
 <template>
   <a href="/billing">Billing</a>
 </template>
@@ -9152,8 +8886,6 @@ Remove the conflicting presentation request and rely on the native link role and
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_role_presentation_on_focusable.rs#L19) · [All rules](all.md)
-
-<span id="a11y-no-static-element-interactions"></span>
 
 ### `a11y/no-static-element-interactions`
 
@@ -9194,7 +8926,7 @@ vp run lint
 
 A static section receives an Enter-key action without an interactive role.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <section @keydown.enter="select">Select</section>
 </template>
@@ -9206,7 +8938,7 @@ A static section receives an Enter-key action without an interactive role.
 
 A native button carries the same action with an appropriate interactive element.
 
-```vue
+```vue annotate="add:2"
 <template>
   <button type="button" @keydown.enter="select">Select</button>
 </template>
@@ -9215,8 +8947,6 @@ A native button carries the same action with an appropriate interactive element.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L31) · [All rules](all.md)
-
-<span id="a11y-placeholder-label-option"></span>
 
 ### `a11y/placeholder-label-option`
 
@@ -9257,7 +8987,7 @@ vp run lint
 
 The empty-value prompt remains selectable as if it were a country value.
 
-```vue
+```vue annotate="remove:3"
 <template>
   <select v-model="country">
     <option value="">Choose a country</option>
@@ -9272,7 +9002,7 @@ The empty-value prompt remains selectable as if it were a country value.
 
 Adding `disabled` distinguishes the prompt from the selectable Japan option.
 
-```vue
+```vue annotate="add:3"
 <template>
   <select v-model="country">
     <option value="" disabled>Choose a country</option>
@@ -9284,8 +9014,6 @@ Adding `disabled` distinguishes the prompt from the selectable Japan option.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [All rules](all.md)
-
-<span id="a11y-role-has-required-aria-props"></span>
 
 ### `a11y/role-has-required-aria-props`
 
@@ -9326,7 +9054,7 @@ vp run lint
 
 The checkbox role omits `aria-checked`, which conveys the checkbox state.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <span role="checkbox">Receive updates</span>
 </template>
@@ -9338,7 +9066,7 @@ The checkbox role omits `aria-checked`, which conveys the checkbox state.
 
 `aria-checked="false"` supplies the state required by the checkbox role.
 
-```vue
+```vue annotate="add:2"
 <template>
   <span role="checkbox" aria-checked="false">Receive updates</span>
 </template>
@@ -9347,8 +9075,6 @@ The checkbox role omits `aria-checked`, which conveys the checkbox state.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs#L30) · [All rules](all.md)
-
-<span id="a11y-tabindex-no-positive"></span>
 
 ### `a11y/tabindex-no-positive`
 
@@ -9389,7 +9115,7 @@ vp run lint
 
 A positive tabindex of 3 creates a custom focus order ahead of ordinary controls.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <button tabindex="3">Save</button>
 </template>
@@ -9401,7 +9127,7 @@ A positive tabindex of 3 creates a custom focus order ahead of ordinary controls
 
 The button uses its native focus order without a positive tabindex.
 
-```vue
+```vue annotate="add:2"
 <template>
   <button>Save</button>
 </template>
@@ -9410,8 +9136,6 @@ The button uses its native focus order without a positive tabindex.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs#L16) · [All rules](all.md)
-
-<span id="a11y-use-list"></span>
 
 ### `a11y/use-list`
 
@@ -9452,7 +9176,7 @@ vp run lint
 
 The task items are separate paragraphs with typed dash markers rather than list elements.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <p>- First task</p>
   <p>- Second task</p>
@@ -9465,7 +9189,7 @@ The task items are separate paragraphs with typed dash markers rather than list 
 
 An unordered list and list items express the same tasks with list semantics.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <ul>
     <li>First task</li>
@@ -9477,8 +9201,6 @@ An unordered list and list items express the same tasks with list semantics.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/use_list.rs#L36) · [All rules](all.md)
-
-<span id="vue-use-unique-element-ids"></span>
 
 ### `vue/use-unique-element-ids`
 
@@ -9519,7 +9241,7 @@ vp run lint
 
 The literal `email` ID is reused by every instance of this component, which can misdirect its label when several instances are rendered.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <label for="email">Email</label>
   <input id="email" />
@@ -9532,7 +9254,7 @@ The literal `email` ID is reused by every instance of this component, which can 
 
 `useId()` produces the instance's `emailId`; bind the same value to the label's `for` and the input's `id`.
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,8,9"
 <script setup>
 import { useId } from "vue";
 
@@ -9548,8 +9270,6 @@ const emailId = useId();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs#L52) · [All rules](all.md)
-
-<span id="html-deprecated-attr"></span>
 
 ### `html/deprecated-attr`
 
@@ -9590,7 +9310,7 @@ vp run lint
 
 The paragraph uses the deprecated presentational `align` attribute.
 
-```vue
+```vue annotate="remove:1,2,3"
 <template>
 <p align="center">Notice</p>
 </template>
@@ -9602,7 +9322,7 @@ The paragraph uses the deprecated presentational `align` attribute.
 
 The class and `text-align: center` declaration express the alignment through CSS.
 
-```vue
+```vue annotate="add:1,2"
 <template><p class="notice">Notice</p></template>
 <style scoped>.notice { text-align: center; }</style>
 ```
@@ -9610,8 +9330,6 @@ The class and `text-align: center` declaration express the alignment through CSS
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_attr.rs#L32) · [All rules](all.md)
-
-<span id="html-deprecated-element"></span>
 
 ### `html/deprecated-element`
 
@@ -9652,7 +9370,7 @@ vp run lint
 
 The `center` element uses a deprecated HTML presentation element.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <center>Profile</center>
 </template>
@@ -9664,7 +9382,7 @@ The `center` element uses a deprecated HTML presentation element.
 
 A section and a styling class replace the deprecated element while preserving the content.
 
-```vue
+```vue annotate="add:2"
 <template>
   <section class="profile">Profile</section>
 </template>
@@ -9673,8 +9391,6 @@ A section and a styling class replace the deprecated element while preserving th
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_element.rs#L33) · [All rules](all.md)
-
-<span id="html-id-duplication"></span>
 
 ### `html/id-duplication`
 
@@ -9715,7 +9431,7 @@ vp run lint
 
 Both the input and help paragraph declare `id="email"`, so the label target is ambiguous.
 
-```vue
+```vue annotate="remove:3,4"
 <template>
   <label for="email">Email</label>
   <input id="email" />
@@ -9729,7 +9445,7 @@ Both the input and help paragraph declare `id="email"`, so the label target is a
 
 The input keeps `email`; the help paragraph uses `email-help`, and aria-describedby refers to that distinct ID.
 
-```vue
+```vue annotate="add:3,4"
 <template>
   <label for="email">Email</label>
   <input id="email" aria-describedby="email-help" />
@@ -9740,8 +9456,6 @@ The input keeps `email`; the help paragraph uses `email-help`, and aria-describe
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/id_duplication.rs#L36) · [All rules](all.md)
-
-<span id="html-no-consecutive-br"></span>
 
 ### `html/no-consecutive-br`
 
@@ -9782,7 +9496,7 @@ vp run lint
 
 Two consecutive break elements create spacing between blocks inside a single paragraph.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <p>First line<br /><br />Second block</p>
 </template>
@@ -9794,7 +9508,7 @@ Two consecutive break elements create spacing between blocks inside a single par
 
 Separate paragraphs express the two content blocks without repeated break elements.
 
-```vue
+```vue annotate="add:2,3"
 <template>
   <p>First line</p>
   <p>Second block</p>
@@ -9804,8 +9518,6 @@ Separate paragraphs express the two content blocks without repeated break elemen
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_consecutive_br.rs#L30) · [All rules](all.md)
-
-<span id="html-no-dupe-style-properties"></span>
 
 ### `html/no-dupe-style-properties`
 
@@ -9846,7 +9558,7 @@ vp run lint
 
 Each static style repeats one property; `margin` and `MARGIN` also count as the same property.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
 <div style="color: red; color: blue">text</div>
 <div style="margin: 0; MARGIN: 1px">text</div>
@@ -9859,7 +9571,7 @@ Each static style repeats one property; `margin` and `MARGIN` also count as the 
 
 The static style uses distinct color and background properties. Dynamic style bindings are outside this static-attribute check.
 
-```vue
+```vue annotate="add:2,3"
 <template>
 <div style="color: red; background: blue">text</div>
 <div :style="{ color: a, color: b }">text</div>
@@ -9869,8 +9581,6 @@ The static style uses distinct color and background properties. Dynamic style bi
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_dupe_style_properties.rs#L37) · [All rules](all.md)
-
-<span id="html-no-duplicate-class"></span>
 
 ### `html/no-duplicate-class`
 
@@ -9911,7 +9621,7 @@ vp run lint
 
 The static class list repeats the `btn` token.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <div class="btn btn primary">click</div>
 </template>
@@ -9923,7 +9633,7 @@ The static class list repeats the `btn` token.
 
 The class list keeps one `btn` token and the distinct `primary` token.
 
-```vue
+```vue annotate="add:2"
 <template>
 <div class="btn primary">click</div>
 </template>
@@ -9932,8 +9642,6 @@ The class list keeps one `btn` token and the distinct `primary` token.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_duplicate_class.rs#L32) · [All rules](all.md)
-
-<span id="html-no-duplicate-dt"></span>
 
 ### `html/no-duplicate-dt`
 
@@ -9974,7 +9682,7 @@ vp run lint
 
 The same definition list repeats the `API` term for two descriptions.
 
-```vue
+```vue annotate="remove:5"
 <template>
   <dl>
     <dt>API</dt>
@@ -10004,8 +9712,6 @@ One API term is followed by both descriptions, avoiding the repeated term.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_duplicate_dt.rs#L41) · [All rules](all.md)
-
-<span id="html-no-empty-palpable-content"></span>
 
 ### `html/no-empty-palpable-content`
 
@@ -10046,7 +9752,7 @@ vp run lint
 
 The paragraph, list item, and table cell all have empty palpable content.
 
-```vue
+```vue annotate="remove:2,3,4"
 <template>
   <p></p>
   <li></li>
@@ -10060,7 +9766,7 @@ The paragraph, list item, and table cell all have empty palpable content.
 
 Text fills the paragraph, interpolation supplies the list item, and aria-label explicitly names the otherwise empty cell.
 
-```vue
+```vue annotate="add:2,3,4"
 <template>
   <p>Overview</p>
   <li>{{ item.label }}</li>
@@ -10071,8 +9777,6 @@ Text fills the paragraph, interpolation supplies the list item, and aria-label e
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32) · [All rules](all.md)
-
-<span id="html-require-datetime"></span>
 
 ### `html/require-datetime`
 
@@ -10113,7 +9817,7 @@ vp run lint
 
 The time element contains a human-readable date but no machine-readable datetime value.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <time>May 13, 2026</time>
 </template>
@@ -10125,7 +9829,7 @@ The time element contains a human-readable date but no machine-readable datetime
 
 `datetime="2026-05-13"` supplies the corresponding machine-readable date.
 
-```vue
+```vue annotate="add:2"
 <template>
   <time datetime="2026-05-13">May 13, 2026</time>
 </template>
@@ -10134,8 +9838,6 @@ The time element contains a human-readable date but no machine-readable datetime
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/require_datetime.rs#L34) · [All rules](all.md)
-
-<span id="type-no-floating-promises"></span>
 
 ### `type/no-floating-promises`
 
@@ -10179,7 +9881,7 @@ vp run lint
 
 The async `save` function returns a Promise, but the standalone `save()` call neither awaits nor returns it and does not explicitly mark intentional disposal.
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 async function save(): Promise<void> {}
 save();
@@ -10192,7 +9894,7 @@ save();
 
 `void save()` explicitly marks the fire-and-forget intent accepted by this rule. This is an explicit disposal marker, not a rejection handler.
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 async function save(): Promise<void> {}
 void save();
@@ -10202,8 +9904,6 @@ void save();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs#L13) · [All rules](all.md)
-
-<span id="type-no-reactivity-loss"></span>
 
 ### `type/no-reactivity-loss`
 
@@ -10247,7 +9947,7 @@ vp run lint
 
 `const count = state.count` takes a plain numeric snapshot of the reactive property, so later updates of `state.count` are not reflected in that binding.
 
-```vue
+```vue annotate="remove:2,4"
 <script setup lang="ts">
 import { reactive } from "vue";
 const state = reactive({ count: 0 });
@@ -10261,7 +9961,7 @@ const count = state.count;
 
 `toRef(state, "count")` keeps `count` linked to the original reactive property rather than copying its current primitive value.
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 import { reactive, toRef } from "vue";
 const state = reactive({ count: 0 });
@@ -10272,8 +9972,6 @@ const count = toRef(state, "count");
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12) · [All rules](all.md)
-
-<span id="type-no-unsafe-template-binding"></span>
 
 ### `type/no-unsafe-template-binding`
 
@@ -10317,7 +10015,7 @@ vp run lint
 
 The interpolated `value` is explicitly typed as `any`, so the checker cannot give the template binding a safe concrete type.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const value: any = "Hello";
 </script>
@@ -10330,7 +10028,7 @@ const value: any = "Hello";
 
 Changing the annotation to `string` gives the same interpolation a concrete, checkable type without changing the rendered value.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const value: string = "Hello";
 </script>
@@ -10340,8 +10038,6 @@ const value: string = "Hello";
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs#L12) · [All rules](all.md)
-
-<span id="type-require-typed-emits"></span>
 
 ### `type/require-typed-emits`
 
@@ -10385,7 +10081,7 @@ vp run lint
 
 The array-only `defineEmits(["save"])` declares the event name without a typed payload contract.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 defineEmits(["save"]);
 </script>
@@ -10397,7 +10093,7 @@ defineEmits(["save"]);
 
 `defineEmits<{ save: [] }>()` declares the typed `save` event with an empty payload tuple, explicitly stating that it takes no payload arguments.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineEmits<{ save: [] }>();
 </script>
@@ -10406,8 +10102,6 @@ defineEmits<{ save: [] }>();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54) · [All rules](all.md)
-
-<span id="type-require-typed-props"></span>
 
 ### `type/require-typed-props`
 
@@ -10451,7 +10145,7 @@ vp run lint
 
 The array-only `defineProps(["title"])` declares `title` by name without giving it a type.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 defineProps(["title"]);
 </script>
@@ -10463,7 +10157,7 @@ defineProps(["title"]);
 
 `defineProps<{ title: string }>()` gives `title` an explicit string type instead of a name-only runtime declaration.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineProps<{ title: string }>();
 </script>
@@ -10472,8 +10166,6 @@ defineProps<{ title: string }>();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) · [All rules](all.md)
-
-<span id="type-strict-boolean-expressions"></span>
 
 ### `type/strict-boolean-expressions`
 
@@ -10519,7 +10211,7 @@ vp run lint
 
 `if (count)` relies on the truthiness of a nullable numeric binding instead of an explicit boolean test; it also conflates zero with absence.
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 const count: number | undefined = undefined;
 if (count) console.log(count);
@@ -10532,7 +10224,7 @@ if (count) console.log(count);
 
 `count !== undefined && count > 0` separately tests presence and positivity, producing an explicit boolean condition after narrowing the optional value.
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 const count: number | undefined = undefined;
 if (count !== undefined && count > 0) console.log(count);
@@ -10542,8 +10234,6 @@ if (count !== undefined && count > 0) console.log(count);
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/strict_boolean_expressions.rs#L7) · [All rules](all.md)
-
-<span id="script-no-get-current-instance"></span>
 
 ### `script/no-get-current-instance`
 
@@ -10584,7 +10274,7 @@ vp run lint
 
 The Vapor-marked setup imports and calls `getCurrentInstance`, relying on an instance API this rule disallows for Vapor-oriented components.
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts" vapor>
 import { getCurrentInstance } from "vue";
 const instance = getCurrentInstance();
@@ -10597,7 +10287,7 @@ const instance = getCurrentInstance();
 
 `inject("app-config")` obtains the explicitly provided configuration without importing or calling `getCurrentInstance`.
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts" vapor>
 import { inject } from "vue";
 const appConfig = inject("app-config");
@@ -10607,8 +10297,6 @@ const appConfig = inject("app-config");
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_get_current_instance.rs#L38) · [All rules](all.md)
-
-<span id="script-no-next-tick"></span>
 
 ### `script/no-next-tick`
 
@@ -10649,7 +10337,7 @@ vp run lint
 
 The Vapor-oriented component imports and awaits `nextTick`, introducing the DOM-flush scheduling dependency that this migration rule rejects.
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts" vapor>
 import { nextTick } from "vue";
 await nextTick();
@@ -10662,7 +10350,7 @@ await nextTick();
 
 The input is obtained through `useTemplateRef` and focused at `onMounted`. The explicit mount boundary replaces the example’s `nextTick` dependency.
 
-```vue
+```vue annotate="add:2,3,4,6"
 <script setup lang="ts" vapor>
 import { onMounted, useTemplateRef } from "vue";
 const input = useTemplateRef<HTMLInputElement>("input");
@@ -10674,8 +10362,6 @@ onMounted(() => { input.value?.focus(); });
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_next_tick.rs#L40) · [All rules](all.md)
-
-<span id="script-no-options-api"></span>
 
 ### `script/no-options-api`
 
@@ -10716,7 +10402,7 @@ vp run lint
 
 The default-export object declares Options API `data()`, a component option form prohibited by this rule.
 
-```vue
+```vue annotate="remove:1,2,3,4,5,6"
 <script lang="ts">
 export default {
   data() {
@@ -10732,7 +10418,7 @@ export default {
 
 The component state becomes a Composition API `ref` in Vapor `<script setup>`, removing the Options API object and its `data` option.
 
-```vue
+```vue annotate="add:1,2"
 <script setup lang="ts" vapor>
 const count = ref(0);
 </script>
@@ -10741,8 +10427,6 @@ const count = ref(0);
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_options_api.rs#L43) · [All rules](all.md)
-
-<span id="vapor-no-inline-template"></span>
 
 ### `vapor/no-inline-template`
 
@@ -10783,7 +10467,7 @@ vp run lint
 
 LegacyCard uses the inline-template attribute for its child markup.
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <LegacyCard inline-template>
     <p>Profile</p>
@@ -10797,7 +10481,7 @@ LegacyCard uses the inline-template attribute for its child markup.
 
 The markup is passed through the default slot instead of an inline template.
 
-```vue
+```vue annotate="add:2,3,4,5"
 <template>
   <LegacyCard>
     <template #default>
@@ -10810,8 +10494,6 @@ The markup is passed through the default slot instead of an inline template.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs#L31) · [All rules](all.md)
-
-<span id="vapor-no-vue-lifecycle-events"></span>
 
 ### `vapor/no-vue-lifecycle-events`
 
@@ -10852,7 +10534,7 @@ vp run lint
 
 The input uses the @vue:mounted template lifecycle event.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <input @vue:mounted="focusInput" />
 </template>
@@ -10864,7 +10546,7 @@ The input uses the @vue:mounted template lifecycle event.
 
 onMounted accesses the named template reference and focuses the input through the supported script lifecycle hook.
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,7,8,10"
 <script setup lang="ts" vapor>
 const input = useTemplateRef<HTMLInputElement>("input");
 
@@ -10881,8 +10563,6 @@ onMounted(() => {
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs#L34) · [All rules](all.md)
-
-<span id="vapor-prefer-static-class"></span>
 
 ### `vapor/prefer-static-class`
 
@@ -10923,7 +10603,7 @@ vp run lint
 
 The class binding evaluates a constant string even though the class does not change.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <section :class="'panel panel-primary'">Profile</section>
 </template>
@@ -10935,7 +10615,7 @@ The class binding evaluates a constant string even though the class does not cha
 
 A static class attribute expresses the same panel classes without a binding.
 
-```vue
+```vue annotate="add:2"
 <template>
   <section class="panel panel-primary">Profile</section>
 </template>
@@ -10944,8 +10624,6 @@ A static class attribute expresses the same panel classes without a binding.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L31) · [All rules](all.md)
-
-<span id="vapor-require-vapor-attribute"></span>
 
 ### `vapor/require-vapor-attribute`
 
@@ -10990,7 +10668,7 @@ vp run lint
 
 The script setup block lacks the Vapor compilation attribute. This is an intended convention: the current empty rule callback does not diagnose it.
 
-```vue
+```vue annotate="remove:1"
 <script setup>
 const count = 0;
 </script>
@@ -11003,7 +10681,7 @@ const count = 0;
 
 Adding vapor selects Vapor compilation. It demonstrates the intended repair and does not imply that the current linter emits this catalog rule.
 
-```vue
+```vue annotate="add:1"
 <script setup vapor>
 const count = 0;
 </script>
@@ -11013,8 +10691,6 @@ const count = 0;
 Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs#L17) · [All rules](all.md)
-
-<span id="ecosystem-nuxt-prefer-nuxt-link"></span>
 
 ### `ecosystem/nuxt-prefer-nuxt-link`
 
@@ -11055,7 +10731,7 @@ vp run lint
 
 The internal settings destination uses a plain anchor in a Nuxt application.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <a href="/settings">Settings</a>
 </template>
@@ -11067,7 +10743,7 @@ The internal settings destination uses a plain anchor in a Nuxt application.
 
 NuxtLink handles the same internal destination through the Nuxt router.
 
-```vue
+```vue annotate="add:2"
 <template>
   <NuxtLink to="/settings">Settings</NuxtLink>
 </template>
@@ -11076,8 +10752,6 @@ NuxtLink handles the same internal destination through the Nuxt router.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs#L14) · [All rules](all.md)
-
-<span id="ecosystem-pinia-prefer-store-to-refs"></span>
 
 ### `ecosystem/pinia-prefer-store-to-refs`
 
@@ -11118,7 +10792,7 @@ vp run lint
 
 Destructuring `name` directly from the store separates the value from its reactive store access.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const { name } = useUserStore();
 </script>
@@ -11130,7 +10804,7 @@ const { name } = useUserStore();
 
 The store remains intact and storeToRefs creates a reactive reference for name.
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const store = useUserStore();
 const { name } = storeToRefs(store);
@@ -11140,8 +10814,6 @@ const { name } = storeToRefs(store);
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs#L20) · [All rules](all.md)
-
-<span id="ecosystem-router-link-require-to"></span>
 
 ### `ecosystem/router-link-require-to`
 
@@ -11184,7 +10856,7 @@ vp run lint
 
 The nested RouterLink has no `to` destination; it cannot rely on root attribute fallthrough.
 
-```vue
+```vue annotate="remove:2"
 <template>
 <nav><RouterLink>Settings</RouterLink></nav>
 </template>
@@ -11196,7 +10868,7 @@ The nested RouterLink has no `to` destination; it cannot rely on root attribute 
 
 `to="/settings"` explicitly supplies the nested link destination.
 
-```vue
+```vue annotate="add:2"
 <template>
 <nav><RouterLink to="/settings">Settings</RouterLink></nav>
 </template>
@@ -11205,8 +10877,6 @@ The nested RouterLink has no `to` destination; it cannot rely on root attribute 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L14) · [All rules](all.md)
-
-<span id="ecosystem-void-link-require-href"></span>
 
 ### `ecosystem/void-link-require-href`
 
@@ -11247,7 +10917,7 @@ vp run lint
 
 The Link imported from @void/vue omits its href destination.
 
-```vue
+```vue annotate="remove:6"
 <script setup>
 import { Link } from "@void/vue";
 </script>
@@ -11263,7 +10933,7 @@ import { Link } from "@void/vue";
 
 The same imported Link receives the settings destination through href.
 
-```vue
+```vue annotate="add:6"
 <script setup>
 import { Link } from "@void/vue";
 </script>
@@ -11276,8 +10946,6 @@ import { Link } from "@void/vue";
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_require_href.rs#L13) · [All rules](all.md)
-
-<span id="ecosystem-void-link-valid-method"></span>
 
 ### `ecosystem/void-link-valid-method`
 
@@ -11318,7 +10986,7 @@ vp run lint
 
 The DELETE action requests prefetching, although prefetch is intended for navigation requests.
 
-```vue
+```vue annotate="remove:6"
 <script setup>
 import { Link } from "@void/vue";
 </script>
@@ -11334,7 +11002,7 @@ import { Link } from "@void/vue";
 
 Removing prefetch keeps the DELETE action without prefetching that non-GET request.
 
-```vue
+```vue annotate="add:6"
 <script setup>
 import { Link } from "@void/vue";
 </script>
@@ -11347,8 +11015,6 @@ import { Link } from "@void/vue";
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_valid_method.rs#L14) · [All rules](all.md)
-
-<span id="ecosystem-vue-i18n-no-missing-key"></span>
 
 ### `ecosystem/vue-i18n-no-missing-key`
 
@@ -11389,7 +11055,7 @@ vp run lint
 
 The template requests auth.missing, but the local English messages declare only auth.login.
 
-```vue
+```vue annotate="remove:1"
 <template>{{ $t("auth.missing") }}</template>
 
 <i18n lang="json">
@@ -11403,7 +11069,7 @@ The template requests auth.missing, but the local English messages declare only 
 
 The template requests the auth.login key that exists in the local messages.
 
-```vue
+```vue annotate="add:1"
 <template>{{ $t("auth.login") }}</template>
 
 <i18n lang="json">
@@ -11414,8 +11080,6 @@ The template requests the auth.login key that exists in the local messages.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs#L17) · [All rules](all.md)
-
-<span id="ecosystem-vue-router-prefer-named-link"></span>
 
 ### `ecosystem/vue-router-prefer-named-link`
 
@@ -11456,7 +11120,7 @@ vp run lint
 
 The RouterLink destination is a literal path rather than a named route.
 
-```vue
+```vue annotate="remove:2"
 <template>
   <RouterLink to="/settings">Settings</RouterLink>
 </template>
@@ -11468,7 +11132,7 @@ The RouterLink destination is a literal path rather than a named route.
 
 The bound route object identifies the destination by its settings route name.
 
-```vue
+```vue annotate="add:2"
 <template>
   <RouterLink :to="{ name: 'settings' }">Settings</RouterLink>
 </template>
@@ -11477,8 +11141,6 @@ The bound route object identifies the destination by its settings route name.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/vue_router_prefer_named_link.rs#L15) · [All rules](all.md)
-
-<span id="ecosystem-vue-router-prefer-named-push"></span>
 
 ### `ecosystem/vue-router-prefer-named-push`
 
@@ -11519,7 +11181,7 @@ vp run lint
 
 router.push receives a path string that is tied to the current URL spelling.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 router.push("/settings");
 </script>
@@ -11531,7 +11193,7 @@ router.push("/settings");
 
 router.push receives a route object with the stable settings name.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 router.push({ name: "settings" });
 </script>
@@ -11540,8 +11202,6 @@ router.push({ name: "settings" });
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_router_prefer_named_push.rs#L19) · [All rules](all.md)
-
-<span id="ecosystem-vue-test-utils-no-html-snapshot"></span>
 
 ### `ecosystem/vue-test-utils-no-html-snapshot`
 
@@ -11582,7 +11242,7 @@ vp run lint
 
 The assertion snapshots the complete wrapper HTML instead of checking the expected behavior.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 expect(wrapper.html()).toMatchSnapshot();
 </script>
@@ -11594,7 +11254,7 @@ expect(wrapper.html()).toMatchSnapshot();
 
 The assertion checks that the rendered text contains Saved.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 expect(wrapper.text()).toContain("Saved");
 </script>
@@ -11603,8 +11263,6 @@ expect(wrapper.text()).toContain("Saved");
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_test_utils_no_html_snapshot.rs#L15) · [All rules](all.md)
-
-<span id="css-no-display-none"></span>
 
 ### `css/no-display-none`
 
@@ -11645,7 +11303,7 @@ vp run lint
 
 The `.message` declaration hides the local paragraph through CSS rather than a template visibility condition.
 
-```vue
+```vue annotate="remove:2,4,5,6,7,8,9"
 <template>
   <p class="message">Saved</p>
 </template>
@@ -11663,7 +11321,7 @@ The `.message` declaration hides the local paragraph through CSS rather than a t
 
 `v-show="isSaved"` makes the visibility condition explicit on the local paragraph and removes `display: none`.
 
-```vue
+```vue annotate="add:2"
 <template>
   <p v-show="isSaved" class="message">Saved</p>
 </template>
@@ -11672,8 +11330,6 @@ The `.message` declaration hides the local paragraph through CSS rather than a t
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27) · [All rules](all.md)
-
-<span id="css-no-hardcoded-values"></span>
 
 ### `css/no-hardcoded-values`
 
@@ -11714,7 +11370,7 @@ vp run lint
 
 The button embeds spacing numbers and a hexadecimal color directly in the declarations.
 
-```vue
+```vue annotate="remove:3,4"
 <style scoped>
 .button {
   padding: 12px 16px;
@@ -11729,7 +11385,7 @@ The button embeds spacing numbers and a hexadecimal color directly in the declar
 
 The declarations refer to named spacing and color custom properties, so these values can be maintained as tokens.
 
-```vue
+```vue annotate="add:3,4"
 <style scoped>
 .button {
   padding: var(--space-3) var(--space-4);
@@ -11741,8 +11397,6 @@ The declarations refer to named spacing and color custom properties, so these va
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L30) · [All rules](all.md)
-
-<span id="css-no-id-selectors"></span>
 
 ### `css/no-id-selectors`
 
@@ -11783,7 +11437,7 @@ vp run lint
 
 `#submit` ties the style rule to an ID selector.
 
-```vue
+```vue annotate="remove:2"
 <style scoped>
 #submit {
   font-weight: 600;
@@ -11797,7 +11451,7 @@ vp run lint
 
 The `.submit` class expresses the reusable styling hook without an ID selector.
 
-```vue
+```vue annotate="add:2"
 <style scoped>
 .submit {
   font-weight: 600;
@@ -11808,8 +11462,6 @@ The `.submit` class expresses the reusable styling hook without an ID selector.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19) · [All rules](all.md)
-
-<span id="css-no-important"></span>
 
 ### `css/no-important`
 
@@ -11850,7 +11502,7 @@ vp run lint
 
 The color declaration overrides normal cascade priority with `!important`.
 
-```vue
+```vue annotate="remove:3"
 <style scoped>
 .button {
   color: red !important;
@@ -11864,7 +11516,7 @@ The color declaration overrides normal cascade priority with `!important`.
 
 The color comes from a custom property without an important declaration.
 
-```vue
+```vue annotate="add:3"
 <style scoped>
 .button {
   color: var(--button-color);
@@ -11875,8 +11527,6 @@ The color comes from a custom property without an important declaration.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L14) · [All rules](all.md)
-
-<span id="css-no-utility-classes"></span>
 
 ### `css/no-utility-classes`
 
@@ -11917,7 +11567,7 @@ vp run lint
 
 The authored selectors use utility-shaped names such as `.flex`, `.mt-4`, and `.text-center`.
 
-```vue
+```vue annotate="remove:2,3,4"
 <style scoped>
 .flex { display: flex; }
 .mt-4 { margin-top: 1rem; }
@@ -11931,7 +11581,7 @@ The authored selectors use utility-shaped names such as `.flex`, `.mt-4`, and `.
 
 A component-specific `.my-component` selector groups the component styling under one semantic name.
 
-```vue
+```vue annotate="add:2"
 <style scoped>
 .my-component { display: flex; margin-top: 1rem; }
 </style>
@@ -11940,8 +11590,6 @@ A component-specific `.my-component` selector groups the component styling under
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_utility_classes.rs#L37) · [All rules](all.md)
-
-<span id="css-no-v-bind-performance"></span>
 
 ### `css/no-v-bind-performance`
 
@@ -11982,7 +11630,7 @@ vp run lint
 
 The stylesheet reads the changing `offset` through the SFC CSS `v-bind()` mechanism.
 
-```vue
+```vue annotate="remove:1,2,3,4,5"
 <style scoped>
 .card {
   transform: translateX(v-bind(offset));
@@ -11996,7 +11644,7 @@ The stylesheet reads the changing `offset` through the SFC CSS `v-bind()` mechan
 
 The element receives the changing transform directly through its style binding.
 
-```vue
+```vue annotate="add:1,2,3"
 <template>
   <article :style="{ transform: `translateX(${offset}px)` }" class="card" />
 </template>
@@ -12005,8 +11653,6 @@ The element receives the changing transform directly through its style binding.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_v_bind_performance.rs#L20) · [All rules](all.md)
-
-<span id="css-prefer-logical-properties"></span>
 
 ### `css/prefer-logical-properties`
 
@@ -12047,7 +11693,7 @@ vp run lint
 
 `margin-left` fixes the margin to a physical side regardless of writing direction.
 
-```vue
+```vue annotate="remove:3"
 <style scoped>
 .panel {
   margin-left: 1rem;
@@ -12061,7 +11707,7 @@ vp run lint
 
 `margin-inline-start` follows the start of the inline direction instead.
 
-```vue
+```vue annotate="add:3"
 <style scoped>
 .panel {
   margin-inline-start: 1rem;
@@ -12072,8 +11718,6 @@ vp run lint
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15) · [All rules](all.md)
-
-<span id="css-prefer-nested-selectors"></span>
 
 ### `css/prefer-nested-selectors`
 
@@ -12114,7 +11758,7 @@ vp run lint
 
 The `.card .title` descendant selector repeats the parent selector in a flat rule.
 
-```vue
+```vue annotate="remove:2"
 <style scoped>
 .card .title { color: red; }
 </style>
@@ -12126,7 +11770,7 @@ The `.card .title` descendant selector repeats the parent selector in a flat rul
 
 The `.title` rule is nested inside `.card`, keeping the parent-child styling relationship together.
 
-```vue
+```vue annotate="add:2"
 <style scoped>
 .card { .title { color: red; } }
 </style>
@@ -12135,8 +11779,6 @@ The `.title` rule is nested inside `.card`, keeping the parent-child styling rel
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_nested_selectors.rs#L14) · [All rules](all.md)
-
-<span id="css-prefer-slotted"></span>
 
 ### `css/prefer-slotted`
 
@@ -12177,7 +11819,7 @@ vp run lint
 
 The scoped stylesheet targets the `slot` outlet rather than the elements supplied through the slot.
 
-```vue
+```vue annotate="remove:2"
 <style scoped>
 slot { color: red; }
 </style>
@@ -12189,7 +11831,7 @@ slot { color: red; }
 
 `:slotted(.label)` targets the supplied label element through the scoped slot selector.
 
-```vue
+```vue annotate="add:2"
 <style scoped>
 :slotted(.label) { color: red; }
 </style>
@@ -12198,8 +11840,6 @@ slot { color: red; }
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34) · [All rules](all.md)
-
-<span id="css-require-font-display"></span>
 
 ### `css/require-font-display`
 
@@ -12255,7 +11895,7 @@ The font-face declaration defines the font source but omits its font-display pol
 
 `font-display: swap` explicitly selects the fallback-to-font display policy.
 
-```vue
+```vue annotate="add:5"
 <style>
 @font-face {
   font-family: "Inter";
@@ -12268,8 +11908,6 @@ The font-face declaration defines the font source but omits its font-display pol
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13) · [All rules](all.md)
-
-<span id="musea-no-empty-variant"></span>
 
 ### `musea/no-empty-variant`
 
@@ -12310,7 +11948,7 @@ vp run lint
 
 The named primary variant is empty, so it provides no preview content.
 
-```vue
+```vue annotate="remove:2"
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
 </art>
@@ -12322,7 +11960,7 @@ The named primary variant is empty, so it provides no preview content.
 
 The variant renders a primary Button with its Save content.
 
-```vue
+```vue annotate="add:2,3,4"
 <art title="Button" component="./Button.vue">
   <variant name="primary">
     <Button tone="primary">Save</Button>
@@ -12333,8 +11971,6 @@ The variant renders a primary Button with its Save content.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/no_empty_variant.rs#L8) · [All rules](all.md)
-
-<span id="musea-prefer-design-tokens"></span>
 
 ### `musea/prefer-design-tokens`
 
@@ -12390,7 +12026,7 @@ The art example uses the literal blue color instead of the configured primary de
 
 `Button.art.vue`
 
-```vue
+```vue annotate="remove:6"
 <art title="Button" component="Button">
 <variant name="Primary"><Button /></variant>
 </art>
@@ -12409,7 +12045,7 @@ The style refers to --color-primary, the token configured for this example.
 
 `Button.art.vue`
 
-```vue
+```vue annotate="add:6"
 <art title="Button" component="Button">
 <variant name="Primary"><Button /></variant>
 </art>
@@ -12423,8 +12059,6 @@ The style refers to --color-primary, the token configured for this example.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32) · [All rules](all.md)
-
-<span id="musea-require-component"></span>
 
 ### `musea/require-component`
 
@@ -12465,7 +12099,7 @@ vp run lint
 
 The art block supplies a title but does not identify the component being previewed.
 
-```vue
+```vue annotate="remove:1"
 <art title="Button">
   <variant name="primary" />
 </art>
@@ -12477,7 +12111,7 @@ The art block supplies a title but does not identify the component being preview
 
 defineArt supplies ./Button.vue as the component for the art block.
 
-```vue
+```vue annotate="add:1,2,3,4,5"
 <script setup>
 defineArt("./Button.vue", { title: "Button" });
 </script>
@@ -12490,8 +12124,6 @@ defineArt("./Button.vue", { title: "Button" });
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_component.rs#L11) · [All rules](all.md)
-
-<span id="musea-require-title"></span>
 
 ### `musea/require-title`
 
@@ -12532,7 +12164,7 @@ vp run lint
 
 The art block identifies Button.vue but supplies no title.
 
-```vue
+```vue annotate="remove:1"
 <art component="./Button.vue">
   <variant name="primary" />
 </art>
@@ -12544,7 +12176,7 @@ The art block identifies Button.vue but supplies no title.
 
 The defineArt options supply the Button title for the art block.
 
-```vue
+```vue annotate="add:1,2,3,4,5"
 <script setup>
 defineArt("./Button.vue", { title: "Button" });
 </script>
@@ -12557,8 +12189,6 @@ defineArt("./Button.vue", { title: "Button" });
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31) · [All rules](all.md)
-
-<span id="musea-unique-variant-names"></span>
 
 ### `musea/unique-variant-names`
 
@@ -12599,7 +12229,7 @@ vp run lint
 
 Two variants in the same art block both use the primary name.
 
-```vue
+```vue annotate="remove:3"
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
   <variant name="primary" />
@@ -12612,7 +12242,7 @@ Two variants in the same art block both use the primary name.
 
 The variants have distinct primary and secondary names.
 
-```vue
+```vue annotate="add:3"
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
   <variant name="secondary" />
@@ -12622,8 +12252,6 @@ The variants have distinct primary and secondary names.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10) · [All rules](all.md)
-
-<span id="musea-valid-variant"></span>
 
 ### `musea/valid-variant`
 
@@ -12664,7 +12292,7 @@ vp run lint
 
 The variant omits the name needed to identify the preview.
 
-```vue
+```vue annotate="remove:2"
 <art title="Button" component="./Button.vue">
   <variant />
 </art>
@@ -12676,7 +12304,7 @@ The variant omits the name needed to identify the preview.
 
 The primary name identifies that variant.
 
-```vue
+```vue annotate="add:2"
 <art title="Button" component="./Button.vue">
   <variant name="primary" />
 </art>
@@ -12685,8 +12313,6 @@ The primary name identifies that variant.
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8) · [All rules](all.md)
-
-<span id="script-component-options-name-casing"></span>
 
 ### `script/component-options-name-casing`
 
@@ -12727,7 +12353,7 @@ vp run lint
 
 The component option `name: 'my-component'` is kebab-case, whereas this rule requires a literal component name in PascalCase.
 
-```vue
+```vue annotate="remove:3"
 <script lang="ts">
 export default {
 name: 'my-component' // kebab-case
@@ -12741,7 +12367,7 @@ name: 'my-component' // kebab-case
 
 `MyComponent` begins with an uppercase letter and contains only alphanumeric characters, satisfying the name check.
 
-```vue
+```vue annotate="add:3"
 <script lang="ts">
 export default {
 name: 'MyComponent'
@@ -12752,8 +12378,6 @@ name: 'MyComponent'
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44) · [All rules](all.md)
-
-<span id="script-custom-event-name-casing"></span>
 
 ### `script/custom-event-name-casing`
 
@@ -12794,7 +12418,7 @@ vp run lint
 
 The emitted string `my-event` contains a hyphen and violates the default camelCase event naming policy.
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 const emit = defineEmits(['my-event'])
 emit('my-event')         // kebab-case → report
@@ -12807,7 +12431,7 @@ emit('my-event')         // kebab-case → report
 
 Both the declaration and call use `myEvent`, preserving agreement between the event name and its emission while satisfying the default casing policy. A configured kebab-case policy has a different expectation.
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const emit = defineEmits(['myEvent'])
 emit('myEvent')
@@ -12817,8 +12441,6 @@ emit('myEvent')
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61) · [All rules](all.md)
-
-<span id="script-define-emits-declaration"></span>
 
 ### `script/define-emits-declaration`
 
@@ -12859,7 +12481,7 @@ vp run lint
 
 `defineEmits(["change"])` uses a runtime array declaration; this style rule prefers a type-based declaration.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const emit = defineEmits(["change"]);
 emit("change", 1);
@@ -12872,7 +12494,7 @@ emit("change", 1);
 
 `defineEmits<{ change: [id: number] }>()` moves the event declaration into a type argument and explicitly describes the numeric payload used by `emit("change", 1)`.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const emit = defineEmits<{ change: [id: number] }>();
 emit("change", 1);
@@ -12882,8 +12504,6 @@ emit("change", 1);
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_emits_declaration.rs#L39) · [All rules](all.md)
-
-<span id="script-define-macros-order"></span>
 
 ### `script/define-macros-order`
 
@@ -12924,7 +12544,7 @@ vp run lint
 
 `defineProps` appears before `defineModel`, although `defineModel` has the earlier rank in the canonical macro order.
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 // defineProps before defineModel (out of canonical order)
 const props = defineProps<{ count: number }>()
@@ -12938,7 +12558,7 @@ const model = defineModel<string>()
 
 The declarations follow the exact sequence `defineOptions`, `defineModel`, `defineProps`, `defineEmits`, `defineSlots`, before unrelated runtime statements.
 
-```vue
+```vue annotate="add:2,4,5,6"
 <script setup lang="ts">
 defineOptions({ name: 'MyComponent' })
 const model = defineModel<string>()
@@ -12951,8 +12571,6 @@ defineSlots<{ default(props: {}): any }>()
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) · [All rules](all.md)
-
-<span id="script-define-props-declaration"></span>
 
 ### `script/define-props-declaration`
 
@@ -12993,7 +12611,7 @@ vp run lint
 
 `defineProps({ title: String })` supplies a runtime object, which conflicts with this rule’s preference for type-based props.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const props = defineProps({ title: String });
 console.log(props.title);
@@ -13006,7 +12624,7 @@ console.log(props.title);
 
 `defineProps<{ title: string }>()` declares `title` in the type argument and retains the `props.title` access without a runtime declaration argument.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const props = defineProps<{ title: string }>();
 console.log(props.title);
@@ -13016,8 +12634,6 @@ console.log(props.title);
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_declaration.rs#L40) · [All rules](all.md)
-
-<span id="script-define-props-destructuring"></span>
 
 ### `script/define-props-destructuring`
 
@@ -13058,7 +12674,7 @@ vp run lint
 
 `defineProps` is assigned to the single `props` binding rather than destructured, contrary to the default destructuring preference.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const props = defineProps<{ foo: string }>()
 </script>
@@ -13070,7 +12686,7 @@ const props = defineProps<{ foo: string }>()
 
 The object pattern binds `foo` and `bar` directly and gives the optional `bar` a default. This relies on Vue 3.5+ reactive props destructuring; the configurable `never` mode prefers the opposite form.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 </script>
@@ -13079,8 +12695,6 @@ const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29) · [All rules](all.md)
-
-<span id="script-no-arrow-functions-in-watch"></span>
 
 ### `script/no-arrow-functions-in-watch`
 
@@ -13121,7 +12735,7 @@ vp run lint
 
 The Options API watcher `value` and the nested `other.handler` are arrow functions. An arrow captures its surrounding `this` rather than receiving the component instance.
 
-```vue
+```vue annotate="remove:4,5,9"
 <script lang="ts">
 export default {
 watch: {
@@ -13143,7 +12757,7 @@ handler: () => {}
 
 Both handlers become ordinary methods, allowing Vue to bind `this` to the component. The `deep: true` watcher option remains compatible with the object form.
 
-```vue
+```vue annotate="add:4,8,9"
 <script lang="ts">
 export default {
 watch: {
@@ -13162,8 +12776,6 @@ deep: true
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) · [All rules](all.md)
-
-<span id="script-no-async-in-computed"></span>
 
 ### `script/no-async-in-computed`
 
@@ -13204,7 +12816,7 @@ vp run lint
 
 The `computed` getter is `async`, so the fetch produces a Promise instead of a synchronously derived computed value.
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <script setup lang="ts">
 import { computed } from "vue";
 const data = computed(async () => {
@@ -13220,7 +12832,7 @@ const data = computed(async () => {
 
 The asynchronous fetch moves into `watch` and stores its result in `data.value`. Cleanup aborts the old request and prevents an inactive callback from writing a stale result; no async computed getter remains.
 
-```vue
+```vue annotate="add:2,3,4,5,6,7,8,9,10,11"
 <script setup lang="ts">
 import { ref, watch } from "vue";
 const query = ref("");
@@ -13239,8 +12851,6 @@ watch(query, async (value, _oldValue, onCleanup) => {
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_async_in_computed.rs#L46) · [All rules](all.md)
-
-<span id="script-no-boolean-default"></span>
 
 ### `script/no-boolean-default`
 
@@ -13281,7 +12891,7 @@ vp run lint
 
 Both `disabled` and `checked` declare a `default` on a prop whose sole constructor is `Boolean`; the rule rejects even an explicit `false` default.
 
-```vue
+```vue annotate="remove:4,5,6"
 <script lang="ts">
 export default {
 props: {
@@ -13299,7 +12909,7 @@ checked: { type: Boolean, default: false }
 
 The Boolean-only props omit `default`, using Vue’s implicit false value. The `[Boolean, String]` union and the Number prop illustrate that this check is limited to the sole `Boolean` constructor.
 
-```vue
+```vue annotate="add:4,5,6,7,8,9,10"
 <script lang="ts">
 export default {
 props: {
@@ -13318,8 +12928,6 @@ count: { type: Number, default: 0 }
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) · [All rules](all.md)
-
-<span id="script-no-deep-destructure-in-props"></span>
 
 ### `script/no-deep-destructure-in-props`
 
@@ -13360,7 +12968,7 @@ vp run lint
 
 The binding pattern descends through `user` to destructure `name`, exceeding the default shallow props-destructuring depth.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const { user: { name } } = defineProps<{ user: { name: string } }>();
 </script>
@@ -13372,7 +12980,7 @@ const { user: { name } } = defineProps<{ user: { name: string } }>();
 
 The props object remains intact, and a computed getter reads `props.user.name`. The nested access stays explicit without a deeply nested binding pattern.
 
-```vue
+```vue annotate="add:2,3,4"
 <script setup lang="ts">
 import { computed } from "vue";
 const props = defineProps<{ user: { name: string } }>();
@@ -13383,8 +12991,6 @@ const userName = computed(() => props.user.name);
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [All rules](all.md)
-
-<span id="script-no-deprecated-data-object-declaration"></span>
 
 ### `script/no-deprecated-data-object-declaration`
 
@@ -13425,7 +13031,7 @@ vp run lint
 
 The Options API `data` option is an object literal, a Vue 2 form that Vue 3 no longer accepts.
 
-```vue
+```vue annotate="remove:3,4,5"
 <script lang="ts">
 export default {
 // `data` must be a function in Vue 3, not an object literal.
@@ -13442,7 +13048,7 @@ count: 0
 
 `data()` returns a new `{ count: 0 }` object, providing the function-based data declaration required by Vue 3.
 
-```vue
+```vue annotate="add:3,4"
 <script lang="ts">
 export default {
 data() {
@@ -13455,8 +13061,6 @@ return { count: 0 }
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) · [All rules](all.md)
-
-<span id="script-no-deprecated-destroyed-lifecycle"></span>
 
 ### `script/no-deprecated-destroyed-lifecycle`
 
@@ -13497,7 +13101,7 @@ vp run lint
 
 `beforeDestroy` is the removed Vue 2 lifecycle option used for the timer cleanup.
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { beforeDestroy() { clearTimeout(this.timer); } };
 </script>
@@ -13509,7 +13113,7 @@ export default { beforeDestroy() { clearTimeout(this.timer); } };
 
 Renaming the hook to `beforeUnmount` preserves the cleanup body under its Vue 3 lifecycle name.
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { beforeUnmount() { clearTimeout(this.timer); } };
 </script>
@@ -13518,8 +13122,6 @@ export default { beforeUnmount() { clearTimeout(this.timer); } };
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17) · [All rules](all.md)
-
-<span id="script-no-deprecated-dollar-listeners-api"></span>
 
 ### `script/no-deprecated-dollar-listeners-api`
 
@@ -13560,7 +13162,7 @@ vp run lint
 
 The member reads and the bare argument reference all use `$listeners`, which Vue 3 removed after merging listeners into attributes.
 
-```vue
+```vue annotate="remove:2,3,4"
 <script setup lang="ts">
 const handlers = this.$listeners
 const forwarded = ctx.$listeners
@@ -13574,7 +13176,7 @@ emit('input', $listeners)
 
 The reads move to `this.$attrs` and setup-context `ctx.attrs`. These replace the removed listener surface; the illustrated receivers must exist in the surrounding component context.
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const handlers = this.$attrs
 const forwarded = ctx.attrs
@@ -13584,8 +13186,6 @@ const forwarded = ctx.attrs
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [All rules](all.md)
-
-<span id="script-no-deprecated-dollar-scopedslots-api"></span>
 
 ### `script/no-deprecated-dollar-scopedslots-api`
 
@@ -13626,7 +13226,7 @@ vp run lint
 
 `this.$scopedSlots`, `ctx.$scopedSlots`, and the bare `$scopedSlots` reference use the Vue 2 scoped-slot API removed in Vue 3.
 
-```vue
+```vue annotate="remove:2,3,4"
 <script setup lang="ts">
 const header = this.$scopedSlots.header
 const footer = ctx.$scopedSlots.footer
@@ -13640,7 +13240,7 @@ render($scopedSlots.default)
 
 Replacing `$scopedSlots` with `$slots` uses the unified slot surface. The example removes the deprecated spelling rather than establishing a setup context for the receivers.
 
-```vue
+```vue annotate="add:2,3,4"
 <script setup lang="ts">
 const header = this.$slots.header
 const footer = ctx.$slots.footer
@@ -13651,8 +13251,6 @@ render($slots.default)
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) · [All rules](all.md)
-
-<span id="script-no-deprecated-events-api"></span>
 
 ### `script/no-deprecated-events-api`
 
@@ -13693,7 +13291,7 @@ vp run lint
 
 The `$on`, `$once`, and `$off` calls use the instance event-bus methods removed in Vue 3.
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <script setup lang="ts">
 this.$on('event', handler)
 this.$once('event', handler)
@@ -13708,7 +13306,7 @@ emitter.$off('event')
 
 `$emit` remains valid, while event-bus subscription moves to the external emitter’s `on` method. The repair separates parent-directed emission from an external event bus.
 
-```vue
+```vue annotate="add:2,3,4,5,6,7,8"
 <script setup lang="ts">
 // $emit is still valid in Vue 3
 this.$emit('event', payload)
@@ -13723,8 +13321,6 @@ emitter.on('event', handler)
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) · [All rules](all.md)
-
-<span id="script-no-deprecated-props-default-this"></span>
 
 ### `script/no-deprecated-props-default-this`
 
@@ -13765,7 +13361,7 @@ vp run lint
 
 The prop default and validator read `this`, but those functions cannot rely on the component instance in Vue 3.
 
-```vue
+```vue annotate="remove:6,7,8,13,14"
 <script lang="ts">
 export default {
 props: {
@@ -13793,7 +13389,7 @@ return this.value > 0
 
 The default reads `props.baseSize` from its argument, and the validator tests its `value` argument. Both stop depending on an unavailable instance receiver.
 
-```vue
+```vue annotate="add:6,7,8,13,14"
 <script lang="ts">
 export default {
 props: {
@@ -13818,8 +13414,6 @@ return value > 0
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) · [All rules](all.md)
-
-<span id="script-no-dupe-keys"></span>
 
 ### `script/no-dupe-keys`
 
@@ -13860,7 +13454,7 @@ vp run lint
 
 `foo` is declared by both props and data, and `bar` by both computed and methods. Those declarations compete for the same component instance keys.
 
-```vue
+```vue annotate="remove:5,8,9,10,11"
 <script lang="ts">
 export default {
 props: ['foo'],
@@ -13883,7 +13477,7 @@ bar() {} // duplicate of computed `bar`
 
 The prop, data, and computed declarations use distinct names (`foo`, `bar`, and `baz`), eliminating both cross-option collisions.
 
-```vue
+```vue annotate="add:5,8"
 <script lang="ts">
 export default {
 props: ['foo'],
@@ -13900,8 +13494,6 @@ baz() { return 2 }
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L52) · [All rules](all.md)
-
-<span id="script-no-duplicate-attr-inheritance"></span>
 
 ### `script/no-duplicate-attr-inheritance`
 
@@ -13942,7 +13534,7 @@ vp run lint
 
 The explicit `inheritAttrs: true` values restate Vue’s default. This rule reports that redundant literal even when no root `$attrs` spread is shown.
 
-```vue
+```vue annotate="remove:2,3"
 <script lang="ts">
 defineOptions({ inheritAttrs: true })
 export default { inheritAttrs: true }
@@ -13955,7 +13547,7 @@ export default { inheritAttrs: true }
 
 `inheritAttrs: false` expresses a real opt-out, while the empty options object leaves default inheritance implicit. Neither restates the redundant `true` value.
 
-```vue
+```vue annotate="add:2,3"
 <script lang="ts">
 defineOptions({ inheritAttrs: false }) // intentional opt-out
 export default {}                      // default inheritance, unstated
@@ -13965,8 +13557,6 @@ export default {}                      // default inheritance, unstated
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L73) · [All rules](all.md)
-
-<span id="script-no-export-in-script-setup"></span>
 
 ### `script/no-export-in-script-setup`
 
@@ -14007,7 +13597,7 @@ vp run lint
 
 `export const count` attempts to expose a module export from `<script setup>`, where runtime exports are prohibited.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 export const count = 1;
 </script>
@@ -14019,7 +13609,7 @@ export const count = 1;
 
 Removing `export` keeps `count` as a setup binding rather than a module export.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const count = 1;
 </script>
@@ -14028,8 +13618,6 @@ const count = 1;
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) · [All rules](all.md)
-
-<span id="script-no-import-compiler-macros"></span>
 
 ### `script/no-import-compiler-macros`
 
@@ -14070,7 +13658,7 @@ vp run lint
 
 The `vue` import includes `defineProps` and `defineEmits`, although these are compiler macros available directly in `<script setup>`.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 import { defineProps, defineEmits } from "vue";
 const props = defineProps<{ title: string }>();
@@ -14094,8 +13682,6 @@ const emit = defineEmits<{ save: [id: number] }>();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_import_compiler_macros.rs#L39) · [All rules](all.md)
-
-<span id="script-no-internal-imports"></span>
 
 ### `script/no-internal-imports`
 
@@ -14136,7 +13722,7 @@ vp run lint
 
 Both imports address internal `dist` files rather than Vue’s public package entry point, coupling the component to build-file paths.
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 import { foo } from '@vue/runtime-core/dist/runtime-core.esm-bundler'
 import { bar } from 'vue/dist/vue.esm-bundler'
@@ -14149,7 +13735,7 @@ import { bar } from 'vue/dist/vue.esm-bundler'
 
 Importing the required helpers from `vue` removes the dependency on internal distribution file locations.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 </script>
@@ -14158,8 +13744,6 @@ import { ref, computed } from 'vue'
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) · [All rules](all.md)
-
-<span id="script-no-multiple-slot-args"></span>
 
 ### `script/no-multiple-slot-args`
 
@@ -14200,7 +13784,7 @@ vp run lint
 
 The slot calls pass multiple positional arguments or spread an unknown argument list. Vue slots receive one props object, not a positional parameter list.
 
-```vue
+```vue annotate="remove:2,3,4,5,6"
 <script setup lang="ts">
 slots.default(foo, bar)
 $slots.header(a, b)
@@ -14216,7 +13800,7 @@ slots.default(...args)
 
 `{ foo, bar }` combines the data into one argument; `slotProps` and the argument-free call also stay within the supported slot-call shape.
 
-```vue
+```vue annotate="add:2,3,4"
 <script setup lang="ts">
 slots.default({ foo, bar })
 slots.default(slotProps)
@@ -14227,8 +13811,6 @@ slots.default()
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_multiple_slot_args.rs#L61) · [All rules](all.md)
-
-<span id="script-no-potential-component-option-typo"></span>
 
 ### `script/no-potential-component-option-typo`
 
@@ -14269,7 +13851,7 @@ vp run lint
 
 The option is spelled `method`, one edit away from the recognized `methods` option; Vue would not treat it as the intended methods declaration.
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { method: { save() {} } };
 </script>
@@ -14281,7 +13863,7 @@ export default { method: { save() {} } };
 
 Changing the key to `methods` places `save()` under the recognized component option.
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { methods: { save() {} } };
 </script>
@@ -14290,8 +13872,6 @@ export default { methods: { save() {} } };
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19) · [All rules](all.md)
-
-<span id="script-no-reactive-destructure"></span>
 
 ### `script/no-reactive-destructure`
 
@@ -14332,7 +13912,7 @@ vp run lint
 
 `const { count, name } = state` copies primitive properties out of the `reactive` object, losing their connection to subsequent property changes.
 
-```vue
+```vue annotate="remove:2,4"
 <script setup lang="ts">
 import { reactive } from "vue";
 const state = reactive({ count: 0, name: "Ada" });
@@ -14346,7 +13926,7 @@ const { count, name } = state;
 
 Destructuring `toRefs(state)` creates refs for `count` and `name`, keeping each binding linked to the original reactive property.
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 import { reactive, toRefs } from "vue";
 const state = reactive({ count: 0, name: "Ada" });
@@ -14357,8 +13937,6 @@ const { count, name } = toRefs(state);
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43) · [All rules](all.md)
-
-<span id="script-no-ref-as-operand"></span>
 
 ### `script/no-ref-as-operand`
 
@@ -14399,7 +13977,7 @@ vp run lint
 
 `count + 1` uses the ref object itself as the arithmetic operand instead of the number it wraps.
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { ref } from "vue";
 const count = ref(0);
@@ -14413,7 +13991,7 @@ const next = count + 1;
 
 `count.value + 1` reads the wrapped number before adding one; script arithmetic requires this explicit ref access.
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { ref } from "vue";
 const count = ref(0);
@@ -14424,8 +14002,6 @@ const next = count.value + 1;
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_ref_as_operand.rs#L41) · [All rules](all.md)
-
-<span id="script-no-required-prop-with-default"></span>
 
 ### `script/no-required-prop-with-default`
 
@@ -14466,7 +14042,7 @@ vp run lint
 
 `title` is both required and given the fallback `"Untitled"`, combining a required-input contract with a default intended for missing input.
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { props: { title: { type: String, required: true, default: "Untitled" } } };
 </script>
@@ -14478,7 +14054,7 @@ export default { props: { title: { type: String, required: true, default: "Untit
 
 Removing `required: true` makes `title` optional and leaves `"Untitled"` as its coherent fallback.
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { props: { title: { type: String, default: "Untitled" } } };
 </script>
@@ -14487,8 +14063,6 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [All rules](all.md)
-
-<span id="script-no-reserved-identifiers"></span>
 
 ### `script/no-reserved-identifiers`
 
@@ -14529,7 +14103,7 @@ vp run lint
 
 The bindings `__props`, `__emit`, and `__sfc__` use identifiers reserved for generated Vue compiler code.
 
-```vue
+```vue annotate="remove:2,3,4"
 <script setup lang="ts">
 const __props = { name: "Ada" };
 const __emit = () => {};
@@ -14543,7 +14117,7 @@ const __sfc__ = {};
 
 The ordinary names `props`, `emit`, and `componentData` avoid those generated identifiers while retaining props and emits declarations.
 
-```vue
+```vue annotate="add:2,3,4"
 <script setup lang="ts">
 const props = defineProps<{ name: string }>();
 const emit = defineEmits<{ save: [] }>();
@@ -14554,8 +14128,6 @@ const componentData = {};
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_identifiers.rs#L49) · [All rules](all.md)
-
-<span id="script-no-reserved-keys"></span>
 
 ### `script/no-reserved-keys`
 
@@ -14596,7 +14168,7 @@ vp run lint
 
 The returned data key `$el` collides with Vue’s built-in component-instance property and also uses a reserved `$` prefix.
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { data() { return { $el: "custom" }; } };
 </script>
@@ -14608,7 +14180,7 @@ export default { data() { return { $el: "custom" }; } };
 
 Renaming the application data to `elementLabel` avoids the built-in instance surface and reserved prefix.
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { data() { return { elementLabel: "custom" }; } };
 </script>
@@ -14617,8 +14189,6 @@ export default { data() { return { elementLabel: "custom" }; } };
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L32) · [All rules](all.md)
-
-<span id="script-no-reserved-props"></span>
 
 ### `script/no-reserved-props`
 
@@ -14659,7 +14229,7 @@ vp run lint
 
 The object-form `ref` and `$foo`, plus the array-form `key`, are reserved prop names. `ref` and `key` are framework controls, and `$`-prefixed names are rejected.
 
-```vue
+```vue annotate="remove:4,5,6,8,9,10"
 <script lang="ts">
 export default {
 props: {
@@ -14680,7 +14250,7 @@ props: ['key']    // reserved (array form)
 
 The ordinary prop names `name` and `refValue` avoid the reserved names in both spelling and prefix.
 
-```vue
+```vue annotate="add:4,5"
 <script lang="ts">
 export default {
 props: {
@@ -14694,8 +14264,6 @@ refValue: Number
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53) · [All rules](all.md)
-
-<span id="script-no-restricted-globals"></span>
 
 ### `script/no-restricted-globals`
 
@@ -14736,7 +14304,7 @@ vp run lint
 
 The example reads the default restricted globals `process`, `localStorage`, and `sessionStorage` directly, bypassing the project’s explicit config and storage helpers.
 
-```vue
+```vue annotate="remove:2,3,4"
 <script setup lang="ts">
 const flag = process.env.FEATURE_FLAG
 const token = localStorage.getItem('auth.token')
@@ -14750,7 +14318,7 @@ sessionStorage.setItem('view.scroll', String(window.scrollY))
 
 `useFeatureFlag`, `authStorage.read`, and `viewStorage.write` remove those direct restricted-global references. The remaining `window.scrollY` is not a default restriction of this rule; SSR safety is a separate concern.
 
-```vue
+```vue annotate="add:2,3,4,5,6,7"
 <script setup lang="ts">
 // Use a typed config helper that distinguishes server vs. client.
 const flag = useFeatureFlag('FEATURE_FLAG')
@@ -14764,8 +14332,6 @@ viewStorage.write('view.scroll', String(window.scrollY))
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_globals.rs#L57) · [All rules](all.md)
-
-<span id="script-no-restricted-members"></span>
 
 ### `script/no-restricted-members`
 
@@ -14818,7 +14384,7 @@ vp run lint
 
 With `{ object: "window", property: "localStorage" }` configured in `ruleOptions`, `window.localStorage` accesses the forbidden object/member pair. This rule has no default forbidden members.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const token = window.localStorage.getItem("token");
 </script>
@@ -14830,7 +14396,7 @@ const token = window.localStorage.getItem("token");
 
 `authStorage.read("token")` delegates the read to the application’s storage helper and no longer accesses the configured `window.localStorage` member.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const token = authStorage.read("token");
 </script>
@@ -14839,8 +14405,6 @@ const token = authStorage.read("token");
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_members.rs#L53) · [All rules](all.md)
-
-<span id="script-no-side-effects-in-computed-properties"></span>
 
 ### `script/no-side-effects-in-computed-properties`
 
@@ -14881,7 +14445,7 @@ vp run lint
 
 `doubled` assigns to `this.count`, and `reversed` mutates `this.items` through `reverse()`. Both getters modify the state they are supposed to derive from.
 
-```vue
+```vue annotate="remove:8,9,12"
 <script lang="ts">
 export default {
 data() {
@@ -14906,7 +14470,7 @@ return this.items.reverse() // side effect: mutates the array
 
 `doubled` returns the multiplication without assignment. `reversed` copies the array before reversing it, so the original component state is unchanged by the getter.
 
-```vue
+```vue annotate="add:8,11"
 <script lang="ts">
 export default {
 data() {
@@ -14927,8 +14491,6 @@ return [...this.items].reverse() // operate on a copy
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L70) · [All rules](all.md)
-
-<span id="script-no-top-level-ref-in-script"></span>
 
 ### `script/no-top-level-ref-in-script`
 
@@ -14969,7 +14531,7 @@ vp run lint
 
 The ordinary `<script>` initializes `count` and `user` at module scope. During SSR, these state objects can be shared across component instances and requests.
 
-```vue
+```vue annotate="remove:1,2,4,8"
 <script>
 // This state is shared across all requests in SSR!
 const count = ref(0)
@@ -14989,7 +14551,7 @@ return { count, user }
 
 The setup ref is initialized per component instance; the ordinary script keeps only a constant, a state-producing function, and a ref created inside `setup()`. None creates reactive state at ordinary module scope.
 
-```vue
+```vue annotate="add:1,2,4,6,7,8,9,10,11,12,13,14,17,18,19"
 <script setup>
 // Script setup creates fresh state per request
 const count = ref(0)
@@ -15017,8 +14579,6 @@ return { count }
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs#L63) · [All rules](all.md)
-
-<span id="script-no-unstable-nested-components"></span>
 
 ### `script/no-unstable-nested-components`
 
@@ -15059,7 +14619,7 @@ vp run lint
 
 `defineComponent` runs inside the parent’s `setup()`, creating a new `Child` component definition whenever that setup executes.
 
-```vue
+```vue annotate="remove:3"
 <script lang="ts">
 import { defineComponent } from "vue";
 export default { setup() { const Child = defineComponent({ render() { return null; } }); return { Child }; } };
@@ -15072,7 +14632,7 @@ export default { setup() { const Child = defineComponent({ render() { return nul
 
 The `Child` definition moves to module scope, and `setup()` returns that existing definition instead of recreating it.
 
-```vue
+```vue annotate="add:3,4"
 <script lang="ts">
 import { defineComponent } from "vue";
 const Child = defineComponent({ render() { return null; } });
@@ -15083,8 +14643,6 @@ export default { setup() { return { Child }; } };
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) · [All rules](all.md)
-
-<span id="script-no-unused-emit-declarations"></span>
 
 ### `script/no-unused-emit-declarations`
 
@@ -15125,7 +14683,7 @@ vp run lint
 
 `defineEmits` declares both `change` and `unused`, but the captured `emit` function only emits the literal event `change`.
 
-```vue
+```vue annotate="remove:2,4"
 <script setup lang="ts">
 const emit = defineEmits(['change', 'unused'])
 emit('change')
@@ -15139,7 +14697,7 @@ emit('change')
 
 Removing `unused` makes the declared event list match the observed emission. The example uses a captured, unescaped emit binding so this local usage conclusion is available.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const emit = defineEmits(['change'])
 emit('change')
@@ -15149,8 +14707,6 @@ emit('change')
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs#L74) · [All rules](all.md)
-
-<span id="script-no-use-computed-property-like-method"></span>
 
 ### `script/no-use-computed-property-like-method`
 
@@ -15191,7 +14747,7 @@ vp run lint
 
 `this.total()` calls the value exposed by the computed getter; the getter returns `3`, which is not callable.
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { computed: { total() { return 3; } }, methods: { log() { console.log(this.total()); } } };
 </script>
@@ -15203,7 +14759,7 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 
 `this.total` reads the computed value without call parentheses, so `log` prints the derived number.
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { computed: { total() { return 3; } }, methods: { log() { console.log(this.total); } } };
 </script>
@@ -15212,8 +14768,6 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) · [All rules](all.md)
-
-<span id="script-no-with-defaults"></span>
 
 ### `script/no-with-defaults`
 
@@ -15254,7 +14808,7 @@ vp run lint
 
 `withDefaults` wraps the typed props declaration solely to supply `count` and `name` defaults, instead of the Vue 3.5+ destructuring-default style preferred here.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { count: 0, name: "Ada" });
 </script>
@@ -15266,7 +14820,7 @@ const props = withDefaults(defineProps<{ count?: number; name?: string }>(), { c
 
 The destructuring pattern puts `count = 0` and `name = "Ada"` beside their bindings and removes the `withDefaults` wrapper.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string }>();
 </script>
@@ -15275,8 +14829,6 @@ const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) · [All rules](all.md)
-
-<span id="script-prefer-computed"></span>
 
 ### `script/prefer-computed`
 
@@ -15319,7 +14871,7 @@ vp run lint
 
 The watcher only copies a derivation of `count` into a second ref, `doubled`, so the derived state is maintained through manual synchronization.
 
-```vue
+```vue annotate="remove:2,4,5"
 <script setup lang="ts">
 import { ref, watch } from "vue";
 const count = ref(0);
@@ -15334,7 +14886,7 @@ watch(count, (value) => { doubled.value = value * 2; });
 
 `computed(() => count.value * 2)` expresses the derivation directly and removes both the extra writable ref and its synchronization watcher.
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 import { ref, computed } from "vue";
 const count = ref(0);
@@ -15345,8 +14897,6 @@ const doubled = computed(() => count.value * 2);
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) · [All rules](all.md)
-
-<span id="script-prefer-define-options"></span>
 
 ### `script/prefer-define-options`
 
@@ -15387,7 +14937,7 @@ vp run lint
 
 The plain script’s only meaningful statement exports an object containing just `name` and `inheritAttrs`; these options can be expressed by `defineOptions`.
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { name: 'MyComponent', inheritAttrs: false }
 </script>
@@ -15399,7 +14949,7 @@ export default { name: 'MyComponent', inheritAttrs: false }
 
 The shown `data()` method makes the script carry real Options API logic, so it falls outside this rule’s conservative options-only suggestion. This Good demonstrates an allowed exception; the direct migration would put `defineOptions({ name: 'MyComponent', inheritAttrs: false })` in `<script setup>`.
 
-```vue
+```vue annotate="add:2,3,4,5,6"
 <script lang="ts">
 // Real options logic — keep the plain script.
 export default {
@@ -15412,8 +14962,6 @@ data() { return { count: 0 } },
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) · [All rules](all.md)
-
-<span id="script-prefer-import-from-vue"></span>
 
 ### `script/prefer-import-from-vue`
 
@@ -15454,7 +15002,7 @@ vp run lint
 
 `ref` and `h` are imported from the internal `@vue/runtime-core` and `@vue/runtime-dom` packages rather than the public `vue` package.
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 import { ref } from '@vue/runtime-core'
 import { h } from '@vue/runtime-dom'
@@ -15467,7 +15015,7 @@ import { h } from '@vue/runtime-dom'
 
 Both helpers are imported together from `vue`, using the public package entry point instead of either internal package.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 import { ref, h } from 'vue'
 </script>
@@ -15476,8 +15024,6 @@ import { ref, h } from 'vue'
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [All rules](all.md)
-
-<span id="script-prefer-ref-over-reactive"></span>
 
 ### `script/prefer-ref-over-reactive`
 
@@ -15518,7 +15064,7 @@ vp run lint
 
 The state is created with `reactive`, contrary to this opinionated rule’s preference for refs. The example illustrates a style preference, not an inherently invalid reactive object.
 
-```vue
+```vue annotate="remove:2,3,4,5,6"
 <script setup lang="ts">
 // reactive requires careful handling to avoid losing reactivity
 const state = reactive({
@@ -15534,7 +15080,7 @@ name: 'foo'
 
 The examples create both scalar and object state with `ref`; related fields may also be split into separate refs. This satisfies the preferred state-construction form.
 
-```vue
+```vue annotate="add:2,3,4,5,6,7,8,9,10,11"
 <script setup lang="ts">
 // ref is more explicit and safer
 const count = ref(0)
@@ -15552,8 +15098,6 @@ const userAge = ref(20)
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs#L44) · [All rules](all.md)
-
-<span id="script-prefer-use-attrs"></span>
 
 ### `script/prefer-use-attrs`
 
@@ -15594,7 +15138,7 @@ vp run lint
 
 `setup` obtains `attrs` by destructuring its context parameter, which this rule asks to replace with the Composition API helper.
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { setup(_props, { attrs }) { console.log(attrs.class); } };
 </script>
@@ -15606,7 +15150,7 @@ export default { setup(_props, { attrs }) { console.log(attrs.class); } };
 
 `useAttrs()` supplies `attrs` inside setup, retaining the `attrs.class` read without depending on the second setup parameter.
 
-```vue
+```vue annotate="add:2,3"
 <script lang="ts">
 import { useAttrs } from "vue";
 export default { setup() { const attrs = useAttrs(); console.log(attrs.class); } };
@@ -15616,8 +15160,6 @@ export default { setup() { const attrs = useAttrs(); console.log(attrs.class); }
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_attrs.rs#L44) · [All rules](all.md)
-
-<span id="script-prefer-use-id"></span>
 
 ### `script/prefer-use-id`
 
@@ -15658,7 +15200,7 @@ vp run lint
 
 `id` contains `Math.random()`, so the generated input/label identifier can differ between server and client rendering. Its ID-named binding is the rule’s recognized generation context.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const id = `input-${Math.random()}`;
 </script>
@@ -15671,7 +15213,7 @@ const id = `input-${Math.random()}`;
 
 Vue 3.5+ `useId()` generates the identifier, and both `:for` and `:id` continue reading the same binding instead of independently generating random values.
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { useId } from "vue";
 const id = useId();
@@ -15682,8 +15224,6 @@ const id = useId();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) · [All rules](all.md)
-
-<span id="script-prefer-use-slots"></span>
 
 ### `script/prefer-use-slots`
 
@@ -15724,7 +15264,7 @@ vp run lint
 
 `setup` destructures `slots` from its context argument, the access form this rule prefers to replace.
 
-```vue
+```vue annotate="remove:2,4"
 <script lang="ts">
 import { defineComponent, h } from "vue";
 export default defineComponent({
@@ -15739,7 +15279,7 @@ export default defineComponent({
 
 `useSlots()` retrieves the slots inside setup, preserving the render function and its optional default-slot call without a context parameter.
 
-```vue
+```vue annotate="add:2,4,5,6,7"
 <script lang="ts">
 import { defineComponent, h, useSlots } from "vue";
 export default defineComponent({
@@ -15754,8 +15294,6 @@ export default defineComponent({
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_slots.rs#L44) · [All rules](all.md)
-
-<span id="script-prefer-use-template-ref"></span>
 
 ### `script/prefer-use-template-ref`
 
@@ -15796,7 +15334,7 @@ vp run lint
 
 The nullable `input` ref is paired with the template’s literal `ref="input"`, identifying it as an element reference rather than ordinary nullable data.
 
-```vue
+```vue annotate="remove:2,3"
 <script setup lang="ts">
 import { ref } from 'vue'
 const input = ref<HTMLInputElement | null>(null)
@@ -15812,7 +15350,7 @@ const input = ref<HTMLInputElement | null>(null)
 
 Vue 3.5+ `useTemplateRef<HTMLInputElement>('input')` makes that template reference explicit. The unpaired `error = ref(null)` remains ordinary data and is intentionally outside this rule.
 
-```vue
+```vue annotate="add:2,3,4,5,6,10"
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue'
 // Paired with the template ref below.
@@ -15829,8 +15367,6 @@ const error = ref(null)
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75) · [All rules](all.md)
-
-<span id="script-require-default-prop"></span>
 
 ### `script/require-default-prop`
 
@@ -15871,7 +15407,7 @@ vp run lint
 
 `name` and `age` are optional non-Boolean runtime props without defaults, leaving their omitted-input values unspecified.
 
-```vue
+```vue annotate="remove:4,5,6"
 <script lang="ts">
 export default {
 props: {
@@ -15889,7 +15425,7 @@ age: { type: Number },
 
 `name` receives `default: ''`. `enabled` uses Boolean’s implicit false default, and required `id` needs no fallback, illustrating both exemptions.
 
-```vue
+```vue annotate="add:4,5,6"
 <script lang="ts">
 export default {
 props: {
@@ -15904,8 +15440,6 @@ id: { type: Number, required: true },
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L58) · [All rules](all.md)
-
-<span id="script-require-explicit-emits"></span>
 
 ### `script/require-explicit-emits`
 
@@ -15946,7 +15480,7 @@ vp run lint
 
 The captured emit function emits `save`, but `defineEmits([])` declares no such event.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const emit = defineEmits([]);
 emit("save");
@@ -15959,7 +15493,7 @@ emit("save");
 
 Adding `"save"` to the declaration makes the emitted literal event part of the component’s explicit event contract.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const emit = defineEmits(["save"]);
 emit("save");
@@ -15969,8 +15503,6 @@ emit("save");
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L61) · [All rules](all.md)
-
-<span id="script-require-explicit-slots"></span>
 
 ### `script/require-explicit-slots`
 
@@ -16011,7 +15543,7 @@ vp run lint
 
 The typed `defineProps<{ id: number }>()` establishes TypeScript syntax, but setup uses `useSlots()` without a `defineSlots` declaration. The rule therefore finds consumed slots without an explicit slot contract.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const props = defineProps<{ id: number }>()
 const slots = useSlots()
@@ -16024,7 +15556,7 @@ const slots = useSlots()
 
 `defineSlots` declares a `default` slot whose props include `msg: string`; `useSlots()` now appears alongside an explicit typed slot contract.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineSlots<{ default(props: { msg: string }): unknown }>()
 const slots = useSlots()
@@ -16034,8 +15566,6 @@ const slots = useSlots()
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) · [All rules](all.md)
-
-<span id="script-require-function-return-type"></span>
 
 ### `script/require-function-return-type`
 
@@ -16076,7 +15606,7 @@ vp run lint
 
 Both `add` and `greet` annotate their parameters but omit a return-type annotation; inferred returns do not satisfy this explicit-annotation policy.
 
-```vue
+```vue annotate="remove:2,6"
 <script setup lang="ts">
 const add = (a: number, b: number) => {
 return a + b
@@ -16094,7 +15624,7 @@ return `Hello, ${name}`
 
 `add` declares `: number`, and `greet` declares `: string`, making the return contracts explicit without changing either body.
 
-```vue
+```vue annotate="add:2,6"
 <script setup lang="ts">
 const add = (a: number, b: number): number => {
 return a + b
@@ -16109,8 +15639,6 @@ return `Hello, ${name}`
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) · [All rules](all.md)
-
-<span id="script-require-prop-type-constructor"></span>
 
 ### `script/require-prop-type-constructor`
 
@@ -16151,7 +15679,7 @@ vp run lint
 
 The prop declarations use strings `"String"` and `"Number"` as runtime types, including inside the constructor array. Those strings are not constructor functions.
 
-```vue
+```vue annotate="remove:4,5,6,7"
 <script lang="ts">
 export default {
 props: {
@@ -16170,7 +15698,7 @@ id: { type: ["String", "Number"] }
 
 The declarations use the actual `String` and `Number` identifiers, including the union array `[String, Number]`.
 
-```vue
+```vue annotate="add:4,5,6"
 <script lang="ts">
 export default {
 props: {
@@ -16185,8 +15713,6 @@ id: { type: [String, Number] }
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L59) · [All rules](all.md)
-
-<span id="script-require-prop-types"></span>
 
 ### `script/require-prop-types`
 
@@ -16227,7 +15753,7 @@ vp run lint
 
 The array entry declares only the name `status`; the `null` value and empty descriptor declare no runtime prop type either.
 
-```vue
+```vue annotate="remove:3,4,5,6,8,9"
 <script lang="ts">
 export default {
 props: ['status']            // array form: no types
@@ -16248,7 +15774,7 @@ other: {}                  // empty descriptor: no type
 
 `status: String` supplies a shorthand constructor, and `other` supplies `type: Number` inside its descriptor. Both props now carry type declarations.
 
-```vue
+```vue annotate="add:4,5"
 <script lang="ts">
 export default {
 props: {
@@ -16262,8 +15788,6 @@ other: { type: Number, default: 0 }
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) · [All rules](all.md)
-
-<span id="script-require-symbol-provide"></span>
 
 ### `script/require-symbol-provide`
 
@@ -16304,7 +15828,7 @@ vp run lint
 
 `provide` and `inject` use literal string keys such as `'user'` and `'theme'`, which can collide with another provider using the same spelling.
 
-```vue
+```vue annotate="remove:1,2,3,4,6,7"
 <script setup lang="ts">
 // String keys can collide
 provide('user', user)
@@ -16321,7 +15845,7 @@ provide('theme', { dark: true })
 
 The shared `UserKey` is created with `Symbol` and annotated as `InjectionKey<User>`; both calls pass that key instead of a literal string.
 
-```vue
+```vue annotate="add:1,2,3,5,6,7,8,9"
 <script lang="ts">
 // Define injection key with Symbol
 export const UserKey: InjectionKey<User> = Symbol('user')
@@ -16337,8 +15861,6 @@ const user = inject(UserKey)
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_symbol_provide.rs#L39) · [All rules](all.md)
-
-<span id="script-require-typed-object-prop"></span>
 
 ### `script/require-typed-object-prop`
 
@@ -16379,7 +15901,7 @@ vp run lint
 
 Bare `Object` and `Array` constructors describe only broad runtime categories, so neither `user` nor the `items` element shape has an explicit static type.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const props = defineProps({ user: Object, items: { type: Array } });
 </script>
@@ -16391,7 +15913,7 @@ const props = defineProps({ user: Object, items: { type: Array } });
 
 `PropType<User>` and `PropType<User[]>` add the object and element types while retaining the same runtime constructors.
 
-```vue
+```vue annotate="add:2,3,4,5,6,7"
 <script setup lang="ts">
 import type { PropType } from "vue";
 interface User { name: string }
@@ -16405,8 +15927,6 @@ const props = defineProps({
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs#L63) · [All rules](all.md)
-
-<span id="script-require-typed-ref"></span>
 
 ### `script/require-typed-ref`
 
@@ -16447,7 +15967,7 @@ vp run lint
 
 The imported `ref` calls have neither a type argument nor a useful initial value: no argument, `null`, and `undefined` cannot infer the intended future value type.
 
-```vue
+```vue annotate="remove:4,5,6"
 <script setup lang="ts">
 import { ref } from 'vue'
 
@@ -16463,7 +15983,7 @@ const c = ref(undefined)  // Ref<undefined>
 
 Explicit type arguments describe the string and nullable User refs. `ref(0)` already has a concrete numeric initializer and can rely on inference.
 
-```vue
+```vue annotate="add:4,5,6"
 <script setup lang="ts">
 import { ref } from 'vue'
 
@@ -16476,8 +15996,6 @@ const c = ref(0)          // inferred Ref<number>
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_typed_ref.rs#L55) · [All rules](all.md)
-
-<span id="script-require-valid-default-prop"></span>
 
 ### `script/require-valid-default-prop`
 
@@ -16518,7 +16036,7 @@ vp run lint
 
 The Number and Boolean props receive mismatched scalar defaults, and the Array and Object props use shared literal values instead of factories.
 
-```vue
+```vue annotate="remove:4,5,6,7"
 <script lang="ts">
 export default {
 props: {
@@ -16537,7 +16055,7 @@ config: { type: Object, default: {} }       // literal must be a factory
 
 The scalar defaults become `0` and `false`; the array and object defaults become functions returning fresh values. The `[String, Number]` example accepts its string default because it matches one declared type.
 
-```vue
+```vue annotate="add:4,5,6,7,8"
 <script lang="ts">
 export default {
 props: {
@@ -16554,8 +16072,6 @@ label: { type: [String, Number], default: '' }
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs#L68) · [All rules](all.md)
-
-<span id="script-return-in-computed-property"></span>
 
 ### `script/return-in-computed-property`
 
@@ -16596,7 +16112,7 @@ vp run lint
 
 The block-bodied computed getter evaluates `1 + 2` but never returns it, leaving the computed value undefined.
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 import { computed } from "vue";
 const total = computed(() => { 1 + 2; });
@@ -16609,7 +16125,7 @@ const total = computed(() => { 1 + 2; });
 
 `return 1 + 2` turns the expression into the getter’s returned value. The rule looks for a value-returning return in the getter itself, not merely an expression statement.
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 import { computed } from "vue";
 const total = computed(() => { return 1 + 2; });
@@ -16619,8 +16135,6 @@ const total = computed(() => { return 1 + 2; });
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/return_in_computed_property.rs#L31) · [All rules](all.md)
-
-<span id="script-return-in-emits-validator"></span>
 
 ### `script/return-in-emits-validator`
 
@@ -16663,7 +16177,7 @@ vp run lint
 
 The `submit` validator logs the payload but does not return a validation result, so its block body yields undefined.
 
-```vue
+```vue annotate="remove:2"
 <script lang="ts">
 export default { emits: { submit: (payload: unknown) => { console.log(payload); } } };
 </script>
@@ -16675,7 +16189,7 @@ export default { emits: { submit: (payload: unknown) => { console.log(payload); 
 
 `return payload != null` supplies a boolean validation result for the submitted payload instead of ending without a returned value.
 
-```vue
+```vue annotate="add:2"
 <script lang="ts">
 export default { emits: { submit: (payload: unknown) => { return payload != null; } } };
 </script>
@@ -16684,8 +16198,6 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) · [All rules](all.md)
-
-<span id="script-valid-define-emits"></span>
 
 ### `script/valid-define-emits`
 
@@ -16726,7 +16238,7 @@ vp run lint
 
 The same `defineEmits` call supplies both a type argument and the runtime array `["save"]`, mixing two mutually exclusive declarations.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 defineEmits<{ save: [] }>(["save"]);
 </script>
@@ -16738,7 +16250,7 @@ defineEmits<{ save: [] }>(["save"]);
 
 Removing the runtime argument leaves a single type-based event declaration for `save`.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineEmits<{ save: [] }>();
 </script>
@@ -16747,8 +16259,6 @@ defineEmits<{ save: [] }>();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_emits.rs#L45) · [All rules](all.md)
-
-<span id="script-valid-define-options"></span>
 
 ### `script/valid-define-options`
 
@@ -16789,7 +16299,7 @@ vp run lint
 
 The first call puts the dedicated `props` declaration inside `defineOptions`; the later calls also repeat the macro and include a non-object argument. These illustrate the forbidden shape and repeated-call constraints.
 
-```vue
+```vue annotate="remove:2,3,4,5"
 <script setup lang="ts">
 defineOptions({ props: ['foo'] })   // use defineProps instead
 defineOptions({ name: 'Foo' })
@@ -16804,7 +16314,7 @@ defineOptions('Foo')                // not an object literal
 
 One `defineOptions` call receives an object containing only the supported ordinary options `name` and `inheritAttrs`.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineOptions({ name: 'Foo', inheritAttrs: false })
 </script>
@@ -16813,8 +16323,6 @@ defineOptions({ name: 'Foo', inheritAttrs: false })
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_options.rs#L41) · [All rules](all.md)
-
-<span id="script-valid-define-props"></span>
 
 ### `script/valid-define-props`
 
@@ -16855,7 +16363,7 @@ vp run lint
 
 The same `defineProps` call supplies both `{ title: string }` as a type argument and `{ title: String }` as a runtime argument, which the compiler does not permit together.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 defineProps<{ title: string }>({ title: String });
 </script>
@@ -16867,7 +16375,7 @@ defineProps<{ title: string }>({ title: String });
 
 Removing the runtime object leaves one type-based declaration for `title` instead of combining both declaration forms.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 defineProps<{ title: string }>();
 </script>
@@ -16876,8 +16384,6 @@ defineProps<{ title: string }>();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_props.rs#L44) · [All rules](all.md)
-
-<span id="script-valid-next-tick"></span>
 
 ### `script/valid-next-tick`
 
@@ -16918,7 +16424,7 @@ vp run lint
 
 The imported `nextTick()` is a bare expression with no callback, so its returned Promise is ignored and no work waits for the DOM flush.
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 import { nextTick } from "vue";
 nextTick();
@@ -16931,7 +16437,7 @@ nextTick();
 
 `await nextTick()` consumes the Promise and explicitly waits for the next DOM update before subsequent setup code continues.
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 import { nextTick } from "vue";
 await nextTick();
@@ -16941,8 +16447,6 @@ await nextTick();
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_next_tick.rs#L55) · [All rules](all.md)
-
-<span id="nuxt-no-nuxt-config-test-key"></span>
 
 ### `nuxt/no-nuxt-config-test-key`
 
@@ -16985,7 +16489,7 @@ The exported Nuxt config sets the identifier key `test` to the boolean `true`, t
 
 `nuxt.config.ts`
 
-```ts
+```ts annotate="remove:1"
 export default defineNuxtConfig({ test: true });
 ```
 
@@ -16997,15 +16501,13 @@ The empty config removes that boolean `test` property. This example does not for
 
 `nuxt.config.ts`
 
-```ts
+```ts annotate="add:1"
 export default defineNuxtConfig({});
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_nuxt_config_test_key.rs#L16) · [All rules](all.md)
-
-<span id="nuxt-no-page-meta-runtime-values"></span>
 
 ### `nuxt/no-page-meta-runtime-values`
 
@@ -17046,7 +16548,7 @@ vp run lint
 
 `useRoute()` is evaluated immediately while building the `definePageMeta` object, although the macro hoists that metadata outside the setup runtime context.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 definePageMeta({ title: useRoute() });
 </script>
@@ -17058,7 +16560,7 @@ definePageMeta({ title: useRoute() });
 
 `validate` receives a callback, so its `useRoute().params.id` access is deferred until the callback runs. The rule distinguishes deferred function bodies from eager metadata values.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 definePageMeta({ validate: () => Boolean(useRoute().params.id) });
 </script>
@@ -17067,8 +16569,6 @@ definePageMeta({ validate: () => Boolean(useRoute().params.id) });
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_page_meta_runtime_values.rs#L25) · [All rules](all.md)
-
-<span id="nuxt-nuxt-config-keys-order"></span>
 
 ### `nuxt/nuxt-config-keys-order`
 
@@ -17111,7 +16611,7 @@ The config places `ssr` before `modules`, reversing their order in the rule’s 
 
 `nuxt.config.ts`
 
-```ts
+```ts annotate="remove:1"
 export default defineNuxtConfig({ ssr: true, modules: [] });
 ```
 
@@ -17123,15 +16623,13 @@ Putting `modules` before `ssr` preserves both values while satisfying the prescr
 
 `nuxt.config.ts`
 
-```ts
+```ts annotate="add:1"
 export default defineNuxtConfig({ modules: [], ssr: true });
 ```
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
 [Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/nuxt_config_keys_order.rs#L24) · [All rules](all.md)
-
-<span id="nuxt-prefer-import-meta"></span>
 
 ### `nuxt/prefer-import-meta`
 
@@ -17172,7 +16670,7 @@ vp run lint
 
 `process.client` uses a legacy Nuxt environment flag that the rule asks to migrate to `import.meta`.
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 if (process.client) console.log("browser");
 </script>
@@ -17184,7 +16682,7 @@ if (process.client) console.log("browser");
 
 `import.meta.client` keeps the browser-only branch explicit using the replacement environment flag.
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 if (import.meta.client) console.log("browser");
 </script>
@@ -17196,8 +16694,6 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 
 ## Project examples
-
-<span id="ecosystem-vue-router-unknown-route"></span>
 
 ### `ecosystem/vue-router-unknown-route`
 
@@ -17274,7 +16770,7 @@ The reachable installed router declares `user-post`, but navigation uses the mis
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17291,7 +16787,7 @@ Use the registered `user-post` name while retaining both declared path parameter
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17303,8 +16799,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Cross-file index](cross-file.md)
-
-<span id="ecosystem-vue-router-extra-param"></span>
 
 ### `ecosystem/vue-router-extra-param`
 
@@ -17381,7 +16875,7 @@ The `user-post` path declares `userId` and `postId`, but the navigation also sup
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17398,7 +16892,7 @@ Remove `tab` from params and retain only the keys present in the route path. Use
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17410,8 +16904,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Cross-file index](cross-file.md)
-
-<span id="ecosystem-vue-router-param-type"></span>
 
 ### `ecosystem/vue-router-param-type`
 
@@ -17488,7 +16980,7 @@ export const router = createRouter({
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17505,7 +16997,7 @@ Pass the scalar `"2"` for the non-repeatable `postId` segment.
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17517,8 +17009,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Cross-file index](cross-file.md)
-
-<span id="ecosystem-vue-router-missing-param"></span>
 
 ### `ecosystem/vue-router-missing-param`
 
@@ -17595,7 +17085,7 @@ The navigation omits required `postId` from the `user-post` path. This is a warn
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17612,7 +17102,7 @@ Pass both `userId` and `postId` explicitly so navigation does not depend on the 
 
 `src/UserPost.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { useRouter } from "vue-router";
 const router = useRouter();
@@ -17624,8 +17114,6 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Cross-file index](cross-file.md)
-
-<span id="html-cross-component-nesting"></span>
 
 ### `html/cross-component-nesting`
 
@@ -17679,7 +17167,7 @@ The parent's `<p>` contains a resolved child whose root is `<div>`, producing in
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -17700,7 +17188,7 @@ Use a `<section>` container that can contain the child's block element; the chil
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -17716,8 +17204,6 @@ import Child from "./Child.vue";
 The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Cross-file index](cross-file.md)
-
-<span id="vue-cross-file-attrs-fallthrough"></span>
 
 ### `vue/cross-file-attrs-fallthrough`
 
@@ -17780,7 +17266,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:1"
 <template><main>Content</main><aside>Help</aside></template>
 ```
 
@@ -17801,15 +17287,13 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:1"
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
 The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-array-mutation"></span>
 
 ### `vize:croquis/cf/array-mutation`
 
@@ -17869,7 +17353,7 @@ In this historical Vue 2.7 project, `items[0] = next` changes the array without 
 
 `replace-first.ts`
 
-```ts
+```ts annotate="remove:2"
 export function replaceFirst(items: string[], next: string): void {
   items[0] = next;
 }
@@ -17884,7 +17368,7 @@ export function replaceFirst(items: string[], next: string): void {
 
 `replace-first.ts`
 
-```ts
+```ts annotate="add:2"
 export function replaceFirst(items: string[], next: string): void {
   items.splice(0, 1, next);
 }
@@ -17896,8 +17380,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-async-boundary"></span>
 
 ### `vize:croquis/cf/async-boundary`
 
@@ -17976,7 +17458,7 @@ const query = ref("");
 
 `SearchResults.vue`
 
-```vue
+```vue annotate="remove:10,11"
 <script setup lang="ts">
 import { load, type Result } from "./api";
 import { ref, watch } from "vue";
@@ -18016,7 +17498,7 @@ const query = ref("");
 
 `SearchResults.vue`
 
-```vue
+```vue annotate="add:10,11,12,13,14,15,16,17,18,19,20"
 <script setup lang="ts">
 import { load, type Result } from "./api";
 import { ref, watch } from "vue";
@@ -18049,8 +17531,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/race_conditions/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-async-no-suspense"></span>
 
 ### `vize:croquis/cf/async-no-suspense`
 
@@ -18094,7 +17574,7 @@ The child has top-level await but its parent supplies no `<Suspense>` boundary. 
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -18118,7 +17598,7 @@ The parent wraps the same async child in `<Suspense>` with a loading fallback. T
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -18141,8 +17621,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/boundary.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-browser-api-ssr"></span>
 
 ### `vize:croquis/cf/browser-api-ssr`
 
@@ -18196,7 +17674,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const width = window.innerWidth;
 </script>
@@ -18211,7 +17689,7 @@ Initialize a ref to a server-safe value and read `window` inside `onMounted`, wh
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,3,4"
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 const width = ref(0);
@@ -18227,8 +17705,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/boundary.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-circular-dep"></span>
 
 ### `vize:croquis/cf/circular-dep`
 
@@ -18294,7 +17770,7 @@ export const bPrefix = 'B';
 
 `a.ts`
 
-```ts
+```ts annotate="remove:1,2"
 import { bLabel } from './b';
 export const aLabel = 'A' + bLabel;
 
@@ -18302,7 +17778,7 @@ export const aLabel = 'A' + bLabel;
 
 `b.ts`
 
-```ts
+```ts annotate="remove:1,2"
 import { aLabel } from './a';
 export const bLabel = 'B' + aLabel;
 
@@ -18316,7 +17792,7 @@ Both modules read initialized prefixes from the independent `labels.ts` module, 
 
 `a.ts`
 
-```ts
+```ts annotate="add:1,2"
 import { bPrefix } from './labels';
 export const aLabel = 'A' + bPrefix;
 
@@ -18324,7 +17800,7 @@ export const aLabel = 'A' + bPrefix;
 
 `b.ts`
 
-```ts
+```ts annotate="add:1,2"
 import { aPrefix } from './labels';
 export const bLabel = 'B' + aPrefix;
 
@@ -18335,8 +17811,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-circular-reactive-dependency"></span>
 
 ### `vize:croquis/cf/circular-reactive-dependency`
 
@@ -18417,7 +17891,7 @@ App owns and provides count (A). CycleView derives nextCount (B), then immediate
 
 `CycleView.vue`
 
-```vue
+```vue annotate="remove:2,6"
 <script setup lang="ts">
 import { computed, inject, watch } from 'vue';
 import { countKey } from './count-key';
@@ -18428,7 +17902,7 @@ watch(nextCount, value => { count.value = value; }, { immediate: true });
 <template><p>{{ nextCount }}</p></template>
 ```
 
-```text
+```text annotate="remove:2"
 Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B; B -> A
 ```
@@ -18441,7 +17915,7 @@ Remove the watcher that writes B back into A. App keeps ownership of count and c
 
 `CycleView.vue`
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import { countKey } from './count-key';
@@ -18451,7 +17925,7 @@ const nextCount = computed(() => count.value + 1); // B: the derived consumer.
 <template><p>{{ nextCount }}</p></template>
 ```
 
-```text
+```text annotate="add:2"
 Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B
 ```
@@ -18463,8 +17937,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/cross_file_reactivity/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-closure-captures-reactive"></span>
 
 ### `vize:croquis/cf/closure-captures-reactive`
 
@@ -18524,7 +17996,7 @@ const shown = computed(read);
 
 `reader.ts`
 
-```ts
+```ts annotate="remove:3,4"
 import type { Ref } from 'vue';
 export function makeReader(count: Ref<number>): () => number {
   const captured = count.value;
@@ -18541,7 +18013,7 @@ The closure reads `count.value` when invoked, so the computed getter can track t
 
 `reader.ts`
 
-```ts
+```ts annotate="add:3"
 import type { Ref } from 'vue';
 export function makeReader(count: Ref<number>): () => number {
   return () => count.value;
@@ -18554,8 +18026,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-composable-outside-setup"></span>
 
 ### `vize:croquis/cf/composable-outside-setup`
 
@@ -18614,7 +18084,7 @@ Importing `use-title.ts` registers `onMounted` before a component setup is activ
 
 `use-title.ts`
 
-```ts
+```ts annotate="remove:2,3,4"
 import { onMounted, ref } from 'vue';
 const title = ref('Before mount');
 onMounted(() => { title.value = 'Mounted'; });
@@ -18630,7 +18100,7 @@ Both state creation and hook registration move into `useTitle`, which App calls 
 
 `use-title.ts`
 
-```ts
+```ts annotate="add:2,3,4,5,6"
 import { onMounted, ref } from 'vue';
 export function useTitle() {
   const title = ref('Before mount');
@@ -18645,8 +18115,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-computed-side-effects"></span>
 
 ### `vize:croquis/cf/computed-side-effects`
 
@@ -18703,7 +18171,7 @@ Evaluating `doubled` writes `lastCalculated`, so reading a computed value also m
 
 `use-double.ts`
 
-```ts
+```ts annotate="remove:1,5,6,7,8,9"
 import { computed, ref } from 'vue';
 export function useDouble() {
   const count = ref(0);
@@ -18726,7 +18194,7 @@ The getter only returns the derived number. A separate watcher owns the write to
 
 `use-double.ts`
 
-```ts
+```ts annotate="add:1,5,6"
 import { computed, ref, watch } from 'vue';
 export function useDouble() {
   const count = ref(0);
@@ -18743,8 +18211,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-deep-import"></span>
 
 ### `vize:croquis/cf/deep-import`
 
@@ -18837,7 +18303,7 @@ The entry routes a simple value through `level-one`, `level-two`, and `level-thr
 
 `entry.ts`
 
-```ts
+```ts annotate="remove:1"
 export { label } from './level-one';
 
 ```
@@ -18850,7 +18316,7 @@ The entry uses `public-api.ts`, which re-exports the value directly. The consume
 
 `entry.ts`
 
-```ts
+```ts annotate="add:1"
 export { label } from './public-api';
 
 ```
@@ -18860,8 +18326,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-destructuring-breaks-reactivity"></span>
 
 ### `vize:croquis/cf/destructuring-breaks-reactivity`
 
@@ -18930,7 +18394,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 const props = defineProps<{ item: { name: string } }>();
 const { item } = props;
@@ -18960,7 +18424,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="add:2,3,5"
 <script setup lang="ts">
 import { toRef } from "vue";
 
@@ -18980,8 +18444,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-di-outside-setup"></span>
 
 ### `vize:croquis/cf/di-outside-setup`
 
@@ -19051,7 +18513,7 @@ const theme = useTheme();
 
 `main.ts`
 
-```ts
+```ts annotate="remove:1,2,3,4,5,6"
 import { createApp } from 'vue';
 import App from './App.vue';
 import { provideTheme } from './theme';
@@ -19081,7 +18543,7 @@ App calls the provider from its setup before rendering the child. The child now 
 
 `App.vue`
 
-```vue
+```vue annotate="add:3,4"
 <script setup lang="ts">
 import ThemedText from './ThemedText.vue';
 import { provideTheme } from './theme';
@@ -19099,8 +18561,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-dom-access-without-next-tick"></span>
 
 ### `vize:croquis/cf/dom-access-without-next-tick`
 
@@ -19152,7 +18612,7 @@ The click handler increments `count` and immediately reads the rendered paragrap
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2,7"
 <script setup lang="ts">
 import { ref } from 'vue';
 import { readLabel } from './read-label';
@@ -19179,7 +18639,7 @@ Awaiting `nextTick()` after the state write lets Vue update the paragraph before
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,7,9"
 <script setup lang="ts">
 import { nextTick, ref } from 'vue';
 import { readLabel } from './read-label';
@@ -19204,8 +18664,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-duplicate-id"></span>
 
 ### `vize:croquis/cf/duplicate-id`
 
@@ -19273,7 +18731,7 @@ import ShippingAddress from "./ShippingAddress.vue";
 
 `ShippingAddress.vue`
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <label for="postal-code">Shipping postal code</label>
   <input id="postal-code" />
@@ -19282,7 +18740,7 @@ import ShippingAddress from "./ShippingAddress.vue";
 
 `BillingAddress.vue`
 
-```vue
+```vue annotate="remove:2,3"
 <template>
   <label for="postal-code">Billing postal code</label>
   <input id="postal-code" />
@@ -19311,7 +18769,7 @@ import ShippingAddress from "./ShippingAddress.vue";
 
 `ShippingAddress.vue`
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,8,9"
 <script setup lang="ts">
 import { useId } from "vue";
 
@@ -19326,7 +18784,7 @@ const postalCodeId = useId();
 
 `BillingAddress.vue`
 
-```vue
+```vue annotate="add:1,2,3,4,5,6,8,9"
 <script setup lang="ts">
 import { useId } from "vue";
 
@@ -19346,8 +18804,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/element_id.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-event-listener-leak"></span>
 
 ### `vize:croquis/cf/event-listener-leak`
 
@@ -19404,7 +18860,7 @@ Mounting adds a window resize listener that captures the component’s width ref
 
 `use-width.ts`
 
-```ts
+```ts annotate="remove:1"
 import { onMounted, ref } from 'vue';
 export function useWidth() {
   const width = ref(0);
@@ -19423,7 +18879,7 @@ export function useWidth() {
 
 `use-width.ts`
 
-```ts
+```ts annotate="add:1,6"
 import { onMounted, onUnmounted, ref } from 'vue';
 export function useWidth() {
   const width = ref(0);
@@ -19440,8 +18896,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-event-modifier"></span>
 
 ### `vize:croquis/cf/event-modifier`
 
@@ -19481,7 +18935,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -19506,7 +18960,7 @@ Remove `.stop` from the custom-event listener; handle native propagation at the 
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -19530,8 +18984,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/event_bubbling.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-hydration-risk"></span>
 
 ### `vize:croquis/cf/hydration-risk`
 
@@ -19594,7 +19046,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:2,4"
 <script setup lang="ts">
 import { ref } from "vue";
 const props = defineProps<{ count: number }>();
@@ -19620,7 +19072,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 import { toRef } from "vue";
 const props = defineProps<{ count: number }>();
@@ -19638,8 +19090,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-inherit-attrs-unused"></span>
 
 ### `vize:croquis/cf/inherit-attrs-unused`
 
@@ -19688,7 +19138,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false });
 </script>
@@ -19712,7 +19162,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 defineOptions({ inheritAttrs: false });
 </script>
@@ -19726,8 +19176,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/fallthrough.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-inject-without-symbol"></span>
 
 ### `vize:croquis/cf/inject-without-symbol`
 
@@ -19789,7 +19237,7 @@ The consumer injects the untyped string key `"theme"`, which offers no symbol id
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="remove:6"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -19805,7 +19253,7 @@ provide("theme", theme);
 
 `ThemeLabel.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { inject } from "vue";
 
@@ -19821,7 +19269,7 @@ The consumer and provider import the same `ThemeKey` instead of duplicating stri
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="add:4,7"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -19838,7 +19286,7 @@ provide(ThemeKey, theme);
 
 `ThemeLabel.vue`
 
-```vue
+```vue annotate="add:3,5"
 <script setup lang="ts">
 import { inject } from "vue";
 import { ThemeKey } from "./keys/theme";
@@ -19854,8 +19302,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/keys.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-injected-async-mutation-race"></span>
 
 ### `vize:croquis/cf/injected-async-mutation-race`
 
@@ -19941,7 +19387,7 @@ export const StoreKey: InjectionKey<Store> = Symbol("store");
 
 `StoreProvider.vue`
 
-```vue
+```vue annotate="remove:12"
 <script setup lang="ts">
 import { provide, reactive } from "vue";
 import CountLoader from "./CountLoader.vue";
@@ -19960,7 +19406,7 @@ provide(StoreKey, store);
 
 `CountLoader.vue`
 
-```vue
+```vue annotate="remove:3,4,6,9,10"
 <script setup lang="ts">
 import { loadCount } from "./api";
 import { inject, ref, watch } from "vue";
@@ -19995,7 +19441,7 @@ export const StoreKey: InjectionKey<Store> = Symbol("store");
 
 `StoreProvider.vue`
 
-```vue
+```vue annotate="add:9,10,11,12,16"
 <script setup lang="ts">
 import { provide, reactive } from "vue";
 import CountLoader from "./CountLoader.vue";
@@ -20018,7 +19464,7 @@ function applyLoadedCount(count: number) {
 
 `CountLoader.vue`
 
-```vue
+```vue annotate="add:3,5,8,9,10,11,12,13,14,15,16,17,18"
 <script setup lang="ts">
 import { loadCount } from "./api";
 import { ref, watch } from "vue";
@@ -20048,8 +19494,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/race_conditions/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-lifecycle-outside-setup"></span>
 
 ### `vize:croquis/cf/lifecycle-outside-setup`
 
@@ -20102,7 +19546,7 @@ The entry calls `installTitle()` before mounting an app, so `onMounted` is regis
 
 `main.ts`
 
-```ts
+```ts annotate="remove:1,2,3,4,5,6"
 import { createApp } from 'vue';
 import App from './App.vue';
 import { installTitle } from './install-title';
@@ -20113,7 +19557,7 @@ createApp(App).mount('#app');
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 
 </script>
@@ -20132,7 +19576,7 @@ Calling the same helper synchronously from App’s setup attaches the lifecycle 
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { installTitle } from './install-title';
 installTitle();
@@ -20149,8 +19593,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-lifecycle-without-cleanup"></span>
 
 ### `vize:croquis/cf/lifecycle-without-cleanup`
 
@@ -20190,7 +19632,7 @@ Mounting registers a window resize listener, but unmounting never removes the sa
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 import { onMounted } from "vue";
 const resize = () => {};
@@ -20207,7 +19649,7 @@ onMounted(() => { window.addEventListener("resize", resize); });
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,5"
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
 const resize = () => {};
@@ -20224,8 +19666,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/setup_context.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-missing-required-prop"></span>
 
 ### `vize:croquis/cf/missing-required-prop`
 
@@ -20265,7 +19705,7 @@ The parent renders `<Child />` without the child's required `title: string` prop
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -20289,7 +19729,7 @@ const props = defineProps<{ title: string }>();
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -20312,8 +19752,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/props_validation.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-missing-suspense"></span>
 
 ### `vize:croquis/cf/missing-suspense`
 
@@ -20369,7 +19807,7 @@ const message = await Promise.resolve('Ready');
 
 `App.vue`
 
-```vue
+```vue annotate="remove:6"
 <script setup lang="ts">
 import AsyncCard from './AsyncCard.vue';
 </script>
@@ -20388,7 +19826,7 @@ App wraps the async child in `Suspense` and supplies a loading fallback until th
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,7"
 <script setup lang="ts">
 import { Suspense } from 'vue';
 import AsyncCard from './AsyncCard.vue';
@@ -20405,8 +19843,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-module-scope-reactive"></span>
 
 ### `vize:croquis/cf/module-scope-reactive`
 
@@ -20478,7 +19914,7 @@ The module initializes `count` once, and both Counter instances receive the same
 
 `counter.ts`
 
-```ts
+```ts annotate="remove:2,3"
 import { ref } from 'vue';
 const count = ref(0);
 export function createCounter() { return { count }; }
@@ -20493,7 +19929,7 @@ Creating the ref inside `createCounter` gives each synchronous setup call a sepa
 
 `counter.ts`
 
-```ts
+```ts annotate="add:2,3,4,5"
 import { ref } from 'vue';
 export function createCounter() {
   const count = ref(0);
@@ -20507,8 +19943,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-multi-root-attrs"></span>
 
 ### `vize:croquis/cf/multi-root-attrs`
 
@@ -20557,7 +19991,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:1"
 <template><main>Content</main><aside>Help</aside></template>
 ```
 
@@ -20578,7 +20012,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:1"
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
@@ -20589,8 +20023,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/fallthrough.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-mutated-after-escape"></span>
 
 ### `vize:croquis/cf/mutated-after-escape`
 
@@ -20661,7 +20093,7 @@ The archive retains the same object passed to `publish`. The owner then changes 
 
 `profile.ts`
 
-```ts
+```ts annotate="remove:5"
 import { reactive } from 'vue';
 import { publish } from './archive';
 export function publishProfile(): void {
@@ -20680,7 +20112,7 @@ Publishing a plain copy separates the archived Ada record from later edits of th
 
 `profile.ts`
 
-```ts
+```ts annotate="add:5"
 import { reactive } from 'vue';
 import { publish } from './archive';
 export function publishProfile(): void {
@@ -20696,8 +20128,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-non-reactive-provide"></span>
 
 ### `vize:croquis/cf/non-reactive-provide`
 
@@ -20757,7 +20187,7 @@ export const ThemeKey = Symbol("theme");
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="remove:2,6"
 <script setup lang="ts">
 import { provide } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -20797,7 +20227,7 @@ export const ThemeKey = Symbol("theme");
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="add:2,6"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -20830,8 +20260,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/cross_file_reactivity/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-non-unique-id"></span>
 
 ### `vize:croquis/cf/non-unique-id`
 
@@ -20885,7 +20313,7 @@ Every `v-for` iteration renders the same literal `result-title` ID; the loop's k
 
 `ResultsList.vue`
 
-```vue
+```vue annotate="remove:6"
 <script setup lang="ts">
 const results = [{ id: "first", title: "First result" }, { id: "second", title: "Second result" }];
 </script>
@@ -20904,7 +20332,7 @@ The heading ID includes the result's stable ID, producing a distinct document id
 
 `ResultsList.vue`
 
-```vue
+```vue annotate="add:6"
 <script setup lang="ts">
 const results = [{ id: "first", title: "First result" }, { id: "second", title: "Second result" }];
 </script>
@@ -20922,8 +20350,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/element_id.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-object-identity-comparison"></span>
 
 ### `vize:croquis/cf/object-identity-comparison`
 
@@ -20979,7 +20405,7 @@ export function makeUser() {
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { makeUser } from './user';
 const { raw, proxy } = makeUser();
@@ -21000,7 +20426,7 @@ Comparing the stable record `id` answers the intended question without depending
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import { makeUser } from './user';
 const { raw, proxy } = makeUser();
@@ -21018,8 +20444,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-pinia-getter"></span>
 
 ### `vize:croquis/cf/pinia-getter`
 
@@ -21076,7 +20500,7 @@ export const useCounterStore = defineStore('counter', {
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { useCounterStore } from './counter-store';
 const store = useCounterStore();
@@ -21097,7 +20521,7 @@ const doubled = store.doubled;
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,5"
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { useCounterStore } from './counter-store';
@@ -21116,8 +20540,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-prop-type-mismatch"></span>
 
 ### `vize:croquis/cf/prop-type-mismatch`
 
@@ -21157,7 +20579,7 @@ The parent passes the numeric expression `42` to the resolved child's `title: st
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -21181,7 +20603,7 @@ The literal `title="Hello"` supplies a string matching the child's declaration.
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -21204,8 +20626,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/props_validation.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-provide-inject-type"></span>
 
 ### `vize:croquis/cf/provide-inject-type`
 
@@ -21272,7 +20692,7 @@ provide("title", "Hello" as string);
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 import { inject } from "vue";
 const title = inject<number>("title");
@@ -21299,7 +20719,7 @@ provide("title", "Hello" as string);
 
 `Child.vue`
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 import { inject } from "vue";
 const title = inject<string>("title");
@@ -21314,8 +20734,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/analysis/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-provide-without-symbol"></span>
 
 ### `vize:croquis/cf/provide-without-symbol`
 
@@ -21369,7 +20787,7 @@ Both components use the string `"theme"`; unrelated features can accidentally re
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="remove:5,6"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -21385,7 +20803,7 @@ provide("theme", theme);
 
 `ThemeLabel.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import { inject } from "vue";
 
@@ -21401,7 +20819,7 @@ Export one typed `ThemeKey` symbol and import that same value at both provide an
 
 `ThemeProvider.vue`
 
-```vue
+```vue annotate="add:4,6,7"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -21418,7 +20836,7 @@ provide(ThemeKey, theme);
 
 `ThemeLabel.vue`
 
-```vue
+```vue annotate="add:3,5"
 <script setup lang="ts">
 import { inject } from "vue";
 import { ThemeKey } from "./keys/theme";
@@ -21429,7 +20847,7 @@ const theme = inject(ThemeKey);
 
 `keys/theme.ts`
 
-```ts
+```ts annotate="add:1,2,3,4,5,6,7"
 import type { InjectionKey, Ref } from "vue";
 
 export interface Theme {
@@ -21446,8 +20864,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/keys.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-reactive-export"></span>
 
 ### `vize:croquis/cf/reactive-export`
 
@@ -21492,7 +20908,7 @@ The module exports one initialized reactive object, so every importer receives t
 
 `state.ts`
 
-```ts
+```ts annotate="remove:2"
 import { reactive } from 'vue';
 export const state = reactive({ count: 0 });
 
@@ -21500,7 +20916,7 @@ export const state = reactive({ count: 0 });
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 import { state } from './state';
 </script>
@@ -21519,7 +20935,7 @@ The module exports a factory, and App invokes it inside setup. Each instance obt
 
 `state.ts`
 
-```ts
+```ts annotate="add:2"
 import { reactive } from 'vue';
 export function createState() { return reactive({ count: 0 }); }
 
@@ -21527,7 +20943,7 @@ export function createState() { return reactive({ count: 0 }); }
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 import { createState } from './state';
 const state = createState();
@@ -21544,8 +20960,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-reactivity-outside-setup"></span>
 
 ### `vize:croquis/cf/reactivity-outside-setup`
 
@@ -21617,7 +21031,7 @@ Both reactive APIs run while the module loads. The two Counter instances therefo
 
 `use-counter.ts`
 
-```ts
+```ts annotate="remove:2,3,4"
 import { computed, ref } from 'vue';
 const count = ref(0);
 const doubled = computed(() => count.value * 2);
@@ -21633,7 +21047,7 @@ export function useCounter() { return { count, doubled }; }
 
 `use-counter.ts`
 
-```ts
+```ts annotate="add:2,3,4,5,6"
 import { computed, ref } from 'vue';
 export function useCounter() {
   const count = ref(0);
@@ -21648,8 +21062,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-reassignment-breaks-reactivity"></span>
 
 ### `vize:croquis/cf/reassignment-breaks-reactivity`
 
@@ -21718,7 +21130,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="remove:5,6,7"
 <script setup lang="ts">
 import { toRef } from "vue";
 
@@ -21752,7 +21164,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="add:5"
 <script setup lang="ts">
 import { toRef } from "vue";
 
@@ -21768,8 +21180,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-reference-escapes-scope"></span>
 
 ### `vize:croquis/cf/reference-escapes-scope`
 
@@ -21824,7 +21234,7 @@ The process-level cache retains the component’s live count ref. It can keep th
 
 `App.vue`
 
-```vue
+```vue annotate="remove:5"
 <script setup lang="ts">
 import { ref } from 'vue';
 import { remember } from './saved';
@@ -21846,7 +21256,7 @@ The cache receives the current plain number, so it keeps a snapshot without reta
 
 `App.vue`
 
-```vue
+```vue annotate="add:5"
 <script setup lang="ts">
 import { ref } from 'vue';
 import { remember } from './saved';
@@ -21865,8 +21275,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-setup-context-violation"></span>
 
 ### `vize:croquis/cf/setup-context-violation`
 
@@ -21906,7 +21314,7 @@ createApp(Root).mount("#app");
 
 `App.vue`
 
-```vue
+```vue annotate="remove:1,4,6"
 <script lang="ts">
 import { ref } from "vue";
 const count = ref(0);
@@ -21923,7 +21331,7 @@ Move the binding into script setup, where each component instance owns its count
 
 `App.vue`
 
-```vue
+```vue annotate="add:1,5"
 <script setup lang="ts">
 import { ref } from "vue";
 const count = ref(0);
@@ -21938,8 +21346,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/setup_context.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-shallow-deep-access"></span>
 
 ### `vize:croquis/cf/shallow-deep-access`
 
@@ -21996,7 +21402,7 @@ const profile = makeProfile();
 
 `profile.ts`
 
-```ts
+```ts annotate="remove:1,2"
 import { shallowReactive } from 'vue';
 export function makeProfile() { return shallowReactive({ user: { name: 'Ada' } }); }
 
@@ -22010,7 +21416,7 @@ Deep `reactive` wraps the nested user object, so the same name assignment can tr
 
 `profile.ts`
 
-```ts
+```ts annotate="add:1,2"
 import { reactive } from 'vue';
 export function makeProfile() { return reactive({ user: { name: 'Ada' } }); }
 
@@ -22021,8 +21427,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-spread-breaks-reactivity"></span>
 
 ### `vize:croquis/cf/spread-breaks-reactivity`
 
@@ -22091,7 +21495,7 @@ const user = reactive({ name: "Ada", role: "admin" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 const props = defineProps<{ user: { name: string; role: string } }>();
 const copiedUser = { ...props.user };
@@ -22121,7 +21525,7 @@ const user = reactive({ name: "Ada", role: "admin" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="add:2,3,5"
 <script setup lang="ts">
 import { toRef } from "vue";
 
@@ -22137,8 +21541,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-suspense-no-fallback"></span>
 
 ### `vize:croquis/cf/suspense-no-fallback`
 
@@ -22196,7 +21598,7 @@ The Suspense boundary has an async child but no fallback content, leaving no loa
 
 `App.vue`
 
-```vue
+```vue annotate="remove:7"
 <script setup lang="ts">
 import { Suspense } from 'vue';
 import AsyncCard from './AsyncCard.vue';
@@ -22216,7 +21618,7 @@ The `#fallback` slot supplies an explicit loading paragraph until the async chil
 
 `App.vue`
 
-```vue
+```vue annotate="add:7"
 <script setup lang="ts">
 import { Suspense } from 'vue';
 import AsyncCard from './AsyncCard.vue';
@@ -22233,8 +21635,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-template-ref-timing"></span>
 
 ### `vize:croquis/cf/template-ref-timing`
 
@@ -22284,7 +21684,7 @@ Setup reads the template ref before mounting, when its value is still null. The 
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2,5"
 <script setup lang="ts">
 import { ref } from 'vue';
 import { focusInput } from './focus-input';
@@ -22306,7 +21706,7 @@ focusInput(input.value);
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,5"
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { focusInput } from './focus-input';
@@ -22325,8 +21725,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-toraw-mutation"></span>
 
 ### `vize:croquis/cf/toraw-mutation`
 
@@ -22383,7 +21781,7 @@ const profile = makeProfile();
 
 `profile.ts`
 
-```ts
+```ts annotate="remove:1,4,5"
 import { reactive, toRaw } from 'vue';
 export function makeProfile() { return reactive({ name: 'Ada' }); }
 export function rename(profile: { name: string }): void {
@@ -22401,7 +21799,7 @@ Writing `profile.name` through the passed reactive proxy preserves the same rena
 
 `profile.ts`
 
-```ts
+```ts annotate="add:1,4"
 import { reactive } from 'vue';
 export function makeProfile() { return reactive({ name: 'Ada' }); }
 export function rename(profile: { name: string }): void {
@@ -22415,8 +21813,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-uncaught-error"></span>
 
 ### `vize:croquis/cf/uncaught-error`
 
@@ -22496,7 +21892,7 @@ The parent registers `onErrorCaptured` around that child. Returning `false` stop
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,4"
 <script setup lang="ts">
 import { onErrorCaptured } from "vue";
 import Child from "./Child.vue";
@@ -22521,8 +21917,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/boundary.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-undeclared-emit"></span>
 
 ### `vize:croquis/cf/undeclared-emit`
 
@@ -22571,7 +21965,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const emit = defineEmits<{ cancel: [] }>();
 emit("save");
@@ -22596,7 +21990,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 const emit = defineEmits<{ save: [] }>();
 emit("save");
@@ -22611,8 +22005,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/emit.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-undeclared-prop"></span>
 
 ### `vize:croquis/cf/undeclared-prop`
 
@@ -22652,7 +22044,7 @@ The parent passes `typo` even though the resolved child declares only `title`. T
 
 `App.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -22676,7 +22068,7 @@ Remove the unintended `typo` binding and retain the declared `title` prop.
 
 `App.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -22699,8 +22091,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/props_validation.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-undefined-slot"></span>
 
 ### `vize:croquis/cf/undefined-slot`
 
@@ -22756,7 +22146,7 @@ App supplies a `footer` slot, but Card declares and renders only `header`. The s
 
 `App.vue`
 
-```vue
+```vue annotate="remove:6"
 <script setup lang="ts">
 import Card from './Card.vue';
 </script>
@@ -22775,7 +22165,7 @@ App supplies `header`, matching both the child’s typed slot declaration and it
 
 `App.vue`
 
-```vue
+```vue annotate="add:6"
 <script setup lang="ts">
 import Card from './Card.vue';
 </script>
@@ -22791,8 +22181,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-unhandled-event"></span>
 
 ### `vize:croquis/cf/unhandled-event`
 
@@ -22841,7 +22229,7 @@ import Wrapper from "./Wrapper.vue";
 
 `Wrapper.vue`
 
-```vue
+```vue annotate="remove:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -22875,7 +22263,7 @@ import Wrapper from "./Wrapper.vue";
 
 `Wrapper.vue`
 
-```vue
+```vue annotate="add:4"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -22899,8 +22287,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/event_bubbling.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-unmatched-inject"></span>
 
 ### `vize:croquis/cf/unmatched-inject`
 
@@ -23007,7 +22393,7 @@ export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 
 `App.vue`
 
-```vue
+```vue annotate="add:2,4,5,6,7"
 <script setup lang="ts">
 import { provide, ref } from "vue";
 import ThemeLabel from "./ThemeLabel.vue";
@@ -23040,8 +22426,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/analysis/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-unmatched-listener"></span>
 
 ### `vize:croquis/cf/unmatched-listener`
 
@@ -23090,7 +22474,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 const emit = defineEmits<{ cancel: [] }>();
 </script>
@@ -23114,7 +22498,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:2,3"
 <script setup lang="ts">
 const emit = defineEmits<{ save: [] }>();
 emit("save");
@@ -23129,8 +22513,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/emit.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-unregistered-component"></span>
 
 ### `vize:croquis/cf/unregistered-component`
 
@@ -23188,7 +22570,7 @@ Import `Child` in the parent's script setup so the template resolves the compone
 
 `App.vue`
 
-```vue
+```vue annotate="add:1,2,3"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -23208,8 +22590,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/component_resolution.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-unresolved-import"></span>
 
 ### `vize:croquis/cf/unresolved-import`
 
@@ -23249,7 +22629,7 @@ The parent imports `./Missing.vue`, but the project contains `Child.vue` rather 
 
 `App.vue`
 
-```vue
+```vue annotate="remove:2"
 <script setup lang="ts">
 import Child from "./Missing.vue";
 </script>
@@ -23270,7 +22650,7 @@ Point the import at the existing `./Child.vue` file, retaining the same template
 
 `App.vue`
 
-```vue
+```vue annotate="add:2"
 <script setup lang="ts">
 import Child from "./Child.vue";
 </script>
@@ -23290,8 +22670,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/component_resolution.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-unused-attrs"></span>
 
 ### `vize:croquis/cf/unused-attrs`
 
@@ -23340,7 +22718,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="remove:1"
 <template><main>Content</main><aside>Help</aside></template>
 ```
 
@@ -23361,7 +22739,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:1"
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
@@ -23372,8 +22750,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/fallthrough.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-unused-emit"></span>
 
 ### `vize:croquis/cf/unused-emit`
 
@@ -23446,7 +22822,7 @@ import Child from "./Child.vue";
 
 `Child.vue`
 
-```vue
+```vue annotate="add:3"
 <script setup lang="ts">
 const emit = defineEmits<{ save: [] }>();
 emit("save");
@@ -23461,8 +22837,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/emit.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-unused-provide"></span>
 
 ### `vize:croquis/cf/unused-provide`
 
@@ -23541,7 +22915,7 @@ provide(ThemeKey, theme);
 
 `Dashboard.vue`
 
-```vue
+```vue annotate="remove:2"
 <template>
   <h1>Dashboard</h1>
 </template>
@@ -23572,7 +22946,7 @@ provide(ThemeKey, theme);
 
 `Dashboard.vue`
 
-```vue
+```vue annotate="add:1,2,3,4,6"
 <script setup lang="ts">
 import ThemeLabel from "./ThemeLabel.vue";
 </script>
@@ -23584,7 +22958,7 @@ import ThemeLabel from "./ThemeLabel.vue";
 
 `ThemeLabel.vue`
 
-```vue
+```vue annotate="add:1,2,3,4,5,6"
 <script setup lang="ts">
 import { inject } from "vue";
 import { ThemeKey } from "./keys/theme";
@@ -23600,8 +22974,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/provide_inject/analysis.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-value-extraction-breaks-reactivity"></span>
 
 ### `vize:croquis/cf/value-extraction-breaks-reactivity`
 
@@ -23670,7 +23042,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="remove:3"
 <script setup lang="ts">
 const { item } = defineProps<{ item: { name: string } }>();
 const itemSnapshot = item;
@@ -23700,7 +23072,7 @@ const user = reactive({ name: "Ada" });
 
 `UserSummary.vue`
 
-```vue
+```vue annotate="add:2,3,5"
 <script setup lang="ts">
 import { computed } from "vue";
 
@@ -23716,8 +23088,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/reactivity/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-watch-can-be-computed"></span>
 
 ### `vize:croquis/cf/watch-can-be-computed`
 
@@ -23776,7 +23146,7 @@ The watcher performs no external effect; it only keeps a second writable ref syn
 
 `use-double.ts`
 
-```ts
+```ts annotate="remove:1,4,5"
 import { ref, watch } from 'vue';
 export function useDouble() {
   const count = ref(0);
@@ -23795,7 +23165,7 @@ A computed getter expresses the same derivation directly and removes the manual 
 
 `use-double.ts`
 
-```ts
+```ts annotate="add:1,4"
 import { computed, ref } from 'vue';
 export function useDouble() {
   const count = ref(0);
@@ -23810,8 +23180,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Public explanation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/en.txt)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-watcheffect-async"></span>
 
 ### `vize:croquis/cf/watcheffect-async`
 
@@ -23890,7 +23258,7 @@ const query = ref("");
 
 `SearchResults.vue`
 
-```vue
+```vue annotate="remove:3,8,9,10"
 <script setup lang="ts">
 import { load, type Result } from "./api";
 import { ref, watchEffect } from "vue";
@@ -23927,7 +23295,7 @@ const query = ref("");
 
 `SearchResults.vue`
 
-```vue
+```vue annotate="add:3,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22"
 <script setup lang="ts">
 import { load, type Result } from "./api";
 import { ref, watch } from "vue";
@@ -23960,8 +23328,6 @@ The Good files demonstrate the change described above; other diagnostics can sti
 [Producer](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_croquis_cf/src/rules/race_conditions/diagnostics.rs)
 
 [Cross-file index](cross-file.md)
-
-<span id="vize-croquis-cf-watcher-outside-setup"></span>
 
 ### `vize:croquis/cf/watcher-outside-setup`
 
@@ -24033,7 +23399,7 @@ The watcher is created at module load, outside either Observer’s setup, and bo
 
 `use-observer.ts`
 
-```ts
+```ts annotate="remove:2,3,4,5"
 import { ref, watch } from 'vue';
 const count = ref(0);
 const observed = ref(0);
@@ -24050,7 +23416,7 @@ Each synchronous setup call creates its own refs and watcher inside `useObserver
 
 `use-observer.ts`
 
-```ts
+```ts annotate="add:2,3,4,5,6,7"
 import { ref, watch } from 'vue';
 export function useObserver() {
   const count = ref(0);
