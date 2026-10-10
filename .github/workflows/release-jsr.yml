@@ -1,0 +1,82 @@
+name: Release JSR
+on:
+  workflow_call:
+    inputs:
+      version:
+        { description: Exact published npm release version or tag, required: true, type: string }
+      source_sha:
+        { description: Frozen source for the normal release, required: true, type: string }
+  workflow_dispatch:
+    inputs:
+      version:
+        { description: Exact published npm release version or tag, required: true, type: string }
+permissions: { contents: read }
+concurrency:
+  group: release-jsr-${{ inputs.version }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions: { contents: read, id-token: write }
+    steps:
+      - name: Require maintainer bootstrap and reviewed dispatch
+        env:
+          JSR_ENABLED: ${{ vars.VIZE_JSR_ENABLED }}
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_REF: ${{ github.ref }}
+          FROM_RELEASE: ${{ inputs.source_sha != '' }}
+        run: |
+          test "$JSR_ENABLED" = true || { echo "::error::Create @vizejs/vize on JSR, link this repository, and enable VIZE_JSR_ENABLED first."; exit 1; }
+          if [ "$EVENT_NAME" = workflow_dispatch ] && [ "$FROM_RELEASE" != true ]; then test "$DISPATCH_REF" = refs/heads/main; fi
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
+        with: { deno-version: "2.9.5" }
+      - name: Generate the matching public npm release facade
+        env: { JSR_VERSION: "${{ inputs.version }}" }
+        run: node tools/support/release/jsr/prepare.mjs "$RUNNER_TEMP/jsr-package" "$JSR_VERSION"
+      - name: Validate JSR source, exports and public npm dependencies
+        working-directory: ${{ runner.temp }}/jsr-package
+        run: deno publish --dry-run --config jsr.json
+      - name: Publish through repository-linked JSR OIDC
+        working-directory: ${{ runner.temp }}/jsr-package
+        run: deno publish --config jsr.json
+  consumer:
+    needs: publish
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, node: "22" }
+          - { os: ubuntu-24.04, node: "24" }
+          - { os: macos-15, node: "24" }
+          - { os: windows-2025, node: "24" }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.source_sha || github.sha }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "${{ matrix.node }}", package-manager-cache: false }
+      - name: Install and exercise the exact published JSR package
+        env:
+          JSR_VERSION: ${{ inputs.version }}
+          JSR_EVIDENCE: ${{ runner.temp }}/jsr-consumer
+        shell: bash
+        run: node tools/support/release/jsr/consumer.mjs "$JSR_VERSION" "$JSR_EVIDENCE"
+      - name: Retain published metadata and actual consumer observations
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: jsr-consumer-${{ matrix.os }}-node${{ matrix.node }}
+          path: |
+            ${{ runner.temp }}/jsr-consumer/registry-metadata.json
+            ${{ runner.temp }}/jsr-consumer/consumer-result.json
+            ${{ runner.temp }}/jsr-consumer/consumer-*/package.json
+            ${{ runner.temp }}/jsr-consumer/consumer-*/package-lock.json
+            ${{ runner.temp }}/jsr-consumer/consumer-*/runtime-result.json
+          if-no-files-found: error
+          retention-days: 30

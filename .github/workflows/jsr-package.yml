@@ -1,0 +1,31 @@
+name: JSR package checks
+on:
+  pull_request:
+    paths:
+      - "jsr/**"
+      - "tools/support/release/jsr/**"
+      - "tests/tooling/release/jsr-package.test.mjs"
+      - ".github/workflows/*jsr*.yml"
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: jsr-package-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  package:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
+        with: { deno-version: "2.9.5" }
+      - name: Validate version and staging boundaries
+        run: node --test tests/tooling/release/jsr-package.test.mjs
+      - name: Generate exact-version JSR entry points
+        run: node tools/support/release/jsr/prepare.mjs "$RUNNER_TEMP/jsr-package"
+      - name: Validate actual JSR publication graph and types
+        working-directory: ${{ runner.temp }}/jsr-package
+        run: deno publish --dry-run --config jsr.json

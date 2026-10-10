@@ -637,6 +637,15 @@ jobs:
         with: { name: release-package-vite-plugin-vize, path: npm/builder/vite }
       - name: Publish @vizejs/vite-plugin
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/vite --provenance
+  release-jsr:
+    name: Release and verify JSR distribution
+    if: ${{ vars.VIZE_JSR_ENABLED == 'true' }}
+    needs: [release-npm-cli, release-npm-native, release-npm-vite-plugin, release-preflight]
+    permissions: { contents: read, id-token: write }
+    uses: ./.github/workflows/release-jsr.yml
+    with:
+      version: ${{ inputs.tag_name }}
+      source_sha: ${{ inputs.expected_sha }}
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-24.04
