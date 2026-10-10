@@ -1,20 +1,25 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { baselinePartitions } from "./n8n-baseline-partitions.mjs";
+import { baselinePartitions, seedOriginalSources } from "./n8n-baseline-partitions.mjs";
 import { runBaselineProcesses } from "./n8n-baseline-processes.mjs";
 import { joinBaselinePartitions } from "./n8n-baseline-join.mjs";
 import { sha256 } from "./n8n-replay-inputs.mjs";
 
 export async function runBaselineWorkers({ packageDir, output, custody, inventory, environment }) {
   assert.equal(sha256(fs.readFileSync(custody.binary.path)), custody.binary.sha256);
+  const seeded = seedOriginalSources(inventory, custody.sources);
+  fs.writeFileSync(
+    path.join(output, "baseline-source-store.json"),
+    JSON.stringify(seeded, null, 2) + "\n",
+  );
   const jobs = baselinePartitions(inventory.files.length).map((partition) => {
     const directory = path.join(output, `baseline-worker-${partition.index}`);
     fs.mkdirSync(directory);
     const calls = path.join(directory, "native-calls.jsonl");
     const configuration = path.join(directory, "custody.json");
-    // The unchanged exclusive hash store safely retains source bytes shared
-    // by duplicate corpus text. Every child keeps its own complete call ledger.
+    // Input backing files are complete before any worker starts. Only the last
+    // worker creates additional cache-control source hashes; ledgers are private.
     fs.writeFileSync(configuration, JSON.stringify({ ...custody, calls }, null, 2) + "\n");
     return {
       index: partition.index,

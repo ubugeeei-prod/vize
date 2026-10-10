@@ -20,6 +20,10 @@ licensed input or 51-rule configuration is changed.
 Both real process groups share one 900000ms deadline and one combined 32MiB
 stdout/stderr budget. Fatal exit, signal, spawn error, output overflow, or parent
 interruption ends the campaign, kills its active groups, and waits for close.
+The parent saves and verifies complete licensed hash backing before either child
+starts, avoiding a duplicate-text partial-write race. This is source custody,
+with its overhead included in the partitioned arm; native startup hashing is
+unchanged. Only the final worker creates cache-control backing additions.
 Complete per-worker byte streams, terminal fields, native arguments/results,
 source bytes and vectors remain separate. The join rejects missing, duplicate,
 reordered or substituted input/mode rows and preserves their entire payloads.

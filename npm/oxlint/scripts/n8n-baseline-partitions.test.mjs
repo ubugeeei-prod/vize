@@ -4,12 +4,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   baselineMode,
   baselineModes,
   baselinePartitions,
   admittedPartition,
   validatePartitionRows,
+  seedOriginalSources,
 } from "./n8n-baseline-partitions.mjs";
 import { runBaselineProcesses } from "./n8n-baseline-processes.mjs";
 
@@ -110,6 +112,37 @@ test("whole51-rule vectors survive validation and missing, duplicate, reordered 
     const candidate = structuredClone(original);
     mutate(candidate);
     assert.throws(() => validatePartitionRows(inventory, part, candidate, () => rules));
+  }
+});
+
+test("parent source backing is complete for duplicates and refuses source or stored-byte corruption", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-n8n-source-store-control-"));
+  try {
+    const fixture = path.join(root, "fixture"),
+      directory = path.join(root, "sources");
+    fs.mkdirSync(fixture);
+    const bytes = Buffer.from("日本語\r\n<template/>\r\n");
+    const sha256 = createHash("sha256").update(bytes).digest("hex");
+    fs.writeFileSync(path.join(fixture, "a.vue"), bytes);
+    fs.writeFileSync(path.join(fixture, "b.vue"), bytes);
+    const original = {
+      fixture,
+      files: [
+        { file: "a.vue", sha256 },
+        { file: "b.vue", sha256 },
+      ],
+    };
+    assert.deepEqual(seedOriginalSources(original, directory), { files: 2, uniqueSources: 1 });
+    const target = path.join(directory, sha256 + ".vue");
+    assert.deepEqual(fs.readFileSync(target), bytes);
+    assert.deepEqual(seedOriginalSources(original, directory), { files: 2, uniqueSources: 1 });
+    fs.writeFileSync(target, bytes.subarray(0, 1));
+    assert.throws(() => seedOriginalSources(original, directory));
+    fs.writeFileSync(target, bytes);
+    fs.writeFileSync(path.join(fixture, "b.vue"), "changed");
+    assert.throws(() => seedOriginalSources(original, directory));
+  } finally {
+    fs.rmSync(root, { recursive: true });
   }
 });
 

@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { createHash } from "node:crypto";
 
 export const baselineModes = [
   "frozenPerRule",
@@ -67,4 +70,22 @@ export function validatePartitionRows(inventory, partition, rows, rulesFor) {
     }
   }
   return totals;
+}
+
+// Fully finish each original backing file in the parent before either child.
+// Exclusive create alone would allow a sibling to read a partially written file.
+export function seedOriginalSources(inventory, directory) {
+  fs.mkdirSync(directory, { recursive: true });
+  const unique = new Set();
+  for (const entry of inventory.files) {
+    const bytes = fs.readFileSync(path.join(inventory.fixture, entry.file));
+    const hash = createHash("sha256").update(bytes).digest("hex");
+    assert.equal(hash, entry.sha256, "complete licensed source matches the original inventory");
+    const target = path.join(directory, hash + ".vue");
+    if (fs.existsSync(target))
+      assert.deepEqual(fs.readFileSync(target), bytes, "original backing bytes remain exact");
+    else fs.writeFileSync(target, bytes, { flag: "wx" });
+    unique.add(hash);
+  }
+  return { files: inventory.files.length, uniqueSources: unique.size };
 }
