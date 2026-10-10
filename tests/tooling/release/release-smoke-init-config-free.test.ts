@@ -8,6 +8,7 @@ import {
 } from "../../../tools/support/compat/npm/smoke-release-init-shapes.mjs";
 import { PACKAGE_MANAGERS } from "../../../tools/support/compat/npm/smoke-release-init-managers.mjs";
 import { readRepoFile } from "../support/github-workflows.ts";
+import { expectedInitOutput } from "../../../tools/support/compat/npm/smoke-release-init-project.mjs";
 
 const CHANGED_FIELDS = new Set([
   "features",
@@ -84,4 +85,46 @@ test("the genuine packed driver selects the named successor and checks both init
   assert.ok(source.includes('name.startsWith("vize.config.")'));
   assert.ok(source.includes('"a second init run changed the project"'));
   assert.ok(source.includes("shape.check.brokenDiagnostics"));
+});
+
+test("the delivered Yarn cell retains its whole archive and declares three current stdout packets", () => {
+  const historical = JSON.parse(
+    readRepoFile("tests/tooling/fixtures/release-smoke-init-yarn-checkjs.json"),
+  );
+  const current = JSON.parse(
+    readRepoFile("tests/tooling/fixtures/release-smoke-init-yarn-checkjs-config-free.json"),
+  );
+  const shape = CONFIG_FREE_PROJECT_SHAPES["vite-vue-js-checkjs"];
+  const manager = PACKAGE_MANAGERS.yarn;
+  for (const [key, value] of Object.entries(historical)) {
+    if (key !== "expected") assert.deepEqual(current[key], value, key);
+  }
+  assert.deepEqual(Object.keys(current), Object.keys(historical));
+  assert.deepEqual(Object.keys(current.expected), Object.keys(historical.expected));
+  for (const [key, value] of Object.entries(historical.expected)) {
+    if (!["files", "dryStdout", "applyStdout", "rerunStdout"].includes(key))
+      assert.deepEqual(current.expected[key], value, key);
+  }
+  assert.deepEqual(FRESH_INIT_MATRIX, [
+    ...historical.originalSevenCells,
+    historical.proposedEighthCell,
+  ]);
+  assert.deepEqual(
+    { ...shape.files(current.peers), ...manager.projectFiles },
+    current.authoredFiles,
+  );
+  const { "vize.config.ts": archivedConfig, ...retainedFiles } = historical.expected.files;
+  assert.equal(typeof archivedConfig, "string");
+  assert.deepEqual(current.expected.files, retainedFiles);
+  assert.deepEqual(shape.expectedFiles, current.expected.files);
+  for (const mode of ["dry", "apply", "rerun"])
+    assert.equal(
+      expectedInitOutput(shape, current.projectRootToken, manager, mode),
+      current.expected[`${mode}Stdout`],
+    );
+  assert.deepEqual(shape.check.broken, current.expected.broken.files);
+  assert.deepEqual(shape.check.brokenDiagnostics, current.expected.broken.diagnosticFiles);
+  assert.deepEqual(current.expected.clean, historical.expected.clean);
+  assert.deepEqual(current.expected.broken, historical.expected.broken);
+  assert.deepEqual(current.expected.repair, historical.expected.repair);
 });

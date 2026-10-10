@@ -113,3 +113,12 @@ adds only the config-free initializer contract to the broad set; unresolved
 dynamic source reads remain broad. Actions must validate the generated formatter
 inventory against the current source addresses; updating those addresses does
 not change a provider, consumer, symbol or import count.
+
+The actual #8516 delivery adds the existing Yarn JavaScript/checkJs cell and
+strict completed-child outcomes. Preserve its whole authored input, manager
+arguments, diagnostic triples and null-signal exit-zero/one controls. The
+separate current Yarn packet changes only three complete initializer stdout
+plans and the omitted dedicated config file, retaining the original archive.
+The current release audit is exactly 40/31: all original 37 contracts, the two
+genuine delivered broad contracts, and the named config-free broad contract.
+Packed execution across all eight manager cells remains an Actions obligation.
