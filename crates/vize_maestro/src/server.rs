@@ -17,6 +17,7 @@ mod capabilities;
 mod client_capabilities;
 mod code_actions;
 mod diagnostic_publishing;
+mod document_changes;
 mod document_structure;
 mod format;
 mod handlers;
