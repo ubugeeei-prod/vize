@@ -34,8 +34,8 @@ export function generatePreviewModule(
   const artStyleIdLiteral = JSON.stringify(artStyleId);
   const legacyVue = isLegacyVueVersion(vueVersion);
   const vueImport = legacyVue
-    ? `import Vue, { reactive${globals ? ", ref as __museaCreateGlobalsRef" : ""} } from 'vue';`
-    : `import { createApp, reactive, h${globals ? ", ref as __museaCreateGlobalsRef" : ""} } from 'vue';`;
+    ? `import Vue, { reactive, shallowRef${globals ? ", ref as __museaCreateGlobalsRef" : ""} } from 'vue';`
+    : `import { createApp, reactive, shallowRef, h${globals ? ", ref as __museaCreateGlobalsRef" : ""} } from 'vue';`;
   const destroyCurrentApp = legacyVue ? "currentApp.$destroy();" : "currentApp.unmount();";
   const mountInitialApp = legacyVue
     ? "const app = new Vue({ render: (h) => h(VariantComponent) });"
@@ -57,7 +57,8 @@ const container = document.getElementById('app');
 ${MUSEA_ADDONS_INIT_CODE}${generatePreviewGlobals(toolbar)}
 
 let currentApp = null;
-const propsOverride = reactive({});
+// Replace raw JSON snapshots so every literal prop name stays an own key.
+const propsOverride = shallowRef({});
 const slotsOverride = reactive({ default: '' });
 
 function ensureArtStyles(styles) {
@@ -105,11 +106,7 @@ function renderError(title, error) {
 ${mountHelper}
 
 window.__museaSetProps = (props) => {
-  // Clear old keys
-  for (const key of Object.keys(propsOverride)) {
-    delete propsOverride[key];
-  }
-  Object.assign(propsOverride, props);
+  propsOverride.value = { ...props };
 };
 
 window.__museaSetSlots = (slots) => {
@@ -143,10 +140,7 @@ async function mount() {
     // Override set-props to remount with raw component + props
     const TargetComponent = RawComponent || VariantComponent;
     window.__museaSetProps = (props) => {
-      for (const key of Object.keys(propsOverride)) {
-        delete propsOverride[key];
-      }
-      Object.assign(propsOverride, props);
+      propsOverride.value = { ...props };
       remountWithProps(TargetComponent);
     };
     window.__museaSetSlots = (slots) => {
@@ -204,7 +198,7 @@ function vue2RemountAppSnippet(): string {
         slotFns[name] = slot;
         if (name === 'default') children.push(...slot());
       }
-      return h(Component, { props: { ...propsOverride }, scopedSlots: slotFns }, children);
+      return h(Component, { props: { ...propsOverride.value }, scopedSlots: slotFns }, children);
     }
   });`;
 }
@@ -217,7 +211,7 @@ function vue3RemountAppSnippet(): string {
         for (const [name, content] of Object.entries(slotsOverride)) {
           if (content) slotFns[name] = () => h('span', String(content));
         }
-        return h(Component, { ...propsOverride }, slotFns);
+        return h(Component, { ...propsOverride.value }, slotFns);
       };
     }
   });`;
@@ -280,7 +274,7 @@ ${vueImport}
 import * as artModule from ${artModuleIdLiteral};
 
 const container = document.getElementById('app');
-const propsOverride = ${propsJson};
+const propsOverride = JSON.parse(${JSON.stringify(propsJson)});
 
 ${MUSEA_ADDONS_INIT_CODE}${generatePreviewGlobals(toolbar)}
 

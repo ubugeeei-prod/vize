@@ -10,7 +10,7 @@ void test("generatePreviewModule emits Vue 2 preview runtime when requested", ()
   const code = generatePreviewModule(art, "Default", "default", [], null, 2);
 
   assert.doesNotMatch(code, /\bcreateApp\b/);
-  assert.match(code, /import Vue, \{ reactive \} from 'vue';/);
+  assert.match(code, /import Vue, \{ reactive, shallowRef \} from 'vue';/);
   assert.match(code, /new Vue\(\{ render: \(h\) => h\(VariantComponent\) \}\)/);
   assert.match(code, /currentApp\.\$destroy\(\);/);
 });
