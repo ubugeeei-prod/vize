@@ -35,8 +35,8 @@ impl ProjectIgnoreSet {
                 let relative = if let Ok(relative) = path.strip_prefix(&base) {
                     relative
                 } else {
-                    base = path.ancestors().last().unwrap().to_path_buf();
-                    path.strip_prefix(&base).unwrap()
+                    base = path.ancestors().last().unwrap_or(path).to_path_buf();
+                    path.strip_prefix(&base).unwrap_or(path)
                 };
                 normalize_path(relative)
             } else {
@@ -46,7 +46,8 @@ impl ProjectIgnoreSet {
             if groups.last().is_none_or(|(existing, _)| *existing != base) {
                 groups.push((base, Vec::new()));
             }
-            let patterns = &mut groups.last_mut().unwrap().1;
+            let group_index = groups.len() - 1;
+            let patterns = &mut groups[group_index].1;
             patterns.push(crate::cstr!("{sign}{pattern}"));
             // Preserve the existing nested dependency ignore expansion without
             // changing authored negation or escaped metacharacters.
