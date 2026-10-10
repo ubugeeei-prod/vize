@@ -21,6 +21,7 @@ export interface RepositoryGuardOptions {
   guardFails?: boolean;
   packageManifests?: Record<string, object>;
   guestLocks?: Record<string, string>;
+  env?: NodeJS.ProcessEnv;
 }
 
 export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
@@ -38,9 +39,15 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
     .find((command) => fs.existsSync(command));
   fs.mkdirSync(binDir, { recursive: true });
   fs.mkdirSync(path.join(tempDir, "npm"));
-  if (options.guestLocks) {
+  if (options.env?.VIZE_RELEASE_REGISTRY_REFRESH) {
+    const updater = "tools/support/release/moon-registry-update.mjs";
+    fs.mkdirSync(path.dirname(path.join(tempDir, updater)), { recursive: true });
+    fs.copyFileSync(path.join(repoRoot, updater), path.join(tempDir, updater));
+  } else if (options.guestLocks) {
     fs.symlinkSync(path.join(repoRoot, "tools"), path.join(tempDir, "tools"), "dir");
-    for (const [relativePath, contents] of Object.entries(options.guestLocks)) {
+  }
+  if (options.guestLocks) {
+    for (const [relativePath, contents] of Object.entries(options.guestLocks ?? {})) {
       const lockPath = path.join(tempDir, relativePath);
       fs.mkdirSync(path.dirname(lockPath), { recursive: true });
       fs.writeFileSync(lockPath, contents);
@@ -133,6 +140,7 @@ export function runRepositoryGuardFixture(options: RepositoryGuardOptions) {
   const result = runMoonScript("release", ["patch", "-y", "--prepare-only"], {
     cwd: tempDir,
     env: {
+      ...options.env,
       PATH: `${binDir}${path.delimiter}${process.env.PATH ?? ""}`,
       GIT_LOG: gitLogPath,
       TEST_BRANCH: options.branch,
