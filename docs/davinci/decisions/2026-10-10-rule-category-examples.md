@@ -169,3 +169,16 @@ foreign category and English subgroup route. Complete copy, font, link, source,
 device, palette and pixel assertions and bounded progress logs remain. This
 resolves the actual verifier conflict without weakening either owner's oracle;
 fresh exact-head full qualification remains mandatory.
+
+## Generated command panels in category source checks
+
+Exact source `6b69bf4e8fd416021494dc419a23127cfa2635c5` passed Check and
+native validation, but full Docs run
+[38051448524](https://github.com/ubugeeei-prod/vize/actions/runs/38051448524)
+failed on `script/component-options-name-casing` in the type-and-script page.
+The category caller counted five generated package-manager variants as authored
+source. Apply the existing original-command marker distinction in this caller
+as well as the Vue and overview callers. Preserve every complete authored code
+block, packet, fragment, native annotation, copy, font, palette, device and pixel
+check. Earlier successes remain source-specific; obtain fresh exact-head full
+Docs and source qualification before protected delivery or deployed acceptance.
