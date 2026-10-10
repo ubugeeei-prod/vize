@@ -18,7 +18,14 @@ export function generateGalleryGlobalsScript(globals: MuseaGalleryGlobals): stri
   }
   if (globals.staticPreviews !== undefined) {
     parts.push("window.__MUSEA_STATIC__=true;");
-    parts.push(`window.__MUSEA_STATIC_PREVIEWS__=${serializeScriptValue(globals.staticPreviews)};`);
+    const previews = globals.staticPreviews;
+    const hasProtoKey =
+      Object.hasOwn(previews, "__proto__") ||
+      Object.values(previews).some((urls) => Object.hasOwn(urls, "__proto__"));
+    const source = hasProtoKey
+      ? `JSON.parse(${serializeScriptValue(JSON.stringify(previews))})`
+      : serializeScriptValue(previews);
+    parts.push(`window.__MUSEA_STATIC_PREVIEWS__=${source};`);
   }
   if (globals.themeConfig) {
     parts.push(`window.__MUSEA_THEME_CONFIG__=${serializeScriptValue(globals.themeConfig)};`);

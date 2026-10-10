@@ -62,6 +62,13 @@ The shared security serializer and generic report generators remain unchanged.
 
 Fresh native qualification, coordinated stack composition, protected merge and
 publication are unfinished. The hosted browser VRT service remains separate.
-The source-only observation that `ComponentView.variantSectionIds` also starts
-with a plain record remains a pending navigation follow-up; its runtime outcome
-is not established by the initial retained VRT documents.
+The genuine before static `gallery.html` also retains authored `__proto__`
+section `id` and its actual navigation `aria-controls` as `[object Object]`.
+The other literal names have their correct IDs. The
+[paired navigation decision](https://github.com/ubugeeei-prod/vize/issues/8489#issuecomment-6096318021)
+includes the one-line own-key correction in `ComponentView.variantSectionIds`
+within this same defect. Its grandfathered line count does not grow. Fresh
+static/dev laws require exact authored names, expected distinct section IDs and
+matching controls, with real selection of the literal default in the static UI.
+The additional diagnostic head `f8f5adc9188ade0f8d07630025b1ea59ebe82f60` retains
+original affected runtime bytes and adds dev section/control observations.

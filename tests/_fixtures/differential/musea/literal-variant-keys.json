@@ -25,5 +25,21 @@
     "Every authored variant retains its own static preview URL through manifest and browser embedding",
     "Every physical static preview renders the corresponding native authored button",
     "Real dev API captures distinct PNG ownership and zero-diff repeats; actual VRT UI retains literal groups without prototype inheritance"
-  ]
+  ],
+  "before": {
+    "head": "7854bab7739ab93303de2a5210d03b95bc0323f9",
+    "run": 38042404142,
+    "artifact": "musea-native-inline-7854bab7739ab93303de2a5210d03b95bc0323f9",
+    "static": [
+      "All five direct physical native previews and ordinary/custom gallery controls render",
+      "Own __proto__ URL absent in physical static JSON and actual browser globals",
+      "Proto iframe renders gallery index instead of authored button",
+      "Actual __proto__ section id and nav aria-controls are [object Object]"
+    ],
+    "dev": [
+      "Ordinary2new -> repeat2passed0diff, correct own groups",
+      "Literal3new -> repeat3passed0diff, distinct physical PNGs but empty groups",
+      "Two actual source console TypeErrors: groups[key].push is not a function; pageerror[]"
+    ]
+  }
 }

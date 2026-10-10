@@ -113,6 +113,44 @@ void test(
         );
       }
       assert.equal(galleryFailure, undefined);
+      for (const item of observations as Array<{
+        phase?: string;
+        previews?: Awaited<ReturnType<typeof previews>>;
+      }>) {
+        const title =
+          item.phase === "controls-gallery"
+            ? "Controls"
+            : item.phase === "keys-gallery"
+              ? "Keys"
+              : undefined;
+        if (!title) continue;
+        assert.ok(item.previews);
+        assert.deepEqual(
+          item.previews.map((frame) => frame.sectionName),
+          variants[title].map(([name]) => name),
+        );
+        assert.deepEqual(
+          item.previews.map((frame) => frame.sectionId),
+          sectionIds[title],
+        );
+        assert.deepEqual(
+          item.previews.map((frame) => frame.ariaControls),
+          sectionIds[title],
+        );
+      }
+      await page.locator(".variant-toc-item").last().click();
+      await page.locator(".variant-toc-item").first().click();
+      await page.locator('.variant-toc-item[aria-current="true"]').first().waitFor();
+      assert.equal(
+        await page.locator(".variant-toc-item").first().getAttribute("aria-current"),
+        "true",
+      );
+      observations.push({
+        phase: "literal-nav-selected",
+        name: await page.locator(".variant-toc-name").first().textContent(),
+        sectionId: await page.locator(".variant-section").first().getAttribute("id"),
+        ariaControls: await page.locator(".variant-toc-item").first().getAttribute("aria-controls"),
+      });
       assert.ok(controlGlobals.every((item) => item.prototypeUnchanged && !item.hasOwnToString));
       const keysGlobals = controlGlobals.find((item) => item.artPath.endsWith("/Keys.art.vue"));
       assert.equal(keysGlobals?.protoOwn, true);
