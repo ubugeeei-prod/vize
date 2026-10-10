@@ -147,3 +147,17 @@ receipts supply historical evidence only; exact fresh Check, full Docs,
 protected Stack merge and deployed reader verification are still required.
 Bounded route start/completion logs make long complete-page capture progress
 visible without changing source packets, screenshots or acceptance gates.
+
+## Current-main catalogue composition
+
+The prior top's complete Docs run passed 180 rendered desktop/mobile routes,
+1,419 Open Graph frames, and all 104 Vue packets in five locales. Its official
+source manifest and whole-page receipts are retained as historical evidence.
+Actual main subsequently delivered two deprecated-rule preset memberships and
+typed `valid-v-slot` options. The resulting three translated all-rule conflicts
+replace old metadata tables with the complete same-page indexes, whose full
+metadata remains in the generated packets. Keep the entire original indexes,
+regenerate packets from the actual source metadata, and preserve every complete
+code block. No preset, option, example, support boundary, assertion, or pixel
+capture is removed. Fresh exact-head source and full Docs, protected delivery,
+and the actual deployed reader flow remain required.
