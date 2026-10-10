@@ -167,7 +167,12 @@ function runFreshProjectCell(context, cell) {
 
   writeFiles(projectRoot, shape.check.broken);
   const broken = checkReport(projectRoot);
-  assert.notEqual(broken.status, 0, "the broken project passed vize:check");
+  assert.equal(
+    broken.status,
+    1,
+    `broken project did not return diagnostic exit one\n${broken.rendered}`,
+  );
+  assert.equal(broken.signal, null, "the broken project was terminated by a signal");
   assert.deepEqual(reportedDiagnostics(broken.report, projectRoot), shape.check.brokenDiagnostics);
   assert.equal(
     broken.report.errorCount,
