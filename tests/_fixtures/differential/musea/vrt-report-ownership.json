@@ -1,0 +1,18 @@
+{
+  "issue": 8479,
+  "sources": [
+    {
+      "path": "tests/tooling/fixtures/musea/snapshot-collision/left/Button.art.vue",
+      "sha256": "ecbe89ffd4276aff872c00a258622f12cba608315f35f464392bfd33b40c088b"
+    },
+    {
+      "path": "tests/tooling/fixtures/musea/snapshot-collision/right/Button.art.vue",
+      "sha256": "5b5a1bfe6f0eea822548d2e4671fbff615842287b9ab52197c6080774d7bdd5a"
+    }
+  ],
+  "legacyReports": [
+    "vrt-Button-report.json",
+    "vrt-Button-report.html"
+  ],
+  "law": "Running the second Art preserves the first complete physical JSON/HTML report and both native PNG owners; repeated comparisons retain separate report paths."
+}
