@@ -73,3 +73,16 @@ Proposed paired issue comment:
 > current page in all five locales, using native diff annotations without changing
 > copied source. Remaining categories, cross-file views and deployed verification
 > stay tracked here; third-party release delivery remains first.
+
+## Source Actions corpus correction
+
+The first source Check at `f10f75f` exposed a stale natural v-on corpus
+inventory in tooling shard 3/4 (job 114105009567). Generated Vue reader pages
+add 60 real rows to `docs--content.tsv`, taking that inventory from 63 to 123
+occurrence rows (excluding its header). Regenerate it with the unchanged corpus producer; retain all event, option
+and storage maxima at two. No scanner, example bytes or product behavior changes.
+
+The existing corpus producer's `--check` and all five v-on storage tests pass
+locally. Fresh exact-head Check and Docs Actions are required after rebasing the
+complete dependent stack onto the signed v0.439.0 metadata merge. Earlier source
+runs remain evidence of the original failure, not acceptance of the new head.
