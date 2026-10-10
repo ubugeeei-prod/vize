@@ -95,3 +95,38 @@ void test("Musea resolves only the exact Vite config registration", async () => 
     }
   }
 });
+
+void test("Musea-only Vite setup projects shared settings without re-importing Vite config", async () => {
+  const previousConfigFile = process.env.VIZE_CONFIG_FILE;
+  Reflect.deleteProperty(process.env, "VIZE_CONFIG_FILE");
+  const config = resolvedConfig("/workspace/gallery");
+  const shared = { musea: { include: ["stories/**/*.art.vue"], basePath: "/gallery" } };
+  let loaderCalls = 0;
+  let projectionCalls = 0;
+  try {
+    assert.equal(
+      await resolveMuseaSharedConfig(
+        config,
+        async (root, options) => {
+          loaderCalls += 1;
+          assert.equal(root, config.root);
+          assert.equal(options?.viteConfig, false);
+          assert.equal(options?.configFile, undefined);
+          return null;
+        },
+        async (exported, env) => {
+          projectionCalls += 1;
+          assert.equal(exported, config);
+          assert.deepEqual(env, { mode: "production", command: "build", isSsrBuild: false });
+          return shared;
+        },
+      ),
+      shared,
+    );
+    assert.equal(loaderCalls, 1);
+    assert.equal(projectionCalls, 1);
+  } finally {
+    if (previousConfigFile === undefined) Reflect.deleteProperty(process.env, "VIZE_CONFIG_FILE");
+    else process.env.VIZE_CONFIG_FILE = previousConfigFile;
+  }
+});

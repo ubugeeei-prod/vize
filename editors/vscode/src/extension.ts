@@ -35,6 +35,7 @@ import { registerTypeScriptContentMapperDiscovery } from "./content-mapper-disco
 import { createClientOptions } from "./client-options.js";
 import { isJsxDocument } from "./jsx-routing.js";
 import { downloadFile } from "./release-download.js";
+import { WorkspaceLspConfigDiscovery } from "./workspace-config.js";
 
 const execFileAsync = promisify(execFile);
 let client: LanguageClient | undefined;
@@ -46,6 +47,7 @@ let currentStatus: VizeStatus = "disabled";
 let currentStatusDetail = "";
 let configurationSyncTimer: ReturnType<typeof setTimeout> | undefined;
 let suppressConfigurationSync = false;
+const workspaceLspConfig = new WorkspaceLspConfigDiscovery(WORKSPACE_LSP_CONFIG_FILES);
 
 type ServerCandidateSource =
   | "configured"
@@ -116,6 +118,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
   );
 
   context.subscriptions.push(
+    ...workspaceLspConfig.watch((reason) => scheduleClientSync(context, reason)),
+  );
+
+  context.subscriptions.push(
     commands.registerCommand("vize.enableRecommendedProfile", async () => {
       await applyRecommendedConfiguration();
       await syncClientToConfiguration(context, "recommended profile applied");
@@ -172,13 +178,14 @@ function scheduleClientSync(context: ExtensionContext, reason: string): void {
 }
 
 async function syncClientToConfiguration(context: ExtensionContext, reason: string): Promise<void> {
+  await workspaceLspConfig.refresh();
   let config = workspace.getConfiguration("vize");
-  let enabled = shouldStartFromConfiguration(config, hasWorkspaceLspConfig());
+  let enabled = shouldStartFromConfiguration(config, workspaceLspConfig.hasConfig);
 
   if (!enabled) {
     await maybeOfferInitialSetup(context, config);
     config = workspace.getConfiguration("vize");
-    enabled = shouldStartFromConfiguration(config, hasWorkspaceLspConfig());
+    enabled = shouldStartFromConfiguration(config, workspaceLspConfig.hasConfig);
 
     if (!enabled) {
       if (client) {
@@ -195,8 +202,8 @@ async function syncClientToConfiguration(context: ExtensionContext, reason: stri
     }
 
     outputChannel.appendLine("Recommended Vize setup was applied. Starting language server...");
-  } else if (!config.get<boolean>("enable", false)) {
-    outputChannel.appendLine("Starting Vize language server from workspace vize.config.");
+  } else if (workspaceLspConfig.hasConfig) {
+    outputChannel.appendLine("Starting Vize language server with workspace configuration.");
   }
 
   if (client) {
@@ -255,7 +262,7 @@ async function maybeOfferCapabilitySetup(
   context: ExtensionContext,
   config: ReturnType<typeof workspace.getConfiguration>,
 ): Promise<void> {
-  if (hasAnyEnabledCapability(config) || hasWorkspaceLspConfig()) {
+  if (hasAnyEnabledCapability(config) || workspaceLspConfig.hasConfig) {
     return;
   }
 
@@ -348,7 +355,7 @@ async function selectServerExecutable(context: ExtensionContext): Promise<void> 
 async function showStatus(context: ExtensionContext): Promise<void> {
   const config = workspace.getConfiguration("vize");
   const initializationOptions = getInitializationOptions(config, {
-    hasWorkspaceLspConfig: hasWorkspaceLspConfig(),
+    hasWorkspaceLspConfig: workspaceLspConfig.hasConfig,
     logDefaultProfile: false,
   });
   const items = createStatusItems(config);
@@ -368,7 +375,7 @@ async function showStatus(context: ExtensionContext): Promise<void> {
 function createStatusItems(
   config: ReturnType<typeof workspace.getConfiguration>,
 ): VizeStatusQuickPickItem[] {
-  const enabled = config.get<boolean>("enable", false);
+  const enabled = shouldStartFromConfiguration(config, workspaceLspConfig.hasConfig);
   const items: VizeStatusQuickPickItem[] = [
     {
       action: "recommended",
@@ -463,19 +470,6 @@ function getConfigurationTarget(): ConfigurationTarget {
     : ConfigurationTarget.Global;
 }
 
-function hasWorkspaceLspConfig(): boolean {
-  const workspaceFolders = workspace.workspaceFolders;
-  if (!workspaceFolders) {
-    return false;
-  }
-
-  return workspaceFolders.some((folder) =>
-    WORKSPACE_LSP_CONFIG_FILES.some((filename) =>
-      fs.existsSync(path.join(folder.uri.fsPath, filename)),
-    ),
-  );
-}
-
 async function showServerNotFoundMessage(context: ExtensionContext): Promise<void> {
   const selection = await window.showErrorMessage(
     "Vize: Could not find the language server. Install a matching GitHub release binary or set vize.serverPath.",
@@ -512,16 +506,17 @@ async function startClient(
   config: ReturnType<typeof workspace.getConfiguration>,
 ): Promise<void> {
   const initializationOptions = getInitializationOptions(config, {
-    hasWorkspaceLspConfig: hasWorkspaceLspConfig(),
+    hasWorkspaceLspConfig: workspaceLspConfig.hasConfig,
     log: (message) => outputChannel.appendLine(message),
   });
   activeInitializationOptions = initializationOptions;
-  updateStatusBar("starting", `Starting with ${describeCapabilities(initializationOptions)}`);
+  const capabilityDescription = workspaceLspConfig.describeCapabilities(initializationOptions);
+  updateStatusBar("starting", `Starting with ${capabilityDescription}`);
   if (Object.keys(initializationOptions).length === 0) {
-    outputChannel.appendLine(
-      "Vize server is enabled with no opt-in features. Enable lint, typecheck, editor assistance, and ecosystem helpers to activate diagnostics and navigation.",
-    );
-    void maybeOfferCapabilitySetup(context, config);
+    outputChannel.appendLine(`Starting Vize with ${capabilityDescription}.`);
+    if (!workspaceLspConfig.hasConfig) {
+      void maybeOfferCapabilitySetup(context, config);
+    }
   }
   const serverPath = await findServerPath(context, config);
   if (!serverPath) {
@@ -544,7 +539,7 @@ async function startClient(
     await nextClient.start();
     client = nextClient;
     outputChannel.appendLine("Vize language server started successfully");
-    updateStatusBar("ready", `Ready with ${describeCapabilities(initializationOptions)}`);
+    updateStatusBar("ready", `Ready with ${capabilityDescription}`);
   } catch (error) {
     outputChannel.appendLine(`Failed to start language server: ${String(error)}`);
     updateStatusBar("failed", "Failed to start language server");
@@ -683,12 +678,12 @@ function createStatusSummary(
   config: ReturnType<typeof workspace.getConfiguration>,
   initializationOptions: LspInitializationOptions,
 ): string {
-  const enabled = config.get<boolean>("enable", false) ? "enabled" : "disabled";
+  const enabled = shouldStartFromConfiguration(config, workspaceLspConfig.hasConfig);
   const server = selectedServerCandidate
     ? `${selectedServerCandidate.source} ${selectedServerCandidate.version ?? "unknown"}`
     : "server not resolved";
 
-  return `Vize is ${formatStatus(currentStatus)} (${enabled}). Features: ${describeCapabilities(initializationOptions)}. Server: ${server}.`;
+  return `Vize is ${formatStatus(currentStatus)} (${enabled ? "enabled" : "disabled"}). Features: ${workspaceLspConfig.describeCapabilities(initializationOptions)}. Server: ${server}.`;
 }
 
 function formatStatus(status: VizeStatus): string {

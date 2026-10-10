@@ -1,5 +1,7 @@
 //! `init`, `add`, `outdated`, and third-party namespaces.
 
+mod init;
+
 use std::fs;
 
 use vize_l0::String;
@@ -17,91 +19,6 @@ fn acme(dir: &std::path::Path) {
         "1.0.0",
         &[Item::new("button", &[("button/button.ts", BUTTON)], &[])],
     );
-}
-
-#[test]
-fn init_detects_the_layout_and_writes_the_lib_section() {
-    let project = Project::new();
-    fs::create_dir_all(project.path("src")).unwrap();
-    project.write(
-        "tsconfig.json",
-        r#"{ "compilerOptions": { "strict": true } }"#,
-    );
-
-    let preview = project.json(&[], &["init", "--dry-run"]);
-    assert_eq!(preview["action"], "create");
-    assert_eq!(preview["sourceDir"], "src");
-    assert_eq!(preview["lib"]["uiDir"], "src/components/vize");
-    assert!(
-        preview["hints"][0]
-            .as_str()
-            .unwrap()
-            .contains("allowImportingTsExtensions")
-    );
-    assert!(!project.path("vize.config.json").exists());
-
-    project.run(&["init", "--ui-dir", "src/ui"]).unwrap();
-    let config: serde_json::Value =
-        serde_json::from_str(&project.read("vize.config.json")).unwrap();
-    assert_eq!(config["lib"]["uiDir"], "src/ui");
-    assert_eq!(config["lib"]["composableDir"], "src/composables/vize");
-
-    let again = project.json(&[], &["init"]);
-    assert_eq!(again["action"], "unchanged");
-}
-
-#[test]
-fn init_appends_to_existing_json_config_and_defers_on_ts_config() {
-    let project = Project::new();
-    project.write(
-        "vize.config.json",
-        "{\n  \"formatter\": { \"semi\": false }\n}\n",
-    );
-    project.run(&["init"]).unwrap();
-    let text = project.read("vize.config.json");
-    assert!(
-        text.starts_with("{\n  \"formatter\": { \"semi\": false },\n  \"lib\": {"),
-        "{text}"
-    );
-
-    let ts = Project::new();
-    ts.write("vize.config.ts", "export default {};\n");
-    let report = ts.json(&[], &["init"]);
-    assert_eq!(report["action"], "manual");
-    assert!(
-        report["hints"][0]
-            .as_str()
-            .unwrap()
-            .contains("uiDir: \"src/components/vize\"")
-    );
-    assert_eq!(ts.read("vize.config.ts"), "export default {};\n");
-}
-
-#[cfg(unix)]
-#[test]
-fn init_rejects_symlinked_config_outside_project() {
-    use std::os::unix::fs::symlink;
-
-    let project = Project::new();
-    let outside = tempfile::tempdir().unwrap();
-    let target = outside.path().join("vize.config.json");
-    let original = "{ \"formatter\": { \"semi\": false } }\n";
-    fs::write(&target, original).unwrap();
-    symlink(&target, project.path("vize.config.json")).unwrap();
-
-    let error = project.run(&["init", "--force"]).unwrap_err();
-    assert!(error.message().contains("symbolic link"), "{error}");
-    assert_eq!(fs::read_to_string(target).unwrap(), original);
-}
-
-#[test]
-fn init_preserves_unparseable_json_config() {
-    let project = Project::new();
-    let invalid = "{ invalid json\n";
-    project.write("vize.config.json", invalid);
-
-    assert!(project.run(&["init"]).is_err());
-    assert_eq!(project.read("vize.config.json"), invalid);
 }
 
 #[test]

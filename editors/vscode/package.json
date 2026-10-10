@@ -147,7 +147,7 @@
         "vize.enable": {
           "type": "boolean",
           "default": true,
-          "description": "Enable the Vize language server."
+          "description": "Enable the Vize language server. Existing vite.config.* and tsconfig.json projects use workspace settings and recommended defaults without a separate Vize config. Set false to disable."
         },
         "vize.serverPath": {
           "type": "string",
@@ -253,7 +253,7 @@
         "vize.formatting.enable": {
           "type": "boolean",
           "default": false,
-          "description": "Enable Vize formatting: Format Document, Format Selection, and re-indenting the line as you type. Keep off when Prettier, Volar, or another formatter owns Vue formatting."
+          "description": "Enable Vize formatting: Format Document, Format Selection, and re-indenting the line as you type. Vite/TypeScript projects enable formatting by default unless project settings disable it; dedicated Vize configs retain their existing behavior. Set false when another formatter owns Vue formatting."
         },
         "vize.semanticTokens.enable": {
           "type": "boolean",

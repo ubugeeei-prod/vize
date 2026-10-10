@@ -6,6 +6,10 @@ on:
       - .github/workflows/nuxt2-module-build.yml
       - npm/framework/nuxt/**
       - npm/framework/nuxt-lint-config/**
+      - npm/cli/**
+      - npm/native/**
+      - crates/vize_carton/src/config/**
+      - davinci/vize_l0/src/config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.mjs
       - tools/support/compat/nuxt/nuxt2-lint-config.mjs
@@ -16,6 +20,10 @@ on:
       - .github/workflows/nuxt2-module-build.yml
       - npm/framework/nuxt/**
       - npm/framework/nuxt-lint-config/**
+      - npm/cli/**
+      - npm/native/**
+      - crates/vize_carton/src/config/**
+      - davinci/vize_l0/src/config/**
       - tools/support/compat/nuxt/fixtures/nuxt2-module-build/**
       - tools/support/compat/nuxt/nuxt2-module-build.mjs
       - tools/support/compat/nuxt/nuxt2-lint-config.mjs
@@ -47,6 +55,23 @@ jobs:
           run-install: false
       - name: Install workspace tooling
         run: vp install --frozen-lockfile --prefer-offline
+      - uses: ./.github/actions/setup-moonbit
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
+        with:
+          toolchain: "1.99.0"
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: nuxt2-config-source-native
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Build the source configuration normalizer
+        run: vp run --no-cache --filter './npm/native' build:debug
+      - name: Build the canonical Vize configuration loader
+        working-directory: npm/cli
+        run: vp pack
       - name: Build the candidate Nuxt lint preset
         working-directory: npm/framework/nuxt-lint-config
         run: vp pack

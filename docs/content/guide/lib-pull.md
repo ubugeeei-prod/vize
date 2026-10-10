@@ -106,10 +106,13 @@ vize lib init             # write it
 ```
 
 `init` detects the source directory (`src/`, or `app/` for Nuxt 4 projects) and TypeScript, then
-writes `lib.uiDir` / `lib.composableDir`. It creates `vize.config.json` when there is no config,
-appends a `lib` section to an existing `vize.config.json` without touching the rest of the file,
-and prints a snippet for `vize.config.ts` / `.pkl` instead of editing code. An existing `lib`
-section is kept unless `--force` is passed. When `tsconfig.json` lacks
+writes `vize.lib.uiDir` / `vize.lib.composableDir` in a new `vite.config.mjs` when no
+configuration exists. An existing Vite configuration is preserved; `init` prints
+a `vize.lib` snippet when settings still need to be added. Existing dedicated
+configuration users retain the same behavior: `init` appends `lib` to
+`vize.config.json` and prints a snippet for code or Pkl configurations. An existing
+`lib` section is kept; `--force` can replace it in a dedicated JSON configuration.
+When `tsconfig.json` lacks
 `allowImportingTsExtensions`, `init` says so: pulled sources import siblings as `./x.ts`.
 
 ## Checking for updates: `outdated`

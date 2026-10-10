@@ -63,7 +63,7 @@ See [Musea Hosting](./musea-hosting.md) for the CLI wrapper, static deployment, 
 
 ## Shared Config
 
-`musea()` options override shared config. Put stable defaults in `vize.config.ts` when several tools need them, and keep preview settings in `vite.config.ts`.
+Use [`vite.config.*` shared `vize.musea` settings](./configuration-reference.md#musea-shared-configuration) for new projects; `musea()` options override shared settings. The following dedicated config remains supported and takes precedence in the same Vite project:
 
 ```ts
 // vize.config.ts

@@ -12,7 +12,7 @@
  *
  * Options:
  *   -u, --update     Update baseline snapshots
- *   -c, --config     Path to vite config (default: vite.config.ts)
+ *   -c, --config     Path to Vite config (default: Vite config discovery)
  *   -o, --output     Output directory for reports (default: .vize)
  *   -t, --threshold  Diff threshold percentage (default: 0.1)
  *   -w, --workers    Number of concurrent captures (default: 1)
@@ -29,7 +29,7 @@ import type { ArtFileInfo } from "../types/index.js";
 import { parseArtFile } from "./utils.js";
 import { scanArtFiles } from "../utils.js";
 import { runVrt, runApprove, runClean, runGenerate } from "./commands.js";
-import { loadMuseaFileSet, loadMuseaVrtOptions, loadMuseaPreviewBasePath } from "./config.js";
+import { loadMuseaConfiguration } from "./config.js";
 import { loadHostedGallery } from "./hosted.js";
 import type { MuseaVrtOptions } from "../types/index.js";
 
@@ -38,7 +38,8 @@ type Command = "run" | "approve" | "clean" | "generate";
 export interface CliOptions {
   command: Command;
   update: boolean;
-  config: string;
+  config?: string;
+  configDir?: string;
   output: string;
   threshold: number;
   thresholdProvided: boolean;
@@ -64,7 +65,6 @@ export function parseArgs(args: string[]): CliOptions {
   const options: CliOptions = {
     command: "run",
     update: false,
-    config: "vite.config.ts",
     output: ".vize",
     threshold: 0.1,
     thresholdProvided: false,
@@ -113,7 +113,7 @@ export function parseArgs(args: string[]): CliOptions {
         break;
       case "-c":
       case "--config":
-        options.config = args[++i] || "vite.config.ts";
+        options.config = args[++i] || undefined;
         break;
       case "-o":
       case "--output":
@@ -186,7 +186,7 @@ Commands:
 
 Options:
   -u, --update         Update baseline snapshots with current screenshots
-  -c, --config <path>  Path to vite config file (default: vite.config.ts)
+  -c, --config <path>  Path to Vite config file (default: Vite config discovery)
   -o, --output <dir>   Output directory for reports (default: .vize)
   -t, --threshold <n>  Diff threshold percentage (default: 0.1)
   -b, --base-url <url> Base URL for dev server (default: http://localhost:5173)
@@ -259,9 +259,13 @@ async function main(): Promise<void> {
     return;
   }
 
-  options.vrt = await loadMuseaVrtOptions(options.config, cwd);
-  options.previewBasePath =
-    options.vrt?.previewBasePath ?? (await loadMuseaPreviewBasePath(options.config, cwd));
+  const { fileSet, vrt, configDir, previewBasePath } = await loadMuseaConfiguration(
+    options.config,
+    cwd,
+  );
+  options.vrt = vrt;
+  options.configDir = configDir;
+  options.previewBasePath = vrt?.previewBasePath ?? previewBasePath;
   if (options.galleryUrl) {
     const hosted = await loadHostedGallery(options.galleryUrl);
     options.previewUrls = hosted.previewUrls;
@@ -271,7 +275,6 @@ async function main(): Promise<void> {
     else if (options.command === "clean") await runClean(options, hosted.arts);
     return;
   }
-  const fileSet = await loadMuseaFileSet(options.config, cwd);
   options.projectRoot = fileSet.projectRoot;
 
   // Scan for art files
