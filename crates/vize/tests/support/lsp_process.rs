@@ -314,14 +314,8 @@ impl LspProcess {
 impl Drop for LspProcess {
     fn drop(&mut self) {
         self.shutdown();
-        if let Some(passive) = self.passive.take()
-            && let Err(error) = passive.persist(self.terminal_evidence())
-        {
-            // Observation errors must not replace an original assertion panic.
-            let _ = writeln!(
-                std::io::stderr().lock(),
-                "passive LSP evidence could not be persisted: {error}"
-            );
+        if let Some(passive) = self.passive.take() {
+            passive.persist_reporting_error(self.terminal_evidence());
         }
     }
 }

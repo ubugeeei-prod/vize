@@ -6,7 +6,7 @@
     reason = "test-only passive custody uses standard files and JSON buffers"
 )]
 
-use std::{io, path::PathBuf, process::Command};
+use std::{io, io::Write, path::PathBuf, process::Command};
 
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
@@ -40,6 +40,16 @@ impl Passive {
                 "identityScope":"original spawned LSP PID and declared command; no executable-byte or backend-PID join",
                 "extraIdentityProbe":false
             }),
+        }
+    }
+
+    pub(super) fn persist_reporting_error(&self, terminal_evidence: Value) {
+        if let Err(error) = self.persist(terminal_evidence) {
+            // Observation errors must not replace an original assertion panic.
+            let _ = writeln!(
+                std::io::stderr().lock(),
+                "passive LSP evidence could not be persisted: {error}"
+            );
         }
     }
 

@@ -11,6 +11,10 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 #[path = "support/lsp_process/passive.rs"]
+#[allow(
+    dead_code,
+    reason = "the original LSP harness uses this shared helper's constructor and error reporter"
+)]
 mod passive;
 use passive::Passive;
 
