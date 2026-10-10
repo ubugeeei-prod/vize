@@ -56,6 +56,16 @@ this is retained as a failed observation. A fresh bound run must distinguish the
 launch issue from a native diagnostic regression without changing any input,
 expected packet, or notification predicate.
 
+Source inspection also found an actual bottom-layer default bug: the LSP facade
+used the strict CLI selection loader for an existing editor directory without
+configuration, marked the snapshot invalid, and returned before applying fresh
+defaults. Promote the already reviewed private editor entry point from the
+nested-context layer into the first configuration layer. Only existing editor
+directories permit absent configuration; malformed input, missing paths, and
+explicit CLI selection retain their original refusal. An additive whole snapshot
+and strict-CLI control covers that distinction at the owning layer. The bound
+source run must now verify the original complete diagnostic packets.
+
 The local observations distinguish capability/prop witnesses from release
 qualification. The original complete default-capability test still reproduces
 the intentional policy difference; the fresh successor and historical/explicit
