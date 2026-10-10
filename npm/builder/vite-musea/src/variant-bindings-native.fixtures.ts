@@ -11,7 +11,7 @@ import type { StaticGalleryPayload } from "./static-data.ts";
 
 export const bindingFixture = path.join(
   repository,
-  "tests/_fixtures/differential/musea/variant-binding-collision",
+  "tests/tooling/fixtures/musea/variant-binding-collision",
 );
 
 /** The original authored red and ordinary control use the actual source-native pipeline. */

@@ -12,6 +12,12 @@ module hashes are retained. The original public consumer's 2,061 files/symlinks
 remain unchanged before/after the build and browser controls. This macOS
 product diagnostic is separate from Linux release acceptance and source proof.
 
+The byte-exact public regression corpus lives in
+`tests/tooling/fixtures/musea/variant-binding-collision`, outside the compiler
+fixture sweep. Original logical compile filenames and public module/input/error
+bytes are preserved. Together with the parent relocation, the fixed compiler
+corpus retains its original 498-path vector, goldens, selectors and budgets.
+
 ## Decision
 
 Use one pure two-pass `variantComponentNames` plan. Preserve every unique

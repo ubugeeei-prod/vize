@@ -62,7 +62,7 @@ void test("the genuine public red and ordinary control retain their authenticate
   for (const [file, expected] of Object.entries(hashes)) {
     const bytes = await readFile(
       new URL(
-        `../../../../tests/_fixtures/differential/musea/variant-binding-collision/${file}`,
+        `../../../../tests/tooling/fixtures/musea/variant-binding-collision/${file}`,
         import.meta.url,
       ),
     );
