@@ -10,7 +10,7 @@ Comece com os arquivos existentes `vite.config.*` e `tsconfig.json`; consulte o 
 
 ## Arquivos de Configuração
 
-A configuração Vite é descoberta quando não há configuração específica no mesmo diretório do projeto mais próximo. A CLI também aceita `--config`; opções diretas do plugin e recursos explicitamente definidos no editor têm prioridade. Caminhos relativos partem do diretório da configuração. Use `vize.entries` e o projeto TypeScript do pacote para definir os escopos.
+A configuração Vite é descoberta quando não há configuração específica no mesmo diretório do projeto mais próximo. A CLI também aceita `--config`; opções diretas do plugin e recursos explicitamente definidos no editor têm prioridade. Caminhos de configurações específicas partem do diretório da configuração. Os caminhos `typeChecker` do Vite e os `basePath` dos escopos usam o `root` Vite selecionado; entradas explícitas da CLI mantêm o diretório de execução como base. Use `vize.entries` e o projeto TypeScript do pacote para definir os escopos.
 
 
 O pacote npm comandos e `@vizejs/vite-plugin` carregar esses arquivos da raiz do projeto nesta ordem

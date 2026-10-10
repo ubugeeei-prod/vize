@@ -10,7 +10,7 @@ title: 共享配置参考
 
 ## 配置文件
 
-最近项目的同目录不存在专用配置时，会发现并读取 Vite 配置。CLI 也支持 `--config`；直接传给插件的选项和编辑器中显式设置的功能具有更高优先级。相对路径以配置文件所在目录为基准。使用 `vize.entries` 和目标包的 TypeScript 项目来设置包的范围。
+最近项目的同目录不存在专用配置时，会发现并读取 Vite 配置。CLI 也支持 `--config`；直接传给插件的选项和编辑器中显式设置的功能具有更高优先级。专用配置中的相对路径以配置文件目录为基准。Vite 中的 `typeChecker` 路径和作用域 `basePath` 以选定的 Vite `root` 为基准；显式 CLI 输入仍以执行目录为基准。使用 `vize.entries` 和目标包的 TypeScript 项目来设置包的范围。
 
 
 npm 包命令和`@vizejs/vite-plugin`从项目根加载这些文件

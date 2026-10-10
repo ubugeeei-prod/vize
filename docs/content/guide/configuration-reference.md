@@ -10,7 +10,7 @@ Prefer existing `vite.config.*` and `tsconfig.json`; see [Configuration](./confi
 
 ## Config Files
 
-Vite config is discovered when no dedicated config exists in the same nearest project directory. The CLI also accepts an explicit `--config`; direct plugin options and explicit editor feature switches take precedence. Config-relative paths use the config directory. For package scopes, use `vize.entries` and the target package's TypeScript project.
+Vite config is discovered when no dedicated config exists in the same nearest project directory. The CLI also accepts an explicit `--config`; direct plugin options and explicit editor feature switches take precedence. Dedicated-config paths use the config directory. Vite-owned `typeChecker` paths and scoped `basePath` use the selected Vite `root`; explicit CLI inputs retain their invocation-directory base. For package scopes, use `vize.entries` and the target package's TypeScript project.
 
 The npm package commands and `@vizejs/vite-plugin` load these files from the project root in this priority order:
 

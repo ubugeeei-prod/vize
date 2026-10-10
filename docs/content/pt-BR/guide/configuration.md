@@ -81,7 +81,11 @@ vp install -D vize
 vp exec vize check
 ```
 
-A busca para no diretório que contém o `package.json`, `tsconfig.json` ou `jsconfig.json` mais próximo. Em um monorepo, execute os comandos no pacote de destino ou use `vize.entries`, e selecione explicitamente as pastas de trabalho do editor. A descoberta de configurações Vite aninhadas por documento e o suporte equivalente a `vite.root` na CLI independente ainda estão em desenvolvimento.
+A busca para no diretório que contém o `package.json`, `tsconfig.json` ou `jsconfig.json` mais próximo. Em um monorepo, execute os comandos no pacote de destino ou use `vize.entries`, e selecione explicitamente as pastas de trabalho do editor. A descoberta de configurações Vite aninhadas por documento ainda está em desenvolvimento.
+
+Com uma configuração Vite, `build`, `lint`, `fmt` e `check` sem argumento de entrada usam o `root` Vite selecionado. Um `root` relativo parte do diretório da configuração. Os caminhos `typeChecker` do Vite e os `basePath` dos escopos partem dessa raiz; configurações específicas mantêm sua base no diretório da configuração. Arquivos, globs e `--tsconfig` passados explicitamente à CLI continuam relativos ao diretório de execução.
+
+As exclusões globais compartilhadas retiram arquivos da busca da CLI e do lint do editor. Um arquivo excluído aberto no editor ainda recebe diagnósticos de sintaxe, tipos e navegação. A ordem e o significado dos padrões, incluindo a negação `!`, são preservados.
 
 ## Configuração específica opcional
 

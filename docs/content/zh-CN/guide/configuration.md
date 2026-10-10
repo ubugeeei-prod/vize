@@ -81,7 +81,11 @@ vp install -D vize
 vp exec vize check
 ```
 
-配置搜索会在最近的 `package.json`、`tsconfig.json` 或 `jsconfig.json` 所在目录停止。在 monorepo 中，请从目标包运行命令或使用 `vize.entries`，并显式选择编辑器的工作区文件夹。按文档自动发现嵌套 Vite 配置，以及独立 CLI 中与 `vite.root` 等效的支持，仍在开发中。
+配置搜索会在最近的 `package.json`、`tsconfig.json` 或 `jsconfig.json` 所在目录停止。在 monorepo 中，请从目标包运行命令或使用 `vize.entries`，并显式选择编辑器的工作区文件夹。按文档自动发现嵌套 Vite 配置仍在开发中。
+
+使用 Vite 配置时，不带输入参数的 `build`、`lint`、`fmt` 和 `check` 以选定的 Vite `root` 为目标。相对 `root` 从配置文件目录解析。Vite 中的 `typeChecker` 路径和作用域 `basePath` 以该 root 为基准；专用配置中的路径仍以配置文件目录为基准。显式传给 CLI 的文件、glob 和 `--tsconfig` 仍以执行命令的目录为基准。
+
+共享的全局忽略模式会将文件排除在 CLI 文件搜索和编辑器 lint 之外。被忽略的文件在编辑器中打开后，仍可获得语法、类型和导航诊断。模式的顺序和含义，包括 `!` 否定模式，都会保留。
 
 ## 可选的专用配置
 

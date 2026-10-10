@@ -81,7 +81,11 @@ vp install -D vize
 vp exec vize check
 ```
 
-La recherche s'arrête au répertoire contenant le plus proche `package.json`, `tsconfig.json` ou `jsconfig.json`. Dans un monorepo, lancez les commandes depuis le paquet ciblé ou utilisez `vize.entries`, et choisissez explicitement les dossiers de travail de l'éditeur. La découverte des configurations Vite imbriquées par document et la prise en charge équivalente de `vite.root` par la CLI autonome sont encore en cours.
+La recherche s'arrête au répertoire contenant le plus proche `package.json`, `tsconfig.json` ou `jsconfig.json`. Dans un monorepo, lancez les commandes depuis le paquet ciblé ou utilisez `vize.entries`, et choisissez explicitement les dossiers de travail de l'éditeur. La découverte des configurations Vite imbriquées par document est encore en cours.
+
+Avec une configuration Vite, `build`, `lint`, `fmt` et `check` sans argument d'entrée utilisent le `root` Vite sélectionné. Un `root` relatif part du répertoire de configuration. Les chemins `typeChecker` de Vite et les `basePath` des périmètres partent de cette racine ; les configurations dédiées conservent leur base dans le répertoire de configuration. Les fichiers, globs et `--tsconfig` explicitement passés à la CLI restent relatifs au répertoire d'exécution.
+
+Les exclusions globales partagées retirent les fichiers de la recherche CLI et du lint de l'éditeur. Un fichier exclu ouvert dans l'éditeur conserve les diagnostics de syntaxe, de types et de navigation. L'ordre et le sens des motifs, y compris la négation `!`, sont préservés.
 
 ## Configuration dédiée facultative
 

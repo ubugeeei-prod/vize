@@ -43,10 +43,16 @@ existing dedicated format for custom shared settings. Remove that notice only
 after an actual published source cut includes the product changes and its
 installed CLI/editor configuration evidence passes. No version is guessed.
 
-Automatic per-document nested Vite discovery and standalone `vite.root` parity
-remain unfinished at the original documentation base. Describe package-root
-invocation, scoped `vize.entries`, and explicit editor workspace folders; amend
-those bounds only after the later native Stack layers are actually qualified.
+This genuine documentation child now follows the project-root layer #8445.
+All five practical/reference routes distinguish Vite-owned root-relative
+paths, dedicated config-directory paths, and invocation-relative CLI inputs.
+Input-free commands use the selected Vite root, and ordered global ignores
+exclude CLI discovery/editor lint while open editor files retain type and
+navigation diagnostics. The original nine public CLI root/ignore laws passed
+on the parent before this prose was adopted; full source/protected delivery
+remains required. Automatic per-document nested Vite discovery is still
+unfinished: retain package-root invocation, scoped `vize.entries`, and explicit
+editor workspace folders until the later native layer actually qualifies.
 
 Five focused regressions retain complete source examples, all original native
 anchors, identical whole recipes in five locales, and actual rendered reading

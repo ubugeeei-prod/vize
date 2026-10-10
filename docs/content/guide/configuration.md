@@ -77,7 +77,11 @@ vp install -D vize
 vp exec vize check
 ```
 
-Discovery stops at the nearest `package.json`, `tsconfig.json`, or `jsconfig.json`. In a monorepo, run from the target package or use `vize.entries`, and select the editor's workspace folders explicitly. Automatic per-document nested Vite discovery and standalone `vite.root` parity are still being completed.
+Discovery stops at the nearest `package.json`, `tsconfig.json`, or `jsconfig.json`. In a monorepo, run from the target package or use `vize.entries`, and select the editor's workspace folders explicitly. Automatic per-document nested Vite discovery is still being completed.
+
+With Vite config, `build`, `lint`, `fmt`, and `check` without an input argument use the selected Vite `root`. A relative `root` resolves from the config directory. Vite-owned `typeChecker` paths and scoped `basePath` resolve from that root; dedicated-config paths retain their config-directory base. Explicit CLI file/glob arguments and `--tsconfig` remain relative to the directory where you run the command.
+
+Shared global ignores exclude files from CLI discovery and editor lint. An ignored file opened in the editor still receives parser, type and navigation diagnostics. Ordered ignore patterns, including `!` negation, retain their authored meaning.
 
 ## Optional dedicated configuration
 
