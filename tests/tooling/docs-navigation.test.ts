@@ -130,10 +130,24 @@ void test("the sidebar groups the pages the site actually publishes", () => {
   ]);
 
   const start = sitemap.navGroups.find((group) => group.key === "start")!;
-  assert.deepEqual(start.paths, ["/", "/getting-started", "/guide/configuration"]);
+  assert.deepEqual(start.paths, ["/", "/getting-started", "/philosophy", "/guide/configuration"]);
   assert.deepEqual(start.pathsByLocale, {
-    en: ["/", "/getting-started", "/guide/vite-plus", "/guide/migration", "/guide/configuration"],
-    ja: ["/", "/getting-started", "/guide/vite-plus", "/guide/migration", "/guide/configuration"],
+    en: [
+      "/",
+      "/getting-started",
+      "/philosophy",
+      "/guide/vite-plus",
+      "/guide/migration",
+      "/guide/configuration",
+    ],
+    ja: [
+      "/",
+      "/getting-started",
+      "/philosophy",
+      "/guide/vite-plus",
+      "/guide/migration",
+      "/guide/configuration",
+    ],
   });
   // Every common path remains mandatory in all five locales. Authored locale
   // overrides must retain those paths and publish every additional entry.
