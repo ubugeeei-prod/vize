@@ -159,3 +159,10 @@ remain in the built public assets; the missing second-pass receipt is a
 separate artifact-retention defect. The new existing-step assertions must
 reject that artifact layout and a fresh Actions artifact must contain both
 receipts after the path correction.
+
+The first DOM-extension source Check rejected Escape on a static section via
+the unchanged accessibility preset. Put the example-owned Escape handler on
+its actual native input and button controls. Exercise both controls' Escape
+delivery and real trigger-focus return; preserve the non-modal region, source
+alignment, and all earlier interaction laws. Retain failed Check 38033519431
+and require a fresh exact-head native gate, Docs build, and browser receipts.

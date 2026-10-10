@@ -96,6 +96,17 @@ export async function exerciseDomExample(page: Page, name: string): Promise<stri
     await expectOutput(page, "Outside dismissals: 1 · Dismissed by an outside click.");
     assert.equal(await region().count(), 0);
     await activate(page, "Open guide preferences");
+    await page.getByRole("button", { name: "Apply local preference" }).focus();
+    await page.keyboard.press("Escape");
+    await expectOutput(page, "Outside dismissals: 1 · Closed with Escape inside the preferences.");
+    assert.equal(await region().count(), 0);
+    assert.equal(
+      await page
+        .getByRole("button", { name: "Open guide preferences" })
+        .evaluate((element) => element === document.activeElement),
+      true,
+    );
+    await page.keyboard.press("Enter");
     await page.getByRole("textbox", { name: "Review note" }).focus();
     await page.keyboard.press("Escape");
     await expectOutput(page, "Outside dismissals: 1 · Closed with Escape inside the preferences.");
@@ -119,7 +130,7 @@ export async function exerciseDomExample(page: Page, name: string): Promise<stri
       "ignored trigger closes and reopens without counting an outside dismissal",
       "actual pointer drag beginning inside does not dismiss",
       "outside pointer click dismisses and increments only its own counter",
-      "Escape closes and restores actual trigger focus without an outside dismissal",
+      "Escape on both native controls closes and restores actual trigger focus without an outside dismissal",
       "recreated v-if target observes a native keyboard outside click",
     ];
   }

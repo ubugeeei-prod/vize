@@ -45,12 +45,15 @@ function closeWithEscape(): void {
       :id="`${preferencesId}-panel`"
       ref="panel"
       :aria-labelledby="`${preferencesId}-title`"
-      @keydown.esc="closeWithEscape"
     >
       <h2 :id="`${preferencesId}-title`">Guide preferences</h2>
       <label :for="`${preferencesId}-note`">Review note</label>
-      <input :id="`${preferencesId}-note`" v-model="note" />
-      <button type="button" @click="() => (message = `Local note: ${note}`)">
+      <input :id="`${preferencesId}-note`" v-model="note" @keydown.esc="closeWithEscape" />
+      <button
+        type="button"
+        @click="() => (message = `Local note: ${note}`)"
+        @keydown.esc="closeWithEscape"
+      >
         Apply local preference
       </button>
       <p>
