@@ -207,7 +207,7 @@ impl Linter {
     }
 
     fn run_template_rules<'a>(
-        &self,
+        &'a self,
         allocator: &'a Allocator,
         source: &'a str,
         filename: &'a str,
@@ -220,6 +220,7 @@ impl Linter {
         ctx.set_config_disabled_rules(self.disabled_rules.clone());
         ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
+        ctx.set_custom_elements(&self.custom_elements);
         ctx.set_dialect(env.dialect);
         ctx.art_script_analysis = env.art_script_analysis;
         if let Some(descriptor) = env.sfc_descriptor {
@@ -234,7 +235,6 @@ impl Linter {
         if has_analysis && super::native_type_aware::has_active_type_aware_rules(self) {
             ctx.set_analysis_excluded_rules(super::native_type_aware::TYPE_AWARE_RULES);
         }
-
         let rule_count = self.template_rule_count_for_source(
             source,
             env.sfc_descriptor

@@ -16,6 +16,7 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use vize_carton::i18n::Locale;
 use vize_l0::{FxHashMap, FxHashSet, String};
+use vize_relief::options::CustomElementMatcher;
 
 mod constructors;
 
@@ -68,6 +69,8 @@ pub struct Linter {
     pub(crate) severity_overrides: FxHashMap<String, Severity>,
     /// Help display level.
     pub(crate) help_level: HelpLevel,
+    /// The same declarative or static custom-element policy used by the compiler.
+    pub(crate) custom_elements: CustomElementMatcher,
     /// Built-in script rules enabled for this linter.
     pub(crate) script_rules: &'static [&'static str],
     /// Project-wide Vapor mode, when selected by the host.
@@ -101,6 +104,14 @@ pub struct Linter {
 }
 
 impl Linter {
+    /// Apply custom elements from an already-loaded compiler configuration.
+    /// This neither enables a rule nor evaluates project configuration.
+    #[inline]
+    pub fn with_custom_elements(mut self, matcher: CustomElementMatcher) -> Self {
+        self.custom_elements = matcher;
+        self
+    }
+
     /// Set the initial allocator capacity.
     #[inline]
     pub fn with_capacity(mut self, capacity: usize) -> Self {

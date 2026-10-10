@@ -1,8 +1,5 @@
-//! Lint context for rule execution.
-//!
-//! Uses arena allocation for high-performance memory management.
-//! The context tracks element traversal state, scope variables,
-//! disabled rule ranges, and collects diagnostics.
+//! Arena-backed lint context: traversal, scopes, suppression and diagnostics.
+//! Project policy and semantic facts belong to this lint pass.
 
 mod directives;
 mod eslint_directive;
@@ -73,6 +70,7 @@ pub struct LintContext<'a> {
     config_rule_severities: FxHashMap<String, Severity>,
     /// Optional semantic analysis from croquis.
     pub(crate) analysis: Option<&'a Croquis>,
+    custom_elements: Option<&'a vize_relief::options::CustomElementMatcher>,
     /// Original Art script facts, separate from each fragment's template facts.
     pub(crate) art_script_analysis: Option<&'a Croquis>,
     /// One lazy fact manager per drawn artifact for this lint pass.
@@ -138,6 +136,7 @@ impl<'a> LintContext<'a> {
             config_disabled_rules: FxHashSet::default(),
             config_rule_severities: FxHashMap::default(),
             analysis: None,
+            custom_elements: None,
             art_script_analysis: None,
             facts: None,
             sfc_descriptor: None,
@@ -185,6 +184,7 @@ impl<'a> LintContext<'a> {
             config_disabled_rules: FxHashSet::default(),
             config_rule_severities: FxHashMap::default(),
             analysis: Some(analysis),
+            custom_elements: None,
             art_script_analysis: None,
             facts: Some(vize_croquis::facts::CroquisFacts::new(analysis)),
             sfc_descriptor: None,
