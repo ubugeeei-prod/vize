@@ -49,9 +49,9 @@ void test(
     };
     assert.deepEqual(fixture.cases, ["/__musea__", "/gallery/vrt", "/gallery/vrt/"]);
     assert.deepEqual(fixture.titles, ["Left", "Right"]);
-    const entry = path.join(repository, "npm/builder/vite-musea/dist/index.js");
+    const entry = path.join(repository, "npm/builder/vite-musea/dist/index.mjs");
     const { musea } = (await import(pathToFileURL(entry).href)) as typeof import("./index.js");
-    const compilerEntry = path.join(repository, "npm/builder/vite/dist/index.js");
+    const compilerEntry = path.join(repository, "npm/builder/vite/dist/index.mjs");
     const { default: vize } = (await import(
       pathToFileURL(compilerEntry).href
     )) as typeof import("../../vite/src/index.ts");
@@ -168,6 +168,7 @@ void test(
           );
         });
         let failure: unknown;
+        const evidenceErrors: unknown[] = [];
         try {
           await page.goto(url);
           await page.locator(".art-item").filter({ hasText: "Left" }).waitFor();
@@ -302,7 +303,8 @@ void test(
                     responses,
                     failure: failure
                       ? {
-                          error: String(failure),
+                          error:
+                            failure instanceof Error ? failure.message : JSON.stringify(failure),
                           stack: failure instanceof Error ? failure.stack : undefined,
                         }
                       : undefined,
@@ -314,7 +316,6 @@ void test(
             async () => writeFile(path.join(caseOutput, "gallery.html"), await page.content()),
             () => cp(root, path.join(caseOutput, "project"), { recursive: true }),
           ];
-          const evidenceErrors: unknown[] = [];
           for (const save of evidence) {
             try {
               await save();
@@ -322,9 +323,9 @@ void test(
               evidenceErrors.push(error);
             }
           }
-          if (evidenceErrors.length && !failure)
-            throw new AggregateError(evidenceErrors, "Packed gallery evidence failed");
         }
+        if (evidenceErrors.length)
+          throw new AggregateError(evidenceErrors, "Packed gallery evidence failed");
       });
     }
   },
