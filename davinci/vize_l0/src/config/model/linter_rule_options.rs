@@ -16,11 +16,13 @@ mod component_registration;
 mod content_directives;
 mod html_self_closing;
 mod hyphenation;
+mod merge;
 mod no_mutating_props;
 mod props_destructuring;
 mod restrictions;
 mod sfc_element_order;
 mod strict_boolean;
+mod valid_v_slot;
 
 pub use casing::{
     ComponentNameInTemplateCasingOptions, CustomEventNameCasing, CustomEventNameCasingOptions,
@@ -156,6 +158,8 @@ pub struct ConfigLintRuleOptions {
     /// Options for `vue/attribute-hyphenation`.
     #[serde(rename = "vue/attribute-hyphenation")]
     attribute_hyphenation: Option<HyphenationStyle>,
+    #[serde(rename = "vue/valid-v-slot", skip_serializing_if = "Option::is_none")]
+    valid_v_slot: Option<valid_v_slot::ValidVSlotOptions>,
     /// Options for `musea/prefer-design-tokens`.
     #[serde(rename = "musea/prefer-design-tokens")]
     musea_prefer_design_tokens: Option<MuseaPreferDesignTokensOptions>,
@@ -196,6 +200,7 @@ impl ConfigLintRuleOptions {
             && self.html_self_closing.is_none()
             && self.v_on_event_hyphenation.is_none()
             && self.attribute_hyphenation.is_none()
+            && self.valid_v_slot.is_none()
             && self.musea_prefer_design_tokens.is_none()
             && self.require_component_registration.is_none()
     }
@@ -300,47 +305,6 @@ impl ConfigLintRuleOptions {
                     .collect()
             })
             .unwrap_or_default()
-    }
-
-    /// Apply a later config layer to this option set.
-    pub fn merge_from(&mut self, overlay: &Self) {
-        self.stable.merge_from(&overlay.stable);
-        if let Some(options) = overlay.define_props_destructuring {
-            self.define_props_destructuring = Some(options);
-        }
-        if let Some(options) = &overlay.no_empty_palpable_content {
-            self.no_empty_palpable_content = Some(options.clone());
-        }
-        if let Some(options) = overlay.strict_boolean_expressions {
-            self.strict_boolean_expressions = Some(options);
-        }
-        if let Some(options) = &overlay.component_name_in_template_casing {
-            self.component_name_in_template_casing = Some(options.clone());
-        }
-        if let Some(options) = &overlay.custom_event_name_casing {
-            self.custom_event_name_casing = Some(*options);
-        }
-        if let Some(options) = &overlay.no_mutating_props {
-            self.no_mutating_props = Some(*options);
-        }
-        if let Some(options) = &overlay.sfc_element_order {
-            self.sfc_element_order = Some(options.clone());
-        }
-        if let Some(options) = &overlay.html_self_closing {
-            self.html_self_closing = Some(*options);
-        }
-        if let Some(style) = overlay.v_on_event_hyphenation {
-            self.v_on_event_hyphenation = Some(style);
-        }
-        if let Some(style) = overlay.attribute_hyphenation {
-            self.attribute_hyphenation = Some(style);
-        }
-        if let Some(options) = &overlay.musea_prefer_design_tokens {
-            self.musea_prefer_design_tokens = Some(options.clone());
-        }
-        if let Some(options) = &overlay.require_component_registration {
-            self.require_component_registration = Some(options.clone());
-        }
     }
 }
 
