@@ -233,7 +233,7 @@ jobs:
       - name: Check generated reference docs
         run: vp node --test tests/tooling/lib-reference-docs.test.ts
       - name: Build vize CLI
-        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts
+        run: (cd npm/cli && vp pack) && cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts
       - name: Install vize CLI
         run: sudo install -m 0755 target/ci/vize /usr/local/bin/vize
       # Use this commit-built CLI without waiting for npm or building a second binary.
