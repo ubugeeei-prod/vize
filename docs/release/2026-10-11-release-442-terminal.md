@@ -127,10 +127,22 @@ the finite custody seal is
 The original eleven empty runtime overrides are authenticated; npm user/global
 configuration files and cryptographic provenance signatures were not verified.
 
-This same immutable consumer may support the unchanged installed HTML and n8n
-slot campaigns and the bounded default-policy replay. Their success is not
-inferred from installation, publication, source tests or the Linux original
-gallery. No additional consumer installation or old-version replay is required.
+The unchanged slot-policy campaign passes all 75 CLI and 50 versioned LSP
+observations against this public installation. Every complete original packet,
+child outcome and native journal was reviewed; all 235 result artifacts were
+rehashed. The independent review SHA256 is
+`2edf3e9253b4e315b8c993063ab93e95f37ba117e66c2b8f3883046d48a5b381`.
+The 203 public payload files and all 252 original installation entries remain
+unchanged. The campaign added 46 retained workspace/log entries, so the whole
+consumer is not read-only. Its 30-file driver closure was recorded after the
+campaign; per-launch source-file hashing is not claimed. This qualifies only
+the included #8422/#8444 slot-policy controls, not absent-option behavior,
+excluded #8471/#8518 changes or the whole #8142 adoption requirement.
+
+The same authenticated public package installation may support the unchanged
+HTML campaign and bounded default-policy replay. Those results remain pending
+and are not inferred from installation or another campaign. No additional
+consumer installation or old-version replay is required.
 
 The next finite minor release should include genuinely merged urgent #8507
 repair #8524 and the packed-gallery custom-base repair when qualified. Ordinary
