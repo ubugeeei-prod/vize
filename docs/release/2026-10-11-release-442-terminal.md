@@ -117,10 +117,20 @@ The failed installed run remains part of the release record.
 
 ## Remaining acceptance and next release
 
-The single Darwin public-install collector is being independently reviewed.
-Its later sealed receipt may support the unchanged installed HTML and n8n slot
-campaigns and the bounded default-policy replay. Their success is not inferred
-from publication, source tests or the Linux original gallery.
+The single Darwin public-install collector and independent review are sealed.
+All 203 installed payload files across five packages have complete archive-byte
+and SHA512 SRI custody, including the actual loaded native addon and bundled
+Corsa 7.0.2. The authority receipt SHA256 is
+`3b3f094bcb6fae3991c8863e704ba91458320ceaebac59952e860b1b059da9e8`;
+the finite custody seal is
+`57c44988b9120824828a6e28336ca2184889183c2c76d6586c974c1ee29af74c`.
+The original eleven empty runtime overrides are authenticated; npm user/global
+configuration files and cryptographic provenance signatures were not verified.
+
+This same immutable consumer may support the unchanged installed HTML and n8n
+slot campaigns and the bounded default-policy replay. Their success is not
+inferred from installation, publication, source tests or the Linux original
+gallery. No additional consumer installation or old-version replay is required.
 
 The next finite minor release should include genuinely merged urgent #8507
 repair #8524 and the packed-gallery custom-base repair when qualified. Ordinary
