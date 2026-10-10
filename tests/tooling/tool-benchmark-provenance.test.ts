@@ -112,46 +112,69 @@ const READY_BINARIES = {
   prettier: null,
 };
 
-test("a ready artifact renders every version and names the measured backend", () => {
-  assert.deepEqual(
-    renderProvenanceLines({
-      versions: READY_VERSIONS,
-      binaries: READY_BINARIES,
-      backend: {
-        engine: "tsgo-native",
-        corsaPath: "/repo/node_modules/.bin/tsgo",
-        corsaVersion: "7.0.0-dev.20260602.1",
-        ready: true,
-        reason: null,
-      },
-    }),
-    [
-      "Versions: vize `vize 0.303.0` · tsgo `7.0.0-dev.20260602.1` · vue-tsc `3.2.0` (typescript `5.9.0`) · verter-tsc `verter-tsc 0.0.1-beta.3` · Golar `golar 0.1.10` · vue `3.6.0` · eslint `9.0.0` · prettier `3.4.0` · node `v24.0.0`",
-      `Binaries (sha256): vize \`${READY_BINARIES.vize}\` tsgo \`${READY_BINARIES.tsgo}\` vueTsc \`${READY_BINARIES.vueTsc}\` verterTsc \`${READY_BINARIES.verterTsc}\` golar \`${READY_BINARIES.golar}\` eslint n/a prettier n/a`,
-      "Backend: native TypeScript engine ready at `/repo/node_modules/.bin/tsgo`. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).",
-    ],
+test("provenance labels each complete checksum beside the correct tool and version", () => {
+  const lines = renderProvenanceLines({
+    versions: READY_VERSIONS,
+    binaries: READY_BINARIES,
+    backend: { corsaPath: "/repo/node_modules/.bin/tsgo", ready: true },
+  });
+  assert.equal(lines[0], '<details class="benchmark-provenance">');
+  assert.ok(lines.includes("| Tool | Version | Binary SHA-256 |"));
+  for (const [key, label] of [
+    ["vize", "Vize"],
+    ["tsgo", "tsgo"],
+    ["vueTsc", "vue-tsc"],
+    ["verterTsc", "verter-tsc"],
+    ["golar", "Golar"],
+    ["eslint", "ESLint"],
+    ["prettier", "Prettier"],
+  ] as const) {
+    const hash = READY_BINARIES[key];
+    assert.ok(
+      lines.includes(
+        `| ${label} | <code>${READY_VERSIONS[key]}</code> | ${hash == null ? "n/a" : `<code>${hash}</code>`} |`,
+      ),
+      `${label}: preserve the full version/checksum association`,
+    );
+  }
+  assert.ok(lines.includes("| TypeScript (vue-tsc) | <code>5.9.0</code> | n/a |"));
+  assert.ok(lines.includes("| Vue | <code>3.6.0</code> | n/a |"));
+  assert.ok(lines.includes("| Node.js | <code>v24.0.0</code> | n/a |"));
+  assert.ok(
+    lines.some((line) => line.includes("ready at <code>/repo/node&#95;modules/.bin/tsgo</code>")),
+  );
+  assert.equal(lines.at(-1), "</details>");
+});
+
+test("an unready backend keeps the explicit refusal and missing values", () => {
+  const text = renderProvenanceLines({
+    versions: { ...READY_VERSIONS, tsgo: null, vueTsc: null, typescript: null },
+    binaries: { ...READY_BINARIES, tsgo: null, vueTsc: null },
+    backend: {
+      ready: false,
+      reason: "no TypeScript 7/Corsa runtime at: /repo/node_modules/.bin/tsgo",
+    },
+  }).join("\n");
+  assert.ok(text.includes("| tsgo | n/a | n/a |"));
+  assert.ok(text.includes("| vue-tsc | n/a | n/a |"));
+  assert.ok(text.includes("| TypeScript (vue-tsc) | n/a | n/a |"));
+  assert.ok(
+    text.includes(
+      "engine NOT ready (<code>no TypeScript 7/Corsa runtime at: /repo/node&#95;modules/.bin/tsgo</code>); no type-check timing may be published",
+    ),
   );
 });
 
-test("an unready backend is stated outright and forbids a published timing", () => {
-  assert.deepEqual(
-    renderProvenanceLines({
-      versions: { ...READY_VERSIONS, tsgo: null, vueTsc: null, typescript: null },
-      binaries: { ...READY_BINARIES, tsgo: null, vueTsc: null },
-      backend: {
-        engine: "tsgo-native",
-        corsaPath: null,
-        corsaVersion: null,
-        ready: false,
-        reason: "no TypeScript 7/Corsa runtime at: /repo/node_modules/.bin/tsgo",
-      },
-    }),
-    [
-      "Versions: vize `vize 0.303.0` · tsgo n/a · vue-tsc n/a (typescript n/a) · verter-tsc `verter-tsc 0.0.1-beta.3` · Golar `golar 0.1.10` · vue `3.6.0` · eslint `9.0.0` · prettier `3.4.0` · node `v24.0.0`",
-      `Binaries (sha256): vize \`${READY_BINARIES.vize}\` tsgo n/a vueTsc n/a verterTsc \`${READY_BINARIES.verterTsc}\` golar \`${READY_BINARIES.golar}\` eslint n/a prettier n/a`,
-      "Backend: native TypeScript engine NOT ready (no TypeScript 7/Corsa runtime at: /repo/node_modules/.bin/tsgo); no type-check timing may be published from this artifact.",
-    ],
-  );
+test("provenance escapes recorded values without breaking rows or losing text", () => {
+  const text = renderProvenanceLines({
+    versions: { ...READY_VERSIONS, vize: "tool <&>|`dev`\nnext" },
+    binaries: { ...READY_BINARIES, extra: "h".repeat(64) },
+    backend: { ready: false, reason: "<missing & unsafe>" },
+  }).join("\n");
+  assert.ok(text.includes("<code>tool &lt;&amp;&gt;&#124;&#96;dev&#96;&#10;next</code>"));
+  assert.ok(text.includes(`| <code>extra</code> | n/a | <code>${"h".repeat(64)}</code> |`));
+  assert.ok(text.includes("<code>&lt;missing &amp; unsafe&gt;</code>"));
+  assert.ok(!text.includes("<missing"));
 });
 
 test("an artifact without provenance says so instead of rendering a blank line", () => {

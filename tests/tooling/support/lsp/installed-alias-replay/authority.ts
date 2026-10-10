@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { VizePublicRegistryInstallAuthority } from "./authority-schema.ts";
 import { recheckPublicPayload } from "./payload.ts";
+import { RawGitRepository } from "./raw-git.ts";
 import { digest, exactFile, sourceOverrideKeys, verifyNativeJournal } from "./custody.ts";
 
 /** The caller supplies a reviewed concrete installation receipt and its exact digest. */
@@ -35,19 +36,10 @@ export function loadPublicAuthority(
     assert.match(sha, /^[a-f0-9]{40}$/u);
   assert.equal(authority.source.tag, `v${authority.version}`);
   assert.match(authority.source.R, /^\d+$/u);
+  const repository = new RawGitRepository(repositoryRoot);
   for (const destination of [authority.source.C, authority.source.H]) {
-    const relation = spawnSync(
-      "git",
-      ["merge-base", "--is-ancestor", signedSourceMerge, destination],
-      {
-        cwd: repositoryRoot,
-        encoding: "utf8",
-      },
-    );
-    assert.equal(relation.error, undefined);
-    assert.equal(
-      relation.status,
-      0,
+    assert.ok(
+      repository.includes(signedSourceMerge, destination),
       "the actual signed source merge must be included in this immutable public cut",
     );
   }
