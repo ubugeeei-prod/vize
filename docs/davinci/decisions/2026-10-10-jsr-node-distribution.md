@@ -19,8 +19,10 @@ Normal releases use an opt-in `VIZE_JSR_ENABLED` variable so missing registry
 ownership cannot block urgent existing-product delivery. When enabled, JSR
 publication and published consumers form an additional Release run requirement.
 Existing GitHub Release creation prerequisites stay intact. The pinned 0.440
-source cut is owned by the release delivery lane; this change waits outside the
-queue until that cut is frozen.
+source cut is owned by the release delivery lane. This change stays outside the
+queue until 0.440 version metadata, tag and publication complete: the pinned
+catalog compares `release.yml` publication authority byte for byte, including
+disabled jobs. Preserve that guard; a source pin alone does not clear this hold.
 
 At preparation time the public `@vizejs` scope and package metadata return 404.
 Required TODO: an authorized JSR scope administrator creates the scope/package,
