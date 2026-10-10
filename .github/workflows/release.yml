@@ -556,9 +556,16 @@ jobs:
       - name: Smoke install native package tarballs
         run: rust-script --force tools/commands/release/npm/smoke-release-install.rs --prepare-manifests --runtime-checks npm/native npm/native/npm/*
       - name: Publish platform packages
-        run: moon run --target native tools/moon/cmd/publish_npm_package_dirs -- npm/native/npm --provenance
+        run: moon run --target native tools/moon/cmd/publish_npm_package_dirs -- npm/native/npm --concurrency 4 --provenance --receipt "$RUNNER_TEMP/native-platform-publish.json"
       - name: Publish
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/native --provenance
+      - name: Upload native platform publish receipt
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-platform-publish-receipt
+          path: ${{ runner.temp }}/native-platform-publish.json
+          if-no-files-found: warn
   release-npm-fresco-native:
     name: Release @vizejs/fresco-native to npm
     runs-on: ubuntu-24.04

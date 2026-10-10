@@ -138,7 +138,7 @@ test("queue Rust retains full doctests and the unchanged feature tail beside req
   const workspaceStep = recipe.runs.steps.find((step) => step.name === "Test Rust workspace");
   assert.ok(workspaceStep);
   assert.equal(workspaceStep.if, "${{ inputs.workspace-already-tested != 'true' }}");
-  assert.equal(workspaceStep.run, "cargo test --workspace");
+  assert.equal(workspaceStep.run, "node tools/support/compat/github/run-rust-workspace-tests.mjs");
   for (const step of recipe.runs.steps) {
     assert.equal(step.env?.VIZE_TEST_REQUIRE_TSGO, "1");
     assert.notEqual(step["continue-on-error"], true);
