@@ -224,26 +224,26 @@
     {
       "route": "/rules/accessibility-core",
       "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule-link index retained; purpose, usage guidance, and a practical next action still need review."
+      "entry": "revised",
+      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
     },
     {
       "route": "/rules/accessibility-integrity",
       "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule-link index retained; purpose, usage guidance, and a practical next action still need review."
+      "entry": "revised",
+      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
     },
     {
       "route": "/rules/accessibility-interactions",
       "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule-link index retained; purpose, usage guidance, and a practical next action still need review."
+      "entry": "revised",
+      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
     },
     {
       "route": "/rules/accessibility-structure",
       "locales": ["en"],
-      "entry": "audited",
-      "note": "Rule-link index retained; purpose, usage guidance, and a practical next action still need review."
+      "entry": "revised",
+      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
     },
     {
       "route": "/rules/migration",
@@ -272,8 +272,8 @@
     {
       "route": "/rules/options-type",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Concrete typed-rule options retained; introductory purpose and Japanese prose still need review."
+      "entry": "revised",
+      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
     },
     {
       "route": "/rules/options-vue",

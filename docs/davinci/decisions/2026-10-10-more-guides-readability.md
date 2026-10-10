@@ -110,15 +110,15 @@ explicit review entry. Removed routes may remain in the inventory as historical 
 | `/guide/wasm`                                  | en, ja                     | Revised | Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending.         |
 | `/integrations/mcp`                            | en, ja                     | Revised | Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending.         |
 | `/philosophy`                                  | en, ja                     | Audited | Placement is handled in #8364.                                                                                              |
-| `/rules/accessibility-core`                    | en                         | Audited | Rule-link index retained; purpose, usage guidance, and a practical next action still need review.                           |
-| `/rules/accessibility-integrity`               | en                         | Audited | Rule-link index retained; purpose, usage guidance, and a practical next action still need review.                           |
-| `/rules/accessibility-interactions`            | en                         | Audited | Rule-link index retained; purpose, usage guidance, and a practical next action still need review.                           |
-| `/rules/accessibility-structure`               | en                         | Audited | Rule-link index retained; purpose, usage guidance, and a practical next action still need review.                           |
+| `/rules/accessibility-core`                    | en                         | Revised | Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending.               |
+| `/rules/accessibility-integrity`               | en                         | Revised | Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending.               |
+| `/rules/accessibility-interactions`            | en                         | Revised | Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending.               |
+| `/rules/accessibility-structure`               | en                         | Revised | Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending.               |
 | `/rules/migration`                             | en, ja                     | Audited | Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review. |
 | `/rules/options`                               | en, ja                     | Audited | Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review. |
 | `/rules/options-musea`                         | en                         | Audited | Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review. |
 | `/rules/options-script`                        | en                         | Audited | Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review. |
-| `/rules/options-type`                          | en, ja                     | Audited | Concrete typed-rule options retained; introductory purpose and Japanese prose still need review.                            |
+| `/rules/options-type`                          | en, ja                     | Revised | Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending.               |
 | `/rules/options-vue`                           | en                         | Audited | Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review. |
 | `/rules/vue-components`                        | en                         | Audited | Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review. |
 | `/rules/vue-directive-validity`                | en                         | Audited | Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review. |
@@ -133,13 +133,21 @@ explicit review entry. Removed routes may remain in the inventory as historical 
 
 - Focused source checks cover navigation audit completeness, practical links before reference
   sections, retained Japanese `check` anchor, and example-before-reference ordering.
-- Docs build Actions run `docs/scripts/verify-more-guides-render.ts` for the 22 revised routes on
+- Docs build Actions run `docs/scripts/verify-more-guides-render.ts` for all revised routes on
   desktop and mobile before the longer whole-navigation capture, so guide failures surface early
   without removing any existing check. The existing browser verifier checks page errors, viewport overflow, local
   links and fragment targets, sidebar keyboard behavior, and Japanese font rendering. It captures
   screenshots and a receipt under `docs-render-evidence/more-guides/`, with an exact source SHA.
 - This slice does not close #8365. Complete body reviews, remaining page reading flow, and
   verification of the final deployed site are still required.
+
+## Follow-up: fallback rule references
+
+The second slice gives four accessibility link indexes a reader purpose and a concrete rule to
+try. The type-rule options guide gains an opt-in explanation and a next lint action, with its
+existing configuration, defaults, examples, and unsupported scope preserved. Its Japanese prose
+is reviewed alongside the introduction. The combined browser inventory contains 28 routes.
+Complete More-body and deployed acceptance remain pending in #8365.
 
 ## External Markdown links in the pinned renderer
 
@@ -155,3 +163,12 @@ check: it rejected the converted destination before this correction.
 Restore the unencoded spelling when a future pinned renderer preserves external Markdown URLs.
 That restoration must pass the same complete guide browser check; the current source correction
 alone earns no fresh rendered or deployed acceptance.
+
+## Generated accessibility entry pages
+
+The first rule-reference source run at `d6e36e3756bdd64ed190da0e763c71fbf3ce76e5` passed
+the 28-route browser review but failed the existing complete catalogue generation check. The four
+legacy accessibility entry URLs are generated by `category-render.ts`, despite lacking a generated
+marker. Their introductions now live in the generator's small companion data module, preserving
+every original rule link. The full existing deterministic generation assertion remains unchanged.
+Fresh exact-source Actions and browser acceptance are required after this correction.
