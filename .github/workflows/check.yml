@@ -298,6 +298,7 @@ jobs:
       - name: Check configured Router page CLI and editor types
         uses: ./.github/actions/check-router-page-types
       - name: Prepare plugin runtime and test native JS setup
+        if: ${{ always() }}
         uses: ./.github/actions/test-native-js-setup
       - name: Capture original native attribute values and fixed fresh mounts
         if: ${{ always() }}

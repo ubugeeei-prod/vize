@@ -4,6 +4,7 @@ runs:
   using: composite
   steps:
     - name: Qualify fresh completed lower File static class modules in both runtime modes
+      if: ${{ always() }}
       shell: bash
       env:
         VIZE_L4_DOM_STATIC_CLASS_CAPTURE: ${{ runner.temp }}/native-dom-static-class.json
@@ -17,6 +18,7 @@ runs:
         test -s "${VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE}.development.json"
         test -s "${VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE}.production.json"
     - name: Qualify whole public selected static class components in both runtime modes
+      if: ${{ always() }}
       shell: bash
       env:
         VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE: ${{ runner.temp }}/native-selected-static-class.json

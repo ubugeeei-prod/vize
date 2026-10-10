@@ -1,3 +1,6 @@
+#[path = "native_scriptless_ssr/class_successor.rs"]
+mod class_successor;
+
 use vize_atelier_sfc::{
     NativeSsrSfcCompileError, NativeSsrSfcCompileOptions, compile_native_ssr_sfc,
 };
@@ -124,15 +127,18 @@ fn original_whole_sfc_modules_keep_selected_custody_and_complete_maps() {
             serde_json::to_vec_pretty(&serde_json::json!({"custody":"once_selected_scriptless_sfc","suiteCompletion":"positive_modules_only","modules":&modules})).unwrap(),
         ).unwrap();
     }
-    let capture = serde_json::json!({"custody":"once_selected_scriptless_sfc","modules":modules,"refusals":refusals()});
-    let frozen: serde_json::Value =
-        serde_json::from_str(include_str!("fixtures/native-scriptless-ssr-output.json")).unwrap();
-    assert_eq!(frozen["schema"], "vize.native-sfc.scriptless-ssr-output");
-    assert_eq!(frozen["version"], 1);
-    assert_eq!(capture, frozen["capture"]);
+    let capture = serde_json::json!({"custody":"once_selected_scriptless_sfc","modules":modules,"refusals":refusals(),"classSuccessor":class_successor::capture()});
+    class_successor::unchanged(&capture);
     if let Some(path) = capture_path {
         std::fs::write(path, serde_json::to_vec_pretty(&capture).unwrap()).unwrap();
     }
+    let frozen: serde_json::Value = serde_json::from_str(include_str!(
+        "fixtures/native-scriptless-ssr-output-v2.json"
+    ))
+    .unwrap();
+    assert_eq!(frozen["version"], 2);
+    assert_eq!(frozen["state"], "reviewed", "whole successor is unreviewed");
+    assert_eq!(capture, frozen["capture"]);
 }
 
 fn refusals() -> Vec<serde_json::Value> {

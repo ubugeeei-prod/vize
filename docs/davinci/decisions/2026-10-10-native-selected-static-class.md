@@ -65,6 +65,17 @@ Both mandatory executions and their current-source-bound receipt must succeed.
 An unfrozen V2 packet remains a failure until fresh source-built modules/maps/
 links and actual independent runtime outcomes have been reviewed in full.
 
+The original scriptless SSR whole packet has the same explicit class transition.
+Its original V1 archive and all fourteen positive modules/raw maps/links stay
+byte-exact; every seventeen unaffected full refusal remains equal. Current V2
+adds the exact former `class='static'` source as a positive whole component with
+unchanged default descriptor/target options and filename, once with the original
+NoLinks and additionally with Recorded source maps. Both genuine canonical
+modules, complete original maps/links and full repeated official/native runtime
+outcomes are frozen only after source-built evidence is independently reviewed.
+The original V1 gate is also run independently on pinned 815. No historical
+archive is overwritten and no refusal is silently removed from a reviewed law.
+
 Instruction budgets are unchanged. The 10x type-checker target has no new
 measurement here. Source and protected full qualification, actual Stack merge,
 Vapor class support, complete native products and #6880 closure remain separate
