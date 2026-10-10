@@ -5,6 +5,10 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import type { Browser, Page } from "playwright";
 import { previewComposableExamples } from "./build-config.ts";
+import { asyncEffectExamples } from "../../../npm/ui/scripts/reference-docs/async-effect-examples.ts";
+import { exerciseAsyncExample } from "./interactions-async-effects.ts";
+import { browserEffectExamples } from "../../../npm/ui/scripts/reference-docs/browser-effect-examples.ts";
+import { exerciseBrowserExample } from "./interactions-browser-effects.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
   await page.getByRole("button", { name: label, exact: true }).focus();
@@ -12,6 +16,10 @@ async function activate(page: Page, label: string): Promise<void> {
 }
 
 async function exercise(page: Page, name: string): Promise<string[]> {
+  if (asyncEffectExamples.some((example) => example.name === name))
+    return exerciseAsyncExample(page, name);
+  if (browserEffectExamples.some((example) => example.name === name))
+    return exerciseBrowserExample(page, name);
   if (name === "use-toggle") {
     assert.equal(await page.getByText("Free delivery in 2–3 business days.").count(), 0);
     await activate(page, "Show delivery details");
@@ -223,6 +231,6 @@ export async function captureComposablePreviews(
     `${JSON.stringify({ schema: "vize.composable-docs-browser-evidence", browserVersion: browser.version(), baseUrl, examples: receipts }, null, 2)}\n`,
   );
   process.stdout.write(
-    `Verified six composable examples in initial/interacted desktop/mobile states\n`,
+    `Verified ${previewComposableExamples.length} composable examples in initial/interacted desktop/mobile states\n`,
   );
 }
