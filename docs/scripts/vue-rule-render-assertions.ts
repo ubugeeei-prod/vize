@@ -42,6 +42,11 @@ export async function verifyRenderedVueRulePackets(page: Page, route: string) {
             code: [],
           };
         } else if (element.parentElement?.tagName === "PRE" && current) {
+          if (
+            element.closest(".vize-command-tabs") &&
+            !element.hasAttribute("data-command-tabs-original")
+          )
+            continue;
           const text = element.textContent;
           if (text === null) throw new Error(`Missing complete Vue source ${current}`);
           packets[current].code.push(text.replace(/\n$/, ""));
