@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "file": "Consumer.tsx",
+      "diagnostics": [
+        "error:5:54 [TS2339] Property 'missing' does not exist on type '\"ok\"'."
+      ]
+    },
+    {
+      "file": "Host.vue",
+      "diagnostics": []
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "jsx": "preserve",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2022",
+        "types": [
+          "vue/jsx"
+        ]
+      },
+      "files": [
+        "Consumer.tsx",
+        "Host.vue",
+        "node_modules/vue/jsx.d.ts"
+      ]
+    }
+  ],
+  "errorCount": 1,
+  "warningCount": 0,
+  "fileCount": 2
+}
