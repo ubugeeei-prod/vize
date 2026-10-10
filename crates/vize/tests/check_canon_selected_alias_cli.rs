@@ -125,7 +125,7 @@ fn expected_stdout(template: &str, root: &Path) -> String {
         }
     }
     assert_eq!(template.matches(ROOT_MARKER).count(), count);
-    assert!(!bound.contains(ROOT_MARKER));
+    assert_eq!(bound.matches(ROOT_MARKER).count(), 0);
     bound
 }
 
