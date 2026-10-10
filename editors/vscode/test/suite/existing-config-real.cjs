@@ -73,7 +73,14 @@ exports.run = async function run() {
     "default project formatting",
     30_000,
   );
-  assert.ok(edits[0].newText.includes("<template>"));
+  const workspaceEdit = new vscode.WorkspaceEdit();
+  workspaceEdit.set(formattingDocument.uri, edits);
+  assert.equal(await vscode.workspace.applyEdit(workspaceEdit), true);
+  assert.equal(
+    formattingDocument.getText(),
+    '<script setup lang="ts">\nconst count = 1;\n</script>\n\n<template>\n  <div>{{ count }}</div>\n</template>\n',
+    "the complete server edit vector formats the existing-config buffer",
+  );
   await vscode.commands.executeCommand("vize.disable");
   assert.equal(vscode.workspace.getConfiguration("vize").get("enable"), false);
 };
