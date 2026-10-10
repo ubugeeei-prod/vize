@@ -54,7 +54,10 @@ receives formatter rows. The four original formatter rows are separate paired
 observations with no allocation ceilings or allocation-admission claim. RSS is
 reported for every row; this collector adds no RSS threshold. A failed baseline is retained
 as a baseline failure, and does not prove candidate causality. A genuine candidate
-breach holds admission; no ceiling, input, population or comparator is relaxed.
+regression must be repaired before source admission; no ceiling, input,
+population or comparator is relaxed. An inherited baseline mismatch keeps this
+optional collector unqualified and visible; it does not qualify or block a
+separately qualified contiguous parent Stack prefix by itself.
 
 Completed child executions retain raw reports and returned process
 stdout/stderr/status/signal, exact
@@ -65,9 +68,45 @@ spawn/wait errors or job/host termination can prevent complete returned streams,
 final process receipts or upload; missing evidence stays unqualified. An incomplete
 or failed run grants no qualification; local validator success is tooling proof
 only. The first requested baseline is actual main
-`2703daa2f03f5d943dd6b31089aee4a8c5bc7a9e`; hosted memory results remain pending.
+`2703daa2f03f5d943dd6b31089aee4a8c5bc7a9e`.
+
+The first complete [Actions run](https://github.com/ubugeeei-prod/vize/actions/runs/38068714196)
+captured all 624 reports for that baseline and candidate
+`3c92caeab65bbab04a2e2ebe9ef308e138729939`. All six original level-plane
+judgments failed. Each baseline repetition has the same 57 exact allocation
+mismatches: 40 increases and 17 decreases against the committed values. The
+comparator requires equality, so decreases also fail. Each candidate repetition
+has 58 mismatches, including the new `armature_parse_stress-wide` change from
+204 to 208 allocations and 114649 to 115673 peak bytes. `armature_parse_large`
+changes from 320 to 322 allocations and 115428 to 115684 peak bytes; its original
+allocation value is already 272. These two allocation differences propagate
+into the existing whole compile rows. The complete reports, all paired metrics
+and six failed judgments remain retained; no original100 qualification is
+claimed. The four formatter rows remain uncapped observations.
+
+The allocation authority comparison is source-bound: all 85 values recorded at
+P1-13 commit `0901ee419c` remain unchanged in the current registry, which adds
+15 later rows. The original six ladder input files are byte-identical. The
+benchmark parse routine and single normal allocation probe remain the same,
+while the product parser and provider sources differ from that August source.
+This comparison establishes authority drift without attributing the 57 changes
+to any one product modification. Later source requires its own measurement;
+the failed candidate, inputs and original allocation authority remain intact.
 
 The earlier twelve-provider/hard104 collector is retained as rejected source-only
 preparation: the actual level registry has 100 rows, so that recipe cannot collect
 the complete population. Its new source-derived population laws failed before
 correction. No native build or hosted measurement ran on that rejected recipe.
+The first published collector source retains fourteen genuine lint warnings:
+twelve test-registration promises and two missing sort comparators. Explicitly
+await registrations and use the same UTF-16 code-unit ordering as the original
+default string sort; report population, metrics, judges and all provider bytes
+stay unchanged. That failed source remains failed, and the successor requires
+fresh qualification.
+The first tooling worker also retained the original historical-route law's
+failure: its two literal ordinary-job guards predated the new memory mode.
+Require the exact additional `!inputs.level_memory_only` exclusion in both
+expectations, retaining every original production and historical predicate,
+exact-head/ancestry assertion and frozen replay control. The unchanged six
+historical laws and twelve collector laws pass locally after this expectation
+correction; this is source-law proof, not hosted benchmark qualification.

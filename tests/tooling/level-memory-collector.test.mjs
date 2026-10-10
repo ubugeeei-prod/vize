@@ -51,7 +51,7 @@ function fixture(t) {
   return { root, dir, identities, markers };
 }
 
-test("fresh complete reports retain whole packets and original identities", (t) => {
+await test("fresh complete reports retain whole packets and original identities", (t) => {
   const f = fixture(t);
   const rows = collectFreshReports(f.root, f.markers, f.identities);
   assert.equal(rows.size, 2);
@@ -62,7 +62,7 @@ test("fresh complete reports retain whole packets and original identities", (t) 
   assert.ok(!Object.hasOwn(MEMORY_ENVIRONMENT, "VIZE_INSTRUCTION_COUNTS"));
 });
 
-test("tracked or cached reports without actual emitted writes are rejected", (t) => {
+await test("tracked or cached reports without actual emitted writes are rejected", (t) => {
   const f = fixture(t);
   assert.throws(() => collectFreshReports(f.root, "", f.identities), /emitted|missing/);
   assert.throws(
@@ -71,7 +71,7 @@ test("tracked or cached reports without actual emitted writes are rejected", (t)
   );
 });
 
-test("duplicate, extra and foreign emitted reports cannot qualify", (t) => {
+await test("duplicate, extra and foreign emitted reports cannot qualify", (t) => {
   const f = fixture(t);
   assert.throws(
     () => collectFreshReports(f.root, `${f.markers}\n${f.markers}`, f.identities),
@@ -98,7 +98,7 @@ test("duplicate, extra and foreign emitted reports cannot qualify", (t) => {
   );
 });
 
-test("null metrics, forged fields and wrong fixture identities remain red", (t) => {
+await test("null metrics, forged fields and wrong fixture identities remain red", (t) => {
   const f = fixture(t);
   for (const change of [
     { allocs: null },
@@ -115,7 +115,7 @@ test("null metrics, forged fields and wrong fixture identities remain red", (t) 
   }
 });
 
-test("symlink output and changed same-byte source/window populations are rejected", (t) => {
+await test("symlink output and changed same-byte source/window populations are rejected", (t) => {
   const f = fixture(t);
   const rows = collectFreshReports(f.root, f.markers, f.identities);
   const changed = structuredClone(rows);
@@ -131,7 +131,7 @@ test("symlink output and changed same-byte source/window populations are rejecte
   assert.throws(() => collectFreshReports(f.root, f.markers, f.identities), /symlink/);
 });
 
-test("a failing process preserves complete raw streams before refusing admission", (t) => {
+await test("a failing process preserves complete raw streams before refusing admission", (t) => {
   const f = fixture(t);
   const directory = path.join(f.root, "failed-process");
   assert.throws(
@@ -157,7 +157,7 @@ test("a failing process preserves complete raw streams before refusing admission
   assert.ok(!JSON.stringify(receipt).includes("must-not-escape"));
 });
 
-test("launch failures retain unknown status and actual resolution absence", (t) => {
+await test("launch failures retain unknown status and actual resolution absence", (t) => {
   const f = fixture(t);
   const directory = path.join(f.root, "missing-process");
   assert.throws(
@@ -171,7 +171,7 @@ test("launch failures retain unknown status and actual resolution absence", (t) 
   assert.equal(fs.readFileSync(path.join(directory, "stdout.bin")).length, 0);
 });
 
-test("normal measurements select Criterion benchmark sampling explicitly", () => {
+await test("normal measurements select Criterion benchmark sampling explicitly", () => {
   assert.deepEqual(memory.NORMAL_ARGUMENTS, ["--bench", "--quick"]);
   assert.ok(!Object.hasOwn(MEMORY_ENVIRONMENT, "VIZE_INSTRUCTION_COUNTS"));
 });
@@ -201,7 +201,7 @@ function originalPopulation() {
   return { authority, rows };
 }
 
-test("both original source registries and thirteen providers supply the complete population", () => {
+await test("both original source registries and thirteen providers supply the complete population", () => {
   const { authority, rows } = originalPopulation();
   assert.deepEqual(authority.planes.level.registry, originalLevelRegistry);
   assert.deepEqual(authority.planes.formatter.registry, originalFormatterRegistry);
@@ -217,7 +217,7 @@ test("both original source registries and thirteen providers supply the complete
   assert.deepEqual(new Set(planes.formatter.keys()), originalFormatterRegistry);
 });
 
-test("missing or extra rows in either real source plane cannot qualify the whole observation", () => {
+await test("missing or extra rows in either real source plane cannot qualify the whole observation", () => {
   const { authority, rows } = originalPopulation();
   for (const plane of [originalLevelRegistry, originalFormatterRegistry]) {
     const missing = new Map(rows);
@@ -229,7 +229,7 @@ test("missing or extra rows in either real source plane cannot qualify the whole
   assert.throws(() => memory.partitionMemoryReports(extra, authority), /unregistered/);
 });
 
-test("formatter observations cannot enter the original level allocation budget plane", () => {
+await test("formatter observations cannot enter the original level allocation budget plane", () => {
   const { authority, rows } = originalPopulation();
   const planes = memory.partitionMemoryReports(rows, authority);
   const wrongPlane = new Map(planes.level);
@@ -244,7 +244,7 @@ test("formatter observations cannot enter the original level allocation budget p
   assert.throws(() => memory.partitionMemoryReports(forged, authority), /bench id/);
 });
 
-test("every original paired metric is recorded without inventing formatter allocation caps", () => {
+await test("every original paired metric is recorded without inventing formatter allocation caps", () => {
   const { authority, rows } = originalPopulation();
   const candidate = structuredClone(rows);
   for (const id of originalFormatterRegistry) candidate.get(id).report.allocs = 17;
