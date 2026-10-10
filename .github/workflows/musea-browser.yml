@@ -33,7 +33,7 @@ jobs:
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
         with: { toolchain: "1.99.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
