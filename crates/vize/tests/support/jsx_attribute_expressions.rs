@@ -163,5 +163,8 @@ fn executable_hash(path: &Path) -> vize_l0::String {
         }
         hash.update(&buffer[..length]);
     }
-    vize_l0::cstr!("{:x}", hash.finalize())
+    hash.finalize()
+        .iter()
+        .map(|byte| vize_l0::cstr!("{byte:02x}"))
+        .collect()
 }

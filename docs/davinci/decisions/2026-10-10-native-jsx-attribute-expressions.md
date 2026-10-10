@@ -47,3 +47,11 @@ source revision and streamed CLI/Corsa executable hashes, alongside unchanged
 raw stdout/stderr and full inputs. The original Ant observation remains sealed
 at its original false-authority hash; its historical local receipt supplies no
 new-head Actions credit. Fresh source/native/full checks remain required.
+
+The first passive-capture successor failed before native execution in
+[run 38046095408](https://github.com/ubugeeei-prod/vize/actions/runs/38046095408):
+sha2 0.11 digest arrays do not implement whole-array hexadecimal formatting.
+Encode each digest byte using the existing compact-string pattern; preserve
+all input/report/argument assertions and the streamed executable hash contract.
+The failed source receipt remains historical, and the corrected head requires
+fresh native/source/full Actions.
