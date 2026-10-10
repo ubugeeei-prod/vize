@@ -32,15 +32,15 @@ There is no capability skip, second installation or workspace native fallback.
 
 ## Required observations
 
-| Surface | Required physical controls |
-| --- | --- |
-| Dev gallery API | Authored `/gallery/vrt/` route, 320x180 viewport, custom baseline directory, threshold100 and original capture/comparison settings; each same-basename Art runs new, match, physical blue-to-green difference, update and zero-difference repeat through Chromium Run VRT. |
-| Report ownership | Complete JSON and HTML plus physical PNGs for one Art survive every run of the other; owned names and portable identities remain distinct after a real dev server restart. |
-| Historical ambiguity | An unowned historical basename report and removed Art cause the actual API500 with archive/migration guidance before any report or snapshot inventory changes. |
-| Hosted CLI | Installed public CLI uses `--gallery-url` against the real build served by plain HTTP after authored sources are deleted. New, match, physical rebuilt difference, CI exit1, update and repeat preserve whole stdout/stderr, process status, reports and PNGs. |
-| Persistent identity | Real CLI clean removes only the absent Art PNG; index owner tombstones stay byte equal and restoration reuses the exact original name and red PNG bytes. |
-| Hosted audits | The public plugins compile authored `Host.art.vue` containing every original Clean/Broken name and accessible/empty-button trait. A real 300ms async setup runs after document load. Both repeats require6/3/3/0 and three button-name violations; individual clean A11y succeeds. |
-| Hosted refusal | The delivered static VRT notice names the actual CLI URL. Physically refusing the real axe vendor HTTP request requires6/0/6/0 and six test errors, with the404 body retained. |
+| Surface              | Required physical controls                                                                                                                                                                                                                                                         |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev gallery API      | Authored `/gallery/vrt/` route, 320x180 viewport, custom baseline directory, threshold100 and original capture/comparison settings; each same-basename Art runs new, match, physical blue-to-green difference, update and zero-difference repeat through Chromium Run VRT.         |
+| Report ownership     | Complete JSON and HTML plus physical PNGs for one Art survive every run of the other; owned names and portable identities remain distinct after a real dev server restart.                                                                                                         |
+| Historical ambiguity | An unowned historical basename report and removed Art cause the actual API500 with archive/migration guidance before any report or snapshot inventory changes.                                                                                                                     |
+| Hosted CLI           | Installed public CLI uses `--gallery-url` against the real build served by plain HTTP after authored sources are deleted. New, match, physical rebuilt difference, CI exit1, update and repeat preserve whole stdout/stderr, process status, reports and PNGs.                     |
+| Persistent identity  | Real CLI clean removes only the absent Art PNG; index owner tombstones stay byte equal and restoration reuses the exact original name and red PNG bytes.                                                                                                                           |
+| Hosted audits        | The public plugins compile authored `Host.art.vue` containing every original Clean/Broken name and accessible/empty-button trait. A real 300ms async setup runs after document load. Both repeats require6/3/3/0 and three button-name violations; individual clean A11y succeeds. |
+| Hosted refusal       | The delivered static VRT notice names the actual CLI URL. Physically refusing the real axe vendor HTTP request requires6/0/6/0 and six test errors, with the404 body retained.                                                                                                     |
 
 Whole authored/configuration bytes, generated static manifest and physical dist
 files, HTTP bodies, gallery documents and their hashes accompany the raw API
