@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@ui/*": [
+        "./components/*"
+      ],
+      "@fallback/*": [
+        "./preferred/*",
+        "./components/*"
+      ]
+    }
+  },
+  "include": [
+    "**/*.vue"
+  ]
+}

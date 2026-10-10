@@ -1,0 +1,24 @@
+
+running 2 tests
+test alias_component_definitions_keep_complete_crlf_lifecycle_contracts ... 
+thread 'alias_component_definitions_keep_complete_crlf_lifecycle_contracts' (112181767) panicked at /Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-lsp-open-buffer-alias-definition-20261009/crates/vize/tests/lsp_open_buffer_alias_definition_cli.rs:166:9:
+assertion `left == right` failed: whole "aliasOpen" response, newline="\r\n"
+  left: Object {"id": Number(5), "jsonrpc": String("2.0"), "result": Null}
+ right: Object {"id": Number(5), "jsonrpc": String("2.0"), "result": Object {"range": Object {"end": Object {"character": Number(0), "line": Number(0)}, "start": Object {"character": Number(0), "line": Number(0)}}, "uri": String("file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-alias-%E5%AD%90%20[%E8%B5%A4]%20%23-kuwAg2/components/%E5%AD%90%20[%E8%B5%A4]%20%23.vue")}}
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+FAILED
+test alias_component_definitions_keep_complete_lf_lifecycle_contracts ... 
+thread 'alias_component_definitions_keep_complete_lf_lifecycle_contracts' (112181979) panicked at /Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-lsp-open-buffer-alias-definition-20261009/crates/vize/tests/lsp_open_buffer_alias_definition_cli.rs:166:9:
+assertion `left == right` failed: whole "aliasOpen" response, newline="\n"
+  left: Object {"id": Number(5), "jsonrpc": String("2.0"), "result": Null}
+ right: Object {"id": Number(5), "jsonrpc": String("2.0"), "result": Object {"range": Object {"end": Object {"character": Number(0), "line": Number(0)}, "start": Object {"character": Number(0), "line": Number(0)}}, "uri": String("file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-alias-%E5%AD%90%20[%E8%B5%A4]%20%23-IBhjZk/components/%E5%AD%90%20[%E8%B5%A4]%20%23.vue")}}
+FAILED
+
+failures:
+
+failures:
+    alias_component_definitions_keep_complete_crlf_lifecycle_contracts
+    alias_component_definitions_keep_complete_lf_lifecycle_contracts
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 3 filtered out; finished in 4.47s
+
