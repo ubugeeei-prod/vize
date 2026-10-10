@@ -6,10 +6,16 @@ Actual navigation prerequisites #8384 and #8389 merged as `db0ec3dd` and `538c07
 on 2026-10-10. One coherent composition uses the genuine frozen main
 `538c07ac7eca17db3151fe68cdf38586bc561bb0`, preserving every original layer delta,
 complete example and foreign source clause. Only the owned More canonical clauses
-move to the guarded order-record row 337. All five published layers remain Draft
-and off queue; three prepared children retain their actual parent ancestry. Fresh
+move to the guarded order-record row 337. All eight published layers remain Draft
+and off queue with their actual parent ancestry. Fresh
 exact-head Check, native CLI and complete Docs proof is required; historical greens
 do not qualify the composed heads. Configuration defaults remain separately held.
+
+Local composition custody preserves 43 owned source files byte-exact, the corrected CLI
+reference destination, all 137 complete examples and 265 native fragments. The complete incoming workflow and every foreign
+canonical byte survive after removing only the More additions. All sixteen focused laws
+and the unchanged full generated-rule guard pass locally; these are not Actions,
+protected-queue, installed-release or deployed acceptance.
 
 ## Coalesced actual-main delivery
 
@@ -300,3 +306,44 @@ Both published-example/source-contract checks failed before this review and now 
 28-route desktop/mobile renderer covers these pages, but local source/native review supplies no
 new-head Actions, protected admission, release, or deployed credit. Earlier qualifying heads stay
 immutable; fresh source/browser and whole More acceptance remain required for #8365.
+
+## WASM locale and artifact-size contracts, with reviewed-body composition pending
+
+A separate eighth worktree audits the WASM reference against the public JS facade, declaration and
+actual Rust option readers. The guide incorrectly promised localized compiler errors through
+`locale`, but the canonical compiler inventory and `CompilerOptions` declaration have no such
+field. The JS facade passes compiler options through, while the lint handlers and `LintOptions`
+consume `locale`. Both locales now describe `lintSfc` localization and the compiler boundary.
+
+The inherited approximate 1.5 MB gzip claim retained no build, artifact, or measurement provenance.
+It is replaced in both locales by an inline gzip byte-count command for the module produced by the
+existing source-build recipe. This supplies a measurement procedure, not a new measured size,
+download latency, release payload, or performance claim. All ten existing complete recipes and
+all incoming headings remain unchanged. The primary declaration was verified without adding a
+new destination; the two original external destinations are retained.
+
+The complete Japanese translation is independently owned by #8452. This factual child retains
+its current More-base review marker and does not duplicate that body or claim future integration.
+The eventual actual-main composition must retain the complete reviewed #8452 body, all original
+proof, and the More practical introduction/reading order. Its custody test currently requires
+exactly the two original destinations over the whole document, whereas the More intro adds
+practical links. Preserve the full original ordered destination subsequence and explicitly verify
+every added resolved destination when that genuine composition occurs; no baseline deletion or
+product-oracle waiver is allowed. The ten-recipe proof stays exact by keeping size measurement
+inline rather than adding a fence.
+
+The locale/source-boundary regression failed before the factual correction and now passes.
+Full published-example/source-contract retention and the pinned native heading check also pass.
+Fresh exact-source Actions, coherent rebase, protected delivery and deployed acceptance remain
+pending, with all qualifying published heads untouched.
+
+## Prepared canonical conflict resolution
+
+The frozen More layers append only their owned clauses to the canonical final row, which now
+conflicts with unrelated current-main history. A local review-only composition moves the complete
+owned More suffix to the existing short order-record sentence (row 337 on the frozen navigation
+source), keeping the 350-row cap. Every incoming non-owned byte is preserved; subsequent layers
+replace only the exact complete preceding owned suffix. A missing or non-unique suffix or drifted
+row must stop for explicit source review. This prepared projection modifies no qualifying head
+and supplies no product ancestry or qualification. Apply it only after the navigation prefix
+actually merges, against genuine fresh main, then rerun each changed exact source on Actions.
