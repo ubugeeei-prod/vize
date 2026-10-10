@@ -1,11 +1,9 @@
 //! Per-workspace-folder configuration contexts for multi-root sessions.
 //!
 //! `initialize` may carry several `workspaceFolders` (#3240). The primary
-//! root (rootUri, or the first folder) keeps driving the process-wide
-//! configuration — LSP feature flags, the type-checker/Corsa session root,
-//! formatting — matching the historical single-root behavior. Per-document
-//! lint diagnostics however must not leak one folder's lint policy into
-//! another folder's files, so each folder gets its own linter context here:
+//! root (rootUri, or the first folder) initializes the primary owner. Native
+//! document requests use isolated lazy project owners, while capabilities
+//! cover the session's composite roots. Each folder gets its own linter context:
 //! a folder that ships its own `vize.config.*` uses that config, and a
 //! folder without one uses the built-in defaults (never a sibling folder's
 //! config, which would make behavior depend on folder order). Documents
@@ -14,12 +12,13 @@
 use std::path::{Path, PathBuf};
 
 use tower_lsp::lsp_types::{InitializeParams, Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
-use vize_carton::config::matcher::LintPlanScope;
+use vize_carton::config::matcher::{LintPlanScope, ProjectIgnoreSet};
 use vize_l0::config::{
     ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions, LinterFeatureFlags,
 };
 
 use super::ServerState;
+mod config;
 
 /// Linter context resolved for one workspace folder at registration time.
 pub(super) struct WorkspaceFolderConfig {
@@ -27,64 +26,21 @@ pub(super) struct WorkspaceFolderConfig {
     plan: LinterConfigPlanWithConfigRuleOptions,
     scopes: Vec<LintPlanScope>,
     global_ignores: Vec<LintPlanScope>,
+    project_ignores: Option<ProjectIgnoreSet>,
     features: LinterFeatureFlags,
 }
 
 impl WorkspaceFolderConfig {
-    /// Load the folder's own `vize.config.*`; a folder without a config file
-    /// gets the built-in defaults so contexts stay order-independent.
-    fn load(root: PathBuf) -> Self {
-        let (loaded, plan, features) = vize_carton::config::
-            load_config_and_linter_plan_with_config_rule_options_and_lint_features_and_source(
-                Some(&root),
-            );
-        let plan = if loaded.source_path.is_some() {
-            plan
-        } else {
-            LinterConfigPlanWithConfigRuleOptions::default()
-        };
-        let scopes = plan
-            .plan
-            .entries
-            .iter()
-            .map(|entry| {
-                LintPlanScope::new(
-                    entry.base_path.as_deref(),
-                    entry.files.as_deref(),
-                    &entry.ignores,
-                    &root,
-                    &root,
-                )
-            })
-            .collect();
-        let global_ignores = plan
-            .plan
-            .global_ignores
-            .iter()
-            .map(|entry| {
-                LintPlanScope::new(
-                    entry.base_path.as_deref(),
-                    None,
-                    std::slice::from_ref(&entry.pattern),
-                    &root,
-                    &root,
-                )
-            })
-            .collect();
-        Self {
-            root,
-            plan,
-            scopes,
-            global_ignores,
-            features,
-        }
-    }
-
     fn linter_for_path(
         &self,
         path: &Path,
     ) -> Option<(LinterConfig, ConfigLintRuleOptions, LinterFeatureFlags)> {
-        if self.global_ignores.iter().any(|scope| scope.ignores(path)) {
+        if self
+            .project_ignores
+            .as_ref()
+            .is_some_and(|ignores| ignores.is_ignored(path))
+            || self.global_ignores.iter().any(|scope| scope.ignores(path))
+        {
             return None;
         }
         let matching = self
@@ -138,7 +94,7 @@ impl ServerState {
             .map(|context| context.root.clone())
             .collect::<Vec<_>>();
         if let Some(primary) = self.get_workspace_root()
-            && !roots.contains(&primary)
+            && !roots.iter().any(|root| primary.starts_with(root))
         {
             roots.push(primary);
         }
@@ -146,8 +102,7 @@ impl ServerState {
     }
 
     /// Resolve the primary workspace root from `initialize`: `rootUri` when
-    /// present, otherwise the first workspace folder. This root keeps driving
-    /// process-wide config, the type-checker/Corsa session, and formatting.
+    /// present, otherwise the first workspace folder.
     pub(crate) fn primary_workspace_path(&self, params: &InitializeParams) -> Option<PathBuf> {
         params
             .root_uri
@@ -164,11 +119,38 @@ impl ServerState {
 
     /// Replace the workspace-folder contexts with the folders sent by
     /// `initialize`.
+    #[cfg(test)]
     pub(crate) fn set_workspace_folders(&self, roots: Vec<PathBuf>) {
+        self.replace_workspace_folders(roots, false);
+    }
+
+    fn replace_workspace_folders(&self, roots: Vec<PathBuf>, reuse_loaded: bool) {
         #[cfg(feature = "native")]
         let _change = self.corsa_environment_change();
-        let contexts = roots.into_iter().map(WorkspaceFolderConfig::load).collect();
-        *self.workspace_folder_configs.write() = contexts;
+        let mut current = self.workspace_folder_configs.write();
+        let mut existing = std::mem::take(&mut *current);
+        *current = roots
+            .into_iter()
+            .map(|root| {
+                existing
+                    .iter()
+                    .position(|context| reuse_loaded && context.root == root)
+                    .map_or_else(
+                        || self.load_folder_context(root, reuse_loaded),
+                        |index| existing.swap_remove(index),
+                    )
+            })
+            .collect();
+    }
+
+    fn load_folder_context(&self, root: PathBuf, deferred: bool) -> WorkspaceFolderConfig {
+        #[cfg(feature = "native")]
+        if deferred && self.project_routing_initialized() {
+            return WorkspaceFolderConfig::deferred(root);
+        }
+        #[cfg(not(feature = "native"))]
+        let _ = deferred;
+        WorkspaceFolderConfig::load(root)
     }
 
     /// Load a context for every folder carried by `initialize` (#3240),
@@ -184,7 +166,7 @@ impl ServerState {
         {
             roots.push(primary.to_path_buf());
         }
-        self.set_workspace_folders(roots);
+        self.replace_workspace_folders(roots, true);
     }
 
     /// Apply a `workspace/didChangeWorkspaceFolders` event: removed roots
@@ -194,7 +176,11 @@ impl ServerState {
         let _change = self.corsa_environment_change();
         let mut contexts = self.workspace_folder_configs.write();
         contexts.retain(|context| !removed.contains(&context.root));
-        contexts.extend(added.into_iter().map(WorkspaceFolderConfig::load));
+        contexts.extend(
+            added
+                .into_iter()
+                .map(|root| self.load_folder_context(root, true)),
+        );
     }
 
     /// Sync the contexts from a `didChangeWorkspaceFolders` event (#3240) and

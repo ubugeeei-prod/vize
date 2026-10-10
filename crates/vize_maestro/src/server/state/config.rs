@@ -3,14 +3,13 @@
 #[cfg(feature = "glyph")]
 mod formatting;
 mod read;
+#[cfg(feature = "glyph")]
+use formatting::format_options_from_config;
 
 use std::path::Path;
 use std::sync::atomic::Ordering;
 
 use vize_l0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
-
-#[cfg(feature = "glyph")]
-use formatting::format_options_from_config;
 
 use super::ServerState;
 use super::features::LspConfigSection;
@@ -18,6 +17,8 @@ use super::features::LspConfigSection;
 impl ServerState {
     /// Apply LSP initialization options sent by an editor client.
     pub fn apply_lsp_initialization_options(&self, options: Option<&serde_json::Value>) {
+        #[cfg(feature = "native")]
+        self.retain_project_initialization_options(options);
         let Some(options) = options else {
             return;
         };
@@ -227,10 +228,28 @@ impl ServerState {
 
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
     pub fn load_workspace_config(&self, dir: &Path) {
-        let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
-        if !loaded.valid {
-            return;
-        }
+        let project = match vize_carton::config::try_load_project_config_with_source(Some(dir)) {
+            Ok(project) => project,
+            Err(error) => {
+                tracing::warn!("Failed to load editor project configuration: {error}");
+                return;
+            }
+        };
+        self.install_project_linter_context(dir, &project);
+        #[cfg(feature = "native")]
+        self.apply_project_path_identity(dir, &project);
+        let mut loaded = vize_carton::config::LoadedLspConfig::from_document(
+            project.document,
+            project.source_path,
+        );
+        let paths = vize_carton::config::ProjectModel::new(
+            Some(dir),
+            loaded.source_path.as_deref(),
+            &loaded.config.type_checker,
+        );
+        loaded.config.type_checker.tsconfig = paths
+            .tsconfig()
+            .map(|path| path.to_string_lossy().into_owned().into());
         self.apply_project_formatting_default(loaded.source_path.as_deref());
         if loaded.source_path.is_none() {
             self.apply_config_features(loaded.features);

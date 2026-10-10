@@ -13,12 +13,20 @@ impl MaestroServer {
         request: impl Future<Output = Result<T>>,
     ) -> Result<T> {
         #[cfg(feature = "native")]
+        if self.state.project_context_retired() {
+            return Err(Error::content_modified());
+        }
+        #[cfg(feature = "native")]
         let scope = if self.state.is_lsp_typecheck_enabled() {
             Some(self.state.corsa_request_scope().await)
         } else {
             None
         };
         let reply = request.await;
+        #[cfg(feature = "native")]
+        if self.state.project_context_retired() {
+            return Err(Error::content_modified());
+        }
         #[cfg(feature = "native")]
         if let Some(scope) = scope
             && !scope.is_current()

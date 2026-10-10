@@ -24,7 +24,7 @@ impl ServerState {
     ///
     /// Returns `None` if Corsa is not available or failed to initialize.
     pub async fn get_corsa_bridge(&self) -> Option<Arc<CorsaBridge>> {
-        if !self.is_lsp_typecheck_enabled() {
+        if self.project_context_retired() || !self.is_lsp_typecheck_enabled() {
             tracing::info!(
                 "Skipping Corsa bridge initialization because LSP typecheck is disabled"
             );
@@ -51,6 +51,10 @@ impl ServerState {
         }
 
         let _guard = self.corsa_init_lock.lock().await;
+
+        if self.project_context_retired() {
+            return None;
+        }
 
         // Another request may have completed initialization while we were waiting.
         let existing_bridge = { self.corsa_bridge.read().clone() };
@@ -106,7 +110,8 @@ impl ServerState {
         // The bridge's worker-owned async reply yields while its synchronous
         // handshake drains, and enforces the configured deadline (#8012).
         let spawned = bridge.spawn().await;
-        if self.corsa_environment_changes.load(Ordering::Acquire) != 0
+        if self.project_context_retired()
+            || self.corsa_environment_changes.load(Ordering::Acquire) != 0
             || generation != self.corsa_environment_revision.load(Ordering::Acquire)
         {
             self.discard_corsa_startup(&bridge);

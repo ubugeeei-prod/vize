@@ -29,9 +29,7 @@ impl MaestroServer {
         }
 
         self.publish_diagnostics(&uri).await;
-        if self.state.is_lsp_typecheck_enabled() {
-            self.publish_importer_diagnostics(&uri, Some(version)).await;
-        }
+        self.publish_importer_diagnostics(&uri, Some(version)).await;
     }
 
     pub(super) async fn close_document(&self, params: DidCloseTextDocumentParams) {
@@ -47,10 +45,8 @@ impl MaestroServer {
         self.client
             .publish_diagnostics(uri.clone(), vec![], None)
             .await;
-        if self.state.is_lsp_typecheck_enabled() {
-            // Closing discards the unsaved dependency and restores disk types.
-            // A concurrent reopen supersedes this refresh through None.
-            self.publish_importer_diagnostics(&uri, None).await;
-        }
+        // Closing discards the unsaved dependency and restores disk types.
+        // A concurrent reopen supersedes this refresh through None.
+        self.publish_importer_diagnostics(&uri, None).await;
     }
 }

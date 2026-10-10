@@ -25,6 +25,8 @@ impl ServerState {
         let package_route_resolver = vize_canon::PackageRouteResolver::default();
         Self {
             documents: DocumentStore::new(),
+            #[cfg(feature = "native")]
+            project_contexts: Default::default(),
             resident: resident::ResidentCache::default(),
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),

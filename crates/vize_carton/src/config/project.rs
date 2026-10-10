@@ -18,9 +18,11 @@ pub struct ProjectModel {
 impl ProjectModel {
     /// Resolve paths declared by the already-loaded Vize configuration.
     ///
-    /// A relative `typeChecker.tsconfig` belongs to the config file's
-    /// directory. Without a config file it belongs to the invocation root;
-    /// without either, it remains relative for the caller to resolve later.
+    /// Vite-owned checker paths arrive as absolute paths projected against
+    /// Vite's selected root. A remaining relative `typeChecker.tsconfig` in a
+    /// dedicated file belongs to the config file's directory. Without a config
+    /// file it belongs to the invocation root; without either, it remains
+    /// relative for the caller to resolve later.
     pub fn new(
         root: Option<&Path>,
         config_source: Option<&Path>,

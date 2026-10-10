@@ -32,6 +32,7 @@ mod module_target;
 mod native_navigation;
 mod native_requests;
 mod open_document;
+mod project_contexts;
 mod semantic_tokens;
 mod state;
 mod workspace_files;
@@ -136,6 +137,8 @@ impl MaestroServer {
     }
 
     fn finish_shutdown(&self) -> tower_lsp::jsonrpc::Result<()> {
+        #[cfg(feature = "native")]
+        self.state.retire_project_contexts();
         #[cfg(feature = "experimental-source-navigation")]
         self.state
             .retire_module_links(ModuleLinkRetirement::Shutdown);

@@ -70,9 +70,6 @@ impl MaestroServer {
         #[cfg(feature = "native")]
         retained.finish();
 
-        if !self.state.is_lsp_typecheck_enabled() {
-            return;
-        }
         tracing::info!(
             "starting importer diagnostics after edit {} version {}",
             uri,
@@ -113,6 +110,9 @@ impl MaestroServer {
             uri,
             version
         );
+        #[cfg(feature = "native")]
+        let dependents = self.state.project_open_typecheck_dependents(uri);
+        #[cfg(not(feature = "native"))]
         let dependents = super::importers::open_typecheck_dependents(&self.state, uri);
         tracing::info!(
             "refreshing {} open typecheck dependents for {}",
@@ -130,7 +130,9 @@ impl MaestroServer {
                 break;
             }
             tracing::info!("refreshing importer {} for {}", importer, uri);
-            self.publish_diagnostics(&importer).await;
+            self.for_document(&importer)
+                .publish_diagnostics(&importer)
+                .await;
             tracing::info!("refreshed importer {} for {}", importer, uri);
             refreshed.push(importer);
         }

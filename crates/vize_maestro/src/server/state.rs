@@ -15,6 +15,8 @@ mod lint_hover;
 mod module_links;
 #[cfg(feature = "experimental-source-navigation")]
 mod native_names;
+#[cfg(feature = "native")]
+mod project_contexts;
 mod resident;
 mod virtual_docs;
 mod workspace_folders;
@@ -89,6 +91,8 @@ pub use batch_cache::BatchTypeCheckCache;
 pub struct ServerState {
     /// Document store for managing open documents
     pub documents: DocumentStore,
+    #[cfg(feature = "native")]
+    project_contexts: project_contexts::ProjectContexts,
     #[cfg(feature = "experimental-source-navigation")]
     native_linked_editing: AtomicBool,
     #[cfg(feature = "experimental-source-navigation")]

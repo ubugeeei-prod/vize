@@ -3,6 +3,7 @@
 mod formatting;
 mod inlay_hint;
 mod linked_editing;
+mod properties;
 mod typed;
 
 use tower_lsp::{
@@ -32,7 +33,7 @@ use tower_lsp::{
 use tower_lsp::lsp_types::{Position, Range};
 
 use super::MaestroServer;
-use crate::ide::{DocumentHighlightService, DocumentLinkService, IdeContext, position_to_offset};
+use crate::ide::position_to_offset;
 
 #[cfg(feature = "native")]
 use crate::ide::CompletionService;
@@ -58,6 +59,13 @@ impl LanguageServer for MaestroServer {
         // Resolve workspace root
         let workspace_path = self.state.primary_workspace_path(&params);
 
+        // Set workspace root for native features (Corsa, batch checker)
+        #[cfg(feature = "native")]
+        if let Some(ref path) = workspace_path {
+            tracing::info!("Setting workspace root: {:?}", path);
+            self.state.set_workspace_root(path.clone());
+        }
+
         // Load format config from workspace root (always, regardless of feature)
         if let Some(ref path) = workspace_path {
             self.state.load_workspace_config(path);
@@ -69,13 +77,6 @@ impl LanguageServer for MaestroServer {
         );
         self.state
             .apply_lsp_initialization_options(params.initialization_options.as_ref());
-
-        // Set workspace root for native features (Corsa, batch checker)
-        #[cfg(feature = "native")]
-        if let Some(path) = workspace_path {
-            tracing::info!("Setting workspace root: {:?}", path);
-            self.state.set_workspace_root(path);
-        }
 
         Ok(InitializeResult {
             capabilities: self.client_capabilities(),
@@ -106,84 +107,121 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn did_open(&self, params: DidOpenTextDocumentParams) {
-        self.open_document(params).await;
+        let server = self.for_document(&params.text_document.uri);
+        server.open_document(params).await;
     }
 
     async fn did_change(&self, params: DidChangeTextDocumentParams) {
+        let server = self.for_document(&params.text_document.uri);
         let uri = params.text_document.uri;
         let version = params.text_document.version;
-        self.apply_document_changes(&uri, params.content_changes, version)
+        server
+            .apply_document_changes(&uri, params.content_changes, version)
             .await;
     }
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
+        let server = self.for_document(&params.text_document.uri);
         let uri = params.text_document.uri;
-        self.publish_saved_diagnostics(&uri).await;
+        server.publish_saved_diagnostics(&uri).await;
     }
 
     async fn did_close(&self, params: DidCloseTextDocumentParams) {
-        self.close_document(params).await;
+        let server = self.for_document(&params.text_document.uri);
+        server.close_document(params).await;
     }
 
     async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
-        self.native_request(self.hover_request(params)).await
+        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        server.native_request(server.hover_request(params)).await
     }
 
     async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
-        self.native_request(self.completion_request(params)).await
+        let server = self.for_document(&params.text_document_position.text_document.uri);
+        server
+            .native_request(server.completion_request(params))
+            .await
     }
 
     async fn completion_resolve(&self, item: CompletionItem) -> Result<CompletionItem> {
-        self.native_request(async {
-            #[cfg(feature = "native")]
-            let item = CompletionService::resolve(&self.state, item).await;
-            Ok(item)
-        })
-        .await
+        let uri = item
+            .data
+            .as_ref()
+            .and_then(|data| data.get("vizeCompletion"))
+            .and_then(|data| data.get("uri"))
+            .and_then(serde_json::Value::as_str)
+            .and_then(|uri| tower_lsp::lsp_types::Url::parse(uri).ok());
+        let server = uri.as_ref().map(|uri| self.for_document(uri));
+        let server = server.as_deref().unwrap_or(self);
+        server
+            .native_request(async {
+                #[cfg(feature = "native")]
+                let item = CompletionService::resolve(&server.state, item).await;
+                Ok(item)
+            })
+            .await
     }
 
     async fn signature_help(&self, params: SigHelpParams) -> Result<Option<SigHelp>> {
-        self.native_request(async { signature_help::signature_help(self, params).await })
+        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        server
+            .native_request(async { signature_help::signature_help(&server, params).await })
             .await
     }
 
     async fn goto_definition(&self, params: DefParams) -> Result<Option<DefResponse>> {
-        self.native_request(async { navigation::goto_definition(self, params).await })
+        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        server
+            .native_request(async { navigation::goto_definition(&server, params).await })
             .await
     }
 
     async fn goto_type_definition(&self, params: TypeDefParams) -> Result<Option<TypeDefResponse>> {
-        self.native_request(async { navigation::goto_type_definition(self, params).await })
+        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        server
+            .native_request(async { navigation::goto_type_definition(&server, params).await })
             .await
     }
 
     async fn goto_declaration(&self, params: DeclParams) -> Result<Option<DeclResponse>> {
-        self.native_request(async { navigation::goto_declaration(self, params).await })
+        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        server
+            .native_request(async { navigation::goto_declaration(&server, params).await })
             .await
     }
 
     async fn goto_implementation(&self, params: ImplParams) -> Result<Option<ImplResponse>> {
-        self.native_request(async { navigation::goto_implementation(self, params).await })
+        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        server
+            .native_request(async { navigation::goto_implementation(&server, params).await })
             .await
     }
 
     async fn prepare_call_hierarchy(&self, params: CHPrepareParams) -> Result<Option<CHItems>> {
-        self.native_request(async { call_hierarchy::prepare(self, params).await })
+        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        server
+            .native_request(async { call_hierarchy::prepare(&server, params).await })
             .await
     }
 
     async fn incoming_calls(&self, params: CHIncomingParams) -> Result<Option<CHIncomingResponse>> {
-        self.native_request(async { call_hierarchy::incoming(self, params).await })
+        let server = self.for_document(&params.item.uri);
+        server
+            .native_request(async { call_hierarchy::incoming(&server, params).await })
             .await
     }
 
     async fn outgoing_calls(&self, params: CHOutgoingParams) -> Result<Option<CHOutgoingResponse>> {
-        self.native_request(async { call_hierarchy::outgoing(self, params).await })
+        let server = self.for_document(&params.item.uri);
+        server
+            .native_request(async { call_hierarchy::outgoing(&server, params).await })
             .await
     }
 
     async fn references(&self, params: ReferenceParams) -> Result<Option<Vec<Location>>> {
-        self.native_request(async { references::references(self, params).await })
+        let server = self.for_document(&params.text_document_position.text_document.uri);
+        server
+            .native_request(async { references::references(&server, params).await })
             .await
     }
 
@@ -191,40 +229,20 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentHighlightParams,
     ) -> Result<Option<Vec<DocumentHighlight>>> {
-        if !self.state.lsp_features().references {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document_position_params.text_document.uri;
-        let position = params.text_document_position_params.position;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let Some(ctx) = position_to_offset(&content, position.line, position.character)
-            .and_then(|offset| IdeContext::new(&self.state, uri, offset))
-        else {
-            return Ok(None);
-        };
-
-        Ok(DocumentHighlightService::highlights(&ctx))
+        self.document_highlight_request(params).await
     }
 
     async fn document_symbol(
         &self,
         params: DocumentSymbolParams,
     ) -> Result<Option<DocumentSymbolResponse>> {
-        if !self.state.lsp_features().document_symbols {
-            return Ok(None);
-        }
-        Ok(super::document_structure::document_symbols(
-            &self.state,
-            &params,
-        ))
+        self.document_symbol_request(params).await
     }
 
     async fn code_action(&self, params: CodeActionParams) -> Result<Option<CodeActionResponse>> {
-        self.native_request(async { Ok(super::code_actions::code_actions(self, &params).await) })
+        let server = self.for_document(&params.text_document.uri);
+        server
+            .native_request(async { Ok(super::code_actions::code_actions(&server, &params).await) })
             .await
     }
 
@@ -232,33 +250,33 @@ impl LanguageServer for MaestroServer {
         &self,
         params: TextDocumentPositionParams,
     ) -> Result<Option<PrepareRenameResponse>> {
-        self.native_request(self.prepare_rename_request(params))
+        let server = self.for_document(&params.text_document.uri);
+        server
+            .native_request(server.prepare_rename_request(params))
             .await
     }
 
     async fn rename(&self, params: RenameParams) -> Result<Option<WorkspaceEdit>> {
-        self.native_request(self.rename_request(params)).await
+        let server = self.for_document(&params.text_document_position.text_document.uri);
+        server.native_request(server.rename_request(params)).await
     }
 
     async fn semantic_tokens_full(
         &self,
         params: SemanticTokensParams,
     ) -> Result<Option<SemanticTokensResult>> {
-        Ok(super::semantic_tokens::full(&self.state, &params))
+        self.semantic_tokens_full_request(params).await
     }
 
     async fn semantic_tokens_range(
         &self,
         params: SemanticTokensRangeParams,
     ) -> Result<Option<SemanticTokensRangeResult>> {
-        Ok(super::semantic_tokens::range(&self.state, &params))
+        self.semantic_tokens_range_request(params).await
     }
 
     async fn code_lens(&self, params: CodeLensParams) -> Result<Option<Vec<CodeLens>>> {
-        if !self.state.lsp_features().code_lens {
-            return Ok(None);
-        }
-        Ok(super::annotations::code_lens(&self.state, &params))
+        self.code_lens_request(params).await
     }
 
     async fn symbol(
@@ -292,56 +310,32 @@ impl LanguageServer for MaestroServer {
     }
 
     async fn document_link(&self, params: DocumentLinkParams) -> Result<Option<Vec<DocumentLink>>> {
-        if !self.state.lsp_features().document_links {
-            return Ok(None);
-        }
-
-        let uri = &params.text_document.uri;
-
-        let Some(content) = self.state.documents.text(uri) else {
-            return Ok(None);
-        };
-        let links = DocumentLinkService::get_links(&self.state, &content, uri);
-
-        if links.is_empty() {
-            Ok(None)
-        } else {
-            Ok(Some(links))
-        }
+        self.document_link_request(params).await
     }
 
     async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
-        self.native_request(self.inlay_hint_request(params)).await
+        let server = self.for_document(&params.text_document.uri);
+        server
+            .native_request(server.inlay_hint_request(params))
+            .await
     }
 
     /// Colour swatches for the CSS a `.vue` file authors. Rides the
     /// `document_links` flag: both decorate a literal in the authored text and
     /// make it interactive — a path you can follow, a colour you can pick.
     async fn document_color(&self, params: DocumentColorParams) -> Result<Vec<ColorInformation>> {
-        if !self.state.lsp_features().document_links {
-            return Ok(Vec::new());
-        }
-        Ok(super::annotations::document_color(&self.state, &params))
+        self.document_color_request(params).await
     }
 
     async fn color_presentation(
         &self,
         params: ColorPresentationParams,
     ) -> Result<Vec<ColorPresentation>> {
-        if !self.state.lsp_features().document_links {
-            return Ok(Vec::new());
-        }
-        Ok(super::annotations::color_presentation(&params))
+        self.color_presentation_request(params).await
     }
 
     async fn folding_range(&self, params: FoldingRangeParams) -> Result<Option<Vec<FoldingRange>>> {
-        if !self.state.lsp_features().folding_ranges {
-            return Ok(None);
-        }
-        Ok(super::document_structure::folding_ranges(
-            &self.state,
-            &params,
-        ))
+        self.folding_range_request(params).await
     }
 
     /// Expand/shrink selection over the **authored** `.vue` document.
@@ -352,13 +346,7 @@ impl LanguageServer for MaestroServer {
         &self,
         params: SelectionRangeParams,
     ) -> Result<Option<Vec<SelectionRange>>> {
-        if !self.state.lsp_features().folding_ranges {
-            return Ok(None);
-        }
-        Ok(super::document_structure::selection_ranges(
-            &self.state,
-            &params,
-        ))
+        self.selection_range_request(params).await
     }
 
     /// Keep an open/close tag-name pair in sync while the user types.
@@ -369,11 +357,13 @@ impl LanguageServer for MaestroServer {
         &self,
         params: LinkedEditingRangeParams,
     ) -> Result<Option<LinkedEditingRanges>> {
-        linked_editing::linked_editing_range(self, params).await
+        let server = self.for_document(&params.text_document_position_params.text_document.uri);
+        linked_editing::linked_editing_range(&server, params).await
     }
 
     async fn formatting(&self, params: DocumentFormattingParams) -> Result<Option<Vec<TextEdit>>> {
-        formatting::formatting(self, params).await
+        let server = self.for_document(&params.text_document.uri);
+        formatting::formatting(&server, params).await
     }
 
     /// Format only the SFC blocks the selection touches — see
@@ -382,7 +372,8 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentRangeFormattingParams,
     ) -> Result<Option<Vec<TextEdit>>> {
-        formatting::range_formatting(self, params).await
+        let server = self.for_document(&params.text_document.uri);
+        formatting::range_formatting(&server, params).await
     }
 
     /// Re-indent the line being typed on — see `server::format::on_type` for
@@ -391,7 +382,8 @@ impl LanguageServer for MaestroServer {
         &self,
         params: DocumentOnTypeFormattingParams,
     ) -> Result<Option<Vec<TextEdit>>> {
-        formatting::on_type_formatting(self, params).await
+        let server = self.for_document(&params.text_document_position.text_document.uri);
+        formatting::on_type_formatting(&server, params).await
     }
 }
 
