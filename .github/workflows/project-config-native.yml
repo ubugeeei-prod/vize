@@ -7,6 +7,7 @@ on:
       - ".github/workflows/project-config-native.yml"
       - "crates/vize/tests/project_config_cli**"
       - "crates/vize/tests/support/lsp_process**"
+      - "tests/differential/project-config-native-receipt.ts"
       - "crates/vize_carton/src/config/**"
       - "crates/vize_maestro/src/server/**"
       - "tests/_fixtures/differential/config/**"
@@ -64,6 +65,12 @@ jobs:
           set -euo pipefail
           unset VIZE_TEST_DISABLE_TSGO
           cargo test --locked --profile ci -p vize --test project_config_cli -- --nocapture 2>&1 | tee target/project-config-native/tests.log
+      - name: Authenticate every lifecycle case against the post-test production executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          unset VIZE_TEST_DISABLE_TSGO
+          vp node tests/differential/project-config-native-receipt.ts
       - name: Upload complete source identity, decoded RPC and process terminal custody
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a

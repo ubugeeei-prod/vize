@@ -33,13 +33,11 @@ impl ServerState {
             }
         }
     }
-
     /// Get a clone of the current type checker config.
     #[inline]
     pub fn get_type_checker_config(&self) -> TypeCheckerConfig {
         self.type_checker_config.read().0.clone()
     }
-
     /// Effective editor Corsa request bound in milliseconds.
     #[inline]
     pub fn lsp_request_timeout_ms(&self) -> u64 {
