@@ -7,7 +7,10 @@ import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { nativePreparationIsActive } from "../../native/scripts/test-preparation.mjs";
+import {
+  nativeHistoryReceipt,
+  validateNativeHistoryBuild,
+} from "../../native/scripts/formatter-history-build.mjs";
 import { snapshot, plainHostEnvironment, readEvents } from "./test-support/html-cli-oracles.mjs";
 import { presentationInputs } from "./cli/presentation-context.ts";
 import {
@@ -31,15 +34,34 @@ const capturePath = process.env.VIZE_OXLINT_MIXED_CAPTURE;
 const custody = JSON.parse(fs.readFileSync(process.env.VIZE_OXLINT_NATIVE_CUSTODY));
 assert.equal(custody.schema, "vize.oxlint.source-native");
 assert.equal(custody.version, 1);
+assert.equal(process.env.GITHUB_ACTIONS, "true");
+assert.equal(custody.source.head, process.env.GITHUB_SHA);
 assert.equal(wrapper, fs.realpathSync(path.join(packageDir, "dist/cli.mjs")));
 assert.ok(capturePath && process.env.NODE_OPTIONS, "source observer and complete capture required");
 const nativeDir = path.join(repository, "npm/native");
+const buildReceiptBytes = fs.readFileSync(nativeHistoryReceipt(nativeDir));
+const buildReceipt = JSON.parse(buildReceiptBytes);
+validateNativeHistoryBuild(nativeDir, buildReceipt);
+assert.deepEqual(custody.source, buildReceipt.source);
+assert.deepEqual(custody.toolchain, buildReceipt.toolchain);
+assert.equal(custody.binary.sha256, buildReceipt.frozen.sha256);
 assert.ok(
-  nativePreparationIsActive(nativeDir),
-  "genuine current-source native preparation required",
+  fs
+    .readFileSync(path.join(path.dirname(custody.binary.path), "build-receipt.json"))
+    .equals(buildReceiptBytes),
+  "staged current-source build receipt must be byte exact",
 );
 const native = createRequire(import.meta.url)(path.join(nativeDir, "index.js"));
 assert.equal(typeof native.lintOxlintHtml, "function");
+const driverLoad = readEvents(custody.calls).filter(
+  (event) => event.kind === "load" && event.pid === process.pid,
+);
+assert.ok(driverLoad.length, "driver must actually load the authenticated staged addon");
+for (const event of driverLoad) {
+  assert.deepEqual(event.source, custody.source);
+  assert.equal(event.binary, custody.binary.path);
+  assert.equal(event.binarySha256, custody.binary.sha256);
+}
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 assert.equal(hash(fs.readFileSync(custody.binary.path)), custody.binary.sha256);
 assert.equal(fs.realpathSync(custody.binary.path), custody.binary.path);

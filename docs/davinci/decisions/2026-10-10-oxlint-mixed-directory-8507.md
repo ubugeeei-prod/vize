@@ -39,7 +39,17 @@ error companions have explicitly authored rule overlays. A historical observer
 never substitutes the current-source addon. Linux Actions assembly is distinct
 from the reporter's Darwin/pnpm installation and from public-release acceptance.
 
-No regression campaign has completed at preparation. Require fresh exact-head
+The first e682 source run fails before the new cases: its driver mistakenly
+requires the already completed JS-test process's live preparation receipt.
+Validate the existing full native build receipt instead, join its source,
+toolchain and physical SHA to the staged byte-identical receipt, and require
+the driver's authenticated addon load before any case. Its separate controller
+formatting failure is retained. The unchanged L3 corpus also observes precisely
+the two newly authored Vue fixture paths (498 to 500), with all 151 remarks and
+zero remark changes preserved; register only those sorted paths. Original
+inputs, reports, counts, timeouts and every prior corpus assertion remain fixed.
+
+No regression campaign has completed. Require fresh exact-head
 Actions and protected actual merge, then the first genuinely included published
 release and its official installed consumer replay before closing #8507. The
 existing #7903 installed whole mixed/four-format campaign remains a separate
