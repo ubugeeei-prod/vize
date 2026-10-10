@@ -78,10 +78,12 @@ and unsaved content. The workspace inventory outlives primary runtime retirement
 and never borrows that retired runtime's native transaction.
 
 Bulk requests capture stable routing generation and authored source revision.
-Active config/folder mutations refuse requests before work begins; changes
+Active config/folder or authored-buffer mutations refuse requests before work begins; changes
 during work refuse the aggregate reply. Individual native queries additionally
 hold their own owner's request scope. The routing mutation guard spans folder
 updates, owner retirement, route clearing, and virtual-source cleanup.
+Edit deduplication uses typed hash identities for URI, range, text, and annotation
+ID, retaining original order and distinct annotations without quadratic scans.
 
 Public JSON-RPC controls reload the primary config before querying complete
 symbol and import-edit vectors, preserving sibling package disables and explicit

@@ -23,12 +23,15 @@ impl MaestroServer {
             .state
             .stable_project_routing_generation()
             .ok_or_else(Error::content_modified)?;
-        let documents = self.state.documents.stable_revision();
+        let documents = self
+            .state
+            .documents
+            .stable_revision()
+            .ok_or_else(Error::content_modified)?;
         let result = request.await;
         if self.state.project_routing_shutting_down()
             || self.state.stable_project_routing_generation() != Some(generation)
-            || documents.is_none()
-            || self.state.documents.stable_revision() != documents
+            || self.state.documents.stable_revision() != Some(documents)
         {
             return Err(Error::content_modified());
         }

@@ -95,6 +95,18 @@ fn bulk_requests_refuse_a_changed_project_generation_without_borrowing_retired_p
         "a request during owner mutation must not run"
     );
     drop(change);
+    let polled = std::sync::atomic::AtomicBool::new(false);
+    let source_mutation = server.state.documents.source_mutation_for_test();
+    let refused = futures::executor::block_on(server.project_request(async {
+        polled.store(true, std::sync::atomic::Ordering::Relaxed);
+        Ok::<_, tower_lsp::jsonrpc::Error>(42)
+    }));
+    assert_eq!(
+        refused.unwrap_err(),
+        tower_lsp::jsonrpc::Error::content_modified()
+    );
+    assert!(!polled.load(std::sync::atomic::Ordering::Relaxed));
+    drop(source_mutation);
     assert_eq!(
         futures::executor::block_on(
             server.project_request(async { Ok::<_, tower_lsp::jsonrpc::Error>(42) })

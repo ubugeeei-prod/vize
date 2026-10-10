@@ -3,6 +3,8 @@
     clippy::disallowed_types,
     reason = "bulk rename owns cached project views and LSP edit maps"
 )]
+mod deduplicate;
+
 use super::{FileRenameService, ServerState, manual, merge_workspace_edits};
 use std::sync::Arc;
 use tower_lsp::{
@@ -39,7 +41,7 @@ impl FileRenameService {
         let manual = manual::collect_project_import_rename_edits(owner, &params.files);
         let mut edit = merge_workspace_edits(edit, manual);
         if let Some(edit) = &mut edit {
-            deduplicate_edits(edit);
+            deduplicate::edits(edit);
         }
         Ok(edit)
     }
@@ -69,56 +71,6 @@ fn retain_owned_edits(edit: &mut WorkspaceEdit, mut owns: impl FnMut(&Url) -> bo
             operations.retain(|operation| match operation {
                 DocumentChangeOperation::Edit(edit) => owns(&edit.text_document.uri),
                 DocumentChangeOperation::Op(_) => false,
-            })
-        }
-        None => {}
-    }
-}
-
-fn deduplicate_edits(edit: &mut WorkspaceEdit) {
-    if let Some(changes) = &mut edit.changes {
-        for edits in changes.values_mut() {
-            let mut unique = Vec::new();
-            for change in edits.drain(..) {
-                if !unique.contains(&change) {
-                    unique.push(change);
-                }
-            }
-            *edits = unique;
-        }
-    }
-    // Native responses use versioned document edits while the scanner uses
-    // changes. Merging converts those to the same representation; retain one
-    // exact edit at each authored range, without modifying different edits.
-    let mut seen = Vec::new();
-    match &mut edit.document_changes {
-        Some(DocumentChanges::Edits(edits)) => edits.retain_mut(|edit| {
-            edit.edits.retain(|change| {
-                let key = (edit.text_document.uri.clone(), change.clone());
-                if seen.contains(&key) {
-                    false
-                } else {
-                    seen.push(key);
-                    true
-                }
-            });
-            !edit.edits.is_empty()
-        }),
-        Some(DocumentChanges::Operations(operations)) => {
-            operations.retain_mut(|operation| match operation {
-                DocumentChangeOperation::Edit(edit) => {
-                    edit.edits.retain(|change| {
-                        let key = (edit.text_document.uri.clone(), change.clone());
-                        if seen.contains(&key) {
-                            false
-                        } else {
-                            seen.push(key);
-                            true
-                        }
-                    });
-                    !edit.edits.is_empty()
-                }
-                DocumentChangeOperation::Op(_) => true,
             })
         }
         None => {}
