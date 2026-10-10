@@ -1,18 +1,23 @@
 import assert from "node:assert/strict";
 import path from "node:path";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { parseArtFile } from "../cli/utils.ts";
 import { assertUniqueSnapshotNames } from "./snapshot-collisions.ts";
 import { buildSnapshotName } from "./utils.ts";
 
-const fixtures = fileURLToPath(
-  new URL("../../../../../tests/tooling/fixtures/musea/snapshot-collision/", import.meta.url),
-);
+const repository = fileURLToPath(new URL("../../../../../", import.meta.url));
 
 void test("two genuine same-basename Arts retain separate native identities and cannot share a baseline", async () => {
+  const fixture = JSON.parse(
+    await readFile(
+      path.join(repository, "tests/_fixtures/differential/musea/snapshot-collision.json"),
+      "utf8",
+    ),
+  );
   const arts = await Promise.all(
-    ["left", "right"].map((side) => parseArtFile(path.join(fixtures, side, "Button.art.vue"))),
+    fixture.sources.map((source: string) => parseArtFile(path.join(repository, source))),
   );
   assert.ok(arts[0] && arts[1]);
   assert.notEqual(arts[0].path, arts[1].path);
@@ -33,7 +38,7 @@ void test("two genuine same-basename Arts retain separate native identities and 
   }));
   assert.equal(
     buildSnapshotName(arts[0].path, "Default", jobs[0].viewport),
-    "Button--Default--small.png",
+    fixture.legacySnapshot,
   );
   assert.throws(
     () => assertUniqueSnapshotNames(jobs),
