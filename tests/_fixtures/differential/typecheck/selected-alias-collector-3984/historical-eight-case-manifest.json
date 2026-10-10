@@ -1,0 +1,81 @@
+{
+  "scope": "Immutable original eight-case input/oracle/driver/source bytes; no execution or corrected-head acceptance claim",
+  "sourceSha": "77ed369860b19a44f2716dfad9d537d968fba018",
+  "sourceTree": "6e8e3874a828782f445510cbb3eea1f3d588064e",
+  "archive": "historical-eight-case.tar.gz",
+  "archiveSha256": "52da08c9f047d83dabe0e400b242df84649ec914757b53ff1c196f678602282b",
+  "members": [
+    {
+      "path": ".github/workflows/type-snapshot-bench.yml",
+      "bytes": 10807,
+      "sha256": "8aaf7a9febb610c3556334610a3cf0df8304ef00823182480ae4b4334996ca66",
+      "gitBlob": "000f5a06afe7bdfe0d1045c554d5c0eb0d3e2910"
+    },
+    {
+      "path": "crates/vize/src/commands/check/imports_aliases.rs",
+      "bytes": 8040,
+      "sha256": "5a612ebb5f2e263a404c8692fc5847862929842e07d837c0e6eb1d22bf4ffd5b",
+      "gitBlob": "ef212910d8cb4e806e313e0d069365e100f875ec"
+    },
+    {
+      "path": "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs",
+      "bytes": 7255,
+      "sha256": "3d97f55712486403c0accc0db1121391ab70140177deb8630ce591e4df4781e8",
+      "gitBlob": "8a52bdbcbbc28be6b9a704a4cceab0fefe8620d3"
+    },
+    {
+      "path": "docs/davinci/decisions/2026-10-10-path-alias-pattern-selection.md",
+      "bytes": 5710,
+      "sha256": "289eb163961104eccce92d79f88a6ff65e2e659e2512745f63351668a117595c",
+      "gitBlob": "0b0a03818cd2f650533dc7dc855266c771d0e02e"
+    },
+    {
+      "path": "tests/_fixtures/differential/typecheck/path-alias-precedence-3984/App.tsx.txt",
+      "bytes": 75,
+      "sha256": "255d4f7058e70cae7f42e3d915f8e58de1af23898bfb07a1183054f3b984d55f",
+      "gitBlob": "4aa405943a7410cbbef747e6f8df1095aa44050d"
+    },
+    {
+      "path": "tests/_fixtures/differential/typecheck/path-alias-precedence-3984/App.vue.txt",
+      "bytes": 110,
+      "sha256": "b3b050673b04237323a26439f6b9c4294344ebd8080db95d6cc6e9e96507b185",
+      "gitBlob": "7bbccf3ccfa121ca44619db45406986324390b69"
+    },
+    {
+      "path": "tests/_fixtures/differential/typecheck/path-alias-precedence-3984/README.md",
+      "bytes": 2483,
+      "sha256": "1a45a10fd225f2f859ea9613ca57d3c791c2f4f9f6dfceb9798014ffd3e66e04",
+      "gitBlob": "2b98779cdd282d6c1810b0bac082671d61e234e8"
+    },
+    {
+      "path": "tests/_fixtures/differential/typecheck/path-alias-precedence-3984/cases.json",
+      "bytes": 2762,
+      "sha256": "e90eb1c9d258c2f707fe5b78f03e1f2c71b4721a8519a2b212f362f67cfe5afa",
+      "gitBlob": "6f17525b17c8b3efaae089af5a8443b266bb2ede"
+    },
+    {
+      "path": "tests/_fixtures/differential/typecheck/path-alias-precedence-3984/number.ts.txt",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92",
+      "gitBlob": "95a95c192b38a58911fd3b211f412a65ef56dc63"
+    },
+    {
+      "path": "tests/_fixtures/differential/typecheck/path-alias-precedence-3984/string.ts.txt",
+      "bytes": 30,
+      "sha256": "9f511ef8ef036ccf79997da03857502d7ae47dbabf491266b9da9a9cca88fb6f",
+      "gitBlob": "1512dd75b2d42737268f3a70b691bff82730a329"
+    },
+    {
+      "path": "tools/benchmarks/scripts/canon-alias-corpus.mjs",
+      "bytes": 4235,
+      "sha256": "dc09c48a11bfd9fca7b42402b40a5774ab9785a71f620d9887c53d7d7321a73b",
+      "gitBlob": "c7c208f491d910a79ea03302258c486514e94305"
+    },
+    {
+      "path": "tools/benchmarks/scripts/canon-alias-native.mjs",
+      "bytes": 11470,
+      "sha256": "b3ba1fe31726aeeec7dae35ad2f5a1a59c70e9deb1f73fda6d04c5303a41562b",
+      "gitBlob": "bd4bfdcb023bf90a23f716ee7969a9c9a2822d13"
+    }
+  ]
+}

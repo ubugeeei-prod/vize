@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "noEmit": true,
+    "paths": {
+      "@x": [
+        "./exact.tsx"
+      ],
+      "@x*": [
+        "./wildcard*.tsx"
+      ]
+    }
+  },
+  "files": [
+    "App.tsx"
+  ]
+}
