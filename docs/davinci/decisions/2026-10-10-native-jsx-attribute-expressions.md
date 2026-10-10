@@ -40,3 +40,10 @@ This source repair is a genuine native Stack child of the nested-expression
 producer. #8371 fresh configuration defaults remain held until actual source
 ancestry, full exact-head Actions, protected delivery and installed verification
 qualify. Existing historical JSX/configuration oracles are not changed.
+
+Hosted custody routes the same four CLI vectors through the existing JSX capture
+root. Passive records include the actual spawned PID, complete command arguments,
+source revision and streamed CLI/Corsa executable hashes, alongside unchanged
+raw stdout/stderr and full inputs. The original Ant observation remains sealed
+at its original false-authority hash; its historical local receipt supplies no
+new-head Actions credit. Fresh source/native/full checks remain required.

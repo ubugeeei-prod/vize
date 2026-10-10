@@ -1,9 +1,11 @@
 //! Required native full CLI packets for authored JSX attribute AST roots.
 use super::{corsa_requirement, link_dir};
 use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 use std::{
+    io::Read,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Stdio},
 };
 
 #[test]
@@ -27,9 +29,26 @@ fn authored_attribute_roots_preserve_complete_native_cli_packets() {
     let dependencies = vue.parent().unwrap();
     let fixtures = workspace
         .join("tests/_fixtures/differential/typecheck/jsx-attribute-native-expressions-8371");
-    let output = workspace
-        .join("target/vize-tests/jsx-attributes")
+    let output = std::env::var_os("VIZE_JSX_SLOT_CAPTURE")
+        .map(PathBuf::from)
+        .map(|root| root.join("attribute-expressions"))
+        .unwrap_or_else(|| workspace.join("target/vize-tests/jsx-attributes"))
         .join(std::process::id().to_string());
+    let revision = Command::new("git")
+        .current_dir(workspace)
+        .args(["rev-parse", "HEAD"])
+        .output()
+        .unwrap();
+    assert!(revision.status.success());
+    let source_sha = std::str::from_utf8(&revision.stdout).unwrap().trim();
+    if let Ok(expected) = std::env::var("SOURCE_SHA") {
+        assert_eq!(source_sha, expected);
+    }
+    let cli = Path::new(env!("CARGO_BIN_EXE_vize"))
+        .canonicalize()
+        .unwrap();
+    let cli_sha256 = executable_hash(&cli);
+    let corsa_sha256 = executable_hash(&corsa);
     std::fs::create_dir_all(&output).unwrap();
     for (id, input, semantic_probe, jsx) in [
         ("valid", "valid", false, true),
@@ -65,20 +84,31 @@ fn authored_attribute_roots_preserve_complete_native_cli_packets() {
             json!({"typeChecker":{"jsxTypecheck":jsx}}).to_string(),
         )
         .unwrap();
-        let result = Command::new(env!("CARGO_BIN_EXE_vize"))
+        let mut command = Command::new(env!("CARGO_BIN_EXE_vize"));
+        command
             .current_dir(&project)
             .arg("check")
             .args(&files)
             .args(["--quiet", "--format", "json", "--corsa-path"])
             .arg(&corsa)
-            .output()
-            .unwrap();
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+        let arguments: Vec<_> = command
+            .get_args()
+            .map(|argument| argument.to_string_lossy().into_owned())
+            .collect();
+        let child = command.spawn().unwrap();
+        let pid = child.id();
+        let result = child.wait_with_output().unwrap();
         std::fs::write(project.join("stdout.raw"), &result.stdout).unwrap();
         std::fs::write(project.join("stderr.raw"), &result.stderr).unwrap();
         std::fs::write(
             project.join("process.json"),
             json!({"exitCode":result.status.code(),
-            "sourceCli":env!("CARGO_BIN_EXE_vize"),"corsa":corsa,"jsx":jsx})
+            "sourceCli":cli,"sourceCliSha256":cli_sha256,
+            "corsa":corsa,"corsaSha256":corsa_sha256,"jsx":jsx,
+            "sourceSha":source_sha,"pid":pid,"harnessPid":std::process::id(),
+            "arguments":arguments,"cwd":project})
             .to_string(),
         )
         .unwrap();
@@ -120,4 +150,18 @@ fn authored_attribute_roots_preserve_complete_native_cli_packets() {
             assert_eq!(std::fs::read(project.join("Probe.vue")).unwrap(), probe);
         }
     }
+}
+
+fn executable_hash(path: &Path) -> vize_l0::String {
+    let mut file = std::fs::File::open(path).unwrap();
+    let mut hash = Sha256::new();
+    let mut buffer = [0; 64 * 1024];
+    loop {
+        let length = file.read(&mut buffer).unwrap();
+        if length == 0 {
+            break;
+        }
+        hash.update(&buffer[..length]);
+    }
+    vize_l0::cstr!("{:x}", hash.finalize())
 }
