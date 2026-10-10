@@ -28,3 +28,7 @@ Separate props-editor follow-ups discovered during this audit remain unfinished:
 - Removing a palette prop and adding the same name as a custom prop leaves that
   name in `deletedPaletteProps`, so it never reaches the preview; saved-state
   restoration also rejects the replacement as a palette-name collision.
+- Add Prop accepts arbitrary names without validation. Names containing spaces,
+  quotes or Vue directive syntax can still produce invalid or unintended Usage
+  code. This change preserves values for ordinary Vue prop names; arbitrary
+  custom-name support requires a separate keyed `v-bind` contract.
