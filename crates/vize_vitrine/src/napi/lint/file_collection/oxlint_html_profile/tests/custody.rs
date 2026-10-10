@@ -55,6 +55,7 @@ impl Receipt {
         let receipt_bytes = fs::read(&receipt).ok();
         let source_identity = match profile {
             HostProfile::Oxlint178 => "c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd",
+            HostProfile::Oxlint181 => "0b4e2e67f4193e7ebfcc64982275eb583ae82c83",
             HostProfile::Oxlint186 => "2ae2939bb2fd98796393658b21556b2a2467e047",
         };
         let evidence = json!({
