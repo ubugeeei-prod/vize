@@ -81,7 +81,7 @@ vp dev
 http://localhost:5173/__musea__
 ```
 
-CLI ラッパー、静的ホスト、テストの要件は [Musea のホスティング](./musea-hosting) を参照してください。
+CLI ラッパー、静的ホスト、テストの要件は [Musea のホスティング](./musea-hosting.md) を参照してください。
 
 ## 共有構成
 
