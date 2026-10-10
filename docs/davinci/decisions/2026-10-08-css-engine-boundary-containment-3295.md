@@ -31,6 +31,17 @@ laws. The earlier local controls remain qualified only to `26031a4f`; the
 new source head requires its own full hosted CLI, native and instruction-count
 results. Queue admission and publication remain separate pending actions.
 
+The first exact source measurement, run `38017077091` at `575068cd`, retained
+all 312 instruction observations but exceeded the unchanged JSX markup ceiling:
+45,769 instructions against 45,385. Signed main's protected run `38015025652`
+passed those same budgets; its log does not expose the individual JSX count.
+The unchanged gallery fixture cannot enter CSS parsing, and no markup visitor,
+binding, registry, benchmark or budget changed. Keep the private Patina CSS
+helper out of caller inlining as a narrow compiler-isolation experiment.
+The actual parse, unwind handling and fallback remain identical. Fresh whole
+source qualification must establish whether this resolves the failure; no
+speedup or instruction-gate success is assumed.
+
 Separate finite child processes retain the complete arguments, input,
 stdout, stderr and exit status. `a{opacity:abs(-50%)}` exits by SIGABRT through
 `formatSfc` and CSS-only `lintPatinaSfc`, while `parseCssAst` returns the
