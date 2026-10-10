@@ -127,7 +127,7 @@ export function createLoad(state: VirtualModuleState) {
       const lastColonIndex = rest.lastIndexOf(":");
       if (lastColonIndex !== -1) {
         const artPath = rest.slice(0, lastColonIndex);
-        const variantName = rest.slice(lastColonIndex + 1);
+        const variantName = decodeVariantName(rest.slice(lastColonIndex + 1));
         const art = state.artFiles.get(artPath);
         if (art) {
           const variantComponentName = toPascalCase(variantName);
