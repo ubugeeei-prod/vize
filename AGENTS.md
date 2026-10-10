@@ -17,8 +17,9 @@ most when you have been told to "do the rest" and left to run.
   [#6830](https://github.com/ubugeeei-prod/vize/issues/6830) (CI). Each has
   sub-issues, and every sub-issue body has an `**Order:**` line.
 - **Decisions:** the
-  [decision record](./docs/davinci/decisions/2026-09-27-level-restructure.md),
-  including its "Order of work" table.
+  [canonical collection](./docs/davinci/decisions/README.md), rooted in the
+  [foundation record](./docs/davinci/decisions/2026-09-27-level-restructure.md)
+  and its "Order of work" table.
 - **Detailed designs:** the design comments on
   [#6836](https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929)
   (L1 embeds),
@@ -37,9 +38,13 @@ product fix-history gates still apply; use the [order record](./docs/davinci/dec
 
 - **Record every decision and TODO in an issue or in `docs/`.** Never keep
   them only in session or agent memory.
-- **Record each decision in two places in the same change:** as a comment
-  on its issue, and in the
-  [decision record](./docs/davinci/decisions/2026-09-27-level-restructure.md).
+- **Record each decision in two places in the same change:** as a concise
+  comment on its existing issue and a dedicated record under
+  [`docs/davinci/decisions/`](./docs/davinci/decisions/README.md). The full
+  collection, including the foundation and its companions, is canonical.
+  Follow the [recording workflow](./docs/davinci/decisions/README.md): give
+  independent decisions their own files, without appending each new decision
+  to the shared foundation or index.
 - **Keep PRs small** and give them conventional titles, e.g.
   `refactor(l1): …`.
 - **Use `wt` for isolated worktrees** and assign independent slices to

@@ -1,5 +1,5 @@
 # Decision Record — Level Restructure (2026-09-27)
-
+[Decision collection and recording workflow](./README.md) includes this foundation, its companions, and issue-specific records.
 > [!NOTE]
 > This record and its linked companion pages collect the decisions from the maintainer's 2026-09-27 design session. It is the working source of truth for crate layout, naming, level responsibilities and CI tiers. The [component preview recipe](../../previews/ui/README.md) binds UI usage to maintained source SFCs and real browser evidence. The [practical composable demos decision](./2026-10-10-practical-composable-demos.md) adds twenty source-bound SFCs with actual SSR/hydration, keyboard, mobile, async/timer, browser-effect and form/navigation-state checks while preserving unfinished catalogue acceptance (#8374, #6101). Reviewed field/storage text follows recorded validation and in-tab fallback; meaningful batch writes and actual disabled-storage Chromium receive fresh source/browser proof before the complete Stack is queued. The prepared DOM interaction extension adds actual target replacement, scoped keyboard delivery, and stop/resume behavior after the current sixteen-example delivery.
 > Where it conflicts with older pages (S0–S4 naming, the `vize_davinci` substrate crate, Folio naming, S4 placement,
