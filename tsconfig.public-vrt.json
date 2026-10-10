@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.node.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "listFiles": true,
+    "paths": {
+      "playwright": ["./docs/node_modules/playwright/index.d.ts"]
+    }
+  },
+  "include": [],
+  "files": [
+    "tools/support/release/public_acceptance/vrt_api.ts",
+    "tools/support/release/public_acceptance/vrt_artifacts.ts",
+    "tools/support/release/public_acceptance/vrt_audit.ts",
+    "tools/support/release/public_acceptance/vrt_cli.ts",
+    "tools/support/release/public_acceptance/vrt_fixtures.ts",
+    "tools/support/release/public_acceptance/vrt_host.ts",
+    "tools/support/release/public_acceptance/vrt_hosted.ts",
+    "tools/support/release/public_acceptance/vrt_observer.ts"
+  ]
+}
