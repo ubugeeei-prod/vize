@@ -10,6 +10,30 @@ fn generate(source: &str) -> GeneratedJsxFile {
     generate_jsx_virtual_ts(Path::new("Comp.tsx"), source, JsxLang::Tsx).unwrap()
 }
 
+#[test]
+fn typed_slot_callback_opener_maps_to_its_actual_authored_ast_start() {
+    for callback in [
+        "(props: { value: string }) => props.value",
+        "function(props: { value: string }) { return props.value; }",
+        "({ value }: { value: string }) => value",
+        "props => props.value",
+    ] {
+        let source =
+            format!("// 日本語 😀\r\nconst view = <Host>{{{{ default: {callback} }}}}</Host>;");
+        let generated = generate(&source);
+        let opener = generated.code.find("\"default\", (").unwrap() + "\"default\", ".len();
+        let map = crate::batch::source_map::SfcSourceMap::new(generated.mappings, Vec::new());
+        assert_eq!(
+            map.get_original_position(opener as u32),
+            Some((
+                source.find(callback).unwrap() as u32,
+                0,
+                SfcBlockType::Script
+            ))
+        );
+    }
+}
+
 fn assert_generated_snapshot(name: &str, source: &str) {
     let generated = generate(source);
     insta::assert_snapshot!(format!("{name}_code"), generated.code.as_str());
@@ -96,7 +120,7 @@ fn scoped_slot_object_binds_its_pattern_over_the_slot_body() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props: { item: string }) => __vize_jsx_expr__(props.item)));"
     );
 }
 
@@ -106,7 +130,7 @@ fn scoped_slot_render_prop_child_binds_its_pattern_over_the_slot_body() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props: { item: string }) => __vize_jsx_expr__(props.item)));"
     );
 }
 
@@ -116,7 +140,7 @@ fn scoped_slot_destructured_pattern_and_named_slots_each_get_their_own_scope() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", ({ item }) => __vize_jsx_expr__(item)), __vize_jsx_component_slot__(Widget, \"footer\", (b) => __vize_jsx_expr__(b.n)));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", ({ item }: { item: string }) => __vize_jsx_expr__(item)), __vize_jsx_component_slot__(Widget, \"footer\", (b: { n: number }) => __vize_jsx_expr__(b.n)));"
     );
 }
 
@@ -129,7 +153,7 @@ fn component_inside_a_scoped_slot_body_keeps_its_props_call() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(__vize_jsx_component__(Counter)({\"count\": props.item}))));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props: { item: string }) => __vize_jsx_expr__(__vize_jsx_component__(Counter)({\"count\": props.item}))));"
     );
 }
 
@@ -142,7 +166,7 @@ fn scoped_slot_inside_a_v_for_body_binds_both_scopes() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__((items).map((item) => __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": item}), __vize_jsx_component_slot__(Widget, \"default\", (props) => __vize_jsx_expr__(props.item)))));"
+        "export const view = __vize_jsx_expr__((items).map((item) => __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": item}), __vize_jsx_component_slot__(Widget, \"default\", (props: { item: string }) => __vize_jsx_expr__(props.item)))));"
     );
 }
 
@@ -154,7 +178,7 @@ fn nested_scoped_slots_each_resolve_their_own_host() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (outer) => __vize_jsx_expr__(__vize_jsx_component__(Panel)({\"title\": outer.item}), __vize_jsx_component_slot__(Panel, \"default\", (inner) => __vize_jsx_expr__(inner.row)))));"
+        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (outer: { item: string }) => __vize_jsx_expr__(__vize_jsx_component__(Panel)({\"title\": outer.item}), __vize_jsx_component_slot__(Panel, \"default\", (inner: { row: number }) => __vize_jsx_expr__(inner.row)))));"
     );
 }
 
@@ -195,7 +219,8 @@ fn scoped_slot_maps_its_pattern_and_body_to_authored_ranges() {
             // The slot scope maps only the authored binding pattern; the
             // re-emitted host tag and the slot-name literal are scaffolding and
             // stay unmapped so a diagnostic on the tag cannot double-report.
-            "props",
+            "props: { item: string }",
+            "(",
             "props.item",
             ";\n",
         ]

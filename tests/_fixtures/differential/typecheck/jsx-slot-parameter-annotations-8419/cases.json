@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "id": "wrong-arrow",
+      "diagnostics": [
+        "error:3:32 [TS2345] Argument of type '(props: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.\n  Types of parameters 'props' and 'payload' are incompatible.\n    Type '{ value: number; }' is not assignable to type '{ value: string; }'.\n      Types of property 'value' are incompatible.\n        Type 'number' is not assignable to type 'string'."
+      ],
+      "exitCode": 1
+    },
+    {
+      "id": "wrong-function",
+      "diagnostics": [
+        "error:3:32 [TS2345] Argument of type '(props: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.\n  Types of parameters 'props' and 'payload' are incompatible.\n    Type '{ value: number; }' is not assignable to type '{ value: string; }'.\n      Types of property 'value' are incompatible.\n        Type 'number' is not assignable to type 'string'."
+      ],
+      "exitCode": 1
+    },
+    {
+      "id": "wrong-destructure",
+      "diagnostics": [
+        "error:3:32 [TS2345] Argument of type '({ value }: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.\n  Types of parameters '__0' and 'payload' are incompatible.\n    Type '{ value: number; }' is not assignable to type '{ value: string; }'.\n      Types of property 'value' are incompatible.\n        Type 'number' is not assignable to type 'string'."
+      ],
+      "exitCode": 1
+    },
+    {
+      "id": "correct-arrow",
+      "diagnostics": [],
+      "exitCode": 0
+    },
+    {
+      "id": "untyped-clean",
+      "diagnostics": [],
+      "exitCode": 0
+    },
+    {
+      "id": "independent-body-error",
+      "diagnostics": [
+        "error:3:75 [TS2339] Property 'toUpperCase' does not exist on type 'number'."
+      ],
+      "exitCode": 1
+    },
+    {
+      "id": "correct-optional",
+      "diagnostics": [],
+      "exitCode": 0
+    },
+    {
+      "id": "correct-default",
+      "diagnostics": [],
+      "exitCode": 0
+    },
+    {
+      "id": "untyped-host",
+      "diagnostics": [],
+      "exitCode": 0
+    }
+  ]
+}
