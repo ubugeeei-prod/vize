@@ -4,6 +4,14 @@ title: Type Rule Options
 
 # Type Rule Options
 
+Use these options when you want conditionals to express exactly how your app treats zero, empty
+strings, and absent objects. `type/strict-boolean-expressions` is opt-in and requires type-aware
+linting; setting its options alone does not enable it.
+
+Start with the configuration and Bad/Good examples below, then run `vp run lint` and review the
+reported conditions. The [Rule Options guide](./options.md) explains severity, scoped replacement,
+and how to configure rules with Vite+ or the standalone CLI.
+
 ## `type/strict-boolean-expressions`
 
 Enable the native type-aware rule explicitly under `linter.rules`. It belongs
@@ -14,21 +22,21 @@ to allow. The native checker projection already uses strict checking.
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
-      "typeAware": true,
-      "rules": {
-        "type/strict-boolean-expressions": "error"
+  lint: {
+    vize: {
+      typeAware: true,
+      rules: {
+        "type/strict-boolean-expressions": "error",
       },
-      "ruleOptions": {
+      ruleOptions: {
         "type/strict-boolean-expressions": {
-          "allowString": false,
-          "allowNumber": false,
-          "allowNullableObject": false
-        }
-      }
-    }
-  }
+          allowString: false,
+          allowNumber: false,
+          allowNullableObject: false,
+        },
+      },
+    },
+  },
 });
 ```
 

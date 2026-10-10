@@ -9,6 +9,7 @@ import { parseArgs } from "./cli/index.ts";
 import { startHostedVrtSession } from "./cli/serve.ts";
 import { buildServiceGallery, repository, sha256 } from "./hosted-vrt-build.fixtures.ts";
 import { proveSessionAuthorityInvalidation } from "./hosted-vrt-authority.fixtures.ts";
+import { registerHostedCleanup } from "./hosted-vrt-cleanup.fixtures.ts";
 import {
   createSecureHost,
   launchPublicBrowser,
@@ -39,12 +40,16 @@ void test(
   "hosted VRT keeps latest connection authority and releases images after actual panel unmount",
   { skip: process.env.VIZE_MUSEA_NATIVE_BROWSER_TESTS !== "1", timeout: 180000 },
   async (t) => {
+    const registerCleanup = registerHostedCleanup(t);
     const root = await mkdtemp(path.join(os.tmpdir(), "musea-native-hosted-lifecycle-"));
+    registerCleanup(() => rm(root, { recursive: true, force: true }));
     const output = path.join(repository, "artifacts/musea-native-hosted-vrt-lifecycle");
     await mkdir(output, { recursive: true });
     const built = await buildServiceGallery(root, output);
     const host = await createSecureHost(built.directory);
+    registerCleanup(() => host.close());
     const restoreTrust = await trustSecureHost(host);
+    registerCleanup(restoreTrust);
     const options = parseArgs([
       "serve",
       "--gallery-url",
@@ -57,18 +62,13 @@ void test(
       capture: { settleTime: 0 },
     };
     const session = await startHostedVrtSession(options, host.spki);
+    registerCleanup(() => session.close());
     const relay = await createLifecycleRelay(session.endpoint);
+    registerCleanup(() => relay.close());
     assert.notEqual(relay.endpoint, session.endpoint);
     const browser = await launchPublicBrowser(host);
+    registerCleanup(() => browser.close());
     const observations: unknown[] = [];
-    t.after(async () => {
-      await browser.close();
-      await relay.close();
-      await session.close();
-      restoreTrust();
-      await host.close();
-      await rm(root, { recursive: true, force: true });
-    });
 
     async function openGallery() {
       const context = await browser.newContext();

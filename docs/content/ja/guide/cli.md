@@ -2,18 +2,19 @@
 title: CLI
 ---
 
-<!-- Generated translation; source: guide/cli.md -->
+<!-- Reviewed translation; source: guide/cli.md; scope: introduction, headings and reading order -->
 
 # CLI リファレンス
 
-> **⚠️ 進行中の作業:** Vize は活発に開発中であり、CLI サーフェスはまだ進化中です。
+CLI を使うと、Vue ファイルのコンパイル・整形・lint・型チェックをターミナルや CI で実行できます。
+アプリでは `vize` npm パッケージをインストールし、まず
+[package.json のスクリプト](#アプリケーション-パッケージ-スクリプト) を設定してください。
+LSP、IDE 管理、`check-server`、プロファイリングには
+[Rust バイナリ](#rust-バイナリのインストール) を使います。
 
-ほとんどのアプリケーション ワークフローでは、`vize` npm パッケージをインストールし、`package.json` を通じて実行する必要があります。
-スクリプト。このページでは、LSP、IDE管理、
-`check-server`、プロファイリング、およびその他の直接 CLI ワークフロー。 npm パッケージは共有構成を公開します
-ヘルパーと、NAPI サポートの `build`、`fmt`、`lint`、`check`、`clean`、`ready`、および `upgrade` コマンド。
-
-分析パイプラインのより高度な説明については、[静的分析](./static-analysis.md)を参照してください。
+npm パッケージは共有設定のヘルパーと、NAPI を利用する `build`、`fmt`、`lint`、`check`、
+`clean`、`ready`、`upgrade` を提供します。具体的な作業順序は
+[ユーザーワークフロー](./workflows.md) を参照してください。
 
 ## アプリケーション パッケージ スクリプト
 
@@ -98,7 +99,9 @@ vize [COMMAND]
 インストルメンテーション フックは `vize_carton` に残りますが、管理者は CLI レポート シェイプと並行して所有します。
 検査官とエージェント向けのアーティファクト。
 
-## 建てる
+<a id="建てる"></a>
+
+## ビルド
 
 ```bash
 vize build src/**/*.vue
@@ -146,7 +149,9 @@ vize fmt --write src
 | `--normalize-directive-shorthands` | `v-bind:` / `v-on:` / `v-slot:` 省略表記を正規化する |
 | `--profile`                        | 印刷タイミング プロファイル                          |
 
-## 糸くず
+<a id="糸くず"></a>
+
+## lint
 
 ```bash
 vize lint src
@@ -193,9 +198,10 @@ vize lint --format agent src
 vize lint --format markdown src
 ```
 
+<a id="チェック"></a>
 <span id="check"></span>
 
-## チェック
+## 型チェック
 
 ```bash
 vize check
@@ -257,7 +263,9 @@ declare module "vue" {
 }
 ```
 
-## 検査官
+<a id="検査官"></a>
+
+## インスペクター
 
 ```bash
 vize inspector src/App.vue
@@ -308,7 +316,9 @@ Musea レポート/スナップショット/トークン、Patina セッショ�
 卸売り。 `--dry-run` は、削除されるアーティファクト パスを出力します。 `--scope node-modules`を使用してください
 または、1 つのアーティファクト ルートのみをクリーンアップする必要がある場合は、`--scope project`。
 
-## 準備ができて
+<a id="準備ができて"></a>
+
+## 準備状況の確認
 
 ```bash
 vize ready src
@@ -341,7 +351,9 @@ vp install -D vize@latest
 
 `--source cargo` は、明示的なローカル Cargo インストールの場合にのみ使用してください。
 
-## 美術館
+<a id="美術館"></a>
+
+## Musea
 
 ```bash
 vize musea --help

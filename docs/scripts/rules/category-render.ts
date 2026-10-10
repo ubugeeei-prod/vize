@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { purposeJa } from "./purpose-ja.ts";
 import { resolve } from "node:path";
 import { exampleLinks } from "./example-links.ts";
+import { accessibilityIntroductions } from "./accessibility-introductions.ts";
 const categories: readonly [string, string, string, (name: string) => boolean][] = [
   ["vue", "Vue rules", "Vue ルール", (name) => name.startsWith("vue/")],
   [
@@ -160,6 +161,8 @@ export function generateCategoryPages(
       "---",
       "",
       `# Accessibility ${group}`,
+      "",
+      ...accessibilityIntroductions[group],
       "",
       ...ids.map((id) => `- [\`a11y/${id}\`](./reference/a11y-${id}.md)`),
       ...(group === "integrity"

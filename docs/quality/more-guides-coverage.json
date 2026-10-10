@@ -1,0 +1,333 @@
+{
+  "version": 1,
+  "issue": 8365,
+  "source": "4c2bebb9a586e3eaab698b41e5b58ed5f8181852",
+  "pages": [
+    {
+      "route": "/architecture/crates",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/architecture/language-engineering-practices",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/architecture/overview",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/architecture/performance",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Benchmark claims and provenance are handled in #8367."
+    },
+    {
+      "route": "/architecture/performance-blacksmith",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Benchmark snapshot and provenance are handled in #8367."
+    },
+    {
+      "route": "/architecture/source-guide",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/contributing",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Purpose and setup present; Japanese body still needs review."
+    },
+    {
+      "route": "/credits",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Attribution retained; Japanese prose still needs body review."
+    },
+    {
+      "route": "/guide/auto-imports",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/guide/check-performance",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Concrete worker/profile commands present; standalone purpose and safety context still need reader-flow review."
+    },
+    {
+      "route": "/guide/cli",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/guide/compiler-inspector",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Playground entry and concrete commands present; Japanese body still needs review."
+    },
+    {
+      "route": "/guide/cross-file-complexity",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/guide/doctor",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Filter reference starts with internal report model; practical first-run flow still needs review."
+    },
+    {
+      "route": "/guide/experimentals",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Opt-in introduction and examples present; long switch inventory still needs reader-flow review."
+    },
+    {
+      "route": "/guide/experimentals-reference",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Intentionally dense reference; Japanese wording still needs review."
+    },
+    {
+      "route": "/guide/experimentals-vue-rfcs",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Reference expands opt-in guide; Japanese body still needs review."
+    },
+    {
+      "route": "/guide/formatter-import-sorting",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+    },
+    {
+      "route": "/guide/formatter-indent-width",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+    },
+    {
+      "route": "/guide/formatter-jsx-quotes",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+    },
+    {
+      "route": "/guide/formatter-line-endings",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+    },
+    {
+      "route": "/guide/formatter-property-quotes",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Concrete setting and example retained; complete reader-flow review remains pending."
+    },
+    {
+      "route": "/guide/init",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Existing-project setup is handled in #8370 and #8371."
+    },
+    {
+      "route": "/guide/lib-pull",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/guide/lint-execution",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Configuration example present; purpose and next action still need review."
+    },
+    {
+      "route": "/guide/musea-capture",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Capture defaults and report examples present; practical first-run flow still needs review."
+    },
+    {
+      "route": "/guide/musea-globals",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Toolbar purpose, configuration, and state examples present; Japanese body still needs review."
+    },
+    {
+      "route": "/guide/musea-hosting",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "capture": true,
+      "note": "Complete hosting, async accessibility, CLI VRT and report-owner refusal instructions reviewed in both locales against actual 4a416 source; original examples retained. Native capture required; deployed and installed release acceptance remain pending."
+    },
+    {
+      "route": "/guide/musea-snapshots",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "capture": true,
+      "note": "Complete relative identity, index transfer, adoption and ambiguous-approval refusals, root migration and lock recovery reviewed in both locales against actual 4a416 source; original examples retained. Native capture required; deployed and installed release acceptance remain pending."
+    },
+    {
+      "route": "/guide/testing",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Tester purpose and report steps present; Japanese body still needs review."
+    },
+    {
+      "route": "/guide/troubleshooting",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/guide/vite-plus-editor",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Existing-project editor setup is handled in #8370 and #8371."
+    },
+    {
+      "route": "/guide/vite-scoped-compiler",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Scoped setup is retained; shared setup changes are handled in #8370 and #8371."
+    },
+    {
+      "route": "/guide/wasm",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/integrations/mcp",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+    },
+    {
+      "route": "/philosophy",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Placement is handled in #8364."
+    },
+    {
+      "route": "/rules/accessibility-core",
+      "locales": ["en"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+    },
+    {
+      "route": "/rules/accessibility-integrity",
+      "locales": ["en"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+    },
+    {
+      "route": "/rules/accessibility-interactions",
+      "locales": ["en"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+    },
+    {
+      "route": "/rules/accessibility-structure",
+      "locales": ["en"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+    },
+    {
+      "route": "/rules/migration",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/options",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/options-musea",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/options-script",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/options-type",
+      "locales": ["en", "ja"],
+      "entry": "revised",
+      "note": "Purpose, usage choice, practical rule example, and next lint action revised; deployed review remains pending."
+    },
+    {
+      "route": "/rules/options-vue",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/vue-components",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/vue-directive-validity",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/vue-directives",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/vue-formatting",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/vue-sfc",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/vue-template-safety",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/rules/vue-template-structure",
+      "locales": ["en"],
+      "entry": "audited",
+      "note": "Rule reference and Bad/Good examples retained; topic introductions and Japanese availability still need reader-flow review."
+    },
+    {
+      "route": "/stability",
+      "locales": ["en", "ja"],
+      "entry": "audited",
+      "note": "Support tables retained; Japanese body review is handled in #8372."
+    }
+  ]
+}

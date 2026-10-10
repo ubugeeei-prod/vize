@@ -9,6 +9,11 @@ import { parseArgs } from "./cli/index.ts";
 import { startHostedVrtSession } from "./cli/serve.ts";
 import { buildServiceGallery, repository, sha256 } from "./hosted-vrt-build.fixtures.ts";
 import { proveOwnedHostedError } from "./hosted-vrt-errors.fixtures.ts";
+import {
+  attemptHostedCleanup,
+  proveHostedCleanupFailures,
+  registerHostedCleanup,
+} from "./hosted-vrt-cleanup.fixtures.ts";
 import { proveCompiledSession, proveCompiledStartupRefusal } from "./hosted-vrt-cli.fixtures.ts";
 import {
   createSecureHost,
@@ -62,12 +67,17 @@ void test(
   "public HTTPS native gallery connects through real loopback permission and reviews local VRT bytes",
   { skip: process.env.VIZE_MUSEA_NATIVE_BROWSER_TESTS !== "1", timeout: 180000 },
   async (t) => {
+    const registerCleanup = registerHostedCleanup(t);
     const root = await mkdtemp(path.join(os.tmpdir(), "musea-native-hosted-vrt-"));
+    registerCleanup(() => rm(root, { recursive: true, force: true }));
     const output = path.join(repository, "artifacts/musea-native-hosted-vrt");
     await mkdir(output, { recursive: true });
     const built = await buildServiceGallery(root, output);
+    await proveHostedCleanupFailures(built.directory, root, output);
     const host = await createSecureHost(built.directory);
+    registerCleanup(() => host.close());
     const restoreTrust = await trustSecureHost(host);
+    registerCleanup(restoreTrust);
     const local = path.join(root, "local-vrt");
     const options = parseArgs([
       "serve",
@@ -84,24 +94,19 @@ void test(
     ) as { viewport: { name: string; width: number; height: number } };
     options.vrt = { viewports: [history.viewport], threshold: 0.1, capture: { settleTime: 0 } };
     const session = await startHostedVrtSession(options, host.spki);
+    registerCleanup(() => session.close());
     assert.equal(new URL(session.endpoint).hostname, "127.0.0.1");
     assert.notEqual(new URL(session.endpoint).origin, host.origin);
     const browser = await launchPublicBrowser(host);
+    registerCleanup(() => browser.close());
     const page = await browser.newPage();
     const addressSpaces = await createAddressSpaceObserver(page);
+    registerCleanup(() => addressSpaces.close());
     const permissionCleanup: Array<() => Promise<void>> = [];
     const errors: string[] = [];
     const observations: unknown[] = [];
     page.on("pageerror", (error) => errors.push(String(error)));
-    t.after(async () => {
-      for (const cleanup of permissionCleanup.reverse()) await cleanup();
-      await addressSpaces.close();
-      await browser.close();
-      await session.close();
-      restoreTrust();
-      await host.close();
-      await rm(root, { recursive: true, force: true });
-    });
+    registerCleanup(() => attemptHostedCleanup(permissionCleanup.reverse()));
     const artifact = async (route: string) => {
       const response = await fetch(`${session.endpoint}${route}`, {
         headers: { Origin: host.origin, Authorization: `Bearer ${session.token}` },
