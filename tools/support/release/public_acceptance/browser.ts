@@ -4,10 +4,12 @@ import { createServer as createHttpServer } from "node:http";
 import path from "node:path";
 import { publicNative, rejectOverrides } from "./installed.ts";
 import { frames, openArt, checkLegacy, rememberDocuments, documentIdentity } from "./gallery.ts";
+import { observeBrowser } from "./browser_observation.ts";
 
 rejectOverrides();
 const [version, output] = process.argv.slice(2);
 assert.ok(version && output);
+const observation = observeBrowser(output);
 const { createServer } = await import("vite");
 const { default: vize } = await import("@vizejs/vite-plugin");
 const { musea } = await import("@vizejs/vite-plugin-musea");
@@ -74,6 +76,7 @@ try {
   assert.ok(address && typeof address !== "string");
   origin = `http://127.0.0.1:${address.port}`;
   const context = await browser.newContext();
+  observation.context(context);
   const page = await context.newPage();
   page.on("pageerror", (error) => errors.push(String(error)));
   await page.goto(origin + base);
@@ -257,6 +260,7 @@ try {
   await openArt(page, "Button");
   observations.push({ phase: "return-to-art", frames: await frames(page, changed) });
   const clean = await browser.newContext();
+  observation.context(clean);
   const copied = await clean.newPage();
   copied.on("pageerror", (error) => errors.push(String(error)));
   await copied.goto(sharedUrl);
@@ -277,7 +281,7 @@ try {
   observations.push({ phase: "same-url-reload-oracle-control", refusal, frames: reloadFrames });
   await clean.close();
   await context.close();
-  observations.push(await checkLegacy(browser, errors));
+  observations.push(await checkLegacy(browser, errors, observation.page));
   const { packages, loaded } = publicNative(version);
   assert.deepEqual(errors, []);
   mkdirSync(path.dirname(output), { recursive: true });
@@ -306,6 +310,11 @@ try {
       success: true,
     }),
   );
+} catch (error) {
+  await observation
+    .failure(browser, error, { issue: 8329, version, observations, errors })
+    .catch((captureError) => console.error("Public browser failure capture failed:", captureError));
+  throw error;
 } finally {
   await browser.close();
   await server.close();
