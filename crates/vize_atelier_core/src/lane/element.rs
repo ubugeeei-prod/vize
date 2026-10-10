@@ -17,6 +17,7 @@ use crate::{
 use super::{ExitFns, TransformContext};
 
 mod directive_expressions;
+mod frozen;
 mod vue_is;
 use directive_expressions::process_directive_expressions;
 /// Transform element node
@@ -24,8 +25,7 @@ pub fn transform_element<'a>(
     ctx: &mut TransformContext<'a>,
     el: &mut Box<'a, ElementNode<'a>>,
 ) -> Option<ExitFns<'a>> {
-    maybe_promote_element_to_component(ctx, el);
-    vue_is::resolve(el);
+    frozen::resolve_identity(ctx, el);
     validate_v_slot_usage(ctx, el);
     // Process props and directives
     process_element_props(ctx, el);

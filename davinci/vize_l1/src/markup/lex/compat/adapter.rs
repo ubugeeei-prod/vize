@@ -185,4 +185,8 @@ impl<C: Callbacks> Sink for CompatSink<C> {
             LexMode::Normal
         }
     }
+
+    fn directive_heads_in_verbatim(&self) -> bool {
+        self.callbacks.directive_heads_in_verbatim()
+    }
 }

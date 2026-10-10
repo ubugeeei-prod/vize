@@ -1,0 +1,90 @@
+RootNode {
+    children: Vec(
+        [
+            Element(
+                ElementNode {
+                    ns: Html,
+                    tag: "p",
+                    tag_type: Element,
+                    props: Vec(
+                        [
+                            Attribute(
+                                AttributeNode {
+                                    name: ":broken",
+                                    name_loc: SourceLocation {
+                                        span: Span {
+                                            start: 9,
+                                            end: 28,
+                                        },
+                                    },
+                                    value: Some(
+                                        TextNode {
+                                            content: "unfinished",
+                                            loc: SourceLocation {
+                                                span: Span {
+                                                    start: 9,
+                                                    end: 28,
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    loc: SourceLocation {
+                                        span: Span {
+                                            start: 9,
+                                            end: 28,
+                                        },
+                                    },
+                                },
+                            ),
+                        ],
+                    ),
+                    children: Vec(
+                        [],
+                    ),
+                    is_self_closing: false,
+                    loc: SourceLocation {
+                        span: Span {
+                            start: 0,
+                            end: 28,
+                        },
+                    },
+                    inner_loc: None,
+                    hoisted_props_index: None,
+                },
+            ),
+        ],
+    ),
+    comments: Vec(
+        [],
+    ),
+    helpers: Vec(
+        [],
+    ),
+    components: Vec(
+        [],
+    ),
+    directives: Vec(
+        [],
+    ),
+    filters: Vec(
+        [],
+    ),
+    hoists: Vec(
+        [],
+    ),
+    imports: Vec(
+        [],
+    ),
+    cached: Vec(
+        [],
+    ),
+    temps: 0,
+    source: "<p v-pre :broken='unfinished",
+    loc: SourceLocation {
+        span: Span {
+            start: 0,
+            end: 0,
+        },
+    },
+    transformed: false,
+}

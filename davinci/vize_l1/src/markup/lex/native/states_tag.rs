@@ -141,7 +141,7 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     }
 
     pub(super) fn handle_attr_start(&mut self, c: u8) {
-        if self.sink.mode() == LexMode::Verbatim {
+        if self.sink.mode() == LexMode::Verbatim && !self.sink.directive_heads_in_verbatim() {
             self.state = State::InAttrName;
             self.section_start = self.index;
             return;

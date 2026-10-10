@@ -4,9 +4,9 @@ use crate::{
 };
 use vize_atelier_core::{
     CompilerError, ErrorCode, Namespace, RootNode,
-    lane::transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+    lane::transform_with_frozen_elements,
     options::{CustomElementMatcher, TemplateSyntaxMode},
-    parser::parse_with_options_custom_elements_and_template_syntax,
+    parser::Parser,
 };
 use vize_l0::{
     Allocator, String, cstr,
@@ -246,16 +246,16 @@ pub(crate) fn compile_ssr_on_lane<'a>(
 ) -> (RootNode<'a>, Vec<CompilerError>, SsrCodegenResult) {
     let codegen_options = options.clone();
     let parser_opts = crate::stage_options::parser_options(&options);
-
-    let (mut root, errors) = profile!(
+    let (mut root, errors, frozen_elements) = profile!(
         "atelier.ssr.template.parse",
-        parse_with_options_custom_elements_and_template_syntax(
+        Parser::with_options_custom_elements_and_template_syntax(
             allocator,
             source,
             parser_opts,
             custom_elements.clone(),
             template_syntax,
         )
+        .parse_with_frozen_elements()
     );
     if errors.iter().any(|e| !e.is_recoverable()) {
         return (
@@ -279,6 +279,7 @@ pub(crate) fn compile_ssr_on_lane<'a>(
                 slotted,
                 template_syntax,
                 has_custom_elements: !custom_elements.is_empty(),
+                frozen: Some((&root, &frozen_elements)),
             },
         ),
         #[cfg(any(test, feature = "legacy-differential"))]
@@ -292,14 +293,16 @@ pub(crate) fn compile_ssr_on_lane<'a>(
     let transform_opts = crate::stage_options::transform_options(&codegen_options);
     let transform_errors = profile!(
         "atelier.ssr.template.transform",
-        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+        transform_with_frozen_elements(
             allocator,
+            source,
             &mut root,
             transform_opts,
             options.croquis.map(|c| allocator.alloc_owned(*c)),
             custom_elements,
             template_syntax.is_quirks(),
             None,
+            frozen_elements,
         )
     );
 

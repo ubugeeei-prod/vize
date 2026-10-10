@@ -46,6 +46,12 @@ pub fn compare_ssr_lanes(
 ) -> SsrLaneComparison {
     let lane = {
         let allocator = Allocator::new();
+        let (root, _errors, frozen) = vize_atelier_core::parser::Parser::with_options(
+            &allocator,
+            source,
+            crate::stage_options::parser_options(options),
+        )
+        .parse_with_frozen_elements();
         let selection = select_ssr_lane(
             &allocator,
             source,
@@ -55,6 +61,7 @@ pub fn compare_ssr_lanes(
                 template_syntax: TemplateSyntaxMode::Standard,
                 has_custom_elements: false,
                 slotted: true,
+                frozen: Some((&root, &frozen)),
             },
         );
         production::lane_label(&selection)

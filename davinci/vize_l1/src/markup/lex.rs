@@ -7,6 +7,6 @@ pub mod compat;
 mod native;
 
 pub use native::{
-    Delimiters, LexOptions, Lexer, char_codes, is_end_of_tag_section, is_tag_start_char,
-    is_whitespace,
+    Delimiters, LexOptions, Lexer, char_codes, dynamic_argument_boundary, is_end_of_tag_section,
+    is_tag_start_char, is_whitespace,
 };

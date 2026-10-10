@@ -23,10 +23,8 @@ enum Segment {
 }
 
 impl Emitter<'_, '_, '_, '_, '_, '_> {
-    /// A `v-bind` / `v-on` dynamic key the plan emitter owns: a bare
-    /// identifier, spelled `_ctx.<name>` outside a scope and as the local
-    /// inside a `v-for` / slot scope (the legacy `dynamic_arg_to_string`
-    /// over an argument the transform leaves unprefixed).
+    /// A `v-bind` / `v-on` key: bare identifiers retain their original context
+    /// spelling; non-identifiers use the existing scope/binding-aware provider.
     pub(super) fn dynamic_key(&self, name: &DynamicName<'_>) -> Result<String> {
         let DynamicName::Dynamic(expr) = name else {
             return Err(LegacyReason::Binding.into());
@@ -37,9 +35,8 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
         {
             return Ok(self.ctx_key(source));
         }
-        // A non-identifier argument is not prefix-rewritten. The legacy
-        // walker prints the authored text (`a+b`, `row.field`).
-        Ok(vize_l0::String::from(source.trim()))
+        super::attrs::admit_dynamic_key(expr)?;
+        self.expr(expr, TransformContent::Padded)
     }
 
     /// A custom directive's dynamic argument. The transform prefixes it like
@@ -188,6 +185,12 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
                     }
                     Some(name) => {
                         let key = self.dynamic_key(name)?;
+                        let key = if bind.modifiers.contains(&"camel") {
+                            self.ctx.use_core_helper(RuntimeHelper::Camelize);
+                            cstr!("_camelize(({key}) || \"\")")
+                        } else {
+                            key
+                        };
                         entries.push(component_prop_entry(&key, &value, true));
                     }
                 }
