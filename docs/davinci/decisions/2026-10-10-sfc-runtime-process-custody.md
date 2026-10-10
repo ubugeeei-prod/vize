@@ -82,3 +82,15 @@ is weakened. The raw failed worker logs have SHA-256
 `f6301322563d0227e6c13dde5a442f5c0e793937ebf86b33905c5d409d566dcd`
 (worker 114159269905). The complete source run is not accepted; the corrected
 head still requires its own source, full and protected results.
+
+The next source head `e34f014bb6dd98b0c5da57491afb23b35db1de3a` passed
+the original recipe/module contracts and all four Rust shards, but
+[tooling worker 114162198404](https://github.com/ubugeeei-prod/vize/actions/runs/38034444811/job/114162198404)
+rejected Check growing from 690 to 698 lines. Its complete raw log SHA-256 is
+`c29a406db1f8b020e6e00cfd1e840f402354904b0e39ece604237a261126a61f`.
+Share the two identical uploads through the small `retain-sfc-runtime` action;
+both caller and nested upload retain their `always()` condition. Compact only
+the existing one-key job environment and linker options to equivalent flow maps
+in the full Check job. Check retains its original 690 lines, and all original
+YAML job/step values and execution order remain unchanged. Do not raise the
+length cap or add an exception. The corrected head needs fresh qualification.
