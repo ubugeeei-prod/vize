@@ -65,10 +65,11 @@ export async function unsupportedMessage(page: Page, expected: Record<string, st
       frame?.contentWindow && Reflect.get(frame.contentWindow, "__unsupportedPropMessages");
     return messages?.length && JSON.stringify(messages.at(-1).props) === serialized;
   }, JSON.stringify(expected));
-  const message = await page
+  const serialized = await page
     .frameLocator(".props-preview iframe")
     .locator("body")
-    .evaluate(() => Reflect.get(window, "__unsupportedPropMessages").at(-1));
+    .evaluate(() => JSON.stringify(Reflect.get(window, "__unsupportedPropMessages").at(-1)));
+  const message = JSON.parse(serialized);
   assert.deepEqual(message, {
     props: expected,
     keys: Object.keys(expected),
@@ -96,17 +97,24 @@ export async function addRawProp(page: Page, name: string, value: string) {
 }
 
 export async function rawEditorPrototype(page: Page) {
-  const observed = await page.locator(".props-json-code code").evaluate((node) => {
+  const serialized = await page.locator(".props-json-code code").evaluate((node) => {
     const values = JSON.parse(node.textContent!);
-    return {
+    return JSON.stringify({
       values,
       keys: Object.keys(values),
       ownProto: Object.hasOwn(values, "__proto__"),
       prototypeUnchanged: Object.getPrototypeOf(values) === Object.prototype,
       globalPrototypeUnchanged:
         Object.getPrototypeOf(Object.prototype) === null && Object.prototype.constructor === Object,
-    };
+    });
   });
+  const observed = JSON.parse(serialized) as {
+    values: Record<string, string>;
+    keys: string[];
+    ownProto: boolean;
+    prototypeUnchanged: boolean;
+    globalPrototypeUnchanged: boolean;
+  };
   assert.equal(observed.prototypeUnchanged, true);
   assert.equal(observed.globalPrototypeUnchanged, true);
   return observed;

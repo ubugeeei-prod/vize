@@ -90,13 +90,18 @@ for (const mode of ["dev", "static"] as const) {
         const seed = Object.fromEntries(vector.names.map((name) => [name, `Retained ${name}`]));
         await page.goto(gallery);
         await page.evaluate(
-          ({ key, values }) => {
-            localStorage.setItem(
-              key,
-              JSON.stringify({ version: 1, values, customProps: [], deletedPaletteProps: [] }),
-            );
+          ({ key, serialized }) => {
+            localStorage.setItem(key, serialized);
           },
-          { key: storageKey, values: seed },
+          {
+            key: storageKey,
+            serialized: JSON.stringify({
+              version: 1,
+              values: seed,
+              customProps: [],
+              deletedPaletteProps: [],
+            }),
+          },
         );
         const openProps = async (title = vector.title) => {
           await page.goto(gallery);
