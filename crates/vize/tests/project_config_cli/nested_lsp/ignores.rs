@@ -1,5 +1,5 @@
 //! The native editor consumes the canonical ordered Vite-root ignore matcher.
-use super::*;
+use super::{Value, cstr, file_uri, finish, fixture, initialize, json, write};
 
 const IMAGE: &str = "<template>\n  <img src=\"x\" />\n</template>\n";
 const CONFIG: &str = r#"export default {root:'src',vize:{ignores:['generated/**','!generated/KeepItem.vue','pages/\\[id\\].vue'],linter:{preset:'essential',rules:{'a11y/alt-text':'error'}},lsp:{lint:true,typecheck:false}}};"#;

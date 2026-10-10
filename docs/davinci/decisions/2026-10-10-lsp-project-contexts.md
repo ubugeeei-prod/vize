@@ -36,6 +36,15 @@ indexes of initialized owners, then dispatches each importer to its own owner.
 Workspace-folder removal retires cached contexts outside the remaining roots.
 Shutdown retires all cached native owners.
 
+Creating a new nested config marker refreshes affected open documents even when
+no child context existed before that event. Removing the marker returns them to
+the nearest remaining boundary, rebuilding from the latest unsaved buffer.
+Retirement also rejects unstamped parser/lint/empty diagnostic packets and
+initial synchronous feedback, before notification or lint-hover cache mutation.
+The protocol control covers creation and removal without a document request;
+the deterministic transport control covers an old lint/empty packet after the
+replacement owner has published the same document version.
+
 Project ignores exclude CLI discovery and LSP lint policy. An explicitly opened
 file still receives parser and type diagnostics, preserving editor behavior.
 

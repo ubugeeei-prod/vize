@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const value: string = 1;
+</script>
+<template>{{ value }}</template>

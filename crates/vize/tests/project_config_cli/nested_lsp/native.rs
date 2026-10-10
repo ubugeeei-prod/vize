@@ -3,13 +3,20 @@ use super::super::{
     corsa_path, corsa_requirement,
     typecheck::{link_vue, workspace_root},
 };
-use super::*;
+use super::{
+    LspProcess, SOURCE, Value, cstr, file_uri, finish, fixture, initialize, json, settings, write,
+};
 
-fn runtime() -> Option<String> {
+pub(super) fn runtime() -> Option<String> {
     corsa_requirement::required_or_skip(corsa_path::resolve(workspace_root()))
 }
 
-fn publication(lsp: &mut LspProcess, uri: &str, version: i64, expected: &Value) -> Value {
+pub(super) fn publication(
+    lsp: &mut LspProcess,
+    uri: &str,
+    version: i64,
+    expected: &Value,
+) -> Value {
     let matches = |message: &Value| {
         message["method"] == "textDocument/publishDiagnostics"
             && message["params"]["uri"] == uri
@@ -25,7 +32,7 @@ fn publication(lsp: &mut LspProcess, uri: &str, version: i64, expected: &Value) 
     message
 }
 
-fn mismatch(from: &str, to: &str, line: i64, variable: &str) -> Value {
+pub(super) fn mismatch(from: &str, to: &str, line: i64, variable: &str) -> Value {
     json!([{
         "range":{"start":{"line":line,"character":6},"end":{"line":line,"character":6+variable.len()}},
         "severity":1,"code":2322,"source":"vize/types",

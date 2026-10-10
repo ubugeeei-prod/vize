@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const value: number = 'wrong';
+</script>
+<template>{{ value }}</template>

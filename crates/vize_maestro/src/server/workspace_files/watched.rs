@@ -23,7 +23,15 @@ pub(super) async fn did_change_watched_files(
         did_change_in_context(&project, params).await;
     }
     #[cfg(feature = "native")]
-    publish_versioned_dependents(server, reconfigured).await;
+    for (uri, version) in reconfigured {
+        let project = server.for_document(&uri);
+        if project.state.documents.version(&uri) == Some(version)
+            && let Some(source) = project.state.documents.text(&uri)
+        {
+            project.state.update_virtual_docs(&uri, &source);
+        }
+        project.publish_diagnostics_if_version(&uri, version).await;
+    }
 }
 
 async fn did_change_in_context(server: &MaestroServer, params: &DidChangeWatchedFilesParams) {

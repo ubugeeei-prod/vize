@@ -216,5 +216,7 @@ fn explicit_initialization_flags_win_over_each_nested_project() {
 
 #[path = "nested_lsp/ignores.rs"]
 mod ignores;
+#[path = "nested_lsp/marker_lifecycle.rs"]
+mod marker_lifecycle;
 #[path = "nested_lsp/native.rs"]
 mod native;
