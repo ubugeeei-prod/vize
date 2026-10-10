@@ -186,6 +186,46 @@ fn unchanged_manifests_cannot_borrow_a_changed_publication_selection() {
         original,
         metadata::catalog(&ordinary, "1.2.3", &repo.work).unwrap()
     );
+
+    github::git(&["reset", "--hard", &head], &repo.work).unwrap();
+    let partial = repo.commit(&[(
+        ".github/workflows/release.yml",
+        "uses: ./.github/workflows/release-jsr.yml\n",
+    )]);
+    assert!(metadata::catalog(&partial, "1.2.3", &repo.work).is_err());
+    let jsr = [
+        (
+            ".github/workflows/release-jsr.yml",
+            "publish and verify JSR\n",
+        ),
+        (
+            "tools/support/release/jsr/prepare.mjs",
+            "pin exact npm dependencies\n",
+        ),
+        (
+            "tools/support/release/jsr/consumer.mjs",
+            "install public JSR package\n",
+        ),
+        ("jsr/vize/jsr.json", "{\"name\":\"@vizejs/vize\"}\n"),
+        ("jsr/vize/README.md", "supported Node imports\n"),
+        ("LICENSE", "MIT\n"),
+    ];
+    let jsr_head = repo.commit(&jsr);
+    let with_jsr = metadata::catalog(&jsr_head, "1.2.3", &repo.work).unwrap();
+    for (path, _) in jsr {
+        github::git(&["reset", "--hard", &jsr_head], &repo.work).unwrap();
+        let changed = repo.commit(&[(path, "changed publishing authority\n")]);
+        let observed = metadata::catalog(&changed, "1.2.3", &repo.work).unwrap();
+        assert_ne!(with_jsr, observed, "{path}");
+        assert_eq!(with_jsr["npm"], observed["npm"], "{path}");
+        github::git(&["reset", "--hard", &jsr_head], &repo.work).unwrap();
+        github::git(&["rm", path], &repo.work).unwrap();
+        let missing = repo.commit(&[]);
+        assert!(
+            metadata::catalog(&missing, "1.2.3", &repo.work).is_err(),
+            "{path}"
+        );
+    }
 }
 
 #[test]

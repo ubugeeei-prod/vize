@@ -16,6 +16,39 @@ const PUBLICATION_AUTHORITIES: [&str; 4] = [
     "tools/moon/cmd/publish_npm_package/main.mbt",
 ];
 
+const JSR_PUBLICATION_AUTHORITIES: [&str; 6] = [
+    ".github/workflows/release-jsr.yml",
+    "tools/support/release/jsr/prepare.mjs",
+    "tools/support/release/jsr/consumer.mjs",
+    "jsr/vize/jsr.json",
+    "jsr/vize/README.md",
+    "LICENSE",
+];
+
+fn publication_authorities(
+    revision: &str,
+    root: &Path,
+) -> Result<BTreeMap<&'static str, String>, String> {
+    let mut authorities = PUBLICATION_AUTHORITIES
+        .into_iter()
+        .map(|path| Ok((path, text(revision, path, root)?)))
+        .collect::<Result<BTreeMap<_, _>, String>>()?;
+    let inventory = paths(revision, root)?;
+    let jsr_present = JSR_PUBLICATION_AUTHORITIES
+        .iter()
+        .any(|path| *path != "LICENSE" && inventory.iter().any(|entry| entry.as_str() == *path))
+        || authorities[".github/workflows/release.yml"]
+            .contains(".github/workflows/release-jsr.yml");
+    if jsr_present {
+        // A partially added or deleted lane must fail, never borrow an older
+        // source's artifacts or silently disappear from the strict catalog.
+        for path in JSR_PUBLICATION_AUTHORITIES {
+            authorities.insert(path, text(revision, path, root)?);
+        }
+    }
+    Ok(authorities)
+}
+
 pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Value, String> {
     let mut npm = BTreeMap::new();
     let mut editors = BTreeMap::new();
@@ -156,10 +189,7 @@ pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Valu
                 json!({"path":path,"manifest":text(revision,path,root)?,"publication":descriptor}),
             );
         }
-        let publication_authorities = PUBLICATION_AUTHORITIES
-            .into_iter()
-            .map(|path| Ok((path, text(revision, path, root)?)))
-            .collect::<Result<BTreeMap<_, _>, String>>()?;
+        let publication_authorities = publication_authorities(revision, root)?;
         Ok(
             json!({"npm":npm,"editors":editors,"crates":crates,"cratePublisher":text(revision,"tools/moon/cmd/publish_crates/main.mbt",root)?,"nativeCatalog": native_catalog(&text(revision,"pnpm-workspace.yaml",root)?,version),"publicationAuthorities":publication_authorities}),
         )

@@ -28,6 +28,14 @@ queue until 0.440 version metadata, tag and publication complete: the pinned
 catalog compares `release.yml` publication authority byte for byte, including
 disabled jobs. Preserve that guard; a source pin alone does not clear this hold.
 
+Future source cuts also capture the JSR reusable workflow, generator, public
+consumer, package template, package README and license as publication authorities.
+Any changed byte differs from the qualified catalog; a partial lane fails closed.
+The four existing authorities and every existing graph field remain intact.
+Enabling JSR is a maintainer bootstrap decision. Record that channel's requirement
+and exact publication/consumer receipts with the first and each later release;
+a skipped opt-in lane does not prove a published JSR release.
+
 At preparation time the public `@vizejs` scope and package metadata return 404.
 Required TODO: an authorized JSR scope administrator creates the scope/package,
 links `ubugeeei-prod/vize`, configures Node-only compatibility, enables the

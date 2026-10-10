@@ -96,6 +96,12 @@ With the variable unset, normal product releases continue and JSR remains
 explicitly undelivered. Disable the variable if initial bootstrap verification
 fails, repair the failure and retry before advertising JSR commands.
 
+Release source catalogs retain the JSR workflow, generator, public consumer,
+package template, package README and license byte for byte. Record the enabled
+channel requirement and actual published consumer receipts for each release.
+If publication succeeded and a consumer failed, rerun the failed consumer jobs
+on that exact run; do not attempt to overwrite the immutable published version.
+
 The package version and every Vize npm dependency are generated from the same
 checked-out release manifests. A mismatch fails before publication. JSR's
 publisher uses Deno solely for package validation and publication; fresh exact
