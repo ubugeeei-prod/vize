@@ -34,6 +34,12 @@ Owners remain reserved after clean, so removal cannot transfer a baseline
 to another Art. Corrupt indexes, unsupported identities, missing map entries,
 duplicate captures and concurrent runs fail before PNG mutation.
 
+One runner caches its ownership initialization promise before awaiting filesystem
+work. Simultaneous first captures share that initialization; separate runners
+still fail the exclusive lock. Close waits for an already requested open and
+its pending plan, but creates no index for an unused runner. Failed initialization
+releases its lock and resets the promise so a repaired index can be retried.
+
 ## Migration and operations
 
 An existing unowned, unambiguous legacy PNG requires explicit

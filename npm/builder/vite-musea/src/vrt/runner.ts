@@ -41,6 +41,7 @@ export class MuseaVrtRunner {
   private browser: Browser | null = null;
   private startTime: number = 0;
   private snapshotIndex: SnapshotIndex | undefined;
+  private snapshotIndexOpening: Promise<SnapshotIndex> | undefined;
   private identityOptions: ExtendedVrtOptions;
   private previewUrls: ExtendedVrtOptions["previewUrls"];
 
@@ -136,15 +137,24 @@ export class MuseaVrtRunner {
   }
 
   private async getSnapshotIndex(): Promise<SnapshotIndex> {
-    this.snapshotIndex ??= await SnapshotIndex.open(this.options.snapshotDir, this.identityOptions);
-    return this.snapshotIndex;
+    if (this.snapshotIndex) return this.snapshotIndex;
+    const opening = (this.snapshotIndexOpening ??= SnapshotIndex.open(
+      this.options.snapshotDir,
+      this.identityOptions,
+    ));
+    try {
+      return (this.snapshotIndex = await opening);
+    } finally {
+      if (this.snapshotIndexOpening === opening) this.snapshotIndexOpening = undefined;
+    }
   }
 
   /**
    * Close browser and cleanup.
    */
   async close(): Promise<void> {
-    await this.snapshotIndex?.close();
+    const index = this.snapshotIndex ?? (await this.snapshotIndexOpening?.catch(() => undefined));
+    await index?.close();
     this.snapshotIndex = undefined;
     if (this.browser) {
       await this.browser.close();
