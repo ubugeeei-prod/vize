@@ -66,6 +66,13 @@ button {
   color: var(--musea-accent-contrast);
   cursor: pointer;
 }
+button:hover {
+  background: var(--musea-accent-hover);
+}
+button:focus-visible {
+  outline: 2px solid var(--musea-accent);
+  outline-offset: 2px;
+}
 [role="alert"] {
   color: var(--musea-error);
 }

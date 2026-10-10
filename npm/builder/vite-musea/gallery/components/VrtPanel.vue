@@ -6,6 +6,7 @@ import { isStaticGallery } from "../staticApi";
 import MdiIcon from "./MdiIcon.vue";
 import StaticVrtNotice from "./StaticVrtNotice.vue";
 import HostedVrtConnection from "./HostedVrtConnection.vue";
+import HostedVrtReports from "./HostedVrtReports.vue";
 import { useHostedVrt } from "../composables/useHostedVrt";
 import type { VrtResult, VrtSummary, VrtArtifacts } from "./vrtResults";
 
@@ -86,19 +87,18 @@ function getStatusIcon(result: VrtResult): string {
     <StaticVrtNotice v-if="isStaticGallery && !hosted.connected.value" />
     <div v-else-if="error" class="vrt-error">
       <p>{{ error }}</p>
-      <p class="vrt-hint">Make sure Playwright is installed: <code>npm install playwright</code></p>
+      <p v-if="!isStaticGallery" class="vrt-hint">
+        Make sure Playwright is installed: <code>npm install playwright</code>
+      </p>
     </div>
 
     <div v-else-if="!hasRun" class="vrt-empty">
       <p>Click "Run VRT" to capture and compare screenshots.</p>
-      <p class="vrt-hint">Requires Playwright to be installed.</p>
+      <p v-if="!isStaticGallery" class="vrt-hint">Requires Playwright to be installed.</p>
     </div>
 
     <template v-else>
-      <div v-if="hosted.reports.value" class="vrt-actions">
-        <button type="button" @click="hosted.download('html')">Download HTML report</button>
-        <button type="button" @click="hosted.download('json')">Download JSON report</button>
-      </div>
+      <HostedVrtReports v-if="hosted.reports.value" @download="hosted.download" />
       <div v-if="summary" class="vrt-summary">
         <div class="vrt-stat total">
           <span class="vrt-stat-value">{{ summary.total }}</span>
