@@ -59,3 +59,7 @@ files remain byte-exact with pinned SHA-256 custody in the same whole-code law;
 separate successor snapshots retain the complete current generated code. No
 original input/reference or runtime assertion is erased. Fresh successor source
 and protected checks are still required.
+
+The source-length guard also caught a formatted Vue import growing the existing
+PropsPanel file. Separate direct imports retain the original 1054-line ceiling;
+the unchanged guard passes against the pinned parent, with no exemption.

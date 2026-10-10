@@ -1,13 +1,6 @@
 <script setup lang="ts">
-import {
-  ref,
-  shallowRef,
-  watch,
-  computed,
-  onMounted,
-  onUnmounted,
-  defineAsyncComponent,
-} from "vue";
+import { ref, watch, computed, onMounted, onUnmounted, defineAsyncComponent } from "vue";
+import { shallowRef } from "vue";
 import { usePalette } from "../composables/usePalette";
 import { useArts } from "../composables/useArts";
 import { getPreviewUrl, vMuseaGlobals } from "../api";
@@ -57,7 +50,6 @@ const iframeReady = ref(false);
 const slotContent = shallowRef<Record<string, string>>({});
 const copiedUsage = ref(false);
 const art = computed(() => getArt(props.artPath));
-
 const controlsMode = ref<"controls" | "code">("controls");
 const saveStatus = ref<"idle" | "saved">("idle");
 
