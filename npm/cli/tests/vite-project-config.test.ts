@@ -130,7 +130,7 @@ test("Vite root projects scoped paths while preserving global entries and author
   };
   const original = JSON.stringify(source);
   const resolved = await resolveViteConfigExport(source, undefined, root);
-  assert.equal(resolved.projectRoot, path.join(root, "app"));
+  assert.equal(resolved.__vizeProjectRoot, path.join(root, "app"));
   assert.equal(resolved.basePath, path.join(root, "app"));
   assert.deepEqual(resolved.ignores, [path.join(root, "app/src/Ignored.vue")]);
   assert.equal(resolved.typeChecker.tsconfig, path.join(root, "app/tsconfig.json"));
@@ -144,7 +144,7 @@ test("Vite root projects scoped paths while preserving global entries and author
     undefined,
     root,
   );
-  assert.equal(entries[0].projectRoot, path.join(root, "app"));
+  assert.equal(entries[0].__vizeProjectRoot, path.join(root, "app"));
   assert.equal(entries[1].basePath, undefined);
   assert.equal(entries[1].formatter.singleQuote, true);
   assert.equal(entries[2].basePath, path.join(root, "app"));

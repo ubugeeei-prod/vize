@@ -135,11 +135,15 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
 
     std::fs::write(
         project.path().join("vize.config.json"),
-        "{\"projectRoot\":\"app\"}",
+        "{\"projectRoot\":42,\"__vizeProjectRoot\":42}",
     )
     .unwrap();
-    let dedicated = super::load_project_config_with_source(Some(project.path()));
+    let dedicated = super::try_load_project_config_with_source(Some(project.path())).unwrap();
     assert_eq!(dedicated.project_root, None);
+    assert_eq!(
+        dedicated.source_path,
+        Some(project.path().join("vize.config.json"))
+    );
 }
 
 #[test]

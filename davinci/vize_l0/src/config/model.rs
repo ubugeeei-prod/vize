@@ -159,7 +159,10 @@ pub(crate) struct RawVizeConfig {
     #[serde(rename = "$schema")]
     pub schema: Option<String>,
     /// Project identity projected by a Vite host; not a stable config field.
-    #[serde(rename = "projectRoot")]
+    #[serde(
+        rename = "__vizeProjectRoot",
+        deserialize_with = "deserialize_project_root"
+    )]
     pub project_root: Option<String>,
     #[serde(rename = "basePath")]
     pub base_path: Option<String>,
@@ -186,6 +189,16 @@ pub(crate) struct RawVizeConfig {
     legacy_formatter: Option<FormatterConfig>,
     #[serde(rename = "lsp")]
     legacy_lsp: Option<RawLanguageServerConfig>,
+}
+
+fn deserialize_project_root<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    // This host metadata used to be an unknown extension key. Preserve native
+    // config compatibility by ignoring any previously authored non-string value.
+    let value = serde_json::Value::deserialize(deserializer)?;
+    Ok(value.as_str().map(String::from))
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]
