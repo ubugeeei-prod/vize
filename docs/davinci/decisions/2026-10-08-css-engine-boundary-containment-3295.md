@@ -36,11 +36,13 @@ all 312 instruction observations but exceeded the unchanged JSX markup ceiling:
 45,769 instructions against 45,385. Signed main's protected run `38015025652`
 passed those same budgets; its log does not expose the individual JSX count.
 The unchanged gallery fixture cannot enter CSS parsing, and no markup visitor,
-binding, registry, benchmark or budget changed. Keep the private Patina CSS
-helper out of caller inlining as a narrow compiler-isolation experiment.
-The actual parse, unwind handling and fallback remain identical. Fresh whole
-source qualification must establish whether this resolves the failure; no
-speedup or instruction-gate success is assumed.
+binding, registry, benchmark or budget changed. Keeping only the shared parse
+helper out of caller inlining at `047c1791`, run `38017760523`, produced the
+same 45,769 count; that ineffective attribute is removed. Isolate the actual
+markerless-list stylesheet entry from caller inlining instead. The complete
+parse, matching, unwind handling and fallback remain identical. Fresh whole
+source qualification must establish its effect; no speedup or instruction-gate
+success is assumed.
 
 Separate finite child processes retain the complete arguments, input,
 stdout, stderr and exit status. `a{opacity:abs(-50%)}` exits by SIGABRT through
