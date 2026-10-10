@@ -1,5 +1,6 @@
 import { publicReader } from "./http.ts";
 import { verifyGithub } from "./github.ts";
+import { verifyJsrPublication } from "./jsr.ts";
 import type { PublicationPlan, PublicationTarget } from "./plan.ts";
 import { readMarketplace } from "../marketplace_query.ts";
 
@@ -97,6 +98,9 @@ export async function verifyPublication(plan: PublicationPlan, options: Publicat
     options,
     json,
   );
+  const jsr = plan.jsr
+    ? await verifyJsrPublication(plan.jsr, plan.version, jobs, { json, download, text })
+    : undefined;
 
   const npmTarget = async (item: PublicationTarget) => {
     const metadataUrl = `https://registry.npmjs.org/${encodeURIComponent(item.name)}/${item.version}`;
@@ -255,6 +259,7 @@ export async function verifyPublication(plan: PublicationPlan, options: Publicat
     npm,
     crates,
     githubAssets,
+    ...(jsr ? { jsr } : {}),
     marketplace: {
       ...editor,
       metadataUrl: marketplaceObservation.url,
@@ -262,8 +267,9 @@ export async function verifyPublication(plan: PublicationPlan, options: Publicat
       exactVersionAvailable: true,
     },
     openVsx: { ...editor, metadataUrl: openVsxUrl, ...openVsx },
-    evidence:
-      "Public metadata and downloaded npm/crate digest verification; no signature or installed-product execution claim.",
+    evidence: jsr?.required
+      ? "Public metadata and downloaded npm/crate/JSR source digest verification; JSR consumer jobs bound to the official Release; no signature claim."
+      : "Public metadata and downloaded npm/crate digest verification; no signature or installed-product execution claim.",
     success: true,
   };
 }

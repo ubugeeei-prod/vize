@@ -18,6 +18,9 @@ mod catalog;
 #[path = "pr_pin_catalog_tests.rs"]
 mod catalog_tests;
 #[cfg(test)]
+#[path = "pr_pin_jsr_tests.rs"]
+mod jsr_tests;
+#[cfg(test)]
 #[path = "pr_pin_budget_tests.rs"]
 mod budget_tests;
 pub use candidate::{check_candidate, verify_candidate};

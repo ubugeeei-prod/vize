@@ -16,6 +16,68 @@ const PUBLICATION_AUTHORITIES: [&str; 4] = [
     "tools/moon/cmd/publish_npm_package/main.mbt",
 ];
 
+const JSR_PUBLICATION_AUTHORITIES: [&str; 8] = [
+    ".github/workflows/release-jsr.yml",
+    "tools/support/release/jsr/prepare.mjs",
+    "tools/support/release/jsr/consumer.mjs",
+    "jsr/vize/jsr.json",
+    "jsr/vize/README.md",
+    "LICENSE",
+    "jsr/vize/channel.json",
+    "tools/support/release/jsr/channel.mjs",
+];
+
+fn publication_authorities(
+    revision: &str,
+    root: &Path,
+) -> Result<BTreeMap<&'static str, String>, String> {
+    let mut authorities = PUBLICATION_AUTHORITIES
+        .into_iter()
+        .map(|path| Ok((path, text(revision, path, root)?)))
+        .collect::<Result<BTreeMap<_, _>, String>>()?;
+    let inventory = paths(revision, root)?;
+    let jsr_present = JSR_PUBLICATION_AUTHORITIES
+        .iter()
+        .any(|path| *path != "LICENSE" && inventory.iter().any(|entry| entry.as_str() == *path))
+        || authorities[".github/workflows/release.yml"]
+            .contains(".github/workflows/release-jsr.yml");
+    if jsr_present {
+        // A partially added or deleted lane must fail, never borrow an older
+        // source's artifacts or silently disappear from the strict catalog.
+        for path in JSR_PUBLICATION_AUTHORITIES {
+            authorities.insert(path, text(revision, path, root)?);
+        }
+    }
+    Ok(authorities)
+}
+
+fn jsr_channel(
+    authorities: &BTreeMap<&str, String>,
+    version: &str,
+) -> Result<Option<Value>, String> {
+    let Some(raw) = authorities.get("jsr/vize/channel.json") else {
+        return Ok(None);
+    };
+    let policy: Value = serde_json::from_str(raw).map_err(|e| e.to_string())?;
+    if policy.as_object().map(|object| object.len()) != Some(2)
+        || policy["schema"] != "vize-jsr-channel-v1"
+        || !policy["enabled"].is_boolean()
+    {
+        return Err("Exact JSR channel schema and boolean enabled policy required.".into());
+    }
+    let manifest: Value =
+        serde_json::from_str(&authorities["jsr/vize/jsr.json"]).map_err(|e| e.to_string())?;
+    if manifest["name"] != "@vizejs/vize"
+        || manifest["exports"]
+            != json!({".":"./mod.ts","./config":"./config.ts","./native":"./native.ts","./vite":"./vite.ts"})
+    {
+        return Err("Supported JSR package identity and four exact exports required.".into());
+    }
+    Ok(Some(
+        json!({"enabled":policy["enabled"],"name":manifest["name"],"version":version,"exports":manifest["exports"]}),
+    ))
+}
+
 pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Value, String> {
     let mut npm = BTreeMap::new();
     let mut editors = BTreeMap::new();
@@ -156,13 +218,13 @@ pub(super) fn catalog(revision: &str, version: &str, root: &Path) -> Result<Valu
                 json!({"path":path,"manifest":text(revision,path,root)?,"publication":descriptor}),
             );
         }
-        let publication_authorities = PUBLICATION_AUTHORITIES
-            .into_iter()
-            .map(|path| Ok((path, text(revision, path, root)?)))
-            .collect::<Result<BTreeMap<_, _>, String>>()?;
-        Ok(
-            json!({"npm":npm,"editors":editors,"crates":crates,"cratePublisher":text(revision,"tools/moon/cmd/publish_crates/main.mbt",root)?,"nativeCatalog": native_catalog(&text(revision,"pnpm-workspace.yaml",root)?,version),"publicationAuthorities":publication_authorities}),
-        )
+        let publication_authorities = publication_authorities(revision, root)?;
+        let jsr = jsr_channel(&publication_authorities, version)?;
+        let mut catalog = json!({"npm":npm,"editors":editors,"crates":crates,"cratePublisher":text(revision,"tools/moon/cmd/publish_crates/main.mbt",root)?,"nativeCatalog": native_catalog(&text(revision,"pnpm-workspace.yaml",root)?,version),"publicationAuthorities":publication_authorities});
+        if let Some(jsr) = jsr {
+            catalog["jsr"] = jsr;
+        }
+        Ok(catalog)
     })();
     // This path was allocated by this invocation; no shared checkout is touched.
     let removed = github::git(

@@ -52,6 +52,8 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions: { contents: read, pull-requests: read }
+    outputs:
+      jsr_required: ${{ steps.jsr-policy.outputs.jsr_required }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { fetch-depth: 0, persist-credentials: false }
@@ -59,6 +61,7 @@ jobs:
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
       - name: Verify author, current main and exact PR commit
+        id: jsr-policy
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PR: ${{ inputs.release_pr }}
@@ -71,6 +74,7 @@ jobs:
           else
             rust-script tools/commands/release/pr.rs validate "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"
           fi
+          node tools/support/release/jsr/channel.mjs "$RELEASE_SHA" >> "$GITHUB_OUTPUT"
   plan-release-platforms:
     if: inputs.release_pr != ''
     needs: candidate
@@ -637,6 +641,16 @@ jobs:
         with: { name: release-package-vite-plugin-vize, path: npm/builder/vite }
       - name: Publish @vizejs/vite-plugin
         run: moon run --target native tools/moon/cmd/publish_npm_package -- npm/builder/vite --provenance
+  release-jsr:
+    name: Release and verify JSR distribution
+    if: ${{ needs.candidate.outputs.jsr_required == 'true' }}
+    needs:
+      [candidate, release-npm-cli, release-npm-native, release-npm-vite-plugin, release-preflight]
+    permissions: { contents: read, id-token: write }
+    uses: ./.github/workflows/release-jsr.yml
+    with:
+      version: ${{ inputs.tag_name }}
+      source_sha: ${{ inputs.expected_sha }}
   release-npm-oxlint-plugin:
     name: Release oxlint-plugin-vize to npm
     runs-on: ubuntu-24.04
