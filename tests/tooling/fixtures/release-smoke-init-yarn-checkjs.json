@@ -1,0 +1,121 @@
+{
+  "schema": "vize-init-yarn-checkjs-authored-preparation-v1",
+  "manager": "yarn@4.9.2",
+  "nodeLinker": "node-modules",
+  "originalSevenCells": [
+    {
+      "packageManager": "npm",
+      "shape": "vite-vue-ts",
+      "projectDirectory": "vite vue 日本語"
+    },
+    {
+      "packageManager": "npm",
+      "shape": "vite-vue-js-checkjs"
+    },
+    {
+      "packageManager": "pnpm",
+      "shape": "vite-vue-ts"
+    },
+    {
+      "packageManager": "pnpm",
+      "shape": "vite-vue-js-checkjs"
+    },
+    {
+      "packageManager": "yarn",
+      "shape": "vite-vue-ts"
+    },
+    {
+      "packageManager": "bun",
+      "shape": "vite-vue-ts"
+    },
+    {
+      "packageManager": "vp",
+      "shape": "vite-plus-vue-ts"
+    }
+  ],
+  "proposedEighthCell": {
+    "packageManager": "yarn",
+    "shape": "vite-vue-js-checkjs"
+  },
+  "peers": {
+    "typescript": "6.0.3",
+    "vite": "^8.0.0",
+    "vite-plus": "0.1.24",
+    "vue": "3.5.34"
+  },
+  "projectRootToken": "<fresh-outside-checkout-root>/vite-vue-js-checkjs-yarn",
+  "authoredFiles": {
+    "package.json": "{\n  \"name\": \"vize-fresh-init-vite-vue-js-checkjs\",\n  \"version\": \"0.0.0\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite\",\n    \"build\": \"vite build\"\n  },\n  \"dependencies\": {\n    \"vue\": \"3.5.34\"\n  },\n  \"devDependencies\": {\n    \"vite\": \"^8.0.0\"\n  }\n}\n",
+    "index.html": "<div id=\"app\"></div><script type=\"module\" src=\"/src/main.js\"></script>\n",
+    "vite.config.js": "import { defineConfig } from \"vite\";\n\nexport default defineConfig({\n  plugins: [],\n});\n",
+    "src/main.js": "import { createApp } from \"vue\";\nimport App from \"./App.vue\";\n\n/** @type {string} */\nconst mountLabel = \"root\";\nvoid mountLabel;\n\ncreateApp(App).mount(\"#app\");\n",
+    "src/App.vue": "<template>\n  <HelloWorld :msg=\"message\" />\n</template>\n\n<script setup>\nimport HelloWorld from \"./components/HelloWorld.vue\";\n\nconst message = \"vize\";\n</script>\n",
+    "src/components/HelloWorld.vue": "<template>\n  <p class=\"greeting\">{{ props.msg.toUpperCase() }}</p>\n</template>\n\n<script setup>\nconst props = defineProps({\n  msg: { type: String, required: true },\n});\n</script>\n",
+    ".yarnrc.yml": "nodeLinker: node-modules\n"
+  },
+  "initialAbsent": [".vscode"],
+  "initFlags": ["--yes", "--no-lint", "--vite", "--fmt", "--typecheck", "--editor"],
+  "expected": {
+    "dryStdout": "[vize init] detected in <fresh-outside-checkout-root>/vite-vue-js-checkjs-yarn:\n  framework:       Vite (vite.config.js)\n  package manager: yarn\n  language:        JavaScript (no tsconfig.json)\n  lint command:    oxlint\n  vize config:     none\n  oxlint config:   none\n[vize init] plan:\n  lint      skipped    not selected\n  bundler   configured adds vize() to vite.config.js\n  fmt       configured writes vize.config.ts\n  typecheck configured writes tsconfig.json and vize.config.ts\n  editor    configured writes .vscode/extensions.json recommending ubugeeei.vize\n[vize init] would create tsconfig.json\n[vize init] would create vize.config.ts\n[vize init] would create .vscode/extensions.json\n[vize init] would update vite.config.js\n[vize init] would update package.json\n[vize init] would add scripts: vize:fmt, vize:fmt:fix, vize:check\n[vize init] would run: yarn add -D @vizejs/vite-plugin vize\n",
+    "applyStdout": "[vize init] detected in <fresh-outside-checkout-root>/vite-vue-js-checkjs-yarn:\n  framework:       Vite (vite.config.js)\n  package manager: yarn\n  language:        JavaScript (no tsconfig.json)\n  lint command:    oxlint\n  vize config:     none\n  oxlint config:   none\n[vize init] plan:\n  lint      skipped    not selected\n  bundler   configured adds vize() to vite.config.js\n  fmt       configured writes vize.config.ts\n  typecheck configured writes tsconfig.json and vize.config.ts\n  editor    configured writes .vscode/extensions.json recommending ubugeeei.vize\n[vize init] will create tsconfig.json\n[vize init] will create vize.config.ts\n[vize init] will create .vscode/extensions.json\n[vize init] will update vite.config.js\n[vize init] will update package.json\n[vize init] will add scripts: vize:fmt, vize:fmt:fix, vize:check\n[vize init] editor integrations shipped with Vize:\n  VS Code: ubugeeei.vize (recommended in .vscode/extensions.json)\n  Zed: editors/zed\n  Neovim: editors/nvim\n  Vim: editors/vim\n  Helix: editors/helix\n  Emacs: editors/emacs\n",
+    "rerunStdout": "[vize init] detected in <fresh-outside-checkout-root>/vite-vue-js-checkjs-yarn:\n  framework:       Vite (vite.config.js)\n  package manager: yarn\n  language:        TypeScript (tsconfig.json)\n  lint command:    oxlint\n  vize config:     vize.config.ts\n  oxlint config:   none\n[vize init] plan:\n  lint      skipped    not selected\n  bundler   unchanged  vite.config.js already uses @vizejs/vite-plugin\n  fmt       unchanged  vize.config.ts already exists and was left unchanged\n  typecheck unchanged  vize.config.ts already exists and was left unchanged\n  editor    unchanged  .vscode/extensions.json already recommends ubugeeei.vize\n[vize init] nothing to do; the project is already configured\n[vize init] editor integrations shipped with Vize:\n  VS Code: ubugeeei.vize (recommended in .vscode/extensions.json)\n  Zed: editors/zed\n  Neovim: editors/nvim\n  Vim: editors/vim\n  Helix: editors/helix\n  Emacs: editors/emacs\n",
+    "files": {
+      "tsconfig.json": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"target\": \"ES2022\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"jsx\": \"preserve\",\n    \"allowJs\": true,\n    \"checkJs\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true\n  },\n  \"include\": [\n    \"src/**/*\"\n  ]\n}\n",
+      "vize.config.ts": "import { defineConfig } from \"vize\";\n\nexport default defineConfig({\n  compiler: {\n    templateSyntax: \"standard\",\n  },\n  formatter: {\n    singleAttributePerLine: false,\n    sortBlocks: true,\n  },\n  typeChecker: {\n    enabled: true,\n    strict: true,\n    jsxTypecheck: true,\n  },\n  vite: {\n    scanPatterns: [\"src/**/*.vue\"],\n  },\n});\n",
+      ".vscode/extensions.json": "{\n  \"recommendations\": [\n    \"ubugeeei.vize\"\n  ]\n}\n",
+      "vite.config.js": "import { defineConfig } from \"vite\";\nimport vize from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  plugins: [vize()],\n});\n"
+    },
+    "manifestScripts": {
+      "dev": "vite",
+      "build": "vite build",
+      "vize:fmt": "vize fmt --check src",
+      "vize:fmt:fix": "vize fmt --write src",
+      "vize:check": "vize check"
+    },
+    "devDependencyNames": ["@vizejs/vite-plugin", "vite", "vize"],
+    "plannedDependencies": ["@vizejs/vite-plugin", "vize"],
+    "clean": {
+      "exit": 0,
+      "signal": null,
+      "errorCount": 0,
+      "diagnosticFiles": []
+    },
+    "broken": {
+      "files": {
+        "src/main.js": "import { createApp } from \"vue\";\nimport App from \"./App.vue\";\n\n/** @type {string} */\nconst mountLabel = 42;\nvoid mountLabel;\n\ncreateApp(App).mount(\"#app\");\n"
+      },
+      "exit": 1,
+      "signal": null,
+      "errorCount": 1,
+      "diagnosticFiles": [
+        {
+          "file": "src/main.js",
+          "diagnostics": ["error:5:7 [TS2322] Type 'number' is not assignable to type 'string'."]
+        }
+      ]
+    },
+    "repair": {
+      "src/main.js": "import { createApp } from \"vue\";\nimport App from \"./App.vue\";\n\n/** @type {string} */\nconst mountLabel = \"root\";\nvoid mountLabel;\n\ncreateApp(App).mount(\"#app\");\n"
+    }
+  },
+  "commands": {
+    "bootstrap": ["corepack", "yarn@4.9.2", "install"],
+    "generatedCheck": ["corepack", "yarn@4.9.2", "run", "--silent", "vize:check"],
+    "plannedInstall": [
+      "corepack",
+      "yarn@4.9.2",
+      "add",
+      "-D",
+      "@vizejs/vite-plugin@file:<authenticated-packed-artifact>",
+      "vize@file:<authenticated-packed-artifact>"
+    ],
+    "localCheck": [
+      "<authenticated-node>",
+      "<fresh-project>/node_modules/vize/bin/vize",
+      "check",
+      "--format",
+      "json",
+      "--quiet"
+    ]
+  }
+}

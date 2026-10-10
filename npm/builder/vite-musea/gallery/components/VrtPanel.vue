@@ -21,7 +21,7 @@ const updateSnapshots = ref(false);
 const artifacts = ref<VrtArtifacts | null>(null);
 
 const groupedResults = computed(() => {
-  const groups: Record<string, VrtResult[]> = {};
+  const groups: Record<string, VrtResult[]> = Object.create(null);
   for (const r of results.value) {
     const key = r.variantName;
     if (!groups[key]) groups[key] = [];

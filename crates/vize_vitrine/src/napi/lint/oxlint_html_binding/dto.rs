@@ -23,7 +23,7 @@ pub struct OxlintHtmlOptions {
     /// Exact original caller snapshot, including every whitespace byte.
     #[napi(ts_type = "Array<number>")]
     pub root_bytes: Vec<u8>,
-    /// Exact supported host version: 1.78.0 or 1.86.0.
+    /// Exact supported host version: 1.78.0, 1.81.0, or 1.86.0.
     pub host_profile: String,
     pub no_ignore: bool,
     pub cli_ignore_patterns: Vec<String>,
@@ -108,6 +108,7 @@ pub struct OxlintHtmlCompleted {
     pub cwd: String,
     pub literal_target: String,
     pub target: String,
+    /// VCS root, or the filesystem matcher root for the 1.81 no-VCS profile.
     pub repository: String,
     pub root_json: String,
     pub no_ignore: bool,

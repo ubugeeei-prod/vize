@@ -40,8 +40,8 @@ export function prepareHtmlContext(
     environment: presentationContext(),
   };
   try {
-    if (!["1.78.0", "1.86.0"].includes(version))
-      throw new Error("original HTML requires a qualified Oxlint 1.78.0 or 1.86.0 host");
+    if (!["1.78.0", "1.81.0", "1.86.0"].includes(version))
+      throw new Error("original HTML requires a qualified Oxlint 1.78.0, 1.81.0 or 1.86.0 host");
     const targets = getLintTargets(args);
     if (targets.length !== 1) throw new Error("original HTML requires one literal original target");
     const config = readScopedConfig(cwd, args);

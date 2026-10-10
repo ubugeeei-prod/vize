@@ -15,6 +15,7 @@ import {
 import type { ArtFileInfo } from "./types/index.js";
 import type { MuseaTokenPreviewConfig } from "./tokens/preview.js";
 import { escapeHtml } from "./utils.js";
+import { previewModuleId } from "./preview-module-id.js";
 
 export const MUSEA_STATIC_BUILD_ENV = "VIZE_MUSEA_STATIC_BUILD";
 export const VIRTUAL_STATIC_RUNTIME = "virtual:musea-static-runtime";
@@ -99,7 +100,7 @@ export function loadStaticRuntimeModule(
   const entries = Array.from(artFiles.values()).flatMap((art) =>
     art.variants.map((variant) => {
       const key = staticPreviewId(art.path, variant.name);
-      const moduleId = `virtual:musea-preview:${art.path}:${variant.name}`;
+      const moduleId = previewModuleId(art.path, variant.name);
       return `${JSON.stringify(key)}: () => import(${JSON.stringify(moduleId)})`;
     }),
   );

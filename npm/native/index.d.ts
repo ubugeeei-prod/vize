@@ -1549,7 +1549,7 @@ export interface OxlintHtmlOptions {
   rootJson: string;
   /** Exact original caller snapshot, including every whitespace byte. */
   rootBytes: Array<number>;
-  /** Exact supported host version: 1.78.0 or 1.86.0. */
+  /** Exact supported host version: 1.78.0, 1.81.0, or 1.86.0. */
   hostProfile: string;
   noIgnore: boolean;
   cliIgnorePatterns: Array<string>;
@@ -1623,6 +1623,7 @@ export interface OxlintHtmlCompleted {
   cwd: string;
   literalTarget: string;
   target: string;
+  /** VCS root, or the filesystem matcher root for the 1.81 no-VCS profile. */
   repository: string;
   rootJson: string;
   noIgnore: boolean;

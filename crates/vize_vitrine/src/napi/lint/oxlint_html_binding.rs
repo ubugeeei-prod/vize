@@ -16,6 +16,7 @@ use dto::{OxlintHtmlOptions, OxlintHtmlOutcome, OxlintHtmlRefusal};
 pub fn lint_oxlint_html(options: OxlintHtmlOptions) -> Result<OxlintHtmlOutcome> {
     let host = match options.host_profile.as_str() {
         "1.78.0" => profile::HostProfile::Oxlint178,
+        "1.81.0" => profile::HostProfile::Oxlint181,
         "1.86.0" => profile::HostProfile::Oxlint186,
         _ => {
             return Err(Error::new(
