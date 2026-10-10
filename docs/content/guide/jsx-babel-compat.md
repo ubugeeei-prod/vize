@@ -56,14 +56,11 @@ points forward their configured `jsxCompat` value to `compileJsx`, and their opt
 silently change the emitted output for every existing Vize project, none of which asked for babel
 semantics.
 
-**Project-level, with no per-component form.** `jsxMode` can be selected per component with a
-`"use vue:vapor"` / `"use vue:vdom"` prologue, because VDOM and Vapor components coexist happily in
-one module — each is an independent render function. Compatibility mode is not like that. It
-changes **module-level** output shape: the babel plugin rewrites the JSX expression in place, so
-`const A = () => <div />` stays a `const A = …`, while Vize emits a standalone `render` export. A
-module compiled half in compat mode and half out of it would emit two mutually incompatible module
-shapes from a single file. Compat is therefore configured once for the project and deliberately has
-no directive prologue.
+**Project-level, with no per-component form.** `jsxMode` selects VDOM or Vapor per component
+with a `"use vue:vapor"` / `"use vue:vdom"` prologue. `jsxCompat` instead selects Babel-compatible
+semantics for the module as a whole and has no per-component directive. Current VDOM modules preserve
+authored declarations, exports and lexical scopes. That preservation does not alone establish
+Babel migration compatibility: block structure, control-flow lowering and patch flags still differ.
 
 ## Plugin option mapping
 
@@ -83,7 +80,7 @@ and every one of them is inert unless `jsxCompat` is `"babel"`.
 
 Two plugin options are not in that table:
 
-- **`optimize`** has no Vize equivalent, because Vize's output is always optimized — which is what
+- **`optimize`** has no Vize equivalent, because Vize's native output is optimized — which is what
   the plugin's `optimize: true` produces. The plugin's default is `optimize: false`, and its own
   README warns that turning it on "may skip certain re-renders", so the gap compat mode has to
   close is the _unoptimized_ direction: emitting patch-flag-free output.
@@ -115,13 +112,13 @@ Both are deliberate answers, recorded in the crate so they are not relitigated.
 
 ## What is deferred
 
-Two corpus rows are recorded as `deferred` rather than divergent, because each is waiting on
-unrelated compiler work rather than on compat mode itself:
+One corpus row is currently `deferred`: it needs type-resolution work outside compatibility mode.
 
-| Row                       | What babel does                          | What it is waiting on                                                                                                                                                                                 |
-| ------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `options/resolve_type_on` | appends `{ props: { … }, name: "A" }`    | type-driven props/emits inference, which needs the type resolution tracked on [#1497](https://github.com/ubugeeei-prod/vize/issues/1497) / [#1502](https://github.com/ubugeeei-prod/vize/issues/1502) |
-| `slots/dynamic_slot_name` | emits a computed key, `{ [n]: () => … }` | dynamic-slot lowering; Vize currently warns and drops the slot                                                                                                                                        |
+| Row | What Babel does | What it is waiting on |
+| --- | --- | --- |
+| `options/resolve_type_on` | appends `{ props: { … }, name: "A" }` | type-driven props/emits inference, which needs the type resolution tracked on [#1497](https://github.com/ubugeeei-prod/vize/issues/1497) / [#1502](https://github.com/ubugeeei-prod/vize/issues/1502) |
+
+`slots/dynamic_slot_name` is now `equivalent`; computed slot keys `{ [n]: () => … }` are no longer deferred.
 
 ## How compatibility is measured
 
@@ -138,7 +135,7 @@ snapshots that recording beside Vize's output with an explicit verdict per row.
 
 The row-by-row verdicts, the global divergences that hold for nearly every row (module shape, block
 tree, patch flags, un-lowered control flow), and the current totals all live in
-[`BABEL_COMPAT_INVENTORY.md`](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_atelier_jsx/tests/BABEL_COMPAT_INVENTORY.md).
+[`BABEL_COMPAT_INVENTORY.md`](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_atelier_jsx/tests/BABEL_COMPAT_INVENTORY%2Emd).
 Those totals are pinned by the `babel_compat_verdict_totals` test, so they cannot drift from the
 corpus — which is why this page quotes none of them. Read them at the source.
 
