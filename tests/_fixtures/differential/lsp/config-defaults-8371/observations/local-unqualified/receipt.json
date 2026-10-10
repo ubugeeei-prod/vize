@@ -1,0 +1,105 @@
+{
+  "kind": "local-observation-only",
+  "qualification": "unqualified; provided binary source worktree remains dirty and its build/source identity is unsealed",
+  "binary": {
+    "path": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-lsp-fresh-capability-successor-8371/target/lsp-fresh-policy-observation/vize",
+    "providedPath": "/tmp/vize-lsp-project-target-8371/debug/vize",
+    "sha256": "480bd3205a16ef0e2b5b8a9137e9a64186125c9806a858118c92ac015d1ebeae",
+    "sha256AtStart": "480bd3205a16ef0e2b5b8a9137e9a64186125c9806a858118c92ac015d1ebeae",
+    "sha256AtEnd": "480bd3205a16ef0e2b5b8a9137e9a64186125c9806a858118c92ac015d1ebeae",
+    "reportedVersion": "vize 0.439.0",
+    "sourceRevision": null,
+    "reportedSourceWorktree": "vize.feat-lsp-nested-project-config-8371",
+    "custody": "immutable owned copy, verified equal to supplied binary at copy time; source/build identity remains unsealed"
+  },
+  "runtime": {
+    "nodeVersion": "v24.14.0",
+    "corsaVersion": "Version 7.0.2",
+    "corsaSha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+    "vueVersion": "3.5.35"
+  },
+  "originalArchive": {
+    "sourceRevision": "93f10aacc174999098760cf5eea4d5165f9384f1",
+    "testSha256": "69548eb706810e1da70a96c0ddc724a1608923a0276ad7662cb226b096ad8dff",
+    "execution": "byte-identical temporary sibling test, removed after execution",
+    "outcome": {
+      "exitCode": 1,
+      "tests": 4,
+      "pass": 2,
+      "fail": 2,
+      "skips": 0
+    },
+    "failures": [
+      "default complete capabilities: only authorized formatting providers and jsx metadata differ",
+      "auto-insertion: only authorized jsx metadata differs"
+    ],
+    "unchangedHistoricalControlSourceSha256": "b60c3d0be6483bb64769b475f2acd31a4d5719785cd11c1cbed0f8e375e631c8"
+  },
+  "successor": {
+    "outcome": {
+      "exitCode": 0,
+      "tests": 12,
+      "pass": 12,
+      "fail": 0,
+      "skips": 0
+    },
+    "scope": [
+      "complete fresh initialize packet",
+      "complete auto-insertion on/off initialize packets",
+      "complete dedicated empty historical packet",
+      "complete Vite explicit-false packet",
+      "complete initialization formatting-false packet",
+      "unchanged original feature gating controls",
+      "pinned original whole-test/fixture custody",
+      "fresh real-Vue TSX and checkJs JSX prop error/repair packets",
+      "independently valid real-Vue props and intrinsic element packet"
+    ]
+  },
+  "normalization": "None in retained observations; tests normalize only the fresh temporary document URI for full publication comparisons.",
+  "admission": "Still held: exact-head source Actions, original typed/nested JSX controls (#8428/#8457), original Ant Design Vue semantic-loss source repair, protected queue, actual merge and release.",
+  "files": {
+    "auto-insert-off.initialize.json": "555770eb700cdd04d4a48f6ec3d05d2260de85779d1fd80bbac7261ad29860e8",
+    "auto-insert.initialize.json": "7a08caa333bff50c9932a09f4efdfeaeb0b112a0f48c12ba3af969fa3e36facc",
+    "dedicated-empty.initialize.json": "64a6f8c763e5f995374ed9fde6b5f1d348b553459d4e57c3616b52b01d83c61c",
+    "editor-full.initialize.json": "555770eb700cdd04d4a48f6ec3d05d2260de85779d1fd80bbac7261ad29860e8",
+    "editor-off.initialize.json": "c9f25530c598746006bdc4fe30b57c42d65a471c4de9bed056b6db62b6e31f3c",
+    "fresh-jsx-repair.notifications.json": "e999b9ed9530d79cdf7682099977274353fb493dbe24f4a310117020d2f15dab",
+    "fresh-jsx-repair.stderr.txt": "a5bd827029a907d5e22ccce9644a84132809b205ad581636d1caccd4d6750c9f",
+    "fresh-jsx-valid.notifications.json": "0ece442c2ff8efa2aed5cd86c895a631c28b36299e5af2258b430624265d2421",
+    "fresh-jsx-valid.stderr.txt": "95c0a00ab25c84457faae3e4e3f5f70f93fbb8a96b8172ab03dfe58d39e98ebe",
+    "fresh-successor-and-vue-witnesses.log.txt.gz": "ee009ae8c72011a08b96c7e83d6e16f51710948ca3e2221e27a2340328290b6d",
+    "fresh-tsx-intrinsic.notifications.json": "e2b26dbb92cea03854dc0aba3cde60cb9dc580e398df63e5953907c5c0d5551d",
+    "fresh-tsx-intrinsic.stderr.txt": "116c74b5d9dd4618acb6d9b4cbff976f11a57e701f20c1228b45592c6b5f16a0",
+    "fresh-tsx-repair.notifications.json": "a4cbb3b078900859b6a20025002591bf9534a423b979b2475e2d038265a1bdb3",
+    "fresh-tsx-repair.stderr.txt": "4aba17afeed17d02433d41843fb79c5b127ab66a6c561d4023d1eea9448416e4",
+    "fresh-tsx-valid.notifications.json": "3267ddd4670843d9c9996cb2ec4434851e07243a19b710b267337bca5de1dc23",
+    "fresh-tsx-valid.stderr.txt": "9e0dbe127a9d70b741ea15e174333b6cad5541022fb77ea04a360ae4e4d3c582",
+    "granular-authoring-off.initialize.json": "78e34099a8a2a67ebca180c0e298d1c3081109b7e82bdcafe855257a10cf06b3",
+    "granular-codelens-off.initialize.json": "9ad5d0a5e2bfbeda34d884140f30620210b6ab74fce1a9820e1809d9d522818d",
+    "granular-formatting-on.initialize.json": "555770eb700cdd04d4a48f6ec3d05d2260de85779d1fd80bbac7261ad29860e8",
+    "granular-four-off.initialize.json": "8a2ca7df208bc436f0727178afd352b517624e55338cde70e3f304eca793167d",
+    "granular-lint-off.initialize.json": "1497245bfeab0160c020cdba6f97d84111a6de8933447a529d60497360cc2a58",
+    "granular-typecheck-off.initialize.json": "bc368b3b3aba461e0fb3998414214d8e14cde3ab32ba71b5c223c6420943ac3b",
+    "init-formatting-false.initialize.json": "fc2a6034c84a98f95fc5d1052d3d47b1fed837bdb88f802e17c440c65fe67d19",
+    "original-complete-test.log.txt.gz": "760fc307da536425e19fbb1e42e2db2d74d4bec72a284c80afd3f800b6da7784",
+    "vite-explicit-false.initialize.json": "64a6f8c763e5f995374ed9fde6b5f1d348b553459d4e57c3616b52b01d83c61c"
+  },
+  "observedTestFiles": {
+    "tests/tooling/lsp-capabilities.test.ts": "f037044465f5c9767b13dbddfc2e71294ba25b7248397d16b56c2c3d1bd62e21",
+    "tests/tooling/lsp-fresh-capability-custody.test.ts": "94600054116eccef1e30d3b1ed17a9180c24fe43af9098883f622fdb9494a5aa",
+    "tests/tooling/lsp-fresh-vue-jsx-defaults.test.ts": "5f823c6281490ab9ff6f04b4d495b94b7b41aeaa94be3738b5957be81567e980",
+    "tests/tooling/support/lsp/capability-oracles.ts": "98c8ea9199c6e6e70fc9af2559b17a65ba87efdc9a5996edeb3304d3f62f47cf",
+    "tests/tooling/support/lsp/fresh-capability-policy.ts": "6c9bd4663731ca4797bc2b0ef9fa080770c7027e9d6594048d0f8a6a3f77f0af",
+    "tests/tooling/support/lsp/fresh-vue-project.ts": "8e8f52a307c894c7da59711f1d3785b626e92a991fd1d683ec5bf29c4191fd70"
+  },
+  "rawTestLogs": {
+    "original-complete-test.log.txt.gz": {
+      "encoding": "gzip, lossless original bytes",
+      "uncompressedSha256": "bfd04f81c04cfc638da4d9b5c756fd9af497cb97998a7265f582d2b7196616aa"
+    },
+    "fresh-successor-and-vue-witnesses.log.txt.gz": {
+      "encoding": "gzip, lossless original bytes",
+      "uncompressedSha256": "dec4f7ef37d00382c99b0fb0cf9b0ef17095be4a99262d0e2c52cde997acbe42"
+    }
+  }
+}
