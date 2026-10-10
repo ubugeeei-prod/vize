@@ -86,3 +86,14 @@ The existing corpus producer's `--check` and all five v-on storage tests pass
 locally. Fresh exact-head Check and Docs Actions are required after rebasing the
 complete dependent stack onto the signed v0.439.0 metadata merge. Earlier source
 runs remain evidence of the original failure, not acceptance of the new head.
+
+## Protected delivery rebase
+
+Current main made the old bottom branch conflict only in the final canonical
+record row. Rebase the genuine native Stack onto current main, retaining
+every incoming decision and source ratchet. Move only this slice's original
+unchanged clause to the existing tooling-input paragraph, and place the
+category child beside it when that child rebases. No rule, example, locale,
+rendering assertion or whole-page capture is removed. Earlier source and
+Docs receipts remain historical; the refreshed heads require fresh complete
+Actions, protected queue and actual deployed acceptance.
