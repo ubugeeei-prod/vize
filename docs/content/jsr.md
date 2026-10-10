@@ -67,8 +67,8 @@ import vize from "@vizejs/vize/vite";
 export default defineConfig({ plugins: [vize()] });
 ```
 
-JSR does not install the `vize`/`vz` CLI executable. Use the npm `vize` package
-for CLI commands. There is no `jsr dlx vize` command or JSR CLI package in this
+The JSR facade defines no CLI bin entry point. Install the npm `vize` package
+directly for the supported CLI workflow. There is no `jsr dlx vize` command or JSR CLI package in this
 offering. Other Vize packages continue to use their documented npm distribution.
 
 ## Maintainer bootstrap and release verification

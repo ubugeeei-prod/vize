@@ -32,8 +32,8 @@ Node imports on Linux x64, macOS arm64 and Windows x64 are exercised against
 the published package in Actions; other native targets retain the existing npm
 release platform qualification.
 
-JSR does not provide the Vize CLI executable. Install `vize` from npm to run
-`vize`/`vz`. Browser, Cloudflare Workers, Deno and Bun execution are outside
+The JSR facade defines no CLI bin entry point. Install `vize` directly from npm
+for the supported `vize`/`vz` CLI workflow. Browser, Cloudflare Workers, Deno and Bun execution are outside
 this package's supported boundary. The browser WASM package remains
 `@vizejs/wasm` on npm. Vite and Vue are project peer dependencies.
 
