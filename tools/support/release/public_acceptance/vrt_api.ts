@@ -6,6 +6,7 @@ import type { Browser, Page } from "playwright";
 import { galleryPath, sides, type Side, type VrtFixture, sha256 } from "./vrt_fixtures.ts";
 import {
   assertSummary,
+  assertApiReport,
   cleanup,
   inventory,
   ownershipIndex,
@@ -14,6 +15,7 @@ import {
   type ApiCapture,
   type Evidence,
   type RetainedCapture,
+  type VrtCounts,
 } from "./vrt_artifacts.ts";
 
 async function unusedPort() {
@@ -87,10 +89,11 @@ async function capture(
   url: string,
   side: Side,
   phase: string,
+  counts: VrtCounts,
 ): Promise<RetainedCapture> {
   const data = (await requestCapture(page, e, url, phase)) as ApiCapture;
   assert.equal(data.success, true);
-  assertSummary(data, 1, {});
+  assertSummary(data, 1, counts);
   assert.equal(data.results[0].artPath, f.arts[side]);
   assert.equal(data.artifacts.snapshotDir, path.join(f.root, f.settings.snapshotDir));
   const identity = `src/${side}/Button.art.vue`;
@@ -107,6 +110,8 @@ async function capture(
     data.artifacts.jsonReportPath,
     data.artifacts.htmlReportPath,
   );
+  const viewport = f.settings.viewports[0];
+  assertApiReport(retained.data, data, viewport.width, viewport.height);
   assert.deepEqual(retained.data.reportOwner, { version: 1, artIdentity: identity });
   assert.deepEqual(
     retained.data.results.map((item) => item.artPath),
@@ -157,11 +162,17 @@ export async function observeVrtApi(browser: Browser, f: VrtFixture, e: Evidence
         Reflect.set(window, "__installedVrtDocument", token);
         return token;
       });
-      const first = await capture(page, f, e, active.url, side, `api-${side}-new`);
-      assertSummary(first.data, 1, { new: 1 });
+      const first = await capture(page, f, e, active.url, side, `api-${side}-new`, {
+        new: 1,
+        passed: 0,
+        failed: 0,
+      });
       if (side === "right") await unchanged(latest.left);
-      const repeat = await capture(page, f, e, active.url, side, `api-${side}-match`);
-      assertSummary(repeat.data, 1, { passed: 1, new: 0, failed: 0 });
+      const repeat = await capture(page, f, e, active.url, side, `api-${side}-match`, {
+        passed: 1,
+        new: 0,
+        failed: 0,
+      });
       assert.equal(repeat.data.results[0].diffPercentage, 0);
       assert.deepEqual(repeat.png, first.png);
       assert.deepEqual(repeat.data.artifacts, first.data.artifacts);
@@ -197,19 +208,24 @@ export async function observeVrtApi(browser: Browser, f: VrtFixture, e: Evidence
       active.url,
       "left",
       "api-physical-diff-configured-threshold",
+      { passed: 1, new: 0, failed: 0 },
     );
-    assertSummary(diff.data, 1, { passed: 1, failed: 0 });
     assert.ok(
-      diff.data.results[0].diffPercentage > 0 &&
+      typeof diff.data.results[0].diffPercentage === "number" &&
+        diff.data.results[0].diffPercentage > 0 &&
         diff.data.results[0].diffPercentage < f.settings.threshold,
     );
     assert.deepEqual(diff.png, latest.left.png);
     assert.ok(pngDetails(await readFile(diff.data.results[0].currentPath!)).colors.green > 2000);
     await unchanged(latest.right);
     await page.getByRole("checkbox", { name: "Update snapshots", exact: true }).check();
-    await capture(page, f, e, active.url, "left", "api-update");
+    await capture(page, f, e, active.url, "left", "api-update", { passed: 1, new: 0, failed: 0 });
     await page.getByRole("checkbox", { name: "Update snapshots", exact: true }).uncheck();
-    latest.left = await capture(page, f, e, active.url, "left", "api-updated-match");
+    latest.left = await capture(page, f, e, active.url, "left", "api-updated-match", {
+      passed: 1,
+      new: 0,
+      failed: 0,
+    });
     assert.equal(latest.left.data.results[0].diffPercentage, 0);
     assert.ok(pngDetails(latest.left.png).colors.green > 2000);
     await unchanged(latest.right);
@@ -221,7 +237,11 @@ export async function observeVrtApi(browser: Browser, f: VrtFixture, e: Evidence
     for (const side of sides) {
       await selectVrt(page, active.url, side);
       const previous = latest[side];
-      latest[side] = await capture(page, f, e, active.url, side, `api-${side}-restart-match`);
+      latest[side] = await capture(page, f, e, active.url, side, `api-${side}-restart-match`, {
+        passed: 1,
+        new: 0,
+        failed: 0,
+      });
       assert.equal(latest[side].data.results[0].diffPercentage, 0);
       assert.deepEqual(latest[side].data.artifacts, previous.data.artifacts);
       assert.deepEqual(latest[side].png, previous.png);

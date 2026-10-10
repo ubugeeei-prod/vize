@@ -38,7 +38,7 @@ export async function observeHostedVrt(browser: Browser, f: VrtFixture, e: Evide
     const bin = await installedVrtBin();
     const baselineDir = path.join(f.root, "cli-baselines");
     const first = await captureHostedCli(f, e, bin, host.url, "cli-hosted-new");
-    assertSummary(first.data, 2, { new: 2, failed: 0 });
+    assertSummary(first.data, 2, { new: 2, passed: 0, failed: 0 });
     const byArt = new Map(first.data.results.map((result) => [result.artPath, result]));
     const left = byArt.get(f.arts.left)!,
       right = byArt.get(f.arts.right)!;
@@ -67,11 +67,12 @@ export async function observeHostedVrt(browser: Browser, f: VrtFixture, e: Evide
     );
     assertSummary(changed.data, 2, { failed: 1, passed: 1, new: 0 });
     const changedLeft = changed.data.results.find((result) => result.artPath === f.arts.left)!;
-    assert.ok(changedLeft.diffPercentage > 0);
+    assert.ok(typeof changedLeft.diffPercentage === "number" && changedLeft.diffPercentage > 0);
     assert.ok(pngDetails(await readFile(changedLeft.currentPath!)).colors.green > 2000);
     assert.deepEqual(await readFile(left.snapshotPath), leftPng);
     assert.deepEqual(await readFile(right.snapshotPath), rightPng);
-    await captureHostedCli(f, e, bin, host.url, "cli-hosted-update", true);
+    const updated = await captureHostedCli(f, e, bin, host.url, "cli-hosted-update", true);
+    assertSummary(updated.data, 2, { failed: 1, passed: 1, new: 0 });
     const clean = await captureHostedCli(f, e, bin, host.url, "cli-hosted-updated-match");
     assertSummary(clean.data, 2, { passed: 2, failed: 0, new: 0 });
     assert.ok(clean.data.results.every((result) => result.diffPercentage === 0));
@@ -94,6 +95,11 @@ export async function observeHostedVrt(browser: Browser, f: VrtFixture, e: Evide
     const restored = await captureHostedCli(f, e, bin, host.url, "cli-hosted-restored-owner");
     assertSummary(restored.data, 2, { passed: 1, new: 1, failed: 0 });
     const restoredRight = restored.data.results.find((result) => result.artPath === f.arts.right)!;
+    assert.equal(restoredRight.status, "new");
+    assert.equal(
+      restored.data.results.find((result) => result.artPath === f.arts.left)!.status,
+      "passed",
+    );
     assert.equal(restoredRight.snapshotPath, right.snapshotPath);
     assert.deepEqual(await readFile(restoredRight.snapshotPath), rightPng);
     assert.deepEqual((await ownershipIndex(baselineDir)).bytes, originalIndex.bytes);

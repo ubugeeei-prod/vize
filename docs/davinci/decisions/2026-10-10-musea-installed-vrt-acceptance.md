@@ -72,3 +72,15 @@ prerequisite once before this narrow integration; no old0.441 campaign evidence 
 to this observer. Source syntax, formatting and guard laws are preparation
 checks only. Official next-cut C/H/R inputs and a real Linux installed run are
 still pending. PR, queue and dispatch admission remain with the root owner.
+
+The [6097370756 peer refinement](https://github.com/ubugeeei-prod/vize/issues/8501#issuecomment-6097370756)
+preserves local64852 as historical preparation: its source laws did not bind
+every written report field to the actual API packet or constrain every new
+counter. The successor compares the whole summary, including duration, and
+all eight shared result fields with exact key presence and value. Both
+viewport names remain their original strings. Report basename/variant aliases,
+pixel arithmetic and explicit error/new/passed/failed mapping are checked
+separately against the actual HTTP flags. Every new API/CLI phase pins all
+counters and result flags. All original controls stay intact;24 source/custody
+laws, lint and syntax are preparation checks only, with installed runtime
+still unexecuted.

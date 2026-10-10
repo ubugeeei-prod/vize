@@ -4,25 +4,46 @@ import { mkdir, readFile, readdir, lstat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { sha256 } from "./vrt_fixtures.ts";
 
-export interface VrtResult {
+export interface VrtSharedResult {
   artPath: string;
   variantName: string;
-  viewport: string | { name: string; width: number; height: number };
+  viewport: string;
   snapshotPath: string;
   currentPath?: string;
   diffPath?: string;
-  diffPercentage: number;
-  passed: boolean;
-  isNew?: boolean;
+  diffPercentage?: number;
   error?: string;
 }
+export interface VrtResult extends VrtSharedResult {
+  passed: boolean;
+  isNew?: boolean;
+}
+export interface WrittenResult extends VrtSharedResult {
+  art: string;
+  variant: string;
+  diffPixels?: number;
+  totalPixels?: number;
+  status: "error" | "new" | "passed" | "failed";
+}
+export interface VrtSummary {
+  total: number;
+  new: number;
+  passed: number;
+  failed: number;
+  errors: number;
+  skipped: number;
+  duration: number;
+}
+export type VrtCounts = Pick<VrtSummary, "new" | "passed" | "failed">;
 export interface VrtReport {
-  results: VrtResult[];
-  summary: { total: number; new: number; passed: number; failed: number; errors?: number };
+  results: WrittenResult[];
+  summary: VrtSummary;
   reportOwner?: { version: number; artIdentity: string };
 }
-export interface ApiCapture extends VrtReport {
+export interface ApiCapture {
   success: boolean;
+  results: VrtResult[];
+  summary: VrtSummary;
   artifacts: { snapshotDir: string; jsonReportPath: string; htmlReportPath: string };
 }
 export interface RetainedCapture {
@@ -117,21 +138,103 @@ export function pngDetails(bytes: Buffer) {
   return { width: png.width, height: png.height, colors, sha256: sha256(bytes) };
 }
 
-export function assertSummary(
-  report: VrtReport,
-  total: number,
-  counts: Partial<VrtReport["summary"]>,
-) {
+export function assertSummary(report: VrtReport | ApiCapture, total: number, counts: VrtCounts) {
   assert.equal(report.summary.total, total);
-  assert.equal(report.summary.errors ?? 0, 0);
+  assert.equal(report.summary.errors, 0);
+  assert.equal(report.summary.skipped, 0);
+  assert.ok(Number.isFinite(report.summary.duration) && report.summary.duration >= 0);
   for (const [key, value] of Object.entries(counts))
     assert.equal(Reflect.get(report.summary, key), value, key);
   assert.equal(report.results.length, total);
-  for (const result of report.results) {
+  const fromApi = "success" in report;
+  if (fromApi) assert.equal(report.success, true);
+  const statuses = report.results.map((result) => {
     assert.equal(result.error, undefined);
     assert.equal(result.variantName, "Default");
-    const name = typeof result.viewport === "string" ? result.viewport : result.viewport.name;
-    assert.equal(name, "authored-compact");
+    assert.equal(result.viewport, "authored-compact");
+    if (fromApi) {
+      const actual = result as VrtResult;
+      assert.equal(Object.hasOwn(actual, "passed"), true);
+      assert.equal(typeof actual.passed, "boolean");
+      if (actual.isNew === true) assert.equal(actual.passed, true);
+      else assert.equal(Object.hasOwn(actual, "isNew"), false);
+      const status = actual.isNew ? "new" : actual.passed ? "passed" : "failed";
+      if (status === "new") assert.equal(actual.diffPercentage, undefined);
+      return status;
+    }
+    const written = result as WrittenResult;
+    assert.equal(Object.hasOwn(written, "passed"), false);
+    assert.equal(Object.hasOwn(written, "isNew"), false);
+    assert.ok(["new", "passed", "failed"].includes(written.status));
+    if (written.status === "new") {
+      assert.equal(written.diffPercentage, undefined);
+      assert.equal(written.diffPixels, undefined);
+      assert.equal(written.totalPixels, undefined);
+    }
+    return written.status;
+  });
+  for (const status of ["new", "passed", "failed"] as const)
+    assert.equal(statuses.filter((actual) => actual === status).length, counts[status]);
+}
+
+/** Bind whole physical JSON data to the actual parsed HTTP packet without normalizing either. */
+export function assertApiReport(
+  report: VrtReport,
+  packet: ApiCapture,
+  width: number,
+  height: number,
+) {
+  assert.deepEqual(report.summary, packet.summary);
+  assert.equal(report.results.length, packet.results.length);
+  const shared = [
+    "artPath",
+    "variantName",
+    "viewport",
+    "snapshotPath",
+    "currentPath",
+    "diffPath",
+    "diffPercentage",
+    "error",
+  ];
+  for (const [index, written] of report.results.entries()) {
+    const actual = packet.results[index];
+    for (const key of shared) {
+      assert.equal(Object.hasOwn(written, key), Object.hasOwn(actual, key), key);
+      assert.deepEqual(Reflect.get(written, key), Reflect.get(actual, key), key);
+    }
+    assert.equal(typeof actual.viewport, "string");
+    assert.equal(Object.hasOwn(actual, "passed"), true);
+    assert.equal(typeof actual.passed, "boolean");
+    assert.equal(Object.hasOwn(written, "passed"), false);
+    assert.equal(Object.hasOwn(written, "isNew"), false);
+    assert.equal(written.art, path.basename(actual.artPath, ".art.vue"));
+    assert.equal(written.variant, actual.variantName);
+    const status = actual.error
+      ? "error"
+      : actual.isNew
+        ? "new"
+        : actual.passed
+          ? "passed"
+          : "failed";
+    assert.equal(written.status, status);
+    if (status === "new") {
+      assert.equal(actual.passed, true);
+      assert.equal(actual.isNew, true);
+    } else assert.equal(Object.hasOwn(actual, "isNew"), false);
+    if (status === "error") assert.equal(actual.passed, false);
+    if (status === "new" || status === "error") {
+      assert.equal(written.diffPixels, undefined);
+      assert.equal(written.totalPixels, undefined);
+      assert.equal(written.diffPercentage, undefined);
+    } else {
+      assert.equal(written.totalPixels, width * height);
+      assert.ok(
+        Number.isSafeInteger(written.diffPixels) &&
+          written.diffPixels! >= 0 &&
+          written.diffPixels! <= written.totalPixels!,
+      );
+      assert.equal(written.diffPercentage, (written.diffPixels! / written.totalPixels!) * 100);
+    }
   }
 }
 
