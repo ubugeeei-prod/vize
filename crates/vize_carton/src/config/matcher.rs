@@ -6,7 +6,7 @@ use std::path::{Component, Path, PathBuf};
 
 /// Ordered, escaped ignore sequences for host-projected project settings.
 ///
-/// Consecutive patterns with a common base retain their declaration order;
+/// Patterns with a common base retain their declaration order;
 /// groups with different bases form independent ignore scopes.
 pub struct ProjectIgnoreSet {
     scopes: Vec<LintPlanScope>,
@@ -43,11 +43,16 @@ impl ProjectIgnoreSet {
                 String::from(pattern)
             };
             let base = Some(normalize_path(&base));
-            if groups.last().is_none_or(|(existing, _)| *existing != base) {
-                groups.push((base, Vec::new()));
-            }
-            let group_index = groups.len() - 1;
-            let patterns = &mut groups[group_index].1;
+            let group_index = groups
+                .iter()
+                .position(|(existing, _)| *existing == base)
+                .unwrap_or_else(|| {
+                    groups.push((base, Vec::new()));
+                    groups.len() - 1
+                });
+            let Some((_, patterns)) = groups.get_mut(group_index) else {
+                continue;
+            };
             patterns.push(crate::cstr!("{sign}{pattern}"));
             // Preserve the existing nested dependency ignore expansion without
             // changing authored negation or escaped metacharacters.

@@ -76,13 +76,13 @@ fn project_ignore_sequences_preserve_root_negation_and_literal_metacharacters() 
     let outside = project.path().join("outside/**");
     let ignores = [
         "generated/**",
+        outside.to_str().unwrap(),
         "!generated/KeepItem.vue",
         r"src/\[id\].vue",
         "node_modules/**",
         "!node_modules/keep.vue",
         absolute.to_str().unwrap(),
         "!absolute/KeepItem.vue",
-        outside.to_str().unwrap(),
     ]
     .into_iter()
     .map(|pattern| crate::config::ConfigEntryIgnore {

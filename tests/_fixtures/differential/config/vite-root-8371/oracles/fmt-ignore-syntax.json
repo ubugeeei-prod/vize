@@ -78,6 +78,6 @@
     "text": "{\n  \"compilerOptions\": {\n    \"strict\": true,\n    \"noEmit\": true,\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"Bundler\",\n    \"skipLibCheck\": true\n  },\n  \"include\": [\"src/**/*.ts\"]\n}\n"
   },
   "vite.config.mjs": {
-    "text": "import { fileURLToPath } from \"node:url\";\n\nexport default {\n  root: \"app\",\n  vize: {\n    basePath: \"elsewhere\",\n    ignores: [\n      \"generated/**\",\n      \"!generated/KeepItem.*\",\n      String.raw`src/\\[id\\].*`,\n      fileURLToPath(new URL(\"./app/absolute/**\", import.meta.url)),\n      \"!absolute/KeepItem.*\",\n    ],\n    linter: { preset: \"essential\", rules: { \"a11y/alt-text\": \"error\" } },\n    formatter: { singleQuote: true },\n    typeChecker: { tsconfig: \"tsconfig.json\" },\n  },\n};\n"
+    "text": "import { fileURLToPath } from \"node:url\";\n\nexport default {\n  root: \"app\",\n  vize: {\n    basePath: \"elsewhere\",\n    ignores: [\n      \"generated/**\",\n      fileURLToPath(new URL(\"./outside/**\", import.meta.url)),\n      \"!generated/KeepItem.*\",\n      String.raw`src/\\[id\\].*`,\n      fileURLToPath(new URL(\"./app/absolute/**\", import.meta.url)),\n      \"!absolute/KeepItem.*\",\n    ],\n    linter: { preset: \"essential\", rules: { \"a11y/alt-text\": \"error\" } },\n    formatter: { singleQuote: true },\n    typeChecker: { tsconfig: \"tsconfig.json\" },\n  },\n};\n"
   }
 }

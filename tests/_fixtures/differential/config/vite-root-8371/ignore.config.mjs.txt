@@ -6,6 +6,7 @@ export default {
     basePath: "elsewhere",
     ignores: [
       "generated/**",
+      fileURLToPath(new URL("./outside/**", import.meta.url)),
       "!generated/KeepItem.*",
       String.raw`src/\[id\].*`,
       fileURLToPath(new URL("./app/absolute/**", import.meta.url)),
