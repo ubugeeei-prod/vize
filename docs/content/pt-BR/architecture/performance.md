@@ -22,8 +22,6 @@ Um único artefato versionado alimenta o README e todos os idiomas. A quantidade
 
 [Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-Versões: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
-
 As medições locais de linter, formatador e os perfis abaixo são históricos e não pertencem a este snapshot. Ambiente registrado: MacBook Pro M2 Max (12 núcleos, 96 GB RAM), macOS 15.3.2, Node v24.14.0, Vite v8.0.0 e Vue v3.6.0-beta.10.
 
 ## Benchmark: compilação SFC
@@ -37,6 +35,26 @@ Arquivos: **3,000** (12,302,100 bytes).
 | 1T / max      | 3.57s             | 65.0ms  | **54.8x** |
 
 [Metodologia e resultados completos](./performance-blacksmith)
+
+<details class="benchmark-provenance">
+<summary>Versões das ferramentas e checksums</summary>
+
+| Ferramenta           | Versão                               | SHA-256 do binário                                                            |
+| -------------------- | ------------------------------------ | ----------------------------------------------------------------------------- |
+| Vize                 | <code>vize 0.424.11</code>           | <code>dc5e840133beec86106ca27c496ca01fbff4299a8aef6c3a0f2fca3131f88fe3</code> |
+| tsgo                 | <code>Version 7.0.2</code>           | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
+| vue-tsc              | <code>Version 6.0.3</code>           | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
+| verter-tsc           | <code>verter-tsc 0.0.1-beta.3</code> | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
+| Golar                | <code>Golar version 0.1.10</code>    | <code>a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da</code> |
+| TypeScript (vue-tsc) | n/a                                  | n/a                                                                           |
+| Vue                  | <code>3.6.0-beta.10</code>           | n/a                                                                           |
+| ESLint               | <code>v10.4.1</code>                 | <code>41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc</code> |
+| Prettier             | <code>3.8.3</code>                   | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
+| Node.js              | <code>v24.14.0</code>                | n/a                                                                           |
+
+Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
+
+</details>
 
 <!-- benchmark:environment:end -->
 
@@ -199,8 +217,6 @@ Um único artefato versionado alimenta o README e todos os idiomas. A quantidade
 
 [Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
 
-Versões: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
-
 | Medição              | Arquivos | Ferramenta comparada | Mediana comparada | Vize 1T | Vize max | Razão    |
 | -------------------- | -------- | -------------------- | ----------------- | ------- | -------- | -------- |
 | Verificação de tipos | 500      | vue-tsc              | 6.75s             | 2.03s   | 1.37s    | **4.9x** |
@@ -254,8 +270,6 @@ Um único artefato versionado alimenta o README e todos os idiomas. A quantidade
 | `blacksmith-32vcpu-ubuntu-2404` (32 CPU) | 2026-09-16T08:19:25.262Z | 3        | 1            |
 
 [Actions](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669) · [f9cc50ee2e2f](https://github.com/ubugeeei-prod/vize/commit/f9cc50ee2e2ff14cd120241cd87a0162446df65b) · [JSON](https://github.com/ubugeeei-prod/vize/blob/main/tools/benchmarks/results/tool-benchmark-latest.json)
-
-Versões: vize: `vize 0.424.11` · tsgo: `Version 7.0.2` · vueTsc: `Version 6.0.3` · verterTsc: `verter-tsc 0.0.1-beta.3` · vue: `3.6.0-beta.10` · node: `v24.14.0`.
 
 Arquivos: **1,000**.
 
