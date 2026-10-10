@@ -23,3 +23,9 @@ captures cover both English and Japanese references on desktop and mobile
 before inherited catalogue validation. Exact-head Actions, protected Stack
 delivery, and deployed browser proof remain required. This is one bounded
 slice; the rest of the site-wide Japanese review remains unfinished.
+
+After the first three Japanese layers actually merged as `65ab25da5b`,
+rebase onto that delivered main and move only this record's canonical clause
+from the shared JSX row to the existing product tracking paragraph. Preserve
+all foreign canonical bytes and owned reader/test sources; fresh exact-head
+Actions and deployed proof remain required.
