@@ -7,7 +7,7 @@ import "../../docs/theme/command-variants.js";
 type Choice = { manager: string; command: string | null; gap: string };
 const { choices } = (
   globalThis as unknown as {
-    __vizeDocsCommands: { choices(source: string): Choice[] | null };
+    __vizeDocsCommands: { choices: (source: string) => Choice[] | null };
   }
 ).__vizeDocsCommands;
 
