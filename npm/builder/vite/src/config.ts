@@ -47,6 +47,14 @@ export async function resolveConfigExport(
   return (await loadVizeConfigModule()).resolveConfigExport(exported, env);
 }
 
+/** Project shared settings from an already evaluated Vite config. */
+export async function resolveViteConfigExport(
+  exported: unknown,
+  env?: ConfigEnv,
+): Promise<ResolvedVizeConfig> {
+  return (await loadVizeConfigModule()).resolveViteConfigExport(exported, env);
+}
+
 export const VIZE_CONFIG_JSON_SCHEMA_PATH = require.resolve("vize/schemas/vize.config.schema.json");
 export const VIZE_CONFIG_PKL_SCHEMA_PATH = require.resolve("vize/pkl/vize.pkl");
 

@@ -44,7 +44,7 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
   const { vize: nativeLint, ...oxlint } = lint ?? {};
   const { vize: nativeFmt, ...oxfmt } = fmt ?? {};
   const formatter = {
-    ...(oxfmt.sortImports === undefined ? {} : { sortImports: oxfmt.sortImports }),
+    ...oxfmt,
     ...(typeof nativeFmt === "object" ? nativeFmt : {}),
   };
   const alias =
@@ -77,7 +77,7 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
     }
     const inherited =
       base === undefined
-        ? await loadConfig(process.cwd(), { env })
+        ? await loadConfig(process.cwd(), { env, viteConfig: false })
         : await resolveConfigExport(base, env);
     const overrides = await resolveConfigExport(
       {
@@ -88,7 +88,11 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
       },
       env,
     );
-    return mergeSharedConfig(inherited, overrides) ?? {};
+    const defaults =
+      base === undefined && inherited !== null
+        ? null
+        : await resolveConfigExport({ typeChecker: { jsxTypecheck: true } }, env);
+    return mergeSharedConfig(mergeSharedConfig(defaults, inherited), overrides) ?? {};
   };
   const metadata: VizeTaskConfig = {
     config,

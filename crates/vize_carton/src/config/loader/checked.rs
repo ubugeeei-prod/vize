@@ -2,8 +2,10 @@
 use std::path::{Path, PathBuf};
 
 use super::{
-    ConfigDocument, LoadedRawConfig, discovery::CONFIG_FILE_NAMES, parse::parse_raw_config_file,
-    pkl,
+    LoadedRawConfig,
+    discovery::{CONFIG_FILE_NAMES, search_directories},
+    parse::parse_raw_config_file,
+    pkl, project_defaults,
 };
 
 pub(super) fn load_raw_config_checked(
@@ -18,32 +20,34 @@ pub(super) fn load_raw_config_checked(
     if base.is_file() {
         return parse(&base);
     }
-    for name in CONFIG_FILE_NAMES {
-        let candidate = base.join(name);
-        if !candidate.exists() {
-            continue;
-        }
-        match parse_raw_config_file(&candidate) {
-            Ok(config) => {
-                return Ok(LoadedRawConfig {
-                    config,
-                    source_path: Some(candidate),
-                });
+    for directory in search_directories(&base, path.is_none()) {
+        for name in CONFIG_FILE_NAMES {
+            let candidate = directory.join(name);
+            if !candidate.exists() {
+                continue;
             }
-            Err(error)
-                if path.is_none()
-                    && candidate.extension().is_some_and(|ext| ext == "pkl")
-                    && pkl::is_process_error_box(error.as_ref()) =>
-            {
-                eprintln!(
-                    "Warning: Failed to evaluate {}: {error}",
-                    candidate.display()
-                );
-            }
-            Err(error) => {
-                return Err(
-                    crate::cstr!("failed to parse {}: {error}", candidate.display()).into(),
-                );
+            match parse_raw_config_file(&candidate) {
+                Ok(config) => {
+                    return Ok(LoadedRawConfig {
+                        config,
+                        source_path: Some(candidate),
+                    });
+                }
+                Err(error)
+                    if path.is_none()
+                        && candidate.extension().is_some_and(|ext| ext == "pkl")
+                        && pkl::is_process_error_box(error.as_ref()) =>
+                {
+                    eprintln!(
+                        "Warning: Failed to evaluate {}: {error}",
+                        candidate.display()
+                    );
+                }
+                Err(error) => {
+                    return Err(
+                        crate::cstr!("failed to parse {}: {error}", candidate.display()).into(),
+                    );
+                }
             }
         }
     }
@@ -51,7 +55,7 @@ pub(super) fn load_raw_config_checked(
         return Err(crate::cstr!("no vize config file found under {}", base.display()).into());
     }
     Ok(LoadedRawConfig {
-        config: ConfigDocument::default(),
+        config: project_defaults(),
         source_path: None,
     })
 }
