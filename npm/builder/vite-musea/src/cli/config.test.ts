@@ -93,6 +93,7 @@ void test("loads Musea include and exclude for the VRT file scan", async () => {
 
   assert.deepEqual(await loadMuseaFileSet(configPath, workspace), {
     root: path.join(workspace, "gallery"),
+    projectRoot: path.join(workspace, "gallery"),
     include: ["../*/src/**/*.art.vue"],
     exclude: ["**/legacy/**"],
   });
@@ -103,6 +104,7 @@ void test("missing vite config scans the working directory with the gallery defa
 
   assert.deepEqual(await loadMuseaFileSet("vite.config.ts", workspace), {
     root: workspace,
+    projectRoot: workspace,
     include: ["**/*.art.vue"],
     exclude: ["node_modules/**", "dist/**"],
   });

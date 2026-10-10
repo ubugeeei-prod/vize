@@ -19,6 +19,7 @@ const VIZE_CONFIG_NAMES = [
 
 export interface MuseaFileSet {
   root: string;
+  projectRoot: string;
   include: string[];
   exclude: string[];
 }
@@ -43,8 +44,10 @@ export async function loadMuseaFileSet(
     : await readVizeMuseaOptions(loaded?.configDir ?? cwd);
   const include = pluginOptions?.include ?? vizeOptions?.include ?? DEFAULT_INCLUDE;
   const exclude = pluginOptions?.exclude ?? vizeOptions?.exclude ?? DEFAULT_EXCLUDE;
+  const root = loaded?.root ?? cwd;
   return {
-    root: loaded?.root ?? cwd,
+    root,
+    projectRoot: path.resolve(root, pluginOptions?.projectRoot ?? "."),
     include,
     exclude,
   };

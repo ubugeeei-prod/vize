@@ -36,3 +36,10 @@ contract tests Musea snapshot naming rather than the compiler remarks corpus.
 The differential JSON record points to the exact persisted sources. Their
 bytes remain unchanged; the original compiler file inventory, remarks and
 golden remain unchanged.
+
+The dependent [portable snapshot identities decision](./2026-10-10-musea-snapshot-identities.md)
+supersedes production basename refusal with a persisted whole-batch identity plan.
+The browser control retains the genuine legacy false comparison and directly
+checks the legacy refusal, then requires two distinct new PNGs and repeat
+matches from the current runner. The historical refusal is not a current-runner
+completion claim; fresh composed-head Actions and protected delivery are required.

@@ -1,7 +1,9 @@
+import { normalizeSnapshotIdentity } from "../vrt/snapshot-identity.js";
 import type { ArtFileInfo } from "../types/index.js";
 
 export interface HostedGallery {
   arts: ArtFileInfo[];
+  snapshotIdentities: Record<string, string>;
   previewUrls: Record<string, Record<string, string>>;
 }
 
@@ -22,6 +24,12 @@ export async function loadHostedGallery(galleryUrl: string): Promise<HostedGalle
   const payload: unknown = await response.json();
   if (!isRecord(payload) || !Array.isArray(payload.arts) || !isRecord(payload.previews))
     throw new Error("Hosted gallery manifest must contain arts and previews");
+  if (payload.snapshotIdentityVersion !== 1 || !isRecord(payload.snapshotIdentities))
+    throw new Error(
+      "Hosted gallery requires snapshot identity version 1; rebuild the gallery with a current Musea version",
+    );
+  const snapshotIdentities: Record<string, string> = Object.create(null);
+  const uniqueIdentities = new Set<string>();
   const arts: ArtFileInfo[] = [];
   const previewUrls: HostedGallery["previewUrls"] = Object.create(null);
   for (const item of payload.arts) {
@@ -35,6 +43,14 @@ export async function loadHostedGallery(galleryUrl: string): Promise<HostedGalle
       throw new Error("Invalid hosted art metadata");
     if (Object.hasOwn(previewUrls, item.path))
       throw new Error(`Duplicate hosted art: ${item.path}`);
+    const identity = payload.snapshotIdentities[item.path];
+    if (typeof identity !== "string")
+      throw new Error(`Missing hosted snapshot identity: ${item.path}`);
+    const normalized = normalizeSnapshotIdentity(identity);
+    if (uniqueIdentities.has(normalized))
+      throw new Error(`Duplicate hosted snapshot identity: ${normalized}`);
+    uniqueIdentities.add(normalized);
+    snapshotIdentities[item.path] = normalized;
     const variants = item.variants;
     const urls: Record<string, string> = Object.create(null);
     const sourceUrls = payload.previews[item.path];
@@ -65,7 +81,7 @@ export async function loadHostedGallery(galleryUrl: string): Promise<HostedGalle
     arts.push(item as unknown as ArtFileInfo);
     previewUrls[item.path] = urls;
   }
-  return { arts, previewUrls };
+  return { arts, previewUrls, snapshotIdentities };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

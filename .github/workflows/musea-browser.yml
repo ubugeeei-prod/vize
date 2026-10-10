@@ -101,6 +101,7 @@ jobs:
         run: |
           vp exec tsx --test src/a11y/browser-contracts.test.ts src/a11y/node-report.test.ts gallery/components/code-display.browser.test.ts gallery/components/global-toolbar.browser.test.ts gallery/components/public-browser-observation.browser.test.ts gallery/components/hosted-tests.browser.test.ts gallery/components/snapshot-collisions.browser.test.ts
           vp exec tsx --test gallery/components/hosted-vrt.browser.test.ts
+          vp exec tsx --test gallery/components/snapshot-identities.browser.test.ts
       - name: Retain gallery browser observations and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -115,6 +116,8 @@ jobs:
             artifacts/musea-hosted/observations.json
             artifacts/musea-hosted-vrt/**/*.png
             artifacts/musea-hosted-vrt/*.json
+            artifacts/musea-snapshot-identities/**/*.png
+            artifacts/musea-snapshot-identities/**/*.json
             artifacts/musea-snapshot-collisions/*.png
             artifacts/musea-snapshot-collisions/*.json
           if-no-files-found: error

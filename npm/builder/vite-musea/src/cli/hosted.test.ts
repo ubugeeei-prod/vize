@@ -17,7 +17,13 @@ void test("hosted manifests preserve exact preview URLs and reject missing or fo
   const server = createServer((request, response) => {
     requests.push(request.url ?? "");
     response.setHeader("Content-Type", "application/json");
-    response.end(JSON.stringify(payload));
+    response.end(
+      JSON.stringify({
+        snapshotIdentityVersion: 1,
+        snapshotIdentities: { [art.path]: "Only.art.vue" },
+        ...(payload as object),
+      }),
+    );
   });
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   const address = server.address();

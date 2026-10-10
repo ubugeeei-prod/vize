@@ -47,3 +47,5 @@ vp exec musea-vrt clean --gallery-url https://example.com/site/__musea__/
 開発サーバーでは、プロジェクトで `vp exec musea-vrt` を実行するか **Run VRT** を使います。
 CLI は Vite の base と Musea の `basePath` を反映します。サーバーの origin は
 `--base-url` で、静的ホストのギャラリーは `--gallery-url` で指定します。
+
+既存 baseline の再利用や同名 Art の比較は [snapshot の識別子と移行](./musea-snapshots.md) を参照してください。

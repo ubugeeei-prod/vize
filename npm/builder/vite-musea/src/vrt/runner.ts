@@ -17,20 +17,18 @@ import type {
 import fs from "node:fs";
 import path from "node:path";
 
-import { assertUniqueSnapshotNames } from "./snapshot-collisions.js";
-import { fileExists, matchGlob } from "./comparison.js";
+import { fileExists } from "./comparison.js";
 import { captureAndCompare } from "./runner-comparison.js";
-import { buildSnapshotName, buildVariantUrl, computeSummary } from "./utils.js";
+import { buildVariantUrl, computeSummary } from "./utils.js";
 
 export type { VrtResult, VrtSummary, ExtendedVrtOptions, PixelCompareOptions } from "./types.js";
 
 import type { VrtResult, VrtSummary, ExtendedVrtOptions } from "./types.js";
-
-type VrtJob = {
-  art: ArtFileInfo;
-  variantName: string;
-  viewport: ViewportConfig;
-};
+import { createVrtJobs, normalizeVrtWorkerCount, runJobsWithWorkers } from "./jobs.js";
+import { SnapshotIndex } from "./snapshot-index.js";
+import { resolveSnapshotIdentity } from "./snapshot-identity.js";
+import { matchesSnapshotPattern } from "./snapshot-pattern.js";
+export { normalizeVrtWorkerCount } from "./jobs.js";
 
 /**
  * VRT runner using Playwright.
@@ -42,9 +40,19 @@ export class MuseaVrtRunner {
   private ci: CiConfig;
   private browser: Browser | null = null;
   private startTime: number = 0;
+  private snapshotIndex: SnapshotIndex | undefined;
+  private snapshotIndexOpening: Promise<SnapshotIndex> | undefined;
+  private identityOptions: ExtendedVrtOptions;
   private previewUrls: ExtendedVrtOptions["previewUrls"];
 
   constructor(options: ExtendedVrtOptions = {}) {
+    this.identityOptions = {
+      ...options,
+      projectRoot: path.resolve(options.projectRoot ?? process.cwd()),
+      snapshotIdentities: options.snapshotIdentities
+        ? { ...options.snapshotIdentities }
+        : undefined,
+    };
     this.options = {
       previewBasePath: options.previewBasePath ?? "/__musea__",
       snapshotDir: options.snapshotDir ?? ".vize/snapshots",
@@ -117,10 +125,37 @@ export class MuseaVrtRunner {
     this.startTime = Date.now();
   }
 
+  /** @internal Resolve and reserve a baseline before navigation or PNG writes. */
+  async getSnapshotName(
+    art: ArtFileInfo,
+    variantName: string,
+    viewport: ViewportConfig,
+  ): Promise<string> {
+    const index = await this.getSnapshotIndex();
+    const names = await index.plan([{ art, variantName, viewport }]);
+    return names.values().next().value!;
+  }
+
+  private async getSnapshotIndex(): Promise<SnapshotIndex> {
+    if (this.snapshotIndex) return this.snapshotIndex;
+    const opening = (this.snapshotIndexOpening ??= SnapshotIndex.open(
+      this.options.snapshotDir,
+      this.identityOptions,
+    ));
+    try {
+      return (this.snapshotIndex = await opening);
+    } finally {
+      if (this.snapshotIndexOpening === opening) this.snapshotIndexOpening = undefined;
+    }
+  }
+
   /**
    * Close browser and cleanup.
    */
   async close(): Promise<void> {
+    const index = this.snapshotIndex ?? (await this.snapshotIndexOpening?.catch(() => undefined));
+    await index?.close();
+    this.snapshotIndex = undefined;
     if (this.browser) {
       await this.browser.close();
       this.browser = null;
@@ -151,7 +186,7 @@ export class MuseaVrtRunner {
 
     const retries = this.ci.retries ?? 0;
     const jobs = createVrtJobs(artFiles, this.options.viewports);
-    assertUniqueSnapshotNames(jobs);
+    await (await this.getSnapshotIndex()).plan(jobs);
 
     return runJobsWithWorkers(jobs, this.options.workers, async (job) => {
       let result: VrtResult | null = null;
@@ -226,6 +261,11 @@ export class MuseaVrtRunner {
     const currentDir = path.join(snapshotDir, "current");
 
     for (const result of results) {
+      if (result.error) continue;
+      const art = { path: result.artPath } as ArtFileInfo;
+      const name = await this.getSnapshotName(art, result.variantName, result.viewport);
+      if (path.resolve(result.snapshotPath) !== path.resolve(snapshotDir, name))
+        throw new Error("Baseline path does not match its snapshot owner");
       const currentPath =
         result.currentPath ?? path.join(currentDir, path.basename(result.snapshotPath));
 
@@ -244,12 +284,37 @@ export class MuseaVrtRunner {
    * Approve specific failed results (update their baselines).
    */
   async approveResults(results: VrtResult[], pattern?: string): Promise<number> {
+    const candidates = results.filter((result) => !result.passed && !result.error);
     const toApprove = pattern
-      ? results.filter((r) => {
-          const name = `${path.basename(r.artPath, ".art.vue")}/${r.variantName}`;
-          return name.includes(pattern) || matchGlob(name, pattern);
+      ? candidates.filter((result) => {
+          const identity = resolveSnapshotIdentity(
+            result.artPath,
+            this.identityOptions.projectRoot,
+            this.identityOptions.snapshotIdentities,
+          );
+          const relativeName = `${identity.replace(/\.art\.vue$/, "")}/${result.variantName}`;
+          const legacyName = `${path.posix.basename(identity, ".art.vue")}/${result.variantName}`;
+          return (
+            matchesSnapshotPattern(relativeName, pattern) ||
+            matchesSnapshotPattern(legacyName, pattern)
+          );
         })
-      : results.filter((r) => !r.passed && !r.error);
+      : candidates;
+    if (pattern) {
+      const legacyMatches = results.filter((result) => {
+        const identity = resolveSnapshotIdentity(
+          result.artPath,
+          this.identityOptions.projectRoot,
+          this.identityOptions.snapshotIdentities,
+        );
+        const name = `${path.posix.basename(identity, ".art.vue")}/${result.variantName}`;
+        return matchesSnapshotPattern(name, pattern);
+      });
+      if (new Set(legacyMatches.map((result) => result.artPath)).size > 1)
+        throw new Error(
+          `Ambiguous approval pattern ${pattern}; use a project-relative Art path: ${legacyMatches.map((result) => resolveSnapshotIdentity(result.artPath, this.identityOptions.projectRoot, this.identityOptions.snapshotIdentities)).join(", ")}`,
+        );
+    }
 
     return this.updateBaselines(toApprove);
   }
@@ -258,33 +323,18 @@ export class MuseaVrtRunner {
    * Clean orphaned snapshots (no corresponding art/variant).
    */
   async cleanOrphans(artFiles: ArtFileInfo[]): Promise<number> {
-    const snapshotDir = this.options.snapshotDir;
+    const index = await this.getSnapshotIndex();
+    const names = await index.plan(createVrtJobs(artFiles, this.options.viewports));
+    const validNames = new Set(names.values());
+    const files = await fs.promises.readdir(this.options.snapshotDir);
     let cleaned = 0;
-
-    try {
-      const files = await fs.promises.readdir(snapshotDir);
-      const validNames = new Set<string>();
-
-      for (const art of artFiles) {
-        for (const variant of art.variants) {
-          if (variant.skipVrt) continue;
-          for (const viewport of this.options.viewports) {
-            validNames.add(buildSnapshotName(art.path, variant.name, viewport));
-          }
-        }
+    for (const file of files) {
+      if (file.endsWith(".png") && !validNames.has(file)) {
+        await fs.promises.unlink(path.join(this.options.snapshotDir, file));
+        cleaned++;
+        console.log(`[vrt] Cleaned: ${file}`);
       }
-
-      for (const file of files) {
-        if (file.endsWith(".png") && !validNames.has(file)) {
-          await fs.promises.unlink(path.join(snapshotDir, file));
-          cleaned++;
-          console.log(`[vrt] Cleaned: ${file}`);
-        }
-      }
-    } catch {
-      // Directory may not exist yet
     }
-
     return cleaned;
   }
 
@@ -294,55 +344,4 @@ export class MuseaVrtRunner {
   getSummary(results: VrtResult[]): VrtSummary {
     return computeSummary(results, this.startTime);
   }
-}
-
-export function normalizeVrtWorkerCount(workers: number | undefined): number {
-  if (workers === undefined || !Number.isFinite(workers)) {
-    return 1;
-  }
-  return Math.max(1, Math.floor(workers));
-}
-
-function createVrtJobs(artFiles: ArtFileInfo[], defaultViewports: ViewportConfig[]): VrtJob[] {
-  const jobs: VrtJob[] = [];
-  for (const art of artFiles) {
-    for (const variant of art.variants) {
-      if (variant.skipVrt) {
-        continue;
-      }
-
-      const viewports = variant.args?.viewport
-        ? [variant.args.viewport as ViewportConfig]
-        : defaultViewports;
-
-      for (const viewport of viewports) {
-        jobs.push({ art, variantName: variant.name, viewport });
-      }
-    }
-  }
-  return jobs;
-}
-
-async function runJobsWithWorkers<T>(
-  jobs: readonly VrtJob[],
-  workerCount: number,
-  runJob: (job: VrtJob) => Promise<T | null>,
-): Promise<T[]> {
-  const results = Array.from<T | null>({ length: jobs.length }, () => null);
-  let nextJobIndex = 0;
-
-  async function runWorker(): Promise<void> {
-    while (true) {
-      const jobIndex = nextJobIndex++;
-      const job = jobs[jobIndex];
-      if (!job) {
-        return;
-      }
-      results[jobIndex] = await runJob(job);
-    }
-  }
-
-  const activeWorkers = Math.min(normalizeVrtWorkerCount(workerCount), jobs.length);
-  await Promise.all(Array.from({ length: activeWorkers }, () => runWorker()));
-  return results.filter((result): result is T => result !== null);
 }
