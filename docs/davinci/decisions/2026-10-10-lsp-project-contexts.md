@@ -99,3 +99,16 @@ proves registry isolation; it alone does not prove executor freedom.
 
 Current-source Actions, the protected queue, actual merge, and installed release
 replay remain required. Source preparation alone does not close #8371.
+
+## Physical declaration aliases
+
+The unchanged global tag-name law exposed a real macOS alias bug: discovery
+canonicalized `/var` to `/private/var`, while editor buffers retained authored
+URIs. One declaration was read from both disk and its open unsaved alias.
+Join open declaration URIs to one physical cache key before scanning, selecting
+the highest process-global document revision when two aliases are open. Keep
+editor URIs, disk stamps, close/reopen authority and the 4 MiB limit unchanged.
+One canonical call is admitted at the same existing physical host; all other
+caller tuples and the original 59-write replay remain unchanged, with surplus
+canonical and other-API calls still rejected. Whole source and protected
+qualification remain required; original expected names are unchanged.

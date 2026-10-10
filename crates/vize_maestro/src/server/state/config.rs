@@ -231,8 +231,7 @@ impl ServerState {
         let project = match vize_carton::config::try_load_project_config_with_source(Some(dir)) {
             Ok(project) => project,
             Err(error) => {
-                tracing::warn!("Failed to load editor project configuration: {error}");
-                return;
+                return tracing::warn!("Failed to load editor project configuration: {error}");
             }
         };
         self.install_project_linter_context(dir, &project);
