@@ -19,22 +19,32 @@ JSR package guards live in `tests/tooling/jsr-package.test.mjs`, preserving the
 existing audited 34-file release-contract inventory. Unknown JSR inputs retain
 the existing conservative full source gates; no selector or budget is narrowed.
 
-Normal releases use an opt-in `VIZE_JSR_ENABLED` variable so missing registry
-ownership cannot block urgent existing-product delivery. When enabled, JSR
-publication and published consumers form an additional Release run requirement.
-Existing GitHub Release creation prerequisites stay intact. The pinned 0.440
-source cut is owned by the release delivery lane. This change stays outside the
-queue until 0.440 version metadata, tag and publication complete: the pinned
-catalog compares `release.yml` publication authority byte for byte, including
-disabled jobs. Preserve that guard; a source pin alone does not clear this hold.
+Normal releases freeze the default-disabled `jsr/vize/channel.json` policy so
+missing registry ownership cannot block urgent existing-product delivery. An
+enabled H requires JSR publication and all four published consumers in its
+official Release run. `VIZE_JSR_ENABLED` only authorizes inside that required
+publisher: clearing the variable fails rather than skips the required channel.
+Existing GitHub Release creation prerequisites stay intact. The 0.440 source cut
+was owned by the release delivery lane. This change stayed outside the queue
+until its metadata, tag, terminal publication and exact-version public checks
+completed. That hold cleared before this change rebased onto actual main
+`c6570cb8706dd9a4f16be984c7ecd04bdb57b26d`. The pinned catalog still compares
+`release.yml` authority byte for byte, including disabled jobs; each later
+publication window requires the same preservation.
 
 Future source cuts also capture the JSR reusable workflow, generator, public
-consumer, package template, package README and license as publication authorities.
+consumer, package template, package README, license, policy and policy reader
+as publication authorities.
 Any changed byte differs from the qualified catalog; a partial lane fails closed.
 The four existing authorities and every existing graph field remain intact.
-Enabling JSR is a maintainer bootstrap decision. Record that channel's requirement
-and exact publication/consumer receipts with the first and each later release;
-a skipped opt-in lane does not prove a published JSR release.
+Enabling JSR is a maintainer bootstrap decision after successful initial manual
+publication and all consumer receipts. The catalog captures the H policy,
+exact package identity, version and four exports. The public verifier derives
+expected facade/README/license bytes from raw H, verifies actual published
+checksums, and rejects a missing, skipped or unsuccessful official publisher
+or original consumer. Disabled H has no JSR delivery credit. Legacy source H
+without this lane retains the original plan and receipt shape. Record exact
+publication/consumer receipts with the first and each later enabled release.
 
 At preparation time the public `@vizejs` scope and package metadata return 404.
 Required TODO: an authorized JSR scope administrator creates the scope/package,

@@ -16,6 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   publish:
+    name: Publish JSR package
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions: { contents: read, id-token: write }
@@ -45,6 +46,7 @@ jobs:
         working-directory: ${{ runner.temp }}/jsr-package
         run: deno publish --config jsr.json
   consumer:
+    name: JSR consumer (${{ matrix.os }}, Node ${{ matrix.node }})
     needs: publish
     strategy:
       fail-fast: false

@@ -4,7 +4,12 @@ import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 import { preparePackage } from "../../tools/support/release/jsr/prepare.mjs";
+import {
+  frozenChannelPolicy,
+  parseChannelPolicy,
+} from "../../tools/support/release/jsr/channel.mjs";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
 await test("JSR publication pins every facade to the same exact release", (t) => {
@@ -55,4 +60,71 @@ await test("mismatched native or Vite release artifacts cannot publish", (t) => 
     );
     writeFileSync(manifestPath, original);
   }
+});
+
+await test("JSR requirement comes from exact frozen source, never working files or variables", (t) => {
+  const fixture = mkdtempSync(resolve(tmpdir(), "vize-jsr-policy-"));
+  t.after(() => rmSync(fixture, { recursive: true, force: true }));
+  const git = (...args) => execFileSync("git", args, { cwd: fixture, encoding: "utf8" }).trim();
+  git("init", "--quiet");
+  git("config", "user.name", "JSR policy fixture");
+  git("config", "user.email", "fixture@example.invalid");
+  mkdirSync(resolve(fixture, "jsr/vize"), { recursive: true });
+  const policy = resolve(fixture, "jsr/vize/channel.json");
+  const write = (enabled) =>
+    writeFileSync(policy, JSON.stringify({ schema: "vize-jsr-channel-v1", enabled }));
+  write(false);
+  git("add", ".");
+  git("commit", "--quiet", "-m", "disabled source");
+  const disabled = git("rev-parse", "HEAD");
+  write(true);
+  assert.equal(frozenChannelPolicy(disabled, { root: fixture }).enabled, false);
+  git("add", ".");
+  git("commit", "--quiet", "-m", "enabled source");
+  const enabled = git("rev-parse", "HEAD");
+  write(false);
+  assert.equal(frozenChannelPolicy(enabled, { root: fixture }).enabled, true);
+  assert.throws(() => frozenChannelPolicy("HEAD", { root: fixture }), /Full frozen/);
+  assert.throws(() => frozenChannelPolicy("0".repeat(40), { root: fixture }));
+  git("replace", enabled, disabled);
+  assert.throws(() => frozenChannelPolicy(enabled, { root: fixture }), /Replacement objects/);
+  git("replace", "-d", enabled);
+  git("rm", "--force", "jsr/vize/channel.json");
+  git("commit", "--quiet", "-m", "missing policy");
+  assert.throws(
+    () => frozenChannelPolicy(git("rev-parse", "HEAD"), { root: fixture }),
+    /regular JSR channel policy blob/,
+  );
+  const blob = execFileSync("git", ["hash-object", "-w", "--stdin"], {
+    cwd: fixture,
+    input: JSON.stringify({ schema: "vize-jsr-channel-v1", enabled: true }),
+    encoding: "utf8",
+  }).trim();
+  git("update-index", "--add", "--cacheinfo", `120000,${blob},jsr/vize/channel.json`);
+  git("commit", "--quiet", "-m", "refuse valid JSON in a symlink blob");
+  assert.throws(
+    () => frozenChannelPolicy(git("rev-parse", "HEAD"), { root: fixture }),
+    /regular JSR channel policy blob/,
+  );
+});
+
+await test("unknown JSR policies cannot silently disable a required channel", () => {
+  for (const policy of [
+    null,
+    [],
+    {},
+    { schema: "unknown", enabled: false },
+    { schema: "vize-jsr-channel-v1", enabled: "true" },
+    { schema: "vize-jsr-channel-v1", enabled: true, skip: true },
+  ]) {
+    assert.throws(() => parseChannelPolicy(JSON.stringify(policy)), /Exact JSR channel/);
+  }
+  const release = readFileSync(resolve(root, ".github/workflows/release.yml"), "utf8");
+  const job = /^  release-jsr:\n([\s\S]*?)(?=^  [a-z][a-z0-9-]*:)/m.exec(release)?.[1];
+  assert.ok(job, "required JSR publisher job remains present");
+  assert.match(job, /if: \$\{\{ needs\.candidate\.outputs\.jsr_required == 'true' \}\}/);
+  assert.doesNotMatch(job, /vars\.VIZE_JSR_ENABLED/);
+  const publisher = readFileSync(resolve(root, ".github/workflows/release-jsr.yml"), "utf8");
+  assert.match(publisher, /JSR_ENABLED: \$\{\{ vars\.VIZE_JSR_ENABLED \}\}/);
+  assert.match(publisher, /test "\$JSR_ENABLED" = true \|\| .*exit 1/);
 });

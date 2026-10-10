@@ -4,7 +4,10 @@ on:
     paths:
       - "jsr/**"
       - "tools/support/release/jsr/**"
+      - "tools/support/release/public_acceptance/**"
       - "tests/tooling/jsr-package.test.mjs"
+      - "tests/tooling/jsr-public-acceptance.test.ts"
+      - "tests/tooling/support/jsr-public-acceptance-fixture.ts"
       - ".github/workflows/*jsr*.yml"
   workflow_dispatch:
 permissions: { contents: read }
@@ -23,7 +26,7 @@ jobs:
       - uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed # v2
         with: { deno-version: "2.9.5" }
       - name: Validate version and staging boundaries
-        run: node --test tests/tooling/jsr-package.test.mjs
+        run: node --test tests/tooling/jsr-package.test.mjs tests/tooling/jsr-public-acceptance.test.ts
       - name: Generate exact-version JSR entry points
         run: node tools/support/release/jsr/prepare.mjs "$RUNNER_TEMP/jsr-package"
       - name: Validate actual JSR publication graph and types

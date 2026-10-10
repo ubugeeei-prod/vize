@@ -87,18 +87,28 @@ The initial registry setup requires a JSR scope administrator:
    checks, native compilation, configuration loading and real Vite build results.
 5. Only then record the initial published version, source SHA and successful run
    on #8367 and replace this page's pending status with those concrete receipts.
+6. Review a change enabling `jsr/vize/channel.json`. Subsequent release source
+   cuts freeze that policy and require exact-version JSR delivery.
 
-When enabled, the normal Release workflow runs the same JSR publication and
-consumer checks after the matching CLI, native and Vite npm packages publish.
-It cannot finish successfully if this lane fails. GitHub Release creation keeps
-its existing prerequisites and can complete before the additional JSR lane.
-With the variable unset, normal product releases continue and JSR remains
-explicitly undelivered. Disable the variable if initial bootstrap verification
-fails, repair the failure and retry before advertising JSR commands.
+The committed channel policy starts disabled, so existing product releases
+continue while registry ownership remains pending. The normal Release workflow
+reads the policy from the exact frozen source H after release authorization.
+An enabled source requires JSR publication and all four consumer checks after
+the matching CLI, native and Vite npm packages publish. Clearing the mutable
+repository variable then fails authorization inside the required publisher;
+it cannot skip that source's JSR requirement. GitHub Release creation keeps its
+existing prerequisites and can complete before the additional JSR lane.
+Disable the variable if initial bootstrap verification fails, repair the failure
+and verify the same published version before enabling the committed policy.
 
 Release source catalogs retain the JSR workflow, generator, public consumer,
-package template, package README and license byte for byte. Record the enabled
-channel requirement and actual published consumer receipts for each release.
+package template, package README, license, channel policy and policy reader
+byte for byte. Public verification derives the requirement and exact package
+from raw H objects, checks published source digests, and requires the publisher
+and every original consumer in that official Release run. A disabled source
+has no published JSR credit. Sources predating this lane retain their original
+public plan and receipt fields. Record the enabled channel requirement and
+actual published consumer receipts for each release.
 If publication succeeded and a consumer failed, rerun the failed consumer jobs
 on that exact run; do not attempt to overwrite the immutable published version.
 

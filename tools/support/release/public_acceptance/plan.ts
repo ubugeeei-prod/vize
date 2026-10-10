@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
+import { deriveJsrPublication } from "./jsr.ts";
+import type { JsrPublicationPlan } from "./jsr.ts";
 
 export interface PublicationTarget {
   name: string;
@@ -14,6 +16,7 @@ export interface PublicationPlan {
   crates: PublicationTarget[];
   editor: PublicationTarget & { publisher: string };
   githubAssets: string[];
+  jsr?: JsrPublicationPlan;
   authority: {
     commitSha256: string;
     tree: string;
@@ -87,11 +90,12 @@ export function derivePublicationPlan(root: string, head: string): PublicationPl
   requireValue(parents.length === 1, "raw H must have one immutable C parent");
   const parentCut = parents[0][1];
   const authority: PublicationPlan["authority"] = { commitSha256: sha256(commit), tree, blobs: [] };
-  const read = (path: string) => {
+  const readBytes = (path: string) => {
     const { oid, bytes } = sourceBlob(root, head, path);
     authority.blobs.push({ path, oid, sha256: sha256(bytes) });
-    return bytes.toString("utf8");
+    return bytes;
   };
+  const read = (path: string) => readBytes(path).toString("utf8");
   const cargo = read("Cargo.toml");
   const packageSection = /^\[workspace\.package\]\s*\n([\s\S]*?)(?=^\[|$(?![\s\S]))/m.exec(
     cargo,
@@ -196,6 +200,12 @@ export function derivePublicationPlan(root: string, head: string): PublicationPl
       /^[a-z0-9-]+$/.test(editor.name),
     "source editor identity/version mismatch",
   );
+  const jsr = deriveJsrPublication(
+    version,
+    npm,
+    readBytes,
+    (path) => rawGit(root, "ls-tree", "-z", head, "--", path).length > 0,
+  );
   return {
     head,
     parentCut,
@@ -207,5 +217,6 @@ export function derivePublicationPlan(root: string, head: string): PublicationPl
       ? ["zed-vize-extension.tar.gz"]
       : [],
     authority,
+    ...(jsr ? { jsr } : {}),
   };
 }
