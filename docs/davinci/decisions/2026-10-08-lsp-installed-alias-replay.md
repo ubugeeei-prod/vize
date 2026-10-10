@@ -133,3 +133,27 @@ provider launch; the unused head-SHA format check supplies no delivery proof.
 The two regressions fail before these corrections and all 33 helper laws pass
 locally. Fresh Actions, actual public-provider replay and protected delivery
 remain required; no source, oracle, public payload or native custody is relaxed.
+
+## Actual public 0.439.0 execution
+
+On October 10 the genuine published npm CLI completed all 32 frozen sessions
+with terminal exit 0. Public C is `26031a4fbb30a1e86511919bafc7035b08440ef3`, H is
+`a26243855bcf81005049252a6e71b6dd55e457f1`, and successful Release run is
+`38011924629`. Both C and H include signed #8262 merge
+`f20f9d9c7f952ab9617344a68b6626dc14886185`. The runner head was
+`fb402f3b73afb4933ba6e1881dd545773c85820b`; public native original-loader return,
+automatic bundled Corsa and the separately installed original Vue graph were
+rechecked before and after every session.
+
+The [complete compressed record](../../../tests/_fixtures/differential/lsp/type-alias-navigation/8011/supplemental/public-0.439.0-alias32/README.md)
+retains every raw stream, whole packet, native journal, phase observation and all
+three genuine authority receipts. Its archive SHA256 is
+`f5da459270a404fbd86efcb8ffda5f195668be3f25ba8f50ffcdd59efcec15dd`;
+the full raw session receipt SHA256 is
+`9d60a23e14f694d9092288324c9851082075bbb87a695d2d43e340e3619b2712`.
+The official collector snapshot SHA256 is
+`a26411442a3fde2590d969160fd83b97685e9019d2de4decb0c103a376f10786`.
+Registry archives and provenance payload binding were verified; cryptographic
+provenance signature verification was not performed. This proves the finite
+installed32 contract. Fresh exact-head Actions and actual protected merge remain
+required for the supplemental PR delivery; broader #3952 acceptance stays open.
