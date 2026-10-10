@@ -12,6 +12,15 @@ on:
       - "tools/support/dependencies/capture-native-script-cli.ts"
       - "tools/support/dependencies/export-capture-evidence.ts"
   workflow_dispatch:
+    inputs:
+      release-terminal-diagnostic:
+        description: Capture only the unchanged release controlling-terminal law
+        type: boolean
+        default: false
+      source-sha:
+        description: Exact source commit required for terminal diagnosis
+        type: string
+        default: ""
 permissions:
   contents: read
 env:
@@ -19,7 +28,7 @@ env:
   CARGO_TERM_COLOR: always
 jobs:
   capture:
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'native-script-capture')
+    if: (github.event_name == 'workflow_dispatch' || contains(github.event.pull_request.labels.*.name, 'native-script-capture')) && inputs.release-terminal-diagnostic != true
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     steps:
@@ -61,4 +70,45 @@ jobs:
         with:
           name: native-script-cli-${{ github.sha }}
           path: capture
+          if-no-files-found: error
+  release-terminal-diagnosis:
+    if: github.event_name == 'workflow_dispatch' && inputs.release-terminal-diagnostic == true
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ inputs.source-sha }}" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: package.json, cache: true, run-install: false }
+      - uses: ./.github/actions/setup-moonbit
+      - name: Install locked dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Record exact source and toolchain custody
+        env: { REQUESTED_SOURCE: "${{ inputs.source-sha }}" }
+        run: |
+          mkdir -p "$RUNNER_TEMP/release-terminal-diagnosis"
+          printf '%s\n' "$GITHUB_WORKFLOW_SHA" > "$RUNNER_TEMP/release-terminal-diagnosis/driver-head.txt"
+          git rev-parse HEAD > "$RUNNER_TEMP/release-terminal-diagnosis/source-head.txt"
+          test "$(git rev-parse HEAD)" = "$REQUESTED_SOURCE"
+          git status --porcelain=v1 --untracked-files=all > "$RUNNER_TEMP/release-terminal-diagnosis/source-status.txt"
+          sha256sum tests/tooling/task-shell.test.ts tests/tooling/support/pty-command.py tools/support/release/moon-registry-update.mjs > "$RUNNER_TEMP/release-terminal-diagnosis/source-sha256.txt"
+          node --version > "$RUNNER_TEMP/release-terminal-diagnosis/node-version.txt"
+          "$MOON_BIN" version > "$RUNNER_TEMP/release-terminal-diagnosis/moon-version.txt"
+          "$MOON_HOME/bin/moonc" -v > "$RUNNER_TEMP/release-terminal-diagnosis/moonc-version.txt"
+      - name: Observe the unchanged original controlling-terminal law
+        env:
+          VIZE_PTY_EVIDENCE: ${{ runner.temp }}/release-terminal-diagnosis/lifecycle
+        run: |
+          node --test --test-name-pattern='release task prompts through a controlling terminal and aborts without mutation' tests/tooling/task-shell.test.ts > "$RUNNER_TEMP/release-terminal-diagnosis/original-law.stdout" 2> "$RUNNER_TEMP/release-terminal-diagnosis/original-law.stderr"
+      - name: Export complete raw evidence
+        if: always()
+        run: vp node tools/support/dependencies/export-capture-evidence.ts "$RUNNER_TEMP/release-terminal-diagnosis" "$RUNNER_TEMP/release-terminal-diagnosis.json.gz" release-terminal-linux
+      - name: Preserve complete evidence and lossless transport
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-terminal-${{ inputs.source-sha }}-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/release-terminal-diagnosis/
+            ${{ runner.temp }}/release-terminal-diagnosis.json.gz
           if-no-files-found: error
