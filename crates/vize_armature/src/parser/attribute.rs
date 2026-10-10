@@ -31,17 +31,6 @@ impl<'a> Parser<'a> {
         });
     }
 
-    /// Process the end of a full attribute or directive head.
-    pub(in crate::parser) fn on_attrib_name_end_impl(&mut self, end: usize) {
-        if let Some(ref mut attr) = self.current_attr {
-            attr.name_end = end;
-        }
-
-        if let Some(ref mut dir) = self.current_dir {
-            dir.name_end = end;
-        }
-    }
-
     /// Process directive name
     pub(super) fn on_dir_name_impl(&mut self, start: usize, end: usize) {
         let raw_name = self.get_source_retained(start, end);
