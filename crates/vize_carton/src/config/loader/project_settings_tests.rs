@@ -13,7 +13,7 @@ fn native_vite_settings_use_the_same_projection_as_public_js() {
             compiler: { whitespace: "preserve", vueVersion: 2.7 },
             typecheck: { tsconfig: "tsconfig.app.json" },
             lint: { vize: { preset: "essential" } },
-            fmt: { printWidth: 90, vize: { singleQuote: true } },
+            fmt: { vize: { printWidth: 90, singleQuote: true } },
         };
     "#,
     )
@@ -39,7 +39,7 @@ fn dedicated_config_precedes_vite_and_preserves_existing_defaults() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
         project.path().join("vite.config.mjs"),
-        "export default { fmt: { singleQuote: true } };",
+        "export default { fmt: { vize: { singleQuote: true } } };",
     )
     .unwrap();
     let fresh = load_config_with_features_and_source(Some(project.path()));
@@ -60,7 +60,7 @@ fn malformed_vite_settings_fail_closed_before_formatter_writes() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
         project.path().join("vite.config.mjs"),
-        "export default { fmt: { tabWidth: 'wrong' } };",
+        "export default { fmt: { vize: { tabWidth: 'wrong' } } };",
     )
     .unwrap();
     let error = try_load_formatter_snapshot(Some(project.path())).unwrap_err();

@@ -10,6 +10,14 @@ pub const SETTINGS: &str = include_str!(
 pub const QUOTES: &str = include_str!(
     "../../../../tests/_fixtures/differential/config/project-settings-8371/Quotes.vue.txt"
 );
+#[cfg(feature = "glyph")]
+pub const FORMATTED_SINGLE: &str = "<script setup>\nconst message = 'hello';\n</script>\n\n<template>\n  <p>{{ message }}</p>\n</template>\n";
+#[cfg(feature = "glyph")]
+pub const FORMATTED_DOUBLE: &str = "<script setup>\nconst message = \"hello\";\n</script>\n\n<template>\n  <p>{{ message }}</p>\n</template>\n";
+#[cfg(feature = "glyph")]
+pub const PRESERVED_SINGLE: &str = "<script setup>\nconst message = 'hello';\n</script>\n\n<template><p>{{ message }}</p></template>\n";
+#[cfg(feature = "glyph")]
+pub const PRESERVED_DOUBLE: &str = "<script setup>\nconst message = \"hello\";\n</script>\n\n<template><p>{{ message }}</p></template>\n";
 pub const CONSUMER: &str = include_str!(
     "../../../../tests/_fixtures/differential/config/project-settings-8371/Consumer.vue.txt"
 );
@@ -84,13 +92,37 @@ pub fn assert_success(output: &Output) {
 }
 
 pub fn assert_no_dedicated_config(root: &Path) {
-    assert!(fs::read_dir(root).unwrap().all(|entry| {
-        !entry
-            .unwrap()
-            .file_name()
-            .to_string_lossy()
-            .starts_with("vize.config.")
-    }));
+    const DEDICATED_FILES: [&str; 5] = [
+        "vize.config.pkl",
+        "vize.config.ts",
+        "vize.config.js",
+        "vize.config.mjs",
+        "vize.config.json",
+    ];
+    let inventory = DEDICATED_FILES.map(|name| (name, root.join(name).exists()));
+    assert_eq!(inventory, DEDICATED_FILES.map(|name| (name, false)));
+}
+
+pub fn normalized_report(root: &Path, mut report: serde_json::Value) -> serde_json::Value {
+    fn replace_root(value: &mut serde_json::Value, root: &str) {
+        match value {
+            serde_json::Value::String(text) => *text = text.replace(root, "<project>"),
+            serde_json::Value::Array(values) => {
+                for value in values {
+                    replace_root(value, root);
+                }
+            }
+            serde_json::Value::Object(values) => {
+                for value in values.values_mut() {
+                    replace_root(value, root);
+                }
+            }
+            _ => {}
+        }
+    }
+    replace_root(&mut report, root.canonicalize().unwrap().to_str().unwrap());
+    replace_root(&mut report, root.to_str().unwrap());
+    report
 }
 
 #[cfg(feature = "glyph")]
