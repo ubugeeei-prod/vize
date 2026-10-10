@@ -35,6 +35,7 @@ static META: RuleMeta = RuleMeta {
 };
 
 mod checks;
+mod configured;
 mod dynamic_binding;
 
 /// Valid v-slot rule
@@ -105,7 +106,7 @@ impl Rule for ValidVSlot {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        self.check_slot_directive(ctx, element, directive);
+        self.check_slot_directive(ctx, element, directive, false);
     }
 }
 

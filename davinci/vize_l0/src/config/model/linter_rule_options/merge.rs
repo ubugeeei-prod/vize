@@ -5,6 +5,9 @@ impl ConfigLintRuleOptions {
     /// Apply a later config layer to this option set.
     pub fn merge_from(&mut self, overlay: &Self) {
         self.stable.merge_from(&overlay.stable);
+        if let Some(options) = overlay.valid_v_slot {
+            self.valid_v_slot = Some(options);
+        }
         if let Some(options) = overlay.define_props_destructuring {
             self.define_props_destructuring = Some(options);
         }

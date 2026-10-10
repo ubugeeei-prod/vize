@@ -10,6 +10,7 @@ impl ValidVSlot {
         ctx: &mut LintContext<'a>,
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
+        allow_modifiers: bool,
     ) {
         if directive.name != "slot" {
             return;
@@ -45,22 +46,28 @@ impl ValidVSlot {
             }
         }
 
-        // Dotted named slots remain supported (for example, Vuetify's item.memo).
-        // Without an argument, the dots can only be unsupported modifiers.
-        if directive.arg.is_none() && !directive.modifiers.is_empty() {
-            ctx.error_with_help(
-                ctx.t("vue/valid-v-slot.invalid_modifier"),
-                &directive.loc,
-                ctx.t("vue/valid-v-slot.modifier_help"),
-            );
-        }
-
         if dynamic_binding::references_own_binding(directive) {
             ctx.error_with_help(
                 ctx.t("vue/valid-v-slot.dynamic_scope"),
                 &directive.loc,
                 ctx.t("vue/valid-v-slot.dynamic_scope_help"),
             );
+        }
+
+        // Argument modifiers need an explicit allowance. Argless modifiers are
+        // invalid under both settings, matching the official Vue rule.
+        if !directive.modifiers.is_empty() && (directive.arg.is_none() || !allow_modifiers) {
+            let message = if directive.arg.is_none() {
+                "vue/valid-v-slot.invalid_modifier"
+            } else {
+                "vue/valid-v-slot.named_modifier"
+            };
+            let help = if directive.arg.is_none() {
+                "vue/valid-v-slot.modifier_help"
+            } else {
+                "vue/valid-v-slot.named_modifier_help"
+            };
+            ctx.error_with_help(ctx.t(message), &directive.loc, ctx.t(help));
         }
 
         if tag == "template" && !has_component_parent(ctx) {

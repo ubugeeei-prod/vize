@@ -188,10 +188,14 @@ jobs:
             "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}"
           vp node tests/tooling/support/n8n-cli-config-semantic-acceptance.mjs \
             "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/semantic-routing"
+      - name: Verify both slot modifier options through whole source CLI and JSON-RPC packets
+        run: vp node tests/tooling/support/n8n-slot-options-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-options"
       - name: Upload whole CLI and independent oracle packets
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: n8n-cli-config-${{ github.run_id }}-${{ github.run_attempt }}
-          path: target/n8n-cli-config
+          path: |
+            target/n8n-cli-config
+            target/differential/lsp-sessions
           if-no-files-found: error

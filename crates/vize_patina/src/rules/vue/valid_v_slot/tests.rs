@@ -93,8 +93,8 @@ fn test_valid_multiple_named_slots() {
 }
 
 #[test]
-fn test_valid_dotted_vuetify_data_table_slots() {
-    let linter = create_linter();
+fn test_valid_dotted_vuetify_data_table_slots_when_modifiers_are_allowed() {
+    let linter = create_linter().with_valid_v_slot_allow_modifiers(true);
     let result = linter.lint_template(
         r#"<v-data-table>
             <template v-slot:item.tagName="{ item }">{{ item.tagName }}</template>
@@ -107,7 +107,7 @@ fn test_valid_dotted_vuetify_data_table_slots() {
 
 #[test]
 fn test_invalid_duplicate_dotted_slot_name() {
-    let linter = create_linter();
+    let linter = create_linter().with_valid_v_slot_allow_modifiers(true);
     let result = linter.lint_template(
         r#"<v-data-table>
             <template v-slot:item.memo="{ item }">{{ item.memo }}</template>
