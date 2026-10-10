@@ -265,7 +265,7 @@ fn generate_slot_object_entry(
         ctx.push("(");
 
         // Slot props
-        let params = if let Some((processed, params)) = slot_parameters(dir, &ctx.source) {
+        let params = if let Some((processed, params)) = slot_parameters(dir, ctx) {
             ctx.push("(");
             ctx.push(&processed);
             ctx.push(")");

@@ -1,0 +1,2264 @@
+{
+  "schema": 1,
+  "sourceCasesSha256": "976d0f17dc972c6bbd871519851defebfd4c5785223195c521353d83317a791f",
+  "originalAuditSha256": "2f65e51977487598d93e7de0c647f54c32e04795957e41ed7176b747c5c3c34e",
+  "lawCount": 12,
+  "laws": [
+    {
+      "id": "alias",
+      "lane": "selected",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "A",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "B",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          "A",
+          "outside",
+          "B",
+          "outside",
+          "A"
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "B"
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": false,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "alias",
+      "lane": "legacy",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "A",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "B",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          "A",
+          "outside",
+          "B",
+          "outside",
+          "A"
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "B"
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": false,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "multiple",
+      "lane": "selected",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "A",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "B",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          {
+            "item": "A",
+            "index": 0,
+            "even": true,
+            "odd": false
+          },
+          "outside",
+          {
+            "item": "B",
+            "index": 1,
+            "even": false,
+            "odd": true
+          },
+          "outside",
+          {
+            "item": "A",
+            "index": 0,
+            "even": true,
+            "odd": false
+          }
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              {
+                "item": "A",
+                "index": 0,
+                "even": true,
+                "odd": false
+              }
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              {
+                "item": "B",
+                "index": 1,
+                "even": false,
+                "odd": true
+              }
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              {
+                "item": "A",
+                "index": 0,
+                "even": true,
+                "odd": false
+              }
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": false,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "multiple",
+      "lane": "legacy",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "A",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "B",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          {
+            "item": "A",
+            "index": 0,
+            "even": true,
+            "odd": false
+          },
+          "outside",
+          {
+            "item": "B",
+            "index": 1,
+            "even": false,
+            "odd": true
+          },
+          "outside",
+          {
+            "item": "A",
+            "index": 0,
+            "even": true,
+            "odd": false
+          }
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              {
+                "item": "A",
+                "index": 0,
+                "even": true,
+                "odd": false
+              }
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              {
+                "item": "B",
+                "index": 1,
+                "even": false,
+                "odd": true
+              }
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              {
+                "item": "A",
+                "index": 0,
+                "even": true,
+                "odd": false
+              }
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": false,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "tuple",
+      "lane": "selected",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "A",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "B",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          "A",
+          "outside",
+          "B",
+          "outside",
+          "A"
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "B"
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": false,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "tuple",
+      "lane": "legacy",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "A",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "B",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          "A",
+          "outside",
+          "B",
+          "outside",
+          "A"
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "B"
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": false,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "default",
+      "lane": "selected",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "fallback",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "B",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          "fallback",
+          "outside",
+          "B",
+          "outside",
+          "fallback"
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "fallback"
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "B"
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "fallback"
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": false,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "default",
+      "lane": "legacy",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "fallback",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "B",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          "fallback",
+          "outside",
+          "B",
+          "outside",
+          "fallback"
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "fallback"
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "B"
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "fallback"
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": false,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "slot-event-name",
+      "lane": "selected",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "A",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "B",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          "A",
+          {
+            "type": "click",
+            "phase": "initial"
+          },
+          "B",
+          {
+            "type": "click",
+            "phase": "updated"
+          },
+          "A"
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              {
+                "type": "click",
+                "phase": "initial"
+              }
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "B"
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              {
+                "type": "click",
+                "phase": "updated"
+              }
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": false,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "slot-event-name",
+      "lane": "legacy",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "A",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "B",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          "A",
+          {
+            "type": "click",
+            "phase": "initial"
+          },
+          "B",
+          {
+            "type": "click",
+            "phase": "updated"
+          },
+          "A"
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              {
+                "type": "click",
+                "phase": "initial"
+              }
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "B"
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              {
+                "type": "click",
+                "phase": "updated"
+              }
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "A"
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": false,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "unscoped-control",
+      "lane": "selected",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "unscoped",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "unscoped",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          "unscoped",
+          "outside",
+          "unscoped",
+          "outside",
+          "unscoped"
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "unscoped"
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "unscoped"
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "unscoped"
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": true,
+          "outsideStable": true
+        }
+      }
+    },
+    {
+      "id": "unscoped-control",
+      "lane": "legacy",
+      "completeDesiredLaw": {
+        "error": null,
+        "logs": [],
+        "frameworkErrors": [],
+        "initialSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "unscoped",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "updatedSemanticTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            },
+            {
+              "type": "div",
+              "props": {},
+              "text": null,
+              "children": [
+                {
+                  "type": "button",
+                  "props": {
+                    "id": "slot",
+                    "onClick": "function"
+                  },
+                  "text": "unscoped",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "props": {
+                "id": "outside",
+                "onClick": "function"
+              },
+              "text": "outside",
+              "children": []
+            },
+            {
+              "type": "#text",
+              "props": {},
+              "text": "",
+              "children": []
+            }
+          ]
+        },
+        "unmountedTree": {
+          "type": "root",
+          "props": {},
+          "text": null,
+          "children": []
+        },
+        "records": [
+          "unscoped",
+          "outside",
+          "unscoped",
+          "outside",
+          "unscoped"
+        ],
+        "phases": [
+          {
+            "label": "initial-inside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "unscoped"
+            ]
+          },
+          {
+            "label": "initial-outside",
+            "event": {
+              "type": "click",
+              "phase": "initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "updated-inside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "unscoped"
+            ]
+          },
+          {
+            "label": "updated-outside",
+            "event": {
+              "type": "click",
+              "phase": "updated"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "outside"
+            ]
+          },
+          {
+            "label": "saved-initial-inside-after-update",
+            "event": {
+              "type": "click",
+              "phase": "saved-initial"
+            },
+            "returned": {
+              "$undefined": true
+            },
+            "records": [
+              "unscoped"
+            ]
+          }
+        ],
+        "handlerIdentityLaws": {
+          "insideStable": true,
+          "outsideStable": true
+        }
+      }
+    }
+  ]
+}

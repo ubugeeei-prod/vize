@@ -90,7 +90,7 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.push_slot_function(el.loc.span.start);
         ctx.push("(");
         // Slot props (scoped slot params) - use raw source with default value prefix
-        let params = if let Some((processed, params)) = slot_parameters(slot_dir, &ctx.source) {
+        let params = if let Some((processed, params)) = slot_parameters(slot_dir, ctx) {
             ctx.push("(");
             ctx.push(&processed);
             ctx.push(")");
@@ -174,16 +174,15 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                     ctx.push("(");
 
                     // Slot props - use raw source with default value prefix
-                    let params =
-                        if let Some((processed, params)) = slot_parameters(slot_dir, &ctx.source) {
-                            ctx.push("(");
-                            ctx.push(&processed);
-                            ctx.push(")");
-                            params
-                        } else {
-                            ctx.push("()");
-                            vec![]
-                        };
+                    let params = if let Some((processed, params)) = slot_parameters(slot_dir, ctx) {
+                        ctx.push("(");
+                        ctx.push(&processed);
+                        ctx.push(")");
+                        params
+                    } else {
+                        ctx.push("()");
+                        vec![]
+                    };
 
                     // Track slot params for stripping _ctx. prefix
                     ctx.add_slot_params(&params);

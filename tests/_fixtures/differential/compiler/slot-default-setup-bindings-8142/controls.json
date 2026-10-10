@@ -1,0 +1,244 @@
+{
+  "schema": 1,
+  "scope": "Only inline LiteralConst/SetupConst reads change; all authored parameter outputs fixed before product implementation or execution",
+  "controlCount": 24,
+  "cases": [
+    {
+      "id": "literal-const",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "literal-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = fallback }",
+      "law": "positive inline immutable read"
+    },
+    {
+      "id": "setup-const-call",
+      "source": "{ item = makeValue(seed) }",
+      "bindings": {
+        "makeValue": "setup-const",
+        "seed": "literal-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = makeValue(seed) }",
+      "law": "positive inline immutable read"
+    },
+    {
+      "id": "mixed-shorthand",
+      "source": "{ item = { fallback, missing } }",
+      "bindings": {
+        "fallback": "literal-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = { fallback, missing: _ctx.missing } }",
+      "law": "positive inline immutable read"
+    },
+    {
+      "id": "nested-pattern",
+      "source": "{ nested: { item = fallback } }",
+      "bindings": {
+        "fallback": "literal-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ nested: { item = fallback } }",
+      "law": "positive inline immutable read"
+    },
+    {
+      "id": "local-binding-shadow",
+      "source": "{ fallback, item = fallback }",
+      "bindings": {
+        "fallback": "setup-ref"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ fallback, item = fallback }",
+      "law": "existing slot local shadows excluded script binding"
+    },
+    {
+      "id": "local-shorthand",
+      "source": "{ fallback, item = { fallback } }",
+      "bindings": {
+        "fallback": "setup-ref"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ fallback, item = { fallback } }",
+      "law": "existing slot shorthand local remains unchanged"
+    },
+    {
+      "id": "argument-shadow",
+      "source": "{ item = (fallback => fallback)(missing) }",
+      "bindings": {
+        "fallback": "literal-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = (fallback => fallback)(_ctx.missing) }",
+      "law": "argument local shadows script name; unknown argument remains ctx"
+    },
+    {
+      "id": "block-shadow",
+      "source": "{ item = (() => { const fallback = \"local\"; return fallback })() }",
+      "bindings": {
+        "fallback": "literal-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = (() => { const fallback = \"local\"; return fallback })() }",
+      "law": "existing block local remains unchanged"
+    },
+    {
+      "id": "lambda-script-read",
+      "source": "{ item = () => fallback }",
+      "bindings": {
+        "fallback": "literal-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = () => fallback }",
+      "law": "positive inline immutable read"
+    },
+    {
+      "id": "script-call-unknown-argument",
+      "source": "{ item = fallback(unknown) }",
+      "bindings": {
+        "fallback": "setup-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = fallback(_ctx.unknown) }",
+      "law": "positive inline immutable read"
+    },
+    {
+      "id": "case-sensitive-unknown",
+      "source": "{ item = Fallback }",
+      "bindings": {
+        "fallback": "literal-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.Fallback }",
+      "law": "unknown differently cased name preserves ctx"
+    },
+    {
+      "id": "no-metadata-inline",
+      "source": "{ item = fallback }",
+      "bindings": null,
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "no-metadata original ctx output remains exact"
+    },
+    {
+      "id": "no-metadata-noninline",
+      "source": "{ item = fallback }",
+      "bindings": null,
+      "inline": false,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "no-metadata noninline original ctx output remains exact"
+    },
+    {
+      "id": "literal-noninline",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "literal-const"
+      },
+      "inline": false,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "noninline policy excluded; preserve original output"
+    },
+    {
+      "id": "setup-const-noninline",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "setup-const"
+      },
+      "inline": false,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "noninline policy excluded; preserve original output"
+    },
+    {
+      "id": "unknown-with-metadata",
+      "source": "{ item = missing }",
+      "bindings": {
+        "fallback": "literal-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.missing }",
+      "law": "unknown free name preserves ctx"
+    },
+    {
+      "id": "excluded-setup-ref",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "setup-ref"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "excluded binding class preservation, not semantic correctness claim"
+    },
+    {
+      "id": "excluded-setup-maybe-ref",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "setup-maybe-ref"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "excluded binding class preservation, not semantic correctness claim"
+    },
+    {
+      "id": "excluded-setup-let",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "setup-let"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "excluded binding class preservation, not semantic correctness claim"
+    },
+    {
+      "id": "excluded-setup-reactive-const",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "setup-reactive-const"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "excluded binding class preservation, not semantic correctness claim"
+    },
+    {
+      "id": "excluded-props",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "props"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "excluded binding class preservation, not semantic correctness claim"
+    },
+    {
+      "id": "excluded-props-aliased",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "props-aliased"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "excluded binding class preservation, not semantic correctness claim"
+    },
+    {
+      "id": "excluded-data",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "data"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "excluded binding class preservation, not semantic correctness claim"
+    },
+    {
+      "id": "excluded-options",
+      "source": "{ item = fallback }",
+      "bindings": {
+        "fallback": "options"
+      },
+      "inline": true,
+      "expectedWholeParameters": "{ item = _ctx.fallback }",
+      "law": "excluded binding class preservation, not semantic correctness claim"
+    }
+  ]
+}
