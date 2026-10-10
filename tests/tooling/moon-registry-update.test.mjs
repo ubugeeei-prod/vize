@@ -19,7 +19,7 @@ import {
 const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 const wrapper = path.join(repoRoot, "tools/support/release/moon-registry-update.mjs");
 
-test("registry refresh retains inherited Git settings and bounds only merge output", () => {
+void test("registry refresh retains inherited Git settings and bounds only merge output", () => {
   const entries = {
     ...process.env,
     GIT_CONFIG_COUNT: "2",
@@ -56,7 +56,7 @@ test("registry refresh retains inherited Git settings and bounds only merge outp
   }
 });
 
-test("registry refresh accepts Git's count syntax and rejects unsafe additions without mutation", () => {
+void test("registry refresh accepts Git's count syntax and rejects unsafe additions without mutation", () => {
   for (const count of ["1", "01", "+1", " 1", "\t1", "-0", ""]) {
     const inherited = {
       ...process.env,
@@ -96,7 +96,7 @@ test("registry refresh accepts Git's count syntax and rejects unsafe additions w
   }
 });
 
-test(
+void test(
   "real Moon refreshes the identical large stale index without a Git pipe deadlock",
   {
     skip: process.platform === "win32",
