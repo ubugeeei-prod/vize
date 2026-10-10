@@ -60,10 +60,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          ref: ${{ env.DRIVER_SHA }}
-          fetch-depth: 0
-          persist-credentials: false
+        with: { ref: "${{ env.DRIVER_SHA }}", fetch-depth: 0, persist-credentials: false }
       - name: Pin immutable driver, source and freshly fetched main baseline
         env: { BASE_SHA: "${{ github.event.pull_request.base.sha }}" }
         run: |
@@ -103,7 +100,8 @@ jobs:
           [[ ! -e "$RUNNER_TEMP/native-phase-source" ]]
           mv "$GITHUB_WORKSPACE/.native-phase-source" "$RUNNER_TEMP/native-phase-source"
           echo "NATIVE_PHASE_SOURCE_ROOT=$RUNNER_TEMP/native-phase-source" >> "$GITHUB_ENV"
-      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # stable
+        with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
