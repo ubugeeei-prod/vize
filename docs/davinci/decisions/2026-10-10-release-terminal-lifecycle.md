@@ -29,7 +29,7 @@ public manifests remain untouched.
 ## Reproduced producer defect and repair
 
 The installed Moon CLI revision `4da23f805e562bcdb20a45764f1ab12cb892bf1d`
-[waits for Git pull with both output streams piped](https://github.com/moonbitlang/moon/blob/4da23f805e562bcdb20a45764f1ab12cb892bf1d/crates/mooncake/src/pkg/update.rs)
+[waits for Git pull with both output streams piped](https://github.com/moonbitlang/moon/blob/4da23f805e562bcdb20a45764f1ab12cb892bf1d/crates/mooncake/src/update.rs)
 without draining them. A local-origin stale registry fixture creates the same
 10,000-file fast-forward for both executions. A normally drained Git pull emits
 730,081 stdout bytes and 1,187 stderr bytes and finishes in 1.88 seconds. The
