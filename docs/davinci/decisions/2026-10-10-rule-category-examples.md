@@ -118,3 +118,19 @@ locally. Example bytes, routes, annotations and native HTML remain unchanged.
 Earlier source runs are historical; require fresh exact-head Check and Docs
 Actions before the protected admission that root coordinates after third-party
 publication. Both source PRs stay draft, with no individual auto-merge or queue.
+
+## Accessibility regression expectation refresh
+
+Source tooling shard 4/4 at `20b8cb5122`
+([job 114109423686](https://github.com/ubugeeei-prod/vize/actions/runs/38016876142/job/114109423686))
+still expects English and Japanese accessibility links to leave the category for
+`all.md`. Update this existing regression to require all 31 accessibility rule
+packets, both local example targets, inline configuration and byte-exact complete
+Vue source on the category itself. Extend its source custody checks to all five
+locales against the unchanged English/Japanese individual reference authorities.
+
+All 35 focused docs tests and strict type-aware lint pass locally. Renderer,
+prose, examples, routes,
+native annotation metadata and payload sizes are unchanged. Obtain fresh
+successor source Actions before protected admission; the failed earlier run
+remains evidence of the stale assertion rather than a passing source receipt.
