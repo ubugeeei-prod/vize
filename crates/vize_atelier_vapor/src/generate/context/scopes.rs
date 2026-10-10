@@ -3,7 +3,7 @@
 use vize_carton::{String, cstr};
 
 use super::GenerateContext;
-use crate::generate::destructure::{DestructureBinding, parse_destructure_names};
+use crate::generate::destructure::{DestructureBinding, parse_destructure_bindings};
 
 impl GenerateContext<'_> {
     /// Free names need no scoped resolution when no binding context is active.
@@ -39,12 +39,28 @@ impl GenerateContext<'_> {
         }
         let slot_props_var = cstr!("_slotProps{}", self.slot_scope_count);
         self.slot_scope_count += 1;
+        let bindings = parse_destructure_bindings(destructure_pattern);
+        let names = bindings
+            .iter()
+            .map(|binding| binding.local.clone())
+            .collect();
+        // A renamed or nested name reads through the key it was destructured
+        // from: `{ props: trigger }` reads `.props`, `{ item: { label } }`
+        // reads `.item.label`.
+        let read_overrides = bindings
+            .into_iter()
+            .filter(|binding| binding.path != cstr!(".{}", binding.local))
+            .map(|binding| DestructureBinding {
+                path: cstr!("{slot_props_var}{}", binding.path),
+                local: binding.local,
+            })
+            .collect();
         self.slot_scopes.push(SlotScope {
-            names: parse_destructure_names(destructure_pattern),
+            names,
             slot_props_var: slot_props_var.clone(),
             for_depth: self.for_scopes.len(),
             whole: false,
-            read_overrides: std::vec::Vec::new(),
+            read_overrides,
         });
         if destructure_pattern.contains('=') {
             self.resolve_slot_defaults(destructure_pattern, &slot_props_var);

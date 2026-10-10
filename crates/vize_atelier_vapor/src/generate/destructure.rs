@@ -17,13 +17,6 @@ pub(super) fn parse_destructure_bindings(pattern: &str) -> std::vec::Vec<Destruc
     bindings
 }
 
-pub(super) fn parse_destructure_names(pattern: &str) -> std::vec::Vec<String> {
-    parse_destructure_bindings(pattern)
-        .into_iter()
-        .map(|binding| binding.local)
-        .collect()
-}
-
 /// Resolve a Vapor template reference that names a destructured prop to a read
 /// through the render signature's `$props`.
 ///

@@ -41,6 +41,8 @@ mod tests_setup_components;
 #[cfg(test)]
 mod tests_sibling_navigation;
 #[cfg(test)]
+mod tests_slot_destructure;
+#[cfg(test)]
 mod tests_slot_outlets;
 #[cfg(test)]
 mod tests_source_map;

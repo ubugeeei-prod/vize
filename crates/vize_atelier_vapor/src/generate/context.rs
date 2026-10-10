@@ -146,9 +146,12 @@ impl<'a> GenerateContext<'a> {
                     .iter()
                     .any(|slot_name| name == slot_name.as_str())
                 {
+                    // Default-bearing reads are recorded after the plain key
+                    // paths, so the last override for a name wins.
                     if let Some(binding) = scope
                         .read_overrides
                         .iter()
+                        .rev()
                         .find(|binding| name == binding.local.as_str())
                     {
                         return Some(binding.path.clone());
