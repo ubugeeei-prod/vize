@@ -1,0 +1,6 @@
+{
+  "sources": ["tests/tooling/fixtures/musea/snapshot-collision/left/Button.art.vue", "tests/tooling/fixtures/musea/snapshot-collision/right/Button.art.vue"],
+  "legacySnapshot": "Button--Default--small.png",
+  "legacyFalseDiffMinimum": 20,
+  "guard": "reject the entire batch before navigation or PNG writes"
+}
