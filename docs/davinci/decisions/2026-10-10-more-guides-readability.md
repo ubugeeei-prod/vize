@@ -77,7 +77,7 @@ explicit review entry. Removed routes may remain in the inventory as historical 
 | Route                                          | Locales currently authored | Entry   | Review boundary                                                                                                             |
 | ---------------------------------------------- | -------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `/architecture/crates`                         | en, ja                     | Revised | Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending.         |
-| `/architecture/language-engineering-practices` | en, ja                     | Revised | Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending.         |
+| `/architecture/language-engineering-practices` | en, ja                     | Revised | Japanese body reviewed against EN; commands, URLs and anchors retained; fresh browser and deployed review pending.          |
 | `/architecture/overview`                       | en, ja                     | Revised | Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending.         |
 | `/architecture/performance`                    | en, ja                     | Audited | Benchmark claims and provenance are handled in #8367.                                                                       |
 | `/architecture/performance-blacksmith`         | en, ja                     | Audited | Benchmark snapshot and provenance are handled in #8367.                                                                     |
@@ -201,3 +201,22 @@ working directory, and requires both guides to describe every advertised tool. F
 Actions and the existing 28-route real-browser check still gate this layer. Client config and
 source review do not claim an authenticated Claude session or final deployed acceptance, and the
 remaining More-body reviews keep #8365 open.
+
+## Complete Japanese language-engineering body
+
+The exact-source More browser artifacts showed that this guide retained literal translations
+below its reviewed introduction: change classes became fragmented sentences, security evidence
+was attached to the wrong command, and completion was rendered as task completion rather than
+editor suggestions. A genuine fourth child reviews this Japanese body against the unchanged
+English source while the earlier validated heads remain immutable.
+
+All six change classes, three assurance lanes, baseline rules, escalation conditions, operational
+guardrails, and ten attributed source rows remain complete. Every inline command/path and external
+reference is checked against the English source. Natural Japanese headings keep all published
+fragment destinations as explicit aliases. The preservation marker now covers the complete
+Japanese document. The new fragment/scope check failed on the preceding source, and the pinned
+native renderer is separately checked for every previously published heading destination.
+
+This bounded translation review leaves the English contracts unchanged. Fresh exact-source Check
+and full Docs Actions, rendered desktop/mobile reading flow, and final deployed acceptance remain
+required. Other retained More bodies and site-wide acceptance keep #8365 open.
