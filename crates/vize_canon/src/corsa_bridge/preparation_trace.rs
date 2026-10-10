@@ -43,6 +43,19 @@ impl Phase {
     pub(crate) fn finish(mut self) {
         self.completed = true;
     }
+
+    pub(crate) fn package_root_lookup(
+        checked_roots: usize,
+        indexed_lookups: usize,
+        fallback_lookups: usize,
+    ) {
+        if *ENABLED.get_or_init(|| {
+            std::env::var("VIZE_TRACE_EDITOR_PREPARATION").is_ok_and(|value| value == "1")
+        }) {
+            tracing::info!(target: "vize_editor_preparation", event = "package_root_lookup",
+                checked_roots, indexed_lookups, fallback_lookups);
+        }
+    }
 }
 
 impl Drop for Phase {

@@ -33,6 +33,7 @@ use crate::batch::error::CorsaResult;
 
 use super::VirtualProject;
 
+mod package_roots;
 #[path = "dependency_scan/references.rs"]
 mod references;
 #[path = "dependency_scan/resolution.rs"]
@@ -139,6 +140,8 @@ impl VirtualProject {
             .iter()
             .filter_map(|path| canonical_key(path))
             .collect();
+        let (raw_roots_indexed, checked_roots) = self.raw_package_roots_are_indexed();
+        let mut package_root_lookups = [0usize; 2];
 
         while let Some(importer) = queue.pop() {
             let Some((virtual_content, virtual_path, generated_sfc)) =
@@ -200,17 +203,11 @@ impl VirtualProject {
                         .into_iter()
                         .map(|specifier| (specifier, crate::PackageResolutionMode::Import, true)),
                 );
-            // Package-local edges only exist inside a package root that already
-            // contains this importer, so scan the route table once per importer
-            // instead of once per specifier (#4137).
-            let importer_package_roots = self
-                .package_routes
-                .values()
-                .filter_map(|binding| binding.route.as_ref())
-                .flat_map(crate::PackageRoute::all_routes)
-                .filter(|route| importer.starts_with(&route.package_root))
-                .map(|route| route.package_root.clone())
-                .collect::<Vec<_>>();
+            // Route bindings stay unchanged during this walk. Incomplete raw
+            // roots and noncanonical originals retain their previous lookup.
+            let use_root_index = raw_roots_indexed && visited.contains(&importer);
+            package_root_lookups[usize::from(use_root_index)] += 1;
+            let importer_package_roots = self.package_roots_for_importer(&importer, use_root_index);
 
             for (specifier, mode, is_reference) in specifiers {
                 // Path references are always relative to the containing file,
@@ -277,6 +274,11 @@ impl VirtualProject {
             let released = self.replace_dependency_edges(&importer, dependency_targets);
             self.prune_unowned_sources(released);
         }
+        crate::corsa_bridge::preparation_trace::Phase::package_root_lookup(
+            checked_roots,
+            package_root_lookups[1],
+            package_root_lookups[0],
+        );
         Ok(())
     }
 
