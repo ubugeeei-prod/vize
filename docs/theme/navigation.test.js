@@ -16,6 +16,40 @@ for (const basename of SCRIPT_BASENAMES.filter((name) => name.startsWith("i18n/"
 
 const navigation = globalThis.__vizeDocsNavigation;
 
+for (const { code } of globalThis.__vizeDocsSitemap.supportedLocales) {
+  void test(`navigation puts Philosophy in Start and Content Mapper in analysis (${code})`, () => {
+    const prefix = code === "en" ? "" : `/${code}`;
+    const document = createNavigationDocument([
+      [`${prefix}/getting-started`, "Getting Started"],
+      [`${prefix}/philosophy`, "Philosophy"],
+      [`${prefix}/guide/content-mapper`, "Content Mapper"],
+      [`${prefix}/guide/musea`, "Musea"],
+    ]);
+    applyNavigation(document, `${prefix}/guide/content-mapper/index.html`);
+    const strings = globalThis.__vizeDocsLocales[code];
+    assert.deepEqual(sections(document), [
+      {
+        title: strings.ui.groups.start,
+        labels: [strings.labels["/getting-started"], strings.labels["/philosophy"]],
+      },
+      {
+        title: strings.ui.groups.staticAnalysis,
+        labels: [strings.labels["/guide/content-mapper"]],
+      },
+      { title: strings.ui.groups.tooling, labels: [strings.labels["/guide/musea"]] },
+    ]);
+    assert.deepEqual(
+      document.querySelectorAll(".nav-link[href]").map((link) => link.getAttribute("href")),
+      [
+        `${prefix}/getting-started`,
+        `${prefix}/philosophy`,
+        `${prefix}/guide/content-mapper`,
+        `${prefix}/guide/musea`,
+      ],
+    );
+  });
+}
+
 void test("applyNavigationOrder keeps the Blog group compact", () => {
   const document = createNavigationDocument([
     ["/", "index"],
@@ -184,6 +218,10 @@ void test("navigation opens the current goal and keeps generated leaf pages out 
   assert.deepEqual(
     groups.map((group) => group.getAttribute("open") !== null),
     [true, true, false],
+  );
+  assert.deepEqual(
+    groups.map((group) => group.querySelector(".nav-list").inert),
+    [false, false, true],
   );
   assert.equal(groups[0].querySelector(".nav-title").tagName, "SUMMARY");
 });

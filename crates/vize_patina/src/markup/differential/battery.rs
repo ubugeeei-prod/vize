@@ -260,8 +260,12 @@ pub struct BatteryCensus {
 pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
     templates: 37,
     rule_fixtures: 869,
-    rule_fixture_calls: 1057,
-    rule_fixture_skipped: 87,
+    // Preserve the original 1057/87 census, adding precisely the three
+    // non-literal calls in valid_v_slot/tests.rs's explicit-false policy test.
+    // That test separately checks complete equality and disabled-rule behavior;
+    // the original 869 literal templates and every compared trace stay intact.
+    rule_fixture_calls: 1057 + 3,
+    rule_fixture_skipped: 87 + 3,
     matrix: 90,
     template_lines: 6316,
     restructured: 0,

@@ -12,15 +12,26 @@ import {
 } from "./support/native-attribute-values-7502-envelopes.ts";
 import {
   exactKeys7502,
+  archivedCapture7502,
+  archiveOutputSha7502,
+  archiveOutputUrl7502,
+  baseline7502,
+  disposition7502,
   fixtureSha7502,
   fixtureUrl7502,
   hash7502,
   loadInputs7502,
   outputUrl7502,
   requireReviewed7502,
+  transition7502,
+  unchangedRows7502,
 } from "./support/native-attribute-values-7502-inputs.ts";
 import { mandatory7502Paths } from "./support/native-attribute-values-7502-judge.ts";
-import { coordinate7502 } from "./support/native-attribute-values-7502-maps.ts";
+import { coordinate7502, maps7502 } from "./support/native-attribute-values-7502-maps.ts";
+import {
+  historyCommands7502,
+  validateHistory7502,
+} from "./support/native-attribute-values-7502-history.ts";
 import { validateCapture7502 } from "./support/native-attribute-values-7502-oracle.ts";
 
 test("verbatim original fourteen pins retain original HTML/options and precise two lower controls", () => {
@@ -60,13 +71,13 @@ test("unfrozen/null, missing fields and incomplete rows cannot grant whole nativ
   const stored = JSON.parse(readFileSync(outputUrl7502, "utf8"));
   exactKeys7502(stored, ["schema", "version", "state", "capture"]);
   assert.equal(stored.schema, "vize.native-attribute-values-7502.reviewed-output");
-  assert.equal(stored.version, 1);
+  assert.equal(stored.version, 2);
   assert(["unfrozen", "reviewed"].includes(stored.state));
   if (stored.state === "unfrozen") assert.equal(stored.capture, null);
   else validateCapture7502(stored.capture); // Schema only; never hosted runtime credit.
   const unfrozen = {
     schema: "vize.native-attribute-values-7502.reviewed-output",
-    version: 1,
+    version: 2,
     state: "unfrozen",
     capture: null,
   };
@@ -103,13 +114,200 @@ test("mandatory hosted paths reject absent capture instead of using fixture nati
       VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR: "/evidence",
       VIZE_NATIVE_ATTRIBUTE_VALUES_7502_CAPTURE: "/evidence/first.capture.json",
       VIZE_NATIVE_ATTRIBUTE_VALUES_7502_BUILD_RECEIPT: "/evidence/build-receipt.json",
+      VIZE_NATIVE_ATTRIBUTE_VALUES_7502_HISTORY_RECEIPT: "/evidence/history-receipt.json",
     }),
     {
       directory: "/evidence",
       capture: "/evidence/first.capture.json",
       build: "/evidence/build-receipt.json",
+      history: "/evidence/history-receipt.json",
     },
   );
+});
+
+test("the named successor retains every original byte and every unaffected whole row", () => {
+  assert.equal(hash7502(readFileSync(archiveOutputUrl7502)), archiveOutputSha7502);
+  const archived = archivedCapture7502();
+  const packet = { rows: structuredClone(archived.rows) };
+  unchangedRows7502(packet);
+  const classRows = packet.rows.filter((row: any) => row.id === transition7502.input);
+  assert.deepEqual(classRows.map(disposition7502), [
+    "positive",
+    "positive",
+    "positive",
+    "positive",
+    "target-refusal",
+    "target-refusal",
+  ]);
+  assert(classRows.every((row: any) => row.disposition === "lower-refusal"));
+  packet.rows[0].observation.file.nodeCount++;
+  assert.throws(() => unchangedRows7502(packet), /unaffected original whole row/);
+  assert.throws(() => validateCapture7502(archived));
+  assert.throws(() => validateHistory7502({}, {}, "/missing-history"));
+  const relabelled = structuredClone(archived);
+  relabelled.version = 2;
+  relabelled.transition = transition7502;
+  relabelled.summary = {
+    fixtures: 14,
+    outcomes: 84,
+    positive: 76,
+    lowerRefusals: 6,
+    targetRefusals: 2,
+  };
+  assert.throws(() => validateCapture7502(relabelled));
+  const commands = historyCommands7502("/baseline", "/history");
+  assert.deepEqual(commands[0], [
+    "git",
+    ["fetch", "--no-tags", "origin", "815d9342ed252cad5802e58931b15166f25bf746"],
+  ]);
+  assert.deepEqual(commands.slice(4, 6), [
+    ["vp", ["node", "tests/tooling/support/native-attribute-values-7502-build.ts", "/history"]],
+    ["vp", ["node", "tests/tooling/support/native-attribute-values-7502-judge.ts"]],
+  ]);
+});
+
+test("pinned history also requires its unchanged whole scriptless Rust and runtime gates", () => {
+  assert.deepEqual(historyCommands7502("/baseline", "/history").slice(6, 8), [
+    [
+      "cargo",
+      [
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_atelier_sfc",
+        "--test",
+        "native_scriptless_ssr",
+        "--",
+        "--nocapture",
+      ],
+    ],
+    ["vp", ["node", "--test", "tests/tooling/native-sfc-scriptless-ssr-reference.test.ts"]],
+  ]);
+});
+
+test("pinned history retains the original native Vapor lower-refusal gate", () => {
+  const commands = historyCommands7502("/baseline", "/history");
+  assert.equal(commands.length, 12);
+  assert.deepEqual(commands[8], [
+    "cargo",
+    [
+      "test",
+      "--locked",
+      "--profile",
+      "ci",
+      "-p",
+      "vize_l4",
+      "--test",
+      "native_vapor",
+      "--",
+      "--nocapture",
+    ],
+  ]);
+});
+
+test("removing a genuine class segment anchor is rejected by the map judge", () => {
+  // A pure map counterfactual supplies no native code or runtime acceptance.
+  const source = "class",
+    mappings = JSON.stringify([[[0, 0, 0, 0]]]);
+  const row = {
+    id: transition7502.input,
+    target: "dom",
+    disposition: "lower-refusal",
+    sourceMap: true,
+    filename: "Class.vue",
+    nativeSource: source,
+    result: {
+      code: source,
+      map: {
+        file: "Class.vue",
+        sources: ["Class.vue"],
+        sourcesContent: [source],
+        names: [],
+        mappings,
+      },
+      links: [
+        {
+          authored: { start: 0, end: 5 },
+          generated: { start: 0, end: 5 },
+          name: null,
+          segment: true,
+        },
+      ],
+    },
+  };
+  const codec = { decode: JSON.parse, encode: JSON.stringify };
+  maps7502({ rows: [row] }, codec);
+  row.result.links.pop();
+  assert.throws(() => maps7502({ rows: [row] }, codec), /complete exact start anchor/);
+});
+
+test("historical source and command substitutions fail before evidence can grant credit", () => {
+  const receipt = {
+    schema: "vize.native-attribute-values-7502.history",
+    version: 1,
+    state: "qualified",
+    currentSource: { current: true },
+    baseline: baseline7502,
+    baselineSource: {
+      sourceRevision: baseline7502.revision,
+      sourceTree: baseline7502.tree,
+      fixtureSourceTree: baseline7502.fixtureTree,
+      inputPackSha256: fixtureSha7502,
+    },
+    originalInputSha256: fixtureSha7502,
+    originalReviewedOutputSha256: archiveOutputSha7502,
+    worktree: "/native-attribute-values-7502-baseline",
+    attempts: [] as any[],
+    buildReceiptSha256: null,
+    qualificationSha256: null,
+    captureSha256: null,
+    envelopesSha256: null,
+    scriptless: null,
+    vapor: null,
+    stages: null,
+    failure: null,
+  };
+  for (const mutate of [
+    (row: any) => (row.state = "unqualified"),
+    (row: any) => (row.currentSource = { stale: true }),
+    (row: any) => (row.baselineSource.sourceRevision = "wrong"),
+    (row: any) => (row.baselineSource.fixtureSourceTree = "wrong"),
+    (row: any) => (row.originalReviewedOutputSha256 = "wrong"),
+  ]) {
+    const changed = structuredClone(receipt);
+    mutate(changed);
+    assert.throws(() => validateHistory7502(changed, receipt.currentSource, "/evidence"));
+  }
+  const commands = historyCommands7502(receipt.worktree, "/evidence/history");
+  receipt.attempts = [
+    "fetch",
+    "checkout",
+    "install",
+    "runtime",
+    "build",
+    "judge",
+    "scriptless-build",
+    "scriptless-judge",
+    "vapor-build",
+    "selected-owner-build",
+    "selected-template-build",
+    "selected-for-class-build",
+  ].map((step, index) => ({
+    step,
+    executable: commands[index][0],
+    argv: commands[index][1],
+    cwd: "/wrong",
+    ...rawProcess7502({
+      status: 0,
+      signal: null,
+      stdout: Buffer.alloc(0),
+      stderr: Buffer.alloc(0),
+    }),
+  }));
+  receipt.attempts[0].argv = ["fetch", "origin", "main"];
+  assert.throws(() => validateHistory7502(receipt, receipt.currentSource, "/evidence"));
 });
 
 test("raw failure streams retain exact bytes even on throw and reject tampering", () => {

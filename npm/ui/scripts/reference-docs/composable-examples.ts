@@ -6,6 +6,7 @@ import { blocks, table } from "./markdown.ts";
 import { asyncEffectExamples } from "./async-effect-examples.ts";
 import { browserEffectExamples } from "./browser-effect-examples.ts";
 import { formStateExamples } from "./form-state-examples.ts";
+import { domInteractionExamples } from "./dom-interaction-examples.ts";
 
 const stateExamples = [
   {
@@ -75,6 +76,7 @@ export const composableExamples = [
   ...asyncEffectExamples,
   ...browserEffectExamples,
   ...formStateExamples,
+  ...domInteractionExamples,
 ] as const;
 
 export function composableExampleSource(packageRoot: string, name: string): string {
