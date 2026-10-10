@@ -18,6 +18,7 @@ export const SCRIPT_BASENAMES = [
   "i18n/locales/zh-CN",
   "i18n/locales/pt-BR",
   "i18n/locales/fr",
+  "i18n/locale-switcher",
   "i18n/navigation",
   "syntax-highlight-languages",
   "syntax-highlight-core",

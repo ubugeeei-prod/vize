@@ -182,34 +182,13 @@ const vizeDocsI18nNavigation = (() => {
   }
 
   function installLocaleSwitcher(root = document) {
-    const headerActions = root.querySelector?.(".header-actions");
-    if (!headerActions || headerActions.querySelector(".docs-locale")) return;
-
     const locale = currentLocale();
-    const language = localeStrings(locale).ui.language;
-    const wrapper = document.createElement("label");
-    wrapper.className = "docs-locale";
-    wrapper.setAttribute("aria-label", language);
-
-    const labelElement = document.createElement("span");
-    labelElement.textContent = language;
-    const select = document.createElement("select");
-    select.className = "docs-locale-select";
-    select.setAttribute("aria-label", language);
-    for (const supportedLocale of sitemap().supportedLocales) {
-      const option = document.createElement("option");
-      option.value = supportedLocale.code;
-      option.textContent = supportedLocale.name;
-      option.selected = supportedLocale.code === locale;
-      select.append(option);
-    }
-    select.addEventListener("change", () => {
-      window.location.href = `${localizedPagePath(select.value)}${window.location.search}${window.location.hash}`;
+    globalThis.__vizeDocsLocaleSwitcher.install(root, {
+      locale,
+      language: localeStrings(locale).ui.language,
+      supportedLocales: sitemap().supportedLocales,
+      pagePath: localizedPagePath,
     });
-    wrapper.append(labelElement, select);
-
-    const searchButton = headerActions.querySelector(".search-button");
-    headerActions.insertBefore(wrapper, searchButton);
   }
 
   function initialize(root = document) {
