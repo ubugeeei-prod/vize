@@ -1,0 +1,68 @@
+{
+  "cases": [
+    {
+      "id": "exact-clean",
+      "paths": { "@x": ["./exact.tsx"], "@x*": ["./wildcard*.tsx"] },
+      "exact": "string",
+      "wildcard": "number",
+      "before": 2322,
+      "after": null
+    },
+    {
+      "id": "exact-broken",
+      "paths": { "@x": ["./exact.tsx"], "@x*": ["./wildcard*.tsx"] },
+      "exact": "number",
+      "wildcard": "string",
+      "before": null,
+      "after": 2322
+    },
+    {
+      "id": "exact-equal-rank",
+      "paths": { "@*": ["./wildcard*.tsx"], "@x": ["./exact.tsx"] },
+      "exact": "string",
+      "wildcard": "number",
+      "before": 2322,
+      "after": null
+    },
+    {
+      "id": "exact-target-array-fallback",
+      "paths": { "@x": ["./missing.tsx", "./exact.tsx"], "@x*": ["./wildcard*.tsx"] },
+      "exact": "number",
+      "wildcard": "string",
+      "before": null,
+      "after": 2322
+    },
+    {
+      "id": "selected-exact-missing",
+      "paths": { "@x": ["./missing.tsx"], "@x*": ["./wildcard*.tsx"] },
+      "exact": "string",
+      "wildcard": "number",
+      "before": 2322,
+      "after": 2307
+    },
+    {
+      "id": "selected-longer-wildcard-missing",
+      "paths": { "@*": ["./generic*.tsx"], "@x*": ["./missing*.tsx"] },
+      "exact": "string",
+      "wildcard": "number",
+      "before": 2322,
+      "after": 2307
+    },
+    {
+      "id": "unaffected-exact-clean",
+      "paths": { "@x": ["./exact.tsx"] },
+      "exact": "string",
+      "wildcard": "number",
+      "before": null,
+      "after": null
+    },
+    {
+      "id": "unaffected-exact-broken",
+      "paths": { "@x": ["./exact.tsx"] },
+      "exact": "number",
+      "wildcard": "string",
+      "before": 2322,
+      "after": 2322
+    }
+  ]
+}

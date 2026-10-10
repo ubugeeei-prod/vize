@@ -11,6 +11,10 @@ on:
       - "crates/vize_canon/src/batch/virtual_project/setup_props.rs"
       - "crates/vize_canon/src/batch/virtual_project/setup_props/**"
       - "crates/vize_canon/src/batch/virtual_project/tests/type_source_snapshot.rs"
+      - "crates/vize_canon/src/batch/virtual_project/dependency_scan.rs"
+      - "crates/vize_canon/src/batch/virtual_project/dependency_scan/**"
+      - "tests/_fixtures/differential/typecheck/path-alias-precedence-3984/**"
+      - "tools/benchmarks/scripts/canon-alias-*.mjs"
       - "crates/vize_atelier_sfc/examples/type_snapshot_bench.rs"
       - "tools/benchmarks/scripts/type-snapshot-paired.mjs"
       - "tools/benchmarks/scripts/type-snapshot-cli-*.mjs"
@@ -161,6 +165,15 @@ jobs:
           cargo test --locked -p vize_canon --lib batch::virtual_project::tests::type_source_snapshot
           cargo test --locked -p vize_atelier_sfc --lib croquis::tests
           cargo clippy --locked -p vize_canon --lib -- -D warnings
+      - name: Preserve native alias selection and existing suffix laws
+        working-directory: head
+        env:
+          VIZE_TEST_REQUIRE_TSGO: "1"
+        run: |
+          cargo test --locked -p vize_canon --lib precedence_tests
+          cargo test --locked -p vize_canon --lib dependency_scan::resolution::alias_tests
+          cargo test --locked -p vize_canon --lib batch::virtual_project::tests::alias_rewrite
+          cargo test --locked -p vize_canon --lib app_only_suffix_alias_reports_and_repairs_the_authored_child
       - name: Build exact base and head CLIs with identical ci-opt settings
         run: |
           set -euo pipefail
@@ -175,7 +188,13 @@ jobs:
               --config 'profile.ci-opt.codegen-units=16' \
               --config 'profile.ci-opt.package.vize.strip="symbols"'
           done
-      - name: Gate both 500-SFC corpora and compare max/1T with nine alternating pairs
+      - name: Qualify exact source alias diagnostics against stock TypeScript and native Corsa
+        run: |
+          node head/tools/benchmarks/scripts/canon-alias-native.mjs \
+            "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
+            "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
+            "$GITHUB_WORKSPACE/canon-path-alias-before-after.json"
+      - name: Gate the pinned corpora and compare max/1T with nine alternating pairs
         env:
           RUNNER_LABEL: blacksmith-32vcpu-ubuntu-2404
         run: |
@@ -198,5 +217,7 @@ jobs:
             type-snapshot-cli-bench.json.samples/inputs/
             type-snapshot-cli-bench.json.samples/raw/
             type-snapshot-cli-bench.json.samples/profiles/
+            canon-path-alias-before-after.json
+            canon-path-alias-before-after.json.samples/
           if-no-files-found: error
           retention-days: 30
