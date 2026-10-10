@@ -4,6 +4,8 @@ title: VS Code
 
 <!-- Reviewed translation; source: integrations/vscode.md -->
 
+<span id="vs-コードの統合"></span>
+
 # VS Code 統合
 
 > **⚠️ 開発中:** Vize のエディターサポートはまだ実験段階です。
@@ -29,10 +31,9 @@ Vize Art は art ファイルの構文ハイライトを提供します。
 ## Vize 拡張機能
 
 Vize 拡張機能は `vize lsp` を起動します。lint、型チェック、エディター支援などを個別に有効にできます。
-拡張機能が無効になったまま、または機能が有効になっていない状態で Vue ファイルを開くと、拡張機能はワンクリックで推奨されるワークスペース設定を提供するようになりました。これにより、ホバー、ジャンプ、診断が黙ってオフのままになることがなくなります。
-この設定により、現在のワークスペースに `vize.enable`、`vize.lint.enable`、`vize.typecheck.enable`、および `vize.editor.enable` が書き込まれます。
-`vize.enable: true` のみを手動で設定した場合、Vize はその推奨診断も使用し、
-空の言語サーバーを起動する代わりに、エディター プロファイルを使用します。
+拡張機能や各機能が無効のまま Vue ファイルを開くと、ワークスペースに推奨設定を適用する操作が表示されます。
+この操作は `vize.enable`、`vize.lint.enable`、`vize.typecheck.enable`、`vize.editor.enable` を有効にします。
+手動で `vize.enable: true` だけを設定した場合も、推奨される診断とエディター支援が有効になります。
 ステータスバーの Vize をクリックすると `Vize: Show Status` が開きます。
 プロファイルの変更、サーバー実行ファイルの選択、再起動、設定、ログの確認をまとめて行えます。
 
@@ -55,14 +56,14 @@ Vize 拡張機能は `vize lsp` を起動します。lint、型チェック、�
 | 設定                         | 目的                                         |
 | ---------------------------- | -------------------------------------------- |
 | `vize.enable`                | 拡張機能と言語サーバーを有効にする           |
-| `vize.serverPath`            | `vize` 実行可能パスをオーバーライドします。  |
+| `vize.serverPath`            | 使用する `vize` 実行ファイルのパスを指定する |
 | `vize.lint.enable`           | lint 診断を有効にする                        |
 | `vize.typecheck.enable`      | 型情報を使う診断とバックエンド機能を有効にする |
 | `vize.editor.enable`         | エディター支援バンドルを有効にする           |
 | `vize.completion.enable`     | 補完を有効にする                             |
 | `vize.formatting.enable`     | ファイルのフォーマットを有効にする           |
 | `vize.definition.enable`     | 定義への移動を有効にする                     |
-| `vize.references.enable`     | 参照を有効にする                             |
+| `vize.references.enable`     | 参照検索を有効にする                         |
 | `vize.hover.enable`          | ホバーを有効にする                           |
 | `vize.codeActions.enable`    | lint クイックフィックスを有効にする          |
 | `vize.semanticTokens.enable` | セマンティック トークンを有効にする          |
@@ -75,9 +76,9 @@ Vize 拡張機能は `vize lsp` を起動します。lint、型チェック、�
 | `Vize: Show Status`                       | 状態と初期設定の操作画面を開く |
 | `Vize: Enable Recommended Profile`        | lint、型チェック、およびエディター支援を有効にする    |
 | `Vize: Enable Lint-Only Profile`          | 他のツールを使用したまま診断を有効にする              |
-| `Vize: Select Language Server Executable` | ファイルピッカーから `vize.serverPath` を設定します。 |
+| `Vize: Select Language Server Executable` | ファイル選択画面で `vize.serverPath` を指定する |
 | `Vize: Disable Language Server`           | 現在の設定対象の Vize を停止する                |
-| `Vize: Restart Language Server`           | 言語サーバーを再起動します。                          |
+| `Vize: Restart Language Server`           | 言語サーバーを再起動する |
 | `Vize: Show Output Channel`               | 拡張機能と LSP ログを表示する                         |
 
 ### 拡張機能が使用するもの
@@ -107,23 +108,26 @@ vp exec vsce package --no-dependencies --out dist/vize.vsix
 code --install-extension dist/vize.vsix
 ```
 
-## Vize アート拡張機能
+<span id="vize-アート拡張機能"></span>
 
-`Vize Art` は、Musea `*.art.vue` ファイルの構文強調表示を提供します。
+## Vize Art 拡張機能
+
+`Vize Art` は、Musea の `*.art.vue` ファイルに構文ハイライトを提供します。
 マーケットプレイス拡張機能 ID は `vize.vize-art` です。
 
-それは以下を認識します:
+次のブロックを認識します。
 
 - `<art>` メタデータ ブロック
 - `<variant>` ブロック
 - 標準の Vue `<template>`、`<script>`、および `<style>` セクション
 
-## 他の編集者
+<span id="他の編集者"></span>
 
-`vize lsp` は言語サーバー プロトコルに従っており、Neovim、Helix、
-ゼッドとEmacs。
+## 他のエディター
 
-Neovim セットアップの例:
+`vize lsp` は Language Server Protocol に対応しているため、Neovim、Helix、Zed、Emacs などでも利用できます。
+
+Neovim の設定例です。
 
 ```lua
 require("lspconfig").vize.setup({
@@ -137,6 +141,6 @@ require("lspconfig").vize.setup({
 })
 ```
 
-`editor = true` は、ホバー、完了、ジャンプ、参照、シンボルをテストする最も簡単な方法です
-一緒に。 tsgo などの別の TypeScript サーバーがプロジェクト診断を所有している場合は、
-`typecheck = false` を選択し、評価したい Vue 固有の機能のみをオンにします。
+`editor = true` を指定すると、ホバー、補完、定義への移動、参照検索、シンボル検索をまとめて評価できます。
+tsgo など別の TypeScript サーバーでプロジェクトの診断を実行する場合は、`typecheck = false` にして、
+試したい Vue 固有の機能だけを有効にしてください。
