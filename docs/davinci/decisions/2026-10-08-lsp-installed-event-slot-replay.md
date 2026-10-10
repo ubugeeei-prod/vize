@@ -1,10 +1,10 @@
 # Installed event, slot and library transactions
 
 The original #8010 and #8011 source bugs were closed on October 8 after their
-actual source delivery. This Draft supplemental installed-provider campaign
-remains incomplete and adds no source-issue closure or release gate. Resume it
-only against genuinely published immutable C/H containing the actual reviewed
-signed #8262 delivery; no installed replay or publication success is claimed.
+actual source delivery. On October 10 the supplemental installed-provider runner
+completed its finite sixty-session contract against genuine public 0.439.0 C/H
+containing signed #8262 delivery. The additional ownership/refusal and batch
+acceptance work remains pending; this adds no source-issue closure or release gate.
 
 Prepare a dependent public npm runner for the complete original six
 event sessions, twelve slot sessions, twenty-two event/library sessions and
@@ -137,3 +137,28 @@ checkout's unrelated historical object availability dependency. The runtime
 consumer still requires real SHA-authenticated c2bc/9fe commit/tree/blob reads;
 the pure fixture files supply no runtime fallback. A refusal law proves that an
 empty repository cannot inherit source authority from the fixture copies.
+
+## Actual public 0.439.0 execution
+
+The genuine published npm CLI completed all 60 original sessions with terminal
+exit 0: event6, slot12, library22 and bound20. Public C is
+`26031a4fbb30a1e86511919bafc7035b08440ef3`, H is
+`a26243855bcf81005049252a6e71b6dd55e457f1`, and successful Release run is
+`38011924629`. Both C and H include signed #8262 merge
+`f20f9d9c7f952ab9617344a68b6626dc14886185`. Runner head
+`fb402f3b73afb4933ba6e1881dd545773c85820b` used the unchanged genuine public,
+signed-source and separate original Vue authorities retained by the parent32
+record. The actual original native-loader return, automatic public Corsa and full
+fixture graph were rechecked before and after every session.
+
+The [complete compressed record](../../../tests/_fixtures/differential/lsp/event-rename/8010/supplemental/public-0.439.0-event-slot60/README.md)
+retains every raw stream, whole packet, native journal and phase observation.
+Its archive SHA256 is
+`fde3f76adfdfca08b122d7fe8f6ebf4111b8e7e89022878866c379929143a166`;
+the complete raw receipt SHA256 is
+`caaa9537dd43cee82b1762209ab2b87b428ce33d24958574f0fb7ccb9062de49`.
+Registry archive bytes and provenance payload binding were checked; cryptographic
+provenance signature verification was not performed. Fresh exact-head Actions
+and actual protected merge remain required for these bounded PR slices. The
+additional14 and complete-batch acceptance TODOs above remain explicit, and the
+broader #3952 roadmap remains open.
