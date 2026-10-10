@@ -199,7 +199,7 @@ fn three_whole_original_scoped_ssr_modules_css_maps_and_file_custody_match() {
 }
 
 #[test]
-fn original_style_and_authored_class_refusals_do_not_grant_partial_scoped_product() {
+fn original_style_refusals_do_not_grant_partial_scoped_product() {
     for source in [
         "<template><p/></template>",
         "<template><p/></template><style>.a:empty{}</style>",
@@ -208,7 +208,6 @@ fn original_style_and_authored_class_refusals_do_not_grant_partial_scoped_produc
         "<template><p/></template><style scoped src='outside.css'></style>",
         "<template><p/></template><style scoped>.a:empty{}</style><style scoped>.b:empty{}</style>",
         "<script setup>const value=1;</script><template><p/></template><style scoped>.a:empty{}</style>",
-        "<template><p class=a/></template><style scoped>.a:empty{}</style>",
         "<template><p style='color:red'/></template><style scoped>.a:empty{}</style>",
         "<template><search/></template><style scoped>.a:empty{}</style>",
         "<template><p/></template><style scoped>.a:hover{}</style>",

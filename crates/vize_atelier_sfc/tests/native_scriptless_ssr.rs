@@ -167,7 +167,6 @@ fn refusals() -> Vec<serde_json::Value> {
             "for",
             "<template><div v-for='value in [1,2]'>x</div></template>",
         ),
-        ("class", "<template><div class='static'/></template>"),
         (
             "nested-whitespace",
             "<template><div>\n a \n</div></template>",

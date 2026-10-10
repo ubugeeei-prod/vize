@@ -74,14 +74,17 @@ where
                     return Err(Kind::InvalidEvent);
                 }
                 if name.is_empty()
-                    || matches!(name, "class" | "style" | "key" | "ref" | "is")
-                    || source
-                        .text()
-                        .bytes()
-                        .any(|byte| byte == 0 || (byte == b'\r' && source.decode_map().is_some()))
+                    || matches!(name, "style" | "key" | "ref" | "is")
+                    || source.text().bytes().any(|byte| {
+                        byte == 0
+                            || (name != "class" && byte == b'\r' && source.decode_map().is_some())
+                    })
                 {
                     return Err(Kind::UnsupportedChild);
                 }
+                // Class keeps the original once-decoded value, including
+                // encoded CR. Qualified target normalization consumes HTML
+                // whitespace; ordinary attribute CR policy stays unchanged.
                 Ok(Attribute {
                     name,
                     value: Some(source.text()),

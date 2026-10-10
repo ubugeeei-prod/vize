@@ -114,7 +114,7 @@ fn whole_public_selected_class_components_preserve_once_decoding_and_complete_so
             }
         }
     }
-    assert_eq!(captures.len(), 64);
+    assert_eq!(captures.len(), 76);
     if let Ok(path) = std::env::var("VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&captures).unwrap()).unwrap();
     }

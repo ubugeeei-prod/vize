@@ -624,6 +624,120 @@
         },
         "mapSha256": "1555a972bcfee2de45ad4c2ef5bda92927c1393efc07b3aff52ee3e1a088bb38"
       }
+    },
+    {
+      "id": "class-encoded-spaces",
+      "source": "<template><div class=\" a&#13;&#10;&#9;b &#12;c \"/></template>",
+      "template": "<div class=\" a&#13;&#10;&#9;b &#12;c \"/>",
+      "sourceSha256": "4a09d74886a10cc0d2fe956358957279dbdd0347dc9bd9a4b9d47e7ad86444ea",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a b c\" }))\n}",
+        "codeSha256": "2e5984562f8b885e90aa8340163810ad1ed4d0b4c3c854a63ddd8e5874ff0d2c",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAwC,SAAnC,KAAK,EAAC,OAA2B",
+          "sourcesContent": [
+            "<div class=\" a&#13;&#10;&#9;b &#12;c \"/>"
+          ]
+        },
+        "mapSha256": "3db44b9fd9cb0f11a64dbfe61a7922801c4f54e56a1fec0add5be8cf529f7d0f"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"a b c\" }, _attrs))}></div>`)\n}",
+        "codeSha256": "74ab38d54f55c6cb3a0c11c6f353c8e8c326476aa762296ee1c222153239d2b9",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;6CAAK,KAAK,EAAC,OAA2B",
+          "sourcesContent": [
+            "<div class=\" a&#13;&#10;&#9;b &#12;c \"/>"
+          ]
+        },
+        "mapSha256": "07fbd463678ab7691b8c8746a47d86e5214957b34697800aaad88ade1e4b0343"
+      }
+    },
+    {
+      "id": "class-former-scriptless-refusal",
+      "source": "<template><div class='static'/></template>",
+      "template": "<div class='static'/>",
+      "sourceSha256": "f69ae98af309e67e66b9be35a849ffe543c15529ec55a46bb435b6a209d392fd",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"static\" }))\n}",
+        "codeSha256": "e376b60a72b3e75fbfcc10d440510ec4d16a0b9292f4c0a693d416b58de6a6a3",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAqB,SAAhB,KAAK,EAAC,QAAQ",
+          "sourcesContent": [
+            "<div class='static'/>"
+          ]
+        },
+        "mapSha256": "7ed40c10dff3752cfc9e9b2580edc64ba24b52ce7f6da34b4c6903591c47e02b"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"static\" }, _attrs))}></div>`)\n}",
+        "codeSha256": "b496cecebb167caa188593e6c1c3a9354280de6ee65ec949f55242de60bbe3b1",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;6CAAK,KAAK,EAAC,QAAQ",
+          "sourcesContent": [
+            "<div class='static'/>"
+          ]
+        },
+        "mapSha256": "061dd3c99d731e0c8fe0e178961689b1553f46d3f787ce79f394f27d12ac0c95"
+      }
+    },
+    {
+      "id": "class-former-lower-refusal",
+      "source": "<template><div class='&amp;lt;'>x</div></template>",
+      "template": "<div class='&amp;lt;'>x</div>",
+      "sourceSha256": "8f4a7e2ee9b107834cbe1df120cb0313915f8542328a30549216e3bca3e38aaa",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"&lt;\" }, \"x\"))\n}",
+        "codeSha256": "3a41fa72d451c3be7ff5130e3c5663dad629a32652ad936515fc85bee36cf3a3",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAA6B,SAAxB,KAAK,EAAC,MAAU,IAAC,GAAC",
+          "sourcesContent": [
+            "<div class='&amp;lt;'>x</div>"
+          ]
+        },
+        "mapSha256": "9f8f59978d5df4363a0e7aaef691236a18e1755fbc19c48bf1fa6c8ef5beef4a"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"&lt;\" }, _attrs))}>x</div>`)\n}",
+        "codeSha256": "f1768d652712520ac5fee3388a8a91e03b0f9b3f97267bd36efc5f4258553cb8",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;6CAAK,KAAK,EAAC,MAAU",
+          "sourcesContent": [
+            "<div class='&amp;lt;'>x</div>"
+          ]
+        },
+        "mapSha256": "629a3c2e2f93745f82e0c402cfdd6992de2f6c534e4e4239eb931527a0c51ffb"
+      }
     }
   ]
 }
