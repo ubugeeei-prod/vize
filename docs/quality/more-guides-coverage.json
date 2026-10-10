@@ -67,7 +67,7 @@
       "route": "/guide/cli",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Japanese command body reviewed against the complete source reference, retaining every published full example and native fragment; the unchanged shared-configuration entry is excluded until its separate source integration. Fresh browser and deployed acceptance remain pending."
     },
     {
       "route": "/guide/compiler-inspector",
