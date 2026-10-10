@@ -65,3 +65,4 @@ pub trait DirectiveSyntax {
 
 /// Transitional public path; the implementation is owned by the Vue dialect.
 pub use crate::dialect::vue3::VueDirectives;
+pub use crate::dialect::vue3::directive::frozen_attribute_name;

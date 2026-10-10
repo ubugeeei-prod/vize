@@ -27,7 +27,6 @@ use super::cx::{Cx, attr_slice, attr_span, element_span};
 use super::directive::{AttrForm, Head, classify};
 use super::slot::lower_slot;
 use super::structural::lower_children;
-use v_pre::frozen_name;
 
 /// Which branch of a `v-if` chain an element opens or continues.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -54,7 +53,7 @@ pub(crate) struct Analyzed<'a> {
     pub v_pre: Option<usize>,
     /// Whether this element is the one that *opens* a `v-pre` subtree, as
     /// opposed to sitting inside one. The two freeze their attribute
-    /// names differently — see [`frozen_name`].
+    /// names differently — see [`frozen_attribute_name`].
     pub opens_v_pre: bool,
 }
 
@@ -64,8 +63,9 @@ pub(crate) struct Analyzed<'a> {
 /// `in_v_pre` says an **ancestor** carries `v-pre`. Inside such a subtree
 /// — and on the element that opens one — nothing is a directive: Vue's
 /// parser sets `inVPre` when it reaches the spelling and rewrites every
-/// prop on that element back to a plain attribute under its raw authored
-/// name, for the element itself and its whole subtree. So `:x="1"` stays
+/// prop on that element back to a plain attribute. Names before `v-pre`
+/// retain their authored bytes; later and descendant longhand names lose
+/// only their argument-separating colon. So `:x="1"` stays
 /// the attribute `":x"` with the string value `"1"`, `v-if` never builds
 /// a branch, and `v-for` never builds a region.
 pub(crate) fn analyze<'a>(element: &Element<'a>, in_v_pre: bool) -> Analyzed<'a> {
@@ -190,14 +190,16 @@ pub(crate) fn element_core<'a>(
     let authored_tag = element.tag();
     let cast = identity::vue_is(cx, element, analyzed);
     let tag = cast.map_or(authored_tag, |(_, name)| name);
-    if authored_tag == "slot" {
+    let frozen = cx.v_pre_suppressed() || analyzed.opens_v_pre;
+    if authored_tag == "slot" && !frozen {
         return lower_slot(cx, element, analyzed, ns);
     }
     let own_ns = enter_ns(ns, authored_tag);
     let child_ns = children_ns(own_ns, authored_tag);
     let span = element_span(cx, element);
     let node = cx.mint_op();
-    let component = cast.is_some() || (!is_native_tag(tag) && !cx.is_custom_element(tag));
+    let component =
+        !frozen && (cast.is_some() || (!is_native_tag(tag) && !cx.is_custom_element(tag)));
 
     let open_end = cx.token_span(&element.open.gt).end;
     let open_slice = cx
@@ -266,13 +268,21 @@ pub(crate) fn element_core<'a>(
                 ));
             }
             AttrForm::Static => attributes.push(Attribute {
-                name: attr.name.text,
+                name: if cx.v_pre_suppressed() {
+                    frozen_attribute_name(cx.allocator, attr.name.text)
+                } else {
+                    attr.name.text
+                },
                 value: attr.value.as_ref().map(|value| value.content.text),
                 span: attr_span(cx, attr),
             }),
-            AttrForm::Directive(directive) if analyzed.opens_v_pre => {
+            AttrForm::Directive(_) if analyzed.opens_v_pre => {
                 attributes.push(Attribute {
-                    name: frozen_name(cx.allocator, attr.name.text, directive),
+                    name: if analyzed.v_pre.is_some_and(|ordinal| index < ordinal) {
+                        attr.name.text
+                    } else {
+                        frozen_attribute_name(cx.allocator, attr.name.text)
+                    },
                     value: attr.value.as_ref().map(|value| value.content.text),
                     span: attr_span(cx, attr),
                 });

@@ -1,5 +1,7 @@
 //! The SSR source bridge through the native level artifacts.
 
+use super::frozen_slots::{FrozenSlotFacts, FrozenTemplate};
+
 use super::{
     Allocator, CaptureSink, Dump, DumpMode, LegacyReason, Level, SsrL4Request, SsrL4Selection,
     String, SurfaceParseOptions, TransformExpressions, admitted_rule, bindings, blocks_surface,
@@ -14,6 +16,11 @@ pub(crate) fn select_ssr_lane(
     source: &str,
     request: &SsrL4Request<'_>,
 ) -> SsrL4Selection {
+    if let Some((root, carrier)) = request.frozen
+        && let Err(message) = FrozenTemplate::new(root, source, carrier)
+    {
+        return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
+    }
     let selection = if bridge_supported(request) {
         profile!(
             "atelier.ssr.template.s4_bridge",
@@ -39,6 +46,19 @@ fn lower_and_emit_plain(
         },
     );
     let s2 = vize_l1_to_l2::lower(allocator, &tree, &surface_errors);
+    let frozen_slots = match request.frozen {
+        Some((root, carrier)) => {
+            let facts = FrozenTemplate::new(root, source, carrier)
+                .and_then(|template| FrozenSlotFacts::new(template, source, &s2.root));
+            match facts {
+                Ok(facts) => Some(facts),
+                Err(message) => {
+                    return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
+                }
+            }
+        }
+        None => None,
+    };
     let artifact = select::L2Artifact {
         source,
         root: &s2.root,
@@ -47,6 +67,7 @@ fn lower_and_emit_plain(
             for_wrappers: &s2.for_wrappers,
             wrappers: &s2.wrappers,
             if_facts: &s2.if_facts,
+            frozen_slots,
         },
         diagnostics: s2.diagnostics.len() as u64,
     };
@@ -98,6 +119,11 @@ pub(crate) fn select_ssr_lane_captured<C: CaptureSink>(
     request: &SsrL4Request<'_>,
     capture: &mut C,
 ) -> SsrL4Selection {
+    if let Some((root, carrier)) = request.frozen
+        && let Err(message) = FrozenTemplate::new(root, source, carrier)
+    {
+        return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
+    }
     let selection = if bridge_supported(request) {
         profile!(
             "atelier.ssr.template.s4_bridge",
@@ -135,6 +161,19 @@ fn lower_and_emit<C: CaptureSink>(
     capture.page(Level::L2, "provenance", || {
         vize_l2::dump::ProvenancePage::of(&s2.provenance).print_to_string(DumpMode::Full)
     });
+    let frozen_slots = match request.frozen {
+        Some((root, carrier)) => {
+            let facts = FrozenTemplate::new(root, source, carrier)
+                .and_then(|template| FrozenSlotFacts::new(template, source, &s2.root));
+            match facts {
+                Ok(facts) => Some(facts),
+                Err(message) => {
+                    return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
+                }
+            }
+        }
+        None => None,
+    };
     let artifact = select::L2Artifact {
         source,
         root: &s2.root,
@@ -143,6 +182,7 @@ fn lower_and_emit<C: CaptureSink>(
             for_wrappers: &s2.for_wrappers,
             wrappers: &s2.wrappers,
             if_facts: &s2.if_facts,
+            frozen_slots,
         },
         diagnostics: s2.diagnostics.len() as u64,
     };

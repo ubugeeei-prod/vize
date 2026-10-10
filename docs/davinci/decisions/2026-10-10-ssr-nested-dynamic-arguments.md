@@ -115,3 +115,125 @@ separate from the actual runner's renderer-shape failure.
 TODO: obtain fresh exact-source full Actions, complete runtime/map packets,
 unchanged performance and protected qualification, and actual merged main.
 Local classifier failure and fixture custody do not replace those witnesses.
+
+## Literal v-pre and normal-key prerequisites
+
+[#8504](https://github.com/ubugeeei-prod/vize/issues/8504) records the separate
+literal v-pre prerequisite exposed by the three original controls. Pinned
+Vue retains literal Child/Other tags and `is` attributes. Before the opening
+v-pre marker, the complete authored directive name is retained; after it,
+and in descendants, only the longhand separator colon is removed. Quoted
+brackets, outer argument delimiters and modifiers remain literal. The
+original legacy output was wrong; it is retained as a historical result.
+
+Both public lexer callback opt-ins default false. Only Armature opts into
+lexical directive-head framing under inherited verbatim mode. Completed
+name ends are temporary parser metadata, consumed once for each successfully
+appended directive in opening order. Missing and extra custody are fatal;
+normal directive raw_name stays the original prefix. The compiler alone
+opts into an ordered frozen-element sidecar from the existing parser walk.
+Its borrowed source must match both actual Root.source and caller source
+before any Core mutation. External/default transforms carry an empty slice.
+This is the original parser-bundle contract, not protection against forging
+public mutable AST. Only frozen promotion and Vue-is removal are suppressed.
+Newly literal, non-native component-like self-closing tags are accepted;
+native, configured custom, unknown lowercase, strict and quirks policies
+retain their existing boundaries. Public AST layout and default parse
+result tuple remain unchanged.
+
+The first scoped native debug measurement retained paired ordinal/end words:
+CurrentElement 56→192 bytes, Parser 944→1104, and Core TransformContext
+704→720, all aligned to 8. An end-only inline8 successor measures
+CurrentElement 128 and Parser 1040; the context remains 720. It preserves
+wide `usize` boundaries and uses the existing ordered append/consume walk,
+without a rescan, narrow offset conversion or additional traversal.
+Public ElementNode/DirectiveNode/RootNode sizes remain 104/176/224.
+Across the same original five normal inputs repeated three times, both
+inline8 designs add no allocation for 0, 1, 4 or 5 directives. Nine
+directives add one spill allocation: 256 bytes initially, 128 bytes after
+compaction, with no extra reallocation. Default and opted-in empty-sidecar
+normal allocation snapshots agree; every complete normal Parser/Core AST
+Debug result equals the retained untouched baseline. Internal size and
+spill costs remain real. These native local debug measurements do not
+establish a speed claim or replace the original 104 instruction ceilings.
+
+Normal SSR nonidentifier component keys reuse the existing scope/binding
+expression provider in both routes. DOM/Vapor, bare keys, local ownership,
+globals and existing inline refusal are unchanged. The original Row first
+failed at runtime with bare `keys`; after provider reuse, it instead
+renders `data-key` while pinned Vue renders `datakey`. Both SSR component
+dynamic v-bind consumers ignored `.camel`. They now use the existing
+Camelize helper on `(key) || ""`, with one key evaluation and the unchanged
+outer prop-entry guard. Events, static keys and options are not widened.
+Separate finite controls check falsy keys, actual key/value call count,
+spread order/collision, for/slot locals, helper imports, and raw low-level
+maps. Scriptless public SFC maps remain null; nonempty low-level maps are
+separate evidence, without whole official template-map parity claims.
+
+The local source-built continuation passes the original three selected
+controls, additive maps and twelve whole official/current SSR renders on
+Node 26.11.1. Two new test expectations failed (default parser options and
+an omitted existing falsy guard); those exact test laws are corrected.
+The separate eight-case observer retains a genuine exit-1 `.camel` failure
+after six renders and all sixteen official DOM/SSR modules. Its successor
+collects every attempted runtime outcome before strict assertions. The old
+six-outcome packet remains distinct. The source-built end-only continuation
+completes all twelve original, sixteen whole-eight and twenty-four separate
+camel observations with actual Node exit 0, no signal and whole raw streams
+retained. Its complete runtime inputs and results equal the prior passing
+paired-metadata source after only actual process PID removal; no fixture or
+oracle normalization is needed. Four initially incorrect new falsy-key
+expectations were corrected to the independently observed stock result
+`[{}]`; their original failures remain retained. The original three/twelve/
+thirty-one populations, authored inputs, historical packets and all caps
+are preserved. These local Node 26.11.1 outcomes are not current-main,
+Actions, release or completion evidence.
+
+### Empty literal slot authority
+
+The corrected frozen classification exposed the unchanged admitted
+`<slot v-pre></slot>` case as an actual literal `ElementOp`, rather than a normal
+`SlotOp`. The retained local camel continuation records the resulting genuine
+`Legacy(Element)` failure. The original nonempty frozen-slot refusal remains a
+separate admission boundary, despite stock Vue rendering that literal correctly.
+
+The local successor passes the actual existing parser Root and its sealed
+`FrozenElements` sidecar through the private SSR request. A borrowed view joins
+both `Root.source` and the caller source before bridge work. The source bridge
+then binds that view to the actual newly lowered L2 Region. Both selectors check
+that exact source/Region before L3 lowering or codegen context construction.
+The slot-only exception requires an authenticated opening at the full element's
+start, its exact authored tag borrow and valid bounds, with no bindings or
+children. Direct caller-built L2 has no authority; normal `SlotOp`, nonempty
+literal slots and the other refused tags retain their prior routes. This trusts
+the compiler's original parser/lowering bundle, not arbitrary public mutable
+ASTs. It adds no scan, stage, serialization, dependency or metadata allocation.
+
+Separate source controls were authored before this exception for mixed parser
+roots/callers, equal-byte detached buffers, foreign lowered Regions, copied L2
+slot offsets/tags and public DOM/Vapor/SSR literal-versus-outlet ownership.
+They retain complete compiler results and raw maps; DOM/Vapor compiler pattern
+checks do not establish runtime or stock source-map parity. The source-built
+continuation passes the original admitted/refused/TypeScript/selector laws,
+source/Region identity negatives and all sixteen complete public compiler
+packets. A separate read-only local replay of the exact source-built public
+SSR modules and pinned official modules completes eight observations over
+four sources with equal whole HTML, context and diagnostics. Stock SSR maps
+have empty mappings and current scriptless public maps are null. The original
+slot refusal and both compile-repair failures remain retained. No DOM/Vapor
+runtime parity or stock map equality is inferred.
+
+The final end-only local session runs three locked/offline builds and
+seventeen nonzero filters, including original native-lexer caller laws,
+provider ownership, mixed-source rejection, missing/extra head custody,
+literal/outlet/direct-L2 slot boundaries and the three whole runtime helpers.
+All commands exit 0. Temporary allocator probes are restored byte-exactly.
+The same four public slot controls additionally use the existing strict
+completed-child collector for eight current/official observations in CI;
+no original source or runtime population is replaced. All four supplemental
+runtime directories join the existing always-run raw artifact retention.
+Those latest test/helper changes await fresh Actions execution.
+The ordinary current-main composition, complete source/full Actions,
+unchanged historical corpora, all 104 measured instruction-budget rows,
+protected queue and actual merge still remain before delivery. Raw previous
+failures are evidence of their own source and never inherit this local pass.

@@ -17,7 +17,10 @@ use vize_atelier_sfc::{
 };
 use vize_atelier_ssr::differential::{record_lanes, with_legacy_lane};
 
+mod component_camel_boundaries;
+mod literal_slot_boundaries;
 mod nested_dynamic_arguments;
+mod v_pre_boundaries;
 
 fn compile(source: &str) -> String {
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse");

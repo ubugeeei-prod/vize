@@ -48,18 +48,19 @@ use region::is_close;
 type Result<T> = core::result::Result<T, AdmissionFailure>;
 
 /// The L2 side facts the emitter reads beside the plan.
-pub(super) struct PlanFacts<'s> {
+pub(super) struct PlanFacts<'s, 'a> {
     pub(super) texts: &'s SideTable<TextParts>,
     pub(super) for_wrappers: &'s SideTable<ForWrapper>,
     pub(super) wrappers: &'s SideTable<WrapperKeys>,
     pub(super) if_facts: &'s SideTable<IfFacts>,
+    pub(super) frozen_slots: Option<super::frozen_slots::FrozenSlotFacts<'s, 'a>>,
 }
 
 /// Write the render body for `plan` into `ctx`.
-pub(super) fn emit_plan(
+pub(super) fn emit_plan<'r, 'a>(
     ctx: &mut SsrCodegenContext<'_>,
-    plan: &SsrStringPlan<'_, '_>,
-    facts: &PlanFacts<'_>,
+    plan: &SsrStringPlan<'r, 'a>,
+    facts: &PlanFacts<'_, 'a>,
     exprs: &mut TransformExpressions<'_>,
 ) -> Result<()> {
     let mut emitter = Emitter {
@@ -93,7 +94,7 @@ struct Emitter<'p, 'r, 'a, 'c, 'x, 'e> {
     segments: &'p [SsrStringSegment<'r, 'a>],
     pos: usize,
     ctx: &'c mut SsrCodegenContext<'x>,
-    facts: &'p PlanFacts<'p>,
+    facts: &'p PlanFacts<'p, 'a>,
     exprs: &'p mut TransformExpressions<'e>,
     /// The legacy walker's codegen scope: `v-for` / slot destructure params
     /// whose transform-applied prefixes are stripped at emission.

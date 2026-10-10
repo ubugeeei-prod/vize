@@ -5,6 +5,7 @@
 mod context;
 pub mod element;
 mod extensions;
+mod frozen;
 mod options;
 pub mod patterned_template;
 pub mod structural;
@@ -22,6 +23,8 @@ use crate::{
     PropNode, RootNode, RuntimeHelper, TemplateChildNode,
 };
 
+#[doc(hidden)]
+pub use frozen::transform_with_frozen_elements;
 pub(crate) use options::{JsxTransformCompat, TransformLaneOptions};
 use traverse::traverse_children;
 
@@ -118,6 +121,8 @@ pub struct TransformContext<'a> {
     pub(crate) analysis: Option<&'a Croquis>,
     /// Scope ID to bake into static VNodes hoisted outside render scope.
     pub(crate) hoisted_scope_id: Option<String>,
+    /// Validated compiler opt-in provenance; ordinary transform entries leave it empty.
+    pub(crate) frozen_elements: &'a [vize_l0::Span],
 }
 
 impl TransformContext<'_> {
@@ -228,7 +233,7 @@ pub(crate) fn transform_inner<'a>(
     root: &mut RootNode<'a>,
     options: TransformOptions,
     analysis: Option<&'a Croquis>,
-    lane_options: TransformLaneOptions,
+    lane_options: TransformLaneOptions<'a>,
     source_text: Option<&'a str>,
 ) -> std::vec::Vec<CompilerError> {
     let TransformLaneOptions {
@@ -236,6 +241,7 @@ pub(crate) fn transform_inner<'a>(
         hoisted_scope_id,
         jsx_compat,
         custom_elements,
+        frozen_elements,
     } = lane_options;
     let source = source_text.unwrap_or(root.source);
     let mut ctx = if let Some(analysis) = analysis {
@@ -257,6 +263,7 @@ pub(crate) fn transform_inner<'a>(
     ctx.jsx_compat = jsx_compat;
     ctx.hoisted_scope_id = hoisted_scope_id;
     ctx.custom_elements = custom_elements;
+    ctx.frozen_elements = frozen_elements;
     ctx.root = Some(root as *mut _);
 
     // Legacy (Vue 2 / 2.7) template-sugar pre-transform. Resolved once per file

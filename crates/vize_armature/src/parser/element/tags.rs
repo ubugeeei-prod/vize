@@ -41,12 +41,14 @@ impl<'a> Parser<'a> {
             ns,
             is_self_closing: false,
             props: vize_l0::Vec::new_in(&self.allocator),
+            directive_name_ends: vize_l0::SmallVec::new(),
         });
     }
 
     /// Process open tag end
     pub(in crate::parser) fn on_open_tag_end_impl(&mut self, end: usize) {
         if let Some(current) = self.current_element.take() {
+            let inherited_v_pre = self.in_v_pre;
             let tag_start = current.tag_start;
             let loc = self.create_loc(tag_start.saturating_sub(1), end + 1); // Include < and >
 
@@ -74,43 +76,38 @@ impl<'a> Parser<'a> {
 
             // Check for pre tags
             let is_pre = (self.options.is_pre_tag)(element.tag);
-            let has_v_pre = element
+            let v_pre_ordinal = element
                 .props
                 .iter()
-                .any(|p| matches!(p, PropNode::Directive(d) if d.name == "pre"));
+                .position(|p| matches!(p, PropNode::Directive(d) if d.name == "pre"));
+            let has_v_pre = v_pre_ordinal.is_some();
 
             // When v-pre is on this element, convert all directives (except v-pre itself)
             // back to raw attribute nodes, since v-pre means "skip compilation"
-            if has_v_pre {
+            if let Some(v_pre_ordinal) = v_pre_ordinal {
                 let allocator = self.allocator;
                 let mut i = 0;
+                let mut head_ends = current.directive_name_ends.iter();
                 while let Some(prop) = element.props.get(i) {
                     if let PropNode::Directive(dir) = prop {
-                        if dir.name == "pre" {
+                        let Some(&authored_end) = head_ends.next() else {
+                            self.report_head_custody_error(&dir.loc, false);
+                            return;
+                        };
+                        if i == v_pre_ordinal {
                             // Remove v-pre directive itself
-                            element.props.remove(i);
+                            i += 1;
                             continue;
                         }
-                        // Convert directive back to attribute using its raw_name + arg
-                        // to reconstruct the original attribute name (e.g., ":id", "@click")
-                        let attr_name = {
-                            let prefix = dir.raw_name.unwrap_or(dir.name);
-                            let arg_str = dir.arg.as_ref().map(|a| match a {
-                                ExpressionNode::Simple(s) => s.content,
-                                ExpressionNode::Compound(c) => c.loc.span.slice(self.source),
-                            });
-                            match arg_str {
-                                // Reconstructed name: computed, and the same
-                                // `v-pre` shape recurs, so it interns.
-                                Some(arg) => {
-                                    let mut name =
-                                        vize_l0::String::with_capacity(prefix.len() + arg.len());
-                                    name.push_str(prefix);
-                                    name.push_str(arg);
-                                    self.interner.intern(&name)
-                                }
-                                None => prefix,
-                            }
+                        let authored =
+                            self.get_source_retained(dir.loc.span.start as usize, authored_end);
+                        let attr_name = if i < v_pre_ordinal {
+                            authored
+                        } else {
+                            vize_l1::markup::directive::frozen_attribute_name(
+                                self.allocator,
+                                authored,
+                            )
                         };
                         let attr_value = dir.exp.as_ref().map(|e| {
                             let content = match e {
@@ -125,7 +122,8 @@ impl<'a> Parser<'a> {
                         let attr = PropNode::Attribute(Box::new_in(
                             AttributeNode {
                                 name: attr_name,
-                                name_loc: dir.loc.clone(),
+                                name_loc: self
+                                    .create_loc(dir.loc.span.start as usize, authored_end),
                                 value: attr_value,
                                 loc: dir.loc.clone(),
                             },
@@ -137,10 +135,18 @@ impl<'a> Parser<'a> {
                     }
                     i += 1;
                 }
+                if head_ends.next().is_some() {
+                    self.report_head_custody_error(&element.loc, true);
+                    return;
+                }
+                element.props.remove(v_pre_ordinal);
             }
 
+            let frozen = has_v_pre || inherited_v_pre;
+            self.record_frozen_element(element.loc.span, frozen);
+
             let html_non_void_self_closing =
-                current.is_self_closing && self.is_invalid_html_self_closing(&element);
+                current.is_self_closing && self.is_invalid_html_self_closing(&element, frozen);
 
             if html_non_void_self_closing {
                 match self.template_syntax {

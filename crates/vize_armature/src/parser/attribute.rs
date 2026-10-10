@@ -33,6 +33,10 @@ impl<'a> Parser<'a> {
 
     /// Process directive name
     pub(super) fn on_dir_name_impl(&mut self, start: usize, end: usize) {
+        if self.in_v_pre {
+            self.on_attrib_name_impl(start, end);
+            return;
+        }
         let raw_name = self.get_source_retained(start, end);
         let name = super::callbacks::parse_directive_name(raw_name);
 
@@ -62,6 +66,9 @@ impl<'a> Parser<'a> {
 
     /// Process directive modifier
     pub(super) fn on_dir_modifier_impl(&mut self, start: usize, end: usize) {
+        if self.in_v_pre {
+            return;
+        }
         if start >= end {
             let loc = self.create_loc(start, end);
             self.errors.push(CompilerError::new(
@@ -331,6 +338,7 @@ impl<'a> Parser<'a> {
         }
 
         if let Some(ref mut current) = self.current_element {
+            current.directive_name_ends.push(dir.name_end);
             let boxed = Box::new_in(dir_node, &self.allocator);
             current.props.push(PropNode::Directive(boxed));
         }

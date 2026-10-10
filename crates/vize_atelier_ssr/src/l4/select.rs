@@ -18,7 +18,7 @@ use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 pub(super) struct L2Artifact<'s, 'a> {
     pub(super) source: &'a str,
     pub(super) root: &'s Region<'a>,
-    pub(super) facts: PlanFacts<'s>,
+    pub(super) facts: PlanFacts<'s, 'a>,
     pub(super) diagnostics: u64,
 }
 
@@ -34,6 +34,11 @@ pub(super) fn select_from_l2<'a, 'e, C: CaptureSink>(
     capture: &mut C,
     admit: impl FnOnce() -> Result<TransformExpressions<'e>, LegacyReason>,
 ) -> SsrL4Selection {
+    if let Some(facts) = &artifact.facts.frozen_slots
+        && let Err(message) = facts.validate(artifact.source, artifact.root)
+    {
+        return SsrL4Selection::Rejected(std::vec![cstr!("{message}")]);
+    }
     let s3 = vize_l2_to_l3::lower(allocator, artifact.root);
     capture.page(Level::L3, "lower", || {
         vize_l3::dump::Page::of(&s3.program).print_to_string(DumpMode::Full)
@@ -111,6 +116,11 @@ pub(super) fn select_from_l2_plain<'a, 'e>(
     slotted: bool,
     admit: impl FnOnce() -> Result<TransformExpressions<'e>, LegacyReason>,
 ) -> SsrL4Selection {
+    if let Some(facts) = &artifact.facts.frozen_slots
+        && let Err(message) = facts.validate(artifact.source, artifact.root)
+    {
+        return SsrL4Selection::Rejected(std::vec![cstr!("{message}")]);
+    }
     let s3 = vize_l2_to_l3::lower(allocator, artifact.root);
     let violations = verify(&s3.program);
     if !violations.is_empty() {

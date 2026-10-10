@@ -150,4 +150,8 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
     fn is_in_v_pre(&self) -> bool {
         self.parser.in_v_pre
     }
+
+    fn directive_heads_in_verbatim(&self) -> bool {
+        true
+    }
 }

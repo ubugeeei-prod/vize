@@ -1,0 +1,227 @@
+{
+  "scope": "Separate finite SSR component dynamic-bind camel controls; original populations unchanged",
+  "cases": [
+    {
+      "name": "bare",
+      "source": "<template><Child :[key].camel=\"value\"/></template>",
+      "bytes": 50,
+      "sha256": "48888e3aef3c891eede991cfd362889f05b157fbe82f07a821016c1eb086ac9f",
+      "expectedProps": [
+        {
+          "dataKey": "normal-value"
+        }
+      ],
+      "expectedTrace": [],
+      "camelImport": true,
+      "overrides": {}
+    },
+    {
+      "name": "quoted",
+      "source": "<template><Child :[keys['name]']].camel=\"value\"/></template>",
+      "bytes": 60,
+      "sha256": "8c4f380c07467c92701396e4738016d566e8b0b1422671e00488e6760825abf8",
+      "expectedProps": [
+        {
+          "dataKey": "normal-value"
+        }
+      ],
+      "expectedTrace": [],
+      "camelImport": true,
+      "overrides": {}
+    },
+    {
+      "name": "falsy-null",
+      "source": "<template><Child :[nextKey()].camel=\"nextValue()\"/></template>",
+      "bytes": 62,
+      "sha256": "2499c439bbd3c43478344ed61eed95f867681ff84c51d8fa6805b85e45f88786",
+      "expectedProps": [
+        {}
+      ],
+      "expectedTrace": [
+        "key",
+        "value"
+      ],
+      "camelImport": true,
+      "overrides": {
+        "key": null
+      }
+    },
+    {
+      "name": "falsy-false",
+      "source": "<template><Child :[nextKey()].camel=\"nextValue()\"/></template>",
+      "bytes": 62,
+      "sha256": "2499c439bbd3c43478344ed61eed95f867681ff84c51d8fa6805b85e45f88786",
+      "expectedProps": [
+        {}
+      ],
+      "expectedTrace": [
+        "key",
+        "value"
+      ],
+      "camelImport": true,
+      "overrides": {
+        "key": false
+      }
+    },
+    {
+      "name": "falsy-zero",
+      "source": "<template><Child :[nextKey()].camel=\"nextValue()\"/></template>",
+      "bytes": 62,
+      "sha256": "2499c439bbd3c43478344ed61eed95f867681ff84c51d8fa6805b85e45f88786",
+      "expectedProps": [
+        {}
+      ],
+      "expectedTrace": [
+        "key",
+        "value"
+      ],
+      "camelImport": true,
+      "overrides": {
+        "key": 0
+      }
+    },
+    {
+      "name": "falsy-empty",
+      "source": "<template><Child :[nextKey()].camel=\"nextValue()\"/></template>",
+      "bytes": 62,
+      "sha256": "2499c439bbd3c43478344ed61eed95f867681ff84c51d8fa6805b85e45f88786",
+      "expectedProps": [
+        {}
+      ],
+      "expectedTrace": [
+        "key",
+        "value"
+      ],
+      "camelImport": true,
+      "overrides": {
+        "key": ""
+      }
+    },
+    {
+      "name": "key-once",
+      "source": "<template><Child :[nextKey()].camel=\"nextValue()\"/></template>",
+      "bytes": 62,
+      "sha256": "2499c439bbd3c43478344ed61eed95f867681ff84c51d8fa6805b85e45f88786",
+      "expectedProps": [
+        {
+          "dataKey": "normal-value"
+        }
+      ],
+      "expectedTrace": [
+        "key",
+        "value"
+      ],
+      "camelImport": true,
+      "overrides": {}
+    },
+    {
+      "name": "source-order",
+      "source": "<template><Child a=\"first\" :[nextKey()].camel=\"nextValue()\" v-bind=\"spreadProps()\" z=\"last\"/></template>",
+      "bytes": 104,
+      "sha256": "e4cda73d974254ba32d612124d452b86ec30e0a6c9c4fb0e8a143417c3f46da8",
+      "expectedProps": [
+        {
+          "a": "first",
+          "dataKey": "spread-value",
+          "b": "middle",
+          "z": "last"
+        }
+      ],
+      "expectedTrace": [
+        "key",
+        "value",
+        "spread"
+      ],
+      "camelImport": true,
+      "overrides": {}
+    },
+    {
+      "name": "for-locals",
+      "source": "<template><div><Child v-for=\"row in rows\" :[row.key].camel=\"row.value\"/><Child :[key].camel=\"value\"/></div></template>",
+      "bytes": 118,
+      "sha256": "3040422da83fb67f957e5bb979c17d4190d1ab2f5b3f0e4c1a3d694d85404629",
+      "expectedProps": [
+        {
+          "firstKey": "first"
+        },
+        {
+          "secondKey": "second"
+        },
+        {
+          "dataKey": "normal-value"
+        }
+      ],
+      "expectedTrace": [],
+      "camelImport": true,
+      "overrides": {}
+    },
+    {
+      "name": "slot-locals",
+      "source": "<template><Host v-slot=\"{row}\"><Child :[row.key].camel=\"row.value\"/></Host></template>",
+      "bytes": 86,
+      "sha256": "222dce6a45dd69485baed194b1f2133139c41aa54af714edf16977d2a979b709",
+      "expectedProps": [
+        {
+          "slotKey": "slot-value"
+        }
+      ],
+      "expectedTrace": [],
+      "camelImport": true,
+      "overrides": {}
+    },
+    {
+      "name": "without-camel",
+      "source": "<template><Child :[nextKey()]=\"nextValue()\"/></template>",
+      "bytes": 56,
+      "sha256": "103b27285d9621ed75e5cef37490758656cb3f2dd790770ead30e86e6506f228",
+      "expectedProps": [
+        {
+          "data-key": "normal-value"
+        }
+      ],
+      "expectedTrace": [
+        "key",
+        "value"
+      ],
+      "camelImport": false,
+      "overrides": {}
+    },
+    {
+      "name": "static-and-event",
+      "source": "<template><Child :data-key.camel=\"value\" @[event]=\"handler\"/></template>",
+      "bytes": 72,
+      "sha256": "a82e432827484b014e5719122dc2d785ecbff32bda9996db4e5c786383d4a455",
+      "expectedProps": [
+        {
+          "dataKey": "normal-value",
+          "onClick": "[function]"
+        }
+      ],
+      "expectedTrace": [],
+      "camelImport": false,
+      "overrides": {}
+    }
+  ],
+  "state": {
+    "key": "data-key",
+    "keys": {
+      "name]": "data-key"
+    },
+    "value": "normal-value",
+    "event": "click",
+    "rows": [
+      {
+        "key": "first-key",
+        "value": "first"
+      },
+      {
+        "key": "second-key",
+        "value": "second"
+      }
+    ],
+    "slotRow": {
+      "key": "slot-key",
+      "value": "slot-value"
+    }
+  }
+}
