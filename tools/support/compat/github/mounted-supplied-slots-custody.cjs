@@ -118,7 +118,7 @@ const capture = (event) => {
 capture("start");
 // Preserve the original write and bytes. This captures mappings after authored
 // cleanup returns, before its final protocol publication; timing is diagnostic.
-const write = process.stdout.write;
+const write = Reflect.get(process.stdout, "write");
 process.stdout.write = function (...args) {
   capture("stdout");
   return Reflect.apply(write, this, args);
