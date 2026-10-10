@@ -3,6 +3,10 @@ import { test } from "node:test";
 import { retirementAbsenceLaw } from "../support/release-retirement-absence-fixtures.ts";
 import { publicArchiveReceiptLaw } from "../support/release-public-archive-receipt-law.ts";
 import {
+  independentPublicObservationLaw,
+  nativeProviderFailureReceiptLaw,
+} from "../support/release-public-independent-observation-law.ts";
+import {
   derivePublicationPlan,
   readRawBlob,
 } from "../../../tools/support/release/public_acceptance/plan.ts";
@@ -28,6 +32,14 @@ import {
 } from "../support/release-public-acceptance-fixtures.ts";
 
 test("retirement refuses incomplete or ambiguous public absence", retirementAbsenceLaw);
+test(
+  "public browser observation requires completed prerequisites, preserving a strict seal",
+  independentPublicObservationLaw,
+);
+test(
+  "a failed native case retains its earlier provider receipt without a success receipt",
+  nativeProviderFailureReceiptLaw,
+);
 test("raw H plan derives fixture counts and retained authority, ignoring dirty working files", (t) => {
   const s = sourceFixture(t);
   const manifestPath = "npm/mcp-musea/package.json";
