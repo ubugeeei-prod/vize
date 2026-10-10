@@ -12,6 +12,7 @@ export async function proveOwnedHostedError(
   session: { endpoint: string; token: string },
   local: string,
   output: string,
+  galleryUrl: string,
 ) {
   const relay = await createLifecycleRelay(session.endpoint);
   const report = path.join(local, "reports/vrt-Button-report.json");
@@ -19,7 +20,7 @@ export async function proveOwnedHostedError(
   const ambiguous = Buffer.from('{"reportOwner":{"version":1,"artIdentity":"foreign.art.vue"}}');
   const hold = relay.holdNext({ pathname: "/capture", status: 400 });
   async function connect(endpoint: string) {
-    await page.reload();
+    await page.goto(galleryUrl);
     await page.locator(".art-item").filter({ hasText: "Left" }).click();
     await page.getByRole("button", { name: "VRT", exact: true }).click();
     await page.getByRole("textbox", { name: "VRT endpoint", exact: true }).fill(endpoint);

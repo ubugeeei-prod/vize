@@ -9,6 +9,7 @@ import { parseArgs } from "./cli/index.ts";
 import { startHostedVrtSession } from "./cli/serve.ts";
 import { buildServiceGallery, repository, sha256 } from "./hosted-vrt-build.fixtures.ts";
 import { proveOwnedHostedError } from "./hosted-vrt-errors.fixtures.ts";
+import { proveCompiledSession } from "./hosted-vrt-cli.fixtures.ts";
 import {
   createSecureHost,
   launchPublicBrowser,
@@ -109,6 +110,10 @@ void test(
       return Buffer.from(await response.arrayBuffer());
     };
     try {
+      observations.push({
+        phase: "compiled-cli-lifecycle",
+        receipt: await proveCompiledSession(host, options.galleryUrl!, root, output),
+      });
       observations.push({
         phase: "input-refusals",
         receipts: await refuseSessionInputs(session, host.origin, built.artPath, local),
@@ -272,7 +277,7 @@ void test(
       });
       observations.push({
         phase: "owned-report-error",
-        receipt: await proveOwnedHostedError(page, session, local, output),
+        receipt: await proveOwnedHostedError(page, session, local, output, options.galleryUrl!),
       });
       assert.equal((await capture(page, session.endpoint)).summary.passed, 1);
       const beforeTrustRefusal = await storedCaptureBytes(local);

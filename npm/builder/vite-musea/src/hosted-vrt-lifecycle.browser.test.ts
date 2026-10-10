@@ -251,6 +251,7 @@ void test(
             });
             assert.equal(await page.locator(".vrt-panel").count(), 0);
             assert.equal(counts.live, 0, "An unmounted panel retained a late image object URL");
+            assert.equal(counts.createdAfterUnmount, 0, "An unmounted panel created a late URL");
             assert.deepEqual(gallery.errors, []);
           } finally {
             hold.release();
