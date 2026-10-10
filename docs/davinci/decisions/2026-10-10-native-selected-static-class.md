@@ -62,6 +62,9 @@ keeps the original input/v1 output bytes and separately requires their original
 whole qualification from the exact immutable `815d9342` baseline. Current V2
 changes only the named class row, requiring all 84 outcomes: 76 positive modules,
 six unchanged entity-text lower refusals and two honest Vapor target refusals.
+Fresh isolated source capture confirms Vapor preserves complete original L3
+File/value custody and refuses class only at the public L4 output boundary;
+that refusal does not relax any original joined-value law.
 All 78 non-class rows and 336 script/style carriers remain equal to history.
 Both mandatory executions and their current-source-bound receipt must succeed.
 An unfrozen V2 packet remains a failure until fresh source-built modules/maps/

@@ -271,23 +271,16 @@ export function custody7502(row: any, disposition = disposition7502(row)) {
     if (disposition === "target-refusal") {
       assert.equal(row.id, "original-regression-11");
       assert.equal(row.target, "vapor");
-      assert.equal(l3.state, "analysis-refusal");
-      assert(l3.publicError?.includes("AttributeSemantics"));
-      assert.equal(l3.ownerSame, null);
-      assert.equal(l3.fileSame, null);
-      assert.equal(l3.valueCount, 0);
-      assert.deepEqual(l3.values, []);
-      assert.equal(l3.tablesDebug, null);
-      assert.equal(l3.visitError, null);
-    } else {
-      assert.equal(l3.state, "complete");
-      assert.equal(l3.ownerSame, true);
-      assert.equal(l3.fileSame, true);
-      assert.equal(l3.publicError, null);
-      assert.equal(l3.visitError, null);
-      assert.equal(l3.valueCount, file.attributeValues.length);
-      assert.equal(l3.valueCount, 1);
     }
+    // Target refusal occurs at the public output boundary after the genuine
+    // completed L3 decision retains the same lower File and original value.
+    assert.equal(l3.state, "complete");
+    assert.equal(l3.ownerSame, true);
+    assert.equal(l3.fileSame, true);
+    assert.equal(l3.publicError, null);
+    assert.equal(l3.visitError, null);
+    assert.equal(l3.valueCount, file.attributeValues.length);
+    assert.equal(l3.valueCount, 1);
     assert.equal(original.rejectedCreationDebug, null);
     assert.equal(original.interpolationFailureDebug, null);
     assert(original.selected);
@@ -316,13 +309,11 @@ export function custody7502(row: any, disposition = disposition7502(row)) {
       file.attributeValues.map((entry: any) => entry.failure),
       [null],
     );
-    if (disposition !== "target-refusal") {
-      assert.equal(
-        l3.values[0].attribute.name,
-        row.id === "original-regression-11" ? "class" : "title",
-      );
-      assert.deepEqual(l3.values[0].observation, file.attributeValues[0].observation);
-    }
+    assert.equal(
+      l3.values[0].attribute.name,
+      row.id === "original-regression-11" ? "class" : "title",
+    );
+    assert.deepEqual(l3.values[0].observation, file.attributeValues[0].observation);
   } else {
     assert.equal(original.admitted, false);
     assert(original.sourceIssues.length > 0);
