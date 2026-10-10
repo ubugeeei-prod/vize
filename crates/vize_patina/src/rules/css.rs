@@ -362,8 +362,8 @@ impl CssLinter {
 
         // Parse CSS with lightning-css
         let stylesheet = match crate::rules::css_engine::parse_stylesheet(source) {
-            Some(ss) => ss,
-            None => {
+            Ok(ss) => ss,
+            Err(_) => {
                 // If parsing fails, skip CSS linting
                 return result;
             }

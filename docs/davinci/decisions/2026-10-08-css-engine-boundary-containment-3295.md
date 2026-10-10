@@ -37,11 +37,15 @@ all 312 instruction observations but exceeded the unchanged JSX markup ceiling:
 passed those same budgets; its log does not expose the individual JSX count.
 The unchanged gallery fixture cannot enter CSS parsing, and no markup visitor,
 binding, registry, benchmark or budget changed. Keeping only the shared parse
-helper out of caller inlining at `047c1791`, run `38017760523`, produced the
-same 45,769 count; that ineffective attribute is removed. Isolate the actual
-markerless-list stylesheet entry from caller inlining instead. The complete
-parse, matching, unwind handling and fallback remain identical. Fresh whole
-source qualification must establish its effect; no speedup or instruction-gate
+helper out of caller inlining at `047c1791`, run `38017760523`, and isolating
+the markerless stylesheet entry at `9d88f7ee`, run `38018159817`, both produced
+the same 45,769 count. Both ineffective attributes are removed. The private
+helper preserves the parser's original `Result<StyleSheet, Error<ParserError>>`
+and both existing caller error branches instead of returning `Option`.
+A panic becomes `InvalidValue` without an invented source location; both
+consumers discard parser errors as before. Healthy and ordinary-error results
+pass through unchanged, with no extra parse or allocation. Fresh whole source
+qualification must establish its effect; no cause, speedup or instruction-gate
 success is assumed.
 
 Separate finite child processes retain the complete arguments, input,

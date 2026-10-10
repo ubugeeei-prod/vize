@@ -105,9 +105,8 @@ impl NoRedundantRoles {
     }
 }
 
-#[inline(never)]
 fn style_has_markerless_list_class(source: &str, classes: &FxHashSet<&str>) -> bool {
-    let Some(sheet) = parse_stylesheet(source) else {
+    let Ok(sheet) = parse_stylesheet(source) else {
         return false;
     };
     sheet
