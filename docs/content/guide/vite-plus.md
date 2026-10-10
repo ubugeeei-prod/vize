@@ -133,6 +133,8 @@ export default defineConfig(
 
 `tasks: false` disables all generated tasks.
 
+For the next release, the native check task enables Vue JSX checking by default without dedicated `vize.config.*`. Set `typecheck: { jsxTypecheck: false }` for React-owned or mixed React/Vue JSX. This check default does not change compiler, lint, or formatter task settings; see [project defaults](./configuration.md#project-and-editor-defaults) for release availability and dedicated-config compatibility.
+
 ## Lint and formatter ownership
 
 Vize's native linter runs alongside Oxlint, including Oxlint's JS/TS diagnostics

@@ -10,6 +10,20 @@ Keep Vize settings in `vite.config.ts` and the TypeScript project in `tsconfig.j
 > [!NOTE]
 > Shared Vite config discovery for the native CLI/editor and init without a dedicated config are being prepared for the next release. Until that release, published native tools still require the existing dedicated format for custom shared settings. The [reference](./configuration-reference.md) documents that format.
 
+## Project and editor defaults
+
+These defaults are planned for the next release for projects without a dedicated `vize.config.*`. Published releases retain their previous behavior.
+
+| Feature | No dedicated config, including `vite.config.*` | Existing dedicated config |
+| --- | --- | --- |
+| Vue JSX checking in `vize check` and `vize lsp` | Enabled unless explicitly disabled | Opt-in: `typeChecker.jsxTypecheck: true` |
+| LSP document, range, and on-type formatting | Enabled unless a project or editor switch disables it | Existing opt-in behavior |
+| Formatter style options | Existing defaults and authored overrides | Existing defaults and authored overrides |
+
+For React-owned or mixed React/Vue JSX, set `vize.typeChecker.jsxTypecheck: false` in Vite config. Vize does not infer the owning framework from JSX syntax; Vue SFC checking remains available. See [JSX type checking](./jsx.md#type-checking).
+
+Project defaults do not override explicit editor switches. The VS Code lint-only profile still disables formatting; `vp run editor:setup` explicitly enables it while preserving existing choices. [Editor setup](./vite-plus-editor.md) explains formatter ownership.
+
 ## Vite+ configuration
 
 ```ts
@@ -81,7 +95,9 @@ vp install -D vize
 vp exec vize check
 ```
 
-Discovery stops at the nearest `package.json`, `tsconfig.json`, or `jsconfig.json`. In a monorepo, run from the target package or use `vize.entries`, and select the editor's workspace folders explicitly. Automatic per-document nested Vite discovery is still being completed.
+CLI discovery stops at the nearest `package.json`, `tsconfig.json`, or `jsconfig.json`. In a monorepo, run from the target package or use `vize.entries`, and select the editor's workspace folders explicitly.
+
+For the next release, the editor assigns each document to its nearest project root within the selected workspace. A `package.json`, `tsconfig*.json`, `jsconfig.json`, `vite.config.*`, or `vize.config.*` establishes that root. Without a Vite or Vize config there, the fresh-project defaults apply; for example, `package/src/tsconfig.json` selects `package/src` as a separate project. Invalid config retains the editor's historical defaults. An explicit CLI `--config` remains an error if the selected file is missing or invalid.
 
 With Vite config, `build`, `lint`, `fmt`, and `check` without an input argument use the selected Vite `root`. A relative `root` resolves from the config directory. Vite-owned `typeChecker` paths and scoped `basePath` resolve from that root; dedicated-config paths retain their config-directory base. Explicit CLI file/glob arguments and `--tsconfig` remain relative to the directory where you run the command.
 

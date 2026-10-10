@@ -5,7 +5,7 @@ title: JSX & TSX
 # JSX & TSX
 
 > **Status:** JSX/TSX is covered across the compiler, linter, type checker, LSP, and formatter.
-> Fresh projects enable Vue JSX checking; dedicated configs retain opt-in. Release qualification remains pending, and mixed React projects need an explicit opt-out.
+> The next release will enable Vue JSX checking without dedicated config; existing dedicated configs retain opt-in. Mixed React projects need an explicit opt-out.
 > HMR for standalone `.jsx`/`.tsx` modules is still the main remaining integration gap.
 
 Vize compiles `.jsx` and `.tsx` Vue components through the compiler crates used by `.vue` files:
@@ -355,8 +355,8 @@ vize fmt src --write
 
 ## Type-checking
 
-Projects without dedicated `vize.config.*` use the proposed **enabled** Vue JSX default; dedicated configs retain `typeChecker.jsxTypecheck: false` unless enabled.
-Release qualification of the fresh default remains pending. For mixed React projects, [explicitly disable Vue JSX checking](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects); Vue SFC checking remains available.
+For the next release, `vize check` and `vize lsp` enable Vue JSX checking without dedicated `vize.config.*`; dedicated configs retain `typeChecker.jsxTypecheck: false` unless enabled.
+Released versions keep their current behavior. For mixed React projects, [explicitly disable Vue JSX checking](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy%2Emd#react-owned-projects); Vue SFC checking remains available. See [project and editor defaults](./configuration.md#project-and-editor-defaults).
 
 ```ts
 // vize.config.ts

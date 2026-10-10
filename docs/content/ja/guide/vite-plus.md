@@ -79,6 +79,8 @@ export default defineConfig({}, { tasks: { check: "verify", preview: false } });
 
 `tasks: false` ですべての生成タスクを無効化できます。
 
+専用の `vize.config.*` がないプロジェクトでは、次回リリースのネイティブ型チェックタスクで Vue JSX 型チェックを既定で有効にする予定です。React 用、または React と Vue JSX が混在する場合は `typecheck: { jsxTypecheck: false }` を指定します。compiler・lint・フォーマットタスクの設定は変わりません。提供予定と専用設定との互換性は[プロジェクトの既定値](./configuration.md#プロジェクトとエディターの既定値)を参照してください。
+
 <span id="lint-and-formatter-ownership"></span>
 
 ## lint とフォーマットの担当範囲
