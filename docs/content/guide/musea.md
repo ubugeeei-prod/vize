@@ -63,25 +63,19 @@ See [Musea Hosting](./musea-hosting.md) for the CLI wrapper, static deployment, 
 
 ## Shared Config
 
-Put shared defaults in the top-level `vize.musea` option of `vite.config.*`.
-`musea()` options override individual shared options. Existing `vize.config.*`
-files remain supported and take precedence over shared settings in the same Vite project.
+Use [`vite.config.*` shared `vize.musea` settings](./configuration-reference.md#musea-shared-configuration) for new projects; `musea()` options override shared settings. The following dedicated config remains supported and takes precedence in the same Vite project:
 
 ```ts
-// vite.config.ts
-import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
-import { musea } from "@vizejs/vite-plugin-musea";
+// vize.config.ts
+import { defineConfig } from "vize";
 
 export default defineConfig({
-  plugins: [musea()],
-  vize: {
-    musea: {
-      include: ["src/**/*.art.vue"],
-      exclude: ["node_modules/**", "dist/**"],
-      basePath: "/__musea__",
-      storybookCompat: false,
-      inlineArt: false,
-    },
+  musea: {
+    include: ["src/**/*.art.vue"],
+    exclude: ["node_modules/**", "dist/**"],
+    basePath: "/__musea__",
+    storybookCompat: false,
+    inlineArt: false,
   },
 });
 ```
@@ -89,12 +83,6 @@ export default defineConfig({
 Shared config currently covers `include`, `exclude`, `basePath`, `storybookCompat`, and
 `inlineArt`. Pass `previewCss`, `previewSetup`, `tokensPath`, `theme`, and `storybookOutDir`
 directly to `musea()`.
-
-`musea-vrt` also reads shared `include`, `exclude`, and `vrt` settings from this
-Vite configuration. Shared `vrt.outDir` selects the snapshot directory; plugin
-`vrt` options override the corresponding shared options. `vize musea new` creates
-an example art file and uses Musea's default discovery without generating a
-dedicated configuration file.
 
 ## Art Files
 

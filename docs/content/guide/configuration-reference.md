@@ -260,3 +260,34 @@ export default defineConfig({
 
 Pass presentation-focused options such as `previewCss`, `previewSetup`, `tokensPath`, `theme`, and
 `storybookOutDir` directly to `musea()` in `vite.config.ts`.
+
+## Musea shared configuration
+
+Put shared defaults in the top-level `vize.musea` option of `vite.config.*`.
+`musea()` options override individual shared options. Existing `vize.config.*`
+files remain supported and take precedence over shared settings in the same Vite project.
+
+```ts
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { musea } from "@vizejs/vite-plugin-musea";
+
+export default defineConfig({
+  plugins: [musea()],
+  vize: {
+    musea: {
+      include: ["src/**/*.art.vue"],
+      exclude: ["node_modules/**", "dist/**"],
+      basePath: "/__musea__",
+      storybookCompat: false,
+      inlineArt: false,
+    },
+  },
+});
+```
+
+`musea-vrt` also reads shared `include`, `exclude`, and `vrt` settings from this
+Vite configuration. Shared `vrt.outDir` selects the snapshot directory; plugin
+`vrt` options override the corresponding shared options. `vize musea new` creates
+an example art file and uses Musea's default discovery without generating a
+dedicated configuration file.
