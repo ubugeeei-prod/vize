@@ -16,7 +16,7 @@ use crate::runtime::{Runtime, vocabulary};
 use crate::write::{LinkSink, Writer};
 
 mod setup;
-mod static_class;
+use super::static_class;
 mod write;
 pub use setup::emit_selected_setup_template;
 

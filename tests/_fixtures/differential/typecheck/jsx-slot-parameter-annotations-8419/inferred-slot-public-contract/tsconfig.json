@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "preserve",
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "vueCompilerOptions": { "jsxSlots": true, "strictTemplates": true },
+  "include": ["*.vue", "*.ts", "*.tsx"]
+}

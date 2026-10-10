@@ -162,6 +162,7 @@ const expected = {
   argv: ["/inert/node", "/inert/public-install/node_modules/vize/bin/vize", "lint"],
   pid: 1234,
   status: 1,
+  signal: null,
   corsaPath: "/inert/public-install/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
 };
 function symbolicJournal(): Array<Record<string, unknown>> {

@@ -30,7 +30,7 @@ use vize_relief::{ElementNode, ElementType, PropNode};
 
 use crate::virtual_ts::VizeMapping;
 
-use super::{JsxEmit, JsxExpr, collect, push_mapped_expr};
+use super::{JsxEmit, JsxExpr, RenderContext, collect, push_mapped_expr};
 
 /// A scoped slot: the host component's tag, the slot name, the binding pattern
 /// the slot introduces, and the body evaluated with that pattern in scope.
@@ -38,6 +38,7 @@ pub(super) struct JsxSlotScope {
     host: CompactString,
     name: CompactString,
     params: JsxExpr,
+    callback_start: u32,
     body: Vec<JsxEmit>,
 }
 
@@ -75,6 +76,7 @@ pub(super) fn collect(element: &ElementNode<'_>, host: &JsxExpr) -> Option<JsxSl
         host: host.content.clone(),
         name,
         params,
+        callback_start: element.loc.span.start,
         body,
     })
 }
@@ -90,13 +92,24 @@ pub(super) fn render_open(
     out: &mut CompactString,
     mappings: &mut Vec<VizeMapping>,
     scope: &JsxSlotScope,
+    context: &RenderContext<'_>,
 ) {
     out.push_str("__vize_jsx_component_slot__(");
     out.push_str(&scope.host);
     out.push_str(", ");
     out.push_str(&json_string(&scope.name));
-    out.push_str(", (");
-    push_mapped_expr(out, mappings, &scope.params);
+    out.push_str(", ");
+    let callback_opener = out.len();
+    out.push('(');
+    push_mapped_expr(out, mappings, &scope.params, context);
+    // Native assignability errors start on this generated callback opener.
+    // Anchor only that byte to the actual OXC callback start, after the fine
+    // parameter mapping so reverse lookup still prefers authored identifiers.
+    mappings.push(VizeMapping {
+        gen_range: callback_opener..callback_opener + 1,
+        src_range: scope.callback_start as usize..scope.callback_start as usize + 1,
+        sub_spans: Vec::new(),
+    });
     out.push_str(") => ");
 }
 

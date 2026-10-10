@@ -5,6 +5,8 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSyn
 import { tmpdir } from "node:os";
 import { join, posix } from "node:path";
 import { test } from "node:test";
+import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
 import { gitObjectId } from "../../tools/support/compat/github/canonical-corpus-inventory.mjs";
 import {
   cycleOwner,
@@ -56,6 +58,54 @@ function fixture(root) {
   add("jellyfin-vue/copy", "120000", Buffer.from("src"));
   return { nodes, children, add };
 }
+
+await test("directory syscall exhaustion preserves the complete native logical vector and genuine metadata boundary", (context) => {
+  const temporary = mkdtempSync(join(tmpdir(), "canonical-directory-syscalls-"));
+  try {
+    const { nodes, children } = fixture(temporary);
+    const expected = collectNativePhysical(temporary, nodes, children);
+    const readdir = fs.readdirSync;
+    const rejected = join(
+      temporary,
+      "jellyfin-vue",
+      ...Array(expected.boundary.firstRejected).fill("packaging/deb/root"),
+    );
+    let originalError;
+    try {
+      readdir(rejected);
+    } catch (error) {
+      originalError = error;
+    }
+    assert.equal(
+      originalError?.code,
+      "ELOOP",
+      "The control witnesses an actual directory syscall limit",
+    );
+    const logicalDirectory = join(
+      temporary,
+      "jellyfin-vue/packaging/deb/root/packaging/deb/root/src",
+    );
+    context.mock.method(fs, "readdirSync", (directory, ...args) => {
+      if (directory === logicalDirectory) {
+        const error = new Error(originalError.message, { cause: originalError });
+        Object.assign(error, {
+          code: originalError.code,
+          errno: originalError.errno,
+          syscall: "scandir",
+          path: directory,
+        });
+        throw error;
+      }
+      return readdir(directory, ...args);
+    });
+    syncBuiltinESMExports();
+    assert.deepEqual(collectNativePhysical(temporary, nodes, children), expected);
+  } finally {
+    context.mock.restoreAll();
+    syncBuiltinESMExports();
+    rmSync(temporary, { recursive: true, force: true });
+  }
+});
 
 await test("unchanged original Rust, physical bytes and independent logical Git walk agree at the actual kernel boundary", () => {
   const temporary = mkdtempSync(join(tmpdir(), "canonical-native-walk-"));

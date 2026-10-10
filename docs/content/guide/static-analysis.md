@@ -296,7 +296,7 @@ vp run vize:check
 vp run vize:ready
 ```
 
-The Rust CLI currently has the fuller project-backed type-checking surface:
+A directly installed Rust CLI exposes the same commands:
 
 ```bash
 nix run github:ubugeeei-prod/vize#vize -- check --tsconfig tsconfig.app.json --profile src
@@ -304,9 +304,10 @@ vize check --tsconfig tsconfig.app.json --profile src
 vize lsp
 ```
 
-Use npm package scripts when you want installable workflows in an application. Use the Rust CLI when
-you need `check-server`, LSP, IDE management, or the Corsa-backed project diagnostics path across
-Vue and TypeScript files.
+Use npm package scripts to manage the tool and runtime with your application dependencies. The npm
+launcher calls the Rust CLI through NAPI and resolves its bundled TypeScript runtime, respecting
+explicit runtime settings such as `CORSA_PATH`. A direct Rust CLI installation is also available
+through Nix and other installation methods.
 
 ## Oxlint
 
