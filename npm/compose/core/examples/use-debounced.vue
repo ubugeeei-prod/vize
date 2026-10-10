@@ -24,8 +24,10 @@ const results = computed(() =>
       pending ? "Waiting for typing to stop…" : `Showing results for: ${debounced || "all guides"}`
     }}</output>
     <div class="example-actions">
-      <button type="button" :disabled="!pending" @click="flush()">Search now</button>
-      <button type="button" :disabled="!pending" @click="cancel()">Cancel pending search</button>
+      <button type="button" :disabled="!pending" @click="() => flush()">Search now</button>
+      <button type="button" :disabled="!pending" @click="() => cancel()">
+        Cancel pending search
+      </button>
     </div>
     <ul aria-label="Matching guides">
       <li v-for="guide in results" :key="guide">{{ guide }}</li>

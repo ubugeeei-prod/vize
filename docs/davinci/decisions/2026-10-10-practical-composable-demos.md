@@ -29,6 +29,13 @@ Twenty-four actual PNGs and their hashes accompany the source hashes and
 individual interaction receipts. These captures are illustrations, not VRT
 baselines or a complete accessibility audit.
 
+The first source checkpoint rejected ten inline-call handlers through the
+unchanged opinionated `vue/v-on-handler-style` gate. Use explicit inline arrows
+for composable controls; passing a method with an optional argument directly
+could treat the native event as its argument. Keep the failed run as evidence
+and require a fresh source run after this correction. Page-size changes are
+also exercised with the keyboard, and count labels handle singular states.
+
 After SSG, the existing docs acceptance entrypoint checks sixteen rendered
 English/Japanese routes and local assets, exact complete displayed source,
 iframe source/hydration identity, and the same six interaction laws. It supports

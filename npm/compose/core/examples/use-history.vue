@@ -20,11 +20,14 @@ function publishTitle(): void {
     <label :for="titleId">Release title</label>
     <input :id="titleId" v-model="title" />
     <div class="example-actions">
-      <button type="button" :disabled="!canUndo" @click="undo()">Undo</button>
-      <button type="button" :disabled="!canRedo" @click="redo()">Redo</button>
+      <button type="button" :disabled="!canUndo" @click="() => undo()">Undo</button>
+      <button type="button" :disabled="!canRedo" @click="() => redo()">Redo</button>
       <button type="button" @click="publishTitle">Apply publication title</button>
-      <button type="button" @click="clear()">Clear history</button>
+      <button type="button" @click="() => clear()">Clear history</button>
     </div>
-    <output aria-live="polite">{{ undoCount }} undo steps · {{ redoCount }} redo steps</output>
+    <output aria-live="polite"
+      >{{ undoCount }} undo {{ undoCount === 1 ? "step" : "steps" }} · {{ redoCount }} redo
+      {{ redoCount === 1 ? "step" : "steps" }}</output
+    >
   </div>
 </template>

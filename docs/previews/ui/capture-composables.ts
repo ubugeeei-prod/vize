@@ -129,7 +129,9 @@ async function exercise(page: Page, name: string): Promise<string[]> {
   await activate(page, "Next page");
   assert.deepEqual(await items.allTextContents(), ["Deployment"]);
   assert.equal(await page.getByRole("button", { name: "Next page" }).isDisabled(), true);
-  await page.getByRole("combobox", { name: "Guides per page" }).selectOption("5");
+  await page.getByRole("combobox", { name: "Guides per page" }).focus();
+  await page.keyboard.press("ArrowDown");
+  await page.keyboard.press("Enter");
   assert.equal(await page.locator("output").textContent(), "Page 2 of 2");
   assert.deepEqual(await items.allTextContents(), ["Testing", "Deployment"]);
   await activate(page, "Previous page");

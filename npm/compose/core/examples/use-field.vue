@@ -28,6 +28,6 @@ const { value, error, dirty, touched, onBlur, reset } = useField("", {
       {{ error || (touched ? "This name is ready to use." : "Enter a display name.") }}
     </p>
     <output>Changed: {{ dirty ? "yes" : "no" }} · Visited: {{ touched ? "yes" : "no" }}</output>
-    <button type="button" @click="reset()">Reset name</button>
+    <button type="button" @click="() => reset()">Reset name</button>
   </div>
 </template>

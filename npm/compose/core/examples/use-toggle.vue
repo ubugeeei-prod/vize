@@ -8,7 +8,12 @@ const detailsId = useId();
 
 <template>
   <div class="composable-example">
-    <button type="button" :aria-expanded="expanded" :aria-controls="detailsId" @click="toggle()">
+    <button
+      type="button"
+      :aria-expanded="expanded"
+      :aria-controls="detailsId"
+      @click="() => toggle()"
+    >
       {{ expanded ? "Hide delivery details" : "Show delivery details" }}
     </button>
     <p v-if="expanded" :id="detailsId">Free delivery in 2–3 business days.</p>
