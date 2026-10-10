@@ -117,3 +117,28 @@ selection example. Move them to source-owned scoped classes and retain the
 unchanged opinionated gate. Keep the review corrections in the top layer and
 queue the corrected complete Stack; earlier prefixes must not ship the known
 misleading states.
+
+## Scoped DOM interaction extension
+
+Prepare four further public-import SFCs for individual/group focus, inline
+outside dismissal, element-scoped review shortcuts, and native input
+observation. This brings the group to twenty complete source packets, eighty
+initial/interacted captures plus the two disabled-storage captures, and thirty
+rendered routes. Keep all earlier interaction laws and source identities.
+
+Use real template-ref targets and browser events. Distinguish live flags from
+frozen observations after focus tracking stops. Outside dismissal includes the
+trigger ignore list, pointer drag origin, native keyboard click, recreated
+conditional target, and explicit example-owned Escape/focus-return behavior.
+Shortcuts follow only the chosen native button, suppress repeated keydown, and
+stop without removing the independent native navigation controls. Input
+listeners detach on retarget and pause, then resume on the current target while
+both v-model drafts remain editable. No example saves or sends data.
+
+Preserve strict initial SSR markup and element identity checks. Defer textarea
+autosize until its genuine mounted style mutation can be represented without
+bypassing hydration assertions. The qualified sixteen-example Stack remains
+immutable while its merge and production proof run. Publish this prepared
+independent slice only after rebasing onto the coherent delivered main; do not
+add it to the current queue during parent delivery. The remaining catalogue and
+broader #6101 acceptance stay open.
