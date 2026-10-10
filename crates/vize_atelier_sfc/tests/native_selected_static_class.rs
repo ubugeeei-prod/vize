@@ -1,8 +1,8 @@
 //! Genuine public selected SFC entries consume the original retained class value.
 
 use vize_atelier_sfc::{
-    NativeSelectedSfcDomOptions, NativeSsrSfcCompileOptions, compile_native_selected_sfc_dom,
-    compile_native_ssr_sfc,
+    NativeScopedSsrSfcCompileOptions, NativeSelectedSfcDomOptions, NativeSsrSfcCompileOptions,
+    compile_native_scoped_ssr_sfc, compile_native_selected_sfc_dom, compile_native_ssr_sfc,
 };
 use vize_l0::Allocator;
 use vize_l4::write::EmitDocument;
@@ -115,6 +115,36 @@ fn whole_public_selected_class_components_preserve_once_decoding_and_complete_so
         }
     }
     assert_eq!(captures.len(), 76);
+    let fixture = &pack["scoped"];
+    for source_map in [true, false] {
+        let arena = Allocator::default();
+        let source = fixture["source"].as_str().unwrap();
+        let scope = fixture["scopeId"].as_str().unwrap();
+        let compilation = compile_native_scoped_ssr_sfc(
+            &arena,
+            source,
+            NativeScopedSsrSfcCompileOptions {
+                filename: "NativeSelectedClass.vue",
+                source_map,
+                scope_id: Some(scope),
+                ..Default::default()
+            },
+        );
+        assert!(compilation.observation().admitted().is_some());
+        let output = compilation.result().unwrap();
+        let expected = prepared(fixture["ssr"]["code"].as_str().unwrap(), "ssr").replace(
+            "export default _sfc_main",
+            &format!("_sfc_main.__scopeId = \"{scope}\"\nexport default _sfc_main"),
+        );
+        assert_eq!(output.code(), expected);
+        assert_eq!(output.css(), Some(fixture["css"].as_str().unwrap()));
+        let captured = capture(output.document(), output.source_map());
+        let css = capture(output.css_document().unwrap(), output.css_source_map());
+        captures.push(serde_json::json!({"id":fixture["id"],"target":"scoped-ssr","sourceMap":source_map,
+            "source":source,"filename":"NativeSelectedClass.vue","scopeId":scope,"code":captured["code"],"map":captured["map"],"links":captured["links"],
+            "css":css["code"],"cssMap":css["map"],"cssLinks":css["links"]}));
+    }
+    assert_eq!(captures.len(), 78);
     if let Ok(path) = std::env::var("VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&captures).unwrap()).unwrap();
     }

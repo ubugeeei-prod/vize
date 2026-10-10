@@ -739,5 +739,31 @@
         "mapSha256": "629a3c2e2f93745f82e0c402cfdd6992de2f6c534e4e4239eb931527a0c51ffb"
       }
     }
-  ]
+  ],
+  "scoped": {
+    "id": "class-former-scoped-refusal",
+    "source": "<template><p class='a'/></template><style scoped>.a:empty{color:red}</style>",
+    "template": "<p class='a'/>",
+    "sourceSha256": "23441a02eb6071832787ff191ced1dc9c59bfeb7dedb0a9b0431140af50e3046",
+    "filename": "NativeSelectedClass.vue",
+    "scopeId": "data-v-static-class",
+    "ssr": {
+      "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<p${_ssrRenderAttrs(_mergeProps({ class: \"a\" }, _attrs))} data-v-static-class></p>`)\n}",
+      "codeSha256": "bc5cf35627da1d9ccd92adcf6f321245d3aab164a1bff86621e3a93ebe3780d0",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;2CAAG,KAAK,EAAC,GAAG",
+        "sourcesContent": [
+          "<p class='a'/>"
+        ]
+      },
+      "mapSha256": "1e2eced719d8e15df104182535ae1a0082a790753644b4b1ca3ee490c346f5e2"
+    },
+    "css": ".a[data-v-static-class]:empty{color:red}",
+    "cssSource": ".a:empty{color:red}"
+  }
 }
