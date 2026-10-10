@@ -13,7 +13,7 @@ import {
   validatePair,
   MEMORY_ENVIRONMENT,
 } from "../../tools/benchmarks/scripts/level-memory-lib.mjs";
-import { collectNormal, run } from "../../tools/benchmarks/scripts/level-memory-runner.mjs";
+import { run } from "../../tools/benchmarks/scripts/level-memory-runner.mjs";
 import * as memory from "../../tools/benchmarks/scripts/level-memory-lib.mjs";
 import { report, fixture, originalPopulation } from "./support/level-memory-fixtures.mjs";
 

@@ -238,3 +238,10 @@ no guard exclusion or limit is added. Fresh Actions must resolve every original
 required gate. Passing source laws does not resolve the original 57 allocation
 equality failures. No knowingly unqualified 624-report campaign is dispatched,
 and the optional memory PR remains off queue without holding releases.
+
+The subsequent `aa269a8409` Actions check formatted all 8,969 files successfully
+and reported exactly one unused `collectNormal` import in the original collector
+test after its uses moved to the custody test. The narrow successor removes that
+one unused binding; the custody test keeps its real import and every control body
+is unchanged. The complete prior failure remains retained, and fresh Actions
+are still required without any 624-report campaign or numerical waiver.
