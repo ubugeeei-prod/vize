@@ -16,6 +16,7 @@ use crate::runtime::{Runtime, vocabulary};
 use crate::write::{LinkSink, Writer};
 
 mod setup;
+mod static_class;
 mod write;
 pub use setup::emit_selected_setup_template;
 
@@ -168,11 +169,8 @@ fn encode<L: LinkSink>(
                                 }
                                 write::property(&mut writer, attribute.name, attribute.span);
                                 writer.push(": ");
-                                write::quoted(
-                                    &mut writer,
-                                    attribute.value.unwrap_or_default(),
-                                    attribute.span,
-                                );
+                                let value = static_class::value(attribute);
+                                write::quoted(&mut writer, value.as_str(), attribute.span);
                             }
                             if multiline {
                                 writer.deindent();
@@ -192,8 +190,9 @@ fn encode<L: LinkSink>(
                             writer.push(" ");
                             write::template(&mut writer, attribute.name, attribute.span, false);
                             if let Some(value) = attribute.value {
+                                let value = static_class::normalize(attribute.name, value);
                                 writer.push("=\"");
-                                write::template(&mut writer, value, attribute.span, true);
+                                write::template(&mut writer, value.as_str(), attribute.span, true);
                                 writer.push("\"");
                             }
                         }

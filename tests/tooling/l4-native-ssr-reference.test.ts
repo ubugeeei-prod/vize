@@ -42,13 +42,13 @@ function groupedImports(code: string) {
   );
 }
 
-test("eleven complete pinned SSR modules preserve full code, maps and selected options", () => {
+test("twenty-five complete pinned SSR modules preserve full code, maps and selected options", () => {
   assert.equal(pack.schema, "vize.native-ssr-reference");
   assert.equal(pack.version, 1);
   assert.equal(pack.compiler.name, "@vue/compiler-ssr");
   assert.equal(pack.compiler.version, "3.5.35");
-  assert.equal(pack.fixtures.length, 11);
-  assert.equal(new Set(pack.fixtures.map((row: any) => row.id)).size, 11);
+  assert.equal(pack.fixtures.length, 25);
+  assert.equal(new Set(pack.fixtures.map((row: any) => row.id)).size, 25);
   assert.equal(fromSfc("@vue/compiler-ssr/package.json").version, "3.5.35");
   assert.equal(fromVue("@vue/server-renderer/package.json").version, "3.5.35");
   assert.equal(fromVue("vue/package.json").version, "3.5.35");
