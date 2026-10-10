@@ -1,0 +1,27 @@
+{
+  "sourceRevision": "93f10aacc174999098760cf5eea4d5165f9384f1",
+  "authority": "original authored LSP contracts, with the separately authorized fresh capability policy successor",
+  "originalSources": [
+    "tests/tooling/lsp-capabilities.test.ts",
+    "tests/tooling/lsp-typecheck-jsx-component.test.ts"
+  ],
+  "authorizedFreshChanges": [
+    "documentFormattingProvider",
+    "documentRangeFormattingProvider",
+    "documentOnTypeFormattingProvider",
+    "experimental.vize.jsxTypecheck"
+  ],
+  "files": {
+    "Consumer.invalid.jsx.txt": "fec86740ac1715901f267b34e3318bf934184c3e9ab89d51ec0dd1f3313acce1",
+    "Consumer.invalid.tsx.txt": "fec86740ac1715901f267b34e3318bf934184c3e9ab89d51ec0dd1f3313acce1",
+    "Consumer.valid.jsx.txt": "f84d32ace2d1da89f9edfd6d8eb9deaa5834427a9165f0552e40b0411ae66abe",
+    "Consumer.valid.tsx.txt": "f84d32ace2d1da89f9edfd6d8eb9deaa5834427a9165f0552e40b0411ae66abe",
+    "Counter.vue.txt": "be05ff1c36344add48c9950caeacaa6e3b9c708d7f324a36799aea6a6537af07",
+    "Intrinsic.tsx.txt": "caa41ae4d258f0769897cf8563e62ffd25fd35c8c74153e8dafdab13e6685676",
+    "capabilities.fresh.json": "07672d754a92cb8d0e622b9eacedb282a9ae96a31f5420d1d12ea58187d40154",
+    "capabilities.historical.json": "0be4a189fd830491ff6cd5215169847b85bb557f8b3874cce49b79da406136c1",
+    "jsx-diagnostics.authored.json": "f0d6772c5269cb6356cae0f4873a1a179347dd1c04745a3a45927287bc6b96a0",
+    "lsp-capabilities.original.ts.txt": "69548eb706810e1da70a96c0ddc724a1608923a0276ad7662cb226b096ad8dff",
+    "lsp-typecheck-jsx-component.original.ts.txt": "9c01f9d68f8e78da0242ff863c63e80aa84da0ca066a8104391a7931b017d0bb"
+  }
+}
