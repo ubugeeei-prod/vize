@@ -189,7 +189,7 @@ try {
             japaneseFonts.some(
               (font) => /Noto Sans CJK/.test(font.familyName) && font.glyphCount > 0,
             ),
-            `${route}: Japanese text did not use installed CJK fonts`,
+            `${route}: Japanese text did not use installed CJK fonts: ${JSON.stringify(japaneseFonts)}`,
           );
         }
         await session.detach();

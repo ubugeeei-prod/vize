@@ -32,3 +32,12 @@ Use one genuine child of the philosophy editorial layer in native Stack
 #8394. Require native-rendering/bookmark/metadata regressions, exact Actions,
 bounded English/Japanese desktop/mobile actual reading captures before the
 full Docs catalogue, protected Stack delivery and deployed reading proof.
+
+The first bounded article capture rejected the Japanese Vapor page's font
+assertion. Its original publication metadata is unchanged, and the first
+Japanese label uses the existing monospace style. Keep all typed CDP,
+positive-glyph and installed-family assertions while exposing the complete
+observed font packet in failure diagnostics. A monospace CJK mismatch is a
+source-based hypothesis until fresh actual browser execution identifies the
+family. Any acceptance correction requires that exact observation and a
+narrow successor regression; earlier qualified editorial heads stay intact.
