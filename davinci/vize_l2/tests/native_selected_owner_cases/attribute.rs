@@ -122,6 +122,10 @@ fn refusal_at_the_last_header_never_mints_that_element_or_body() -> Result<(), &
         let source = format!(
             "<template>prefix<div data-first='kept' {rejected}>unvisited</div>tail</template>"
         );
+        if rejected == "class='a  b'" {
+            super::class_successor::assert_current(&arena, &source)?;
+            continue;
+        }
         let mut original = owner(&arena, &source)?;
         let refusal;
         {

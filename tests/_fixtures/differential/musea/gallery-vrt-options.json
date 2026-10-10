@@ -1,0 +1,8 @@
+{
+  "viewports": [{ "name": "authored-compact", "width": 320, "height": 180 }],
+  "snapshotDir": "reviewed-baselines",
+  "threshold": 100,
+  "workers": 2,
+  "capture": { "settleTime": 0, "waitForNetwork": false },
+  "comparison": { "antiAliasing": false }
+}

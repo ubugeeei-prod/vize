@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
+import { pathToFileURL } from "node:url";
 import { test } from "node:test";
 
 import { SCRIPT_BASENAMES } from "../../docs/theme/background.ts";
@@ -36,6 +38,19 @@ const sitemap = (globalThis as { __vizeDocsSitemap?: Sitemap }).__vizeDocsSitema
 const locales = (globalThis as { __vizeDocsLocales?: Record<string, LocaleStrings> })
   .__vizeDocsLocales!;
 const localeCodes = sitemap.supportedLocales.map(({ code }) => code);
+
+void test("importing theme assertions does not resolve or execute native annotation transforms", async () => {
+  const isolated = fs.mkdtempSync(path.join(os.tmpdir(), "vize-docs-theme-import-"));
+  try {
+    const file = path.join(isolated, "theme-render-assertions.ts");
+    fs.copyFileSync(path.join(repoRoot, "docs/scripts/theme-render-assertions.ts"), file);
+    const module = await import(pathToFileURL(file).href);
+    assert.equal(typeof module.verifyThemeReadability, "function");
+    assert.equal(typeof module.verifySidebarMotion, "function");
+  } finally {
+    fs.rmSync(isolated, { recursive: true, force: true });
+  }
+});
 
 /** The `{ code, name }` pairs `docs/vite.config.ts` builds the site for. */
 function configuredLocales(): Array<{ code: string; name: string }> {
@@ -83,6 +98,8 @@ void test("theme scripts load the sitemap and every locale before navigation", (
     "syntax-highlight-languages",
     "syntax-highlight-core",
     "syntax-highlight",
+    "command-variants",
+    "command-tabs",
   ]);
 
   // A locale file that exists but is never concatenated would leave the
@@ -130,10 +147,24 @@ void test("the sidebar groups the pages the site actually publishes", () => {
   ]);
 
   const start = sitemap.navGroups.find((group) => group.key === "start")!;
-  assert.deepEqual(start.paths, ["/", "/getting-started", "/guide/configuration"]);
+  assert.deepEqual(start.paths, ["/", "/getting-started", "/philosophy", "/guide/configuration"]);
   assert.deepEqual(start.pathsByLocale, {
-    en: ["/", "/getting-started", "/guide/vite-plus", "/guide/migration", "/guide/configuration"],
-    ja: ["/", "/getting-started", "/guide/vite-plus", "/guide/migration", "/guide/configuration"],
+    en: [
+      "/",
+      "/getting-started",
+      "/philosophy",
+      "/guide/vite-plus",
+      "/guide/migration",
+      "/guide/configuration",
+    ],
+    ja: [
+      "/",
+      "/getting-started",
+      "/philosophy",
+      "/guide/vite-plus",
+      "/guide/migration",
+      "/guide/configuration",
+    ],
   });
   // Every common path remains mandatory in all five locales. Authored locale
   // overrides must retain those paths and publish every additional entry.

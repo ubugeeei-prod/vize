@@ -28,7 +28,8 @@ pub fn validate(packet: &Value) -> Test {
     check(
         field(packet, "summary")?
             == &json!({
-                "fixtures":14,"outcomes":84,"positive":72,"lowerRefusals":12
+                "fixtures":14,"outcomes":84,"positive":76,"lowerRefusals":6,
+                "targetRefusals":2
             }),
         "complete positive/refusal outcome counts",
     )?;
@@ -86,8 +87,18 @@ pub fn validate(packet: &Value) -> Test {
         )?;
         let result = field(row, "result")?;
         let l3 = field(row, "l3")?;
-        if text(row, "disposition")? == "positive" {
-            positive(row, observation, file, result, l3, source)?;
+        if text(row, "id")? == "original-regression-11" {
+            positive(
+                row,
+                observation,
+                file,
+                result,
+                l3,
+                source,
+                text(row, "target")? != "vapor",
+            )?;
+        } else if text(row, "disposition")? == "positive" {
+            positive(row, observation, file, result, l3, source, true)?;
         } else {
             lower_refusal(observation, file, result, l3)?;
         }
@@ -102,6 +113,7 @@ fn positive(
     result: &Value,
     l3: &Value,
     source: &str,
+    module: bool,
 ) -> Test {
     check(
         field(observation, "admitted")? == &json!(true)
@@ -126,7 +138,7 @@ fn positive(
         "genuine original L3 value receipt",
     )?;
     let values = array(l3, "values")?;
-    check(values.len() == 1, "one genuine title value")?;
+    check(values.len() == 1, "one genuine original attribute value")?;
     for value in values {
         check(
             field(value, "sameFile")? == &json!(true)
@@ -149,6 +161,18 @@ fn positive(
             field(field(value, "attribute")?, "value")? == field(observed, "decoded")?,
             "actual canonical decoded value",
         )?;
+    }
+    if !module {
+        return check(
+            text(result, "classification")? == "target-refusal"
+                && field(result, "publicError")?.is_string()
+                && field(result, "code")?.is_null()
+                && field(result, "mapText")?.is_null()
+                && field(result, "map")?.is_null()
+                && field(result, "mapError")?.is_null()
+                && array(result, "links")?.is_empty(),
+            "complete original File preserves the honest Vapor class target refusal",
+        );
     }
     check(
         text(result, "classification")? == "complete-original-sfc-module"
@@ -194,7 +218,7 @@ fn lower_refusal(observation: &Value, file: &Value, result: &Value, l3: &Value) 
                 .first()
                 .and_then(|issue| issue.get("templateIssueKind"))
                 == Some(&json!("UnsupportedChild")),
-        "original class/entity-text typed lower refusal",
+        "original entity-text typed lower refusal",
     )?;
     check(
         text(l3, "state")? == "lower-refusal" && array(l3, "values")?.is_empty(),
