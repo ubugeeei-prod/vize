@@ -1,0 +1,324 @@
+{
+  "schema": "vize.native-dom-static-class-reference",
+  "version": 1,
+  "compiler": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "options": {
+    "mode": "module",
+    "hoistStatic": false,
+    "prefixIdentifiers": true,
+    "comments": true,
+    "filename": "NativeDomClass.vue",
+    "sourceMap": true,
+    "bindingMetadata": {},
+    "cacheHandlers": false
+  },
+  "fixtures": [
+    {
+      "id": "class-root",
+      "source": "<div class=\" a  b \"/>",
+      "sourceSha256": "9b63719c81e5c22f2ffb4b2b78e0b601231f3c41ed8dad3ebeff3988cf8c8508",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a b\" }))\n}",
+      "codeSha256": "4dc2d28535db4ebf6f671c1a2917d3e0848908fb0f6615f8c5e7ac2fa9ad8d65",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAqB,SAAhB,KAAK,EAAC,KAAQ",
+        "sourcesContent": [
+          "<div class=\" a  b \"/>"
+        ]
+      },
+      "referenceMapSha256": "c1b27fe095f49a625c10572fd34f1d7a0c2eb39d6b1b3c0dbf97665bbacae070"
+    },
+    {
+      "id": "class-root-props",
+      "source": "<div title=\"before\" class=\" a\tb \" id=\"authored\"/>",
+      "sourceSha256": "130666421932aeb20f820ff66fa59edf640d4eb0b493957f1c4a17eb894e6e64",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    title: \"before\",\n    class: \"a b\",\n    id: \"authored\"\n  }))\n}",
+      "codeSha256": "a64900c5196abbb2638f7ffc290ecc4a4c53209ccc7c6130252274154b36e4f3",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAiD;IAA5C,KAAK,EAAC,QAAQ;IAAC,KAAK,EAAC,KAAO;IAAC,EAAE,EAAC,UAAU",
+        "sourcesContent": [
+          "<div title=\"before\" class=\" a\tb \" id=\"authored\"/>"
+        ]
+      },
+      "referenceMapSha256": "58b82210be146a657235e16d2bd1eb69dd284418191b0226841e1b20efa519c4"
+    },
+    {
+      "id": "class-nested",
+      "source": "<div><span class=\" a\tb\nc\rd\fe \"/></div>",
+      "sourceSha256": "03b6c9652eba0175db30a904803659c1cb3dd409854c4036e59ec9b76c11aa37",
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a b c d e\" })\n  ]))\n}",
+      "codeSha256": "0f06bf095c2cb365ae38a149d50f3f1746497c69d5916b2f80c4709368232b97",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBACe;IADV,oBACI,UADE,KAAK,EAAC,WACV",
+        "sourcesContent": [
+          "<div><span class=\" a\tb\nc\rd\fe \"/></div>"
+        ]
+      },
+      "referenceMapSha256": "dab4a2901c00167229f6b3c3b13319d2bc582968c0b6f17312214d714e4f0dbf"
+    },
+    {
+      "id": "class-fragment",
+      "source": "<div class=\" a  b \"/><span class=\" c d \"/>",
+      "sourceSha256": "4bd35e05c7756508bb662b276949eb764246bcced552c415d0d00aa5c02574ad",
+      "code": "import { createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"div\", { class: \"a b\" }),\n    _createElementVNode(\"span\", { class: \"c d\" })\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+      "codeSha256": "4f909726c5c3e240e6234fd840344c400e5931fecaa831f2bfb077b31cc438d9",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;IAAA,oBAAqB,SAAhB,KAAK,EAAC,KAAQ;IAAE,oBAAqB,UAAf,KAAK,EAAC,KAAO",
+        "sourcesContent": [
+          "<div class=\" a  b \"/><span class=\" c d \"/>"
+        ]
+      },
+      "referenceMapSha256": "c8750262c10c08e9787e8e60093726b403bd3f8e4e3998ed7cd8c2c82a7d530e"
+    },
+    {
+      "id": "class-root-bare",
+      "source": "<div class/>",
+      "sourceSha256": "ca63b56ae28f6211227bec9753449029864d9f604bfe5e0b34de416ee4b0468d",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"\" }))\n}",
+      "codeSha256": "2c88e2b8d6af0eeeb232bd30db83bc4b3de62e7f59ba901d323ca92350f9e0aa",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAY,SAAP,KAAK,EAAL,EAAK",
+        "sourcesContent": [
+          "<div class/>"
+        ]
+      },
+      "referenceMapSha256": "547f56c6f9985bd2f16532699dbbaee84b23c51f7bf12fab32333169394383e3"
+    },
+    {
+      "id": "class-root-empty",
+      "source": "<div class=\"\"/>",
+      "sourceSha256": "f168740cfae02784af18c478426ce4bdb408550c746bf13ef8ac140a8eb6d4ee",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"\" }))\n}",
+      "codeSha256": "2c88e2b8d6af0eeeb232bd30db83bc4b3de62e7f59ba901d323ca92350f9e0aa",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAe,SAAV,KAAK,EAAC,EAAE",
+        "sourcesContent": [
+          "<div class=\"\"/>"
+        ]
+      },
+      "referenceMapSha256": "e6773cd1ede8778d8d76c8fa46c2b36323b26bbcea0957d77375d32d4a1004f4"
+    },
+    {
+      "id": "class-nested-bare",
+      "source": "<div><span class/></div>",
+      "sourceSha256": "9abace9043302da3eeee26eea5daa65fbad60761102bcfb09ebc9567fc003890",
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"\" })\n  ]))\n}",
+      "codeSha256": "cfe09942363b58409b62a9f5fbf730fb2ffb86d80e356be476c7b2fdc84df606",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAwB;IAAnB,oBAAa,UAAP,KAAK,EAAL,EAAK",
+        "sourcesContent": [
+          "<div><span class/></div>"
+        ]
+      },
+      "referenceMapSha256": "4041d626f55062a0cae13a5bedc7412f2fc3abf80a3b3fd32b3061695b2c4f5d"
+    },
+    {
+      "id": "class-nested-empty",
+      "source": "<div><span class=\"\"/></div>",
+      "sourceSha256": "c13fa9d30fabb48d41c46f81886a13c5ec310027d1f82a29a0c1d2036cb70a21",
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"\" })\n  ]))\n}",
+      "codeSha256": "cfe09942363b58409b62a9f5fbf730fb2ffb86d80e356be476c7b2fdc84df606",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAA2B;IAAtB,oBAAgB,UAAV,KAAK,EAAC,EAAE",
+        "sourcesContent": [
+          "<div><span class=\"\"/></div>"
+        ]
+      },
+      "referenceMapSha256": "3b8f70297581cde4900bbc46271e6e9a0d433e0567c477fe013006ede880a619"
+    },
+    {
+      "id": "class-entities",
+      "source": "<div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div>",
+      "sourceSha256": "055de349d1a370540017e7160deb6b577dee1699efa1b28a5cbcfb742bc76751",
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a&amp;b \\\"<>'\" })\n  ]))\n}",
+      "codeSha256": "3c731b14d8dc5a19a4a30f6387e58744b23320f8fadeb1c1dfa759baf9c3651b",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAkE;IAA7D,oBAAuD,UAAjD,KAAK,EAAC,eAAyC",
+        "sourcesContent": [
+          "<div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div>"
+        ]
+      },
+      "referenceMapSha256": "fe6a3eb4154fa93d665f82df581bb5391a0f06f9317cb72d8e4b7a20f501b349"
+    },
+    {
+      "id": "class-unquoted",
+      "source": "<div class=ready />",
+      "sourceSha256": "7749d569109977b15393d1ea9f4b61d4a2d5bdb250db460db1aae097a217fa71",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"ready\" }))\n}",
+      "codeSha256": "807b4cf42145f13d07fa296acc2919fe4f15275bfef2ffce4cc9ad73e7dbb6b7",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAmB,SAAd,KAAK,EAAC,OAAK",
+        "sourcesContent": [
+          "<div class=ready />"
+        ]
+      },
+      "referenceMapSha256": "6d8ea973ae634cf920adb63ca5b6d28ad30ea4e9a2a22d0da00bc0295a7c8c84"
+    },
+    {
+      "id": "class-unicode-trim",
+      "source": "<div class=\"﻿ 雪🌸 ﻿\"/>",
+      "sourceSha256": "06f8b9e1618087272649038e5418607583a98030a4980e27db05066da1e7e283",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"雪🌸\" }))\n}",
+      "codeSha256": "ee9fefc470673ac5afe3327a3eca79a4781e7aae5609ec9b4a95db2a14b7dc81",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAuB,SAAlB,KAAK,EAAC,MAAU",
+        "sourcesContent": [
+          "<div class=\"﻿ 雪🌸 ﻿\"/>"
+        ]
+      },
+      "referenceMapSha256": "9efcb4e8ba0cecd23c9d70c06c674aa2fd969c2274551397c75047e5789ed97b"
+    },
+    {
+      "id": "class-unicode-inner",
+      "source": "<div><span class=\"a b﻿c​de\"/></div>",
+      "sourceSha256": "a586c19588699c5fbd9b1a439e1dca29d50a3ca521c712f324b5d1c9d87758f7",
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a b﻿c​de\" })\n  ]))\n}",
+      "codeSha256": "362e5ecd89ff4c055546c0a1a20039ad144f611f53314ab9e0665510727ca9e8",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAoC;IAA/B,oBAAyB,UAAnB,KAAK,EAAC,WAAW",
+        "sourcesContent": [
+          "<div><span class=\"a b﻿c​de\"/></div>"
+        ]
+      },
+      "referenceMapSha256": "e4b27dc021d7aabfce0ac6e5956595f196359124d458d6a9c629bfad014724fb"
+    },
+    {
+      "id": "class-void",
+      "source": "<div><br class=\" a  b \"/></div>",
+      "sourceSha256": "ee456219d003c2ebc0de0838f60798daa5abd416ba4c919a0c8a50c8ca06d949",
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"br\", { class: \"a b\" })\n  ]))\n}",
+      "codeSha256": "678426f2a5c566d217edd2de1bf3c274516d2612348af84a35ec581f590679ff",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAA+B;IAA1B,oBAAoB,QAAhB,KAAK,EAAC,KAAQ",
+        "sourcesContent": [
+          "<div><br class=\" a  b \"/></div>"
+        ]
+      },
+      "referenceMapSha256": "0866338944d1d5097daf8ccc550cbcd4b7d399e4d2e5e8d360754b3874597a61"
+    },
+    {
+      "id": "class-comment-root",
+      "source": "<!--kept--><div class=\" a  b \"/>",
+      "sourceSha256": "0b21b7794d1b897bfe177cb0391028da48a544efafdaabab81521a311fa0a27b",
+      "code": "import { createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\"kept\"),\n    _createElementVNode(\"div\", { class: \"a b\" })\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+      "codeSha256": "7aae62d97267b1db36872d81483c388a8f41b16ab2a640fe5eaee4b61ac8946e",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;IAAA,2BAAW;IAAA,oBAAqB,SAAhB,KAAK,EAAC,KAAQ",
+        "sourcesContent": [
+          "<!--kept--><div class=\" a  b \"/>"
+        ]
+      },
+      "referenceMapSha256": "749ba8a10fbe867782a7d4ea1c981693630faec650d433095f3e162c8fed5fff"
+    },
+    {
+      "id": "class-original-7502",
+      "source": "<div class=\"a&amp;amp;b\">x</div>",
+      "sourceSha256": "4adae86d483f8f0c634d12fcf8131af38ff7f10bd7943097ec9f3c761ec53dbe",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a&amp;b\" }, \"x\"))\n}",
+      "codeSha256": "8841bfa7bc0ab591ad9f6b5f5a892ba78713deb46d638f19711d62278d5e1161",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAAgC,SAA3B,KAAK,EAAC,SAAa,IAAC,GAAC",
+        "sourcesContent": [
+          "<div class=\"a&amp;amp;b\">x</div>"
+        ]
+      },
+      "referenceMapSha256": "b30f26999d3a55966bc5b2fc4cf8e2bafe39e129527bbcdbacd2c02135f1d3e1"
+    },
+    {
+      "id": "class-suffix",
+      "source": "<div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/>",
+      "sourceSha256": "1467f69eeeaa74412f6ff66fe5b073b71a81affb057aaab5e252cb0090ce9ca0",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    title: \"first\",\n    class: \"a b\",\n    \"data-last\": \"&amp;雪🌸\"\n  }))\n}",
+      "codeSha256": "c7c6a8c31b80f34602b57f9b3376c26d622753f5c58f99daa7d4652a50d3628b",
+      "referenceMap": {
+        "version": 3,
+        "sources": [
+          "NativeDomClass.vue"
+        ],
+        "names": [],
+        "mappings": ";;;wBAAA,oBAA4D;IAAvD,KAAK,EAAC,OAAO;IAAC,KAAK,EAAC,KAAQ;IAAC,WAAS,EAAC,UAAc",
+        "sourcesContent": [
+          "<div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/>"
+        ]
+      },
+      "referenceMapSha256": "b7b3d03a76966d6db4eb78fff17e2873a2649cc619081b3e144e4abb2d287c4f"
+    }
+  ]
+}

@@ -88,7 +88,11 @@ export async function environment7502(mode: "development" | "production") {
         );
       const object = owner === "vue" ? runtime : renderer;
       for (const name of names)
-        assert.equal(typeof object[name], "function", `actual ${owner} export ${name}`);
+        assert.equal(
+          typeof object[name],
+          name === "Fragment" ? "symbol" : "function",
+          `actual ${owner} export ${name}`,
+        );
       owners.set(
         owner,
         data(

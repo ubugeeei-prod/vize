@@ -53,6 +53,8 @@ impl RuleRegistry {
         registry.register(Box::new(crate::rules::vue::NoDeprecatedVOnNativeModifier));
         registry.register(Box::new(crate::rules::vue::NoDeprecatedSlotScopeAttribute));
         registry.register(Box::new(crate::rules::vue::NoDeprecatedScopeAttribute));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedVOnNumberModifiers));
+        registry.register(Box::new(crate::rules::vue::NoDeprecatedFunctionalTemplate));
         crate::rules::vue::register_valid_directives(&mut registry);
         registry.register(Box::new(crate::rules::vapor::NoVueLifecycleEvents));
         crate::rules::vue::register_security(&mut registry);

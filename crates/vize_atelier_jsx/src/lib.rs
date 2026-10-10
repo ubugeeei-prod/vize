@@ -245,6 +245,35 @@ fn lower_source_with_compat<'a>(
     default_mode: JsxOutputMode,
     babel: BabelLoweringOptions<'_>,
 ) -> (LowerOutput<'a>, std::vec::Vec<(u32, u32)>) {
+    lower_source_with_options(
+        bump,
+        allocator,
+        source,
+        lang,
+        LoweringOptions {
+            compat,
+            default_mode,
+            babel,
+            preserve_slot_parameter_types: false,
+        },
+    )
+}
+
+#[derive(Default)]
+struct LoweringOptions<'m> {
+    compat: JsxCompatMode,
+    default_mode: JsxOutputMode,
+    babel: BabelLoweringOptions<'m>,
+    preserve_slot_parameter_types: bool,
+}
+
+fn lower_source_with_options<'a>(
+    bump: &'a Allocator,
+    allocator: &oxc_allocator::Allocator,
+    source: &'a str,
+    lang: JsxLang,
+    options: LoweringOptions<'_>,
+) -> (LowerOutput<'a>, std::vec::Vec<(u32, u32)>) {
     let parse_source = parse::prepare_source_for_parse(source, lang);
     let parsed = parse::parse_module(allocator, parse_source.as_ref(), lang);
     let scoping = Some({
@@ -254,12 +283,13 @@ fn lower_source_with_compat<'a>(
             .into_scoping()
     });
     let mapper = SpanMapper::new(source);
-    let mut lowerer = Lowerer::with_compat(bump, &mapper, compat, babel, scoping);
+    let mut lowerer = Lowerer::with_compat(bump, &mapper, options.compat, options.babel, scoping)
+        .with_slot_parameter_types(options.preserve_slot_parameter_types);
     lowerer.collect_boolean_bindings(&parsed.program);
     for diagnostic in parsed.diagnostics {
         lowerer.report(diagnostic);
     }
-    let roots = finder::lower_program_roots(&parsed.program, &mut lowerer, default_mode);
+    let roots = finder::lower_program_roots(&parsed.program, &mut lowerer, options.default_mode);
     let analysis = analyze::analyze_program(&parsed.program, source);
     let (diagnostics, custom_element_spans) = lowerer.into_compat_parts();
     (

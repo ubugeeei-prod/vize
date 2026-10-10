@@ -71,6 +71,7 @@ pub struct Lowerer<'a, 'm, 's: 'a> {
     bump: &'a Allocator,
     mapper: &'m SpanMapper<'s>,
     compat: JsxCompatMode,
+    preserve_slot_parameter_types: bool,
     is_custom_element: Option<&'m BabelIsCustomElement>,
     scoping: Option<Scoping>,
     boolean_bindings: boolean::BooleanBindings,
@@ -111,6 +112,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             bump,
             mapper,
             compat,
+            preserve_slot_parameter_types: false,
             is_custom_element: babel.is_custom_element,
             scoping,
             boolean_bindings: boolean::BooleanBindings::default(),
@@ -123,6 +125,12 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             diagnostics: std::vec::Vec::new(),
             pending_styles: std::vec::Vec::new(),
         }
+    }
+
+    /// Keep authored formal parameters for analysis without changing runtime JS.
+    pub(crate) fn with_slot_parameter_types(mut self, preserve: bool) -> Self {
+        self.preserve_slot_parameter_types = preserve;
+        self
     }
 
     /// Record a `<style scoped>` block extracted during child lowering.

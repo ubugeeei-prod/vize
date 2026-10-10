@@ -1,0 +1,743 @@
+{
+  "schema": "vize.n8n.slot-dynamic-oracle",
+  "providers": {
+    "eslint": {
+      "version": "10.4.1",
+      "entrySha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2"
+    },
+    "eslint-plugin-vue": {
+      "version": "10.9.2",
+      "entrySha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017"
+    },
+    "vue-eslint-parser": {
+      "version": "10.4.1",
+      "entrySha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087"
+    },
+    "@typescript-eslint/parser": {
+      "version": "8.65.0",
+      "entrySha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966"
+    }
+  },
+  "mandatoryInfrastructure": {
+    "name": "vue/base/setup-for-vue",
+    "processor": "vue/vue",
+    "rules": {
+      "vue/comment-directive": "error",
+      "vue/jsx-uses-vars": "error"
+    }
+  },
+  "records": [
+    {
+      "id": "array-binding",
+      "observations": [
+        [
+          {
+            "filePath": "array-binding.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 39
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"[slot]\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "array-binding.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 39
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"[slot]\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "array-hole",
+      "observations": [
+        [
+          {
+            "filePath": "array-hole.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 41
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"[, slot]\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "array-hole.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 41
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"[, slot]\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "array-rest",
+      "observations": [
+        [
+          {
+            "filePath": "array-rest.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 49
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[rest]=\"[first, ...rest]\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "array-rest.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 49
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[rest]=\"[first, ...rest]\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "object-rest",
+      "observations": [
+        [
+          {
+            "filePath": "object-rest.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 56
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[rest.name]=\"{ first, ...rest }\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "object-rest.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 56
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[rest.name]=\"{ first, ...rest }\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "nested-array",
+      "observations": [
+        [
+          {
+            "filePath": "nested-array.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 51
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"{ source: [slot] }\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "nested-array.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 51
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"{ source: [slot] }\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "renamed-default",
+      "observations": [
+        [
+          {
+            "filePath": "renamed-default.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 56
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"{ source: slot = name }\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "renamed-default.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 56
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"{ source: slot = name }\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "top-default",
+      "observations": [
+        [
+          {
+            "filePath": "top-default.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 44
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"slot = name\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "top-default.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 44
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"slot = name\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "array-default",
+      "observations": [
+        [
+          {
+            "filePath": "array-default.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 46
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"[slot = name]\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "array-default.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 46
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[slot]=\"[slot = name]\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "default-initializer-read",
+      "observations": [
+        [
+          {
+            "filePath": "default-initializer-read.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "default-initializer-read.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "computed-key-read",
+      "observations": [
+        [
+          {
+            "filePath": "computed-key-read.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "computed-key-read.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "array-other-control",
+      "observations": [
+        [
+          {
+            "filePath": "array-other-control.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "array-other-control.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "object-property-control",
+      "observations": [
+        [
+          {
+            "filePath": "object-property-control.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "object-property-control.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "string-control",
+      "observations": [
+        [
+          {
+            "filePath": "string-control.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "string-control.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "call-capture",
+      "observations": [
+        [
+          {
+            "filePath": "call-capture.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 45
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[choose(slot)]=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "call-capture.vue",
+            "messages": [
+              {
+                "ruleId": "vue/valid-v-slot",
+                "severity": 2,
+                "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                "line": 2,
+                "column": 23,
+                "messageId": "disallowArgumentUseSlotParams",
+                "endLine": 2,
+                "endColumn": 45
+              }
+            ],
+            "suppressedMessages": [],
+            "errorCount": 1,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "source": "<template>\n<FancyPanel><template #[choose(slot)]=\"slot\">ready</template></FancyPanel>\n</template>\n",
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "call-outer-control",
+      "observations": [
+        [
+          {
+            "filePath": "call-outer-control.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "call-outer-control.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    },
+    {
+      "id": "computed-member-control",
+      "observations": [
+        [
+          {
+            "filePath": "computed-member-control.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ],
+        [
+          {
+            "filePath": "computed-member-control.vue",
+            "messages": [],
+            "suppressedMessages": [],
+            "errorCount": 0,
+            "fatalErrorCount": 0,
+            "warningCount": 0,
+            "fixableErrorCount": 0,
+            "fixableWarningCount": 0,
+            "usedDeprecatedRules": []
+          }
+        ]
+      ]
+    }
+  ]
+}

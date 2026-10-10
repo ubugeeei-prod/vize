@@ -21,6 +21,10 @@ impl Linter {
                 .insert(String::from("vue/no-deprecated-slot-scope-attribute"));
             self.disabled_rules
                 .insert(String::from("vue/no-deprecated-scope-attribute"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-v-on-number-modifiers"));
+            self.disabled_rules
+                .insert(String::from("vue/no-deprecated-functional-template"));
         }
         self
     }
