@@ -1,7 +1,21 @@
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
+import { joinBasePath } from "../staticApi";
+
+const command = ref("");
+onMounted(() => {
+  const galleryUrl = new URL(joinBasePath("/"), window.location.href).href;
+  command.value = `vp exec musea-vrt --gallery-url '${galleryUrl.replaceAll("'", "'\"'\"'")}'`;
+});
+</script>
+
 <template>
   <div class="vrt-empty">
-    <p>Run screenshot comparisons from your project with <code>vp exec musea-vrt</code>.</p>
-    <p class="vrt-hint">The Run VRT button requires the Musea development server.</p>
+    <p>Capture this hosted gallery with Node and Playwright:</p>
+    <p class="vrt-command">
+      <code>{{ command }}</code>
+    </p>
+    <p class="vrt-hint">Baselines, current captures, diffs, and reports are saved locally.</p>
   </div>
 </template>
 
@@ -11,6 +25,9 @@
   text-align: center;
   color: var(--musea-text-muted);
   font-size: 0.875rem;
+}
+.vrt-command {
+  overflow-wrap: anywhere;
 }
 .vrt-hint {
   font-size: 0.75rem;

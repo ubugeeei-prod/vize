@@ -28,6 +28,9 @@ export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
   const configured = withoutA11y(options.vrt);
   const vrtOptions: ExtendedVrtOptions = {
     ...configured,
+    capture: { waitForPreviewReady: true, ...configured.capture },
+    ...(options.previewBasePath !== undefined ? { previewBasePath: options.previewBasePath } : {}),
+    ...(options.previewUrls !== undefined ? { previewUrls: options.previewUrls } : {}),
     // run, approve, and clean all read this directory.
     snapshotDir: resolveVrtSnapshotDir(options, configured.snapshotDir),
     threshold: options.thresholdProvided
