@@ -33,7 +33,7 @@ const collector = {
   selected: "f2f15711265c21874d604f5b4b32d9f0c3d138ec9b353a35f5b21176e8c0a63e",
 };
 
-test("the successor preserves the original corpus and pins both independent source axes", () => {
+void test("the successor preserves the original corpus and pins both independent source axes", () => {
   assert.equal(successorSha256, "3e8eb8c815da36acd27f2252461e39ec0786f88557f01eb5849371d173bce295");
   assert.deepEqual(successor.resolverSources, resolver);
   assert.deepEqual(successor.collectorSources, collector);
@@ -66,7 +66,7 @@ test("the successor preserves the original corpus and pins both independent sour
   );
 });
 
-test("only the two missing-selected memberships change; all original case fields stay exact", () => {
+void test("only the two missing-selected memberships change; all original case fields stay exact", () => {
   const before = structuredClone(cases);
   const old = sourceContract(resolver.selected, collector.historical, "base");
   const current = sourceContract(resolver.selected, collector.selected, "head");
@@ -104,7 +104,7 @@ test("only the two missing-selected memberships change; all original case fields
   );
 });
 
-test("unknown actual source rejects before preparation can execute a trap CLI", () => {
+void test("unknown actual source rejects before preparation can execute a trap CLI", () => {
   const root = mkdtempSync(join(os.tmpdir(), "canon-collector-source-control-"));
   const marker = join(root, "CLI-MUST-NOT-RUN");
   const resolverPath = "crates/vize_canon/src/batch/virtual_project/dependency_scan/resolution.rs";
