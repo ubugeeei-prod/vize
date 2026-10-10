@@ -86,8 +86,8 @@ successor qualification is still pending.
   again if the authoritative rule registry has changed.
 - Pair this decision with a concise issue comment during root integration. The
   local child appends its link to canonical row 350; all incoming clauses,
-  including current v12 release/retirement row 330, remain exact. No remote issue
-  comment has been made.
+  including current v12 release/retirement row 330, remain exact. The source
+  decisions are paired with comments on #8334; protected admission stays deferred.
 - Run exact-head Actions, the full docs SSG build, and the expanded real Chromium
   navigation/render checks. Verify deployed category and cross-file pages,
   fragment links, copyable source and page payloads in all five locales.
@@ -102,3 +102,19 @@ Proposed paired issue comment after the publication gate:
 > copyable source. Preserve existing routes, fragments and explicit producer
 > limits. The local decision and pending hosted acceptance are recorded in
 > `docs/davinci/decisions/2026-10-10-rule-category-examples.md`.
+
+## Source Actions inventory and base refresh
+
+Rebase the complete source Stack #8356 (#8354 then #8355) onto signed main
+`4c2bebb9a586e3eaab698b41e5b58ed5f8181852`, preserving all 37 v0.439.0
+metadata paths and incoming canonical decisions. The parent corrects the stale
+natural v-on docs corpus discovered in tooling job 114105009567. Complete
+category generation then grows that docs inventory from 123 to 185 occurrence rows (excluding the header): 65
+additional occurrences and three occurrences relocated to the generated English
+Vue directives page. Existing event, option and storage maxima remain two.
+
+The unchanged corpus producer's `--check` and all five v-on storage tests pass
+locally. Example bytes, routes, annotations and native HTML remain unchanged.
+Earlier source runs are historical; require fresh exact-head Check and Docs
+Actions before the protected admission that root coordinates after third-party
+publication. Both source PRs stay draft, with no individual auto-merge or queue.
