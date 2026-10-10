@@ -1,0 +1,53 @@
+//! Whole-packet source observations for the bounded n8n slot-validity audit.
+use serde_json::{Value, json};
+use vize_patina::{HelpLevel, LintPreset, LintResult, Linter, Severity};
+
+fn configured_linter() -> Linter {
+    let config: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/bound-slot-attribute/config.json"
+    )).unwrap();
+    let rules = config["linter"]["rules"].as_object().unwrap();
+    assert_eq!(rules.len(), 51);
+    assert_eq!(config["linter"]["ruleOptions"].as_object().unwrap().len(), 3);
+    Linter::with_preset(LintPreset::Incremental)
+        .with_enabled_rules(Some(rules.keys().map(|name| name.as_str().into()).collect()))
+        .with_rule_severity_overrides(rules.keys().map(|name| (name.as_str().into(), Severity::Error)).collect())
+        .with_help_level(HelpLevel::Full)
+        .with_attribute_hyphenation(vize_patina::rules::HyphenationStyle::Always)
+        .with_component_name_in_template_casing(vize_patina::rules::ComponentCasing::PascalCase)
+        .with_sfc_element_order_options(vize_patina::rules::SfcElementOrderOptions {
+            order: ["script", "template", "style"].into_iter()
+                .map(|name| vize_patina::rules::SfcElementOrderGroup::new(vec![name.into()])).collect(),
+        })
+}
+
+fn complete(result: &LintResult) -> Value {
+    json!({
+        "filename": result.filename.as_str(),
+        "diagnostics": result.diagnostics.iter().map(|d| json!({
+            "rule_name": d.rule_name, "severity": d.severity,
+            "message": d.message.as_str(), "start": d.start, "end": d.end,
+            "help": d.help.as_ref().map(|help| help.as_str()),
+            "labels": d.labels.iter().map(|l| json!({"message": l.message.as_str(), "start": l.start, "end": l.end})).collect::<Vec<_>>(),
+            "fix": d.fix,
+        })).collect::<Vec<_>>(),
+        "error_count": result.error_count, "warning_count": result.warning_count,
+    })
+}
+
+#[test]
+fn capture_bounded_slot_audit() {
+    let input = std::env::var("VIZE_SLOT_AUDIT_INPUT").unwrap();
+    let output = std::env::var("VIZE_SLOT_AUDIT_OUTPUT").unwrap();
+    let corpus: Value = serde_json::from_str(&std::fs::read_to_string(input).unwrap()).unwrap();
+    let linter = configured_linter();
+    let observations = corpus.as_array().unwrap().iter().map(|case| {
+        let source = case["source"].as_str().unwrap();
+        let filename = case["filename"].as_str().unwrap();
+        let first = complete(&linter.lint_sfc(source, filename));
+        let repeat = complete(&linter.lint_sfc(source, filename));
+        assert_eq!(first, repeat, "{}", case["id"]);
+        json!({"id": case["id"], "observations": [first, repeat]})
+    }).collect::<Vec<_>>();
+    std::fs::write(output, serde_json::to_string_pretty(&json!({"cases": observations})).unwrap() + "\n").unwrap();
+}
