@@ -1,0 +1,117 @@
+{
+  "schema": "vize-workspace-symbol-worker-qualified-source-v1",
+  "head": "ed9c575a1fa266b17eef5771de216ca2d5dcb81a",
+  "tree": "e25d2f4b8d71f5be86b152bddede9b47ac1300ff",
+  "control": "65ab25da5b491cef946e304355de5346b7621208",
+  "archive": "qualified-ed9c.tar.gz",
+  "archiveSha256": "83d915022036455bff5f27ec3a5297f5698651cc0a1a8557be176ae7b108c0b4",
+  "files": [
+    {
+      "path": "current-baseline-reviewed.json",
+      "size": 18593,
+      "sha256": "aebd1870ea5efb839398f980a1528876228b54ec6230d26abf7b0e687564cf44"
+    },
+    {
+      "path": "current-baseline.zip",
+      "size": 1301038,
+      "sha256": "5132fcec6880d50bd7fe6982cd7b8293dcd3692a4613f5c5160c6ce38a7c473b"
+    },
+    {
+      "path": "genuine-maestro-laws.json",
+      "size": 4458,
+      "sha256": "8f6df48d94f3968803be72470143f114e920e1adf65ca8aae8d6fcadb69bb047"
+    },
+    {
+      "path": "native-laws/114188077571.log",
+      "size": 1023255,
+      "sha256": "bc4b55384d2b34749ad3e9e93e8eee311d2129724ef09477147ff5f94c5436dd"
+    },
+    {
+      "path": "native-laws/114188077594.log",
+      "size": 992317,
+      "sha256": "8b01e026b8da32ed9642c4513fd8188f83ffdf936258fe497efe42afb2308dc1"
+    },
+    {
+      "path": "native-laws/114188077597.log",
+      "size": 944205,
+      "sha256": "46c981349830d35bac7b353feed386a915a53e2a69c689e09dc3228907c32586"
+    },
+    {
+      "path": "native-laws/114188077642.log",
+      "size": 959453,
+      "sha256": "e8a57aad5264bb740a928235bd9da40515e1e34a180ce4888c1a5bc282f9051f"
+    },
+    {
+      "path": "original400-reviewed.json",
+      "size": 142292,
+      "sha256": "1068dd193b8ad1fe5fe3b2f38b3f700bd62564acbdbabbb6f89980399624814b"
+    },
+    {
+      "path": "original400.zip",
+      "size": 8862960,
+      "sha256": "62dba4c17b4eb32d592f4e7d884ec687e55287291d6c7dd0c3ccc56c32c93a72"
+    },
+    {
+      "path": "source/crates/vize_maestro/src/server/state/workspace_project_files.rs",
+      "size": 9095,
+      "sha256": "c62395cc99d73043b03cc19c4f65ca224f0c875c556bd43652b7fd7bb9758ca9"
+    },
+    {
+      "path": "source/crates/vize_maestro/src/server/state/workspace_project_files/symbols.rs",
+      "size": 4569,
+      "sha256": "72461058158acec11255138dbe23e96a2b3d3c2866683d4582773c4f66252b92"
+    },
+    {
+      "path": "source/crates/vize_maestro/src/server/state/workspace_project_files/worker.rs",
+      "size": 2698,
+      "sha256": "a733b00ad89fe93f0188a8a7c5ca543858e3c3ce40c221b312e795f256e05a27"
+    },
+    {
+      "path": "source/crates/vize_maestro/src/server/state/workspace_project_files/worker/tests.rs",
+      "size": 9595,
+      "sha256": "33b2d3d239467dc5d7f49699bf73a0e3739dacb3ccaae1e693478e0ccb3044d5"
+    }
+  ],
+  "original400": {
+    "run": 38043082997,
+    "job": 114187068142,
+    "wholeComparableRows": 79,
+    "wholeResponses": 81,
+    "wholeNotifications": 18,
+    "scope": "all rows/responses preserve complete values and order; responses normalize only captured physical native session-root spellings; notifications exactly equal",
+    "warmRequestsPerSide": 20,
+    "warmMeanAfterBeforeRange": [
+      1.0317805925417516,
+      1.042060601040785
+    ],
+    "speedupClaim": false
+  },
+  "currentBaseline": {
+    "run": 38043726535,
+    "job": 114188934898,
+    "sessions": 3,
+    "sourceBinarySha256": "800bafea9185c312b5ee9960384a5821fc253e4381e9b316ee643d1ba546ad83",
+    "sampledServerMaxKiB": [
+      114984,
+      112876,
+      113996
+    ],
+    "sampledTreeMaxKiB": [
+      338360,
+      337304,
+      333520
+    ],
+    "serverCapKiB": 131072,
+    "treeCapKiB": 393216,
+    "processesMax": 3,
+    "scope": "original40-cycle semantic/budget checks plus one extra completion per cycle and bounded raw/sampler instrumentation; actual sampled PID/birth/executable hashes joined to source build; not a direct historical-c3 workload comparison"
+  },
+  "genuineMaestro": {
+    "run": 38043083077,
+    "projection": "ea946a5e4b4a671af26646a71a4105b19341cff1",
+    "sevenLawsPass": true,
+    "ownedFourSourceFilesEqualHead": true,
+    "scope": "actual PR projection with exact production bytes; no whole exact-head qualification transfer"
+  },
+  "limits": "source ed9c observations only; no revised/composed-head, true-peak/PSS, causality, allocator/leak, overall-memory, cold-cache/startup-tail, GUI/public/default/history or10x claim; full current source qualification, protected merge and release remain separate"
+}
