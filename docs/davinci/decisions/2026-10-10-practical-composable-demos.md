@@ -166,3 +166,11 @@ its actual native input and button controls. Exercise both controls' Escape
 delivery and real trigger-focus return; preserve the non-modal region, source
 alignment, and all earlier interaction laws. Retain failed Check 38033519431
 and require a fresh exact-head native gate, Docs build, and browser receipts.
+
+The new native Escape handlers intentionally extend the natural modified-v-on
+corpus. Regenerate its per-area inventory with the existing generator and
+review the three `@keydown.esc` spellings in `npm--compose.tsv`; retain the
+two-entry options/event/key capacity limits. Exact-source Check 38033941359
+identified the omitted inventory, and the unchanged live-scan/storage test
+passes after regeneration. A separate canonical-fixture checkout assertion
+failure remains in the CI repair lane and must not be hidden by this update.
