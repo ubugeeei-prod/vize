@@ -38,6 +38,11 @@ import and its unused internal export. Re-export the helper through the existing
 public `drawer` facade and consume that route. The failed build grants no source
 or runtime credit; all original fixtures and refusal laws stay unchanged.
 
+The successor source build passes. Its tooling check detects the newly added
+Patina helper consumer missing from the generated census. Regenerate through
+the existing producer; only the Patina non-product import row changes. The
+unchanged source-qualified census tests pass locally before fresh Actions.
+
 The parser currently cannot retain shorthand-default patterns such as
 `{ slot = fallback }` as expression ASTs. Such patterns, malformed argument
 headers (including the parent's arrow cases), type-syntax refusals and the
