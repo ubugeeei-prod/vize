@@ -93,3 +93,12 @@ launch, observer arguments and cleanup. Fresh type-aware, zero-warning and
 formal Actions gates remain required. The first included public campaign stays
 unaccepted until the unchanged 30-minute workflow succeeds and records total
 runtime and margin; installed runtime remains unexecuted.
+
+The [6097982047 strict source qualification](https://github.com/ubugeeei-prod/vize/issues/8501#issuecomment-6097982047)
+adds one native TypeScript project for all eight VRT modules and their
+nine-source import closure using the existing pinned Playwright declarations.
+The valid Browser witness compiles; the actual wrong Browser and viewport
+witnesses require TS2740 and TS2322. Every original checker option, default
+project, five existing invocations, runtime control and 30-minute deadline
+remains unchanged. Local TypeScript7.0.2 source diagnosis passed; fresh Linux
+Actions and the first included public release acceptance remain required.
