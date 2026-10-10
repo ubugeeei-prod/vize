@@ -81,3 +81,14 @@ selects a private unit rule whose directive callback passes true. Both
 instances allocate no heap payload; explicit false still overrides prior true,
 and neither option enables an absent rule. Source and protected measurements
 must establish the actual resulting traversal cost before queue admission.
+
+The unit-policy source `7caf31bc` still fails the same ceiling at 45,755;
+`walk_items` remains 11,097 exclusive instructions. No budget repair is
+claimed. The JSX authored-item merge now compares cursors only while both
+streams are nonempty, then drains the remaining stream directly. Static
+attributes still win tied spans, the L1 surface path is unchanged, and seven
+authored order vectors cover empty streams, either tail, interleaving and
+ties. This is a real traversal change with no allocation, raised ceiling or
+benchmark-window change. Fresh source and instruction Actions must qualify
+the resulting cost; other independently green queue profiles establish no
+exclusive cause or transferred acceptance.
