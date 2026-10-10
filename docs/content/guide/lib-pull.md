@@ -71,22 +71,26 @@ Pulled files keep the registry layout (`families/form/rating/rating.vue`,
 between items keep working without any rewriting. The directory is chosen by:
 
 1. `--dir <dir>` (must stay inside the project),
-2. the `lib` section of `vize.config.*`,
+2. shared `vize.lib` settings in your existing Vite configuration,
 3. the registry default: `src/components/vize` (ui) and `src/composables/vize` (composable).
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lib: {
-    uiDir: "src/ui/vendor",
-    composableDir: "src/composables/vendor",
-    // dir: "src/vendor",        // shared fallback for both kinds
-    // lockfile: "vize-lib.lock.json",
+  vize: {
+    lib: {
+      uiDir: "src/ui/vendor",
+      composableDir: "src/composables/vendor",
+      // dir: "src/vendor",
+      // lockfile: "vize-lib.lock.json",
+    },
   },
 });
 ```
+
+An existing dedicated `lib` section remains supported with the precedence described in [Configuration](./configuration.md).
 
 Once a kind has been pulled into a directory, later pulls of that kind reuse it; a conflicting
 `--dir` is rejected instead of splitting the dependency graph.

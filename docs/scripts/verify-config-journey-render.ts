@@ -33,9 +33,16 @@ const pages = [
   "/guide/compiler-configuration-reference",
   "/guide/vite-plugin",
   "/guide/workflows",
+  "/guide/musea",
+  "/guide/lib-pull",
 ];
 const routes = ["", "/ja", "/fr", "/pt-BR", "/zh-CN"].flatMap((locale) =>
   pages.map((page) => `${locale}${page}`),
+);
+routes.push(
+  "/guide/formatter-line-endings",
+  "/guide/formatter-property-quotes",
+  "/guide/formatter-import-sorting",
 );
 const rendered = spawnSync(
   process.execPath,

@@ -2,7 +2,7 @@
 title: ソース配布 (vize lib)
 ---
 
-<!-- Generated translation; source: guide/lib-pull.md -->
+<!-- Reviewed translation; source: guide/lib-pull.md; scope: shared native configuration and init -->
 
 # ソース配布 (`vize lib`)
 
@@ -72,22 +72,26 @@ node_modules/@vizejs/ui/
 import は書き換えなしでそのまま動作します。ディレクトリは次の順で決まります。
 
 1. `--dir <dir>` (プロジェクト内である必要があります)
-2. `vize.config.*` の `lib` セクション
+2. 既存の Vite 設定にある共通の `vize.lib` 設定
 3. レジストリの既定値: `src/components/vize` (ui)、`src/composables/vize` (composable)
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lib: {
-    uiDir: "src/ui/vendor",
-    composableDir: "src/composables/vendor",
-    // dir: "src/vendor",        // 両方の種類に共通のフォールバック
-    // lockfile: "vize-lib.lock.json",
+  vize: {
+    lib: {
+      uiDir: "src/ui/vendor",
+      composableDir: "src/composables/vendor",
+      // dir: "src/vendor",
+      // lockfile: "vize-lib.lock.json",
+    },
   },
 });
 ```
+
+既存の専用設定の `lib` も利用できます。優先順位と公開済みバージョンの対応範囲は[設定ガイド](./configuration.md)を参照してください。
 
 ある種類を一度ディレクトリに取得すると、その種類の以降の取得は同じディレクトリを使います。依存グラフを分割
 してしまう競合する `--dir` は拒否されます。
@@ -102,11 +106,9 @@ vize lib init --dry-run   # 検出した構成と設定の変更を表示
 vize lib init             # 書き込む
 ```
 
-`init` はソースディレクトリ (`src/`、Nuxt 4 では `app/`) と TypeScript を検出し、`lib.uiDir` / `lib.composableDir`
-を書き込みます。設定がなければ `vize.config.json` を作成し、既存の `vize.config.json` には他の部分を変えずに
-`lib` セクションを追加し、`vize.config.ts` / `.pkl` の場合はコードを編集せずにスニペットを表示します。既存の
-`lib` セクションは `--force` がない限り保持されます。`tsconfig.json` に `allowImportingTsExtensions` がない場合は
-その旨を表示します (取得したソースは兄弟ファイルを `./x.ts` として import します)。
+`init` はソースディレクトリ（通常は `src/`、Nuxt 4 では `app/`）と TypeScript を検出します。設定がなければ、新しい `vite.config.mjs` に `vize.lib.uiDir` と `vize.lib.composableDir` を書き込みます。既存の Vite 設定は編集せず、設定を追加する必要があれば `vize.lib` のスニペットを表示します。
+
+既存の専用設定では従来の動作を維持します。`vize.config.json` には `lib` を追加し、コードや Pkl の設定ではスニペットを表示します。既存の `lib` は保持し、専用 JSON の場合は `--force` で置き換えられます。`tsconfig.json` に `allowImportingTsExtensions` がなければ、その旨を表示します。取得したソースは兄弟ファイルを `./x.ts` として import します。
 
 ## 更新の確認: `outdated`
 

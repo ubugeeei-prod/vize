@@ -114,3 +114,20 @@ void test("localized configuration reading paths resolve through native rendered
   }
   assert.ok(rendered.size >= 30, "the complete localized reading paths were visited");
 });
+
+void test("library and Musea shared examples keep the same native scope in every locale", () => {
+  const shared = (source: string, section: string) =>
+    fences(source).find((code) => code.includes(`    ${section}: {`));
+  const musea = shared(render("docs/content/guide/musea.md").source, "musea");
+  const lib = shared(render("docs/content/guide/lib-pull.md").source, "lib");
+  assert.ok(musea && lib, "complete authoritative English examples exist");
+  for (const locale of locales) {
+    const prefix = `docs/content/${locale ? `${locale}/` : ""}guide/`;
+    assert.equal(shared(render(`${prefix}musea.md`).source, "musea"), musea, locale);
+    const library = render(`${prefix}lib-pull.md`);
+    assert.equal(shared(library.source, "lib"), lib, locale);
+    assert.match(library.source, /`vite\.config\.mjs`/);
+    assert.match(library.source, /`vize\.lib`/);
+    assert.match(library.source, /`vize\.config\.json`/);
+  }
+});

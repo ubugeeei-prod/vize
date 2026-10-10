@@ -25,6 +25,10 @@ precedence, explicit `--config`, direct plugin/editor overrides, and opt-outs.
   remaining body still contains machine translation.
 - Link tests use the actual maintained UI reference generator for generated
   targets and the native renderer for source/fallback targets and fragments.
+- Localized Musea and library guidance uses the same whole native Vite examples
+  as English. Fresh library init creates `vite.config.mjs`; existing Vite files
+  are preserved and receive a manual snippet when needed. Dedicated JSON and
+  code/Pkl compatibility remains explicit. Short formatter guides use `fmt.vize`.
 
 Common Oxfmt settings are not advertised as native formatter options. Native
 options use `fmt.vize` or top-level `vize.formatter`. TypeScript dependencies and
@@ -44,13 +48,14 @@ remain unfinished at the original documentation base. Describe package-root
 invocation, scoped `vize.entries`, and explicit editor workspace folders; amend
 those bounds only after the later native Stack layers are actually qualified.
 
-Four focused regressions retain complete source examples, all original native
+Five focused regressions retain complete source examples, all original native
 anchors, identical whole recipes in five locales, and actual rendered reading
-targets. The Docs workflow captures all thirty localized setup, configuration,
-reference, plugin, and workflow routes at desktop/mobile widths using the existing
+targets. The Docs workflow captures all forty localized setup, configuration,
+reference, plugin, workflow, Musea, and library routes plus three formatter
+fallback routes at desktop/mobile widths using the existing
 full-page capture and link checks, bound to the exact SSG manifest source. Keep
 the inherited navigation and Open Graph gates too. Exact-head Actions,
 protected Stack delivery, deployed all-locale
-browser acceptance, and the included public release remain required. Other
-localized library/formatter feature-reference prose still needs its separate
-configuration audit; #8370 is not closed by opening this PR.
+browser acceptance, and the included public release remain required. Historical
+blog posts keep their original release context; optional dedicated format examples
+stay in detailed references. #8370 is not closed by opening this PR.
