@@ -86,12 +86,27 @@ test("adjacent replacements and a terminal insertion use original document coord
   );
 });
 
+test("same-position insertions retain array order before an adjacent replacement", () => {
+  const insertions = [replacement(0, 3, 3, "one"), replacement(0, 3, 3, "two")];
+  for (const edits of [insertions, [replacement(0, 3, 7, "palette"), ...insertions]]) {
+    const packet = { changes: { [uri]: edits } };
+    const original = structuredClone(packet);
+    assert.deepEqual(applyWorkspaceEdit(packet, [document]), [
+      {
+        ...document,
+        text: `😀 onetwo${edits.length === 2 ? "tone" : "palette"}\r\n隠 hidden\nlast`,
+      },
+    ]);
+    assert.deepEqual(packet, original);
+  }
+});
+
 test("malformed, reversed, duplicate and overlapping edits fail with the original packet", () => {
   const invalid = [
     [replacement(0, 7, 3, "wrong")],
     [replacement(0, 3, 7, "one"), replacement(0, 3, 7, "two")],
     [replacement(0, 3, 6, "one"), replacement(0, 5, 7, "two")],
-    [replacement(0, 3, 3, "one"), replacement(0, 3, 3, "two")],
+    [replacement(0, 3, 7, "one"), replacement(0, 5, 5, "inside replacement")],
     [replacement(0, 1, 2, "split emoji")],
     [replacement(0, 7, 8, "line ending")],
     [replacement(5, 0, 0, "outside")],

@@ -107,7 +107,9 @@ The ordinary hosted tooling entry
 application, frozen-case, native-journal, public-payload and Vue-custody
 falsification suite. Its success is helper validation. Actual installed32,
 actual #8262 inclusion in C/H and complete source/protected execution remain
-mandatory for #8011 closure. This finite alias replay grants no imported/complex
+mandatory for this supplemental replay's completion. The original #8011 source
+bug is already resolved on signed main; this campaign adds no issue-closure or
+release condition. This finite alias replay grants no imported/complex
 alias or stock ContentMapper parity credit.
 
 The first ecfe hosted `check-js` rejected snapshot spread and default object
@@ -119,3 +121,15 @@ zero-warning gate, whole packets, sources/goldens and terminal custody are
 unchanged. All 31 falsification laws and strict TypeScript checking pass after
 the bounded correction; fresh hosted lint is mandatory. Paired decision:
 [#8011 comment](https://github.com/ubugeeei-prod/vize/issues/8011#issuecomment-6055019121).
+
+## Review corrections on current main
+
+The edit consumer accepts ordered same-position insertions and insertions at the
+start of a replacement, while refusing overlapping or duplicate non-empty
+ranges. Whole Unicode/CRLF output and packet immutability remain asserted.
+Signed source delivery binds the raw PR base repository, PR URL and merge-commit
+URL to the delivered repository. Disposable foreign-record controls fail before
+provider launch; the unused head-SHA format check supplies no delivery proof.
+The two regressions fail before these corrections and all 33 helper laws pass
+locally. Fresh Actions, actual public-provider replay and protected delivery
+remain required; no source, oracle, public payload or native custody is relaxed.

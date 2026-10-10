@@ -146,10 +146,14 @@ export function applyWorkspaceEdit(
       for (let index = 1; index < ordered.length; index++) {
         const previous = ordered[index - 1];
         const current = ordered[index];
-        if (current.start === previous.start && current.end === previous.end)
+        const previousIsInsertion = previous.start === previous.end;
+        if (
+          !previousIsInsertion &&
+          current.start === previous.start &&
+          current.end === previous.end
+        )
           throw new Error("duplicate edit range");
-        if (current.start < previous.end || current.start === previous.start)
-          throw new Error("overlapping text edits");
+        if (current.start < previous.end) throw new Error("overlapping text edits");
       }
       let result = text;
       for (const value of ordered.reverse())
