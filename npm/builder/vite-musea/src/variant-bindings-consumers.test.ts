@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import test from "node:test";
+import { runInThisContext } from "node:vm";
 import type { Connect, ModuleNode, ViteDevServer } from "vite";
 import { generateArtModule } from "./art-module.ts";
 import { handlePreviewWithProps } from "./api-routes/post-handlers.ts";
@@ -114,7 +115,14 @@ void test("dev fallback and props override choose each distinct binding", async 
       (message) => assert.fail(message),
     );
     assert.ok(body.includes(expected), body);
-    assert.ok(body.includes('"label":"Override"'));
+    const propsInitializers = [...body.matchAll(/^const propsOverride = (.+);$/gm)];
+    assert.equal(propsInitializers.length, 1, "props override initializer must be unique");
+    const actualProps: unknown = runInThisContext(`(${propsInitializers[0][1]})`, { timeout: 1_000 });
+    assert.ok(typeof actualProps === "object" && actualProps !== null);
+    assert.deepEqual(actualProps, { label: "Override" });
+    assert.deepEqual(Object.keys(actualProps), ["label"]);
+    assert.deepEqual(Reflect.ownKeys(actualProps), ["label"]);
+    assert.equal(Object.getPrototypeOf(actualProps), Object.prototype);
   }
 });
 
