@@ -18,6 +18,7 @@
   },
   "include": [
     "tests/tooling/**/*.ts",
+    "npm/oxlint/src/cli/presentation-context.ts",
     "tools/config/vite-plus/**/*.ts",
     "vite.config.ts",
     "docs/scripts/rules/**/*.ts",

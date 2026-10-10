@@ -1,0 +1,13 @@
+name: Preserve full-workspace test results and walltime
+description: Preserve workspace diagnostics after source failures without running tests
+runs:
+  using: composite
+  steps:
+    - name: Preserve full-workspace test results and walltime
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: rust-full-workspace-${{ github.sha }}-${{ github.run_attempt }}
+        path: target/nextest/full/
+        if-no-files-found: warn
+        retention-days: 14

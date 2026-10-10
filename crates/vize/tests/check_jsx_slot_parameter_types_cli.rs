@@ -336,3 +336,6 @@ fn nested_raw_and_structural_native_callbacks_keep_whole_packets() {
         assert_eq!(std::fs::read(project.join("App.tsx")).unwrap(), input);
     }
 }
+
+#[path = "support/jsx_attribute_expressions.rs"]
+mod attribute_expressions;

@@ -11,8 +11,10 @@ fn typed_slot_runtime_output_and_metadata_remain_byte_exact() {
     let source = "// 日本語 😀\r\nconst View = () => <Host>{{ named: (props: { value: string }) => <span>{props.value}</span>, other: function ({ value }: { value: number }) { return <b>{value}</b>; } }}</Host>;\r\nconst Styled = () => <div><style scoped>{`.view { color: red; }`}</style><p class=\"view\">ok</p></div>;";
     for mode in [JsxOutputMode::Vdom, JsxOutputMode::Vapor] {
         let bump = Allocator::new();
-        let mut config = JsxCompileConfig::default();
-        config.default_mode = mode;
+        let mut config = JsxCompileConfig {
+            default_mode: mode,
+            ..Default::default()
+        };
         config.vdom.source_map = true;
         let output = compile_jsx(&bump, source, JsxLang::Tsx, &config);
         assert_eq!(output.components.len(), 2);
@@ -94,3 +96,5 @@ fn source_map_covers_single_and_multiple_component_modules() {
         "multi-component module composes maps for every retained declaration"
     );
 }
+
+mod attribute_tests;

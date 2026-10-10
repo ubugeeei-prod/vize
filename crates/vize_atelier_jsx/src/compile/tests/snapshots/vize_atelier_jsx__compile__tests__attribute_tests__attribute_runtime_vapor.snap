@@ -1,0 +1,23 @@
+---
+source: crates/vize_atelier_jsx/src/compile/tests/attribute_tests.rs
+expression: packet
+---
+(
+    "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';\n\nexport function render(_ctx) {\n  const _component_Host = _resolveComponent(\"Host\")\n  const n0 = _createComponentWithFallback(_component_Host, { $: [\n    {\n      separator: () => (choice || <span>{value}</span>),\n      customSlots: () => ({ checkable: () => <i>{count}</i> })\n    },\n    () => ({ extra: <b>{value}</b> }),\n    { icon: () => (<u>{count}</u>) }\n  ] }, null, true)\n  return n0\n}\n",
+    None,
+    [
+        (
+            Some(
+                "View",
+            ),
+            None,
+            Vapor,
+            "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback } from 'vue';\n\nexport function render(_ctx) {\n  const _component_Host = _resolveComponent(\"Host\")\n  const n0 = _createComponentWithFallback(_component_Host, { $: [\n    {\n      separator: () => (choice || <span>{value}</span>),\n      customSlots: () => ({ checkable: () => <i>{count}</i> })\n    },\n    () => ({ extra: <b>{value}</b> }),\n    { icon: () => (<u>{count}</u>) }\n  ] }, null, true)\n  return n0\n}\n",
+            "",
+            None,
+            None,
+            [],
+        ),
+    ],
+    [],
+)

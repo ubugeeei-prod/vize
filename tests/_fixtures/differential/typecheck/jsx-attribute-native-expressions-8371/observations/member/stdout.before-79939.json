@@ -1,0 +1,43 @@
+{
+  "files": [
+    {
+      "file": "Consumer.tsx",
+      "diagnostics": [
+        "error:5:19 [TS1005] ',' expected.",
+        "error:5:19 [TS1109] Expression expected.",
+        "error:5:53 [TS1005] ',' expected.",
+        "error:6:63 [TS1109] Expression expected.",
+        "error:7:21 [TS1109] Expression expected."
+      ]
+    },
+    {
+      "file": "Host.vue",
+      "diagnostics": []
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "jsx": "preserve",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2022",
+        "types": [
+          "vue/jsx"
+        ]
+      },
+      "files": [
+        "Consumer.tsx",
+        "Host.vue",
+        "node_modules/vue/jsx.d.ts"
+      ]
+    }
+  ],
+  "errorCount": 5,
+  "warningCount": 0,
+  "fileCount": 2
+}
