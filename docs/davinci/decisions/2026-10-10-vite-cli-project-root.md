@@ -68,3 +68,10 @@ escaped patterns: dropped/literal files remain untouched, explicit keep files
 remain selected, and their authored TypeScript errors remain visible. Snapshots
 were reviewed against these contracts before adoption; a formatter no-op caused
 by an interior `./` in a root glob was corrected instead of recorded as expected.
+
+Checked discovery also reports config-evaluation failures instead of silently
+checking with unrelated defaults. The Actions app gate builds the lightweight
+public CLI JavaScript exports before invoking the freshly built native CLI, so
+workspace samples importing `defineConfig` from `vize` have the same available
+exports as an installed package. The failing unbuilt-export receipt remains
+evidence of that prerequisite; config errors and their diagnostics stay strict.

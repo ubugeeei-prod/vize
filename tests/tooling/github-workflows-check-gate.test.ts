@@ -182,6 +182,12 @@ test("source gates cover PRs and merge groups while full JS qualification also r
     "generated reference docs must be checked before the Rust build",
   );
   assert.match(commands("check-vize-apps"), /cargo build --profile ci -p vize/);
+  const configExports = appSteps.findIndex((step) => step.run?.includes("(cd npm/cli && vp pack)"));
+  assert.ok(
+    configExports >= 0 &&
+      configExports < appSteps.findIndex((step) => step.name === "Check Vize app fixtures"),
+    "workspace config imports need built public JS exports before the source CLI checks apps",
+  );
   assert.match(commands("test-scripts"), /vp run --workspace-root test:scripts/);
   const history = parse(
     readRepoFile(".github", "actions", "test-js-packages-with-history", "action.yml"),
