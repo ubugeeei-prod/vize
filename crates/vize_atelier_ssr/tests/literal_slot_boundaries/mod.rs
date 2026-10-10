@@ -76,12 +76,27 @@ fn compile(
 
 #[test]
 fn public_dom_vapor_ssr_keep_literal_and_outlet_slot_ownership() {
+    let expected: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/public-slot.expected.json"
+    )))
+    .expect("sixteen complete fixed public compiler packets");
+    assert_eq!(expected.as_array().expect("whole module pins").len(), 16);
+    let mut observed = Vec::new();
     let mut files = Vec::new();
-    for &(name, source, literal) in CASES {
+    for &(name, source, _literal) in CASES {
         for kind in ["dom", "vapor", "ssr"] {
             let (current, lanes) = record_lanes(|| compile(name, source, kind, "selected"));
+            observed.push(serde_json::json!({
+                "name": name, "source": source, "kind": kind,
+                "route": "selected", "result": current
+            }));
             if kind == "ssr" {
                 let legacy = with_legacy_lane(|| compile(name, source, kind, "explicit-legacy"));
+                observed.push(serde_json::json!({
+                    "name": name, "source": source, "kind": kind,
+                    "route": "explicit-legacy", "result": legacy
+                }));
                 assert_eq!(
                     serde_json::to_value(&current).expect("whole current"),
                     serde_json::to_value(&legacy).expect("whole legacy")
@@ -108,40 +123,13 @@ fn public_dom_vapor_ssr_keep_literal_and_outlet_slot_ownership() {
                 "{name}/{kind}: {:?}",
                 current.warnings
             );
-            let code = current.code.as_str();
-            let outlet_helper = match kind {
-                "dom" => "renderSlot",
-                "vapor" => "createSlot",
-                "ssr" => "ssrRenderSlot",
-                _ => unreachable!(),
-            };
-            assert_eq!(
-                code.contains(outlet_helper),
-                !literal,
-                "{name}/{kind}: {code}"
-            );
-            if literal {
-                let emitted_literal = match kind {
-                    "dom" => {
-                        code.contains("_createElementBlock(\"slot\"")
-                            || code.contains("_createElementVNode(\"slot\"")
-                            || code.contains("_createStaticVNode(\"<slot")
-                    }
-                    "vapor" => {
-                        code.contains("_template(\"<slot")
-                            || code.contains("_template(\"<div><slot")
-                    }
-                    "ssr" => code.contains("<slot") && code.contains("</slot>"),
-                    _ => unreachable!(),
-                };
-                assert!(
-                    emitted_literal,
-                    "{name}/{kind}: actual literal emitter: {code}"
-                );
-                assert!(!code.contains("v-pre"), "{name}/{kind}: marker is consumed");
-            }
         }
     }
+    assert_eq!(
+        serde_json::json!(observed),
+        expected,
+        "every complete module/map field"
+    );
     super::v_pre_boundaries::observe_runtime(
         serde_json::json!({ "files": files }),
         "../../tests/tooling/support/ssr-literal-slot-boundaries.mjs",

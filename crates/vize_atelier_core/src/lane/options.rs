@@ -1,4 +1,4 @@
-use vize_l0::{FxHashSet, String};
+use vize_l0::{FxHashSet, Span, String};
 
 use crate::options::CustomElementMatcher;
 
@@ -14,5 +14,5 @@ pub(crate) struct TransformLaneOptions<'a> {
     pub hoisted_scope_id: Option<String>,
     pub jsx_compat: JsxTransformCompat,
     pub custom_elements: CustomElementMatcher,
-    pub frozen_elements: &'a [vize_l0::Span],
+    pub frozen_elements: &'a [Span],
 }

@@ -122,8 +122,11 @@ impl<'a> Parser<'a> {
                         let attr = PropNode::Attribute(Box::new_in(
                             AttributeNode {
                                 name: attr_name,
-                                name_loc: self
-                                    .create_loc(dir.loc.span.start as usize, authored_end),
+                                name_loc: if self.frozen_elements.is_some() {
+                                    self.create_loc(dir.loc.span.start as usize, authored_end)
+                                } else {
+                                    dir.loc.clone()
+                                },
                                 value: attr_value,
                                 loc: dir.loc.clone(),
                             },

@@ -9,7 +9,7 @@ use vize_relief::{ElementType, PropNode, TemplateChildNode, errors::ErrorCode};
 fn complete_names_and_spans_follow_the_v_pre_boundary() {
     let source = "<div v-bind:[keys['name]']].camel.stop=\"before\" id=\"plain\" v-pre v-bind:[keys['name]']].camel.stop=\"after\"><Child is=\"vue:Child\" :[keys['name]']].camel=\"literal\"></Child></div>";
     let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, source);
+    let (root, errors, _) = Parser::new(&allocator, source).parse_with_frozen_elements();
     assert!(errors.is_empty(), "{errors:?}");
     let Some(TemplateChildNode::Element(div)) = root.children.first() else {
         panic!("expected complete div");

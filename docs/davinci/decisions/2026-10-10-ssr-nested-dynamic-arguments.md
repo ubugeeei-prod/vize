@@ -233,6 +233,22 @@ completed-child collector for eight current/official observations in CI;
 no original source or runtime population is replaced. All four supplemental
 runtime directories join the existing always-run raw artifact retention.
 Those latest test/helper changes await fresh Actions execution.
+The first composed f44 Actions fails before full SSR execution on a checked-index
+lint, observer formatting and a generated consumption row. Coverage also exposes
+three supplemental modules as unintended standalone integration crates; fixture
+paths are anchored before byte-identical ordinary module moves. The original
+frozen parser options law identifies exactly two changed name-location endpoints
+(23 to 15 and 28 to 16). Whole historical/current captures retain every original
+input, error and expected digest, with all ten other ASTs byte-identical. The
+public/default parser restores the original full-attribute metadata; only the
+existing compiler opt-in uses the completed authored head. Exact old AST/error
+controls bind that boundary without changing any of the twelve frozen oracles.
+The f44 measured 100 stage plus four formatter rows pass all three repeats under
+their original ceilings; that source-bound result does not qualify the successor.
+The same four supplemental slot inputs now compare all sixteen complete public
+compiler packets against the retained source-built modules, maps and diagnostics.
+Preferred L0 imports retain their original grouped boundary, and only the two
+affected compiler-consumer inventory shards are regenerated from actual sites.
 The ordinary current-main composition, complete source/full Actions,
 unchanged historical corpora, all 104 measured instruction-budget rows,
 protected queue and actual merge still remain before delivery. Raw previous

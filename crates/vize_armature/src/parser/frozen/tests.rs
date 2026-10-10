@@ -63,3 +63,59 @@ fn normal_opt_in_is_empty_and_default_parser_disables_collection() {
     assert!(errors.is_empty(), "{errors:?}");
     assert_eq!(frozen.spans_for(root.source, source), Some(&[][..]));
 }
+
+#[test]
+#[cfg(feature = "legacy")]
+fn compiler_head_locations_do_not_change_the_original_default_v_pre_results() {
+    use vize_relief::{PropNode, TemplateChildNode};
+
+    macro_rules! before {
+        ($name:literal) => {
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/tests/_fixtures/v_pre_name_locations/",
+                $name
+            ))
+        };
+    }
+
+    for (source, historical_ast, historical_errors, original_end, head_end) in [
+        (
+            "<p v-pre :title='value'>{{ literal }}<i @click='f'>{{nested}}</i></p>{{normal}}",
+            before!("case-0.before.ast.txt"),
+            before!("case-0.before.errors.txt"),
+            23,
+            15,
+        ),
+        (
+            "<p v-pre :broken='unfinished",
+            before!("case-7.before.ast.txt"),
+            before!("case-7.before.errors.txt"),
+            28,
+            16,
+        ),
+    ] {
+        let arena = Allocator::new();
+        let (root, errors) = Parser::new(&arena, source).parse();
+        assert_eq!(vize_l0::cstr!("{root:#?}"), historical_ast);
+        assert_eq!(vize_l0::cstr!("{errors:#?}"), historical_errors);
+        let (compiler_root, compiler_errors, frozen) =
+            Parser::new(&arena, source).parse_with_frozen_elements();
+        assert_eq!(vize_l0::cstr!("{compiler_errors:#?}"), historical_errors);
+        assert_eq!(
+            frozen.spans_for(compiler_root.source, source),
+            Some(frozen.spans)
+        );
+        for (tree, end) in [(&root, original_end), (&compiler_root, head_end)] {
+            let Some(TemplateChildNode::Element(element)) = tree.children.first() else {
+                panic!("original literal p");
+            };
+            let Some(PropNode::Attribute(attribute)) = element.props.first() else {
+                panic!("original frozen attribute");
+            };
+            assert_eq!(attribute.name_loc.span.start, 9);
+            assert_eq!(attribute.name_loc.span.end, end);
+            assert_eq!(attribute.loc.span.end, original_end);
+        }
+    }
+}

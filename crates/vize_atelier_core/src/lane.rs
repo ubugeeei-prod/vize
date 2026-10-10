@@ -13,7 +13,7 @@ mod structural_keys;
 pub mod traverse;
 
 use vize_croquis::{Croquis, ScopeChain};
-use vize_l0::{Allocator, Box, SmallVec, String, Vec, interner::Interner, profile};
+use vize_l0::{Allocator, Box, SmallVec, Span, String, Vec, interner::Interner, profile};
 
 use crate::errors::CompilerError;
 use crate::options::TransformOptions;
@@ -122,7 +122,7 @@ pub struct TransformContext<'a> {
     /// Scope ID to bake into static VNodes hoisted outside render scope.
     pub(crate) hoisted_scope_id: Option<String>,
     /// Validated compiler opt-in provenance; ordinary transform entries leave it empty.
-    pub(crate) frozen_elements: &'a [vize_l0::Span],
+    pub(crate) frozen_elements: &'a [Span],
 }
 
 impl TransformContext<'_> {
