@@ -152,7 +152,7 @@ try {
     path.resolve(values.output),
   );
   process.stdout.write(
-    `Verified 16 generated component/composable documentation routes at desktop/mobile widths and ${checkedLinks.size} local links\n`,
+    `Verified ${10 + previewComposableExamples.length} generated component/composable documentation routes at desktop/mobile widths and ${checkedLinks.size} local links\n`,
   );
 } finally {
   await browser.close();

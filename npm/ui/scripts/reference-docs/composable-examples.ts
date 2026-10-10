@@ -3,8 +3,10 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { COMPOSABLE_CATALOG } from "../../../compose/core/src/catalog.ts";
 import { blocks, table } from "./markdown.ts";
+import { asyncEffectExamples } from "./async-effect-examples.ts";
+import { browserEffectExamples } from "./browser-effect-examples.ts";
 
-export const composableExamples = [
+const stateExamples = [
   {
     name: "use-toggle",
     title: "Show delivery details",
@@ -67,6 +69,12 @@ export const composableExamples = [
   },
 ] as const;
 
+export const composableExamples = [
+  ...stateExamples,
+  ...asyncEffectExamples,
+  ...browserEffectExamples,
+] as const;
+
 export function composableExampleSource(packageRoot: string, name: string): string {
   if (!COMPOSABLE_CATALOG.entries.some((entry) => entry.subpath === `./${name}`))
     throw new Error(`Example has no public composable entry: ${name}`);
@@ -103,7 +111,7 @@ export function composableHub(locale: string, linkPrefix: string): string {
   return blocks(
     ja ? "## 動作から選ぶ" : "## Try a behavior",
     ja
-      ? "入力、検証、検索、履歴、ページ切り替えを実例で試せます。各リンクのプレビューと表示コードは同じ Vue SFC を使っています (英語)。"
+      ? "入力、検証、検索、履歴、ページ切り替え、非同期処理、タイマー、保存、画面サイズ、フォーカスを実例で試せます。各リンクのプレビューと表示コードは同じ Vue SFC を使っています (英語)。"
       : "See how reactive state changes an interface. Each live preview and its copyable code come from the same complete Vue SFC.",
     table(
       [ja ? "やりたいこと" : "Goal", "Composable"],
@@ -119,7 +127,7 @@ export function composableHub(locale: string, linkPrefix: string): string {
       : "Use a Vue 3.5+ project, then copy the complete SFC from an example page. Call lifecycle-bound utilities inside `<script setup>` so their watchers, listeners, and timers are disposed with the component.",
     ja ? "## 全 API" : "## All APIs",
     ja
-      ? "以下は全公開エントリーのソース由来リファレンスです。上記の 6 例以外については、ライブプレビューでの検証をまだ行っていません。"
-      : "The source-generated reference below covers every public entry. Live preview interaction checks currently cover the six examples above; other entries retain their API examples and runtime contracts.",
+      ? `以下は全公開エントリーのソース由来リファレンスです。上記の ${composableExamples.length} 例以外については、ライブプレビューでの検証をまだ行っていません。`
+      : `The source-generated reference below covers every public entry. Live preview interaction checks currently cover the ${composableExamples.length} examples above; other entries retain their API examples and runtime contracts.`,
   );
 }
