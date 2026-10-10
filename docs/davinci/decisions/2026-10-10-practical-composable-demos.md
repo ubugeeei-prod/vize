@@ -102,3 +102,18 @@ source hash, diagnostics, and mobile overflow requirements apply.
 Register this dependent extension in the same native Stack and merge only a
 contiguous exact-head passing prefix. Remaining catalogue acceptance and #6101
 stay open; require actual protected merge and deployed browser proof.
+
+Read-only review found misleading state text and a nondiscriminating batching
+input. A field's empty recorded error does not validate subsequent edits; use
+neutral status and exercise valid-to-invalid re-edit before and after blur.
+Unavailable storage keeps writable in-tab state; describe it accurately and
+prove selection/reload in actual Chromium with localStorage disabled, with two
+additional mobile captures and a separate receipt. Batch assertions must use
+whitespace-bearing input so both grouped assignments change the value and Undo
+restores the exact original whitespace.
+
+The first form-extension source run rejected two static inline styles in the
+selection example. Move them to source-owned scoped classes and retain the
+unchanged opinionated gate. Keep the review corrections in the top layer and
+queue the corrected complete Stack; earlier prefixes must not ship the known
+misleading states.

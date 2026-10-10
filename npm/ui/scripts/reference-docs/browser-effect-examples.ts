@@ -8,7 +8,7 @@ export const browserEffectExamples = [
     observe:
       "Choose Components, then reload this page to keep that choice. Reset reading progress removes the saved key and restores Getting started, including after another reload.",
     context:
-      "`state` is writable; `supported` and `error` describe the real localStorage capability. A validator accepts only the three guide sections. `writeDefaults: false` leaves an absent or removed key absent. SSR uses Getting started without accessing storage; the default post-flush initial read preserves hydration before restoring a saved choice. Storage can be unavailable or fail in restricted browsers. The key belongs to this example's origin; an embedded frame may have a different origin or storage policy from its parent. Watches and storage listeners follow the component scope.",
+      "`state` is writable; `supported` and `error` describe the real localStorage capability. A validator accepts only the three guide sections. `writeDefaults: false` leaves an absent or removed key absent. SSR uses Getting started without accessing storage; the default post-flush initial read preserves hydration before restoring a saved choice. When storage is unavailable, choices still update in this tab but reload returns to the default. Storage can fail in restricted browsers. The key belongs to this example's origin; an embedded frame may have a different origin or storage policy from its parent. Watches and storage listeners follow the component scope.",
   },
   {
     name: "media-query",

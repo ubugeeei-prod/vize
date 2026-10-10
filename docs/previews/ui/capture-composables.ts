@@ -11,6 +11,7 @@ import { browserEffectExamples } from "../../../npm/ui/scripts/reference-docs/br
 import { exerciseBrowserExample } from "./interactions-browser-effects.ts";
 import { formStateExamples } from "../../../npm/ui/scripts/reference-docs/form-state-examples.ts";
 import { exerciseFormStateExample } from "./interactions-form-state.ts";
+import { verifyUnavailableStorage } from "./capture-unavailable-storage.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
   await page.getByRole("button", { name: label, exact: true }).focus();
@@ -94,8 +95,21 @@ async function exercise(page: Page, name: string): Promise<string[]> {
     assert.equal(await page.locator("output").textContent(), "Changed: yes · Visited: yes");
     await field.fill("Ada");
     await page.keyboard.press("Tab");
-    await page.getByText("This name is ready to use.").waitFor();
+    await page.getByText("No recorded validation error.").waitFor();
     assert.equal(await field.getAttribute("aria-invalid"), "false");
+    await field.fill("Al");
+    assert.equal(
+      await page.locator('p[role="status"]').textContent(),
+      "No recorded validation error.",
+    );
+    assert.equal(
+      await field.getAttribute("aria-invalid"),
+      "false",
+      "errors describe the last blur",
+    );
+    await page.keyboard.press("Tab");
+    await page.getByText("Use at least three characters.", { exact: true }).waitFor();
+    assert.equal(await field.getAttribute("aria-invalid"), "true");
     await activate(page, "Reset name");
     assert.equal(await field.inputValue(), "");
     assert.equal(await page.locator("output").textContent(), "Changed: no · Visited: no");
@@ -106,17 +120,22 @@ async function exercise(page: Page, name: string): Promise<string[]> {
       "validation waits for keyboard blur",
       "error and aria-invalid",
       "valid state",
+      "re-edit retains only recorded validation status until the next blur",
       "reset clears interaction state",
     ];
   }
   if (name === "use-history") {
     const title = page.getByRole("textbox", { name: "Release title" });
     assert.equal(await page.getByRole("button", { name: "Undo", exact: true }).isDisabled(), true);
-    await title.fill("A new release");
+    await title.fill("  A new release  ");
     await activate(page, "Apply publication title");
     assert.equal(await page.locator("output").textContent(), "2 undo steps · 0 redo steps");
     await activate(page, "Undo");
-    assert.equal(await title.inputValue(), "A new release");
+    assert.equal(
+      await title.inputValue(),
+      "  A new release  ",
+      "one batch restores both meaningful writes",
+    );
     await activate(page, "Redo");
     assert.equal(await title.inputValue(), "Vize release notes");
     await activate(page, "Undo");
@@ -128,7 +147,7 @@ async function exercise(page: Page, name: string): Promise<string[]> {
     await activate(page, "Apply publication title");
     return [
       "keyboard undo and redo restore exact values",
-      "batch creates one undo step",
+      "batch groups trimming and title replacement into one exact whitespace-preserving undo step",
       "new edit drops redo",
       "clear preserves live value",
     ];
@@ -234,6 +253,7 @@ export async function captureComposablePreviews(
     path.join(outputRoot, "browser-evidence.json"),
     `${JSON.stringify({ schema: "vize.composable-docs-browser-evidence", browserVersion: browser.version(), baseUrl, examples: receipts }, null, 2)}\n`,
   );
+  await verifyUnavailableStorage(baseUrl, outputRoot);
   process.stdout.write(
     `Verified ${previewComposableExamples.length} composable examples in initial/interacted desktop/mobile states\n`,
   );

@@ -22,10 +22,11 @@ const { value, error, dirty, touched, onBlur, reset } = useField("", {
       @blur="onBlur"
     />
     <p :id="`${fieldId}-help`">
-      Use at least three characters. Validation runs when you leave the field.
+      Use at least three characters. Validation runs when you leave the field. Further edits wait
+      for the next blur before validation.
     </p>
     <p :id="`${fieldId}-error`" role="status">
-      {{ error || (touched ? "This name is ready to use." : "Enter a display name.") }}
+      {{ error || (touched ? "No recorded validation error." : "Enter a display name.") }}
     </p>
     <output>Changed: {{ dirty ? "yes" : "no" }} · Visited: {{ touched ? "yes" : "no" }}</output>
     <button type="button" @click="() => reset()">Reset name</button>

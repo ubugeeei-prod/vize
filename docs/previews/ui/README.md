@@ -70,6 +70,13 @@ and individual interaction results under the ignored
 `public/component-previews/composables/` build output. Each reference page
 offers initial/after images in a native disclosure alongside its live preview.
 
+`capture-unavailable-storage.ts` additionally launches actual Chromium with
+localStorage disabled, without replacing the host. Its two mobile captures and
+separate receipt prove that keyboard selection still changes in-tab state and
+reload returns to the default. The storage page shows that fallback capture.
+Field status reports only recorded validation until the next blur. The batching
+law uses meaningful whitespace trimming and requires Undo to restore it exactly.
+
 After the real SSG build, `check-site.ts` verifies twenty-six routes at desktop
 and mobile widths, including the sixteen exact displayed SFC packets and their
 iframe identities, then runs the unchanged composable interaction checks.

@@ -78,9 +78,9 @@ export async function exerciseFormStateExample(page: Page, name: string): Promis
     await page.getByRole("textbox", { name: "Workshop attendee" }).fill("Grace");
     await activate(page, "Next step");
     await expectOutput(page, "Step 2 of 3: Session");
-    await page
-      .getByRole("combobox", { name: "Workshop session" })
-      .selectOption("Type checking clinic");
+    await page.getByRole("combobox", { name: "Workshop session" }).focus();
+    await page.keyboard.press("t");
+    await page.keyboard.press("Tab");
     await activate(page, "Next step");
     await expectOutput(page, "Step 3 of 3: Review");
     await page.getByText("Attendee: Grace", { exact: true }).waitFor();
@@ -190,7 +190,9 @@ export async function exerciseFormStateExample(page: Page, name: string): Promis
     .waitFor();
   await activate(page, "Next tip");
   await expectOutput(page, "Tip 1 of 3: Name the props");
-  await tip.selectOption("1");
+  await tip.focus();
+  await page.keyboard.press("l");
+  await page.keyboard.press("Tab");
   await expectOutput(page, "Tip 2 of 3: Label the controls");
   await page
     .getByText("Give each form control a label that explains its purpose.", { exact: true })
@@ -202,7 +204,7 @@ export async function exerciseFormStateExample(page: Page, name: string): Promis
   return [
     "keyboard Previous wraps from the first tip to the last with exact content",
     "keyboard Next wraps from the last tip to the first",
-    "native direct selection updates writable index, title, and explanation together",
+    "keyboard direct selection updates writable index, title, and explanation together",
     "optional-argument navigation continues from the selected tip without receiving the native event",
   ];
 }

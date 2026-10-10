@@ -29,7 +29,10 @@ export async function exerciseBrowserExample(page: Page, name: string): Promise<
     await page.getByText("Browser storage is available.", { exact: true }).waitFor();
     await activate(page, "Reset reading progress");
     await expectOutput(page, "Resume at: Getting started");
-    await section.selectOption("components");
+    await section.focus();
+    await page.keyboard.press("c");
+    await page.keyboard.press("Tab");
+    assert.equal(await section.inputValue(), "components");
     await expectOutput(page, "Resume at: Components");
     assert.equal(
       await page.evaluate(() => localStorage.getItem("vize:docs:reading-progress")),
@@ -53,10 +56,12 @@ export async function exerciseBrowserExample(page: Page, name: string): Promise<
       await page.evaluate(() => localStorage.getItem("vize:docs:reading-progress")),
       null,
     );
-    await section.selectOption("publishing");
+    await section.focus();
+    await page.keyboard.press("p");
+    await page.keyboard.press("Tab");
     await expectOutput(page, "Resume at: Publishing");
     return [
-      "native selection writes components to the real origin's localStorage",
+      "keyboard selection writes components to the real origin's localStorage",
       "page reload hydrates the SSR fallback and restores Components",
       "keyboard reset removes the stored key and restores Getting started",
       "reload after reset keeps the default and leaves the key absent",
@@ -68,11 +73,17 @@ export async function exerciseBrowserExample(page: Page, name: string): Promise<
     const viewport = page.viewportSize();
     assert.ok(viewport, "media-query exercise needs a controllable browser viewport");
     const breakpoint = page.getByRole("combobox", { name: "Roomy layout starts at" });
+    const chooseBreakpoint = async (prefix: "6" | "8"): Promise<void> => {
+      await breakpoint.focus();
+      await page.keyboard.press(prefix);
+      await page.keyboard.press("Tab");
+      assert.equal(await breakpoint.inputValue(), prefix === "6" ? "600" : "800");
+    };
     const guides = page.getByRole("list", { name: "Recommended guides" });
     const columns = () =>
       guides.evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length);
     try {
-      await breakpoint.selectOption("600");
+      await chooseBreakpoint("6");
       await page.setViewportSize({ width: 760, height: viewport.height });
       await expectOutput(page, "Layout: Roomy");
       assert.equal(await page.evaluate(() => matchMedia("(min-width: 600px)").matches), true);
@@ -83,21 +94,21 @@ export async function exerciseBrowserExample(page: Page, name: string): Promise<
       assert.equal(await columns(), 1);
       await page.setViewportSize({ width: 760, height: viewport.height });
       await expectOutput(page, "Layout: Roomy");
-      await breakpoint.selectOption("800");
+      await chooseBreakpoint("8");
       await expectOutput(page, "Layout: Compact");
       assert.equal(await page.evaluate(() => matchMedia("(min-width: 800px)").matches), false);
       assert.equal(await columns(), 1);
-      await breakpoint.selectOption("600");
+      await chooseBreakpoint("6");
       await expectOutput(page, "Layout: Roomy");
       assert.equal(await columns(), 2);
-      await breakpoint.selectOption("800");
+      await chooseBreakpoint("8");
     } finally {
       await page.setViewportSize(viewport);
     }
     await expectOutput(page, viewport.width >= 800 ? "Layout: Roomy" : "Layout: Compact");
     return [
       "real matchMedia changes at 760px/520px switch between two/one grid columns",
-      "changing the reactive query to 800px at 760px switches to Compact",
+      "keyboard query change to 800px at 760px switches to Compact",
       "changing the query back to 600px restores Roomy without remounting",
       "capture viewport is restored with the live 800px query",
     ];

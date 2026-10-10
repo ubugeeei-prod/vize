@@ -41,7 +41,7 @@ const sectionTitle = computed(() => {
           ? `Storage error: ${error.code}. The current section may not be saved.`
           : supported
             ? "Browser storage is available."
-            : "Browser storage is unavailable; using the default section."
+            : "Browser storage is unavailable; changes stay in this tab."
       }}
     </p>
     <button type="button" @click="() => remove()">Reset reading progress</button>

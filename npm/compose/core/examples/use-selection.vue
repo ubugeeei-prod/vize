@@ -38,12 +38,12 @@ function reviseCompilerTitle(): void {
         <input
           :id="`${selectionId}-${item.id}`"
           type="checkbox"
-          style="inline-size: auto"
+          class="session-checkbox"
           :checked="isSelected(item)"
           :disabled="item.full || (count >= 2 && !isSelected(item))"
           @change="() => toggle(item)"
         />
-        <label :for="`${selectionId}-${item.id}`" style="display: inline">{{ item.title }}</label>
+        <label :for="`${selectionId}-${item.id}`" class="session-label">{{ item.title }}</label>
       </div>
     </fieldset>
     <output aria-live="polite">{{ count }} of 2 places used</output>
@@ -64,3 +64,12 @@ function reviseCompilerTitle(): void {
     </p>
   </div>
 </template>
+
+<style scoped>
+.session-checkbox {
+  inline-size: auto;
+}
+.session-label {
+  display: inline;
+}
+</style>

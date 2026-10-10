@@ -46,7 +46,7 @@ const stateExamples = [
     observe:
       "Enter Al and press Tab to see the validation message. Replace it with Ada and leave the field again to clear the error. Reset clears both the value and interaction state.",
     context:
-      "Destructure the returned refs before using them in a template. Wire `onBlur` to the native blur event. The example checks name length, not server availability; no validation runs during setup.",
+      "Destructure the returned refs before using them in a template. Wire `onBlur` to the native blur event. The error records the last blur; subsequent edits wait for another blur, so an empty recorded error does not promise that an unvalidated edit is ready. The example checks name length, not server availability; no validation runs during setup.",
   },
   {
     name: "use-history",
@@ -102,6 +102,9 @@ export function composableExampleSection(packageRoot: string, name: string): str
     `**What to observe:** ${example.observe}`,
     example.context,
     `<details><summary>Compare the initial and interacted states</summary><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:16px"><figure style="margin:0"><img src="/component-previews/composables/${name}-720-initial.png" alt="${example.title}: initial state" loading="lazy" style="width:100%" /><figcaption>Initial state</figcaption></figure><figure style="margin:0"><img src="/component-previews/composables/${name}-720-interacted.png" alt="${example.title}: state after the verified interactions" loading="lazy" style="width:100%" /><figcaption>After the verified interactions</figcaption></figure></div></details>`,
+    name === "use-storage"
+      ? '<details><summary>When browser storage is unavailable</summary><p>Choices still change in this tab. Reloading restores Getting started because the browser cannot save the choice. This capture uses actual Chromium with localStorage disabled.</p><img src="/component-previews/composables/use-storage-unavailable-360-interacted.png" alt="Publishing selected in this tab while browser storage is unavailable" loading="lazy" width="360" style="max-width:100%" /></details>'
+      : "",
     "## Copy the example",
     "Save this complete SFC in your Vue project. Its public imports and source are the same ones executed in the preview.",
     ["```vue", composableExampleSource(packageRoot, name).trim(), "```"].join("\n"),
