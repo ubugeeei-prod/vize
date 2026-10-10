@@ -270,6 +270,5 @@ fn load_raw_config_with_source(path: Option<&Path>) -> LoadedRawConfig {
 }
 
 fn project_defaults() -> ConfigDocument {
-    serde_json::from_str(r#"{"typeChecker":{"jsxTypecheck":true}}"#)
-        .expect("project defaults are valid configuration")
+    ConfigDocument::project_defaults()
 }
