@@ -6,6 +6,7 @@
  */
 
 import { createRequire } from "node:module";
+import ts from "typescript";
 
 import { extractWithDefaults } from "./with-defaults.js";
 
@@ -133,7 +134,7 @@ export function loadNative(): NativeBinding {
 
 /**
  * JS-based fallback for SFC analysis when native `analyzeSfc` is not available.
- * Uses regex parsing to extract props and emits from Vue SFC source.
+ * Reads direct type-literal props and preserves the existing emits/defaults contract.
  */
 export function analyzeSfcFallback(
   source: string,
@@ -165,44 +166,15 @@ export function analyzeSfcFallback(
     }
     const scriptContent = scriptSetupMatch?.[1] || "";
 
-    // Extract defineProps type parameter
-    // Handles: defineProps<{ ... }>()  and  defineProps<{ ... }>
-    const propsMatch = scriptContent.match(/defineProps\s*<\s*\{([\s\S]*?)\}>\s*\(/);
-    const propsMatch2 = scriptContent.match(/defineProps\s*<\s*\{([\s\S]*?)\}>/);
-    const propsBody = propsMatch?.[1] || propsMatch2?.[1];
     const withDefaults = extractWithDefaults(scriptContent);
-
-    if (propsBody) {
-      // Parse each prop line: name?: Type;  or  name: Type;
-      // Handle multiline JSDoc comments before props
-      const lines = propsBody.split("\n");
-      let i = 0;
-      while (i < lines.length) {
-        const line = lines[i].trim();
-        // Skip JSDoc comments
-        if (line.startsWith("/**") || line.startsWith("*") || line.startsWith("*/")) {
-          i++;
-          continue;
-        }
-
-        // Match prop definition: name?: Type  or  name: Type
-        const propMatch = line.match(/^(\w+)(\?)?:\s*(.+?)(?:;?\s*)$/);
-        if (propMatch) {
-          const name = propMatch[1];
-          const optional = !!propMatch[2];
-          let type = propMatch[3].replace(/;$/, "").trim();
-
-          const defaultValue = withDefaults.get(name);
-
-          props.push({
-            name,
-            type,
-            required: !optional && defaultValue === undefined,
-            ...(defaultValue !== undefined ? { default_value: defaultValue } : {}),
-          });
-        }
-        i++;
-      }
+    for (const { name, type, optional } of directTypeLiteralProps(scriptContent)) {
+      const defaultValue = withDefaults.get(name);
+      props.push({
+        name,
+        type,
+        required: !optional && defaultValue === undefined,
+        ...(defaultValue !== undefined ? { default_value: defaultValue } : {}),
+      });
     }
 
     // Extract defineEmits
@@ -220,4 +192,37 @@ export function analyzeSfcFallback(
   } catch {
     return { props: [], emits: [] };
   }
+}
+
+function directTypeLiteralProps(
+  scriptContent: string,
+): Array<{ name: string; type: string; optional: boolean }> {
+  const source = ts.createSourceFile("props.ts", scriptContent, ts.ScriptTarget.Latest, true);
+  const findLiteral = (node: ts.Node): ts.TypeLiteralNode | undefined => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === "defineProps"
+    ) {
+      const argument = node.typeArguments?.[0];
+      if (argument && ts.isTypeLiteralNode(argument)) return argument;
+    }
+    return ts.forEachChild(node, findLiteral);
+  };
+  const literal = findLiteral(source);
+  return (
+    literal?.members.flatMap((member) => {
+      if (!ts.isPropertySignature(member) || !member.type) return [];
+      let name = member.name;
+      if (ts.isComputedPropertyName(name)) {
+        if (!ts.isStringLiteral(name.expression)) return [];
+        name = name.expression;
+      }
+      if (!ts.isIdentifier(name) && !ts.isStringLiteral(name) && !ts.isNumericLiteral(name))
+        return [];
+      return [
+        { name: name.text, type: member.type.getText(source), optional: !!member.questionToken },
+      ];
+    }) ?? []
+  );
 }
