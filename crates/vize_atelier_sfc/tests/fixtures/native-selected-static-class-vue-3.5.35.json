@@ -1,0 +1,629 @@
+{
+  "schema": "vize.native-selected-static-class-reference",
+  "version": 1,
+  "compiler": {
+    "dom": "@vue/compiler-dom",
+    "ssr": "@vue/compiler-ssr",
+    "version": "3.5.35"
+  },
+  "options": {
+    "mode": "module",
+    "hoistStatic": false,
+    "prefixIdentifiers": true,
+    "comments": true,
+    "filename": "NativeSelectedClass.vue",
+    "sourceMap": true,
+    "bindingMetadata": {},
+    "cacheHandlers": false
+  },
+  "fixtures": [
+    {
+      "id": "class-root",
+      "source": "<template><div class=\" a  b \"/></template>",
+      "template": "<div class=\" a  b \"/>",
+      "sourceSha256": "80ce49103e9db7b6d97c8727cc9e8b5cb9ce847629220fc5e9055357c0da9ee5",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a b\" }))\n}",
+        "codeSha256": "4dc2d28535db4ebf6f671c1a2917d3e0848908fb0f6615f8c5e7ac2fa9ad8d65",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAqB,SAAhB,KAAK,EAAC,KAAQ",
+          "sourcesContent": [
+            "<div class=\" a  b \"/>"
+          ]
+        },
+        "mapSha256": "33e27e1437da0a5d6c94a0f60dd2f6f81bf914b686c8b2f342f9b80cf3ee5de4"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"a b\" }, _attrs))}></div>`)\n}",
+        "codeSha256": "48ac1698f5929ba5b877d3518d9e3d01bbf89611014ec90eec6538f0824c3119",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;6CAAK,KAAK,EAAC,KAAQ",
+          "sourcesContent": [
+            "<div class=\" a  b \"/>"
+          ]
+        },
+        "mapSha256": "06cf05f6280cf194771305fea82dcd468783b0469a54bc00e7a9b44c7641658b"
+      }
+    },
+    {
+      "id": "class-root-props",
+      "source": "<template><div title=\"before\" class=\" a\tb \" id=\"authored\"/></template>",
+      "template": "<div title=\"before\" class=\" a\tb \" id=\"authored\"/>",
+      "sourceSha256": "414d0e623573ae5356f1b7cdeb99ea680306ee5f4abfd2ccde358431143c7266",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    title: \"before\",\n    class: \"a b\",\n    id: \"authored\"\n  }))\n}",
+        "codeSha256": "a64900c5196abbb2638f7ffc290ecc4a4c53209ccc7c6130252274154b36e4f3",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAiD;IAA5C,KAAK,EAAC,QAAQ;IAAC,KAAK,EAAC,KAAO;IAAC,EAAE,EAAC,UAAU",
+          "sourcesContent": [
+            "<div title=\"before\" class=\" a\tb \" id=\"authored\"/>"
+          ]
+        },
+        "mapSha256": "cbdc7bb385d3cc7694bc2b4cf4eb5bc700b43daf9e91315a4663d1e7ae864533"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    title: \"before\",\n    class: \"a b\",\n    id: \"authored\"\n  }, _attrs))}></div>`)\n}",
+        "codeSha256": "d89d93a6851d6133c457aaf8b4341708dec2f8b1dd021aab08e2fb2ed2e9f470",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;;IAAK,KAAK,EAAC,QAAQ;IAAC,KAAK,EAAC,KAAO;IAAC,EAAE,EAAC,UAAU",
+          "sourcesContent": [
+            "<div title=\"before\" class=\" a\tb \" id=\"authored\"/>"
+          ]
+        },
+        "mapSha256": "83e18e43b258ad84980610b0d688580f0f5e654ebcd74766e8831212ad034cf0"
+      }
+    },
+    {
+      "id": "class-nested",
+      "source": "<template><div><span class=\" a\tb\nc\rd\fe \"/></div></template>",
+      "template": "<div><span class=\" a\tb\nc\rd\fe \"/></div>",
+      "sourceSha256": "ca0bd4de6826bfb1ef7955d92d5e4f60d5fb5d979bd33347513cda37638e0cb2",
+      "dom": {
+        "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a b c d e\" })\n  ]))\n}",
+        "codeSha256": "0f06bf095c2cb365ae38a149d50f3f1746497c69d5916b2f80c4709368232b97",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBACe;IADV,oBACI,UADE,KAAK,EAAC,WACV",
+          "sourcesContent": [
+            "<div><span class=\" a\tb\nc\rd\fe \"/></div>"
+          ]
+        },
+        "mapSha256": "a14ccf921dab28fb368380ce19b6280cd697b2c35e91e3e1c0d74f4601aa56a8"
+      },
+      "ssr": {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"a b c d e\"></span></div>`)\n}",
+        "codeSha256": "f0f47d2037f28b23b5e5685a3bc21b186196a714e2c1398b97be105502e8c0ae",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": "",
+          "sourcesContent": [
+            "<div><span class=\" a\tb\nc\rd\fe \"/></div>"
+          ]
+        },
+        "mapSha256": "6612eed5961fd0b41118b9363b71ffb2e5d4c6f566aa0a3bbd58258c4b7591fc"
+      }
+    },
+    {
+      "id": "class-fragment",
+      "source": "<template><div class=\" a  b \"/><span class=\" c d \"/></template>",
+      "template": "<div class=\" a  b \"/><span class=\" c d \"/>",
+      "sourceSha256": "f4105aa0fb1e656e3449b954768795e517f2cc6f7028b92014ba18e26b26741f",
+      "dom": {
+        "code": "import { createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"div\", { class: \"a b\" }),\n    _createElementVNode(\"span\", { class: \"c d\" })\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+        "codeSha256": "4f909726c5c3e240e6234fd840344c400e5931fecaa831f2bfb077b31cc438d9",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;IAAA,oBAAqB,SAAhB,KAAK,EAAC,KAAQ;IAAE,oBAAqB,UAAf,KAAK,EAAC,KAAO",
+          "sourcesContent": [
+            "<div class=\" a  b \"/><span class=\" c d \"/>"
+          ]
+        },
+        "mapSha256": "f4758fda3d235401e849248d36b1dde965df9e63e0f7a358ff525ad67bf930c7"
+      },
+      "ssr": {
+        "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<!--[--><div class=\"a b\"></div><span class=\"c d\"></span><!--]-->`)\n}",
+        "codeSha256": "ecd41ff022fde83c848afa8688c0afc7c8d21f3dd8999aca8324d82520934223",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": "",
+          "sourcesContent": [
+            "<div class=\" a  b \"/><span class=\" c d \"/>"
+          ]
+        },
+        "mapSha256": "7f6717c431afc6f4a2d67375197172b38403e7c5f978f688673576bd5c9857c8"
+      }
+    },
+    {
+      "id": "class-root-bare",
+      "source": "<template><div class/></template>",
+      "template": "<div class/>",
+      "sourceSha256": "273571ef4e37ba78c8b917f5010ff2c257368ee0c8e2f9ccf0cab71bd634f288",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"\" }))\n}",
+        "codeSha256": "2c88e2b8d6af0eeeb232bd30db83bc4b3de62e7f59ba901d323ca92350f9e0aa",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAY,SAAP,KAAK,EAAL,EAAK",
+          "sourcesContent": [
+            "<div class/>"
+          ]
+        },
+        "mapSha256": "3e2f47c5dbaad4b4676f94ae0c4ddc9015224e5533bc08a94740af34c3705fd4"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"\" }, _attrs))}></div>`)\n}",
+        "codeSha256": "81c504b3c2ae3ec7442d7ef37b39a4ee1807e521380e2c189cb656ed88e56d8b",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;6CAAK,KAAK,EAAL,EAAK",
+          "sourcesContent": [
+            "<div class/>"
+          ]
+        },
+        "mapSha256": "f64948b87e578d202bf5f503258a8897ec2e5fea56079127372a590c02225e0c"
+      }
+    },
+    {
+      "id": "class-root-empty",
+      "source": "<template><div class=\"\"/></template>",
+      "template": "<div class=\"\"/>",
+      "sourceSha256": "5c261c6eb036094ed489205934d19d97adc9388f0609d63ce888e1cf4c2193da",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"\" }))\n}",
+        "codeSha256": "2c88e2b8d6af0eeeb232bd30db83bc4b3de62e7f59ba901d323ca92350f9e0aa",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAe,SAAV,KAAK,EAAC,EAAE",
+          "sourcesContent": [
+            "<div class=\"\"/>"
+          ]
+        },
+        "mapSha256": "b7adabe6d38e8ae776cfe74681682207481477547e4f269d1ed3587604b72b13"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"\" }, _attrs))}></div>`)\n}",
+        "codeSha256": "81c504b3c2ae3ec7442d7ef37b39a4ee1807e521380e2c189cb656ed88e56d8b",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;6CAAK,KAAK,EAAC,EAAE",
+          "sourcesContent": [
+            "<div class=\"\"/>"
+          ]
+        },
+        "mapSha256": "6a9eb938f470b7bb04d63429b4d2db77bc60f894543886a36510190a479db6fd"
+      }
+    },
+    {
+      "id": "class-nested-bare",
+      "source": "<template><div><span class/></div></template>",
+      "template": "<div><span class/></div>",
+      "sourceSha256": "7d0c468ca510186f7614d4748447dfbc26314eb01e2c5829d8a4a0b3f4d959af",
+      "dom": {
+        "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"\" })\n  ]))\n}",
+        "codeSha256": "cfe09942363b58409b62a9f5fbf730fb2ffb86d80e356be476c7b2fdc84df606",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAwB;IAAnB,oBAAa,UAAP,KAAK,EAAL,EAAK",
+          "sourcesContent": [
+            "<div><span class/></div>"
+          ]
+        },
+        "mapSha256": "b5ca8b828ae5000f89b1293903fe5f3ed3790d1a991edb6358a82592ba02f50d"
+      },
+      "ssr": {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class></span></div>`)\n}",
+        "codeSha256": "5c96e123452f861a9bc4c0a90a8ca1f248ac91c0d2658adfbdf9b2090651259e",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": "",
+          "sourcesContent": [
+            "<div><span class/></div>"
+          ]
+        },
+        "mapSha256": "2ac7bc9e938a8f7ea3cd97309c8bf9763e07a4cd2a7b9655a04c43489271819b"
+      }
+    },
+    {
+      "id": "class-nested-empty",
+      "source": "<template><div><span class=\"\"/></div></template>",
+      "template": "<div><span class=\"\"/></div>",
+      "sourceSha256": "7e6219cb6227a67c34e970cbe37ce84ac9687d8c7ae9d69b4d41fe846606c038",
+      "dom": {
+        "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"\" })\n  ]))\n}",
+        "codeSha256": "cfe09942363b58409b62a9f5fbf730fb2ffb86d80e356be476c7b2fdc84df606",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAA2B;IAAtB,oBAAgB,UAAV,KAAK,EAAC,EAAE",
+          "sourcesContent": [
+            "<div><span class=\"\"/></div>"
+          ]
+        },
+        "mapSha256": "81d70c4022784fb6e38237e7a7c7b0b2d5b1706d8b0e2e8fc9bb7faa5a5ea21d"
+      },
+      "ssr": {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"\"></span></div>`)\n}",
+        "codeSha256": "3cbecce0ffaaaa0be497203e5d79701d71979cd8e8f7a21c121da896b4ed41db",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": "",
+          "sourcesContent": [
+            "<div><span class=\"\"/></div>"
+          ]
+        },
+        "mapSha256": "714ee4a23997497ad2ebf8e8daf303d49b32752734d17316f5ac9a23d289559f"
+      }
+    },
+    {
+      "id": "class-entities",
+      "source": "<template><div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div></template>",
+      "template": "<div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div>",
+      "sourceSha256": "54aa696e5aeada40941222ea5045f7937d31acdd38d82523a3e081b86a8fda7c",
+      "dom": {
+        "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a&amp;b \\\"<>'\" })\n  ]))\n}",
+        "codeSha256": "3c731b14d8dc5a19a4a30f6387e58744b23320f8fadeb1c1dfa759baf9c3651b",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAkE;IAA7D,oBAAuD,UAAjD,KAAK,EAAC,eAAyC",
+          "sourcesContent": [
+            "<div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div>"
+          ]
+        },
+        "mapSha256": "f9e3fbc923cc7bdd396a5bebf4bf4c679415e8ae3811b3f1402b55c9b786b47c"
+      },
+      "ssr": {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"a&amp;amp;b &quot;&lt;&gt;&#39;\"></span></div>`)\n}",
+        "codeSha256": "66517fe15bc905327c728b7c9a868f063acf24269fe94789f77a23284abde9fd",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": "",
+          "sourcesContent": [
+            "<div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div>"
+          ]
+        },
+        "mapSha256": "82ff1bfe9c0c7dfbdc6b58e08c58339ed98aad92bea845f30fc54376a2c1176e"
+      }
+    },
+    {
+      "id": "class-unquoted",
+      "source": "<template><div class=ready /></template>",
+      "template": "<div class=ready />",
+      "sourceSha256": "e1823faab1a8253531de4f2cec5201177212d2bc80de0091904b202efed58cca",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"ready\" }))\n}",
+        "codeSha256": "807b4cf42145f13d07fa296acc2919fe4f15275bfef2ffce4cc9ad73e7dbb6b7",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAmB,SAAd,KAAK,EAAC,OAAK",
+          "sourcesContent": [
+            "<div class=ready />"
+          ]
+        },
+        "mapSha256": "d8027c2b80596bc0a4b5ab47ce73ece18b83e4444553824cfefe217c656ff683"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"ready\" }, _attrs))}></div>`)\n}",
+        "codeSha256": "b32dcb99b4c8733bfc56e2c145e3926748847a99d18fb880227094433fd06e0c",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;6CAAK,KAAK,EAAC,OAAK",
+          "sourcesContent": [
+            "<div class=ready />"
+          ]
+        },
+        "mapSha256": "1165671f8aedb061cfe396b56d5cdb08f5c867022d06087392537b52bd55fdbe"
+      }
+    },
+    {
+      "id": "class-unicode-trim",
+      "source": "<template><div class=\"﻿ 雪🌸 ﻿\"/></template>",
+      "template": "<div class=\"﻿ 雪🌸 ﻿\"/>",
+      "sourceSha256": "70f89478f447993f4dc7eae99837a58ef11d67e55d499d0843bc9b6e9294c2a3",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"雪🌸\" }))\n}",
+        "codeSha256": "ee9fefc470673ac5afe3327a3eca79a4781e7aae5609ec9b4a95db2a14b7dc81",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAuB,SAAlB,KAAK,EAAC,MAAU",
+          "sourcesContent": [
+            "<div class=\"﻿ 雪🌸 ﻿\"/>"
+          ]
+        },
+        "mapSha256": "a55391d9098fb385cff2e2e9e267d17a72785b0305bf5c958650ec48718058ba"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"雪🌸\" }, _attrs))}></div>`)\n}",
+        "codeSha256": "64f0bac688fcfcd0e98f84529454edd2acad135dd6a7104e7fb6cf67fbd21827",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;6CAAK,KAAK,EAAC,MAAU",
+          "sourcesContent": [
+            "<div class=\"﻿ 雪🌸 ﻿\"/>"
+          ]
+        },
+        "mapSha256": "4111971fef19ac9182f3449084a228f30a5ed0851b91c8d7f5fdb049122c8f69"
+      }
+    },
+    {
+      "id": "class-unicode-inner",
+      "source": "<template><div><span class=\"a b﻿c​de\"/></div></template>",
+      "template": "<div><span class=\"a b﻿c​de\"/></div>",
+      "sourceSha256": "326bf2d2498e93e9956ef9fb7170de796319744b1f47b096cdf7e14d15af1530",
+      "dom": {
+        "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a b﻿c​de\" })\n  ]))\n}",
+        "codeSha256": "362e5ecd89ff4c055546c0a1a20039ad144f611f53314ab9e0665510727ca9e8",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAoC;IAA/B,oBAAyB,UAAnB,KAAK,EAAC,WAAW",
+          "sourcesContent": [
+            "<div><span class=\"a b﻿c​de\"/></div>"
+          ]
+        },
+        "mapSha256": "4bfcd5bfc07ff4d740a5bc682d51cf89a130e45f943b3d1548dc1b051a5d7cb4"
+      },
+      "ssr": {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"a b﻿c​de\"></span></div>`)\n}",
+        "codeSha256": "f62b3fe7ba444aec44a6889f210b74c0d0029d160c6e0388a7b9f78080c217ef",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": "",
+          "sourcesContent": [
+            "<div><span class=\"a b﻿c​de\"/></div>"
+          ]
+        },
+        "mapSha256": "817f6c51b8ae0ffd9ba8d8016745bbb0ec0e4c39aacac6abc4c5b565f439d21e"
+      }
+    },
+    {
+      "id": "class-void",
+      "source": "<template><div><br class=\" a  b \"/></div></template>",
+      "template": "<div><br class=\" a  b \"/></div>",
+      "sourceSha256": "aae27afbb7564d342b2f411946c53767f77f6f83dd5a3dc468c478684842613c",
+      "dom": {
+        "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"br\", { class: \"a b\" })\n  ]))\n}",
+        "codeSha256": "678426f2a5c566d217edd2de1bf3c274516d2612348af84a35ec581f590679ff",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAA+B;IAA1B,oBAAoB,QAAhB,KAAK,EAAC,KAAQ",
+          "sourcesContent": [
+            "<div><br class=\" a  b \"/></div>"
+          ]
+        },
+        "mapSha256": "d9036106256cae2103b174a0c3ef2f3251531b7b39d43ccc33ac9f3321d3ceec"
+      },
+      "ssr": {
+        "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><br class=\"a b\"></div>`)\n}",
+        "codeSha256": "e1976eeb38487e986d336816892466a75e5d97dad93d1d7f6322aa43da53b5cc",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": "",
+          "sourcesContent": [
+            "<div><br class=\" a  b \"/></div>"
+          ]
+        },
+        "mapSha256": "471323d99972c000810a176d2394a06221f1e93145a34e46976d22ec05905ad3"
+      }
+    },
+    {
+      "id": "class-comment-root",
+      "source": "<template><!--kept--><div class=\" a  b \"/></template>",
+      "template": "<!--kept--><div class=\" a  b \"/>",
+      "sourceSha256": "e33fb37d41af1cfd9930fe379a2063881e6776414aae0c13e0cf691b57a551b5",
+      "dom": {
+        "code": "import { createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\"kept\"),\n    _createElementVNode(\"div\", { class: \"a b\" })\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}",
+        "codeSha256": "7aae62d97267b1db36872d81483c388a8f41b16ab2a640fe5eaee4b61ac8946e",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;IAAA,2BAAW;IAAA,oBAAqB,SAAhB,KAAK,EAAC,KAAQ",
+          "sourcesContent": [
+            "<!--kept--><div class=\" a  b \"/>"
+          ]
+        },
+        "mapSha256": "9b0f74b397ee4f4b08f2fd239cbe1615a83370946c08830b2e8c82a56c0d53b5"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<!--[--><!--kept--><div${_ssrRenderAttrs(_mergeProps({ class: \"a b\" }, _attrs))}></div><!--]-->`)\n}",
+        "codeSha256": "77f2d62dfc986a05b62ba1dcd8c4ee4813c426cab5e762cf6d3d429cca5ffcc3",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;gEAAgB,KAAK,EAAC,KAAQ",
+          "sourcesContent": [
+            "<!--kept--><div class=\" a  b \"/>"
+          ]
+        },
+        "mapSha256": "6b46f1baf3ea6136e24da82585a53e39c43b4b5dd668d247333f865b7fca8afc"
+      }
+    },
+    {
+      "id": "class-original-7502",
+      "source": "<template><div class=\"a&amp;amp;b\">x</div></template>",
+      "template": "<div class=\"a&amp;amp;b\">x</div>",
+      "sourceSha256": "8a8ef1575d8d26ec46e7e54ca38233bf77ba6ad1acfc99ee906fe7a22d567c68",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a&amp;b\" }, \"x\"))\n}",
+        "codeSha256": "8841bfa7bc0ab591ad9f6b5f5a892ba78713deb46d638f19711d62278d5e1161",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAAgC,SAA3B,KAAK,EAAC,SAAa,IAAC,GAAC",
+          "sourcesContent": [
+            "<div class=\"a&amp;amp;b\">x</div>"
+          ]
+        },
+        "mapSha256": "7185ee9499b732240d0a460bac0985220a9409cf2949c6deaacef32eeaa43907"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"a&amp;b\" }, _attrs))}>x</div>`)\n}",
+        "codeSha256": "575e6d86dfd59d730b95e7961255af425e727554fc4d24dd16bed2109ce3a55b",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;6CAAK,KAAK,EAAC,SAAa",
+          "sourcesContent": [
+            "<div class=\"a&amp;amp;b\">x</div>"
+          ]
+        },
+        "mapSha256": "c60b56b849a2d8dedf2ed4b5975821b8ebc3e0daa7eefb42c4b681ba43ba0ba6"
+      }
+    },
+    {
+      "id": "class-suffix",
+      "source": "<template><div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/></template>",
+      "template": "<div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/>",
+      "sourceSha256": "f2574e46e0a3bed4999ac9f6bae3cd9027fd32966a607aa4d266d8b8faca6dea",
+      "dom": {
+        "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    title: \"first\",\n    class: \"a b\",\n    \"data-last\": \"&amp;雪🌸\"\n  }))\n}",
+        "codeSha256": "c7c6a8c31b80f34602b57f9b3376c26d622753f5c58f99daa7d4652a50d3628b",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;wBAAA,oBAA4D;IAAvD,KAAK,EAAC,OAAO;IAAC,KAAK,EAAC,KAAQ;IAAC,WAAS,EAAC,UAAc",
+          "sourcesContent": [
+            "<div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/>"
+          ]
+        },
+        "mapSha256": "16c0abe1427bd70a45db13ba754b507894873b530ed2263de9b6177d9ef8ae9c"
+      },
+      "ssr": {
+        "code": "import { mergeProps as _mergeProps } from \"vue\"\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"vue/server-renderer\"\n\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    title: \"first\",\n    class: \"a b\",\n    \"data-last\": \"&amp;雪🌸\"\n  }, _attrs))}></div>`)\n}",
+        "codeSha256": "59c37b188e8fcbb2638c5017b3ab6bf48f01635c766e313dd098659134a8d324",
+        "map": {
+          "version": 3,
+          "sources": [
+            "NativeSelectedClass.vue"
+          ],
+          "names": [],
+          "mappings": ";;;;;IAAK,KAAK,EAAC,OAAO;IAAC,KAAK,EAAC,KAAQ;IAAC,WAAS,EAAC,UAAc",
+          "sourcesContent": [
+            "<div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/>"
+          ]
+        },
+        "mapSha256": "1555a972bcfee2de45ad4c2ef5bda92927c1393efc07b3aff52ee3e1a088bb38"
+      }
+    }
+  ]
+}
