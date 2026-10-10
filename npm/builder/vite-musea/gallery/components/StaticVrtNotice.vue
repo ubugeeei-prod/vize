@@ -1,8 +1,12 @@
 <script setup lang="ts">
+import { onMounted, ref } from "vue";
 import { joinBasePath } from "../staticApi";
 
-const galleryUrl = new URL(joinBasePath("/"), window.location.href).href;
-const command = `vp exec musea-vrt --gallery-url '${galleryUrl.replaceAll("'", "'\"'\"'")}'`;
+const command = ref("");
+onMounted(() => {
+  const galleryUrl = new URL(joinBasePath("/"), window.location.href).href;
+  command.value = `vp exec musea-vrt --gallery-url '${galleryUrl.replaceAll("'", "'\"'\"'")}'`;
+});
 </script>
 
 <template>
