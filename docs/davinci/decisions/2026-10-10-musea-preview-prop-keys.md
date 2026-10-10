@@ -50,3 +50,12 @@ for actual editor initialization before unmounting controls.
 Focused local browser/source checks passed. Fresh exact-head Actions, native
 Stack protected qualification, actual merge and root-owned publication remain
 required. No dependency, manifest, release authority or upstream changes.
+
+The first hosted browser run passes all six complete phases. Its full source
+run identifies two harness adaptations: the supported Vue 2 test runtime must
+export the newly used shallow ref, and the default preview byte oracle must
+describe the intentional snapshot-store change. Both original toolbar reference
+files remain byte-exact with pinned SHA-256 custody in the same whole-code law;
+separate successor snapshots retain the complete current generated code. No
+original input/reference or runtime assertion is erased. Fresh successor source
+and protected checks are still required.
