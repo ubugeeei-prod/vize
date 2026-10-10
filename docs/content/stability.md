@@ -9,9 +9,9 @@ Vize is moving toward a v1 alpha. The alpha contract is intentionally narrower t
 contract: it names the surfaces that should be usable by early adopters, while keeping room to
 change internals and experimental integrations quickly. The full project is not yet a completely
 production-ready toolchain; release decisions should use the
-[production-readiness checklist](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/production-readiness.md).
+[production-readiness checklist](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/production-readiness%2Emd).
 Deprecation windows, SemVer rules, and release-line support are spelled out in the
-[support policy](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/support-policy.md).
+[support policy](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/support-policy%2Emd).
 
 ## Versioning Contract
 
@@ -155,7 +155,7 @@ manager layout, every editor capability, or every framework integration. When Vi
 official Vue tooling, treat the official output as the compatibility baseline unless a Vize guide
 explicitly documents a different behavior. The release-blocking compiler, type-checking, runtime,
 and Vite build surfaces are named in the
-[Vue parity matrix](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/vue-parity-matrix.md).
+[Vue parity matrix](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/vue-parity-matrix%2Emd).
 
 For security handling, see the repository `SECURITY.md`. For contribution and fix workflow, see
 `CONTRIBUTING.md`.
