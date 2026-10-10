@@ -1,0 +1,71 @@
+{
+  "archivedSource": "5ed1feff6b2a2b74905bb14b46f970906679a511",
+  "comparedActualMain": "7d645dbca9d3be2e0c96feae7cd826f0f49b02fa",
+  "definitionAndStateDependencyObjectEquality": [
+    {
+      "path": "crates/vize_maestro/src/ide/definition",
+      "archivedObject": "4bce0f45e4a0f04894a1ce5f82a1e5452de43752",
+      "actualMainObject": "4bce0f45e4a0f04894a1ce5f82a1e5452de43752",
+      "equal": true
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/tsconfig_paths.rs",
+      "archivedObject": "2cb324531b7e183a06eedeba2b264af1c5f93c4a",
+      "actualMainObject": "2cb324531b7e183a06eedeba2b264af1c5f93c4a",
+      "equal": true
+    },
+    {
+      "path": "crates/vize_maestro/src/ide/tsconfig_paths_load.rs",
+      "archivedObject": "4dc636107f2acc50257a704680c766dc5f9204ea",
+      "actualMainObject": "4dc636107f2acc50257a704680c766dc5f9204ea",
+      "equal": true
+    },
+    {
+      "path": "crates/vize_maestro/src/document",
+      "archivedObject": "95af72e1d39c21d9035301902808d07b87272b18",
+      "actualMainObject": "95af72e1d39c21d9035301902808d07b87272b18",
+      "equal": true
+    },
+    {
+      "path": "crates/vize_maestro/src/server/handlers/navigation.rs",
+      "archivedObject": "e4bfe8fd8f3deb5cb57bcd22759a5f4df5051a05",
+      "actualMainObject": "e4bfe8fd8f3deb5cb57bcd22759a5f4df5051a05",
+      "equal": true
+    },
+    {
+      "path": "crates/vize_maestro/src/server/open_document.rs",
+      "archivedObject": "0715a1e31b06372da1ad4e982887c0ec5a8da459",
+      "actualMainObject": "0715a1e31b06372da1ad4e982887c0ec5a8da459",
+      "equal": true
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/config.rs",
+      "archivedObject": "affffbbaaade4be1a2de52f4bea454c9d34c049c",
+      "actualMainObject": "affffbbaaade4be1a2de52f4bea454c9d34c049c",
+      "equal": true
+    },
+    {
+      "path": "crates/vize_maestro/src/server/state/features.rs",
+      "archivedObject": "b3963f046b87a2ef2a3739eae8c175f6d17d4de2",
+      "actualMainObject": "b3963f046b87a2ef2a3739eae8c175f6d17d4de2",
+      "equal": true
+    },
+    {
+      "path": "crates/vize_maestro/Cargo.toml",
+      "archivedObject": "5874b2add13ced401a8eb4b1b22a18e45b514dca",
+      "actualMainObject": "5874b2add13ced401a8eb4b1b22a18e45b514dca",
+      "equal": true
+    },
+    {
+      "path": "crates/vize/Cargo.toml",
+      "archivedObject": "518b2f64842ac43cb17277fb03e59527d9842ac7",
+      "actualMainObject": "518b2f64842ac43cb17277fb03e59527d9842ac7",
+      "equal": true
+    }
+  ],
+  "binary": "/tmp/vize-css-jsx-routing-target-20261008/debug/vize",
+  "binarySha256": "e0f42e98c2a33a35d5e284f02725cec1470fceffbbbd8d89d219c40e0f8a76d6",
+  "buildLog": "/tmp/vize-css-jsx-routing-control-20261008/cli-build.log",
+  "buildLogSha256": "253c9f4748937e114a989fff65922b672217560a763418b1b44c98664dc104c8",
+  "scope": "Existing genuine archived native CLI, structural definition with typecheck disabled. No current-main whole build or external Corsa claim."
+}

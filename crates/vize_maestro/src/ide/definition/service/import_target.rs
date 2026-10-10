@@ -15,7 +15,11 @@ use std::path::Path;
 use tower_lsp::lsp_types::{GotoDefinitionResponse, Location, Position, Range, Url};
 
 use crate::ide::IdeContext;
-use crate::ide::definition::{helpers, import_resolver::resolve_import_specifier, script};
+#[cfg(any(test, feature = "native"))]
+use crate::ide::definition::import_resolver::resolve_import_specifier;
+use crate::ide::definition::{
+    helpers, import_resolver::resolve_import_specifier_with_documents, script,
+};
 
 #[cfg(any(test, feature = "native"))]
 mod alias;
@@ -34,7 +38,8 @@ const MAX_REEXPORT_HOPS: usize = 3;
 pub(super) fn definition(ctx: &IdeContext<'_>) -> Option<GotoDefinitionResponse> {
     let word = helpers::get_word_at_offset(&ctx.content, ctx.offset)?;
     let (specifier, exported) = importing_specifier(&ctx.content, ctx.offset, &word)?;
-    let target = resolve_import_specifier(ctx.uri, &specifier)?;
+    let target =
+        resolve_import_specifier_with_documents(ctx.uri, &specifier, &ctx.state.documents)?;
     locate_export(ctx, &target, &exported, MAX_REEXPORT_HOPS).map(GotoDefinitionResponse::Scalar)
 }
 
@@ -54,7 +59,8 @@ pub(super) fn component_tag_definition(ctx: &IdeContext<'_>) -> Option<GotoDefin
         let exported = bound_import(&ctx.content, &name)
             .map_or_else(|| name.clone(), |(_, exported)| exported);
         if let Some(specifier) = helpers::find_import_path(ctx, &name)
-            && let Some(target) = resolve_import_specifier(ctx.uri, &specifier)
+            && let Some(target) =
+                resolve_import_specifier_with_documents(ctx.uri, &specifier, &ctx.state.documents)
             && let Some(location) = locate_export(ctx, &target, &exported, MAX_REEXPORT_HOPS)
         {
             return Some(GotoDefinitionResponse::Scalar(location));
@@ -78,7 +84,13 @@ pub(super) fn component_tag_import_target_is_deleted(ctx: &IdeContext<'_>) -> bo
         .into_iter()
         .any(|name| {
             helpers::find_import_path(ctx, &name)
-                .and_then(|specifier| resolve_import_specifier(ctx.uri, &specifier))
+                .and_then(|specifier| {
+                    resolve_import_specifier_with_documents(
+                        ctx.uri,
+                        &specifier,
+                        &ctx.state.documents,
+                    )
+                })
                 .is_some_and(|target| vue_target_is_deleted(ctx, &target))
         })
 }
@@ -235,7 +247,11 @@ fn locate_export(ctx: &IdeContext<'_>, target: &Path, word: &str, hops: usize) -
                 specifier,
                 exported,
             } if hops > 0 => {
-                let next = resolve_import_specifier(&uri, &specifier)?;
+                let next = resolve_import_specifier_with_documents(
+                    &uri,
+                    &specifier,
+                    &ctx.state.documents,
+                )?;
                 return locate_export(ctx, &next, &exported, hops - 1);
             }
             default_export::Target::Declaration(span) => {
@@ -258,7 +274,8 @@ fn locate_export(ctx: &IdeContext<'_>, target: &Path, word: &str, hops: usize) -
     // comes first so the jump lands on the real declaration, not the alias.
     if hops > 0
         && let Some((specifier, exported)) = reexport_specifier(&content, word)
-        && let Some(next) = resolve_import_specifier(&uri, &specifier)
+        && let Some(next) =
+            resolve_import_specifier_with_documents(&uri, &specifier, &ctx.state.documents)
         && let Some(location) = locate_export(ctx, &next, &exported, hops - 1)
     {
         return Some(location);
