@@ -13,6 +13,7 @@ import {
   fixtureUrl7502,
   hash7502,
 } from "./native-attribute-values-7502-inputs.ts";
+import { scriptlessHistory7502 } from "./native-attribute-values-7502-scriptless-history.ts";
 import { root7502, source7502 } from "./native-attribute-values-7502-source.ts";
 
 import { validateHistory7502 } from "./native-attribute-values-7502-history-protocol.ts";
@@ -41,6 +42,7 @@ export function hostedHistory7502(directory: string) {
     qualificationSha256: null,
     captureSha256: null,
     envelopesSha256: null,
+    scriptless: null,
     failure: null,
   };
   const save = () =>
@@ -150,7 +152,42 @@ export function hostedHistory7502(directory: string) {
       worktree,
       env,
     );
-    for (const raw of [install, runtime, build, judge]) requireSuccess(raw);
+    const scriptlessEnv = {
+      ...env,
+      NODE_ENV: "development",
+      VIZE_NATIVE_SFC_SSR_CAPTURE: path.join(history, "scriptless.capture.json"),
+      VIZE_NATIVE_SFC_SSR_RUNTIME_CAPTURE: path.join(history, "scriptless.runtime.json"),
+      VIZE_L4_SSR_REQUIRE_NATIVE: "1",
+    };
+    const scriptlessBuild = run(
+      "scriptless-build",
+      "cargo",
+      [
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_atelier_sfc",
+        "--test",
+        "native_scriptless_ssr",
+        "--",
+        "--nocapture",
+      ],
+      worktree,
+      scriptlessEnv,
+    );
+    const scriptlessJudge = run(
+      "scriptless-judge",
+      "vp",
+      ["node", "--test", "tests/tooling/native-sfc-scriptless-ssr-reference.test.ts"],
+      worktree,
+      scriptlessEnv,
+    );
+    for (const raw of [install, runtime, build, judge, scriptlessBuild, scriptlessJudge])
+      requireSuccess(raw);
+    frame.scriptless = scriptlessHistory7502(history, worktree);
+    save();
     const receipt = JSON.parse(readFileSync(path.join(history, "build-receipt.json"), "utf8"));
     frame.baselineSource = receipt.source;
     for (const [key, filename] of [

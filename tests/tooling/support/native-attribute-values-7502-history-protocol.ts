@@ -11,9 +11,19 @@ import {
   fixtureSha7502,
   hash7502,
 } from "./native-attribute-values-7502-inputs.ts";
+import { validateScriptlessHistory7502 } from "./native-attribute-values-7502-scriptless-history.ts";
 import { root7502 } from "./native-attribute-values-7502-source.ts";
 
-export const historySteps7502 = ["fetch", "checkout", "install", "runtime", "build", "judge"];
+export const historySteps7502 = [
+  "fetch",
+  "checkout",
+  "install",
+  "runtime",
+  "build",
+  "judge",
+  "scriptless-build",
+  "scriptless-judge",
+];
 export function historyCommands7502(worktree: string, history: string) {
   return [
     ["git", ["fetch", "--no-tags", "origin", baseline7502.revision]],
@@ -22,6 +32,22 @@ export function historyCommands7502(worktree: string, history: string) {
     ["vp", ["exec", "node", "tools/support/compat/davinci/plugin-sandbox-image.mjs"]],
     ["vp", ["node", "tests/tooling/support/native-attribute-values-7502-build.ts", history]],
     ["vp", ["node", "tests/tooling/support/native-attribute-values-7502-judge.ts"]],
+    [
+      "cargo",
+      [
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_atelier_sfc",
+        "--test",
+        "native_scriptless_ssr",
+        "--",
+        "--nocapture",
+      ],
+    ],
+    ["vp", ["node", "--test", "tests/tooling/native-sfc-scriptless-ssr-reference.test.ts"]],
   ] as const;
 }
 export function validateHistory7502(receipt: any, current: any, directory: string) {
@@ -40,6 +66,7 @@ export function validateHistory7502(receipt: any, current: any, directory: strin
     "qualificationSha256",
     "captureSha256",
     "envelopesSha256",
+    "scriptless",
     "failure",
   ]);
   assert.equal(receipt.schema, "vize.native-attribute-values-7502.history");
@@ -180,6 +207,7 @@ export function validateHistory7502(receipt: any, current: any, directory: strin
       assert.equal(runtime.executions.length, 72);
     }
   }
+  validateScriptlessHistory7502(receipt.scriptless, history);
   assert.equal(qualification.captureSha256, receipt.captureSha256);
   assert.equal(qualification.envelopesSha256, receipt.envelopesSha256);
 }

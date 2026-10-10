@@ -160,9 +160,30 @@ test("the named successor retains every original byte and every unaffected whole
     "git",
     ["fetch", "--no-tags", "origin", "815d9342ed252cad5802e58931b15166f25bf746"],
   ]);
-  assert.deepEqual(commands.slice(-2), [
+  assert.deepEqual(commands.slice(4, 6), [
     ["vp", ["node", "tests/tooling/support/native-attribute-values-7502-build.ts", "/history"]],
     ["vp", ["node", "tests/tooling/support/native-attribute-values-7502-judge.ts"]],
+  ]);
+});
+
+test("pinned history also requires its unchanged whole scriptless Rust and runtime gates", () => {
+  assert.deepEqual(historyCommands7502("/baseline", "/history").slice(-2), [
+    [
+      "cargo",
+      [
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_atelier_sfc",
+        "--test",
+        "native_scriptless_ssr",
+        "--",
+        "--nocapture",
+      ],
+    ],
+    ["vp", ["node", "--test", "tests/tooling/native-sfc-scriptless-ssr-reference.test.ts"]],
   ]);
 });
 
@@ -223,6 +244,7 @@ test("historical source and command substitutions fail before evidence can grant
     qualificationSha256: null,
     captureSha256: null,
     envelopesSha256: null,
+    scriptless: null,
     failure: null,
   };
   for (const mutate of [
@@ -237,20 +259,27 @@ test("historical source and command substitutions fail before evidence can grant
     assert.throws(() => validateHistory7502(changed, receipt.currentSource, "/evidence"));
   }
   const commands = historyCommands7502(receipt.worktree, "/evidence/history");
-  receipt.attempts = ["fetch", "checkout", "install", "runtime", "build", "judge"].map(
-    (step, index) => ({
-      step,
-      executable: commands[index][0],
-      argv: commands[index][1],
-      cwd: "/wrong",
-      ...rawProcess7502({
-        status: 0,
-        signal: null,
-        stdout: Buffer.alloc(0),
-        stderr: Buffer.alloc(0),
-      }),
+  receipt.attempts = [
+    "fetch",
+    "checkout",
+    "install",
+    "runtime",
+    "build",
+    "judge",
+    "scriptless-build",
+    "scriptless-judge",
+  ].map((step, index) => ({
+    step,
+    executable: commands[index][0],
+    argv: commands[index][1],
+    cwd: "/wrong",
+    ...rawProcess7502({
+      status: 0,
+      signal: null,
+      stdout: Buffer.alloc(0),
+      stderr: Buffer.alloc(0),
     }),
-  );
+  }));
   receipt.attempts[0].argv = ["fetch", "origin", "main"];
   assert.throws(() => validateHistory7502(receipt, receipt.currentSource, "/evidence"));
 });

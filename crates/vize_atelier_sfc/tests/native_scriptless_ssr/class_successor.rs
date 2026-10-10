@@ -19,13 +19,12 @@ pub fn capture() -> Value {
             compilation.observation().descriptor().source(),
             source
         ));
-        let file = compilation
+        let view = compilation
             .observation()
             .admitted()
             .unwrap()
-            .into_template_view()
-            .file()
-            .unwrap();
+            .into_template_view();
+        let file = view.file().unwrap();
         assert!(file.is_complete());
         let output = compilation.result().unwrap();
         rows.push(

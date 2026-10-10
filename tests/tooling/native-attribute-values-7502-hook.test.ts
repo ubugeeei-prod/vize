@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { nativeAttributeValues7502CaptureRequired } from "../../tools/support/compat/github/native-attribute-values-7502-capture.mjs";
+import { validateScriptlessHistory7502 } from "./support/native-attribute-values-7502-scriptless-history.ts";
+import { baseline7502, hash7502 } from "./support/native-attribute-values-7502-inputs.ts";
 import { toolingShardMatrix } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
 test("genuine value producers, consumers, writers and capture dependencies qualify", () => {
@@ -50,6 +53,7 @@ test("genuine value producers, consumers, writers and capture dependencies quali
     "tests/tooling/support/native-attribute-values-7502-source.ts",
     "tests/tooling/support/native-attribute-values-7502-history.ts",
     "tests/tooling/support/native-attribute-values-7502-history-protocol.ts",
+    "tests/tooling/support/native-attribute-values-7502-scriptless-history.ts",
     "npm/ui/package.json",
     "npm/plugin-sdk/sandbox.js",
     "pnpm-lock.yaml",
@@ -197,3 +201,43 @@ export function assertNativeAttributeValues7502SharedHooks(root: string) {
   assert(full.includes(action));
   assert.doesNotMatch(full, /\bif:|continue-on-error|hashFiles|existsSync/);
 }
+
+// These synthetic receipt mutations provide schema evidence, never native credit.
+test("the pinned whole scriptless archive rejects dropping its original class refusal", () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "native-scriptless-history-law-"));
+  try {
+    const bytes = readFileSync(
+      new URL(
+        "../../crates/vize_atelier_sfc/tests/fixtures/native-scriptless-ssr-output.json",
+        import.meta.url,
+      ),
+    );
+    const original = JSON.parse(bytes.toString("utf8"));
+    const capture = Buffer.from(JSON.stringify(original.capture));
+    const runtime = Buffer.from(JSON.stringify(original.runtime));
+    writeFileSync(path.join(directory, "scriptless.capture.json"), capture);
+    writeFileSync(path.join(directory, "scriptless.runtime.json"), runtime);
+    const receipt = {
+      sourceRevision: baseline7502.revision,
+      sourceTree: baseline7502.tree,
+      archiveSha256: hash7502(bytes),
+      captureSha256: hash7502(capture),
+      runtimeSha256: hash7502(runtime),
+    };
+    validateScriptlessHistory7502(receipt, directory);
+    const changed = structuredClone(original.capture);
+    changed.refusals = changed.refusals.filter((row: any) => row.id !== "class");
+    const modified = Buffer.from(JSON.stringify(changed));
+    writeFileSync(path.join(directory, "scriptless.capture.json"), modified);
+    assert.throws(
+      () =>
+        validateScriptlessHistory7502({ ...receipt, captureSha256: hash7502(modified) }, directory),
+      /whole untouched historical scriptless gate remains exact/,
+    );
+    assert.throws(() =>
+      validateScriptlessHistory7502({ ...receipt, sourceRevision: "main" }, directory),
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});

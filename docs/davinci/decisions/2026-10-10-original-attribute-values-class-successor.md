@@ -30,6 +30,15 @@ wrong source, failed build/process, changed archived bytes or failed original
 whole-output equality blocks the Action. Downloaded old evidence and current
 helpers running on substituted v1 fixtures cannot qualify the historical source.
 
+The same exact historical checkout additionally runs its own unchanged whole
+`native_scriptless_ssr` Cargo test and complete TypeScript SSR/map/runtime judge.
+Its original fourteen whole positive modules and eighteen full refusal outcomes,
+including the exact former `class='static'` source, must equal the original V1
+packet and whole runtime capture. Both real process statuses/raw streams and
+complete captures remain required in the source-bound historical receipt. The
+original scriptless archive hash stays
+`42d07bc4f7c6d19c67d83e4f3d13221e68700aa8c01a8cf7ccad4847088b4773`.
+
 The same Action separately builds the current source and executes all fourteen
 original inputs through the same public DOM, SSR and Vapor selected-SFC entries,
 unchanged descriptor/target defaults and both Recorded/NoLinks modes. V2 names
@@ -70,6 +79,6 @@ The historical source is executed on Actions, not locally for preparation.
 
 The real selected provider, DOM/SSR public-positive controls, exact-head Actions,
 protected full suites, unchanged instruction gates and actual Stack merge remain
-separate delivery prerequisites. Vapor class admission, scoped-style integration,
+separate delivery prerequisites. Vapor class admission, complete scoped-style products,
 dynamic class/style, default replacement and #6880 remain unfinished. The parent
 owns the paired issue and central-record adoption in the same published change.
