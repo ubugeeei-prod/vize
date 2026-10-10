@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "file": "App.tsx",
+      "diagnostics": []
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "jsx": "preserve",
+        "jsxImportSource": "vue",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "strict": true,
+        "target": "ES2022",
+        "types": ["vue/jsx"]
+      },
+      "files": ["App.tsx", "node_modules/vue/jsx.d.ts"]
+    }
+  ],
+  "errorCount": 0,
+  "warningCount": 0,
+  "fileCount": 1
+}

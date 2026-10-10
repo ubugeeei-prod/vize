@@ -1,0 +1,20 @@
+{
+  "id": 11534413040,
+  "node_id": "MDg6QXJ0aWZhY3QxMTUzNDQxMzA0MA==",
+  "name": "rust-test-shard-3-37743192231-1",
+  "size_in_bytes": 471277,
+  "url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11534413040",
+  "archive_download_url": "https://api.github.com/repos/ubugeeei-prod/vize/actions/artifacts/11534413040/zip",
+  "expired": false,
+  "digest": "sha256:b26cfa4f78f80168f2ec94fddccf0adb4d7ad6161f586002c48e9b9a5fb9415c",
+  "created_at": "2026-10-08T07:32:31Z",
+  "updated_at": "2026-10-08T07:32:31Z",
+  "expires_at": "2026-10-15T07:32:30Z",
+  "workflow_run": {
+    "id": 37743192231,
+    "repository_id": 1123610216,
+    "head_repository_id": 1123610216,
+    "head_branch": "test/lsp-alias-original-controls-8011-20261008",
+    "head_sha": "9fe63a3f20b7a56349bcca281e5f7fd98aca4adc"
+  }
+}

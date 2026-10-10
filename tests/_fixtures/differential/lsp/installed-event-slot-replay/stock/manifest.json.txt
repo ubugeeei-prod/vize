@@ -1,0 +1,34 @@
+{
+  "schema": "vize-original-event-stock-pure-inputs-v1",
+  "runtimeSourceFallback": false,
+  "records": [
+    {
+      "head": "c2bc3a55a2b70dc4dd6c4e43ee0737c347476398",
+      "file": "pnpm-lock.yaml",
+      "name": "c2bc-pnpm-lock.yaml.gz",
+      "rawSha256": "6c311bea2e8c89e938f1fe4f4c3c87e08d5776022a316070538178e61ef2ea86",
+      "gzipSha256": "b48f5f463180a17e9626688013e34c2d27e1b5e1592f304918fdbcf85419d57f"
+    },
+    {
+      "head": "c2bc3a55a2b70dc4dd6c4e43ee0737c347476398",
+      "file": "playground/package.json",
+      "name": "c2bc-playground-package.json.gz",
+      "rawSha256": "67a5b2a66ab71004c6440696ae5c1a3824705c6a629433afd5ad462d44abda6e",
+      "gzipSha256": "e4c7d9c3006393a22870bced227fdcdb8101ed3f5dae587bf6b4c8f91e606414"
+    },
+    {
+      "head": "c2bc3a55a2b70dc4dd6c4e43ee0737c347476398",
+      "file": "crates/vize/tests/support/lsp_vue_project.rs",
+      "name": "c2bc-crates-vize-tests-support-lsp_vue_project.rs.gz",
+      "rawSha256": "352aa0542cbfa01407eded744e207957484fd5ab0c0a4a9736f71c8dd869f168",
+      "gzipSha256": "410c2c68fac0e66e75b2bfcc2e78e01369c4f7eaf0b9101de260c63b08929d6b"
+    },
+    {
+      "head": "9fe63a3f20b7a56349bcca281e5f7fd98aca4adc",
+      "file": "pnpm-lock.yaml",
+      "name": "9fe6-pnpm-lock.yaml.gz",
+      "rawSha256": "d2f8dbbde00a2ef67e286d4f07381ed512b312a5ad115868a0e3d235fc583179",
+      "gzipSha256": "e5829d46a343229873b7154e9e7833df71ec5f6095953ab59c076bebf93a2288"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "components": [
+    {
+      "code": "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div data-v-1e1c1096>  &lt;p&gt;literal&lt;/p&gt;</div>\")\n\nexport function render(_ctx) {\n  const _component_Host = _resolveComponent(\"Host\")\n  const n2 = _createComponentWithFallback(_component_Host, null, {\n    \"content\": () => {\n      const n0 = t0()\n      const x0 = _txt(n0)\n      _renderEffect(() => _setText(x0, _toDisplayString(Array.from({ length: 3 }, (_, i) => <p>{i.toFixed(1)}{(() => <span>{i + 1}</span>)()}</p>)) + _toDisplayString((() => <aside>{42}</aside>)()) + \"<p>literal</p>\"))\n      return n0\n    }\n  }, true)\n  return n2\n}\n",
+      "map": null,
+      "mode": "Vapor",
+      "name": null,
+      "preamble": "",
+      "setup": "None",
+      "style": "Some(ScopedStyle { scope_id: \"data-v-1e1c1096\", css: \"p[data-v-1e1c1096]{ color: ; }\" })"
+    }
+  ],
+  "diagnostics": "[]",
+  "module": "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div data-v-1e1c1096>  &lt;p&gt;literal&lt;/p&gt;</div>\")\n\nexport function render(_ctx) {\n  const _component_Host = _resolveComponent(\"Host\")\n  const n2 = _createComponentWithFallback(_component_Host, null, {\n    \"content\": () => {\n      const n0 = t0()\n      const x0 = _txt(n0)\n      _renderEffect(() => _setText(x0, _toDisplayString(Array.from({ length: 3 }, (_, i) => <p>{i.toFixed(1)}{(() => <span>{i + 1}</span>)()}</p>)) + _toDisplayString((() => <aside>{42}</aside>)()) + \"<p>literal</p>\"))\n      return n0\n    }\n  }, true)\n  return n2\n}\n",
+  "moduleMap": null
+}

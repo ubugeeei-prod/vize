@@ -26,7 +26,7 @@ on:
       - "tests/_fixtures/differential/typechecker/**"
       - "crates/vize_canon/**"
       - "crates/vize_atelier_jsx/**"
-      - "tests/_fixtures/differential/typecheck/jsx-slot-parameter-annotations-8419/**"
+      - "tests/_fixtures/differential/typecheck/jsx-*/**"
       - ".github/actions/check-*/**"
       - "tests/tooling/**"
       - "tests/_fixtures/differential/lsp/**"

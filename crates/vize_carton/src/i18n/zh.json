@@ -58,6 +58,8 @@
   "vue/valid-v-slot.missing_value": "组件上的默认v-slot需要插槽参数值",
   "vue/valid-v-slot.value_help": "添加插槽参数值，或使用不带值的子元素<template #default>",
   "vue/valid-v-slot.invalid_modifier": "未指定插槽名称的v-slot不支持修饰符",
+  "vue/valid-v-slot.named_modifier": "带插槽参数的v-slot默认不支持修饰符",
+  "vue/valid-v-slot.named_modifier_help": "移除修饰符或启用allowModifiers",
   "vue/valid-v-slot.modifier_help": "移除v-slot指令上的修饰符",
   "vue/valid-v-slot.dynamic_scope": "动态插槽名称不能引用同一插槽声明的绑定",
   "vue/valid-v-slot.dynamic_scope_help": "使用外层作用域的绑定来选择插槽名称",

@@ -291,10 +291,12 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             | Expression::CallExpression(_) => self
                 .lower_control_flow_expr(inner, inner.span())
                 .unwrap_or_else(|| {
+                    self.retain_nested_typecheck_roots(inner);
                     let content = self.dyn_expr(inner.span());
                     self.interpolation_child(content, inner.span())
                 }),
             other => {
+                self.retain_nested_typecheck_roots(other);
                 let content = self.dyn_expr(other.span());
                 self.interpolation_child(content, other.span())
             }

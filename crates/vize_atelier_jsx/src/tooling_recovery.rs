@@ -14,6 +14,8 @@ use crate::{
 
 /// Lower JSX for type checking and editor queries, retaining parser diagnostics
 /// and all authored coordinates when a trailing member access is incomplete.
+/// Plain-expression children also retain their native nested JSX roots for
+/// source-mapped emission into a plain TypeScript document.
 pub fn lower_source_for_typecheck<'a>(
     bump: &'a Allocator,
     allocator: &oxc_allocator::Allocator,

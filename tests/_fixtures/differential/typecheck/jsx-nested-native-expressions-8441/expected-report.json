@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "file": "src/AfsStepperDialog.stories.tsx",
+      "diagnostics": []
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "jsx": "preserve",
+        "jsxImportSource": "vue",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "strict": true,
+        "target": "ES2022",
+        "types": ["vue/jsx"]
+      },
+      "files": ["node_modules/vue/jsx.d.ts", "src/AfsStepperDialog.stories.tsx"]
+    }
+  ],
+  "errorCount": 0,
+  "warningCount": 0,
+  "fileCount": 1
+}

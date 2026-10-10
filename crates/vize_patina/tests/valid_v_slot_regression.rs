@@ -11,6 +11,31 @@ const CONFIG: &str = include_str!(
 const DYNAMIC: &str = include_str!(
     "../../../tests/_fixtures/differential/lint/slot-dynamic-bindings-8142/additions.json"
 );
+const MODIFIERS: &str = include_str!(
+    "../../../tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/additions.json"
+);
+
+fn modifier_additions(case: &Value) -> Vec<Value> {
+    let additions: Value = serde_json::from_str(MODIFIERS).unwrap();
+    assert_eq!(additions["additions"].as_array().unwrap().len(), 3);
+    additions["additions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|addition| addition["id"] == case["id"])
+        .map(|addition| {
+            assert_eq!(addition["sourceSha256"], case["sourceSha256"]);
+            let diagnostic = addition["diagnostic"].clone();
+            let start = diagnostic["start"].as_u64().unwrap() as usize;
+            let end = diagnostic["end"].as_u64().unwrap() as usize;
+            assert_eq!(
+                case["source"].as_str().unwrap().get(start..end),
+                addition["authored"].as_str()
+            );
+            diagnostic
+        })
+        .collect()
+}
 
 fn dynamic_addition(case: &Value) -> Option<Value> {
     let additions: Value = serde_json::from_str(DYNAMIC).unwrap();
@@ -29,13 +54,20 @@ fn dynamic_addition(case: &Value) -> Option<Value> {
     Some(diagnostic)
 }
 
-fn current_packet(case: &Value) -> Value {
+fn current_packet(case: &Value, allow: bool) -> Value {
     let mut packet = case["after"].clone();
     if let Some(addition) = dynamic_addition(case) {
         let diagnostics = packet["diagnostics"].as_array_mut().unwrap();
         diagnostics.push(addition);
         diagnostics.sort_by_key(|d| (d["start"].as_u64(), d["end"].as_u64()));
         packet["error_count"] = json!(packet["error_count"].as_u64().unwrap() + 1);
+    }
+    if !allow {
+        let added = modifier_additions(case);
+        packet["error_count"] = json!(packet["error_count"].as_u64().unwrap() + added.len() as u64);
+        let diagnostics = packet["diagnostics"].as_array_mut().unwrap();
+        diagnostics.extend(added);
+        diagnostics.sort_by_key(|d| (d["start"].as_u64(), d["end"].as_u64()));
     }
     packet
 }
@@ -88,13 +120,20 @@ fn complete_packets_match_twice_and_preserve_all_foreign_findings() {
     let corpus: Value = serde_json::from_str(CASES).unwrap();
     let cases = corpus["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 47);
-    let linter = configured_linter();
-    for case in cases {
-        let source = case["source"].as_str().unwrap();
-        let filename = case["filename"].as_str().unwrap();
-        for _repeat in [1, 2] {
-            let actual = complete(&linter.lint_sfc(source, filename));
-            assert_eq!(actual, current_packet(case), "{}", case["id"]);
+    for allow in [false, true] {
+        let linter = configured_linter().with_valid_v_slot_allow_modifiers(allow);
+        for case in cases {
+            let source = case["source"].as_str().unwrap();
+            let filename = case["filename"].as_str().unwrap();
+            for _repeat in [1, 2] {
+                let actual = complete(&linter.lint_sfc(source, filename));
+                assert_eq!(
+                    actual,
+                    current_packet(case, allow),
+                    "{} allow {allow}",
+                    case["id"]
+                );
+            }
         }
     }
 }
@@ -102,43 +141,56 @@ fn complete_packets_match_twice_and_preserve_all_foreign_findings() {
 #[test]
 fn only_declared_diagnostics_are_added_at_exact_authored_byte_ranges() {
     let corpus: Value = serde_json::from_str(CASES).unwrap();
-    let linter = configured_linter();
-    let mut additions = 0;
-    let mut unchanged = 0;
-    let mut dynamic_additions = 0;
-    for case in corpus["cases"].as_array().unwrap() {
-        let source = case["source"].as_str().unwrap();
-        let mut actual = complete(&linter.lint_sfc(source, case["filename"].as_str().unwrap()));
-        if let Some(expected) = dynamic_addition(case) {
-            let diagnostics = actual["diagnostics"].as_array_mut().unwrap();
-            let index = diagnostics.iter().position(|d| d == &expected).unwrap();
-            diagnostics.remove(index);
-            actual["error_count"] = json!(actual["error_count"].as_u64().unwrap() - 1);
-            dynamic_additions += 1;
+    for allow in [false, true] {
+        let linter = configured_linter().with_valid_v_slot_allow_modifiers(allow);
+        let mut additions = 0;
+        let mut unchanged = 0;
+        let mut dynamic_additions = 0;
+        let mut modifier_count = 0;
+        for case in corpus["cases"].as_array().unwrap() {
+            let source = case["source"].as_str().unwrap();
+            let mut actual = complete(&linter.lint_sfc(source, case["filename"].as_str().unwrap()));
+            if !allow {
+                for expected in modifier_additions(case) {
+                    let diagnostics = actual["diagnostics"].as_array_mut().unwrap();
+                    let index = diagnostics.iter().position(|d| d == &expected).unwrap();
+                    diagnostics.remove(index);
+                    actual["error_count"] = json!(actual["error_count"].as_u64().unwrap() - 1);
+                    modifier_count += 1;
+                }
+            }
+            if let Some(expected) = dynamic_addition(case) {
+                let diagnostics = actual["diagnostics"].as_array_mut().unwrap();
+                let index = diagnostics.iter().position(|d| d == &expected).unwrap();
+                diagnostics.remove(index);
+                actual["error_count"] = json!(actual["error_count"].as_u64().unwrap() - 1);
+                dynamic_additions += 1;
+            }
+            let added = case["added"].as_array().unwrap();
+            for expected in added {
+                let diagnostics = actual["diagnostics"].as_array_mut().unwrap();
+                let index = diagnostics.iter().position(|d| d == expected).unwrap();
+                let d = diagnostics.remove(index);
+                assert_eq!(d["rule_name"], "vue/valid-v-slot");
+                assert_eq!(d["severity"], "error");
+                assert!(d["fix"].is_null());
+                assert_eq!(d["labels"], json!([]));
+                let start = d["start"].as_u64().unwrap() as usize;
+                let end = d["end"].as_u64().unwrap() as usize;
+                let authored = case["addedDirective"].as_str().unwrap();
+                assert_eq!(source.get(start..end), Some(authored), "{}", case["id"]);
+                assert_eq!(source.find(authored), Some(start), "{}", case["id"]);
+                actual["error_count"] = json!(actual["error_count"].as_u64().unwrap() - 1);
+                additions += 1;
+            }
+            unchanged += usize::from(added.is_empty());
+            assert_eq!(actual, case["before"], "{}", case["id"]);
         }
-        let added = case["added"].as_array().unwrap();
-        for expected in added {
-            let diagnostics = actual["diagnostics"].as_array_mut().unwrap();
-            let index = diagnostics.iter().position(|d| d == expected).unwrap();
-            let d = diagnostics.remove(index);
-            assert_eq!(d["rule_name"], "vue/valid-v-slot");
-            assert_eq!(d["severity"], "error");
-            assert!(d["fix"].is_null());
-            assert_eq!(d["labels"], json!([]));
-            let start = d["start"].as_u64().unwrap() as usize;
-            let end = d["end"].as_u64().unwrap() as usize;
-            let authored = case["addedDirective"].as_str().unwrap();
-            assert_eq!(source.get(start..end), Some(authored), "{}", case["id"]);
-            assert_eq!(source.find(authored), Some(start), "{}", case["id"]);
-            actual["error_count"] = json!(actual["error_count"].as_u64().unwrap() - 1);
-            additions += 1;
-        }
-        unchanged += usize::from(added.is_empty());
-        assert_eq!(actual, case["before"], "{}", case["id"]);
+        assert_eq!(additions, 8);
+        assert_eq!(unchanged, 39);
+        assert_eq!(dynamic_additions, 8);
+        assert_eq!(modifier_count, if allow { 0 } else { 3 });
     }
-    assert_eq!(additions, 8);
-    assert_eq!(unchanged, 39);
-    assert_eq!(dynamic_additions, 8);
 }
 
 #[test]

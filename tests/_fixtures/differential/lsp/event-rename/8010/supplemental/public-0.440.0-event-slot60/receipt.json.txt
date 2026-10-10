@@ -1,0 +1,26 @@
+{
+  "schema": "vize-frozen-public-lsp-campaign-v1",
+  "campaign": "event-slot60",
+  "completeSessions": 60,
+  "terminalExitCode": 0,
+  "rawReceiptOriginalPath": "/private/tmp/vize-lsp440-20261010-5998a437/event-slot60/receipt.json",
+  "rawReceiptSha256": "519f04adf7e2e392b848d1c2961d2fe42aef75e56d9e106ff67d07b539039237",
+  "archive": "complete-evidence.tar.gz",
+  "archiveSha256": "98b93a8d4a0462168e97fc8e925f65e803c256fda528beb144582d88f492a2a9",
+  "regularFiles": 891,
+  "dependencySymlinksRecorded": 60,
+  "publicInstallReceiptSha256": "ad20350f3e7e9d644e311abba179c6f7f61fa0cef8e9a3a9655cfb017fb35ce3",
+  "source": {
+    "C": "e5702be6d0119a716499827fa7b918ce8c9dcbae",
+    "H": "bf2cd911c268605588b2ceedbc011e36c79d113c",
+    "tag": "v0.440.0",
+    "R": "38026960473"
+  },
+  "sourcePr": 8401,
+  "tagObject": "e6a4a955e5374e5748157dc261208e49747d10b2",
+  "runnerSourceHead": "076fa3f25adf2feb249bdbdff3aa16d3f9e9dfa0",
+  "runnerModuleClosureSha256": "08665030f1120b8e28402ee98188b71884b6eeb76ad244b5328511e0ddf1dc54",
+  "collectorSnapshotSha256": "a26411442a3fde2590d969160fd83b97685e9019d2de4decb0c103a376f10786",
+  "provenanceCryptographicSignatureVerificationPerformed": false,
+  "scope": "Finite authentic installed replay only; broader native ownership/refusal and full batch stdout remain unfinished."
+}
