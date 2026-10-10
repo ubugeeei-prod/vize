@@ -45,6 +45,28 @@ export function verifyProjectHostCalls(events, custody, receipt) {
   return { calls, batchCalls, processes: loaded.size };
 }
 
+export function createHostCommandRunner({ temporary, output, version }) {
+  return (command, args, options = {}, captureName = command === "npm" ? "install" : "tests") => {
+    assert.ok(["install", "tests", "html-tests"].includes(captureName));
+    const result = spawnSync(command, args, {
+      cwd: temporary,
+      encoding: "utf8",
+      timeout: 180_000,
+      maxBuffer: 64 * 1024 * 1024,
+      ...options,
+    });
+    fs.writeFileSync(
+      path.join(output, `${captureName}.json`),
+      JSON.stringify({ command, args, ...result }, null, 2) + "\n",
+    );
+    process.stdout.write(result.stdout ?? "");
+    process.stderr.write(result.stderr ?? "");
+    assert.equal(result.error, undefined);
+    assert.equal(result.signal, null);
+    assert.equal(result.status, 0, `Oxlint ${version} original-project qualification failed`);
+  };
+}
+
 function runProjectHost({ packageDir, artifacts, binary, replay, version, types, temporary }) {
   const receipt = JSON.parse(fs.readFileSync(path.join(artifacts, "build-receipt.json"), "utf8"));
   assert.equal(process.env.GITHUB_ACTIONS, "true");
@@ -62,24 +84,7 @@ function runProjectHost({ packageDir, artifacts, binary, replay, version, types,
       phaseWalltimeMs[name] = performance.now() - phaseStart;
     }
   };
-  const run = (command, args, options = {}) => {
-    const result = spawnSync(command, args, {
-      cwd: temporary,
-      encoding: "utf8",
-      timeout: 180_000,
-      maxBuffer: 64 * 1024 * 1024,
-      ...options,
-    });
-    fs.writeFileSync(
-      path.join(output, `${command === "npm" ? "install" : "tests"}.json`),
-      JSON.stringify({ command, args, ...result }, null, 2) + "\n",
-    );
-    process.stdout.write(result.stdout ?? "");
-    process.stderr.write(result.stderr ?? "");
-    assert.equal(result.error, undefined);
-    assert.equal(result.signal, null);
-    assert.equal(result.status, 0, `Oxlint ${version} original-project qualification failed`);
-  };
+  const run = createHostCommandRunner({ temporary, output, version });
   try {
     // These are the actual two pinned host tools, installed outside the source
     // checkout. No package is published and no downloaded addon is qualified.
@@ -156,6 +161,31 @@ function runProjectHost({ packageDir, artifacts, binary, replay, version, types,
         ...verifyProjectHostCalls(events, custody, receipt),
         originalProject: capture.qualified,
       };
+    });
+    timed("htmlTransport", () => {
+      const htmlCustody = { ...custody, calls: path.join(output, "html-native-calls.jsonl") };
+      const htmlConfiguration = path.join(output, "html-custody.json");
+      fs.writeFileSync(htmlConfiguration, JSON.stringify(htmlCustody, null, 2) + "\n");
+      const htmlPreload = fileURLToPath(new URL("./project-html-custody.cjs", import.meta.url));
+      run(
+        process.execPath,
+        ["src/html-cli.test.mjs"],
+        {
+          cwd: packageDir,
+          env: {
+            ...process.env,
+            NODE_OPTIONS:
+              `${process.env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(htmlPreload)}`.trim(),
+            VIZE_OXLINT_NATIVE_CUSTODY: htmlConfiguration,
+            VIZE_OXLINT_TEST_ENTRYPOINT: engine,
+            VIZE_OXLINT_HTML_CAPTURE: path.join(output, "original-html-cli.json"),
+          },
+        },
+        "html-tests",
+      );
+      const htmlCapture = JSON.parse(fs.readFileSync(path.join(output, "original-html-cli.json")));
+      assert.equal(htmlCapture.complete, true);
+      qualification.originalHtml = htmlCapture.qualified;
     });
     const { host: n8nHost, custody: n8nCustody } = timed("n8nReplay", () =>
       replayN8nHost({ ...replay, hosts: [], hostCustodies: [] }, engine, version),
