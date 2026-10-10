@@ -41,7 +41,7 @@ fn lsp_initializes_project_formatting_without_options_and_respects_false() {
         );
         let publication = lsp.recv_matching(|message| {
             message["method"] == "textDocument/publishDiagnostics"
-                && message["params"]["uri"] == uri
+                && message["params"]["uri"] == uri.as_str()
                 && message["params"]["version"] == 1
         });
         assert_eq!(
