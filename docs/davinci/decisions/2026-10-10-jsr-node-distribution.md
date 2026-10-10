@@ -46,6 +46,13 @@ or original consumer. Disabled H has no JSR delivery credit. Legacy source H
 without this lane retains the original plan and receipt shape. Record exact
 publication/consumer receipts with the first and each later enabled release.
 
+Source `fd063b9c8` passed the hosted JSR stage but failed the unchanged original
+`release-pr.test.ts:211` contract: a new policy step displaced the required final
+candidate authorization step. Keep that original step and its complete env last;
+emit the raw-H policy output inside it only after successful original validation.
+The audited oracle, original build barrier and pinned verifier flags stay fixed.
+The failed source remains failed; corrected source requires fresh whole Actions.
+
 At preparation time the public `@vizejs` scope and package metadata return 404.
 Required TODO: an authorized JSR scope administrator creates the scope/package,
 links `ubugeeei-prod/vize`, configures Node-only compatibility, enables the

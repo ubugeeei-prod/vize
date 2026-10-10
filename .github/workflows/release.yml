@@ -61,6 +61,7 @@ jobs:
         with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
       - name: Verify author, current main and exact PR commit
+        id: jsr-policy
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_PR: ${{ inputs.release_pr }}
@@ -73,10 +74,7 @@ jobs:
           else
             rust-script tools/commands/release/pr.rs validate "$RELEASE_PR" "$RELEASE_SHA" "$RELEASE_TAG"
           fi
-      - name: Derive required JSR channel from frozen source
-        id: jsr-policy
-        env: { RELEASE_SHA: "${{ inputs.expected_sha }}" }
-        run: node tools/support/release/jsr/channel.mjs "$RELEASE_SHA" >> "$GITHUB_OUTPUT"
+          node tools/support/release/jsr/channel.mjs "$RELEASE_SHA" >> "$GITHUB_OUTPUT"
   plan-release-platforms:
     if: inputs.release_pr != ''
     needs: candidate
