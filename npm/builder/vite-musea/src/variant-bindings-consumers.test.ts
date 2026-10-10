@@ -117,7 +117,9 @@ void test("dev fallback and props override choose each distinct binding", async 
     assert.ok(body.includes(expected), body);
     const propsInitializers = [...body.matchAll(/^const propsOverride = (.+);$/gm)];
     assert.equal(propsInitializers.length, 1, "props override initializer must be unique");
-    const actualProps: unknown = runInThisContext(`(${propsInitializers[0][1]})`, { timeout: 1_000 });
+    const actualProps: unknown = runInThisContext(`(${propsInitializers[0][1]})`, {
+      timeout: 1_000,
+    });
     assert.ok(typeof actualProps === "object" && actualProps !== null);
     assert.deepEqual(actualProps, { label: "Override" });
     assert.deepEqual(Object.keys(actualProps), ["label"]);
