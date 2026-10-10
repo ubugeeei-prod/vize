@@ -109,6 +109,17 @@ Mapper baseline normative for the quoted-protocol restoration and require fresh
 Actions for the complete corrected source; the earlier failing capture does
 not qualify the new references/rename resolver.
 
+The initializer-rewind receipt has a separate generated-offset baseline. Its
+existing typed `$emit` rewind remains unchanged. The exact-source
+[current native capture](https://github.com/ubugeeei-prod/vize/actions/runs/38089850587)
+confirms that reversing only the declared model coordinates recovers the
+complete original receipt after its 97-byte initializer rewind. Update only
+its Canon mapping, Maestro mapping and authored-hit records to 28/23/27.
+Every original Content Mapper protocol, generated text, import, semantic-link
+and diagnostic record remains normative. The Content Mapper source membership
+law includes five new quoted-model test sites and one production SmallVec site: all 15 L0
+mentions use the preferred physical name, with no compatibility alias.
+
 ## Qualification boundary
 
 The original failures are retained; the bounded producer repair is prepared.

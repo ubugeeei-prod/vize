@@ -14,8 +14,10 @@ pub(super) fn candidates(
     let model_names: SmallVec<[Range<usize>; 4]> = mappings
         .windows(3)
         .filter_map(|rows| {
-            model_triplet(source, generated, &rows[0], &rows[1], &rows[2])
-                .map(|_| rows[0].src_range.clone())
+            let [whole, interior, name] = rows else {
+                return None;
+            };
+            model_triplet(source, generated, whole, interior, name).map(|_| whole.src_range.clone())
         })
         .collect();
     let mut mappings = mappings.iter().peekable();

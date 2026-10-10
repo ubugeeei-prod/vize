@@ -1,9 +1,9 @@
 use serde_json::json;
 
-use super::super::{
+use super::super::span_features::{
     CONTENT_MAPPER_SPAN_FEATURES_ALL, CONTENT_MAPPER_SPAN_FEATURES_WHOLE_SYMBOL,
-    ContentMapperSpanKind, protocol_spans,
 };
+use super::super::{ContentMapperSpanKind, protocol_spans};
 use super::{VizeMapping, model_triplet};
 use crate::virtual_ts::VizeSubSpan;
 
