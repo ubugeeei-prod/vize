@@ -37,7 +37,9 @@ The grandfathered art-module file shrinks by reusing the identical existing
 `componentNameFromSource` export. Ordinary Vue 2/Vue 3 module SHA-256 controls
 were captured from the frozen pre-fix source and remain exact. Unit laws cover
 punctuation, Unicode normalization, numeric names, defaults, duplicate rejection,
-all preview consumers, props overrides and HMR membership changes.
+all preview consumers, props overrides and HMR membership changes. Development
+preview middleware returns HTTP 500 for planning failures; a real Vite HTTP
+law checks bounded duplicate-name errors and a subsequent responsive request.
 
 ## Genuine native build and HTTP law
 

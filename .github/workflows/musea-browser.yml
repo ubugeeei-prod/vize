@@ -60,7 +60,7 @@ jobs:
         working-directory: npm/builder/vite-musea
         env:
           VIZE_MUSEA_NATIVE_BROWSER_TESTS: "1"
-        run: vp exec tsx --test src/art-component.test.ts src/inline-art.browser.test.ts src/inline-art-static.browser.test.ts src/variant-bindings-native.browser.test.ts
+        run: vp exec tsx --test src/art-component.test.ts src/inline-art.browser.test.ts src/inline-art-static.browser.test.ts src/variant-bindings-native.browser.test.ts src/variant-bindings-http.test.ts
       - name: Retain native inline Art browser observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

@@ -13,6 +13,7 @@ import { generateArtModule } from "./art-module.js";
 import { decodeUrlComponent, HttpError, resolveUrlPathInside } from "./security.js";
 import { variantComponentNames } from "./variant-bindings.js";
 import { previewModuleId } from "./preview-module-id.js";
+import { sendPreviewModule } from "./middleware-response.js";
 import type { MuseaTokenPreviewConfig } from "./tokens/preview.js";
 import { generateDevGlobalsScript } from "./gallery/globals.js";
 export { generateDevGlobalsScript } from "./gallery/globals.js";
@@ -229,7 +230,14 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
       return;
     }
 
-    const variantComponentName = variantComponentNames(art.variants).get(variant.name)!;
+    let variantComponentName: string;
+    try {
+      variantComponentName = variantComponentNames(art.variants).get(variant.name)!;
+    } catch (error) {
+      res.statusCode = 500;
+      res.end(error instanceof Error ? error.message : String(error));
+      return;
+    }
     const moduleCode = generatePreviewModule(
       art,
       variantComponentName,
@@ -243,18 +251,14 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
     try {
       const result = await devServer.transformRequest(previewModuleId(artPath, variantName));
       if (result) {
-        res.setHeader("Content-Type", "application/javascript");
-        res.setHeader("Cache-Control", "no-cache");
-        res.end(result.code);
+        sendPreviewModule(res, result.code);
         return;
       }
     } catch {
       // Fall through to manual response
     }
 
-    res.setHeader("Content-Type", "application/javascript");
-    res.setHeader("Cache-Control", "no-cache");
-    res.end(moduleCode);
+    sendPreviewModule(res, moduleCode);
   });
 
   // --- VRT preview route ---
@@ -320,9 +324,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
       const virtualId = `virtual:musea-art:${artPath}`;
       const result = await devServer.transformRequest(virtualId);
       if (result) {
-        res.setHeader("Content-Type", "application/javascript");
-        res.setHeader("Cache-Control", "no-cache");
-        res.end(result.code);
+        sendPreviewModule(res, result.code);
       } else {
         const moduleCode = generateArtModule(art, artPath, {
           root: devServer.config.root,
