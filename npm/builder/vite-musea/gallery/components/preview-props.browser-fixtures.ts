@@ -64,7 +64,7 @@ export async function registerPreviewPropsBrowserTest() {
       const output =
         process.env.MUSEA_CODE_PROOF_DIR || path.join(repository, "artifacts/musea-code");
       const server = await createPropsBrowserServer(output, fixture.values);
-      const browser = await chromium.launch();
+      let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
       const observation: Record<string, unknown> = {
         panel: "generated-preview-prop-keys",
         fixture,
@@ -73,6 +73,7 @@ export async function registerPreviewPropsBrowserTest() {
       const states = observation.snapshots as unknown[];
       const errors: string[] = [];
       try {
+        browser = await chromium.launch();
         await server.listen();
         const address = server.httpServer!.address();
         assert.ok(address && typeof address !== "string");
@@ -181,19 +182,25 @@ export async function registerPreviewPropsBrowserTest() {
         assert.deepEqual(JSON.parse(staticState.rendered!), { props: clearedValues, attrs: {} });
         assert.deepEqual(errors, []);
       } finally {
-        await mkdir(output, { recursive: true });
-        // The existing always-uploaded receipt owns this new complete observation.
-        const receiptPath = path.join(output, "observations.json");
-        let receipt: { observations?: unknown[] } = {};
         try {
-          receipt = JSON.parse(await readFile(receiptPath, "utf8"));
-        } catch {
-          /* first failed test */
+          await mkdir(output, { recursive: true });
+          // The existing always-uploaded receipt owns this new complete observation.
+          const receiptPath = path.join(output, "observations.json");
+          let receipt: { observations?: unknown[] } = {};
+          try {
+            receipt = JSON.parse(await readFile(receiptPath, "utf8"));
+          } catch {
+            /* first failed test */
+          }
+          receipt.observations = [...(receipt.observations || []), { ...observation, errors }];
+          await writeFile(receiptPath, JSON.stringify(receipt, null, 2));
+        } finally {
+          try {
+            await browser?.close();
+          } finally {
+            await server.close();
+          }
         }
-        receipt.observations = [...(receipt.observations || []), { ...observation, errors }];
-        await writeFile(receiptPath, JSON.stringify(receipt, null, 2));
-        await browser.close();
-        await server.close();
       }
     },
   );

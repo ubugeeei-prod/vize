@@ -43,7 +43,7 @@ export async function registerPropEditorCancellationTest() {
       };
       const { values } = fixture;
       const server = await createPropsBrowserServer(output, values);
-      const browser = await chromium.launch();
+      let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined;
       const errors: string[] = [];
       const observation: Record<string, unknown> = { panel: "prop-editor-cancellation", fixture };
       let release!: () => void;
@@ -55,6 +55,7 @@ export async function registerPropEditorCancellationTest() {
         requested = resolve;
       });
       try {
+        browser = await chromium.launch();
         await server.listen();
         const address = server.httpServer!.address();
         assert.ok(address && typeof address !== "string");
@@ -111,19 +112,25 @@ export async function registerPropEditorCancellationTest() {
         assert.equal(observation.liveEditors, 1);
         assert.deepEqual(errors, []);
       } finally {
-        release();
-        await mkdir(output, { recursive: true });
-        const receiptPath = path.join(output, "observations.json");
-        let receipt: { observations?: unknown[] } = {};
         try {
-          receipt = JSON.parse(await readFile(receiptPath, "utf8"));
-        } catch {
-          /* first failure */
+          release();
+          await mkdir(output, { recursive: true });
+          const receiptPath = path.join(output, "observations.json");
+          let receipt: { observations?: unknown[] } = {};
+          try {
+            receipt = JSON.parse(await readFile(receiptPath, "utf8"));
+          } catch {
+            /* first failure */
+          }
+          receipt.observations = [...(receipt.observations || []), { ...observation, errors }];
+          await writeFile(receiptPath, JSON.stringify(receipt, null, 2));
+        } finally {
+          try {
+            await browser?.close();
+          } finally {
+            await server.close();
+          }
         }
-        receipt.observations = [...(receipt.observations || []), { ...observation, errors }];
-        await writeFile(receiptPath, JSON.stringify(receipt, null, 2));
-        await browser.close();
-        await server.close();
       }
     },
   );
