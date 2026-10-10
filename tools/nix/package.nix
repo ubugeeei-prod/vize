@@ -48,6 +48,7 @@ let
   ];
 
   externalAssets = [
+    "/crates/vize_carton/src/config/loader/vite-runtime.mjs"
     "/npm/cli/schemas/vize.config.schema.json"
     "/docs/davinci/plan/budgets.toml"
   ];
