@@ -119,11 +119,13 @@ export async function handleRunVrt(
     }>(body);
     const { MuseaVrtRunner, generateVrtJsonReport, generateVrtReport } = await import("../vrt.js");
 
-    const snapshotDir = path.resolve(ctx.config.root, ".vize/snapshots");
+    const { a11y: _a11y, ...configured } = ctx.vrt ?? {};
+    const snapshotDir = path.resolve(ctx.config.root, configured.snapshotDir ?? ".vize/snapshots");
     const reportDir = path.resolve(ctx.config.root, ".vize/reports");
 
     const runner = new MuseaVrtRunner({
-      capture: { waitForPreviewReady: true },
+      ...configured,
+      capture: { ...configured.capture, waitForPreviewReady: true },
       snapshotDir,
       projectRoot: ctx.projectRoot ?? ctx.config.root,
       previewBasePath: publicBasePathFromViteBase(ctx.config.base, ctx.basePath),
