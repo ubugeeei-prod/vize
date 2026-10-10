@@ -1,6 +1,7 @@
 //! Inline production compiles must retain transform-time scope and helper order.
 
 use super::shapes::{Shape, compile};
+use sha2::{Digest, Sha256};
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l0::profiler::global_profiler;
 
@@ -59,6 +60,24 @@ const items = [1, 2]
     );
 }
 
+#[test]
+fn typed_slot_handlers_keep_the_current_scope_and_outside_cache() {
+    let _guard = crate::PROFILER_TEST_LOCK.lock().unwrap();
+    let fixture: serde_json::Value = serde_json::from_str(include_str!(
+        "../../../../tests/_fixtures/differential/compiler/typed-slot-handler-scope-8142/cases.json"
+    ))
+    .expect("whole independent typed scope controls");
+    let cases = fixture["cases"]
+        .as_array()
+        .expect("complete six authored controls");
+    assert_eq!(cases.len(), 6);
+    for case in cases {
+        let filename = case["filename"].as_str().expect("authored filename");
+        let source = case["source"].as_str().expect("whole authored SFC");
+        assert_inline_parity(filename, source);
+    }
+}
+
 fn assert_inline_parity(filename: &str, source: &str) {
     let descriptor = parse_sfc(
         source,
@@ -71,10 +90,35 @@ fn assert_inline_parity(filename: &str, source: &str) {
     let profiler = global_profiler();
     profiler.clear();
     profiler.enable();
-    let emitted = compile(&descriptor, filename, Shape::DomInline).expect("L2 compile");
+    let emitted = compile(&descriptor, filename, Shape::DomInline);
     let counters = profiler.counter_summary();
     profiler.disable();
     profiler.clear();
+    let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
+        compile(&descriptor, filename, Shape::DomInline)
+    });
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../target/differential/typed-slot-handler-scope");
+    std::fs::create_dir_all(&root).expect("whole scope compiler packet directory");
+    let executable = std::env::current_exe().expect("actual source test producer");
+    let binary = std::fs::read(&executable).expect("actual source test producer bytes");
+    let binary_sha256 = Sha256::digest(binary)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    let packet = serde_json::json!({
+        "filename": filename, "source": source, "shape": "dom_inline",
+        "producer": { "executable": executable, "binarySha256": binary_sha256,
+            "githubSha": std::env::var("GITHUB_SHA").ok(),
+            "argv": std::env::args().collect::<Vec<_>>() },
+        "counters": format!("{counters:?}"),
+        "selectedResult": emitted, "legacyResult": legacy,
+    });
+    std::fs::write(
+        root.join(format!("{filename}.json")),
+        serde_json::to_vec_pretty(&packet).expect("complete original compiler outputs"),
+    )
+    .expect("retain whole actual packet before parity assertion");
     assert!(
         counters
             .entries
@@ -82,9 +126,7 @@ fn assert_inline_parity(filename: &str, source: &str) {
             .any(|entry| entry.name == "davinci.s2_dom.accepted" && entry.total == 1),
         "{filename} must reach L2: {counters:?}"
     );
-    let legacy = vize_atelier_dom::differential::with_legacy_lane(|| {
-        compile(&descriptor, filename, Shape::DomInline)
-    })
-    .expect("legacy compile");
+    let emitted = emitted.expect("L2 compile");
+    let legacy = legacy.expect("legacy compile");
     assert_eq!(emitted.code, legacy.code, "{filename}");
 }

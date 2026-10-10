@@ -329,6 +329,8 @@ impl<'a, C: ParserConfig> Parser<'a, C> {
 mod parser_parse {
     use super::*;
 
+    mod slot_parameters;
+
     /// `UniquePromise` is a way to use the type system to enforce the invariant that only
     /// a single `ParserImpl`, `Lexer` and `lexer::Source` can exist at any time on a thread.
     /// This constraint is required to guarantee the soundness of some methods of these types

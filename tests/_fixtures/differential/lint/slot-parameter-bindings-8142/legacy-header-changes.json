@@ -1,0 +1,74 @@
+{
+  "schema": "vize.slot-parameter.legacy-header-changes",
+  "version": 1,
+  "qualification": "Explicit complete header corrections; immutable original source/history/provider packets retained; inverse reconstruction required. No full adoption or installed qualification.",
+  "changes": [
+    {
+      "id": "dynamic-arrow-shadow-control",
+      "sourceSha256": "8001e5966754d709f0118c8f23677f1c76936730b1d71b4d92aba169d4c4365a",
+      "authored": "#[((slot)=>slot)(name)]=\"slot\"",
+      "removed": [
+        {
+          "end": 205,
+          "fix": null,
+          "help": null,
+          "labels": [],
+          "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+          "rule_name": "parser/template",
+          "severity": "error",
+          "start": 204
+        },
+        {
+          "end": 206,
+          "fix": null,
+          "help": null,
+          "labels": [],
+          "message": "Attribute `#` is missing a value after `=`; continuing without the value.",
+          "rule_name": "parser/template",
+          "severity": "error",
+          "start": 205
+        }
+      ],
+      "added": []
+    },
+    {
+      "id": "dynamic-arrow-capture",
+      "sourceSha256": "b8e74607071c5b3b2b69edc573ea243048c406fa85eafd875ab2e7aa729db085",
+      "authored": "#[(()=>slot)()]=\"slot\"",
+      "removed": [
+        {
+          "end": 201,
+          "fix": null,
+          "help": null,
+          "labels": [],
+          "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+          "rule_name": "parser/template",
+          "severity": "error",
+          "start": 200
+        },
+        {
+          "end": 202,
+          "fix": null,
+          "help": null,
+          "labels": [],
+          "message": "Attribute `#` is missing a value after `=`; continuing without the value.",
+          "rule_name": "parser/template",
+          "severity": "error",
+          "start": 201
+        }
+      ],
+      "added": [
+        {
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+          "start": 195,
+          "end": 217,
+          "help": "Use a binding from the enclosing scope to choose the slot name",
+          "labels": [],
+          "fix": null
+        }
+      ]
+    }
+  ]
+}

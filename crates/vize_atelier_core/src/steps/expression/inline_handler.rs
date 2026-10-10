@@ -47,7 +47,7 @@ pub fn process_inline_handler<'a>(
         .unwrap_or(content);
     // The retained AST applies wherever the checked text is still the node's
     // own bytes (P1-7); TS-stripped text that changed falls back.
-    let retained: Option<&JsExpression<'_>> =
+    let retained: Option<JsExpression<'_>> =
         crate::retained::retained_whole_expression(&normalized);
     let is_function = if function_check_source == *content {
         is_function_expression_node(&normalized)
@@ -59,7 +59,7 @@ pub fn process_inline_handler<'a>(
     if is_function {
         // Process identifiers in the handler
         if ctx.options.prefix_identifiers {
-            let result = rewrite_expression(content, ctx, false, retained);
+            let result = rewrite_expression(content, ctx, false, retained.as_ref());
             if result.used_unref {
                 ctx.helper(crate::RuntimeHelper::Unref);
             }
@@ -117,7 +117,7 @@ pub fn process_inline_handler<'a>(
                     (*content).into()
                 }
             } else {
-                let result = rewrite_expression(content, ctx, false, retained);
+                let result = rewrite_expression(content, ctx, false, retained.as_ref());
                 if result.used_unref {
                     ctx.helper(crate::RuntimeHelper::Unref);
                 }
@@ -159,7 +159,7 @@ pub fn process_inline_handler<'a>(
         // references and authored functions retain their ordinary lexical scope.
         ctx.enter_scope(vize_croquis::ScopeKind::EventHandler);
         ctx.add_identifier("$event");
-        let result = rewrite_expression(content, ctx, false, retained);
+        let result = rewrite_expression(content, ctx, false, retained.as_ref());
         ctx.exit_scope();
         if result.used_unref {
             ctx.helper(crate::RuntimeHelper::Unref);

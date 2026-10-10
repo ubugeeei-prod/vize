@@ -46,7 +46,7 @@ pub(super) fn resolve_expression_node(
     }
 
     if let Some(js) = vize_atelier_core::retained::retained_whole_expression(node)
-        && vize_atelier_core::retained::js_module_compatible(js)
+        && vize_atelier_core::retained::js_module_compatible(&js)
     {
         // Retained spans are content-relative; the resolver rewrites the
         // trimmed text, so shift by the leading whitespace (tokens never
@@ -78,7 +78,7 @@ pub(super) fn resolve_model_update_node(
 ) -> String {
     let target = node.content.trim();
     if let Some(js) = vize_atelier_core::retained::retained_whole_expression(node)
-        && vize_atelier_core::retained::js_module_compatible(js)
+        && vize_atelier_core::retained::js_module_compatible(&js)
     {
         let lead = node.content.len() - node.content.trim_start().len();
         let mut collector = ExpressionRewriteCollector::new(ctx);
@@ -106,7 +106,7 @@ pub(super) fn resolve_inline_handler_node(
 ) -> String {
     let handler = node.content.trim();
     if let Some(js) = vize_atelier_core::retained::retained_whole_expression(node)
-        && vize_atelier_core::retained::js_module_compatible(js)
+        && vize_atelier_core::retained::js_module_compatible(&js)
     {
         let lead = node.content.len() - node.content.trim_start().len();
         let mut collector = ExpressionRewriteCollector::new(ctx);

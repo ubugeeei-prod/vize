@@ -1,7 +1,7 @@
 use crate::drawer::Drawer;
 use crate::drawer::helpers::{
-    ConditionalKind, extract_slot_prop_bindings, extract_v_scope_bindings, is_builtin_directive,
-    parse_v_for_scope_expression,
+    ConditionalKind, extract_retained_slot_prop_bindings, extract_slot_prop_bindings,
+    extract_v_scope_bindings, is_builtin_directive, parse_v_for_scope_expression,
 };
 use vize_carton::{CompactString, SmallVec, profile, smallvec};
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
@@ -90,7 +90,11 @@ impl Drawer {
                         let base = exp.loc().span.start;
                         let prop_bindings = profile!(
                             "croquis.template.v_slot.extract_props",
-                            extract_slot_prop_bindings(content)
+                            match exp {
+                                ExpressionNode::Simple(node) =>
+                                    extract_retained_slot_prop_bindings(node).unwrap_or_default(),
+                                ExpressionNode::Compound(_) => SmallVec::new(),
+                            }
                         );
                         let prop_names =
                             prop_bindings.iter().map(|(name, _)| name.clone()).collect();

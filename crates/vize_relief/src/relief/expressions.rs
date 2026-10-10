@@ -37,8 +37,8 @@ pub struct SimpleExpressionNode<'a> {
     pub is_static: bool,
     pub const_type: ConstantType,
     pub loc: SourceLocation,
-    /// Parsed JavaScript AST (None = simple identifier, Some = parsed expression)
-    pub js_ast: Option<JsExpression<'a>>,
+    /// Parse-once JavaScript payload, selected by its expression or slot role.
+    pub js_ast: Option<RetainedJsAst<'a>>,
     /// Hoisted node reference
     pub hoisted: Option<Box<'a, JsChildNode<'a>>>,
     /// Identifiers declared in this expression
@@ -115,6 +115,89 @@ pub struct JsExpression<'a> {
     /// copy of the decoded content (attribute values with entities,
     /// camelized same-name shorthand arguments).
     pub raw: &'a str,
+}
+
+/// A complete role-selected parse of the node's original `raw` bytes.
+///
+/// The arena owns one kind allocation, containing the expression or slot
+/// parameters. Byte-identical clones copy this borrowed carrier; transforms
+/// must clear it when changing content. Ordinary expression failures remain
+/// absent, while slot errors are retained for compiler diagnostics without
+/// reparsing a synthetic parameter wrapper.
+#[derive(Clone, Copy)]
+pub struct RetainedJsAst<'a> {
+    pub ast: &'a RetainedJsAstKind<'a>,
+    pub raw: &'a str,
+}
+
+#[derive(Debug)]
+pub enum RetainedJsAstKind<'a> {
+    Expression(oxc_ast::ast::Expression<'a>),
+    SlotBindings(Result<oxc_ast::ast::FormalParameters<'a>, &'a oxc_diagnostics::Diagnostics>),
+}
+
+#[cfg(target_pointer_width = "64")]
+const _: () = assert!(size_of::<Option<RetainedJsAst<'_>>>() == 24);
+
+const _: () = assert!(!core::mem::needs_drop::<RetainedJsAstKind<'static>>());
+
+impl std::fmt::Debug for RetainedJsAst<'_> {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // Preserve every ordinary-expression debug packet through its genuine
+        // unchanged public Expression view. Slot payloads show their true role.
+        match self.as_expression() {
+            Some(expression) => std::fmt::Debug::fmt(&expression, formatter),
+            None => formatter
+                .debug_struct("RetainedSlotParameters")
+                .field("parameters", &self.as_slot_parameters())
+                .field("raw", &self.raw)
+                .finish(),
+        }
+    }
+}
+
+impl<'a> RetainedJsAst<'a> {
+    /// Preserve a refused slot goal without retrying the parser. Error owners
+    /// live in the compile's owned parking, whose reset drops their messages.
+    /// `None` preserves the existing silent depth-overflow refusal.
+    #[doc(hidden)]
+    pub fn slot_refusal_in(allocator: &'a Allocator, raw: &'a str, message: Option<&str>) -> Self {
+        let errors = message
+            .map(|message| oxc_diagnostics::OxcDiagnostic::error(message.to_owned()))
+            .into_iter()
+            .collect::<oxc_diagnostics::Diagnostics>();
+        let errors = allocator.alloc_owned(errors);
+        Self {
+            ast: allocator
+                .as_oxc()
+                .alloc(RetainedJsAstKind::SlotBindings(Err(errors))),
+            raw,
+        }
+    }
+
+    /// A copied expression view; a slot binding goal can never masquerade as
+    /// an Expression. `raw` remains the actual producer input.
+    #[inline]
+    pub fn as_expression(self) -> Option<JsExpression<'a>> {
+        match self.ast {
+            RetainedJsAstKind::Expression(ast) => Some(JsExpression { ast, raw: self.raw }),
+            RetainedJsAstKind::SlotBindings(_) => None,
+        }
+    }
+
+    /// The slot parameter goal's complete tree or original diagnostics.
+    #[inline]
+    pub fn as_slot_parameters(
+        self,
+    ) -> Option<Result<&'a oxc_ast::ast::FormalParameters<'a>, &'a oxc_diagnostics::Diagnostics>>
+    {
+        match self.ast {
+            RetainedJsAstKind::Expression(_) => None,
+            RetainedJsAstKind::SlotBindings(result) => {
+                Some(result.as_ref().map_err(|errors| *errors))
+            }
+        }
+    }
 }
 
 /// Compound expression node (mixed content)

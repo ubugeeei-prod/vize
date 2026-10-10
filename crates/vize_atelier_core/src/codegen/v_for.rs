@@ -19,7 +19,7 @@ use super::{
 
 use generate::generate_for_item;
 use helpers::extract_for_params;
-pub(crate) use helpers::{extract_destructure_params, get_element_key, is_numeric_source};
+pub(crate) use helpers::{get_element_key, is_numeric_source};
 use vize_l0::String;
 use vize_l0::ToCompactString;
 

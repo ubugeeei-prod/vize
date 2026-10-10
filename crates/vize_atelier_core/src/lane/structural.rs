@@ -22,7 +22,7 @@ pub struct SimpleExpressionContent<'a> {
     pub is_static: bool,
     pub loc: SourceLocation,
     /// Retained parse of `content` when the source node carried one (P1-7).
-    pub js_ast: Option<vize_relief::JsExpression<'a>>,
+    pub js_ast: Option<vize_relief::RetainedJsAst<'a>>,
 }
 
 #[derive(Clone, Copy)]

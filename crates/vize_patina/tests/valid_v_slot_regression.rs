@@ -14,6 +14,60 @@ const DYNAMIC: &str = include_str!(
 const MODIFIERS: &str = include_str!(
     "../../../tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/additions.json"
 );
+const HEADER_CHANGES: &str = include_str!(
+    "../../../tests/_fixtures/differential/lint/slot-parameter-bindings-8142/legacy-header-changes.json"
+);
+
+fn change_header_packet(case: &Value, packet: &mut Value, inverse: bool) -> bool {
+    let changes: Value = serde_json::from_str(HEADER_CHANGES).unwrap();
+    assert_eq!(changes["changes"].as_array().unwrap().len(), 2);
+    let Some(change) = changes["changes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|change| change["id"] == case["id"])
+    else {
+        return false;
+    };
+    assert_eq!(change["sourceSha256"], case["sourceSha256"]);
+    assert_eq!(change["removed"], case["before"]["diagnostics"]);
+    let (removed, added) = if inverse {
+        (&change["added"], &change["removed"])
+    } else {
+        (&change["removed"], &change["added"])
+    };
+    for diagnostic in removed.as_array().unwrap() {
+        let diagnostics = packet["diagnostics"].as_array_mut().unwrap();
+        let index = diagnostics
+            .iter()
+            .position(|actual| actual == diagnostic)
+            .unwrap();
+        diagnostics.remove(index);
+    }
+    for diagnostic in &change["added"].as_array().unwrap()[..] {
+        let source = case["source"].as_str().unwrap();
+        let start = diagnostic["start"].as_u64().unwrap() as usize;
+        let end = diagnostic["end"].as_u64().unwrap() as usize;
+        assert_eq!(source.get(start..end), change["authored"].as_str());
+        assert_eq!(
+            source.find(change["authored"].as_str().unwrap()),
+            Some(start)
+        );
+    }
+    packet["diagnostics"]
+        .as_array_mut()
+        .unwrap()
+        .extend(added.as_array().unwrap().iter().cloned());
+    packet["diagnostics"]
+        .as_array_mut()
+        .unwrap()
+        .sort_by_key(|d| (d["start"].as_u64(), d["end"].as_u64()));
+    packet["error_count"] = json!(
+        packet["error_count"].as_u64().unwrap() - removed.as_array().unwrap().len() as u64
+            + added.as_array().unwrap().len() as u64
+    );
+    true
+}
 
 fn modifier_additions(case: &Value) -> Vec<Value> {
     let additions: Value = serde_json::from_str(MODIFIERS).unwrap();
@@ -56,6 +110,7 @@ fn dynamic_addition(case: &Value) -> Option<Value> {
 
 fn current_packet(case: &Value, allow: bool) -> Value {
     let mut packet = case["after"].clone();
+    change_header_packet(case, &mut packet, false);
     if let Some(addition) = dynamic_addition(case) {
         let diagnostics = packet["diagnostics"].as_array_mut().unwrap();
         diagnostics.push(addition);
@@ -120,6 +175,7 @@ fn complete_packets_match_twice_and_preserve_all_foreign_findings() {
     let corpus: Value = serde_json::from_str(CASES).unwrap();
     let cases = corpus["cases"].as_array().unwrap();
     assert_eq!(cases.len(), 47);
+    let mut captures = Vec::new();
     for allow in [false, true] {
         let linter = configured_linter().with_valid_v_slot_allow_modifiers(allow);
         for case in cases {
@@ -127,14 +183,19 @@ fn complete_packets_match_twice_and_preserve_all_foreign_findings() {
             let filename = case["filename"].as_str().unwrap();
             for _repeat in [1, 2] {
                 let actual = complete(&linter.lint_sfc(source, filename));
-                assert_eq!(
-                    actual,
-                    current_packet(case, allow),
-                    "{} allow {allow}",
-                    case["id"]
-                );
+                captures.push(json!({ "id": case["id"], "allowModifiers": allow,
+                    "iteration": _repeat, "actual": actual,
+                    "expected": current_packet(case, allow) }));
             }
         }
+    }
+    let artifact = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../target/differential/slot-parameter-legacy-packets.json");
+    std::fs::create_dir_all(artifact.parent().unwrap()).unwrap();
+    std::fs::write(artifact, serde_json::to_vec_pretty(&captures).unwrap()).unwrap();
+    assert_eq!(captures.len(), 188);
+    for capture in captures {
+        assert_eq!(capture["actual"], capture["expected"], "{}", capture["id"]);
     }
 }
 
@@ -147,9 +208,11 @@ fn only_declared_diagnostics_are_added_at_exact_authored_byte_ranges() {
         let mut unchanged = 0;
         let mut dynamic_additions = 0;
         let mut modifier_count = 0;
+        let mut header_changes = 0;
         for case in corpus["cases"].as_array().unwrap() {
             let source = case["source"].as_str().unwrap();
             let mut actual = complete(&linter.lint_sfc(source, case["filename"].as_str().unwrap()));
+            header_changes += usize::from(change_header_packet(case, &mut actual, true));
             if !allow {
                 for expected in modifier_additions(case) {
                     let diagnostics = actual["diagnostics"].as_array_mut().unwrap();
@@ -190,6 +253,7 @@ fn only_declared_diagnostics_are_added_at_exact_authored_byte_ranges() {
         assert_eq!(unchanged, 39);
         assert_eq!(dynamic_additions, 8);
         assert_eq!(modifier_count, if allow { 0 } else { 3 });
+        assert_eq!(header_changes, 2);
     }
 }
 

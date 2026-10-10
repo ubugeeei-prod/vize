@@ -91,17 +91,20 @@ fn eligible_value(value: &SimpleExpressionNode<'_>) -> bool {
     !(value.is_static
         || value.const_type != vize_atelier_core::ConstantType::NotConstant
         || matches!(value.content.trim(), "true" | "false" | "null")
-        || value.js_ast.is_some_and(|js| {
-            js.raw == value.content
-                && matches!(
-                    js.ast,
-                    Expression::NumericLiteral(_)
-                        | Expression::StringLiteral(_)
-                        | Expression::BooleanLiteral(_)
-                        | Expression::NullLiteral(_)
-                        | Expression::BigIntLiteral(_)
-                )
-        }))
+        || value
+            .js_ast
+            .and_then(|js| js.as_expression())
+            .is_some_and(|js| {
+                js.raw == value.content
+                    && matches!(
+                        js.ast,
+                        Expression::NumericLiteral(_)
+                            | Expression::StringLiteral(_)
+                            | Expression::BooleanLiteral(_)
+                            | Expression::NullLiteral(_)
+                            | Expression::BigIntLiteral(_)
+                    )
+            }))
 }
 
 #[expect(

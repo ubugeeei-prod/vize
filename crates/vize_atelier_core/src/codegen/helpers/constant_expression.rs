@@ -191,7 +191,7 @@ pub fn is_constant_simple_expression(
     // Retained fast path (P1-7): the parse-once AST still describes these
     // exact bytes and the dialect gate holds — walk it instead of re-parsing.
     if let Some(js) = crate::retained::retained_whole_expression(exp)
-        && crate::retained::js_module_compatible(js)
+        && crate::retained::js_module_compatible(&js)
     {
         let mut visitor = RuntimeDependencyVisitor::new(bindings);
         visitor.visit_expression(js.ast);

@@ -28,7 +28,7 @@ pub(super) fn owned_named_dynamic_component_ast<'a>(
     let ExpressionNode::Simple(expression) = is_expression_node(template_ast?, usage.start)? else {
         return None;
     };
-    let js = expression.js_ast?;
+    let js = expression.js_ast?.as_expression()?;
     (js.raw == expression.content
         && usage.name == expression.content.trim()
         && matches!(

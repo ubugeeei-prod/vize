@@ -44,11 +44,12 @@ fn simple<'n, 'a>(expr: &'n ExpressionNode<'a>) -> &'n SimpleExpressionNode<'a> 
     }
 }
 
-fn retained<'n, 'a>(expr: &'n ExpressionNode<'a>) -> &'n JsExpression<'a> {
+fn retained<'a>(expr: &ExpressionNode<'a>) -> JsExpression<'a> {
     simple(expr)
         .js_ast
-        .as_ref()
         .expect("expression content is one complete expression, so its AST is retained")
+        .as_expression()
+        .expect("retained role is an ordinary expression")
 }
 
 #[test]

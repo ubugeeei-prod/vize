@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 import {
   expectedScopedPacket,
@@ -7,6 +9,34 @@ import {
   validateProjection,
 } from "./support/n8n-cli-config-inputs.mjs";
 import { assertAuthoredOracle, loadAuthoredCases } from "./support/n8n-cli-config-oracle.mjs";
+
+void test("compiler fixture-only and runtime-only changes trigger the full n8n custody workflow", () => {
+  const root = new URL("../../", import.meta.url);
+  const workflow = fs.readFileSync(new URL(".github/workflows/n8n-adoption.yml", root), "utf8");
+  const block = workflow.match(/^  pull_request:\n    paths:\n([\s\S]*?)^  merge_group:/mu);
+  assert.notEqual(block, null, "the actual workflow retains pull-request path filters");
+  const filters = block[1]
+    .split("\n")
+    .filter((line) => line.startsWith("      - "))
+    .map((line) => line.slice(8));
+  const directories = [
+    "tests/_fixtures/differential/compiler/legacy-slot-binding-handoff-8142/",
+    "tests/_fixtures/differential/compiler/slot-parameter-entities-8142/",
+  ];
+  const inputs = directories.flatMap((directory) =>
+    fs
+      .readdirSync(new URL(directory, root), { recursive: true })
+      .filter((entry) => fs.statSync(new URL(directory + entry, root)).isFile())
+      .map((entry) => directory + entry),
+  );
+  inputs.push("tests/tooling/support/slot-parameter-entity-runtime.mjs");
+  const matches = (file) => filters.some((filter) => path.posix.matchesGlob(file, filter));
+  assert.deepEqual(
+    inputs.map((file) => [file, matches(file)]),
+    inputs.map((file) => [file, true]),
+  );
+  assert.equal(matches("tests/_fixtures/differential/compiler/unrelated/control.json"), false);
+});
 
 void test("latest n8n CLI requirements retain all 51 oracle identities without status filtering", () => {
   assert.equal(validateProjection(), projection);

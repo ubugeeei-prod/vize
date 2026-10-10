@@ -1,0 +1,455 @@
+{
+  "schema": 1,
+  "issue": 8142,
+  "caseCount": 17,
+  "authoring": "Independent whole template inputs, declaration names, conversion counts and byte spans fixed before product execution. No existing fixture or golden is changed.",
+  "cases": [
+    {
+      "id": "simple-named-filter",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot=\"header\" slot-scope=\"scope\">{{ scope.row.order_no | orderNoFilter }}</template></Comp>",
+      "modern": "<Comp><template #header=\"scope\">{{ scope.row.order_no | orderNoFilter }}</template></Comp>",
+      "authoredHeader": "scope",
+      "decodedHeader": "scope",
+      "headerSpans": {
+        "legacy": {
+          "start": 42,
+          "end": 47
+        },
+        "modern": {
+          "start": 25,
+          "end": 30
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "scope"
+      ],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [
+        "_toDisplayString(_filter_orderNoFilter(scope.row.order_no))"
+      ],
+      "errorCount": null
+    },
+    {
+      "id": "scope-alias-outside",
+      "kind": "legacy",
+      "legacy": "<Comp><template scope=\"scope\">{{ scope.title }}</template></Comp><p>{{ scope }}</p>",
+      "modern": "<Comp><template #default=\"scope\">{{ scope.title }}</template></Comp><p>{{ scope }}</p>",
+      "authoredHeader": "scope",
+      "decodedHeader": "scope",
+      "headerSpans": {
+        "legacy": {
+          "start": 23,
+          "end": 28
+        },
+        "modern": {
+          "start": 26,
+          "end": 31
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "scope"
+      ],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [
+        "_toDisplayString(scope.title)",
+        "_toDisplayString(_ctx.scope)"
+      ],
+      "errorCount": null
+    },
+    {
+      "id": "destructured-filter-outside",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"{ row, index }\">{{ row.status | statusFilter }} {{ index }}</template></Comp><p>{{ row }}</p>",
+      "modern": "<Comp><template #default=\"{ row, index }\">{{ row.status | statusFilter }} {{ index }}</template></Comp><p>{{ row }}</p>",
+      "authoredHeader": "{ row, index }",
+      "decodedHeader": "{ row, index }",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 42
+        },
+        "modern": {
+          "start": 26,
+          "end": 40
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "row",
+        "index"
+      ],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [
+        "_filter_statusFilter(row.status)",
+        "_toDisplayString(_ctx.row)"
+      ],
+      "errorCount": null
+    },
+    {
+      "id": "nested",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"{ row: { id, label: local } }\">{{ id }} {{ local }}</template></Comp><p>{{ id }}</p>",
+      "modern": "<Comp><template #default=\"{ row: { id, label: local } }\">{{ id }} {{ local }}</template></Comp><p>{{ id }}</p>",
+      "authoredHeader": "{ row: { id, label: local } }",
+      "decodedHeader": "{ row: { id, label: local } }",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 57
+        },
+        "modern": {
+          "start": 26,
+          "end": 55
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "id",
+        "local"
+      ],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [
+        "_toDisplayString(id)",
+        "_toDisplayString(local)",
+        "_toDisplayString(_ctx.id)"
+      ],
+      "errorCount": null
+    },
+    {
+      "id": "default-rhs",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"{ row = fallback(outer) }\">{{ row.id }} {{ outer }}</template></Comp>",
+      "modern": "<Comp><template #default=\"{ row = fallback(outer) }\">{{ row.id }} {{ outer }}</template></Comp>",
+      "authoredHeader": "{ row = fallback(outer) }",
+      "decodedHeader": "{ row = fallback(outer) }",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 53
+        },
+        "modern": {
+          "start": 26,
+          "end": 51
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "row"
+      ],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [
+        "_ctx.fallback",
+        "_ctx.outer",
+        "_toDisplayString(row.id)"
+      ],
+      "errorCount": null
+    },
+    {
+      "id": "typed",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"{ row }: Props, index: number\">{{ row.id }} {{ index }}</template></Comp>",
+      "modern": "<Comp><template #default=\"{ row }: Props, index: number\">{{ row.id }} {{ index }}</template></Comp>",
+      "authoredHeader": "{ row }: Props, index: number",
+      "decodedHeader": "{ row }: Props, index: number",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 57
+        },
+        "modern": {
+          "start": 26,
+          "end": 55
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "row",
+        "index"
+      ],
+      "conversionAttempts": 1,
+      "isTs": true,
+      "moduleMustContain": [
+        "_toDisplayString(row.id)",
+        "_toDisplayString(index)"
+      ],
+      "errorCount": null
+    },
+    {
+      "id": "object-rest",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"{ row, ...rest }\">{{ row.id }} {{ rest.extra }}</template></Comp><p>{{ rest }}</p>",
+      "modern": "<Comp><template #default=\"{ row, ...rest }\">{{ row.id }} {{ rest.extra }}</template></Comp><p>{{ rest }}</p>",
+      "authoredHeader": "{ row, ...rest }",
+      "decodedHeader": "{ row, ...rest }",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 44
+        },
+        "modern": {
+          "start": 26,
+          "end": 42
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "row",
+        "rest"
+      ],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [
+        "_toDisplayString(rest.extra)",
+        "_toDisplayString(_ctx.rest)"
+      ],
+      "errorCount": null
+    },
+    {
+      "id": "top-rest",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"row, ...rest\">{{ row.id }} {{ rest.length }}</template></Comp>",
+      "modern": "<Comp><template #default=\"row, ...rest\">{{ row.id }} {{ rest.length }}</template></Comp>",
+      "authoredHeader": "row, ...rest",
+      "decodedHeader": "row, ...rest",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 40
+        },
+        "modern": {
+          "start": 26,
+          "end": 38
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "row",
+        "rest"
+      ],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [
+        "_toDisplayString(row.id)",
+        "_toDisplayString(rest.length)"
+      ],
+      "errorCount": null
+    },
+    {
+      "id": "argument-shadow",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"{ row }\"><button @click=\"row => consume(row)\">{{ row.id }}</button></template></Comp>",
+      "modern": "<Comp><template #default=\"{ row }\"><button @click=\"row => consume(row)\">{{ row.id }}</button></template></Comp>",
+      "authoredHeader": "{ row }",
+      "decodedHeader": "{ row }",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 35
+        },
+        "modern": {
+          "start": 26,
+          "end": 33
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "row"
+      ],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [
+        "_ctx.consume(row)",
+        "_toDisplayString(row.id)"
+      ],
+      "errorCount": null
+    },
+    {
+      "id": "decoded-entity",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"&#32;{ row }\">{{ row.id }}</template></Comp>",
+      "modern": "<Comp><template #default=\"&#32;{ row }\">{{ row.id }}</template></Comp>",
+      "authoredHeader": "&#32;{ row }",
+      "decodedHeader": " { row }",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 40
+        },
+        "modern": {
+          "start": 26,
+          "end": 38
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "row"
+      ],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [
+        "_toDisplayString(row.id)"
+      ],
+      "errorCount": null
+    },
+    {
+      "id": "malformed-balanced",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"{ row: }\">{{ outside }}</template></Comp>",
+      "modern": "<Comp><template #default=\"{ row: }\">{{ outside }}</template></Comp>",
+      "authoredHeader": "{ row: }",
+      "decodedHeader": "{ row: }",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 36
+        },
+        "modern": {
+          "start": 26,
+          "end": 34
+        }
+      },
+      "role": "error",
+      "declarations": [],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [],
+      "errorCount": null
+    },
+    {
+      "id": "guard-unbalanced",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"{ row\">{{ outside }}</template></Comp>",
+      "modern": "<Comp><template #default=\"{ row\">{{ outside }}</template></Comp>",
+      "authoredHeader": "{ row",
+      "decodedHeader": "{ row",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 33
+        },
+        "modern": {
+          "start": 26,
+          "end": 31
+        }
+      },
+      "role": "error",
+      "declarations": [],
+      "conversionAttempts": 0,
+      "isTs": false,
+      "moduleMustContain": [],
+      "errorCount": 1
+    },
+    {
+      "id": "unsupported-line-comment-tail",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"scope // tail\">{{ outside }}</template></Comp>",
+      "modern": "<Comp><template #default=\"scope // tail\">{{ outside }}</template></Comp>",
+      "authoredHeader": "scope // tail",
+      "decodedHeader": "scope // tail",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 41
+        },
+        "modern": {
+          "start": 26,
+          "end": 39
+        }
+      },
+      "role": "error",
+      "declarations": [],
+      "conversionAttempts": 1,
+      "isTs": false,
+      "moduleMustContain": [],
+      "errorCount": 1
+    },
+    {
+      "id": "depth-guard",
+      "kind": "legacy",
+      "legacy": "<Comp><template slot-scope=\"[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[row]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]\">{{ outside }}</template></Comp>",
+      "modern": "<Comp><template #default=\"[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[row]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]\">{{ outside }}</template></Comp>",
+      "authoredHeader": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[row]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
+      "decodedHeader": "[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[row]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]",
+      "headerSpans": {
+        "legacy": {
+          "start": 28,
+          "end": 95
+        },
+        "modern": {
+          "start": 26,
+          "end": 93
+        }
+      },
+      "role": "error",
+      "declarations": [],
+      "conversionAttempts": 0,
+      "isTs": false,
+      "moduleMustContain": [],
+      "errorCount": 0
+    },
+    {
+      "id": "valueless",
+      "kind": "no-value",
+      "legacy": "<Comp><template slot-scope>text</template></Comp>",
+      "modern": "<Comp><template #default>text</template></Comp>",
+      "authoredHeader": null,
+      "decodedHeader": null,
+      "headerSpans": {},
+      "role": "none",
+      "declarations": [],
+      "conversionAttempts": 0,
+      "isTs": false,
+      "moduleMustContain": [],
+      "errorCount": null
+    },
+    {
+      "id": "mixed-modern",
+      "kind": "mixed-modern",
+      "legacy": "<Comp><template slot-scope=\"unused\" #default=\"{ row }\">{{ row.id }}</template></Comp>",
+      "modern": "<Comp><template slot-scope=\"unused\" #default=\"{ row }\">{{ row.id }}</template></Comp>",
+      "authoredHeader": "{ row }",
+      "decodedHeader": "{ row }",
+      "headerSpans": {
+        "legacy": {
+          "start": 46,
+          "end": 53
+        },
+        "modern": {
+          "start": 46,
+          "end": 53
+        }
+      },
+      "role": "ok",
+      "declarations": [
+        "row"
+      ],
+      "conversionAttempts": 0,
+      "isTs": false,
+      "moduleMustContain": [],
+      "errorCount": null
+    },
+    {
+      "id": "native-scope-v3-only",
+      "kind": "v3-only",
+      "legacy": "<table><tr><th scope=\"row\">text</th></tr></table>",
+      "modern": "<table><tr><th scope=\"row\">text</th></tr></table>",
+      "authoredHeader": null,
+      "decodedHeader": null,
+      "headerSpans": {},
+      "role": "none",
+      "declarations": [],
+      "conversionAttempts": 0,
+      "isTs": false,
+      "moduleMustContain": [],
+      "errorCount": null
+    }
+  ]
+}

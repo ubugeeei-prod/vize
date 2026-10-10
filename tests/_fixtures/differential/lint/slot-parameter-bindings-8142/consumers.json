@@ -1,0 +1,1642 @@
+{
+  "schema": "vize.n8n.slot-parameter-consumers-v1",
+  "qualification": "Authored expected whole CLI/RPC packets; neither unreleased source nor installed public execution is claimed by this file.",
+  "counts": {
+    "cliCalls": 147,
+    "wholeLspPackets": 98,
+    "total": 245
+  },
+  "records": [
+    {
+      "id": "shorthand-default-own",
+      "sourceSha256": "ea8cef53e6a00dde8bef315b96f32f6a074f4e4ae87ff168abfd892564f4b00a",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "shorthand-default-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 52
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 51
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "shorthand-default-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 52
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 51
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "nested-default-own",
+      "sourceSha256": "8cbc01230fc46e0b62437215851172e888742a6e41d2553cb4dffc81936b2ed6",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "nested-default-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 71
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 70
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "nested-default-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 71
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 70
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "positional-default-own",
+      "sourceSha256": "d9126e514e53e13ba8a1f325b9c2aca15588a70ecfb1d5f5dae01f377a8b2390",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "positional-default-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 65
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 64
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "positional-default-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 65
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 64
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "top-rest-own",
+      "sourceSha256": "a05ad87366f50f2c0bf5c9ba5a2a75bcd9ea94c60f203e65124a7a48ac7c7388",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "top-rest-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 47
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 46
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "top-rest-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 47
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 46
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "typed-object-own",
+      "sourceSha256": "e3cc5314ff6991604899626ae0cd0ebeec281bea2edafd8a6ff35788fccb1bd8",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "typed-object-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 48
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 47
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "typed-object-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 48
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 47
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "typed-positional-own",
+      "sourceSha256": "6dd64a64ff8da9a7e29081591686ccdefc33049ce0b59e6e3047bec822ac239d",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "typed-positional-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 44
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 43
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "typed-positional-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 44
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 43
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "multiple-second-own",
+      "sourceSha256": "c98e6bed8ad7eadf1781f91ae9f61b006317c54680498f1212b5d6f1643ae7dd",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "multiple-second-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 62
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 61
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "multiple-second-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 62
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 61
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "optional-own",
+      "sourceSha256": "8ab61a3b03a4fb83722867ed3f0d07ac23c5c130cb17d089977717ac0c80169e",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "optional-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 45
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 44
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "optional-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 45
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 44
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "computed-key-read-control",
+      "sourceSha256": "955204e0967b18d8a85f68854c58db0c46415c4209c78dc8a5b523f7f27f0566",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "computed-key-read-control.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "computed-key-read-control.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "default-rhs-read-control",
+      "sourceSha256": "e005b4b823805598cd9104811e57fba1e7b85436cbcd474ff35075a301152ae1",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "default-rhs-read-control.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "default-rhs-read-control.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "argument-lambda-shadow-control",
+      "sourceSha256": "d7b688bf3a9bd24ef6114d1b9c60216e7dba727c8ed453290bf2293ba38d0a5d",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "argument-lambda-shadow-control.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "argument-lambda-shadow-control.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "argument-lambda-capture-own",
+      "sourceSha256": "edd99a467573dc5f8c84542e85af81be98b62c8b99d290df14367cc1df7caa5e",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "argument-lambda-capture-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 55
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 54
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "argument-lambda-capture-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 55
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 54
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "escaped-binding-own",
+      "sourceSha256": "6997b72ab0c2cad80d0aba2f8ebce753848c1773cc2d662921b282f45f3b9877",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "escaped-binding-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 42
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 41
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "escaped-binding-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 42
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 41
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "unicode-binding-own",
+      "sourceSha256": "ec74642e53daeb229140264238d8f11ea0956662ced87b7058bbcdd69350d84b",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "unicode-binding-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 3,
+                  "column": 23,
+                  "endLine": 3,
+                  "endColumn": 37
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 22
+                },
+                "end": {
+                  "line": 2,
+                  "character": 36
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "unicode-binding-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 3,
+                  "column": 23,
+                  "endLine": 3,
+                  "endColumn": 37
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 22
+                },
+                "end": {
+                  "line": 2,
+                  "character": 36
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "entity-binding-own",
+      "sourceSha256": "1c74d04eb05a9b3bfa2cf2436f7675ca3503e65417d8e6d8de5fff773c517dc9",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "entity-binding-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 42
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 41
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "entity-binding-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 42
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 41
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "crlf-block-trivia-own",
+      "sourceSha256": "b47264f80bea575ba9dfca91bde95c5fe528df0afc1e13f4702473b6d588db97",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "crlf-block-trivia-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 4,
+                  "endColumn": 12
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 3,
+                  "character": 11
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "crlf-block-trivia-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 4,
+                  "endColumn": 12
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 3,
+                  "character": 11
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "malformed-method-refusal",
+      "sourceSha256": "d24d643049ff4e09fee76be82ce16ade3dd9af43758dc5c7667321d9f32a8a06",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "malformed-method-refusal.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "malformed-method-refusal.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "malformed-accessor-refusal",
+      "sourceSha256": "ac24913ff65ec9f5dfc45602ac9529d4a3b157afa8f868fffb58ec419d306be8",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "malformed-accessor-refusal.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "malformed-accessor-refusal.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "malformed-rest-refusal",
+      "sourceSha256": "c627e2a9c6e64cefd9dfef8b3de447ac58871461749c86fa9786c2a421faff44",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "malformed-rest-refusal.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "malformed-rest-refusal.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "malformed-unbalanced-refusal",
+      "sourceSha256": "79c42697dbc64357067500b47e363b59dce9123883e17a8ea78d701570ab951e",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "malformed-unbalanced-refusal.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "malformed-unbalanced-refusal.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "default-own-modifier",
+      "sourceSha256": "fa27dd4780f515071b52984be1c8c9175a0f6e803716f872579af419314fd6b5",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "default-own-modifier.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 61
+                },
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 61
+                }
+              ],
+              "errorCount": 2,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 60
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 60
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot with a slot argument does not support modifiers by default\n\nHelp: Remove the modifiers or enable allowModifiers"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "default-own-modifier.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 61
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 60
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "outer-member-control",
+      "sourceSha256": "2af2bca6e34dc5edb237abbbef4120632f7e1b6ddedc51ff40c53a00b9e6edba",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "outer-member-control.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "outer-member-control.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "clean-static-typed-control",
+      "sourceSha256": "1169b9830f3a610624ce4b623cb9e3178ec4ed7e191c134f9986e1bce3088c7f",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "clean-static-typed-control.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "clean-static-typed-control.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "nested-array-rest-own",
+      "sourceSha256": "a855adf7097b8cfb6aa0a85544b82d3f53539edb4a032221f027ea6d601753de",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "nested-array-rest-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 75
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 74
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "nested-array-rest-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 75
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 74
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

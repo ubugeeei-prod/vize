@@ -43,9 +43,13 @@ fn ssr_legacy_reparse_floor_holds() {
             .find(|(name, _)| *name == fixture.name)
             .unwrap_or_else(|| panic!("ladder fixture {} has no pinned floor", fixture.name))
             .1;
+        // The original large fixture has eight slot patterns and eight
+        // parameter validations now supplied by Armature's retained role.
+        let retained_slot_removals = if fixture.name == "large" { 16 } else { 0 };
+        let current_floor = floor - retained_slot_removals;
         assert_eq!(
-            parses, floor,
-            "ssr {}: surviving legacy re-parses moved from the pinned P1-7 floor",
+            parses, current_floor,
+            "ssr {}: surviving legacy re-parses moved from the declared retained-slot floor",
             fixture.name
         );
     }

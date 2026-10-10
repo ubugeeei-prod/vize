@@ -177,7 +177,7 @@ impl Drawer {
     ) {
         let compound_content;
         let (content, retained) = match expr {
-            ExpressionNode::Simple(s) => (s.content, s.js_ast.as_ref()),
+            ExpressionNode::Simple(s) => (s.content, s.js_ast.and_then(|js| js.as_expression())),
             ExpressionNode::Compound(c) => {
                 compound_content = CompactString::new(c.loc.span.slice(&self.template_source));
                 (compound_content.as_str(), None)
@@ -204,7 +204,8 @@ impl Drawer {
             let computed = profile!(
                 "croquis.template.expression.extract_identifiers",
                 if let Some(capture) = self.occurrence_capture.as_mut() {
-                    let (names, references) = extract_identifier_refs_retained(content, retained);
+                    let (names, references) =
+                        extract_identifier_refs_retained(content, retained.as_ref());
                     match references {
                         Some(references) => {
                             capture
@@ -215,7 +216,7 @@ impl Drawer {
                     }
                     names
                 } else {
-                    extract_identifiers_retained(content, retained)
+                    extract_identifiers_retained(content, retained.as_ref())
                 }
             );
             self.ident_cache

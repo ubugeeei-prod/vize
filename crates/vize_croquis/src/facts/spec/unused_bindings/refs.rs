@@ -28,7 +28,7 @@ fn visit(children: &[TemplateChildNode<'_>], reads: &mut BTreeSet<CompactString>
                                 && matches!(&dir.arg, Some(ExpressionNode::Simple(arg)) if arg.content == "ref") =>
                         {
                             if let Some(ExpressionNode::Simple(exp)) = &dir.exp
-                                && let Some(js) = &exp.js_ast
+                                && let Some(js) = exp.js_ast.and_then(|js| js.as_expression())
                                 && let oxc_ast::ast::Expression::StringLiteral(value) = js.ast
                             {
                                 reads.insert(CompactString::new(value.value.as_str()));

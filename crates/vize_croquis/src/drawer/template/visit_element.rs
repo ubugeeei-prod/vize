@@ -5,6 +5,7 @@
 //! processes v-bind, v-if, v-show, v-model, v-on in the correct scope.
 
 pub(super) mod bounds;
+mod component_reference;
 mod dynamic_component_alias;
 mod first_pass;
 mod scopes;

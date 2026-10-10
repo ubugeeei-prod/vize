@@ -2,9 +2,10 @@ use super::prefix_identifiers_with_context_node;
 use crate::codegen::context::CodegenContext;
 use crate::codegen::expression::generate_event_handler;
 use crate::options::CodegenOptions;
-use crate::{ExpressionNode, JsExpression, SimpleExpressionNode, SourceLocation};
+use crate::{ExpressionNode, SimpleExpressionNode, SourceLocation};
 use oxc_span::{GetSpan, SourceType};
 use vize_l0::{Allocator, Box};
+use vize_relief::{RetainedJsAst, RetainedJsAstKind};
 
 const DECORATOR_CASES: &[(&str, &str)] = &[
     (
@@ -212,8 +213,8 @@ fn expression_node<'a>(
             oxc_parser::Parser::new(allocator.as_oxc(), source, SourceType::ts()).parse_expression()
         && ast.span().end as usize == source.len()
     {
-        node.js_ast = Some(JsExpression {
-            ast: allocator.as_oxc().alloc(ast),
+        node.js_ast = Some(RetainedJsAst {
+            ast: allocator.as_oxc().alloc(RetainedJsAstKind::Expression(ast)),
             raw: source,
         });
     }

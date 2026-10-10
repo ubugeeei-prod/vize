@@ -54,11 +54,10 @@ use vize_relief::{JsExpression, SimpleExpressionNode};
 /// `raw` is the text the AST was parsed from (P1-5: equal to the content at
 /// parse time), so `raw == content` means no transform rewrote the content
 /// since — the self-validating staleness gate.
+/// Slot-binding parameter parses do not provide an ordinary expression view.
 #[inline]
-pub fn retained_whole_expression<'n, 'a>(
-    node: &'n SimpleExpressionNode<'a>,
-) -> Option<&'n JsExpression<'a>> {
-    let js = node.js_ast.as_ref()?;
+pub fn retained_whole_expression<'a>(node: &SimpleExpressionNode<'a>) -> Option<JsExpression<'a>> {
+    let js = node.js_ast?.as_expression()?;
     (js.raw == node.content).then_some(js)
 }
 

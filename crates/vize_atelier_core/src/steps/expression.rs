@@ -5,6 +5,7 @@ mod collector_targets;
 mod function_shape;
 mod inline_handler;
 pub(crate) mod nesting;
+mod normalize;
 mod parse_checks;
 pub(crate) mod prefix;
 mod reparse;
@@ -23,6 +24,8 @@ use crate::{
     CompoundExpressionChild, CompoundExpressionNode, ConstantType, ExpressionNode,
     SimpleExpressionNode, lane::TransformContext,
 };
+
+pub(crate) use normalize::normalize_expression;
 
 pub use function_shape::is_typescript_function_expression;
 pub use inline_handler::process_inline_handler;
@@ -159,12 +162,6 @@ fn process_expression_shape<'a>(
 ) -> ExpressionNode<'a> {
     let allocator = ctx.allocator;
 
-    // `mut` is only consumed by the legacy filter rewrite below; without the
-    // `legacy` feature that block is cfg'd out and the binding is never mutated.
-    #[cfg_attr(
-        not(feature = "legacy"),
-        expect(unused_mut, reason = "mutated only by legacy")
-    )]
     let mut normalized = normalize_expression(exp, allocator, ctx.source);
 
     // Vue 2 pipe filters (`{{ msg | capitalize }}`): split the top-level `|`
@@ -204,13 +201,30 @@ fn process_expression_shape<'a>(
         return ExpressionNode::Simple(normalized);
     }
 
+    // Slot parameters retain their own grammar, including error ownership.
+    // Keep their original bytes and carrier for codegen's default-RHS walk;
+    // no synthetic parameter parse or expression rewrite can consume this role.
+    if as_params
+        && let Some(retained) = normalized.js_ast
+        && retained.raw == *content
+        && let Some(parameters) = retained.as_slot_parameters()
+    {
+        if let Err(errors) = parameters
+            && let Some(error) = errors.first()
+        {
+            rewrite::report_invalid_expression(ctx, error.message.as_ref(), &normalized.loc);
+        }
+        normalized.is_ref_transformed = true;
+        return ExpressionNode::Simple(normalized);
+    }
+
     // Strip TypeScript if needed, then optionally prefix identifiers
     let mut compound_key = false;
     let processed = if ctx.options.prefix_identifiers {
         // rewrite_expression handles both TS stripping and prefixing; the
         // retained AST rides along when it still describes these bytes (P1-7).
         let retained = crate::retained::retained_whole_expression(&normalized);
-        let result = rewrite_expression(content, ctx, as_params, retained);
+        let result = rewrite_expression(content, ctx, as_params, retained.as_ref());
         if result.used_unref {
             ctx.helper(crate::RuntimeHelper::Unref);
         }
@@ -299,44 +313,6 @@ pub(crate) fn clone_expression<'a>(
             },
             &allocator,
         )),
-    }
-}
-
-pub(crate) fn normalize_expression<'a>(
-    exp: &ExpressionNode<'a>,
-    allocator: &'a Allocator,
-    source: &'a str,
-) -> Box<'a, SimpleExpressionNode<'a>> {
-    match exp {
-        ExpressionNode::Simple(simple) => Box::new_in(
-            SimpleExpressionNode {
-                content: simple.content,
-                is_static: simple.is_static,
-                const_type: simple.const_type,
-                loc: simple.loc.clone(),
-                // Byte-identical clone: the retained parse still applies (P1-7).
-                js_ast: simple.js_ast,
-                hoisted: None,
-                identifiers: None,
-                is_handler_key: simple.is_handler_key,
-                is_ref_transformed: simple.is_ref_transformed,
-            },
-            &allocator,
-        ),
-        ExpressionNode::Compound(compound) => Box::new_in(
-            SimpleExpressionNode {
-                content: compound.loc.span.slice(source),
-                is_static: false,
-                const_type: ConstantType::NotConstant,
-                loc: compound.loc.clone(),
-                js_ast: None,
-                hoisted: None,
-                identifiers: None,
-                is_handler_key: compound.is_handler_key,
-                is_ref_transformed: false,
-            },
-            &allocator,
-        ),
     }
 }
 

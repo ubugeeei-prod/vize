@@ -58,10 +58,11 @@ pub fn get_slot_props_string(dir: &DirectiveNode<'_>, source: &str) -> Option<St
     })
 }
 
-pub fn get_slot_prop_names(dir: &DirectiveNode<'_>, source: &str) -> Vec<String> {
-    get_slot_props_string(dir, source)
-        .map(|pattern| extract_slot_prop_names(pattern.as_str()))
-        .unwrap_or_default()
+pub fn get_slot_prop_names(dir: &DirectiveNode<'_>, _source: &str) -> Vec<String> {
+    match &dir.exp {
+        Some(ExpressionNode::Simple(node)) => params::retained_slot_prop_names(node),
+        _ => Vec::new(),
+    }
 }
 
 /// Check if slot is dynamic (has dynamic name)

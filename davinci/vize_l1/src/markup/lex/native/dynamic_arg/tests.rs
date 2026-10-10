@@ -18,6 +18,8 @@ fn emits_one_complete_argument_and_preserves_modifiers() {
         "`prefix${keys['[']}`",
         "`prefix${`nested${keys[']']}`}`",
         "`escaped\\`][${keys[index]}`",
+        "(slot=>slot)(outside)",
+        "(other=>slot)(outside)",
     ] {
         let source = cstr!("<Child v-model:[{argument}].trim=\"value\"/>");
         let tokenizer = lex_with(&source, LexOptions::default());
@@ -46,6 +48,7 @@ fn boundaries_and_unterminated_literals_recover_without_swallowing_markup() {
             "keys[\"broken",
             "`broken",
             "keys['escaped\\",
+            "(slot=>slot)(outside)",
         ] {
             let source = cstr!("<Child :[{argument}{suffix}");
             let tokenizer = lex_with(&source, LexOptions::default());
