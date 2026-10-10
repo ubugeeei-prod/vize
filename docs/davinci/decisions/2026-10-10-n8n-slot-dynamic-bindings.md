@@ -56,3 +56,8 @@ every original parent packet remain part of the mandatory controls.
 Register this dependent PR with #8359 as a native Stack, keep the emergency
 third-party publication hold, then queue only a current-head-green contiguous
 prefix. n8n upstream remains strictly read-only and #8142 stays open.
+
+The [native Stack delivery record](./2026-10-10-n8n-slot-native-stack-delivery.md)
+preserves exact source observations, signed parent delivery and the supported
+merged-prefix recovery. Fresh source heads and installed public receipts remain
+separate obligations after that recovery.
