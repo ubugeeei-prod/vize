@@ -1,0 +1,34 @@
+{
+  "issue": 8479,
+  "sources": [
+    {
+      "path": "tests/tooling/fixtures/musea/snapshot-collision/left/Button.art.vue",
+      "sha256": "ecbe89ffd4276aff872c00a258622f12cba608315f35f464392bfd33b40c088b"
+    },
+    {
+      "path": "tests/tooling/fixtures/musea/snapshot-collision/right/Button.art.vue",
+      "sha256": "5b5a1bfe6f0eea822548d2e4671fbff615842287b9ab52197c6080774d7bdd5a"
+    }
+  ],
+  "legacyReports": [
+    "vrt-Button-report.json",
+    "vrt-Button-report.html"
+  ],
+  "law": "Running the second Art preserves the first complete physical JSON/HTML report and both native PNG owners; repeated comparisons retain separate report paths.",
+  "before": {
+    "source": "db37087a0984461a3e191fd63e29a4cad675def5",
+    "run": 38039504300,
+    "artifact": "musea-native-inline-db37087a0984461a3e191fd63e29a4cad675def5",
+    "distinctPngOwners": true,
+    "sameJsonAndHtmlPaths": true,
+    "physicalFinalOwner": "right",
+    "sha256": {
+      "leftJson": "79bfe9aa7525709f7d5eb4604cfaea892a24a821fda8bb75533b74b476f5ff27",
+      "rightJson": "10ea727bfd30662f7647494eb1f93454ec7dd404bb03e135ff80c876de71e815",
+      "leftHtml": "ac24e88f503510111d69f100ccfd8afa3d02f92108b1ec21a0afed48b8e0edea",
+      "rightHtml": "e2501a155b1d61de3b78c0a7063bf5b0a40ea37346fa6a7dbcdf10a5b108e907",
+      "leftPng": "376028536bd4122df82cb30bd85aed4fc0aea24661237df77a77c6d67372579f",
+      "rightPng": "c7c74a69d3d9d530ddcaa7bf5d8a185da929a3270a06c74db9a9f9cdc3990564"
+    }
+  }
+}

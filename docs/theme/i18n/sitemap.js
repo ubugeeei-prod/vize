@@ -51,11 +51,12 @@
   sitemap.navGroups = [
     {
       key: "start",
-      paths: ["/", "/getting-started", "/guide/configuration"],
+      paths: ["/", "/getting-started", "/philosophy", "/guide/configuration"],
       pathsByLocale: {
         en: [
           "/",
           "/getting-started",
+          "/philosophy",
           "/guide/vite-plus",
           "/guide/migration",
           "/guide/configuration",
@@ -63,6 +64,7 @@
         ja: [
           "/",
           "/getting-started",
+          "/philosophy",
           "/guide/vite-plus",
           "/guide/migration",
           "/guide/configuration",
@@ -87,6 +89,7 @@
         "/guide/analysis-diagnostics",
         "/guide/oxlint",
         "/guide/comment-annotations",
+        "/guide/content-mapper",
         "/integrations/vscode",
       ],
     },
@@ -106,7 +109,6 @@
 
         "/guide/ui",
         "/guide/composables",
-        "/guide/content-mapper",
       ],
     },
     {
@@ -126,7 +128,6 @@
         "/architecture/source-guide",
         "/architecture/language-engineering-practices",
         "/architecture/performance",
-        "/philosophy",
       ],
     },
     {

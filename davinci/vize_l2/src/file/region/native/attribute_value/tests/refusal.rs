@@ -6,7 +6,6 @@ fn late_header_and_body_refusals_keep_whole_preparations_without_fictional_attac
         "<template><div title='&amp;lt;' title='second'>x</div></template>",
         "<template><div title='&amp;lt;' :id='1'>x</div></template>",
         "<template><div title='&amp;lt;'> &amp; </div></template>",
-        "<template><div class='&amp;lt;'>x</div></template>",
         "<template><div title='&#13;'>x</div></template>",
         "<template><div title='\0'>x</div></template>",
     ] {
@@ -40,6 +39,30 @@ fn late_header_and_body_refusals_keep_whole_preparations_without_fictional_attac
             ))?;
         }
     }
+    Ok(())
+}
+
+#[test]
+fn former_class_refusal_retains_its_original_preparation_and_actual_attachment() -> Test {
+    let arena = Allocator::default();
+    let source = "<template><div class='&amp;lt;'>x</div></template>";
+    let output = lower(&arena, source)?;
+    let file = output
+        .view()
+        .map_err(|_| "completed class")?
+        .file()
+        .ok_or("File")?;
+    check(file.is_complete())?;
+    let [record] = file.native_attribute_values() else {
+        return Err("one class owner");
+    };
+    let value = record.observation().ok_or("original class")?;
+    same(value.raw_value(), "&amp;lt;")?;
+    same(value.source().text(), "&lt;")?;
+    check(core::ptr::eq(value.source().authored_root(), source))?;
+    let actual = element(file, 0)?;
+    check(file.native_attribute_value_for(0, actual, 0).is_some())?;
+    check(matches!(record.state(), State::Attached { slot: 0, .. }))?;
     Ok(())
 }
 

@@ -118,6 +118,7 @@ void test(
     });
     const runner = new MuseaVrtRunner({
       snapshotDir: workspace,
+      projectRoot: "/",
       capture: { reducedMotion: "reduce", settleTime: 0 },
     });
     try {

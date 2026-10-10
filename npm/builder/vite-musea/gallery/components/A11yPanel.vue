@@ -9,6 +9,7 @@ import {
   mdiChevronUp,
 } from "@mdi/js";
 import { useA11y, type A11yResult } from "../composables/useA11y";
+import { usePreviewReady } from "../composables/previewReady";
 import { getPreviewUrl, vMuseaGlobals } from "../api";
 import { safeUrl } from "../utils/safeUrl";
 import MdiIcon from "./MdiIcon.vue";
@@ -21,7 +22,6 @@ const props = defineProps<{
 const { isKeyRunning, init, runA11y, getResult } = useA11y();
 
 const iframeRef = ref<HTMLIFrameElement | null>(null);
-const iframeReady = ref(false);
 const hasRun = ref(false);
 const expandedViolation = ref<string | null>(null);
 
@@ -38,9 +38,7 @@ onMounted(() => {
   init();
 });
 
-function onIframeLoad() {
-  iframeReady.value = true;
-}
+const iframeReady = usePreviewReady(iframeRef, previewUrl);
 function runTest() {
   if (!iframeRef.value || !iframeReady.value) return;
   hasRun.value = true;
@@ -106,7 +104,6 @@ watch(result, (nextResult) => {
       class="a11y-iframe"
       title="Accessibility test preview"
       sandbox="allow-scripts allow-same-origin"
-      @load="onIframeLoad"
     />
 
     <div class="a11y-header">

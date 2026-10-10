@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { nativeAttributeValues7502CaptureRequired } from "../../tools/support/compat/github/native-attribute-values-7502-capture.mjs";
+import { validateScriptlessHistory7502 } from "./support/native-attribute-values-7502-scriptless-history.ts";
+import { validateVaporHistory7502 } from "./support/native-attribute-values-7502-vapor-history.ts";
+import { baseline7502, hash7502 } from "./support/native-attribute-values-7502-inputs.ts";
 import { toolingShardMatrix } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
 test("genuine value producers, consumers, writers and capture dependencies qualify", () => {
@@ -41,12 +45,17 @@ test("genuine value producers, consumers, writers and capture dependencies quali
     "crates/vize_atelier_sfc/tests/native_attribute_values_7502/custody.rs",
     "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/original_inputs.json",
     "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v2.json",
     "tests/tooling/native-attribute-values-7502-reference.test.ts",
     "tests/tooling/native-attribute-values-7502-hook.test.ts",
     "tests/tooling/support/native-attribute-values-7502-runtime.ts",
     "tests/tooling/support/native-attribute-values-7502-build.ts",
     "tests/tooling/support/native-attribute-values-7502-judge.ts",
     "tests/tooling/support/native-attribute-values-7502-source.ts",
+    "tests/tooling/support/native-attribute-values-7502-history.ts",
+    "tests/tooling/support/native-attribute-values-7502-history-protocol.ts",
+    "tests/tooling/support/native-attribute-values-7502-scriptless-history.ts",
+    "tests/tooling/support/native-attribute-values-7502-vapor-history.ts",
     "npm/ui/package.json",
     "npm/plugin-sdk/sandbox.js",
     "pnpm-lock.yaml",
@@ -110,6 +119,7 @@ test("the dedicated action preserves both failing processes and all evidence", (
   for (const [key, suffix] of [
     ["CAPTURE", "/first.capture.json"],
     ["BUILD_RECEIPT", "/build-receipt.json"],
+    ["HISTORY_RECEIPT", "/history-receipt.json"],
     ["EVIDENCE_DIR", ""],
   ])
     assert(
@@ -122,10 +132,12 @@ test("the dedicated action preserves both failing processes and all evidence", (
   assert.match(run, /set -euo pipefail/);
   assert.match(
     run,
-    /set \+e[\s\S]*vp node tests\/tooling\/support\/native-attribute-values-7502-build\.ts[\s\S]*build_status=\$\?[\s\S]*vp node tests\/tooling\/support\/native-attribute-values-7502-judge\.ts[\s\S]*judge_status=\$\?[\s\S]*set -e/,
+    /set \+e[\s\S]*vp node tests\/tooling\/support\/native-attribute-values-7502-history\.ts[\s\S]*history_status=\$\?[\s\S]*vp node tests\/tooling\/support\/native-attribute-values-7502-build\.ts[\s\S]*build_status=\$\?[\s\S]*vp node tests\/tooling\/support\/native-attribute-values-7502-judge\.ts[\s\S]*judge_status=\$\?[\s\S]*set -e/,
   );
   for (const file of [
     "hosted-build.stdout.txt",
+    "history.stdout.txt",
+    "history.stderr.txt",
     "hosted-build.stderr.txt",
     "judge.stdout.txt",
     "judge.stderr.txt",
@@ -134,7 +146,7 @@ test("the dedicated action preserves both failing processes and all evidence", (
     assert(run.includes(file), file);
   assert.match(
     run,
-    /if \[\[ "\$build_status" -ne 0 \|\| "\$judge_status" -ne 0 \]\]; then exit 1; fi/,
+    /if \[\[ "\$history_status" -ne 0 \|\| "\$build_status" -ne 0 \|\| "\$judge_status" -ne 0 \]\]; then exit 1; fi/,
   );
   const upload = action.split("    - name: Upload complete native attribute")[1];
   assert(upload);
@@ -191,3 +203,113 @@ export function assertNativeAttributeValues7502SharedHooks(root: string) {
   assert(full.includes(action));
   assert.doesNotMatch(full, /\bif:|continue-on-error|hashFiles|existsSync/);
 }
+
+// These synthetic receipt mutations provide schema evidence, never native credit.
+test("the pinned whole scriptless archive rejects dropping its original class refusal", () => {
+  const directory = mkdtempSync(path.join(tmpdir(), "native-scriptless-history-law-"));
+  try {
+    const bytes = readFileSync(
+      new URL(
+        "../../crates/vize_atelier_sfc/tests/fixtures/native-scriptless-ssr-output.json",
+        import.meta.url,
+      ),
+    );
+    const original = JSON.parse(bytes.toString("utf8"));
+    const capture = Buffer.from(JSON.stringify(original.capture));
+    const runtime = Buffer.from(JSON.stringify(original.runtime));
+    writeFileSync(path.join(directory, "scriptless.capture.json"), capture);
+    writeFileSync(path.join(directory, "scriptless.runtime.json"), runtime);
+    const receipt = {
+      sourceRevision: baseline7502.revision,
+      sourceTree: baseline7502.tree,
+      archiveSha256: hash7502(bytes),
+      captureSha256: hash7502(capture),
+      runtimeSha256: hash7502(runtime),
+    };
+    validateScriptlessHistory7502(receipt, directory);
+    const changed = structuredClone(original.capture);
+    changed.refusals = changed.refusals.filter((row: any) => row.id !== "class");
+    const modified = Buffer.from(JSON.stringify(changed));
+    writeFileSync(path.join(directory, "scriptless.capture.json"), modified);
+    assert.throws(
+      () =>
+        validateScriptlessHistory7502({ ...receipt, captureSha256: hash7502(modified) }, directory),
+      /whole untouched historical scriptless gate remains exact/,
+    );
+    assert.throws(() =>
+      validateScriptlessHistory7502({ ...receipt, sourceRevision: "main" }, directory),
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("the pinned historical workspace cannot overwrite current transitive Cargo products", () => {
+  const history = readFileSync(
+    new URL("./support/native-attribute-values-7502-history.ts", import.meta.url),
+    "utf8",
+  );
+  assert(history.includes('CARGO_TARGET_DIR: path.join(worktree, ".target-history")'));
+  assert(!history.includes('CARGO_TARGET_DIR: path.join(root7502, "target")'));
+});
+
+test("the historical Vapor receipt rejects changed source, complete code, maps and populations", () => {
+  // Synthetic data checks receipt validation, never actual historical execution.
+  const directory = mkdtempSync(path.join(tmpdir(), "native-vapor-history-law-"));
+  try {
+    const bytes = readFileSync(
+      new URL(
+        "../../davinci/vize_l4/tests/fixtures/native-vapor-vue-3.6.0-rc.9.json",
+        import.meta.url,
+      ),
+    );
+    const fixture = JSON.parse(bytes.toString("utf8"));
+    const rows = fixture.fixtures.map((row: any) => ({
+      id: row.id,
+      source: row.source,
+      code: row.code,
+      map: row.map,
+      nodes: row.id === "empty" ? 0 : 1,
+      roots: row.id === "empty" ? 0 : 1,
+    }));
+    const capture = Buffer.from(JSON.stringify(rows));
+    writeFileSync(path.join(directory, "vapor.capture.json"), capture);
+    const receipt = {
+      sourceRevision: baseline7502.revision,
+      sourceTree: baseline7502.tree,
+      testSourceSha256: "5903289dae43f4efa359612a243976365bf0280536fd5dead194b8bc959f19b9",
+      fixtureSha256: hash7502(bytes),
+      captureSha256: hash7502(capture),
+    };
+    validateVaporHistory7502(receipt, directory);
+    for (const field of [
+      "sourceRevision",
+      "sourceTree",
+      "testSourceSha256",
+      "fixtureSha256",
+      "captureSha256",
+    ] as const)
+      assert.throws(() => validateVaporHistory7502({ ...receipt, [field]: "changed" }, directory));
+    for (const mutate of [
+      (rows: any[]) => rows.pop(),
+      (rows: any[]) => (rows[0].code += "\n"),
+      (rows: any[]) => (rows[0].source += "\n"),
+      (rows: any[]) => (rows[0].map.mappings += "A"),
+      (rows: any[]) => (rows[0].nodes = 1),
+      (rows: any[]) => (rows[0].roots = 1),
+      (rows: any[]) => (rows[1].nodes = 0),
+      (rows: any[]) => (rows[1].roots = 0),
+      (rows: any[]) => (rows[1].roots = 2),
+    ]) {
+      const changed = structuredClone(rows);
+      mutate(changed);
+      const modified = Buffer.from(JSON.stringify(changed));
+      writeFileSync(path.join(directory, "vapor.capture.json"), modified);
+      assert.throws(() =>
+        validateVaporHistory7502({ ...receipt, captureSha256: hash7502(modified) }, directory),
+      );
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});

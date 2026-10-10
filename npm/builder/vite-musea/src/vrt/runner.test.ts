@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 
 import type { ArtFileInfo, ViewportConfig } from "../types/index.ts";
 import { MuseaVrtRunner, normalizeVrtWorkerCount } from "./runner.ts";
@@ -14,24 +17,34 @@ void test("worker count is normalized to a positive integer", () => {
 });
 
 void test("runAllTests captures variants concurrently while preserving result order", async () => {
-  const runner = new StubVrtRunner({ workers: 2, viewports: [{ width: 320, height: 240 }] });
+  const snapshotDir = await mkdtemp(path.join(os.tmpdir(), "musea-workers-"));
+  const runner = new StubVrtRunner({
+    snapshotDir,
+    workers: 2,
+    viewports: [{ width: 320, height: 240 }],
+  });
   runner.markInitialized();
 
-  const results = await runner.runAllTests(
-    [art("Button.art.vue", ["primary", "secondary", "disabled"]), art("Badge.art.vue", ["info"])],
-    "http://localhost:5173",
-  );
+  try {
+    const results = await runner.runAllTests(
+      [art("Button.art.vue", ["primary", "secondary", "disabled"]), art("Badge.art.vue", ["info"])],
+      "http://localhost:5173",
+    );
 
-  assert.equal(runner.maxActiveCaptures, 2);
-  assert.deepEqual(
-    results.map((result) => `${result.artPath}:${result.variantName}`),
-    [
-      "Button.art.vue:primary",
-      "Button.art.vue:secondary",
-      "Button.art.vue:disabled",
-      "Badge.art.vue:info",
-    ],
-  );
+    assert.equal(runner.maxActiveCaptures, 2);
+    assert.deepEqual(
+      results.map((result) => `${result.artPath}:${result.variantName}`),
+      [
+        "Button.art.vue:primary",
+        "Button.art.vue:secondary",
+        "Button.art.vue:disabled",
+        "Badge.art.vue:info",
+      ],
+    );
+  } finally {
+    await runner.close();
+    await rm(snapshotDir, { recursive: true, force: true });
+  }
 });
 
 class StubVrtRunner extends MuseaVrtRunner {
@@ -39,7 +52,7 @@ class StubVrtRunner extends MuseaVrtRunner {
   maxActiveCaptures = 0;
 
   markInitialized(): void {
-    (this as unknown as { browser: unknown }).browser = {};
+    (this as unknown as { browser: unknown }).browser = { close: async () => {} };
   }
 
   override async captureAndCompare(
