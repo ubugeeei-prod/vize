@@ -5,12 +5,15 @@ export function unavailableProjectTransport(
   original: OxlintProcessResult,
   error: unknown,
 ): OxlintProcessResult {
+  const suffix = `\nScript-safe Vue transport unavailable: ${error instanceof Error ? error.message : String(error)}\n`;
   return {
     ...original,
+    rawStderr: Buffer.concat([
+      original.rawStderr ?? Buffer.from(original.stderr),
+      Buffer.from(suffix),
+    ]),
     status: Math.max(original.status ?? 1, 1),
-    stderr:
-      original.stderr +
-      `\nScript-safe Vue transport unavailable: ${error instanceof Error ? error.message : String(error)}\n`,
+    stderr: original.stderr + suffix,
   };
 }
 
@@ -88,6 +91,20 @@ export function mergeProjectOutput(
     });
   }
   return {
+    rawStdout:
+      format === "json"
+        ? undefined
+        : Buffer.concat([
+            original.rawStdout ?? Buffer.from(original.stdout),
+            bridge.rawStdout ?? Buffer.from(bridge.stdout),
+          ]),
+    rawStderr: Buffer.concat([
+      original.rawStderr ?? Buffer.from(original.stderr),
+      bridge.rawStderr ?? Buffer.from(bridge.stderr),
+    ]),
+    phases: [original.observation, bridge.observation].filter(
+      (packet): packet is NonNullable<OxlintProcessResult["observation"]> => packet != null,
+    ),
     stdout,
     stderr: original.stderr + bridge.stderr,
     status: Math.max(original.status ?? 1, bridge.status ?? 1),

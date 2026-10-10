@@ -62,8 +62,12 @@ pub(super) fn file(
         .map(|(line, column, _)| cstr!("{line}:{column}").len())
         .max()
         .unwrap_or(0);
-    let name = original
-        .path
+    let heading = if options.presentation.stylish_relative.unwrap_or(false) {
+        &original.cwd_relative
+    } else {
+        &original.path
+    };
+    let name = heading
         .to_str()
         .ok_or_else(|| String::from("HTML filename is not UTF8"))?;
     let no_color = options.presentation.stylish_no_color;

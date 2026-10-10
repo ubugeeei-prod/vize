@@ -1537,6 +1537,8 @@ export interface OxlintHtmlPresentation {
   links: boolean;
   width: number;
   stylishNoColor: boolean;
+  /** Preserve the public wrapper's established cwd-relative Stylish heading. */
+  stylishRelative?: boolean;
   /** Original cwd for relative human-readable names; process cwd is untouched. */
   cwd: string;
 }
