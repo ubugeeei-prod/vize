@@ -146,10 +146,10 @@ impl LspProcess {
             let stderr_reader = std::thread::spawn(move || {
                 let mut reader = std::io::BufReader::new(stderr_pipe);
                 let mut buffer = Vec::new();
-                if let Err(error) = reader.read_to_end(&mut buffer) {
-                    if let Some(capture) = &capture {
-                        capture.error("stderrError", &error);
-                    }
+                if let Err(error) = reader.read_to_end(&mut buffer)
+                    && let Some(capture) = &capture
+                {
+                    capture.error("stderrError", &error);
                 }
                 *stderr_buffer
                     .lock()
