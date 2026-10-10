@@ -7,13 +7,7 @@ import { getPreviewUrl, vMuseaGlobals } from "../api";
 import { sendMessage } from "../composables/usePostMessage";
 import { indentUsage, usagePropsAttributes, usageScript } from "../utils/usageCode";
 import { safeUrl } from "../utils/safeUrl";
-import TextControl from "./controls/TextControl.vue";
-import NumberControl from "./controls/NumberControl.vue";
-import BooleanControl from "./controls/BooleanControl.vue";
-import RangeControl from "./controls/RangeControl.vue";
-import SelectControl from "./controls/SelectControl.vue";
-import ColorControl from "./controls/ColorControl.vue";
-import ObjectControl from "./controls/ObjectControl.vue";
+import { getControlComponent } from "./controlComponent";
 import SlotEditor from "./SlotEditor.vue";
 import HighlightedCode from "./HighlightedCode.vue";
 
@@ -273,29 +267,6 @@ async function copyUsage() {
     }, 2000);
   } catch {
     // fallback
-  }
-}
-
-function getControlComponent(kind: string) {
-  switch (kind) {
-    case "text":
-      return TextControl;
-    case "number":
-      return NumberControl;
-    case "boolean":
-      return BooleanControl;
-    case "range":
-      return RangeControl;
-    case "select":
-    case "radio":
-      return SelectControl;
-    case "color":
-      return ColorControl;
-    case "object":
-    case "array":
-      return ObjectControl;
-    default:
-      return TextControl;
   }
 }
 
