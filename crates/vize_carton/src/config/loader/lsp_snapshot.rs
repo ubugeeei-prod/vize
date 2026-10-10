@@ -7,7 +7,7 @@ use crate::config::{
     VizeConfig,
 };
 
-use super::{LoadedRawConfig, load_raw_config_checked};
+use super::{LoadedRawConfig, checked::load_raw_editor_config_checked};
 
 /// All LSP config values derived from one raw config evaluation.
 #[derive(Debug, Clone)]
@@ -26,7 +26,7 @@ pub struct LoadedLspConfig {
 /// Evaluate JS/TS/PKL only once so the editor timeout and type checker
 /// settings always come from the same config snapshot.
 pub fn load_lsp_config_snapshot(path: Option<&Path>) -> LoadedLspConfig {
-    let (loaded, valid) = match load_raw_config_checked(path) {
+    let (loaded, valid) = match load_raw_editor_config_checked(path) {
         Ok(loaded) => (loaded, true),
         Err(error) => {
             eprintln!("Warning: Failed to load editor project configuration: {error}");

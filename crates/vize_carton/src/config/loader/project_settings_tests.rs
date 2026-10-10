@@ -92,3 +92,34 @@ fn invalid_dedicated_editor_config_is_not_a_fresh_project_default() {
     assert!(!loaded.features.type_checker_jsx_typecheck);
     assert_eq!(loaded.config.language_server.formatting, None);
 }
+
+#[test]
+fn empty_editor_directory_retains_fresh_defaults_and_strict_cli_checks() {
+    let project = tempfile::tempdir().unwrap();
+    let loaded = load_lsp_config_snapshot(Some(project.path()));
+    assert_eq!(
+        (
+            loaded.valid,
+            loaded.source_path,
+            loaded.features.type_checker_jsx_typecheck,
+            loaded.config.type_checker,
+            loaded.config.language_server.formatting,
+            loaded.request_timeout_ms,
+        ),
+        (
+            true,
+            None,
+            true,
+            crate::config::TypeCheckerConfig::default(),
+            None,
+            60_000
+        )
+    );
+    assert_eq!(
+        super::load_raw_config_checked(Some(project.path())).err(),
+        Some(format!(
+            "no vize config file found under {}",
+            project.path().display()
+        ))
+    );
+}
