@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineSlots<{ default(props: { value: number }): unknown }>();
+</script>
+<template><slot :value="1" /></template>

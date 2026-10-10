@@ -4,10 +4,12 @@ import { createTranslationClient, type TranslationProvider } from "./client.ts";
 import { mapConcurrent } from "./concurrency.ts";
 import { normalizeMarkdownDocument } from "./markdown.ts";
 import { createDocumentTranslator } from "./translation.ts";
+import { collectReviewedTranslations } from "./reviewed.ts";
 
 const ACCEPT_FLAG = "--accept-machine-translation";
 const RESUME_FLAG = "--resume";
 const NORMALIZE_ONLY_FLAG = "--normalize-only";
+const OVERWRITE_REVIEWED_FLAG = "--overwrite-reviewed";
 const CONTENT_DIR = resolve(import.meta.dirname, "../../content");
 const SOURCE_LOCALE = "en";
 const ALL_TARGET_LOCALES = ["ja", "zh-CN", "pt-BR", "fr"];
@@ -98,6 +100,12 @@ for (const locale of TARGET_LOCALES) {
     continue;
   }
 
+  const reviewed = process.argv.includes(OVERWRITE_REVIEWED_FLAG)
+    ? new Map<string, string>()
+    : await collectReviewedTranslations(
+        sourceFiles.map((file) => relative(CONTENT_DIR, file).split(sep).join("/")),
+        localeDir,
+      );
   if (!resume) {
     await rm(localeDir, { recursive: true, force: true });
   }
@@ -112,6 +120,13 @@ for (const locale of TARGET_LOCALES) {
       return;
     }
     await mkdir(resolve(outputFile, ".."), { recursive: true });
+    const reviewedDocument = reviewed.get(sourcePath);
+    if (reviewedDocument !== undefined) {
+      await writeFile(outputFile, reviewedDocument, "utf8");
+      completed += 1;
+      process.stdout.write(`\r${locale}: ${completed}/${sourceFiles.length} (reviewed)`);
+      return;
+    }
     const source = await readFile(sourceFile, "utf8");
     const translated = await translateDocument(source, locale, sourcePath);
     await writeFile(outputFile, translated, "utf8");

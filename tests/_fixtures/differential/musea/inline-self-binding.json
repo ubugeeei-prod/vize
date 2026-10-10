@@ -1,0 +1,7 @@
+{
+  "issue": 8460,
+  "filename": "/project/Button.vue",
+  "source": "<script setup lang=\"ts\">defineProps<{ disabled?: boolean }>();</script>\n<template><button class=\"btn\" :disabled=\"disabled\"><slot /></button></template>\n<art title=\"Button\"><variant name=\"Default\" default><Self>Default Button</Self></variant></art>\n",
+  "template": "<Self>Default Button</Self>",
+  "variant": "Default"
+}

@@ -1,0 +1,4 @@
+declare function slot(callback: (payload: { value: number }) => unknown): void;
+declare function body(...values: unknown[]): any;
+slot((props: { value: string }) => body(props.value));
+slot(({ value }: { value: string }) => body(value));

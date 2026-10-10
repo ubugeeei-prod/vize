@@ -153,24 +153,23 @@ struct ComponentCalls<'a> {
 
 impl<'a> Visit<'a> for ComponentCalls<'_> {
     fn visit_call_expression(&mut self, call: &oxc_ast::ast::CallExpression<'a>) {
-        if let oxc_ast::ast::Expression::Identifier(identifier) = &call.callee {
-            if matches!(
+        if let oxc_ast::ast::Expression::Identifier(identifier) = &call.callee
+            && matches!(
                 identifier.name.as_str(),
                 "_resolveDynamicComponent" | "_resolveComponent"
-            ) {
-                if let Some(argument) = call.arguments.first() {
-                    let callee = identifier.span;
-                    let argument = argument.span();
-                    self.calls.push((
-                        self.source
-                            .get(callee.start as usize..callee.end as usize)
-                            .expect("callee"),
-                        self.source
-                            .get(argument.start as usize..argument.end as usize)
-                            .expect("argument"),
-                    ));
-                }
-            }
+            )
+            && let Some(argument) = call.arguments.first()
+        {
+            let callee = identifier.span;
+            let argument = argument.span();
+            self.calls.push((
+                self.source
+                    .get(callee.start as usize..callee.end as usize)
+                    .expect("callee"),
+                self.source
+                    .get(argument.start as usize..argument.end as usize)
+                    .expect("argument"),
+            ));
         }
         oxc_ast_visit::walk::walk_call_expression(self, call);
     }

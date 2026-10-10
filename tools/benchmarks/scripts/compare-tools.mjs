@@ -1003,7 +1003,6 @@ export function renderMarkdown(data) {
   lines.push(
     `Input: ${data.input.fileCount.toLocaleString()} generated SFC files (${formatBytes(data.input.totalBytes)}). Median of ${data.settings.runs} measured run(s) after ${data.settings.warmups} warmup run(s).`,
   );
-  lines.push(...renderProvenanceLines(data));
   if (data.input.largeSfcBytes > 0) {
     lines.push(
       `Large SFC: ${data.input.largeBlocks.toLocaleString()} repeated template blocks (${formatBytes(data.input.largeSfcBytes)}). Nuxt import set: ${data.input.nuxtFileCount.toLocaleString()} SFC files.`,
@@ -1024,6 +1023,7 @@ export function renderMarkdown(data) {
     lines.push(`- ${note}`);
   }
   lines.push("");
+  lines.push(...renderProvenanceLines(data), "");
   lines.push("Commands:");
   lines.push("");
   lines.push("```sh");
