@@ -44,11 +44,17 @@ runs:
       if: ${{ github.event_name != 'merge_group' }}
       env: { VIZE_TEST_REQUIRE_TSGO: "1" }
       uses: ./.github/actions/test-native-ssr
+    - name: Install full-workspace nextest
+      if: ${{ inputs.workspace-already-tested != 'true' }}
+      env: { VIZE_TEST_REQUIRE_TSGO: "1" }
+      uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+      with:
+        tool: cargo-nextest@0.9.146
     - name: Test Rust workspace
       if: ${{ inputs.workspace-already-tested != 'true' }}
       shell: bash
       env: { VIZE_TEST_REQUIRE_TSGO: "1" }
-      run: cargo test --workspace
+      run: node tools/support/compat/github/run-rust-workspace-tests.mjs
     - name: Test feature-enabled differential corpora
       shell: bash
       env: { VIZE_TEST_REQUIRE_TSGO: "1" }

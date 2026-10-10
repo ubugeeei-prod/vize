@@ -81,10 +81,10 @@ jobs:
         run: vp node docs/scripts/verify-ja-editorial-render.ts
 
       - name: Verify static analysis reading flows
-        run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/static-analysis,/ja/guide/static-analysis --output docs-render-evidence/static-analysis
+        run: vp node docs/scripts/verify-navigation-render.ts --workers 2 --routes /guide/static-analysis,/ja/guide/static-analysis --output docs-render-evidence/static-analysis
 
       - name: Verify rendered navigation and adoption guides
-        run: vp node docs/scripts/verify-navigation-render.ts
+        run: vp node docs/scripts/verify-navigation-render.ts --workers 2
 
       - name: Verify every page's Open Graph metadata and image
         run: vp node docs/scripts/verify-og-images.ts
