@@ -182,3 +182,10 @@ as well as the Vue and overview callers. Preserve every complete authored code
 block, packet, fragment, native annotation, copy, font, palette, device and pixel
 check. Earlier successes remain source-specific; obtain fresh exact-head full
 Docs and source qualification before protected delivery or deployed acceptance.
+
+## Delivered accessibility introductions
+
+The actual `123c0f363d` composition retains all four delivered English
+accessibility introductions. When the category emitter moves into the catalogue
+owner, that owner emits the same introductions on the four subgroup routes.
+Their complete existing examples, source arrays, and browser oracles are retained.

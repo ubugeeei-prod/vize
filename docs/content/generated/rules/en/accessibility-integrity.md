@@ -4,6 +4,14 @@ title: "Accessibility integrity"
 
 # Accessibility integrity
 
+Use these rules when a template's roles, focus order, labels, or element relationships disagree.
+They help review the consistency of markup after adding ARIA roles or changing an interactive component.
+
+For example, [role-has-required-aria-props](./reference/a11y-role-has-required-aria-props.md) shows
+which change to make when an assigned role is missing a required property. Compare the examples,
+use that rule's configuration, then run `vp run lint`.
+The [complete accessibility guide](./accessibility.md) links the other checks.
+
 Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show the changes; copied code keeps the complete source. Each packet states its current support limits.
 
 

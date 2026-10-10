@@ -4,6 +4,15 @@ title: "Accessibility interactions"
 
 # Accessibility interactions
 
+Use these rules when reviewing how people interact with a component: keyboard access, focus,
+mouse handlers, hidden controls, and references to other elements. Check them when introducing
+custom controls or changing visibility and event handling.
+
+For example, a focusable element hidden from assistive technology is covered by
+[no-aria-hidden-on-focusable](./reference/a11y-no-aria-hidden-on-focusable.md).
+Compare its Bad/Good examples, use the shown configuration, then run `vp run lint`.
+The [complete accessibility guide](./accessibility.md) explains how these checks fit together.
+
 Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show the changes; copied code keeps the complete source. Each packet states its current support limits.
 
 
