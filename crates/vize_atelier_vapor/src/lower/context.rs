@@ -1,7 +1,7 @@
 //! Transform context for tracking state during AST-to-IR transformation.
 
 use crate::ir::{BlockIRNode, IREffect, OperationNode};
-use vize_atelier_core::{TextNode, codegen::document::EmitDocument};
+use vize_atelier_core::{ElementNode, Namespace, TextNode, codegen::document::EmitDocument};
 use vize_carton::{Allocator, FxHashMap, FxHashSet, String, Vec, interner::Interner};
 
 /// Template anchors, collected only for map-requesting compiles (P3-9).
@@ -19,6 +19,7 @@ pub(crate) struct TransformContext<'a> {
     pub(crate) interner: Interner<'a>,
     temp_id: usize,
     pub(crate) templates: Vec<'a, &'a str>,
+    pub(crate) template_namespaces: Vec<'a, Namespace>,
     pub(crate) element_template_map: FxHashMap<usize, usize>,
     pub(crate) standalone_text_elements: FxHashSet<usize>,
     non_reactive_scopes: usize,
@@ -42,6 +43,7 @@ impl<'a> TransformContext<'a> {
             interner: Interner::new(allocator),
             temp_id: 0,
             templates: Vec::new_in(&allocator),
+            template_namespaces: Vec::new_in(&allocator),
             element_template_map: FxHashMap::default(),
             standalone_text_elements: FxHashSet::default(),
             non_reactive_scopes: 0,
@@ -64,6 +66,25 @@ impl<'a> TransformContext<'a> {
         element_id: usize,
         template: impl Into<EmitDocument>,
     ) -> usize {
+        self.add_template_in(element_id, template, Namespace::Html)
+    }
+
+    /// Register an element's template under the namespace the parser gave it.
+    pub(crate) fn add_element_template(
+        &mut self,
+        element_id: usize,
+        template: impl Into<EmitDocument>,
+        el: &ElementNode<'_>,
+    ) -> usize {
+        self.add_template_in(element_id, template, el.ns)
+    }
+
+    fn add_template_in(
+        &mut self,
+        element_id: usize,
+        template: impl Into<EmitDocument>,
+        namespace: Namespace,
+    ) -> usize {
         let template: EmitDocument = template.into();
         let template_index = self.templates.len();
         if let Some(spans) = self.template_spans.as_mut()
@@ -75,6 +96,7 @@ impl<'a> TransformContext<'a> {
         // so they are frozen with a single arena copy rather than interned.
         self.templates
             .push(self.allocator.alloc_str(template.as_str()));
+        self.template_namespaces.push(namespace);
         self.element_template_map.insert(element_id, template_index);
         template_index
     }

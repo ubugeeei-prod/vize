@@ -59,7 +59,7 @@ pub(super) fn transform_element_with_dynamic_children<'a>(
     transform_dynamic_children_with_ids(ctx, el, parent_id, block, &child_ids);
 
     // Register template for parent
-    ctx.add_template(parent_id, template);
+    ctx.add_element_template(parent_id, template, el);
 
     block.returns.push(parent_id);
 }

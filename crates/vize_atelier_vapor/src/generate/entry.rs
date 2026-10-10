@@ -3,7 +3,7 @@
 use std::fmt::Write;
 
 use crate::ir::{OperationNode, RootIRNode};
-use vize_atelier_core::{codegen::document::EmitDocument, options::BindingMetadata};
+use vize_atelier_core::{Namespace, codegen::document::EmitDocument, options::BindingMetadata};
 use vize_carton::{FxHashSet, String, cstr};
 
 use super::context::GenerateContext;
@@ -147,17 +147,20 @@ pub(crate) fn generate_vapor_with_spans(
             &EmitDocument::from_parts(String::new(template), links),
             &TEMPLATE_ESCAPES,
         );
-        template_code.push_str(
-            match (
-                root_template_indices.contains(&i),
-                template.starts_with("<svg"),
-            ) {
-                (true, true) => "\", true, 1)\n",
-                (true, false) => "\", true)\n",
-                (false, true) => "\", false, 1)\n",
-                (false, false) => "\")\n",
-            },
-        );
+        let root = root_template_indices.contains(&i);
+        // `template(html, root, ns)` parses a non-HTML template inside an
+        // `<svg>`/`<math>` wrapper; without it an SVG fragment split into its
+        // own template (a `v-if` branch, a `v-for` item) becomes HTML elements.
+        match ir
+            .template_namespaces
+            .get(i)
+            .copied()
+            .unwrap_or(Namespace::Html)
+        {
+            Namespace::Html if root => template_code.push_str("\", true)\n"),
+            Namespace::Html => template_code.push_str("\")\n"),
+            namespace => template_code.push_str(&cstr!("\", {root}, {})\n", namespace as u8)),
+        }
     }
 
     let render = ctx.spanned_at("export function render(_ctx) {", spans.map(|s| s.root));

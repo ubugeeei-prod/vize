@@ -64,6 +64,10 @@ pub struct RootIRNode<'a> {
     pub has_deferred_v_show: bool,
     /// Template strings for static parts, frozen into the arena (P1-10).
     pub templates: Vec<'a, &'a str>,
+    /// Parsed namespace of each template's root, index-parallel to `templates`.
+    /// `template()` parses a non-HTML template inside a wrapper of that
+    /// namespace, so an SVG `<g>` split into its own template stays SVG.
+    pub template_namespaces: Vec<'a, Namespace>,
     /// Mapping from element ID to template index
     pub element_template_map: FxHashMap<usize, usize>,
     /// Element IDs that are standalone text nodes (interpolations with their own template)

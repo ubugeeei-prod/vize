@@ -18,7 +18,7 @@ mod structural_slots;
 mod text;
 
 use vize_atelier_core::{
-    RootNode, SimpleExpressionNode, SourceLocation, codegen::document::EmitDocument,
+    Namespace, RootNode, SimpleExpressionNode, SourceLocation, codegen::document::EmitDocument,
 };
 use vize_carton::{Allocator, Box, FxHashMap, String, Vec, ensure_sufficient_stack};
 
@@ -49,6 +49,7 @@ pub(super) fn emit<'a>(
         has_template_ref: false,
         has_deferred_v_show: false,
         templates: Vec::new_in(&allocator),
+        template_namespaces: Vec::new_in(&allocator),
         element_template_map: Default::default(),
         standalone_text_elements: Default::default(),
     };
@@ -188,6 +189,8 @@ impl<'a> Emitter<'a, '_> {
         self.ir
             .templates
             .push(self.allocator.alloc_str(template.as_str()));
+        // Admission accepts only HTML-namespace elements into this lane.
+        self.ir.template_namespaces.push(Namespace::Html);
         if self.source.is_some() && !template.links().is_empty() {
             self.template_spans.insert(index, template.links().to_vec());
         }

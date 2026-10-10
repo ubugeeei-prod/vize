@@ -49,6 +49,7 @@ fn output<'a>(
         has_template_ref: false,
         has_deferred_v_show: false,
         templates: ctx.templates,
+        template_namespaces: ctx.template_namespaces,
         element_template_map: ctx.element_template_map,
         standalone_text_elements: ctx.standalone_text_elements,
     };
