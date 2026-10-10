@@ -1,6 +1,6 @@
 {
   "name": "@vizejs/devtools",
-  "version": "0.442.0",
+  "version": "0.443.0",
   "description": "Typed SSR-safe devtools trace foundations for Vize applications",
   "keywords": [
     "devtools",
