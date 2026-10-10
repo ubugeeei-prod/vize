@@ -79,3 +79,20 @@ formatting, a dedicated feature opt-out, and the editor's explicit override.
 Automatic per-document settings within one monorepo workspace and standalone
 CLI Vite-root parity remain separate acceptance work; these changes do not close
 #8371 until those behaviors and the full public Actions proofs are delivered.
+
+## Current gallery metadata successor
+
+Actual incoming gallery support carries `MuseaFileSet.projectRoot` and a
+public preview base path. Keep its hosted-gallery branch, snapshot identities,
+secure serialization and service lifecycle. The shared configuration snapshot
+now derives that metadata from the same evaluated Vite export: plugin
+`projectRoot` resolves from the scan root, and Vite `base` combines with the
+plugin/shared Musea base path. VRT's explicit preview override still wins in
+the existing CLI consumer. The public preview accessor uses this snapshot too.
+
+The historical three-field scan cases and two complete snapshot packets remain
+archived with whole original test SHA256
+`55ae49ad6d91f46a89edd91dddbfbcc0efd929dc12fd3950a0d819de067fbc21`.
+Their declared current successors preserve every authored input and old field,
+then assert the entire object with project/preview metadata. An additive whole
+packet checks explicit plugin precedence and exactly one config evaluation.
