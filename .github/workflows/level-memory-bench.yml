@@ -66,7 +66,7 @@ jobs:
       - uses: ./head/.github/actions/setup-rust-script
       - name: Test missing, stale, forged and partial evidence refusal
         run: node --test head/tests/tooling/level-memory-collector.test.mjs
-      - name: Build both original twelve providers and collect all paired observations
+      - name: Build all thirteen original providers and collect all paired observations
         run: node head/tools/benchmarks/scripts/level-memory.mjs "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" "$GITHUB_WORKSPACE/level-memory"
       - name: Retain whole reports and process provenance on success or failure
         if: always()

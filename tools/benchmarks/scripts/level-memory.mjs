@@ -2,13 +2,15 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { loadBudgets, loadRegistry, reconcile } from "./instruction-counts-lib.mjs";
+import { reconcile } from "./instruction-counts-lib.mjs";
 import {
+  compareMemoryMetrics,
+  loadMemoryAuthority,
   MEMORY_ENVIRONMENT,
   NORMAL_ARGUMENTS,
+  partitionMemoryReports,
   REPORT_DIRECTORY,
   sha256,
-  validatePair,
 } from "./level-memory-lib.mjs";
 import {
   bindProbe,
@@ -52,8 +54,9 @@ const manifest = {
     profile: "ci-opt",
     target: "x86_64-unknown-linux-gnu",
     rust: "1.99.0",
-    suites: 12,
+    suites: 13,
     population: 104,
+    planes: { level: 100, formatter: 4 },
     repetitions: 3,
     arguments: NORMAL_ARGUMENTS,
     allocator: "existing-counting-mimalloc-normal-mode-reserve128m-purgeoff",
@@ -64,7 +67,10 @@ const manifest = {
     instruction_preinit_bytes: 0,
     rss: "existing-process-baseline-growth;report-only-in-bench-compare",
     wall: "existing-budget-dependent-gate;quick-samples-not-a-speedup-claim",
+    allocation_admission: "original100-level-plane-only;original4-formatter-report-only-no-caps",
   },
+  authority: {},
+  paired_metrics: [],
   measurements: {},
   gates: [],
   observations_complete: false,
@@ -94,33 +100,35 @@ try {
     roots.head,
     path.join(out, "ancestor"),
   );
-  const registryFiles = Object.fromEntries(
-    Object.entries(roots).map(([side, root]) => [
-      side,
-      path.join(root, "docs/davinci/plan/budgets.toml"),
-    ]),
+  const authority = Object.fromEntries(
+    Object.entries(roots).map(([side, root]) => [side, loadMemoryAuthority(root)]),
   );
-  const registry = loadRegistry(registryFiles.head);
-  assert.equal(registry.size, 104, "the entire original104 registry is mandatory");
-  reconcile(loadRegistry(registryFiles.base), registry, "baseline registry");
-  assert.deepEqual(
-    fs.readFileSync(registryFiles.head),
-    fs.readFileSync(registryFiles.base),
-    "original allocation/peak/wall caps must remain byte exact",
-  );
-  const budgets = {};
-  for (const [side, root] of Object.entries(roots)) {
-    const file = path.join(root, "docs/davinci/plan/instruction-budgets.toml");
-    budgets[side] = loadBudgets(file, registry);
-    fs.copyFileSync(file, path.join(out, `${side}-instruction-budgets.toml`));
-    fs.copyFileSync(registryFiles[side], path.join(out, `${side}-budgets.toml`));
-    provenance(root, side);
+  const registry = authority.head.registry;
+  reconcile(authority.base.registry, registry, "complete baseline source registries");
+  for (const plane of ["level", "formatter"]) {
+    const original = authority.base.planes[plane];
+    const current = authority.head.planes[plane];
+    reconcile(original.registry, current.registry, `${plane} original source registry`);
+    manifest.authority[plane] = {
+      ids: [...current.registry].sort(),
+      allocation_budgets: current.allocation_budgets,
+      files: {},
+    };
+    for (const field of ["registry_file", "instruction_file"]) {
+      const raw = fs.readFileSync(current[field]);
+      assert.deepEqual(
+        raw,
+        fs.readFileSync(original[field]),
+        `${plane} original registry/identity/cap bytes must remain unchanged`,
+      );
+      const name = path.basename(current[field]);
+      manifest.authority[plane].files[name] = { bytes: raw.length, sha256: sha256(raw) };
+      for (const side of ["base", "head"])
+        fs.copyFileSync(authority[side].planes[plane][field], path.join(out, `${side}-${name}`));
+    }
   }
-  assert.deepEqual(
-    budgets.head.instruction,
-    budgets.base.instruction,
-    "original instruction identities and ceilings must remain unchanged",
-  );
+  for (const [side, root] of Object.entries(roots)) provenance(root, side);
+  writeJson(path.join(out, "measurement.json"), manifest);
   const version = run(
     "valgrind",
     ["--version"],
@@ -152,7 +160,7 @@ try {
         suite,
         probe,
         path.join(out, side, "identity", String(index)),
-        budgets[side],
+        authority[side].planes[suite.plane].budgets,
       );
       identities[side].push(rows);
       for (const [id, row] of rows) {
@@ -191,10 +199,23 @@ try {
         }
       }
       reconcile(new Set(whole.keys()), registry, `${side} run${repetition} whole population`);
+      const planes = partitionMemoryReports(whole, authority[side]);
+      for (const [plane, rows] of Object.entries(planes)) {
+        const reports = path.join(directory, `${plane}-reports`);
+        fs.mkdirSync(reports);
+        for (const [id, row] of rows) {
+          const file = path.join(reports, `${id}.json`);
+          fs.copyFileSync(path.join(directory, "reports", `${id}.json`), file);
+          assert.equal(sha256(fs.readFileSync(file)), row.raw_sha256, "plane report copy changed");
+        }
+        writeJson(path.join(directory, `${plane}-rows.json`), Object.fromEntries(rows));
+      }
       measurements[side].push(whole);
       writeJson(path.join(directory, "whole-rows.json"), Object.fromEntries(whole));
     }
-    validatePair(measurements.base[repetition - 1], measurements.head[repetition - 1]);
+    manifest.paired_metrics.push(
+      compareMemoryMetrics(measurements.base[repetition - 1], measurements.head[repetition - 1]),
+    );
   }
   for (const side of ["base", "head"]) {
     for (const suite of binaries[side]) {
@@ -226,7 +247,7 @@ try {
   manifest.observations_complete = true;
   writeJson(path.join(out, "measurement.json"), manifest);
   for (let repetition = 1; repetition <= 3; repetition += 1) {
-    const baseline = path.join(out, "base", `run-${repetition}`, "reports");
+    const baseline = path.join(out, "base", `run-${repetition}`, "level-reports");
     for (const side of ["base", "head"]) {
       let accepted = false;
       try {
@@ -235,11 +256,11 @@ try {
           [
             path.join(roots.head, "tools/commands/davinci/bench-compare.rs"),
             "--results",
-            path.join(out, side, `run-${repetition}`, "reports"),
+            path.join(out, side, `run-${repetition}`, "level-reports"),
             "--baseline",
             baseline,
             "--budgets",
-            registryFiles.head,
+            authority.head.planes.level.registry_file,
           ],
           roots.head,
           path.join(out, "gates", `${side}-${repetition}`),
@@ -260,7 +281,7 @@ try {
     "original absolute comparison failed; all624 observations and six verdicts retained",
   );
   console.log(
-    "level-memory: all104 original benchmarks, three complete paired normal-mode runs, existing gates passed",
+    "level-memory: all104 original reports paired; original100 level gates passed; four formatter metrics are uncapped observations",
   );
 } catch (error) {
   manifest.failure = { name: error.name, message: error.message };
