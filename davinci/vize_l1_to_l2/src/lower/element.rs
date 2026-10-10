@@ -60,14 +60,11 @@ pub(crate) struct Analyzed<'a> {
 /// Analyze an element's attributes: classify every name, note the
 /// structural directives.
 ///
-/// `in_v_pre` says an **ancestor** carries `v-pre`. Inside such a subtree
-/// — and on the element that opens one — nothing is a directive: Vue's
-/// parser sets `inVPre` when it reaches the spelling and rewrites every
-/// prop on that element back to a plain attribute. Names before `v-pre`
-/// retain their authored bytes; later and descendant longhand names lose
-/// only their argument-separating colon. So `:x="1"` stays
-/// the attribute `":x"` with the string value `"1"`, `v-if` never builds
-/// a branch, and `v-for` never builds a region.
+/// `in_v_pre` says an ancestor carries `v-pre`; structural spellings then
+/// become literal attributes, so no branch or loop is built. Default entries
+/// retain the shipped opening-name rewrite and complete inherited names.
+/// Only authenticated compiler custody selects literal element ownership and
+/// the positional authored-name projection in [`element_core`].
 pub(crate) fn analyze<'a>(element: &Element<'a>, in_v_pre: bool) -> Analyzed<'a> {
     let mut forms = StdVec::with_capacity(element.open.attrs.len());
     let mut branch = None;
@@ -190,7 +187,8 @@ pub(crate) fn element_core<'a>(
     let authored_tag = element.tag();
     let cast = identity::vue_is(cx, element, analyzed);
     let tag = cast.map_or(authored_tag, |(_, name)| name);
-    let frozen = cx.v_pre_suppressed() || analyzed.opens_v_pre;
+    let in_v_pre = cx.v_pre_suppressed() || analyzed.opens_v_pre;
+    let frozen = cx.frozen_literal(element, in_v_pre);
     if authored_tag == "slot" && !frozen {
         return lower_slot(cx, element, analyzed, ns);
     }
@@ -268,20 +266,22 @@ pub(crate) fn element_core<'a>(
                 ));
             }
             AttrForm::Static => attributes.push(Attribute {
-                name: if cx.v_pre_suppressed() {
-                    frozen_attribute_name(cx.allocator, attr.name.text)
+                name: if frozen && cx.v_pre_suppressed() {
+                    v_pre::literal_attribute_name(cx.allocator, attr.name.text)
                 } else {
                     attr.name.text
                 },
                 value: attr.value.as_ref().map(|value| value.content.text),
                 span: attr_span(cx, attr),
             }),
-            AttrForm::Directive(_) if analyzed.opens_v_pre => {
+            AttrForm::Directive(directive) if analyzed.opens_v_pre => {
                 attributes.push(Attribute {
-                    name: if analyzed.v_pre.is_some_and(|ordinal| index < ordinal) {
+                    name: if !frozen {
+                        v_pre::frozen_name(cx.allocator, attr.name.text, directive)
+                    } else if analyzed.v_pre.is_some_and(|ordinal| index < ordinal) {
                         attr.name.text
                     } else {
-                        frozen_attribute_name(cx.allocator, attr.name.text)
+                        v_pre::literal_attribute_name(cx.allocator, attr.name.text)
                     },
                     value: attr.value.as_ref().map(|value| value.content.text),
                     span: attr_span(cx, attr),

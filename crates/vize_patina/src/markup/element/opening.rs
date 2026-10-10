@@ -119,14 +119,10 @@ impl<'a> MarkupElement<'a> {
                 opens_v_pre,
                 ..
             } => {
-                let mut after_pre = frozen && !opens_v_pre;
                 for attr in &element.open.attrs {
-                    if frozen && opens_v_pre && attr.name.text == "v-pre" {
-                        after_pre = true;
-                    }
                     if !super::super::authored::consumed(attr, frozen, opens_v_pre) {
                         let name = frozen
-                            .then(|| super::super::authored::frozen_name(attr, doc, after_pre));
+                            .then(|| super::super::authored::frozen_name(attr, doc, opens_v_pre));
                         visitor(MarkupBinding::from_surface(attr, doc, name));
                     }
                 }

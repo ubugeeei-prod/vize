@@ -270,8 +270,11 @@ impl<'a> Parser<'a> {
                 .iter()
                 .any(|(content, _, _)| *content == "prop");
 
+        let Some(authored) = self.completed_raw_name(&dir, &loc) else {
+            return;
+        };
         let mut dir_node = DirectiveNode::new(self.allocator, dir.name, loc);
-        dir_node.raw_name = Some(dir.raw_name);
+        dir_node.raw_name = Some(authored);
 
         // Vue 3.4+ same-name shorthand: `:foo` without a value is `:foo="foo"`
         // Pre-compute the shorthand expression before moving dir.arg
@@ -336,9 +339,7 @@ impl<'a> Parser<'a> {
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
             dir_node.shorthand = true;
         }
-
         if let Some(ref mut current) = self.current_element {
-            current.directive_name_ends.push(dir.name_end);
             let boxed = Box::new_in(dir_node, &self.allocator);
             current.props.push(PropNode::Directive(boxed));
         }

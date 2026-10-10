@@ -249,7 +249,81 @@ The same four supplemental slot inputs now compare all sixteen complete public
 compiler packets against the retained source-built modules, maps and diagnostics.
 Preferred L0 imports retain their original grouped boundary, and only the two
 affected compiler-consumer inventory shards are regenerated from actual sites.
+The corrective 2e Actions preserves all twelve complete historical parser AST/error
+records and passes the 104 three-repeat instruction measurements. Its current
+native recipe exposes a missing passive-LSP test target from newer main. A single
+ordinary composition with signed c10 main retains the complete incoming fixture
+and recipe; the composed source requires fresh qualification without retry credit.
 The ordinary current-main composition, complete source/full Actions,
 unchanged historical corpora, all 104 measured instruction-budget rows,
 protected queue and actual merge still remain before delivery. Raw previous
 failures are evidence of their own source and never inherit this local pass.
+
+### Default compatibility and source-bound lowering correction
+
+The first exact source/full attempt exposed genuine legacy DOM and Patina
+regressions: inherited `v-bind:x` became `v-bindx`, own `v-my:a.m` retained
+`.m`, and literal classification changed default Component/Slot ownership.
+Keep the original whole failures and corpus inputs. Restore ordinary Parser,
+Patina, every public/default lower entry and empty Core context to the shipped
+compatibility contract. Current Vue's own-after/inherited names differ; this
+restoration is compatibility, not a claim of current official parity.
+
+Complete directive heads now borrow the existing `raw_name` only for the
+compiler's explicit frozen collection. Default parsing stores the original
+prefix directly. The first successful `v-pre` position comes from completed
+props, with no head vector or ordinal field. Armature still drops every
+semantic `pre`; default level lowering keeps its original first-only policy.
+The previous head-counter/storage2 source and allocation RED remain history.
+No original-size or zero-allocation claim is made before new measurements.
+
+One doc-hidden LEVEL entry, `lower_with_frozen_element_spans`, accepts only an
+exact base-zero whole SourceBlock/tree and ordered borrowed opening spans.
+All existing entries keep absent authority. Explicit empty custody is valid
+only without frozen elements; missing, extra, duplicate, overlapping, foreign
+or unmatched custody is an error before a Lowered escapes. The original
+walk consumes spans at element dispatch, not lookahead, and validates leftovers
+before materialization. It adds no scanner, pipeline pass or reverse legacy
+dependency. The trusted SSR bundle first binds the parser carrier to both the
+actual Root source and caller. Public mutable ASTs are not forge-proof inputs.
+
+Parser and generic L1 HTML recovery differ for p/div, repeated button and
+ignored nested form inputs. The explicit bridge refuses these precise custody
+mismatches rather than inferring ancestry or dropping a supplied span. Default
+recovery and all original malformed/facade streams retain their contract.
+
+Keep the whole historical sixteen public slot packets. Eight SSR packets and
+same four sources remain strict current/legacy/runtime controls. Six historical
+literal DOM/Vapor packets describe the earlier regression. A separate eight-row
+old/default baseline must come from the source-built authentic-ca observer,
+including complete modules/maps/errors/options. The authentic-ca observer
+now records all eight public results and nine whole default Parser/L1/L2
+outcomes at ca074239ba (actual executable 599643aa, exit0, one test).
+The fixed before data, exact observer source and source/recipe/raw-result
+provenance live beside `public-default-ca.expected.json`; no corrective
+current output supplies this oracle. All eight public maps are null. Fresh original layout/allocation,
+104 measured instruction rows and 624 normal memory observations remain
+required with unchanged inputs/providers/repeats/caps. The baseline's 57 exact
+allocation-equality mismatches (40 up, 17 down) are a separate observation.
+
+The closed-default source-built continuation completes seven locked/offline builds
+and twenty-seven nonzero test commands, all exit 0. The original DOM six-case
+suite, L2 v-pre control, Patina facade/pre/textarea laws and lexer caller laws
+pass unchanged. Complete eight public default DOM/Vapor rows equal authentic-ca
+except the declared observer route label; all nine whole default Parser/L1/L2
+outcomes are exact. The four current child packets complete twelve original,
+sixteen v-pre, twenty-four camel and eight slot SSR observations, with actual
+Node exit 0, null signals and full input/stdout/stderr preserved before verdicts.
+Temporary probes and every authored source byte are restored.
+
+The same five normal sources repeated three times now measure CurrentElement
+56 bytes and Parser 968, aligned to 8; Parser retains 24 bytes over the original
+944-byte baseline. Core TransformContext remains 720 versus 704; current LEVEL
+Cx measures 416 without an independently measured old Cx. Public AST sizes stay
+104/176/224. All fifteen complete Parser allocation snapshots and five whole
+ASTs equal the retained untouched baseline, including nine directives without
+added allocation or bytes. Both default Core and opted-in empty-sidecar Core
+have the same fifteen complete snapshots and five whole ASTs as that baseline.
+These scoped local debug observations establish neither universal zero cost nor
+fresh Actions, measured 104/624, protected admission or actual delivery. The
+compile/feature-gate failures preceding this pass remain separate raw evidence.

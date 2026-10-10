@@ -31,6 +31,22 @@ impl<'a> FrozenTemplate<'a> {
             .ok_or(FOREIGN_SOURCE)?;
         Ok(Self { source, spans })
     }
+
+    pub(super) fn lower(
+        self,
+        allocator: &'a vize_l0::Allocator,
+        tree: &vize_l1::SurfaceTree<'a>,
+        errors: &[vize_l1::SurfaceError],
+    ) -> Result<vize_l1_to_l2::Lowered<'a>, &'static str> {
+        let source = vize_l0::SourceRoot::new(self.source).map_err(|_| FOREIGN_SOURCE)?;
+        vize_l1_to_l2::lower_with_frozen_element_spans(
+            allocator,
+            tree,
+            errors,
+            source.whole_block(),
+            self.spans,
+        )
+    }
 }
 
 /// Only the source bridge mints this alongside its actual lowered Region.

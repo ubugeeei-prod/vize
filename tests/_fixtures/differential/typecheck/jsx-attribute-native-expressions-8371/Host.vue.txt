@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import type { VNodeChild } from 'vue';
+defineProps<{ content: VNodeChild; callback: () => VNodeChild; extra?: VNodeChild }>();
+</script>
+<template><div /></template>

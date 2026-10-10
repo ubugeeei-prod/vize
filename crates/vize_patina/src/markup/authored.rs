@@ -95,9 +95,7 @@ fn walk_elements<'a>(
 
 pub(super) fn kind(element: &Element<'_>, frozen: bool) -> MarkupElementKind {
     let tag = element.tag();
-    if frozen {
-        MarkupElementKind::Element
-    } else if tag == "slot" {
+    if tag == "slot" {
         MarkupElementKind::Slot
     } else if tag == "template"
         && !frozen
@@ -140,15 +138,11 @@ pub(super) fn walk_attributes<'a>(
     opens_v_pre: bool,
     visitor: &mut impl FnMut(MarkupAttribute<'a>),
 ) {
-    let mut after_pre = frozen && !opens_v_pre;
     for attr in &element.open.attrs {
-        if frozen && opens_v_pre && attr.name.text == "v-pre" {
-            after_pre = true;
-        }
         if !consumed(attr, frozen, opens_v_pre)
             && (frozen || SurfaceDirective::parse(attr.name.text).is_none())
         {
-            let name = frozen_name(attr, doc, after_pre);
+            let name = frozen_name(attr, doc, opens_v_pre);
             visitor(MarkupAttribute::from_authored(attr, doc, name));
         }
     }
@@ -202,14 +196,14 @@ pub(super) fn walk_children<'a>(
     }
 }
 
-/// Full authored names before the opening v-pre; opaque head projection
-/// after it and throughout the inherited subtree.
+/// Only the opening element was tokenized before v-pre took effect.
+/// Descendant spellings keep their authored names unchanged.
 pub(super) fn frozen_name<'a>(
     attr: &'a Attribute<'a>,
     doc: &'a L2Markup<'a>,
-    after_pre: bool,
+    opens_v_pre: bool,
 ) -> &'a str {
-    if after_pre {
+    if opens_v_pre {
         doc.frozen_attribute_name(attr.name.text)
     } else {
         attr.name.text

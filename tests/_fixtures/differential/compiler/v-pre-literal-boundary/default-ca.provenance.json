@@ -1,0 +1,84 @@
+{
+  "scope": "Complete eight original-ca public packets copied from genuine compiled old/default observation only. No current captured output is used as an oracle; original historical16 remains byteexact.",
+  "actualCa": "ca074239bab31d1111bf49953a68ff9c64ebd0aa",
+  "sourceTree": "5c5e1679f28fb2cb9ad9952b040d3377f2d55f30",
+  "observerImage": {
+    "path": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-v-pre-default-ca-observer-20261011/target/debug/deps/v_pre_default_before-c0c05c6b7644f175",
+    "realpath": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-v-pre-default-ca-observer-20261011/target/debug/deps/v_pre_default_before-c0c05c6b7644f175",
+    "retainedPath": "/private/tmp/vize-8504-local-proof/provider-net-review/default-v-pre-compatibility-plan-20261011/actual-ca-observer/execution-1/observer-executable.bin",
+    "bytes": 66599848,
+    "sha256": "599643aa731428eaa812a79e3a5e35045c37f8339624e89f1f76c97e4c3f85db",
+    "retainedSha256": "599643aa731428eaa812a79e3a5e35045c37f8339624e89f1f76c97e4c3f85db",
+    "compilerArtifact": "/private/tmp/vize-8504-local-proof/provider-net-review/default-v-pre-compatibility-plan-20261011/actual-ca-observer/execution-1/compiler-artifact.json"
+  },
+  "executionReceipt": {
+    "path": "/private/tmp/vize-8504-local-proof/provider-net-review/default-v-pre-compatibility-plan-20261011/actual-ca-observer/execution-1/execution.json",
+    "bytes": 10781,
+    "sha256": "b8edb6b1775804b736bd2c795ecd1098f17fd57428a89b28c0346db446b4302c"
+  },
+  "rawPacket": {
+    "path": "/private/tmp/vize-8504-local-proof/provider-net-review/default-v-pre-compatibility-plan-20261011/actual-ca-observer/execution-1/packet.raw.json",
+    "bytes": 144709,
+    "sha256": "67f9fb635a6560107c6ec321912330bb09e31b74c994654f51d2b9313d2ed40d"
+  },
+  "wholeStdout": {
+    "path": "/private/tmp/vize-8504-local-proof/provider-net-review/default-v-pre-compatibility-plan-20261011/actual-ca-observer/execution-1/observe.stdout.bin",
+    "bytes": 144918,
+    "sha256": "97ea567752b155af37ead3f5468764203cee18a7761130ecda14fabdc9127f1a"
+  },
+  "wholeStderr": {
+    "path": "/private/tmp/vize-8504-local-proof/provider-net-review/default-v-pre-compatibility-plan-20261011/actual-ca-observer/execution-1/observe.stderr.bin",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "pid": 40644,
+  "exitCode": 0,
+  "signal": null,
+  "testCount": 1,
+  "publicCount": 8,
+  "defaultLowerCount": 9,
+  "copiedFields": [
+    "name",
+    "source",
+    "kind",
+    "result"
+  ],
+  "fieldTreatment": "Exact JSON field projection in original order; full code/maps/errors/warnings and every result field retained. Full descriptor/options/errors/default Root/L1/L2 packets remain in raw superset.",
+  "destination": "public-default-ca.expected.json",
+  "destinationBytes": 4522,
+  "destinationSha256": "e3f6611d6bbe4f8e897100aeacfb82e540dd22dc08cf3f0c8bf6d646d4968526",
+  "driver": {
+    "path": "/private/tmp/vize-8504-local-proof/provider-net-review/default-v-pre-compatibility-plan-20261011/actual-ca-observer/execute_actual_ca.py",
+    "sha256": "ec787ae569622be624002f005958b1266973618fc9831036bc50b0c16fc2cf7f"
+  },
+  "limits": "No Node runtime or DOM/Vapor browser execution; actual-ca source compile/default AST/lowering only; running mapped Rust image not independently observed, retained Cargo-selected executable filesystem bytes are identified.",
+  "observedPacket": "default-ca.observed.json",
+  "observerSource": "v_pre_default_before.rs",
+  "reproduction": {
+    "sourceSha": "ca074239bab31d1111bf49953a68ff9c64ebd0aa",
+    "copyObserverTo": "crates/vize_atelier_ssr/tests/v_pre_default_before.rs",
+    "buildCommand": [
+      "cargo",
+      "+1.99.0",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "vize_atelier_ssr",
+      "--features",
+      "legacy-differential",
+      "--test",
+      "v_pre_default_before",
+      "--no-run",
+      "--message-format=json"
+    ],
+    "runCommand": [
+      "<Cargo compiler-artifact executable>",
+      "--exact",
+      "actual_ca_default_complete_public_and_lowering_observations",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "extract": "Parse unique ACTUAL_CA_DEFAULT_PACKET= JSON line after successful build/test; project public rows in original order to name/source/kind/result only. Keep the whole packet and raw streams separately."
+  }
+}

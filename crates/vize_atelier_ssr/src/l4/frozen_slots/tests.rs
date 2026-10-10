@@ -10,7 +10,12 @@ use vize_l2::op::{ElementOp, Namespace, Op, Region};
 fn lower<'a>(arena: &'a Allocator, source: &'a str) -> vize_l1_to_l2::lower::Lowered<'a> {
     let (tree, errors) = vize_l1::parse(arena, source);
     assert!(errors.is_empty(), "{errors:?}");
-    vize_l1_to_l2::lower(arena, &tree, &errors)
+    let (root, parser_errors, carrier) = Parser::new(arena, source).parse_with_frozen_elements();
+    assert!(parser_errors.is_empty(), "{parser_errors:?}");
+    FrozenTemplate::new(&root, source, &carrier)
+        .expect("original parser bundle")
+        .lower(arena, &tree, &errors)
+        .expect("complete opening custody")
 }
 
 #[test]
@@ -141,5 +146,39 @@ fn original_empty_literal_and_normal_outlet_admit_while_nonempty_literal_refuses
             }
             differential_tests::assert_parity(source, &options, &experimental, name);
         }
+    }
+}
+
+#[test]
+fn recovered_provider_mismatches_refuse_complete_custody_without_root_mutation() {
+    for (source, message) in [
+        (
+            "<p v-pre><div><Child></Child></div><p></p>",
+            "Frozen lowering custody is missing an authored frozen opening.",
+        ),
+        (
+            "<button v-pre><button></button></button>",
+            "Frozen lowering custody contains an unmatched or non-frozen opening.",
+        ),
+        (
+            "<form v-pre><form><Child></Child></form></form>",
+            "Frozen lowering custody is missing an authored frozen opening.",
+        ),
+    ] {
+        let arena = Allocator::new();
+        let (root, _parser_errors, carrier) =
+            Parser::new(&arena, source).parse_with_frozen_elements();
+        let before = vize_l0::cstr!("{root:#?}");
+        let (tree, errors) = vize_l1::parse(&arena, source);
+        let tree_before = vize_l0::cstr!("{tree:#?}");
+        let template =
+            FrozenTemplate::new(&root, source, &carrier).expect("actual original parser join");
+        assert_eq!(
+            template.lower(&arena, &tree, &errors).err(),
+            Some(message),
+            "{source}"
+        );
+        assert_eq!(vize_l0::cstr!("{root:#?}"), before);
+        assert_eq!(vize_l0::cstr!("{tree:#?}"), tree_before);
     }
 }

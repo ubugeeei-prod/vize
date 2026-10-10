@@ -105,3 +105,5 @@ fn recovery_does_not_reinterpret_spreads_strings_or_other_syntax_errors() {
         assert_eq!(recovered.roots.len(), strict.roots.len());
     }
 }
+
+mod attribute_tests;
