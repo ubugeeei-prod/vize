@@ -1,0 +1,889 @@
+{
+  "schema": "vize.component-registration-explicit-project-context-v1",
+  "sourcePurpose": "Separate complete authored context controls; original n8n rule projection and historical captures are unchanged.",
+  "nativeOptionsPolicy": "globals are component names; compiler.customElements are exact case-sensitive compiler globs.",
+  "referenceOptionsPolicy": "eslint-plugin-vue 10.9.2 no-undef-components ignorePatterns are JavaScript regexes; they are independent explicit controls, not interchangeable native API shapes.",
+  "cases": [
+    {
+      "id": "missing-pascal",
+      "source": "<script setup lang=\"ts\"></script>\n<template><UnknownWidget /></template>\n",
+      "sourceSha256": "96fab041530e5856ebf0b9f0fb27e355fda9eb1c367933381c4013a6ab1d3914",
+      "filename": "missing-pascal.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "UnknownWidget",
+      "tagSpan": {
+        "start": 45,
+        "end": 58
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-pascal.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 58,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 1
+    },
+    {
+      "id": "missing-lower",
+      "source": "<script setup lang=\"ts\"></script>\n<template><unknownwidget /></template>\n",
+      "sourceSha256": "2f1a3d8a7b5aa6c4d2f0370053d1430e93bff5767d03ddf678127017743c7e1a",
+      "filename": "missing-lower.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "unknownwidget",
+      "tagSpan": {
+        "start": 45,
+        "end": 58
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-lower.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 58,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "missing-kebab",
+      "source": "<script setup lang=\"ts\"></script>\n<template><unknown-widget /></template>\n",
+      "sourceSha256": "f4cba5b7a6c8d3e271d51a7d626359164382512db5bbae262a0811ce72de7fc9",
+      "filename": "missing-kebab.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "unknown-widget",
+      "tagSpan": {
+        "start": 45,
+        "end": 59
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-kebab.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 59,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 1
+    },
+    {
+      "id": "missing-x",
+      "source": "<script setup lang=\"ts\"></script>\n<template><x-widget /></template>\n",
+      "sourceSha256": "b89c4a34e8057cbb2689c4b90cb2cd4fdd927ee7b0a70a07218d4f9908106bbc",
+      "filename": "missing-x.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "x-widget",
+      "tagSpan": {
+        "start": 45,
+        "end": 53
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-x.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 53,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "missing-ion",
+      "source": "<script setup lang=\"ts\"></script>\n<template><ion-widget /></template>\n",
+      "sourceSha256": "3938f314292652aeb6df2e969aabd755f3b7bae086e793e6207f080506e839a4",
+      "filename": "missing-ion.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "ion-widget",
+      "tagSpan": {
+        "start": 45,
+        "end": 55
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-ion.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 55,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "missing-md",
+      "source": "<script setup lang=\"ts\"></script>\n<template><md-widget /></template>\n",
+      "sourceSha256": "ed4cf20da5a7c744bcfec147d2a07c192dcb9fd911e421772a3d5905eef494d4",
+      "filename": "missing-md.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "md-widget",
+      "tagSpan": {
+        "start": 45,
+        "end": 54
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-md.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 54,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "missing-mwc",
+      "source": "<script setup lang=\"ts\"></script>\n<template><mwc-widget /></template>\n",
+      "sourceSha256": "c9e8073fe91a2b350b676412b9924fffb85a53a409ccc60dc0e26696aba634b6",
+      "filename": "missing-mwc.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "mwc-widget",
+      "tagSpan": {
+        "start": 45,
+        "end": 55
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-mwc.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 55,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "missing-router",
+      "source": "<script setup lang=\"ts\"></script>\n<template><RouterLink /></template>\n",
+      "sourceSha256": "5f27b30c50b847ce97e82b764c296dc38d5af20204f1b680bd1a9fa4fe56285b",
+      "filename": "missing-router.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "RouterLink",
+      "tagSpan": {
+        "start": 45,
+        "end": 55
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-router.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 55,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "missing-router-kebab",
+      "source": "<script setup lang=\"ts\"></script>\n<template><router-link /></template>\n",
+      "sourceSha256": "b88fa57ca5461f6c87e86902b291c128f7227a7092b27a8090bc60195a940a9c",
+      "filename": "missing-router-kebab.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "router-link",
+      "tagSpan": {
+        "start": 45,
+        "end": 56
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-router-kebab.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 56,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "missing-nuxt",
+      "source": "<script setup lang=\"ts\"></script>\n<template><NuxtPage /></template>\n",
+      "sourceSha256": "77e285c0639ea33356514f531ffd43257f06387ae614359ff8485763edd6a0e7",
+      "filename": "missing-nuxt.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "NuxtPage",
+      "tagSpan": {
+        "start": 45,
+        "end": 53
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-nuxt.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 53,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "missing-nuxt-kebab",
+      "source": "<script setup lang=\"ts\"></script>\n<template><nuxt-page /></template>\n",
+      "sourceSha256": "2a50de0580f3d86a9ad26016d2a2f96b1ce481274607446d3e93277444f3c9f7",
+      "filename": "missing-nuxt-kebab.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "nuxt-page",
+      "tagSpan": {
+        "start": 45,
+        "end": 54
+      },
+      "authoredExpectedPacket": {
+        "filename": "missing-nuxt-kebab.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 45,
+            "end": 54,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "native-div",
+      "source": "<script setup lang=\"ts\"></script>\n<template><div /></template>\n",
+      "sourceSha256": "59d7206ae365ffd4f28700cb1cb0e1478239f01a7ff4c7db0bc40e56442726b0",
+      "filename": "native-div.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "div",
+      "tagSpan": {
+        "start": 45,
+        "end": 48
+      },
+      "authoredExpectedPacket": {
+        "filename": "native-div.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "native-svg",
+      "source": "<script setup lang=\"ts\"></script>\n<template><svg /></template>\n",
+      "sourceSha256": "b49e453324cb616664d1113fdd4ce14d3d9251a5a5df9621c2b6a8ce8bec4ea2",
+      "filename": "native-svg.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "svg",
+      "tagSpan": {
+        "start": 45,
+        "end": 48
+      },
+      "authoredExpectedPacket": {
+        "filename": "native-svg.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "imported-pascal",
+      "source": "<script setup lang=\"ts\">import UnknownWidget from './UnknownWidget.vue'</script>\n<template><UnknownWidget /></template>\n",
+      "sourceSha256": "1408d175debb64f6656fbf7990d4c556490a6959f77f82e4b39fb844763c5560",
+      "filename": "imported-pascal.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "UnknownWidget",
+      "tagSpan": {
+        "start": 92,
+        "end": 105
+      },
+      "authoredExpectedPacket": {
+        "filename": "imported-pascal.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "imported-kebab",
+      "source": "<script setup lang=\"ts\">import UnknownWidget from './UnknownWidget.vue'</script>\n<template><unknown-widget /></template>\n",
+      "sourceSha256": "9fb4688694bec3b79a4ccc5ce20c434d25c214c0b12d623cf431656bd1cb5d8e",
+      "filename": "imported-kebab.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "unknown-widget",
+      "tagSpan": {
+        "start": 92,
+        "end": 106
+      },
+      "authoredExpectedPacket": {
+        "filename": "imported-kebab.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "recursive-filename",
+      "source": "<script setup lang=\"ts\"></script>\n<template><RecursiveFilename /></template>\n",
+      "sourceSha256": "5b77622d7a2b547b3a3760a9357a2da03ae80acc58c75f13750b372faf947638",
+      "filename": "recursive-filename.vue",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "family": "registration-research",
+      "authoredTag": "RecursiveFilename",
+      "tagSpan": {
+        "start": 45,
+        "end": 62
+      },
+      "authoredExpectedPacket": {
+        "filename": "recursive-filename.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "plain-missing",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><MyWidget /></template>\n",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "sourceSha256": "d4f7f1ffa0d6db8a63fc7e7a9a185211759008013b9a20dacb3698f70bf714c9",
+      "filename": "plain-missing.vue",
+      "compiler": {},
+      "family": "registration-positive",
+      "authoredTag": "MyWidget",
+      "tagSpan": {
+        "start": 61,
+        "end": 69
+      },
+      "authoredExpectedPacket": {
+        "filename": "plain-missing.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 61,
+            "end": 69,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 1
+    },
+    {
+      "id": "literal-global",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><MyWidget /></template>\n",
+      "nativeOptions": {
+        "globals": [
+          "MyWidget"
+        ]
+      },
+      "referenceOptions": {
+        "ignorePatterns": [
+          "^MyWidget$"
+        ]
+      },
+      "sourceSha256": "d4f7f1ffa0d6db8a63fc7e7a9a185211759008013b9a20dacb3698f70bf714c9",
+      "filename": "literal-global.vue",
+      "compiler": {},
+      "family": "registration-positive",
+      "authoredTag": "MyWidget",
+      "tagSpan": {
+        "start": 61,
+        "end": 69
+      },
+      "authoredExpectedPacket": {
+        "filename": "literal-global.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "custom-element-global",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><my-widget /></template>\n",
+      "nativeOptions": {
+        "globals": [
+          "MyWidget"
+        ]
+      },
+      "referenceOptions": {
+        "ignorePatterns": [
+          "^MyWidget$"
+        ]
+      },
+      "sourceSha256": "14b9fe48c0323d90f9966b44212bc9340af581439c4202640d9280189aa88a76",
+      "filename": "custom-element-global.vue",
+      "compiler": {},
+      "family": "registration-positive",
+      "authoredTag": "my-widget",
+      "tagSpan": {
+        "start": 61,
+        "end": 70
+      },
+      "authoredExpectedPacket": {
+        "filename": "custom-element-global.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "router-global",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><RouterLink /></template>\n",
+      "nativeOptions": {
+        "globals": [
+          "RouterLink"
+        ]
+      },
+      "referenceOptions": {
+        "ignorePatterns": [
+          "^RouterLink$"
+        ]
+      },
+      "sourceSha256": "8434f95671435ee20400499dc4c42b6a19e35b93471cfbe87ce807002ea60110",
+      "filename": "router-global.vue",
+      "compiler": {},
+      "family": "registration-positive",
+      "authoredTag": "RouterLink",
+      "tagSpan": {
+        "start": 61,
+        "end": 71
+      },
+      "authoredExpectedPacket": {
+        "filename": "router-global.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "nuxt-global",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><NuxtPage /></template>\n",
+      "nativeOptions": {
+        "globals": [
+          "NuxtPage"
+        ]
+      },
+      "referenceOptions": {
+        "ignorePatterns": [
+          "^NuxtPage$"
+        ]
+      },
+      "sourceSha256": "cdffb39f0248eaf2b46681a7ede690112aa57637c989c98cfd407b51cbce9a04",
+      "filename": "nuxt-global.vue",
+      "compiler": {},
+      "family": "registration-positive",
+      "authoredTag": "NuxtPage",
+      "tagSpan": {
+        "start": 61,
+        "end": 69
+      },
+      "authoredExpectedPacket": {
+        "filename": "nuxt-global.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "router-import",
+      "source": "<script setup lang=\"ts\">import RouterLink from './RouterLink.vue'</script>\n<template><RouterLink /></template>\n",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "sourceSha256": "7f0c4fa541287edb3f3d498b728be9625a7ee68e0b436af85f88677d47178de3",
+      "filename": "router-import.vue",
+      "compiler": {},
+      "family": "registration-positive",
+      "authoredTag": "RouterLink",
+      "tagSpan": {
+        "start": 86,
+        "end": 96
+      },
+      "authoredExpectedPacket": {
+        "filename": "router-import.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "nuxt-import",
+      "source": "<script setup lang=\"ts\">import NuxtPage from './NuxtPage.vue'</script>\n<template><NuxtPage /></template>\n",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "sourceSha256": "bf61b757325a85185083b2d0befff5505541c78d34291f5fb18a003b6c4d1f12",
+      "filename": "nuxt-import.vue",
+      "compiler": {},
+      "family": "registration-positive",
+      "authoredTag": "NuxtPage",
+      "tagSpan": {
+        "start": 82,
+        "end": 90
+      },
+      "authoredExpectedPacket": {
+        "filename": "nuxt-import.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "recursive-nonempty",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><RecursiveNonempty /></template>\n",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "sourceSha256": "a1e4ee07b3760fe1729ba59fbf6eeb65c7cd13cfa906958d73547141c3eb8e2f",
+      "filename": "recursive-nonempty.vue",
+      "compiler": {},
+      "family": "registration-positive",
+      "authoredTag": "RecursiveNonempty",
+      "tagSpan": {
+        "start": 61,
+        "end": 78
+      },
+      "authoredExpectedPacket": {
+        "filename": "recursive-nonempty.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "native-math",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><math /></template>\n",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "sourceSha256": "109f124e9db8c406b903d435473135e9f10fd51a008053957d37bc9e091e809c",
+      "filename": "native-math.vue",
+      "compiler": {},
+      "family": "registration-positive",
+      "authoredTag": "math",
+      "tagSpan": {
+        "start": 61,
+        "end": 65
+      },
+      "authoredExpectedPacket": {
+        "filename": "native-math.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 0
+    },
+    {
+      "id": "type-only-import",
+      "source": "<script setup lang=\"ts\">import type TypeWidget from './types'</script>\n<template><TypeWidget /></template>\n",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "sourceSha256": "34576e6918b14324f5fad187f4637404276135fef6bcc25427fa154fa4c47f7e",
+      "filename": "type-only-import.vue",
+      "compiler": {},
+      "family": "registration-positive",
+      "authoredTag": "TypeWidget",
+      "tagSpan": {
+        "start": 82,
+        "end": 92
+      },
+      "authoredExpectedPacket": {
+        "filename": "type-only-import.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 82,
+            "end": 92,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 1
+    },
+    {
+      "id": "custom-default",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><my-widget /></template>\n",
+      "nativeOptions": {},
+      "referenceOptions": {},
+      "compiler": {},
+      "sourceSha256": "14b9fe48c0323d90f9966b44212bc9340af581439c4202640d9280189aa88a76",
+      "filename": "custom-default.vue",
+      "family": "custom-elements-context",
+      "authoredTag": "my-widget",
+      "tagSpan": {
+        "start": 61,
+        "end": 70
+      },
+      "authoredExpectedPacket": {
+        "filename": "custom-default.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 61,
+            "end": 70,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 1
+    },
+    {
+      "id": "custom-literal",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><my-widget /></template>\n",
+      "nativeOptions": {},
+      "referenceOptions": {
+        "ignorePatterns": [
+          "^my-widget$"
+        ]
+      },
+      "compiler": {
+        "customElements": [
+          "my-widget"
+        ]
+      },
+      "sourceSha256": "14b9fe48c0323d90f9966b44212bc9340af581439c4202640d9280189aa88a76",
+      "filename": "custom-literal.vue",
+      "family": "custom-elements-context",
+      "authoredTag": "my-widget",
+      "tagSpan": {
+        "start": 61,
+        "end": 70
+      },
+      "authoredExpectedPacket": {
+        "filename": "custom-literal.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 1
+    },
+    {
+      "id": "custom-neighbor",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><my-neighbor /></template>\n",
+      "nativeOptions": {},
+      "referenceOptions": {
+        "ignorePatterns": [
+          "^my-widget$"
+        ]
+      },
+      "compiler": {
+        "customElements": [
+          "my-widget"
+        ]
+      },
+      "sourceSha256": "3609d3e82439731ccb7eafc1f0463ea60bf8b9a693acbfa14f4fba30e21faf28",
+      "filename": "custom-neighbor.vue",
+      "family": "custom-elements-context",
+      "authoredTag": "my-neighbor",
+      "tagSpan": {
+        "start": 61,
+        "end": 72
+      },
+      "authoredExpectedPacket": {
+        "filename": "custom-neighbor.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/require-component-registration",
+            "severity": "warning",
+            "message": "Component is used but not explicitly imported",
+            "start": 61,
+            "end": 72,
+            "help": "Import the component in <script setup> or register it in components option",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 0,
+        "warning_count": 1
+      },
+      "declaredPublic440RegistrationWarnings": 1
+    },
+    {
+      "id": "custom-pattern",
+      "source": "<script setup lang=\"ts\">const sentinel=1</script>\n<template><my-neighbor /></template>\n",
+      "nativeOptions": {},
+      "referenceOptions": {
+        "ignorePatterns": [
+          "^my-.*$"
+        ]
+      },
+      "compiler": {
+        "customElements": [
+          "my-*"
+        ]
+      },
+      "sourceSha256": "3609d3e82439731ccb7eafc1f0463ea60bf8b9a693acbfa14f4fba30e21faf28",
+      "filename": "custom-pattern.vue",
+      "family": "custom-elements-context",
+      "authoredTag": "my-neighbor",
+      "tagSpan": {
+        "start": 61,
+        "end": 72
+      },
+      "authoredExpectedPacket": {
+        "filename": "custom-pattern.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "declaredPublic440RegistrationWarnings": 1
+    }
+  ]
+}

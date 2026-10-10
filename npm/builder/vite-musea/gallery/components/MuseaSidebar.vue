@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { useRoute } from "vue-router";
+import { RouterLink, useRoute } from "vue-router";
 import { mdiHome, mdiPalette, mdiCheckCircleOutline, mdiChevronRight } from "@mdi/js";
 import type { ArtFileInfo } from "../../src/types/index.js";
 import MdiIcon from "./MdiIcon.vue";

@@ -17,11 +17,13 @@ linter	Linter	manifest	crates/vize_patina/Cargo.toml	20	raw_oxc	raw OXC	raw	oxc_
 linter	Linter	manifest	crates/vize_patina/Cargo.toml	20	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 linter	Linter	manifest	crates/vize_patina/Cargo.toml	20	raw_oxc	raw OXC	raw	oxc_semantic	raw	1
 linter	Linter	manifest	crates/vize_patina/Cargo.toml	20	raw_oxc	raw OXC	raw	oxc_syntax	raw	1
-linter	Linter	source	crates/vize_patina/src/context.rs	22	l0	L0	stage	vize_l0	preferred	2
-linter	Linter	source	crates/vize_patina/src/context.rs	22	carton	Carton host/compatibility	old	vize_carton	legacy	1
-linter	Linter	source	crates/vize_patina/src/context.rs	22	croquis	Croquis analysis	old	vize_croquis	legacy	3
+linter	Linter	source	crates/vize_patina/src/context.rs	19	l0	L0	stage	vize_l0	preferred	2
+linter	Linter	source	crates/vize_patina/src/context.rs	19	carton	Carton host/compatibility	old	vize_carton	legacy	1
+linter	Linter	source	crates/vize_patina/src/context.rs	19	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/context.rs	19	croquis	Croquis analysis	old	vize_croquis	legacy	3
 linter	Linter	source	crates/vize_patina/src/context/directives.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/context/eslint_directive.rs	3	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	source	crates/vize_patina/src/context/facts.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/context/facts.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2
 linter	Linter	source	crates/vize_patina/src/context/helpers.rs	9	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/context/helpers.rs	9	old_ast	old AST/parser	old	vize_relief	legacy	1
@@ -59,7 +61,8 @@ linter	Linter	source	crates/vize_patina/src/linter/category_config.rs	8	l0	L0	st
 linter	Linter	source	crates/vize_patina/src/linter/compatibility.rs	2	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/linter/config.rs	17	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	source	crates/vize_patina/src/linter/config.rs	17	carton	Carton host/compatibility	old	vize_carton	legacy	1
-linter	Linter	source	crates/vize_patina/src/linter/config/constructors.rs	36	l0	L0	stage	vize_l0	preferred	4
+linter	Linter	source	crates/vize_patina/src/linter/config.rs	17	old_ast	old AST/parser	old	vize_relief	legacy	1
+linter	Linter	source	crates/vize_patina/src/linter/config/constructors.rs	37	l0	L0	stage	vize_l0	preferred	4
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session.rs	3	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/src/linter/corsa_session.rs	33	l0	L0	stage	vize_l0	preferred	3
 linter	Linter	source	crates/vize_patina/src/linter/corsa_session/boolean.rs	9	l0	L0	stage	vize_l0	preferred	1
@@ -616,7 +619,7 @@ linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_true_at
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs	35	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	47	l0	L0	stage	vize_l0	preferred	2
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	47	old_ast	old AST/parser	old	vize_relief	legacy	4
-linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	47	croquis	Croquis analysis	old	vize_croquis	legacy	4
+linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs	47	croquis	Croquis analysis	old	vize_croquis	legacy	5
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration/art.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration/art.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	2
 linter	Linter	source	crates/vize_patina/src/rules/opinionated/vue/require_component_registration/async_setup.rs	8	l0	L0	stage	vize_l0	preferred	1
@@ -1129,6 +1132,8 @@ linter	Linter	test/dev	crates/vize_patina/tests/accessible_content.rs	4	l0	L0	st
 linter	Linter	test/dev	crates/vize_patina/tests/aria_hidden_static_focus.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/aria_hidden_static_focus.rs	4	old_ast	old AST/parser	old	vize_armature	legacy	1
 linter	Linter	test/dev	crates/vize_patina/tests/bound_slot_attribute.rs	122	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/component_registration_project_context.rs	4	l0	L0	stage	vize_l0	preferred	1
+linter	Linter	test/dev	crates/vize_patina/tests/component_registration_project_context.rs	4	old_ast	old AST/parser	old	vize_relief	legacy	1
 linter	Linter	test/dev	crates/vize_patina/tests/content_directives_history.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/css_external_target_history.rs	4	l0	L0	stage	vize_l0	preferred	1
 linter	Linter	test/dev	crates/vize_patina/tests/css_global_compound_ownership.rs	4	l0	L0	stage	vize_l0	preferred	1

@@ -78,9 +78,11 @@ fn unicode_prefix_self_closing_and_nested_kebab_tags_keep_byte_ranges() {
 }
 
 #[test]
-fn imported_self_builtin_framework_and_native_names_remain_registered() {
+fn imported_self_builtin_configured_framework_and_native_names_remain_registered() {
     check(
-        &linter().lint_sfc(REGISTERED, "RegisteredPanel.vue"),
+        &linter()
+            .with_component_registration_globals(vec!["RouterLink".into()])
+            .lint_sfc(REGISTERED, "RegisteredPanel.vue"),
         REGISTERED,
         "RegisteredPanel.vue",
         &[],

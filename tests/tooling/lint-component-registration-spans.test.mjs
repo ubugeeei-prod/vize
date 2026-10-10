@@ -110,6 +110,32 @@ await test("original component-registration CLI findings point to whole physical
       const bytes = fs.readFileSync(path.join(fixture, input));
       const source = bytes.toString("utf8");
       fs.writeFileSync(path.join(directory, filename), bytes);
+      let selectedConfig = config;
+      if (input === "RegisteredPanel.vue.txt") {
+        // Preserve the original bytes and record the new unconfigured finding
+        // before selecting the plugin registration this positive case assumes.
+        const unconfigured = capture(
+          binary,
+          ["lint", filename, "--format", "json", "--locale", "en", "--help-level", "full"],
+          directory,
+        );
+        evidence.unconfiguredRouter = { source, config, run: unconfigured };
+        persist();
+        assert.equal(unconfigured.error, null);
+        assert.equal(unconfigured.signal, null);
+        assert.equal(unconfigured.status, 0);
+        assert.equal(unconfigured.stderr, "");
+        assert.deepEqual(
+          JSON.parse(unconfigured.stdout),
+          expected(source, filename, ["router-link"]),
+        );
+        const configured = JSON.parse(config);
+        configured.linter.ruleOptions = {
+          "vue/require-component-registration": { globals: ["RouterLink"] },
+        };
+        selectedConfig = JSON.stringify(configured) + "\n";
+        fs.writeFileSync(path.join(directory, "vize.config.json"), selectedConfig);
+      }
       if (input === "crlf-panel.vue.txt") assert.equal(source, original.replaceAll("\n", "\r\n"));
       const oracle = expected(source, filename, tags);
       if (input === "my-panel.vue.txt") {
@@ -125,6 +151,7 @@ await test("original component-registration CLI findings point to whole physical
         input,
         filename,
         source,
+        config: selectedConfig,
         bytes: bytes.length,
         sha256: sha256(bytes),
         oracle,
