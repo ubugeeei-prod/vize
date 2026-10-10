@@ -18,6 +18,7 @@ export function usePalette() {
   const values = ref<Record<string, unknown>>({});
   const customProps = ref<CustomProp[]>([]);
   const deletedPaletteProps = ref<Set<string>>(new Set());
+  let loadVersion = 0;
 
   const allControls = computed<PaletteControl[]>(() => {
     const paletteControls = (palette.value?.controls ?? []).filter(
@@ -48,10 +49,13 @@ export function usePalette() {
   );
 
   async function load(artPath: string) {
+    const version = ++loadVersion;
     loading.value = true;
     error.value = null;
     try {
-      palette.value = await fetchPalette(artPath);
+      const loadedPalette = await fetchPalette(artPath);
+      if (version !== loadVersion) return;
+      palette.value = loadedPalette;
       const saved = readSavedPaletteState(artPath);
       if (saved) {
         const restored = restorePaletteState(palette.value.controls, saved);
@@ -64,10 +68,11 @@ export function usePalette() {
         deletedPaletteProps.value = new Set();
       }
     } catch (e) {
+      if (version !== loadVersion) return;
       error.value = e instanceof Error ? e.message : String(e);
       palette.value = null;
     } finally {
-      loading.value = false;
+      if (version === loadVersion) loading.value = false;
     }
   }
 
