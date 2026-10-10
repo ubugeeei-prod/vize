@@ -1,0 +1,28 @@
+{
+  "source": "6b6bf9948302031fc489025d4227653858bb7cf9",
+  "blocks": [
+    "```bash\nvp install -D vize\n```",
+    "```json\n{\n  \"scripts\": {\n    \"vize:build\": \"vize build src\",\n    \"vize:fmt\": \"vize fmt --write src\",\n    \"vize:lint\": \"vize lint --preset happy-path src\",\n    \"vize:check\": \"vize check src\",\n    \"vize:ready\": \"vize ready src\"\n  }\n}\n```",
+    "```bash\nvp run vize:lint\nvp run vize:check\nvp run vize:ready\n```",
+    "```bash\nnix run github:ubugeeei-prod/vize#vize -- --help\n```",
+    "```bash\ncargo install --path crates/vize --force --locked\n```",
+    "```bash\nvize [COMMAND]\n```",
+    "```bash\nvize build src/**/*.vue\nvize build --ssr\nvize build --profile src\n```",
+    "```bash\nvize fmt --check src\nvize fmt --write src\n```",
+    "```bash\nvize lint src\nvize lint --preset opinionated src\nvize lint --help-level short src\n```",
+    "```bash\nvize lint --preset essential --max-warnings 0 src\nvize lint --preset opinionated --help-level short src\nvize lint --cross-file --cross-file-tree src\nvize lint --strict-reactivity src\nvize lint --format ansi src\nvize lint --format plain src\nvize lint --format agent src\nvize lint --format markdown src\n```",
+    "```bash\nvize check\nvize check src\nvize check --tsconfig tsconfig.app.json\nvize check --profile src\n```",
+    "```bash\nvize check --tsconfig tsconfig.app.json src\nvize check --show-virtual-ts src/components/App.vue\nvize check --profile src\nvize check --declaration --declaration-dir dist/types\n```",
+    "```json\n{\n  \"include\": [\"src/**/*.ts\", \"src/**/*.tsx\", \"src/**/*.vue\", \"src/**/*.d.ts\"]\n}\n```",
+    "```ts\n// src/types/vue-app.d.ts\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $t: (key: string) => string;\n  }\n}\n```",
+    "```bash\nvize inspector src/App.vue\nvize inspector \"src/**/*.vue\" --target ssr\nvize inspector src --format json --output inspector-payload.json\nvize inspector src --format agent --output inspector-agent.json\n```",
+    "```bash\nvize clean\nvize clean --dry-run\nvize clean --scope node-modules\nvize clean --scope project\nvize clean --force\nvize clean path/to/project\n```",
+    "```bash\nvize ready src\nvize ready --output dist src\n```",
+    "```bash\nvize upgrade\nvize upgrade --dry-run\n```",
+    "```bash\nvp install -D vize@latest\n```",
+    "```bash\nvize musea --help\nvize musea serve --port 6006\nvize musea new\n```",
+    "```bash\nvp exec vize musea\nvp exec vize musea --build\n```",
+    "```bash\nvize lsp\nvize lsp --port 9527\nvize ide vscode\nvize ide zed\n```",
+    "```bash\nvize --help\nvize --version\nvize <command> --help\n```"
+  ]
+}

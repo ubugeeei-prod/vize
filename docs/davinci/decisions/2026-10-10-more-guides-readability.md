@@ -248,3 +248,35 @@ The full-document/table/diagram regression and historical-source link regression
 the preceding source. Fresh exact-source Check, complete 28-route desktop/mobile Docs Actions,
 and deployed acceptance remain required. This layer is prepared independently of the ready
 native Stack prefix; other More bodies and site-wide acceptance keep #8365 open.
+
+## Japanese CLI command body, with configuration admission kept separate
+
+A genuine sixth worktree reviews the Japanese command body against the current English reference.
+The old body rendered Rust as `錆び`, broke the preset table, omitted Doctor and newer command
+rows, and did not explain the formatter's unsupported YAML/Markdown behavior. Natural prose now
+covers the actual typechecker/project path, Doctor analysis scope and exit statuses, inspector
+outputs, cleanup ownership, staged ready behavior, and current entry-point support. The complete
+23 existing code fences remain byte-for-byte intact, including the additional lint output, type
+augmentation, and npm Musea examples; all 23 incoming native fragments still resolve exactly once.
+The command and option tables retain every current source entry, and the corrected preset table
+has two cells per row. The Japanese guide is 378 lines, below its inherited 395-line budget.
+
+This preparation does not change the existing shared-settings table row. The separate #8447
+configuration journey couples that row to product-source admission. Its replacement with the
+Vite-config reference must follow the actual supported source integration, even though the link's
+fragment already exists on the incoming base. The translation marker explicitly excludes this
+unchanged configuration entry; eventual integration must reconcile the complete and partial
+review scopes. These locally prepared changes do not modify the five qualifying Stack heads or
+claim future Vite configuration auto-discovery, defaults, release, or deployed acceptance.
+
+The published-example retention and current-command check, and the legacy-fragment/terminology
+check, both failed before this review and now pass. The pinned native renderer separately preserves
+all incoming fragments and adds Doctor. Fresh exact-source Actions and the complete desktop/mobile
+More render remain required before this genuine child can enter a ready native Stack prefix.
+Remaining More bodies, the admitted configuration boundary, and site-wide deployed acceptance
+keep #8365 open.
+
+The first fresh composed Docs run rejected the Doctor link with HTTP 404: this source has no
+Japanese Doctor page. The CLI now labels and links the existing English reference. The original
+full browser-link assertion remains unchanged; every incoming fence and native fragment is retained.
+Layers six through eight require fresh source qualification after this correction.
