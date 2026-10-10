@@ -185,3 +185,5 @@ callers resolve that origin for execution; the module-link snapshot retains its
 existing raw values and workspace-root path policy. The original whole law,
 concurrent complete-snapshot control, and actual relative-config JSON-RPC
 vectors must all pass. No historical oracle or provider budget changes.
+
+The final hosted native proof uses `project-config-native.yml`: pin the actual PR head, build the production CLI, retain its existing source receipt, and run the entire unchanged `project_config_cli` target with required Corsa and decoded JSON-RPC/terminal capture. Ordinary PR Rust shards intentionally disable native execution and cannot supply this evidence. Keep their policy and the separate immutable native-phase recipe unchanged. All nested native cases, original formatting and explicit controls must run; historical local captures remain historical.
