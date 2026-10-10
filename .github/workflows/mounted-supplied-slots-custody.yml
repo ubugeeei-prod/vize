@@ -1,0 +1,112 @@
+name: Mounted supplied-slots diagnostic custody
+run-name: Supplied-slots custody @ ${{ github.sha }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  supplied-slots:
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 40
+    env:
+      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
+      VIZE_NUXT_CONFIG_ITERATIONS: "100"
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - name: Snapshot authored tools and verify the literal observed source
+        run: |
+          set -euo pipefail
+          tools="$RUNNER_TEMP/supplied-slots-tools"
+          custody="$RUNNER_TEMP/supplied-slots-custody"
+          mkdir -p "$tools/bin" "$custody/cores"
+          git rev-parse HEAD HEAD^{tree} > "$custody/orchestration-source.txt"
+          for file in mounted-child-custody.cjs mounted-supplied-slots-custody.py mounted-supplied-slots-custody.cjs; do
+            cp "tools/support/compat/github/$file" "$tools/$file"
+            cmp "tools/support/compat/github/$file" "$tools/$file"
+          done
+          (cd "$tools" && sha256sum mounted-child-custody.cjs mounted-supplied-slots-custody.py mounted-supplied-slots-custody.cjs) > "$custody/tools.sha256"
+          (cd "$tools" && echo '03f3c33d687c37c0841db5d2b2093259060f79bcc4232f9381f20e361c244319  mounted-child-custody.cjs' | sha256sum --check)
+          git fetch --no-tags origin f2ade1f7ca6dda81e14a75b46cb43980bd9762e2
+          git checkout --detach f2ade1f7ca6dda81e14a75b46cb43980bd9762e2
+          python3 "$tools/mounted-supplied-slots-custody.py" verify-source > "$custody/observed-source.json"
+          (cd "$tools" && sha256sum --check "$custody/tools.sha256")
+          echo "VIZE_MOUNTED_CHILD_CUSTODY=$custody" >> "$GITHUB_ENV"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: true
+          run-install: false
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, components: llvm-tools-preview }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-moonbit
+      - uses: ./.github/actions/setup-rust-script
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: coverage-source
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Install the original dependencies
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Install the original Pkl runtime
+        run: npm install --global @pkl-community/pkl@0.27.2
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with: { tool: cargo-llvm-cov }
+      - name: Run the original supplied-slot test once with custody
+        run: |
+          set -euo pipefail
+          tools="$RUNNER_TEMP/supplied-slots-tools"
+          custody="$VIZE_MOUNTED_CHILD_CUSTODY"
+          (cd "$tools" && sha256sum --check "$custody/tools.sha256")
+          python3 "$tools/mounted-supplied-slots-custody.py" verify-source
+          for name in RUST_TEST_THREADS CARGO_BUILD_JOBS VIZE_TEST_REQUIRE_TSGO VIZE_TEST_DISABLE_TSGO VIZE_VUE_RUNTIME_DEVTOOLS NODE_ENV; do
+            test -z "${!name+x}"
+          done
+          node --version | tee "$custody/node-version.txt"
+          rustc --version --verbose | tee "$custody/rust-version.txt"
+          cargo llvm-cov --version | tee "$custody/llvm-cov-version.txt"
+          test "$(node --version)" = v24.14.0
+          test "$(rustc --version | cut -d ' ' -f 2)" = 1.99.0
+          test "$(cargo llvm-cov --version)" = 'cargo-llvm-cov 0.8.7'
+          export VIZE_SUPPLIED_SLOTS_NODE="$(command -v node)"
+          chmod +x "$tools/mounted-supplied-slots-custody.py"
+          ln -s ../mounted-supplied-slots-custody.py "$tools/bin/node"
+          ulimit -c unlimited
+          sudo sysctl -w "kernel.core_pattern=$custody/cores/core.%p" > "$custody/core-pattern.txt"
+          export PATH="$tools/bin:$PATH"
+          mkdir -p target/llvm-cov
+          set +e
+          cargo llvm-cov --workspace --test davinci_mounted_behavior --json --summary-only --output-path target/llvm-cov/source-summary.json -- davinci_mounted_behavior::slots::mounted_supplied_slots_match_the_lean_reference --exact 2>&1 | tee "$custody/original-tests.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "$status" > "$custody/cargo.status"
+          exit "$status"
+      - name: Retain core backtraces and reject incomplete custody
+        if: ${{ always() }}
+        run: |
+          set -euo pipefail
+          custody="$RUNNER_TEMP/supplied-slots-custody"
+          shopt -s nullglob
+          cores=("$custody/cores/"core.*)
+          if (( ${#cores[@]} != 0 )); then
+            sudo apt-get update
+            sudo apt-get install -y gdb
+          fi
+          python3 "$RUNNER_TEMP/supplied-slots-tools/mounted-supplied-slots-custody.py" validate "$custody" 2>&1 | tee "$custody/validation.log"
+      - name: Preserve every original child outcome and diagnostic artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: supplied-slots-custody-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/supplied-slots-custody/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
