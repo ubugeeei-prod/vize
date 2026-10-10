@@ -169,7 +169,7 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
 #[test]
 fn native_array_projection_retains_global_settings_and_ordered_root_scopes() {
     let project = tempfile::tempdir().unwrap();
-    std::fs::write(project.path().join("vite.config.mjs"), "export default {root:'app',vize:[{formatter:{singleQuote:true},linter:{preset:'essential'}},{basePath:'ui',files:['*.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]};").unwrap();
+    std::fs::write(project.path().join("vite.config.mjs"), "export default {root:'app',vize:[{__vizeProjectRoot:'decoy',formatter:{singleQuote:true},linter:{preset:'essential'}},{basePath:'ui',files:['*.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]};").unwrap();
     let loaded = super::try_load_project_config_with_source(Some(project.path())).unwrap();
     let root = project.path().canonicalize().unwrap().join("app");
     assert_eq!(loaded.project_root.as_deref(), Some(root.as_path()));

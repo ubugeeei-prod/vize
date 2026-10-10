@@ -23,6 +23,9 @@ projection uses Node's path helpers and adds no dependency on Vite or its plugin
 execution. A Vite export with an entry array uses the existing pure Rust public
 normalizer before native deserialization, retaining global values and ordered
 scoped entries without a native addon dependency in config evaluation.
+For array exports, the final unscoped tool override retains the selected host
+root, so an authored extension key in an earlier entry cannot redirect the CLI
+to a different project.
 
 Ignore strings remain authored strings, including ordered `!` negation and
 escaped glob metacharacters. Global ignore projections carry the trusted Vite
