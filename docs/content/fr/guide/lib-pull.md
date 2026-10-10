@@ -2,7 +2,7 @@
 title: Distribution des sources (vize lib)
 ---
 
-<!-- Generated translation; source: guide/lib-pull.md -->
+<!-- Reviewed translation; source: guide/lib-pull.md; scope: shared native configuration and init -->
 
 # Distribution des sources (`vize lib`)
 
@@ -72,22 +72,26 @@ Les fichiers copiés conservent la disposition du registre (`families/form/ratin
 éléments continuent de fonctionner sans réécriture. Le répertoire est choisi par :
 
 1. `--dir <dir>` (doit rester dans le projet),
-2. la section `lib` de `vize.config.*`,
+2. les options partagées `vize.lib` de votre configuration Vite existante,
 3. la valeur par défaut du registre : `src/components/vize` (ui) et `src/composables/vize` (composable).
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  lib: {
-    uiDir: "src/ui/vendor",
-    composableDir: "src/composables/vendor",
-    // dir: "src/vendor",        // repli commun aux deux types
-    // lockfile: "vize-lib.lock.json",
+  vize: {
+    lib: {
+      uiDir: "src/ui/vendor",
+      composableDir: "src/composables/vendor",
+      // dir: "src/vendor",
+      // lockfile: "vize-lib.lock.json",
+    },
   },
 });
 ```
+
+Une section `lib` dans une configuration dédiée reste prise en charge ; voir la priorité et la disponibilité actuelle dans [Configuration](./configuration.md).
 
 Une fois un type copié dans un répertoire, les copies suivantes de ce type le réutilisent ; un `--dir`
 contradictoire est refusé plutôt que de scinder le graphe de dépendances.
@@ -102,12 +106,9 @@ vize lib init --dry-run   # affiche la structure détectée et la modification d
 vize lib init             # l'écrit
 ```
 
-`init` détecte le répertoire des sources (`src/`, ou `app/` pour les projets Nuxt 4) et TypeScript, puis écrit
-`lib.uiDir` / `lib.composableDir`. Il crée `vize.config.json` en l'absence de configuration, ajoute une section
-`lib` à un `vize.config.json` existant sans toucher au reste du fichier, et affiche un extrait pour
-`vize.config.ts` / `.pkl` au lieu de modifier du code. Une section `lib` existante est conservée sauf avec
-`--force`. Si `tsconfig.json` n'active pas `allowImportingTsExtensions`, `init` le signale : les sources copiées
-importent leurs voisins sous la forme `./x.ts`.
+`init` détecte le répertoire source (`src/`, ou `app/` avec Nuxt 4) et TypeScript. En l'absence de configuration, il écrit `vize.lib.uiDir` et `vize.lib.composableDir` dans un nouveau `vite.config.mjs`. Il ne modifie jamais une configuration Vite existante : si des options restent à ajouter, il affiche un extrait `vize.lib`.
+
+Les configurations dédiées gardent leur comportement : ajout de `lib` dans `vize.config.json`, ou affichage d'un extrait pour les fichiers de code et Pkl. Une section `lib` existante est conservée ; `--force` peut la remplacer dans une configuration JSON dédiée. Si `tsconfig.json` ne contient pas `allowImportingTsExtensions`, `init` le signale : les sources importent leurs voisines sous la forme `./x.ts`.
 
 ## Vérifier les mises à jour : `outdated`
 

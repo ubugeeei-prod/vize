@@ -1,12 +1,14 @@
 # Formatter line endings
 
-Set `formatter.endOfLine` in `vize.config.*` for CLI and editor formatting:
+Set `fmt.vize.endOfLine` in your existing Vite+ configuration:
 
 ```ts
-import { defineConfig } from "vize";
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  formatter: { endOfLine: "auto" },
+  fmt: {
+    vize: { endOfLine: "auto" },
+  },
 });
 ```
 
@@ -30,3 +32,5 @@ const again = formatSfc(result.code, { endOfLine: "auto" });
 Node rejects unsupported mode strings with `InvalidArg` and non-string values
 with `StringExpected`. Both diagnostics name the `endOfLine` field. Formatting
 returns the existing `code` and `changed` fields.
+
+For CLI/editor sharing and optional dedicated settings, see [Configuration](./configuration.md), including the current release availability.

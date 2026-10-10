@@ -18,11 +18,15 @@ It configures five things, each of which you can take or leave:
 | oxlint plugin    | `oxlint-plugin-vize`, in the file your lint command actually reads |
 | vite plugin      | `@vizejs/vite-plugin` in `vite.config.*`                           |
 | nuxt module      | `@vizejs/nuxt` in `nuxt.config.*`                                  |
-| fmt              | `vize.config.ts` formatter block and the `vize:fmt` scripts        |
-| typecheck        | `vize.config.ts` type-checker block and the `vize:check` script    |
+| fmt              | project settings and formatter defaults, plus `vize:fmt` scripts |
+| typecheck        | the TypeScript project and the `vize:check` script |
 | editor extension | a `.vscode/extensions.json` recommendation                         |
 
 The vite plugin and the nuxt module are the same choice: `init` detects which one your project needs.
+
+Init preserves existing configuration and does not create a dedicated Vize file.
+See [Configuration](./configuration.md) for shared settings and the current
+release availability of this setup behavior.
 
 ## What It Detects
 
@@ -144,10 +148,9 @@ vpx vize init --yes --lint --vite --fmt --typecheck --editor
 [vize init] plan:
   lint      configured Vite+ detected, so `vp lint` reads the `lint` block in vite.config.ts and never reads .oxlintrc.json; writes vite.config.ts
   bundler   configured adds vize() to vite.config.ts
-  fmt       configured writes vize.config.ts
-  typecheck configured writes vize.config.ts
+  fmt       configured uses project settings and formatter defaults
+  typecheck configured uses tsconfig.json and project settings
   editor    configured writes .vscode/extensions.json recommending ubugeeei.vize
-[vize init] would create vize.config.ts
 [vize init] would create .vscode/extensions.json
 [vize init] would update vite.config.ts
 [vize init] would update package.json
@@ -164,8 +167,8 @@ every file byte-identical:
 [vize init] plan:
   lint      unchanged  Vite+ detected, so `vp lint` reads the `lint` block in vite.config.ts and never reads .oxlintrc.json
   bundler   unchanged  vite.config.ts already uses @vizejs/vite-plugin
-  fmt       unchanged  vize.config.ts already exists and was left unchanged
-  typecheck unchanged  vize.config.ts already exists and was left unchanged
+  fmt       unchanged  uses project settings and formatter defaults
+  typecheck unchanged  uses tsconfig.json and project settings
   editor    unchanged  .vscode/extensions.json already recommends ubugeeei.vize
 [vize init] nothing to do; the project is already configured
 ```
@@ -244,5 +247,5 @@ package-manager detection, a dry run, and a non-interactive mode, over the same 
 
 - [Static Analysis](./static-analysis.md) for the lint and type-checking model
 - [Oxlint Plugin](./oxlint.md) for preset and settings reference
-- [Configuration](./configuration.md) for everything `vize.config.ts` accepts
+- [Configuration](./configuration.md) for shared project settings
 - [CLI](./cli.md) for the rest of the commands

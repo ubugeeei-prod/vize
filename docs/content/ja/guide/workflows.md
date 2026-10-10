@@ -4,6 +4,8 @@ title: 日常の開発ワークフロー
 
 <!-- Reviewed translation; source: guide/workflows.md -->
 
+<span id="ユーザーワークフロー"></span>
+
 # 日常の開発ワークフロー
 
 Vize のインストールから設定、フォーマット、lint、型チェック、コンパイルまでを順に説明します。
@@ -44,27 +46,28 @@ package.json にスクリプトを登録すると、ローカルと CI で同じ
 
 ## 共通の設定を用意する
 
-デフォルトでは不十分な場合は、プロジェクト ルートに `vize.config.ts` を作成します。
+既定値を変更する場合は、既存の `vite.config.*` のトップレベルの `vize` にネイティブ設定を追加します。検索規則、次回リリースの対応状況、必要な場合に使える専用形式は[設定ガイド](./configuration.md)を参照してください。
 
 ```ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  formatter: {
-    printWidth: 100,
+// vite.config.ts
+export default {
+  vize: {
+    formatter: {
+      printWidth: 100,
+    },
+    linter: {
+      preset: "happy-path",
+    },
+    typeChecker: {
+      enabled: true,
+      strict: true,
+      tsconfig: "tsconfig.json",
+    },
+    vite: {
+      scanPatterns: ["src/**/*.vue"],
+    },
   },
-  linter: {
-    preset: "happy-path",
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-    tsconfig: "tsconfig.json",
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
+};
 ```
 
 フラットなモノリポジトリエントリ、PKL、JSON、コンパイラオプション、Vue の型解決の
@@ -72,7 +75,7 @@ export default defineConfig({
 
 ## フォーマット
 
-CI ではチェック モードを使用し、ローカルでは書き込みモードを使用します。
+CI では検査モード、ローカルでは書き込みモードを使います。
 
 ```bash
 vp run vize:fmt
@@ -129,17 +132,19 @@ CI で同じパッケージ スクリプトを使用します。
 - run: vp run vize:check
 ```
 
-プロジェクトが Vize コンパイラー出力を直接使用する場合にのみ、`vize:build` をゲート内に保持します。のために
-Vite アプリケーションでは、通常のアプリケーションのビルドでプラグインが実行されます。
+Vize のコンパイル結果を直接使うプロジェクトでは、CI でも `vize:build` を実行します。
+Vite アプリでは、通常のアプリビルドでプラグインを検証できます。
 
-## デバッグの失敗
+<span id="デバッグの失敗"></span>
 
-障害が不明瞭な場合:
+## 問題の切り分け
 
-- `--format json` を再実行して、安定した診断フィールドを検査します。
+問題の原因が分からない場合は、次の情報を確認します。
+
+- `--format json` で再実行し、診断の各フィールドを確認します。
 - 遅いフェーズを見つけるには、`check`、`lint`、または `build` で `--profile` を使用します。
-- コンパイラの不一致に対して、`vize inspector` を使用してインスペクタ ペイロードを作成します。
-- 修正をリクエストする場合は、最小の `.vue` ファイルまたはプロジェクト スライスを含めます。
+- コンパイル結果に問題がある場合は、`vize inspector` で調査用のペイロードを作成します。
+- 不具合を報告する場合は、再現に必要な最小の `.vue` ファイルやプロジェクトの一部を添えます。
 
-[テストとフィードバック](./testing.md) および [トラブルシューティング](./troubleshooting.md) ページの内容は次のとおりです。
-レポート、現実世界の設備、および一般的な環境問題。
+[テストとフィードバック](./testing.md)には、不具合報告と実プロジェクトを使った検証をまとめています。
+よくある環境の問題は[トラブルシューティング](./troubleshooting.md)を参照してください。
