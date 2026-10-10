@@ -1,0 +1,26 @@
+{
+  "palette": {
+    "title": "Replaceable component",
+    "groups": [],
+    "json": "",
+    "typescript": "",
+    "controls": [
+      {
+        "name": "label",
+        "control": "text",
+        "default_value": "Original label",
+        "options": [],
+        "required": false
+      },
+      {
+        "name": "tone",
+        "control": "text",
+        "default_value": "primary",
+        "options": [],
+        "required": false
+      }
+    ]
+  },
+  "replacement": { "name": "tone", "control": "number", "default_value": 7 },
+  "editedValue": 17
+}

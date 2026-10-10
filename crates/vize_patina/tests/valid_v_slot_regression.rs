@@ -8,6 +8,37 @@ const CASES: &str = include_str!(
 const CONFIG: &str = include_str!(
     "../../../tests/_fixtures/differential/lint/slot-directive-validity-8142/config.json"
 );
+const DYNAMIC: &str = include_str!(
+    "../../../tests/_fixtures/differential/lint/slot-dynamic-bindings-8142/additions.json"
+);
+
+fn dynamic_addition(case: &Value) -> Option<Value> {
+    let additions: Value = serde_json::from_str(DYNAMIC).unwrap();
+    assert_eq!(additions["additions"].as_array().unwrap().len(), 8);
+    let addition = additions["additions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|a| a["id"] == case["id"])?;
+    assert_eq!(addition["sourceSha256"], case["sourceSha256"]);
+    let diagnostic = addition["diagnostic"].clone();
+    let source = case["source"].as_str().unwrap();
+    let start = diagnostic["start"].as_u64().unwrap() as usize;
+    let end = diagnostic["end"].as_u64().unwrap() as usize;
+    assert_eq!(source.get(start..end), addition["authored"].as_str());
+    Some(diagnostic)
+}
+
+fn current_packet(case: &Value) -> Value {
+    let mut packet = case["after"].clone();
+    if let Some(addition) = dynamic_addition(case) {
+        let diagnostics = packet["diagnostics"].as_array_mut().unwrap();
+        diagnostics.push(addition);
+        diagnostics.sort_by_key(|d| (d["start"].as_u64(), d["end"].as_u64()));
+        packet["error_count"] = json!(packet["error_count"].as_u64().unwrap() + 1);
+    }
+    packet
+}
 
 fn configured_linter() -> Linter {
     let config: Value = serde_json::from_str(CONFIG).unwrap();
@@ -63,7 +94,7 @@ fn complete_packets_match_twice_and_preserve_all_foreign_findings() {
         let filename = case["filename"].as_str().unwrap();
         for _repeat in [1, 2] {
             let actual = complete(&linter.lint_sfc(source, filename));
-            assert_eq!(actual, case["after"], "{}", case["id"]);
+            assert_eq!(actual, current_packet(case), "{}", case["id"]);
         }
     }
 }
@@ -74,9 +105,17 @@ fn only_declared_diagnostics_are_added_at_exact_authored_byte_ranges() {
     let linter = configured_linter();
     let mut additions = 0;
     let mut unchanged = 0;
+    let mut dynamic_additions = 0;
     for case in corpus["cases"].as_array().unwrap() {
         let source = case["source"].as_str().unwrap();
         let mut actual = complete(&linter.lint_sfc(source, case["filename"].as_str().unwrap()));
+        if let Some(expected) = dynamic_addition(case) {
+            let diagnostics = actual["diagnostics"].as_array_mut().unwrap();
+            let index = diagnostics.iter().position(|d| d == &expected).unwrap();
+            diagnostics.remove(index);
+            actual["error_count"] = json!(actual["error_count"].as_u64().unwrap() - 1);
+            dynamic_additions += 1;
+        }
         let added = case["added"].as_array().unwrap();
         for expected in added {
             let diagnostics = actual["diagnostics"].as_array_mut().unwrap();
@@ -99,6 +138,7 @@ fn only_declared_diagnostics_are_added_at_exact_authored_byte_ranges() {
     }
     assert_eq!(additions, 8);
     assert_eq!(unchanged, 39);
+    assert_eq!(dynamic_additions, 8);
 }
 
 #[test]

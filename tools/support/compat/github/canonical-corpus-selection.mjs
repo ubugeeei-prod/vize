@@ -18,6 +18,8 @@ const inputs = [
   /^tools\/(?:commands\/fixtures|support\/compat\/fixtures|benchmarks)\//,
   /^tools\/support\/compat\/davinci\/lib\/corpus-baseline-contract\.mjs$/,
   /^tools\/support\/compat\/github\/(?:canonical-corpus-(?:selection|identity|inventory|hydration|observer|workers)|comparison-base|plan-source-checks|require-needs-success|prepare-vue-benchmarks)\.mjs$/,
+  /^tools\/support\/compat\/github\/canonical-corpus-(?:native-walk|logical-walk|io-probe)\.mjs$/,
+  /^tools\/support\/compat\/github\/canonical-corpus-io-probe\.rs$/,
   /^tools\/support\/compat\/github\/(?:comparison-base|plan-source-checks)\.ts$/,
   /^tools\/support\/compat\/github\/(?:require-needs-success|require-rust-tier)\.ts$/,
 ];

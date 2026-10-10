@@ -35,7 +35,15 @@ const toolbar = [
   },
   { id: "locale", title: "Locale", type: "select" as const, options: ["en", "ja"], default: "en" },
 ];
-const observations: unknown[] = [];
+type Observation = {
+  phase: string;
+  frames?: Awaited<ReturnType<typeof frames>>;
+  documents?: Awaited<ReturnType<typeof documentIdentity>>;
+  refusal?: Awaited<ReturnType<typeof documentIdentity>>;
+  argumentCounts?: unknown[];
+  [key: string]: unknown;
+};
+const observations: Observation[] = [];
 const errors: string[] = [];
 const browser = await chromium.launch({ headless: true });
 const base = "/__musea__/";
@@ -281,6 +289,22 @@ try {
       2,
     ) + "\n",
     { flag: "wx" },
+  );
+  console.log(
+    JSON.stringify({
+      issue: 8329,
+      version,
+      packages,
+      loaded,
+      phases: observations.map((observation) => ({
+        phase: observation.phase,
+        control: observation.control,
+        frameCount: observation.frames?.length ?? observation.argumentCounts?.length,
+        documentIdentity: observation.documents ?? observation.refusal,
+        argumentCounts: observation.argumentCounts,
+      })),
+      success: true,
+    }),
   );
 } finally {
   await browser.close();

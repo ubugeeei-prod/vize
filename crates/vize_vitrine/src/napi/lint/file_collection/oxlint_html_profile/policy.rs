@@ -9,10 +9,11 @@ use vize_l0::{String, ToCompactString, cstr};
 
 use super::{Origin, Original, Refusal, RefusalKind, Request, Selection, SourceRole, envelope};
 
-pub(super) fn root_config(
+pub(super) fn root_config<T>(
     request: &Request<'_>,
     selection: &mut Selection,
-) -> Result<Gitignore, Refusal> {
+    decode: impl FnOnce(&Path, &[u8]) -> Result<(serde_json::Value, T), Refusal>,
+) -> Result<(Gitignore, T), Refusal> {
     let path = request.root_json;
     if !path.is_absolute()
         || path.parent() != Some(request.cwd)
@@ -43,8 +44,7 @@ pub(super) fn root_config(
         details,
         original_bytes: Some(bytes.clone()),
     };
-    let value: serde_json::Value = serde_json::from_slice(bytes)
-        .map_err(|error| invalid(RefusalKind::RootJsonSyntax, error.to_compact_string()))?;
+    let (value, plan) = decode(path, bytes)?;
     let Some(object) = value.as_object() else {
         return Err(invalid(
             RefusalKind::RootJsonSyntax,
@@ -88,6 +88,7 @@ pub(super) fn root_config(
     }
     builder
         .build()
+        .map(|matcher| (matcher, plan))
         .map_err(|error| invalid(RefusalKind::IgnoreSyntax, error.to_compact_string()))
 }
 

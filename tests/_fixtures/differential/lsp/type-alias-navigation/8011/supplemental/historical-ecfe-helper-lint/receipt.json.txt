@@ -1,0 +1,16 @@
+{
+  "schema": "vize-lsp-installed-alias-helper-failure-v1",
+  "pullRequest": 8291,
+  "sourceHead": "ecfe7550b7c2f0d5a8a73b1ec04a8f271c8fe6ea",
+  "compiledMerge": "777147e2b114416a7abf7df8e29406bbdfa62b8a",
+  "workflowRun": 37743865312,
+  "job": 113200629321,
+  "conclusion": "failure",
+  "completeJobLog": {
+    "path": "check-js.log.txt.gz",
+    "gzipSha256": "59a43698eebdf61a39de3200aa33c15423946cb1d85b15d99ebc1bd92562ab98",
+    "rawSha256": "5eaab38f850205df4ddd2b685398d0bff4419b642cc2a6d7203e99ee3d89edec",
+    "rawBytes": 81495
+  },
+  "scope": "Real zero-warning helper lint rejection; no public provider or installed32 execution"
+}

@@ -1,0 +1,39 @@
+{
+  "old": {
+    "title": "Previous component",
+    "groups": [],
+    "json": "",
+    "typescript": "",
+    "controls": [
+      {
+        "name": "oldLabel",
+        "control": "text",
+        "default_value": "Previous default",
+        "options": [],
+        "required": false
+      }
+    ]
+  },
+  "current": {
+    "title": "Selected component",
+    "groups": [],
+    "json": "",
+    "typescript": "",
+    "controls": [
+      {
+        "name": "label",
+        "control": "text",
+        "default_value": "Selected default",
+        "options": [],
+        "required": false
+      },
+      {
+        "name": "tone",
+        "control": "text",
+        "default_value": "primary",
+        "options": [],
+        "required": false
+      }
+    ]
+  }
+}

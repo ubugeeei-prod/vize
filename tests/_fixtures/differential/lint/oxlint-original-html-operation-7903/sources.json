@@ -1,0 +1,18 @@
+{
+  "sha256": {
+    "Warning.html": "27edc94e44176a9ae0b41c8f05ff2a0d5c6e7eb8ea48f29de0d5cb32916d8677",
+    "Error.htm": "3f5ef76c0dd11722f55fef7c60c57b46324a67954daf433d1af9ec8b5d177aa6",
+    "Clean.html": "fd0c4251846869aed461c9237375d82a69ebd48f6bc64cb59e8d2b875239fdd7",
+    "Scripted.html": "3efaf36343cbf89897c69491e519604f562a111824b5ac528b41510fe8ecf122",
+    "UnicodeCrLf.html": "695302427320e9d6dc864dc5799fa492b10bd274b88efd78092740f2223b29ff",
+    "Options.html": "79b21d9dd6b287e64facc3bafcf2002daa4dd6828adc7edfa2ac31c7cd3b4aa9",
+    "Directive.html": "6fbe891fb70404b69ff2eb53912eb80bfa50853bbdc5238379c2f6ebe3bc6537",
+    "InvalidUtf8.html": "5015f77a6da853cab2dfda7bb50c4f13b5dab5c2459606eb3def50119fa01786",
+    "OriginalAppPanel.vue.txt": "f5db0a2e942f06a6e8a9e32652fd8f35860792459ac0d40effb3e7c373beafe8",
+    "OriginalStandalone.html.txt": "02f4d43714e5381744d1a1340db3271620f8b6f0823d34295a7e227672fd5ba4"
+  },
+  "copies": {
+    "OriginalAppPanel.vue.txt": "../oxlint-original-ignore-7903/AppPanel.vue.txt",
+    "OriginalStandalone.html.txt": "../oxlint-script-safe-carrier-7903/Standalone.html.txt"
+  }
+}

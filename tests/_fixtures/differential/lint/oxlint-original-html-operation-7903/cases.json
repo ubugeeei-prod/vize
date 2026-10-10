@@ -1,0 +1,1622 @@
+{
+  "profiles": {
+    "Oxlint178": "c42d6397eab5b2d5bb2bd6746c57bc2a9cad21bd",
+    "Oxlint186": "2ae2939bb2fd98796393658b21556b2a2467e047"
+  },
+  "cases": [
+    {
+      "name": "html-warning",
+      "rationale": "HTML-only original must produce an actual native warning.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "html-error",
+      "rationale": "Native duplicate-attribute errors retain original spans and full help.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-duplicate-attributes\":\"error\"}}\n",
+      "files": {
+        "src/Live.htm": "@Error.htm"
+      },
+      "selected": [
+        {
+          "path": "src/Live.htm",
+          "packet": "duplicate-error"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-duplicate-attributes",
+            "severity": "error",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "html-clean",
+      "rationale": "Selected clean HTML is still executed exactly once.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Clean.html": "@Clean.html"
+      },
+      "selected": [
+        {
+          "path": "src/Clean.html",
+          "packet": "empty"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "scripted-html",
+      "rationale": "Host-owned debugger is not run as a native Vize rule; HTML directive remains native.",
+      "target": ".",
+      "root": "{\"options\":{\"typeAware\":true},\"rules\":{\"vize/vue/no-v-html\":\"warn\",\"no-debugger\":\"error\"}}\n",
+      "files": {
+        "src/Scripted.html": "@Scripted.html"
+      },
+      "selected": [
+        {
+          "path": "src/Scripted.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "unicode-crlf-engine-order",
+      "rationale": "Byte offsets include Unicode and CRLF; engine order is not resorted to source order.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":1,\"vize/vue/no-duplicate-attributes\":2}}\n",
+      "files": {
+        "src/Unicode.html": "@UnicodeCrLf.html"
+      },
+      "selected": [
+        {
+          "path": "src/Unicode.html",
+          "packet": "unicode-crlf-engine-order"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-duplicate-attributes",
+            "severity": "error",
+            "active": true,
+            "authored_options": []
+          },
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "same-basename-originals",
+      "rationale": "Equal basenames in distinct original directories remain separate ordered executions.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "b/Live.html": "@Warning.html",
+        "a/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "a/Live.html",
+          "packet": "warning"
+        },
+        {
+          "path": "b/Live.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "mixed-both-live",
+      "rationale": "Literal original Vue remains host-owned; genuine live HTML is retained.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/AppPanel.vue": "@OriginalAppPanel.vue.txt",
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "mixed-vue-live-html-excluded",
+      "rationale": "Excluded HTML must not make live original Vue a mixed-target refusal.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        ".gitignore": "dist/\n",
+        "src/AppPanel.vue": "@OriginalAppPanel.vue.txt",
+        "dist/Built.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "mixed-html-live-vue-excluded",
+      "rationale": "Excluded original Vue does not exclude a separate live HTML original.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        ".gitignore": "dist/\n",
+        "dist/AppPanel.vue": "@OriginalAppPanel.vue.txt",
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "mixed-both-excluded",
+      "rationale": "Both excluded roles yield no native executions and no invented clean Vue result.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        ".gitignore": "dist/\n",
+        "dist/AppPanel.vue": "@OriginalAppPanel.vue.txt",
+        "dist/Built.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "all-three-ignore-sources",
+      "rationale": "VCS, root JSON and ordered CLI patterns independently remove their original paths together.",
+      "target": ".",
+      "root": "{\"ignorePatterns\":[\"vendor/**\"],\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        ".gitignore": "dist/\n",
+        "src/Live.html": "@Warning.html",
+        "dist/Built.html": "@Warning.html",
+        "vendor/Configured.html": "@Warning.html",
+        "src/Skipped.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "cli": [
+        "src/Skipped.html"
+      ]
+    },
+    {
+      "name": "vcs-ignore-alone",
+      "rationale": "Discovery respects original VCS ignore.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        ".gitignore": "dist/\n",
+        "src/Live.html": "@Warning.html",
+        "dist/Built.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "root-ignore-alone",
+      "rationale": "Root configuration is matched on original HTML paths.",
+      "target": ".",
+      "root": "{\"ignorePatterns\":[\"vendor/**\"],\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html",
+        "vendor/Configured.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "cli-ignore-alone",
+      "rationale": "Ordered CLI pattern strings are used for original paths.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html",
+        "src/Skipped.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "cli": [
+        "src/Skipped.html"
+      ]
+    },
+    {
+      "name": "explicit-vcs-profile-difference",
+      "rationale": "Explicit ignored original is rejected in 1.78 and eligible in 1.86.",
+      "target": "dist/Built.html",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        ".gitignore": "dist/\n",
+        "dist/Built.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "selected_186": [
+        {
+          "path": "dist/Built.html",
+          "packet": "warning"
+        }
+      ],
+      "root_decision": "VcsExcluded",
+      "root_decision_186": "Eligible"
+    },
+    {
+      "name": "explicit-config-excluded",
+      "rationale": "Explicit paths remain subject to original root ignorePatterns on both profiles.",
+      "target": "vendor/Configured.html",
+      "root": "{\"ignorePatterns\":[\"vendor/**\"],\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "vendor/Configured.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "explicit-cli-excluded",
+      "rationale": "The actual explicit-file CLI prefilter excludes both profiles.",
+      "target": "src/Skipped.html",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Skipped.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "cli": [
+        "src/Skipped.html"
+      ],
+      "root_decision": "CliOrCustomExcluded"
+    },
+    {
+      "name": "discovery-no-ignore",
+      "rationale": "No-ignore disables CLI/custom ignore, preserves VCS and root JSON policy.",
+      "target": ".",
+      "root": "{\"ignorePatterns\":[\"vendor/**\"],\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        ".gitignore": "dist/\n",
+        ".eslintignore": "src/Custom.html\n",
+        "src/Live.html": "@Warning.html",
+        "src/Skipped.html": "@Warning.html",
+        "src/Custom.html": "@Warning.html",
+        "dist/Built.html": "@Warning.html",
+        "vendor/Configured.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Custom.html",
+          "packet": "warning"
+        },
+        {
+          "path": "src/Live.html",
+          "packet": "warning"
+        },
+        {
+          "path": "src/Skipped.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "cli": [
+        "src/Skipped.html"
+      ],
+      "no_ignore": true
+    },
+    {
+      "name": "explicit-vcs-no-ignore-profile-difference",
+      "rationale": "No-ignore does not change pinned explicit VCS-root profile differences.",
+      "target": "dist/Built.html",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        ".gitignore": "dist/\n",
+        "dist/Built.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "no_ignore": true,
+      "selected_186": [
+        {
+          "path": "dist/Built.html",
+          "packet": "warning"
+        }
+      ],
+      "root_decision": "VcsExcluded",
+      "root_decision_186": "Eligible"
+    },
+    {
+      "name": "explicit-cli-no-ignore",
+      "rationale": "No-ignore disables the explicit CLI prefilter.",
+      "target": "src/Skipped.html",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Skipped.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Skipped.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "cli": [
+        "src/Skipped.html"
+      ],
+      "no_ignore": true
+    },
+    {
+      "name": "missing-rules-empty-set",
+      "rationale": "Missing rules never enables catalog defaults.",
+      "target": ".",
+      "root": "{}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "empty"
+        }
+      ],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "empty-rules-empty-set",
+      "rationale": "An empty rules object is an explicit empty enabled set.",
+      "target": ".",
+      "root": "{\"rules\":{}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "empty"
+        }
+      ],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "off-numeric",
+      "rationale": "Authored numeric zero is preserved and does not emit warnings.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":0}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "empty"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": null,
+            "active": false,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "off-string",
+      "rationale": "Authored off is retained separately from missing rules.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"off\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "empty"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": null,
+            "active": false,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "severity-error-overrides-default-warning",
+      "rationale": "Configured severity controls whole diagnostic counts.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":2}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning-error-severity"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "error",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "severity-warning-overrides-default-error",
+      "rationale": "A duplicate attribute can be configured as a warning.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-duplicate-attributes\":1}}\n",
+      "files": {
+        "src/Live.htm": "@Error.htm"
+      },
+      "selected": [
+        {
+          "path": "src/Live.htm",
+          "packet": "duplicate-warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-duplicate-attributes",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "options-always-incremental",
+      "rationale": "Enabled set must be established before configured rule replacement.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/attribute-hyphenation\":[\"error\",\"always\"]},\"settings\":{\"vize\":{\"preset\":\"incremental\"}}}\n",
+      "files": {
+        "src/Options.html": "@Options.html"
+      },
+      "selected": [
+        {
+          "path": "src/Options.html",
+          "packet": "attribute-always"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/attribute-hyphenation",
+            "severity": "error",
+            "active": true,
+            "authored_options": [
+              "always"
+            ]
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "options-never-incremental",
+      "rationale": "The opposite authored option changes the actual diagnostic range and message.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/attribute-hyphenation\":[\"error\",\"never\"]},\"settings\":{\"vize\":{\"preset\":\"incremental\"}}}\n",
+      "files": {
+        "src/Options.html": "@Options.html"
+      },
+      "selected": [
+        {
+          "path": "src/Options.html",
+          "packet": "attribute-never"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/attribute-hyphenation",
+            "severity": "error",
+            "active": true,
+            "authored_options": [
+              "never"
+            ]
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "preset-gates-authored-rule",
+      "rationale": "Essential preset retains but gates a general-recommended rule.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/attribute-hyphenation\":[\"error\",\"always\"]},\"settings\":{\"vize\":{\"preset\":\"essential\"}}}\n",
+      "files": {
+        "src/Options.html": "@Options.html"
+      },
+      "selected": [
+        {
+          "path": "src/Options.html",
+          "packet": "empty"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/attribute-hyphenation",
+            "severity": "error",
+            "active": false,
+            "authored_options": [
+              "always"
+            ]
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "essential"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "locale-japanese-full-help",
+      "rationale": "Locale and full help affect the actual engine packet.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"},\"settings\":{\"vize\":{\"locale\":\"ja\",\"helpLevel\":\"full\"}}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "japanese-warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "ja",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "help-none",
+      "rationale": "Explicit no-help yields null, not an empty string.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"},\"settings\":{\"vize\":{\"helpLevel\":\"none\"}}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning-no-help"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "none",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "show-help-false",
+      "rationale": "Legacy showHelp is admitted as the same effective no-help setting.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"},\"settings\":{\"vize\":{\"showHelp\":false}}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning-no-help"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "none",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "directive-original-lines",
+      "rationale": "Native existing directive suppression keeps the second original-line warning.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Live.html": "@Directive.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "directive-unsuppressed-second"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "original-standalone-retained",
+      "rationale": "The immutable original standalone input is copied exactly and no unauthored rule runs.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Standalone.html": "@OriginalStandalone.html.txt"
+      },
+      "selected": [
+        {
+          "path": "src/Standalone.html",
+          "packet": "empty"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "deny-warnings",
+      "rationale": "Whole root options are retained and denyWarnings is projected without changing diagnostic severity.",
+      "target": ".",
+      "root": "{\"options\":{\"denyWarnings\":true},\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": true
+      }
+    },
+    {
+      "name": "excluded-invalid-source",
+      "rationale": "An excluded invalid byte source is never decoded or linted.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        ".gitignore": "dist/\n",
+        "dist/Invalid.html": "@InvalidUtf8.html",
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [
+        {
+          "path": "src/Live.html",
+          "packet": "warning"
+        }
+      ],
+      "projection": {
+        "rules": [
+          {
+            "name": "vue/no-v-html",
+            "severity": "warning",
+            "active": true,
+            "authored_options": []
+          }
+        ],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      }
+    },
+    {
+      "name": "root-identity-mismatch",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigIdentity",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      },
+      "expected_root": "{}\n"
+    },
+    {
+      "name": "duplicate-rule-key",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"off\",\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "RootJsonSyntax",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "duplicate-foreign-key",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"foreign\":1,\"foreign\":2,\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "RootJsonSyntax",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "malformed-json",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{not-json\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "RootJsonSyntax",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "active-native-type-rule",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/type/require-typed-props\":\"error\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "native-type-aware-setting",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"},\"settings\":{\"vize\":{\"typeAware\":true}}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "native-project-executable",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"},\"settings\":{\"vize\":{\"corsaPath\":\"./tsgo\"}}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "unknown-vize-rule",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/unknown-operation-control\":\"warn\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "invalid-severity",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"fatal\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "boolean-severity",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":true}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "empty-severity-tuple",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":[]}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "disabled-invalid-option",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/attribute-hyphenation\":[\"off\",\"sometimes\"]}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "unsupported-vize-option",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":[\"warn\",{\"unexpected\":true}]}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "invalid-locale",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"},\"settings\":{\"vize\":{\"locale\":\"invalid-locale\"}}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "invalid-preset",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"},\"settings\":{\"vize\":{\"preset\":\"unknown-preset\"}}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "invalid-help",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"},\"settings\":{\"vize\":{\"helpLevel\":\"verbose\"}}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "unsupported-vize-setting",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"},\"settings\":{\"vize\":{\"unknownOperationControl\":true}}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "unsupported-warning-limit",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"options\":{\"maxWarnings\":1},\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Live.html": "@Warning.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "ConfigProjection",
+        "path": ".oxlintrc.json",
+        "bytes_ref": "@root"
+      }
+    },
+    {
+      "name": "invalid-source-encoding",
+      "rationale": "Unqualified original authority must return a refusal without partial success.",
+      "target": ".",
+      "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+      "files": {
+        "src/Invalid.html": "@InvalidUtf8.html"
+      },
+      "selected": [],
+      "projection": {
+        "rules": [],
+        "settings": {
+          "locale": "en",
+          "help_level": "full",
+          "preset": "incremental"
+        },
+        "deny_warnings": false
+      },
+      "refusal": {
+        "kind": "SourceEncoding",
+        "path": "src/Invalid.html",
+        "bytes_ref": "@InvalidUtf8.html"
+      }
+    }
+  ]
+}

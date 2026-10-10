@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import { value } from "@x";
+const observed: string = value;
+void observed;
+</script>
