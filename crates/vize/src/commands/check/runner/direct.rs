@@ -91,7 +91,11 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut tsconfig_input_cache = TsconfigInputCache::default();
     let mut canonical_paths = CanonicalPathCache::default();
     let mut package_route_resolver = vize_canon::PackageRouteResolver::default();
-    let check_ignore_set = super::ignores::CheckIgnoreSet::new(&ignores, config_dir);
+    let check_ignore_set = if project_config.project_root.is_some() {
+        super::ignores::CheckIgnoreSet::for_project(&ignores, config_dir)
+    } else {
+        super::ignores::CheckIgnoreSet::new(&ignores, config_dir)
+    };
     let collect_start = Instant::now();
     let collected = collect_roots(
         args,

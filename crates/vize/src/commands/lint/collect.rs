@@ -10,6 +10,7 @@ use crate::config;
 
 pub(super) struct LintIgnoreSet {
     patterns: Vec<LintInputGlob>,
+    project: Option<config::matcher::ProjectIgnoreSet>,
 }
 
 pub(super) struct LintFileCollection {
@@ -24,11 +25,27 @@ impl LintIgnoreSet {
             .flat_map(|ignore| expand_entry_ignore_patterns(ignore, config_dir))
             .filter_map(|pattern| LintInputGlob::new(pattern.to_string_lossy().as_ref()))
             .collect::<Vec<_>>();
-        (!patterns.is_empty()).then_some(Self { patterns })
+        (!patterns.is_empty()).then_some(Self {
+            patterns,
+            project: None,
+        })
+    }
+
+    pub(super) fn for_project(
+        ignores: &[config::ConfigEntryIgnore],
+        config_dir: &Path,
+    ) -> Option<Self> {
+        config::matcher::ProjectIgnoreSet::new(ignores, config_dir).map(|project| Self {
+            patterns: Vec::new(),
+            project: Some(project),
+        })
     }
 
     fn is_ignored(&self, path: &Path) -> bool {
-        self.patterns.iter().any(|pattern| pattern.matches(path))
+        self.project.as_ref().map_or_else(
+            || self.patterns.iter().any(|pattern| pattern.matches(path)),
+            |project| project.is_ignored(path),
+        )
     }
 }
 

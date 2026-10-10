@@ -120,7 +120,7 @@ test("Vite root projects scoped paths while preserving global entries and author
     root: "app",
     vize: {
       files: ["src/**/*.vue"],
-      ignores: ["src/Ignored.vue"],
+      ignores: ["src/Ignored.vue", "!src/Keep.vue", String.raw`src/\[id\].vue`],
       typeChecker: { tsconfig: "tsconfig.json", corsaPath: "tools/corsa" },
       entries: [
         { files: ["src/**/*.vue"], linter: { rules: { "a11y/alt-text": "error" } } },
@@ -132,7 +132,11 @@ test("Vite root projects scoped paths while preserving global entries and author
   const resolved = await resolveViteConfigExport(source, undefined, root);
   assert.equal(resolved.__vizeProjectRoot, path.join(root, "app"));
   assert.equal(resolved.basePath, path.join(root, "app"));
-  assert.deepEqual(resolved.ignores, [path.join(root, "app/src/Ignored.vue")]);
+  assert.deepEqual(resolved.ignores, [
+    "src/Ignored.vue",
+    "!src/Keep.vue",
+    String.raw`src/\[id\].vue`,
+  ]);
   assert.equal(resolved.typeChecker.tsconfig, path.join(root, "app/tsconfig.json"));
   assert.equal(resolved.typeChecker.corsaPath, path.join(root, "app/tools/corsa"));
   assert.equal(resolved.entries[0].basePath, path.join(root, "app"));

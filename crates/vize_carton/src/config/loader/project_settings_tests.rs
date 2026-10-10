@@ -122,8 +122,11 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
     );
     let ignores = loaded.document.entry_ignores();
     assert_eq!(
-        ignores[0].pattern.as_str(),
-        root.join("src/Ignored.vue").to_str().unwrap()
+        ignores
+            .iter()
+            .map(|ignore| (ignore.base_path.as_deref(), ignore.pattern.as_str()))
+            .collect::<Vec<_>>(),
+        vec![(root.to_str(), "src/Ignored.vue")]
     );
     let plan = loaded.document.linter_plan();
     assert_eq!(plan.entries[0].base_path.as_deref(), root.to_str());
@@ -143,6 +146,23 @@ fn project_snapshot_resolves_vite_root_paths_from_one_evaluation() {
     assert_eq!(
         dedicated.source_path,
         Some(project.path().join("vize.config.json"))
+    );
+
+    std::fs::write(
+        project.path().join("vize.config.json"),
+        r#"{"__vizeProjectRoot":"untrusted","ignores":["src/Ignored.vue"]}"#,
+    )
+    .unwrap();
+    let dedicated = super::try_load_project_config_with_source(Some(project.path())).unwrap();
+    assert_eq!(dedicated.document.project_root(), None);
+    assert_eq!(
+        dedicated
+            .document
+            .entry_ignores()
+            .iter()
+            .map(|ignore| (ignore.base_path.as_deref(), ignore.pattern.as_str()))
+            .collect::<Vec<_>>(),
+        vec![(None, "src/Ignored.vue")]
     );
 }
 
