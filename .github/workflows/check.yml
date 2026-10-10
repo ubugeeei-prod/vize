@@ -300,6 +300,7 @@ jobs:
       - name: Prepare plugin runtime and test native JS setup
         uses: ./.github/actions/test-native-js-setup
       - name: Capture original native attribute values and fixed fresh mounts
+        if: ${{ always() }}
         uses: ./.github/actions/test-native-attribute-values-7502
       - name: Install CSS formatter reference browser
         uses: ./.github/actions/install-formatter-css-browser

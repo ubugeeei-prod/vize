@@ -203,7 +203,7 @@ jobs:
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-vapor-capture == 'true')) }}
         uses: ./.github/actions/test-native-vapor
       - name: Capture original attribute values across native targets
-        if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-attribute-values-7502-capture == 'true')) }}
+        if: ${{ always() && needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-attribute-values-7502-capture == 'true')) }}
         uses: ./.github/actions/test-native-attribute-values-7502
       - name: Test selected PR tooling scripts
         if: ${{ github.event_name == 'pull_request' && needs.pr-source-plan.outputs.tooling == 'true' }}

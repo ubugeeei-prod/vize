@@ -23,12 +23,21 @@ runs:
         VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE: ${{ runner.temp }}/native-selected-static-class-runtime
         VIZE_NATIVE_SELECTED_STATIC_CLASS_REQUIRE_CAPTURE: "1"
       run: |
+        set +e
         cargo test --locked --profile ci -p vize_atelier_sfc --test native_selected_static_class -- --nocapture
+        rust_status=$?
         NODE_ENV=development vp node --test tests/tooling/native-selected-static-class-reference.test.ts
+        development_status=$?
         NODE_ENV=production vp node --test tests/tooling/native-selected-static-class-reference.test.ts
+        production_status=$?
+        set -e
+        printf '{"rust":%s,"development":%s,"production":%s}\n' "$rust_status" "$development_status" "$production_status" > "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.statuses.json"
         test -s "$VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE"
         test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.development.json"
         test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.production.json"
+        test "$rust_status" -eq 0
+        test "$development_status" -eq 0
+        test "$production_status" -eq 0
     - name: Capture and execute source-built selected SFC components
       shell: bash
       env:
@@ -109,6 +118,7 @@ runs:
           ${{ runner.temp }}/native-selected-static-class.json
           ${{ runner.temp }}/native-selected-static-class-runtime.development.json
           ${{ runner.temp }}/native-selected-static-class-runtime.production.json
+          ${{ runner.temp }}/native-selected-static-class-runtime.statuses.json
           ${{ runner.temp }}/native-selected-sfc-dom-capture.json
           ${{ runner.temp }}/native-selected-sfc-dom-runtime.json
           ${{ runner.temp }}/native-selected-setup-sfc-dom-capture.json

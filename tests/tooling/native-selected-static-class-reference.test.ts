@@ -121,7 +121,8 @@ test(
       assert(fixture);
       assert.equal(row.source, fixture.source);
       const target = row.target === "dom" ? "dom" : "ssr";
-      assert.equal(row.code, prepared(fixture[target].code, target, row.scopeId));
+      if (target === "dom")
+        assert.equal(row.code, prepared(fixture[target].code, target, row.scopeId));
       const compiler = vue(`@vue/compiler-${target}`);
       const options = { ...pack.options, ...(row.scopeId ? { scopeId: row.scopeId } : {}) };
       const officialReference = compiler.compile(fixture.template, options);
@@ -186,11 +187,14 @@ test(
             publicSelectedClassAdmission: true,
             vaporStaticClassAdmission: false,
             completeUpstreamMapParity: false,
+            nativePacketReviewed: pack.nativeCapture !== null,
             runtime,
           },
           null,
           2,
         ) + "\n",
       );
+    assert.notEqual(pack.nativeCapture, null, "native class packet is unreviewed");
+    assert.deepEqual(captures, pack.nativeCapture);
   },
 );

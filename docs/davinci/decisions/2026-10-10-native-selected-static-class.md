@@ -36,13 +36,25 @@ the public scoped SSR entry with its real original style owner: 78 complete
 supplemental outcomes. Whole official code/raw maps, complete native links,
 UTF-8 endpoints and class-anchor deletion laws remain mandatory.
 
-The pinned development compiler process reproduces complete canonical module
-bytes/raw maps independently of the fresh development or production runtime
-process. Runtime controls separately compile with their actual mode, retain
-complete official modules/maps, mount whole DOM components and render whole SSR
-components with three fallthrough contexts twice. This preserves mode-dependent
-Vue development fragment flags without changing canonical native byte laws.
+The pinned development compiler process independently reproduces the complete
+raw official DOM/SSR modules and maps. DOM canonical module bytes equal their
+prepared official modules. Native SSR retains the existing four-argument
+`ssrRender(_ctx, _push, _parent, _attrs)` ABI and imports helpers from
+`@vue/server-renderer` before Vue helpers. The independent official SSR module
+has its eight-argument binding-metadata ABI and `vue/server-renderer` imports
+in the compiler's original order. Those complete raw official bytes/maps stay
+unchanged; native canonical bytes are a separate whole-packet reviewed law,
+never an expected-driven rewrite or a claim of raw official byte equality.
 
+Runtime controls separately compile in their actual development or production
+process, retain complete official modules/maps, mount whole DOM components and
+render whole SSR components with three fallthrough contexts twice. Complete
+native maps/links remain independent from official raw maps. Both modes must
+produce equal whole runtime outcomes and original authored class anchors.
+The source-built 78-row canonical packet is captured before its final frozen
+comparison. An unfrozen packet fails that comparison in Rust and both runtime
+processes; statuses and all actual receipts are retained for independent review.
+This preparation cannot grant acceptance.
 The [strict #7502 successor](./2026-10-10-original-attribute-values-class-successor.md)
 keeps the original input/v1 output bytes and separately requires their original
 whole qualification from the exact immutable `815d9342` baseline. Current V2

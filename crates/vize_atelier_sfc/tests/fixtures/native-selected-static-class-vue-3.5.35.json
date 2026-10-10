@@ -765,5 +765,6 @@
     },
     "css": ".a[data-v-static-class]:empty{color:red}",
     "cssSource": ".a:empty{color:red}"
-  }
+  },
+  "nativeCapture": null
 }
