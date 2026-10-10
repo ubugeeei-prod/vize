@@ -9,6 +9,11 @@ fn lsp_initializes_project_formatting_without_options_and_respects_false() {
     for enabled in [true, false] {
         let project = project();
         let root = project.path();
+        write(
+            root,
+            "vite.config.mjs",
+            &support::SETTINGS.replace(", jsxTypecheck: true", ""),
+        );
         if !enabled {
             write(
                 root,
@@ -26,6 +31,10 @@ fn lsp_initializes_project_formatting_without_options_and_respects_false() {
         );
         let response = lsp.recv_response(1);
         assert!(response["result"].is_object(), "{response:#}");
+        assert_eq!(
+            response["result"]["capabilities"]["experimental"]["vize"],
+            json!({"jsxTypecheck":true})
+        );
         assert_eq!(
             response["result"]["capabilities"]["documentFormattingProvider"]
                 .as_bool()
@@ -60,7 +69,7 @@ fn lsp_initializes_project_formatting_without_options_and_respects_false() {
             let edits = response["result"].as_array().expect("formatting edits");
             assert_eq!(edits.len(), 1, "{response:#}");
             assert_eq!(edits[0]["newText"], expected.as_str(), "{response:#}");
-            assert!(expected.contains("const message = 'hello'"), "{expected}");
+            assert_eq!(expected.as_str(), support::PRESERVED_SINGLE);
         } else {
             assert_eq!(response["result"], Value::Null, "{response:#}");
         }

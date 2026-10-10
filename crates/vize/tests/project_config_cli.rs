@@ -27,17 +27,14 @@ fn compiler_reads_whitespace_and_custom_elements_from_vite() {
     let root = project.path();
     assert_success(&run(root, &["build", "App.vue", "-o", "configured"]));
     let configured = fs::read_to_string(root.join("configured/App.js")).unwrap();
-    assert!(configured.contains("  two  spaces  "), "{configured}");
-    assert!(configured.contains("\"my-widget\""), "{configured}");
-    assert!(!configured.contains("resolveComponent"), "{configured}");
+    insta::assert_snapshot!("project_settings_build_vite", configured);
 
     assert_success(&run(
         root,
         &["build", "App.vue", "-o", "defaults", "--no-config"],
     ));
     let defaults = fs::read_to_string(root.join("defaults/App.js")).unwrap();
-    assert!(!defaults.contains("  two  spaces  "), "{defaults}");
-    assert!(defaults.contains("resolveComponent"), "{defaults}");
+    insta::assert_snapshot!("project_settings_build_defaults", defaults);
     assert_ne!(configured, defaults);
     assert_no_dedicated_config(root);
     assert_eq!(
@@ -53,12 +50,9 @@ fn configured_lint_rule_changes_the_public_diagnostic_and_can_be_overridden() {
     let configured = run(root, &["lint", "Image.vue", "--format", "json"]);
     let report: Value = serde_json::from_slice(&configured.stdout).unwrap();
     assert_eq!(configured.status.code(), Some(1), "{configured:?}");
-    let messages = report[0]["messages"].as_array().unwrap();
-    assert!(
-        messages
-            .iter()
-            .any(|message| { message["ruleId"] == "a11y/alt-text" && message["severity"] == 2 }),
-        "{report:#}"
+    insta::assert_snapshot!(
+        "project_settings_lint_vite",
+        serde_json::to_string_pretty(&support::normalized_report(root, report)).unwrap()
     );
 
     let manual = root.join("manual.json");
@@ -81,15 +75,12 @@ fn configured_lint_rule_changes_the_public_diagnostic_and_can_be_overridden() {
             manual.to_str().unwrap(),
         ],
     );
-    assert_success(&overridden);
+    // The independent component-name error stays reported when alt-text is off.
+    assert_eq!(overridden.status.code(), Some(1), "{overridden:?}");
     let report: Value = serde_json::from_slice(&overridden.stdout).unwrap();
-    assert!(
-        report[0]["messages"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .all(|message| message["ruleId"] != "a11y/alt-text"),
-        "{report:#}"
+    insta::assert_snapshot!(
+        "project_settings_lint_override",
+        serde_json::to_string_pretty(&support::normalized_report(root, report)).unwrap()
     );
     assert_no_dedicated_config(root);
 }
@@ -100,14 +91,11 @@ fn formatter_applies_vite_settings_and_explicit_cli_switches() {
     let project = project();
     let root = project.path();
     let configured = formatted(root, &[]);
-    assert!(
-        configured.contains("const message = 'hello'"),
-        "{configured}"
-    );
+    assert_eq!(configured.as_str(), support::PRESERVED_SINGLE);
     let defaults = formatted(root, &["--no-config"]);
-    assert!(defaults.contains("const message = \"hello\""), "{defaults}");
+    assert_eq!(defaults.as_str(), support::FORMATTED_DOUBLE);
     let cli_override = formatted(root, &["--single-quote=false"]);
-    assert_eq!(cli_override, defaults);
+    assert_eq!(cli_override.as_str(), support::PRESERVED_DOUBLE);
     assert_no_dedicated_config(root);
 }
 
@@ -138,8 +126,8 @@ fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
     );
     let a = root.join("packages/a/src");
     let b = root.join("packages/b/src");
-    assert!(formatted(&a, &[]).contains("'hello'"));
-    assert!(formatted(&b, &[]).contains("\"hello\""));
+    assert_eq!(formatted(&a, &[]).as_str(), support::FORMATTED_SINGLE);
+    assert_eq!(formatted(&b, &[]).as_str(), support::FORMATTED_DOUBLE);
 
     // A package with no settings keeps its own defaults instead of inheriting
     // an unrelated workspace config, or its sibling's cached settings.
@@ -149,7 +137,7 @@ fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
         r#"{"formatter":{"singleQuote":true}}"#,
     );
     fs::remove_file(root.join("packages/b/vite.config.mjs")).unwrap();
-    assert!(formatted(&b, &[]).contains("\"hello\""));
+    assert_eq!(formatted(&b, &[]).as_str(), support::FORMATTED_DOUBLE);
 
     // Existing same-directory dedicated configs still override Vite settings.
     write(
@@ -157,12 +145,18 @@ fn package_boundaries_precedence_and_sibling_settings_reach_the_formatter() {
         "vize.config.json",
         r#"{"formatter":{"singleQuote":false}}"#,
     );
-    assert!(formatted(&a, &[]).contains("\"hello\""));
+    assert_eq!(formatted(&a, &[]).as_str(), support::FORMATTED_DOUBLE);
     write(
         &root.join("packages/a"),
         "manual.json",
         r#"{"formatter":{"singleQuote":true}}"#,
     );
-    assert!(formatted(&a, &["--config", "../manual.json"]).contains("'hello'"));
-    assert!(formatted(&a, &["--no-config"]).contains("\"hello\""));
+    assert_eq!(
+        formatted(&a, &["--config", "../manual.json"]).as_str(),
+        support::FORMATTED_SINGLE
+    );
+    assert_eq!(
+        formatted(&a, &["--no-config"]).as_str(),
+        support::FORMATTED_DOUBLE
+    );
 }

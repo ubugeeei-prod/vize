@@ -50,7 +50,7 @@ fn check(root: &Path, corsa: &str) -> (std::process::Output, Value) {
         .unwrap();
     let report = serde_json::from_slice(&output.stdout)
         .unwrap_or_else(|error| panic!("{error}: {output:?}"));
-    (output, report)
+    (output, support::normalized_report(root, report))
 }
 
 #[test]
@@ -64,7 +64,11 @@ fn tsconfig_aliases_preserve_valid_types_and_expose_invalid_props_and_ts() {
     link_vue(root);
     let (valid, report) = check(root, &corsa);
     assert!(valid.status.success(), "{valid:?}\n{report:#}");
-    assert_eq!(report["errorCount"], 0, "{report:#}");
+    insta::assert_snapshot!(
+        "project_settings_check_valid",
+        serde_json::to_string_pretty(&report).unwrap()
+    );
+    let valid_report = report;
 
     write(
         root,
@@ -74,39 +78,15 @@ fn tsconfig_aliases_preserve_valid_types_and_expose_invalid_props_and_ts() {
     write(root, "src/invalid.ts", support::INVALID_TS);
     let (invalid, report) = check(root, &corsa);
     assert_eq!(invalid.status.code(), Some(1), "{invalid:?}\n{report:#}");
-    let files = report["files"].as_array().unwrap();
-    for filename in ["Consumer.vue", "invalid.ts"] {
-        assert!(
-            files.iter().any(|file| {
-                file["file"]
-                    .as_str()
-                    .is_some_and(|path| path.ends_with(filename))
-                    && file["diagnostics"].as_array().is_some_and(|diagnostics| {
-                        diagnostics.iter().any(|diagnostic| {
-                            diagnostic
-                                .as_str()
-                                .is_some_and(|message| message.contains("TS2322"))
-                        })
-                    })
-            }),
-            "missing authored {filename} error: {report:#}"
-        );
-    }
-    assert!(
-        files.iter().all(|file| {
-            file["diagnostics"]
-                .as_array()
-                .unwrap()
-                .iter()
-                .all(|diagnostic| !diagnostic.as_str().unwrap().contains("TS2307"))
-        }),
-        "aliases must resolve: {report:#}"
+    insta::assert_snapshot!(
+        "project_settings_check_invalid",
+        serde_json::to_string_pretty(&report).unwrap()
     );
 
     write(root, "src/Consumer.vue", support::CONSUMER);
     fs::remove_file(root.join("src/invalid.ts")).unwrap();
     let (repaired, report) = check(root, &corsa);
     assert!(repaired.status.success(), "{repaired:?}\n{report:#}");
-    assert_eq!(report["errorCount"], 0, "{report:#}");
+    assert_eq!(report, valid_report);
     assert_no_dedicated_config(root);
 }
