@@ -299,7 +299,7 @@ test("a normally closed worker's ignored-stdio descendant is drained before a la
       try {
         process.kill(Number(fs.readFileSync(ready)), "SIGKILL");
       } catch (error) {
-        if (error.code !== "ESRCH") throw error;
+        assert.equal(error.code, "ESRCH");
       }
     }
     fs.rmSync(root, { recursive: true });
