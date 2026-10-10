@@ -165,6 +165,7 @@ test("strict boolean rows render within the complete option and type-aware table
     "vue/html-self-closing",
     "vue/v-on-event-hyphenation",
     "vue/attribute-hyphenation",
+    "vue/valid-v-slot",
     "musea/prefer-design-tokens",
     "type/strict-boolean-expressions",
   ];
