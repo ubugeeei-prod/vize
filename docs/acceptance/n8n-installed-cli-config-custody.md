@@ -80,8 +80,17 @@ successful collection, never placeholders or a previous release:
 ```json
 {
   "schema": "vize.n8n.installed-campaign-v1",
-  "source": { "C": "<full cut>", "H": "<full release head>", "tag": "v0.439.0", "R": "38011924629", "sourcePr": "8351" },
-  "installReceipt": { "path": "/absolute/reviewed-install-receipt.json", "sha256": "<reviewed receipt SHA-256>" },
+  "source": {
+    "C": "<full cut>",
+    "H": "<full release head>",
+    "tag": "v0.439.0",
+    "R": "38011924629",
+    "sourcePr": "8351"
+  },
+  "installReceipt": {
+    "path": "/absolute/reviewed-install-receipt.json",
+    "sha256": "<reviewed receipt SHA-256>"
+  },
   "collectorSha256": "<reviewed official collector snapshot SHA-256>"
 }
 ```
