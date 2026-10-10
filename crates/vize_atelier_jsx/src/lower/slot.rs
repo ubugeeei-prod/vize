@@ -255,6 +255,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
                 &self.bump(),
             ));
         }
+        self.retain_nested_typecheck_roots(expr);
         let content = self.dyn_expr(expr.span());
         self.interpolation(content, expr.span())
     }

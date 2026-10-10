@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { parseArgs } from "node:util";
+import { RawGitRepository } from "./raw-git.ts";
 import { runtimeGraph } from "../../../../performance/support/warm-type-backed-runtime.ts";
 import {
   loadVueFixtureAuthority,
@@ -43,15 +44,11 @@ export function prepareVueFixture(options: PreparationOptions) {
   const parent = path.dirname(options.outputRoot);
   assert.equal(fs.realpathSync(parent), parent, "canonical output parent required");
   const source = new Map<string, Buffer>();
+  const repository = new RawGitRepository(options.sourceRoot);
   for (const [file, sha] of Object.entries(originalFiles)) {
-    const read: SpawnSyncReturns<Buffer> = spawnSync("git", ["show", `${originalHead}:${file}`], {
-      cwd: options.sourceRoot,
-      maxBuffer: 16 * 1024 * 1024,
-    });
-    assert.equal(read.error, undefined);
-    assert.equal(read.status, 0);
-    assert.equal(digest(read.stdout), sha, `original stock source changed: ${file}`);
-    source.set(file, read.stdout);
+    const bytes = repository.file(originalHead, file);
+    assert.equal(digest(bytes), sha, `original stock source changed: ${file}`);
+    source.set(file, bytes);
   }
   const lockedPackages = stockGraph(source.get("pnpm-lock.yaml")!.toString("utf8"));
   assert.equal(new Set(lockedPackages.map((record) => record.name)).size, 26);

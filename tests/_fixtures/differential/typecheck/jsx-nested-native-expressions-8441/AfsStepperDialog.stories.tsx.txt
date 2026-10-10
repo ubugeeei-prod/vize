@@ -1,0 +1,48 @@
+type TabItem = { label: string; value: string };
+
+const AfsStepperDialog = (_props: any) => <div />;
+const AfsButton = (_props: any) => <button />;
+const AfsTabs = (_props: any) => <div />;
+
+const isOpen = { value: true };
+const items = { value: [{ label: 'One', value: 'one' }] satisfies TabItem[] };
+const currentStepIndex = { value: 0 };
+const updateStepIndex = (value: number) => {
+  currentStepIndex.value = value;
+};
+const next = () => updateStepIndex(currentStepIndex.value + 1);
+const activeTab = { value: 'one' };
+const args = { items: items.value };
+
+export const Stepper = () => (
+  <AfsStepperDialog
+    value={isOpen.value}
+    items={items.value}
+    currentStepIndex={currentStepIndex.value}
+    onUpdate:current-step-index={updateStepIndex}
+  >
+    {{
+      content1: () => (
+        <div>
+          {Array.from({ length: 3 }, (_, i) => (
+            <p key={i}>sample {i + 1}</p>
+          ))}
+        </div>
+      ),
+      actions: () => <AfsButton onClick={next}>Next</AfsButton>,
+    }}
+  </AfsStepperDialog>
+);
+
+export const Tabs = () => (
+  <AfsTabs value={activeTab.value} items={args.items}>
+    {{
+      label: ({ item }: { item: TabItem }) => (
+        <span>
+          {item.label}
+          {<span class="mdi mdi-help-circle-outline" />}
+        </span>
+      ),
+    }}
+  </AfsTabs>
+);
