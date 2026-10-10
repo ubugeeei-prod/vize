@@ -58,6 +58,11 @@ export async function verifyRenderedCategoryPackets(page: Page, route: string) {
             good: Boolean(document.getElementById(`${current}-good`)),
           };
         } else if (element.parentElement?.tagName === "PRE" && current) {
+          if (
+            element.closest(".vize-command-tabs") &&
+            !element.hasAttribute("data-command-tabs-original")
+          )
+            continue;
           const text = element.textContent;
           if (text === null) throw new Error(`Missing complete category source ${current}`);
           packets[current].code.push(text.replace(/\n$/, ""));
