@@ -13,7 +13,11 @@ import { generateArtModule } from "./art-module.js";
 import { decodeUrlComponent, HttpError, resolveUrlPathInside } from "./security.js";
 import { variantComponentNames } from "./variant-bindings.js";
 import { previewModuleId } from "./preview-module-id.js";
-import { sendPreviewModule } from "./middleware-response.js";
+import {
+  sendArtModuleFallback,
+  sendPreviewError,
+  sendPreviewModule,
+} from "./middleware-response.js";
 import type { MuseaTokenPreviewConfig } from "./tokens/preview.js";
 import { generateDevGlobalsScript } from "./gallery/globals.js";
 export { generateDevGlobalsScript } from "./gallery/globals.js";
@@ -234,8 +238,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
     try {
       variantComponentName = variantComponentNames(art.variants).get(variant.name)!;
     } catch (error) {
-      res.statusCode = 500;
-      res.end(error instanceof Error ? error.message : String(error));
+      sendPreviewError(res, error);
       return;
     }
     const moduleCode = generatePreviewModule(
@@ -326,21 +329,21 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
       if (result) {
         sendPreviewModule(res, result.code);
       } else {
-        const moduleCode = generateArtModule(art, artPath, {
-          root: devServer.config.root,
-          scanRoots: ctx.scanRoots,
-        });
-        res.setHeader("Content-Type", "application/javascript");
-        res.end(moduleCode);
+        sendArtModuleFallback(res, () =>
+          generateArtModule(art, artPath, {
+            root: devServer.config.root,
+            scanRoots: ctx.scanRoots,
+          }),
+        );
       }
     } catch (err) {
       console.error("[musea] Failed to transform art module:", err);
-      const moduleCode = generateArtModule(art, artPath, {
-        root: devServer.config.root,
-        scanRoots: ctx.scanRoots,
-      });
-      res.setHeader("Content-Type", "application/javascript");
-      res.end(moduleCode);
+      sendArtModuleFallback(res, () =>
+        generateArtModule(art, artPath, {
+          root: devServer.config.root,
+          scanRoots: ctx.scanRoots,
+        }),
+      );
     }
   });
 }

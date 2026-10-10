@@ -19,6 +19,7 @@ void test("actual Vite HTTP previews bound duplicate-name errors and remain resp
     hasScript: false,
     styleCount: 0,
   };
+  const valid = { ...art, path: "/repo/Valid.art.vue", variants: art.variants.slice(0, 1) };
   const server = await createServer({
     configFile: false,
     logLevel: "silent",
@@ -31,7 +32,10 @@ void test("actual Vite HTTP previews bound duplicate-name errors and remain resp
             basePath: "/gallery",
             devSessionToken: "unit",
             themeConfig: undefined,
-            artFiles: new Map([[art.path, art]]),
+            artFiles: new Map([
+              [art.path, art],
+              [valid.path, valid],
+            ]),
             scanRoots: [],
             resolvedPreviewCss: [],
             resolvedPreviewSetup: null,
@@ -55,13 +59,24 @@ void test("actual Vite HTTP previews bound duplicate-name errors and remain resp
   assert.ok(address && typeof address !== "string");
   const origin = `http://127.0.0.1:${address.port}`;
   const parameters = new URLSearchParams({ art: art.path, variant: "Default" });
+  const duplicateRoutes = [
+    `/gallery/preview-module?${parameters.toString()}`,
+    `/gallery/art/${encodeURIComponent(art.path)}`,
+  ];
   for (let attempt = 0; attempt < 2; attempt++) {
-    const response = await fetch(`${origin}/gallery/preview-module?${parameters.toString()}`, {
-      signal: AbortSignal.timeout(2000),
-    });
-    assert.equal(response.status, 500);
-    assert.ok((await response.text()).includes("Duplicate Musea variant name"));
+    for (const route of duplicateRoutes) {
+      const response = await fetch(`${origin}${route}`, { signal: AbortSignal.timeout(2000) });
+      assert.equal(response.status, 500);
+      assert.ok((await response.text()).includes("Duplicate Musea variant name"));
+    }
   }
+  const ordinary = await fetch(`${origin}/gallery/art/${encodeURIComponent(valid.path)}`, {
+    signal: AbortSignal.timeout(2000),
+  });
+  assert.equal(ordinary.status, 200);
+  assert.equal(ordinary.headers.get("content-type"), "application/javascript");
+  assert.equal(ordinary.headers.get("cache-control"), null);
+  assert.ok((await ordinary.text()).includes("export default Default"));
   const missing = await fetch(`${origin}/gallery/preview-module`, {
     signal: AbortSignal.timeout(2000),
   });

@@ -17,6 +17,8 @@ The byte-exact public regression corpus lives in
 fixture sweep. Original logical compile filenames and public module/input/error
 bytes are preserved. Together with the parent relocation, the fixed compiler
 corpus retains its original 498-path vector, goldens, selectors and budgets.
+The existing formatter-sensitive custody policy covers only these exact retained
+public-fixture directories to preserve authenticated original input/observation bytes.
 
 ## Decision
 
@@ -44,8 +46,9 @@ The grandfathered art-module file shrinks by reusing the identical existing
 were captured from the frozen pre-fix source and remain exact. Unit laws cover
 punctuation, Unicode normalization, numeric names, defaults, duplicate rejection,
 all preview consumers, props overrides and HMR membership changes. Development
-preview middleware returns HTTP 500 for planning failures; a real Vite HTTP
-law checks bounded duplicate-name errors and a subsequent responsive request.
+preview and art-module middleware return HTTP 500 for duplicate-name errors.
+A real Vite HTTP law checks both bounded routes, unchanged ordinary art-module
+headers and a subsequent responsive request.
 
 ## Genuine native build and HTTP law
 

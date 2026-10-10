@@ -60,6 +60,7 @@ const formatterSensitiveContentIgnorePatterns = [
   "tools/benchmarks/crates/davinci_harness/fixtures/**",
   // Original public Musea inputs and observations retain their authored bytes.
   "tests/tooling/fixtures/musea/static-variant-name/**",
+  "tests/tooling/fixtures/musea/variant-binding-collision/**",
   // Original #7999 source/hash custody must survive repository formatting.
   "tools/support/compat/nuxt/fixtures/nuxt-prefetch-manifest/**",
 ];
