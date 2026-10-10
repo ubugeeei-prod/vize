@@ -24,6 +24,7 @@ jobs:
       PUBLIC_OUTPUT: ${{ github.workspace }}/artifacts/public-release/${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Require reviewed main and absent runtime overrides
+        id: guard
         env: { DISPATCH_REF: "${{ github.ref }}" }
         shell: bash
         run: |
@@ -39,28 +40,41 @@ jobs:
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, run-install: false }
       - name: Authenticate public release and prepare a fresh consumer
+        id: prepare
         shell: bash
         run: |
           mkdir -p "$PUBLIC_OUTPUT"
           node tools/support/release/public_acceptance/accept.ts prepare 2>&1 | tee "$PUBLIC_OUTPUT/prepare.log"
       - name: Install exact public versions
+        id: install
         working-directory: ${{ env.PUBLIC_CONSUMER }}
         shell: bash
         run: npm install --ignore-scripts --no-audit --no-fund --registry=https://registry.npmjs.org 2>&1 | tee "$PUBLIC_OUTPUT/install.log"
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install real Chromium
+        id: chromium
         working-directory: ${{ env.PUBLIC_CONSUMER }}
         shell: bash
         run: npx --no-install playwright install --with-deps chromium 2>&1 | tee "$PUBLIC_OUTPUT/chromium.log"
       - name: Replay original native DOM and SSR cases
+        id: native
         working-directory: ${{ env.PUBLIC_CONSUMER }}
         shell: bash
         run: node native.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/native.json" 2>&1 | tee "$PUBLIC_OUTPUT/native.log"
       - name: Replay public Musea gallery and globals
+        id: browser
+        if: >-
+          ${{ !cancelled() &&
+              steps.guard.outcome == 'success' &&
+              steps.prepare.outcome == 'success' &&
+              steps.install.outcome == 'success' &&
+              steps.chromium.outcome == 'success' &&
+              (steps.native.outcome == 'success' || steps.native.outcome == 'failure') }}
         working-directory: ${{ env.PUBLIC_CONSUMER }}
         shell: bash
         run: node browser.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/musea.json" 2>&1 | tee "$PUBLIC_OUTPUT/musea.log"
       - name: Seal installed public acceptance
+        if: ${{ success() && steps.native.outcome == 'success' && steps.browser.outcome == 'success' }}
         shell: bash
         run: node tools/support/release/public_acceptance/accept.ts finish 2>&1 | tee "$PUBLIC_OUTPUT/finish.log"
       - name: Retain actual public observations
