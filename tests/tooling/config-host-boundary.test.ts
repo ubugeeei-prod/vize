@@ -130,6 +130,39 @@ test("matcher imports allow only the existing scoped host symbols", () => {
   );
 });
 
+test("workspace ignore policy admits one exact successor at the same matcher host", () => {
+  const file = "crates/vize_maestro/src/server/state/workspace_folders.rs";
+  const historical = "use vize_carton::config::matcher::LintPlanScope;";
+  const current = "use vize_carton::config::matcher::{LintPlanScope, ProjectIgnoreSet};";
+  assert.deepEqual(
+    source(file).split("\n").filter((line) => line.startsWith("use vize_carton::")),
+    [current],
+  );
+  for (const path of [file, file.replaceAll("/", "\\")]) {
+    for (const admitted of [historical, current]) {
+      assert.doesNotMatch(withoutHostRuntimeReferences(admitted, path), forbiddenCartonStorage);
+    }
+    for (const rejected of [
+      "use vize_carton::config::matcher::ProjectIgnoreSet;",
+      "use vize_carton::config::matcher::{ProjectIgnoreSet, LintPlanScope};",
+      "use vize_carton::config::matcher::{LintPlanScope, ProjectIgnoreSet, String};",
+      "use vize_carton::config::matcher::*;",
+      "use vize_carton::config::{matcher::LintPlanScope, matcher::ProjectIgnoreSet};",
+      "use vize_carton::config::matcher::{LintPlanScope, ProjectIgnoreSet as CopiedPolicy};",
+      "pub(crate) use vize_carton::config::matcher::{LintPlanScope, ProjectIgnoreSet};",
+    ]) {
+      assert.match(withoutHostRuntimeReferences(rejected, path), forbiddenCartonStorage);
+    }
+  }
+  for (const path of hostFiles.filter((path) => path !== file)) {
+    assert.match(withoutHostRuntimeReferences(current, path), forbiddenCartonStorage);
+  }
+  assert.match(
+    withoutHostRuntimeReferences(current, "davinci/vize_l1/src/config.rs"),
+    forbiddenCartonStorage,
+  );
+});
+
 test("applied module context retains only its exact reviewed host ProjectModel import", () => {
   const file = "crates/vize_maestro/src/server/state/module_links.rs";
   const declaration = "use vize_carton::config::ProjectModel;";

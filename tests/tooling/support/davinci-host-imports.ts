@@ -23,7 +23,7 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       "host_config_loader",
     );
     storage = storage.replace(
-      /^use vize_carton::config::matcher::LintPlanScope;$/gmu,
+      /^use vize_carton::config::matcher::(?:LintPlanScope|\{LintPlanScope, ProjectIgnoreSet\});$/gmu,
       "host_config_matcher",
     );
   }

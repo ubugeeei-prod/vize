@@ -161,7 +161,7 @@ impl ServerState {
         self.experimental_patterned_template.load(Ordering::SeqCst)
     }
 
-    /// JSX checking is opt-in so ordinary React files are not treated as Vue.
+    /// Effective JSX policy; dedicated configurations retain their opt-in default.
     pub(crate) fn jsx_typecheck_enabled(&self) -> bool {
         *self.type_checker_jsx_typecheck.read()
     }
@@ -228,27 +228,13 @@ impl ServerState {
 
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
     pub fn load_workspace_config(&self, dir: &Path) {
-        let project = match vize_carton::config::try_load_project_config_with_source(Some(dir)) {
-            Ok(project) => project,
-            Err(error) => {
-                return tracing::warn!("Failed to load editor project configuration: {error}");
-            }
-        };
-        self.install_project_linter_context(dir, &project);
+        let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        if !loaded.valid {
+            return;
+        }
+        self.install_project_linter_context(dir, &loaded.project);
         #[cfg(feature = "native")]
-        self.apply_project_path_identity(dir, &project);
-        let mut loaded = vize_carton::config::LoadedLspConfig::from_document(
-            project.document,
-            project.source_path,
-        );
-        let paths = vize_carton::config::ProjectModel::new(
-            Some(dir),
-            loaded.source_path.as_deref(),
-            &loaded.config.type_checker,
-        );
-        loaded.config.type_checker.tsconfig = paths
-            .tsconfig()
-            .map(|path| path.to_string_lossy().into_owned().into());
+        self.apply_project_path_identity(dir, &loaded.project);
         self.apply_project_formatting_default(loaded.source_path.as_deref());
         if loaded.source_path.is_none() {
             self.apply_config_features(loaded.features);

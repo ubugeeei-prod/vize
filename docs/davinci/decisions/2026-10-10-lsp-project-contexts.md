@@ -13,7 +13,16 @@ weakly to the registry so importer diagnostics can route back to their actual
 owner without ownership cycles. Per-document flags gate every routed provider.
 
 Host evaluation produces one ConfigDocument for both linter plans and editor
-settings. Initialization options are retained and applied last to every context.
+settings. The existing Carton LSP snapshot owns the checked evaluation, selected
+project root, raw ordered lint scopes and checker path projection; Maestro keeps
+its existing snapshot facade call and never creates a project model in this host.
+Malformed input returns an invalid snapshot before any editor policy changes.
+An existing editor workspace with no config is a valid fresh project; the shared
+checked loader still rejects an absent explicit CLI configuration selection.
+The same workspace matcher host admits only the exact `ProjectIgnoreSet` and
+`LintPlanScope` import pair for Vite global ignores. Its original single-symbol
+historical positive, surplus/grouped/wildcard/other-host negative controls and
+the unchanged 59-write path replay remain intact. Initialization options are retained and applied last to every context.
 Vite-owned checker paths are projected against Vite's selected source root.
 Dedicated-file relative checker paths resolve against that config file;
 explicit CLI `--tsconfig` continues to resolve against the invocation directory.
@@ -160,3 +169,9 @@ One canonical call is admitted at the same existing physical host; all other
 caller tuples and the original 59-write replay remain unchanged, with surplus
 canonical and other-API calls still rejected. Whole source and protected
 qualification remain required; original expected names are unchanged.
+
+The genuine parent refresh preserves malformed dedicated configuration fallback:
+workspace owners use one checked project snapshot and return before applying
+fresh defaults on failure. Direct editor snapshots carry validity from the same
+checked evaluation; trusted document projections preserve that status. Both
+original direct-loader and additive workspace-owner whole feature controls apply.

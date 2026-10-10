@@ -3,17 +3,22 @@
 use std::path::{Path, PathBuf};
 
 use crate::config::{
-    ConfigDocument, ConfigFeatureFlags, ConfigLintRuleOptions, LanguageServerUnstableFlags,
-    LinterConfig, VizeConfig,
+    ConfigFeatureFlags, ConfigLintRuleOptions, LanguageServerUnstableFlags, LinterConfig,
+    ProjectModel, VizeConfig,
 };
 
-use super::{LoadedRawConfig, checked::load_raw_editor_config_checked};
+use super::{
+    LoadedProjectConfig, LoadedRawConfig, checked::load_raw_editor_config_checked,
+    project_config_snapshot,
+};
 
 /// All LSP config values derived from one raw config evaluation.
 #[derive(Debug, Clone)]
 pub struct LoadedLspConfig {
     /// Configuration was absent or successfully parsed in this one evaluation.
     pub valid: bool,
+    /// The same raw evaluation retains ordered lint scopes and selected root.
+    pub project: LoadedProjectConfig,
     pub config: VizeConfig,
     pub source_path: Option<PathBuf>,
     pub features: ConfigFeatureFlags,
@@ -41,22 +46,28 @@ pub fn load_lsp_config_snapshot(path: Option<&Path>) -> LoadedLspConfig {
             )
         }
     };
-    let mut snapshot = LoadedLspConfig::from_document(loaded.config, loaded.source_path);
+    let mut snapshot = LoadedLspConfig::from_project(project_config_snapshot(loaded), path);
     snapshot.valid = valid;
     snapshot
 }
 
 impl LoadedLspConfig {
-    /// Project all editor settings from the same host evaluation.
-    pub fn from_document(document: ConfigDocument, source_path: Option<PathBuf>) -> Self {
+    fn from_project(project: LoadedProjectConfig, path: Option<&Path>) -> Self {
+        let document = &project.document;
         let compiler_whitespace = document.compiler_whitespace();
         let linter = document.linter();
         let lint_rule_options = document.lint_rule_options().clone();
         let language_server_unstable_flags = document.language_server_unstable_flags();
         let request_timeout_ms = document.lsp_request_timeout_ms();
-        let (config, features) = document.into_config_and_features();
+        let (mut config, features) = document.clone().into_config_and_features();
+        let paths = ProjectModel::new(path, project.source_path.as_deref(), &config.type_checker);
+        config.type_checker.tsconfig = paths
+            .tsconfig()
+            .map(|path| path.to_string_lossy().into_owned().into());
+        let source_path = project.source_path.clone();
         Self {
             valid: true,
+            project,
             config,
             source_path,
             features,

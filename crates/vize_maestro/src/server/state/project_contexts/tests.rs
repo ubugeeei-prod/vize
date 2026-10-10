@@ -329,3 +329,15 @@ fn initializing_multiple_editor_folders_does_not_import_unused_packages() {
     assert!(!fixture.path().join("packages/b/evaluations").exists());
     assert_eq!(state.cached_project_states().len(), 1);
 }
+
+#[test]
+fn malformed_workspace_config_keeps_the_complete_historical_feature_defaults() {
+    let dir = tempfile::tempdir().expect("workspace");
+    std::fs::write(dir.path().join("vize.config.json"), "not valid json").expect("config");
+    let state = super::ServerState::new();
+    state.load_workspace_config(dir.path());
+    assert_eq!(
+        state.lsp_features(),
+        crate::server::state::LspFeatureConfig::default()
+    );
+}

@@ -184,6 +184,101 @@ fn native_array_projection_retains_global_settings_and_ordered_root_scopes() {
 }
 
 #[test]
+fn editor_snapshot_keeps_lint_scopes_and_paths_from_one_host_evaluation() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(
+        project.path().join("vite.config.mjs"),
+        r#"import { appendFileSync } from 'node:fs';
+        export default () => {
+            appendFileSync(new URL('.evaluations', import.meta.url), 'once');
+            return {root:'app',vize:{
+                typeChecker:{tsconfig:'tsconfig.json'}, ignores:['src/Ignored.vue'],
+                entries:[{files:['src/*.vue'],linter:{rules:{'a11y/alt-text':'error'}}}]
+            }};
+        };"#,
+    )
+    .unwrap();
+    let loaded = load_lsp_config_snapshot(Some(project.path()));
+    let root = project.path().canonicalize().unwrap().join("app");
+    let plan = loaded.project.document.linter_plan();
+    assert_eq!(
+        (
+            loaded.valid,
+            loaded.source_path.as_deref(),
+            loaded.project.source_path.as_deref(),
+            loaded.project.project_root.as_deref(),
+            loaded.config.type_checker.tsconfig.as_deref(),
+            plan.entries[0].base_path.as_deref(),
+            loaded.project.document.entry_ignores(),
+            std::fs::read_to_string(project.path().join(".evaluations")).unwrap(),
+        ),
+        (
+            true,
+            Some(project.path().join("vite.config.mjs").as_path()),
+            Some(project.path().join("vite.config.mjs").as_path()),
+            Some(root.as_path()),
+            root.join("tsconfig.json").to_str(),
+            root.to_str(),
+            vec![super::ConfigEntryIgnore {
+                base_path: root.to_str().map(Into::into),
+                pattern: "src/Ignored.vue".into(),
+            }],
+            "once".into(),
+        )
+    );
+}
+
+#[test]
+fn editor_snapshot_owns_dedicated_relative_tsconfig_projection() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(
+        project.path().join("vize.config.json"),
+        r#"{"typeChecker":{"tsconfig":"tsconfig.app.json","jsxTypecheck":false}}"#,
+    )
+    .unwrap();
+    let loaded = load_lsp_config_snapshot(Some(project.path()));
+    assert_eq!(
+        (
+            loaded.valid,
+            loaded.project.project_root,
+            loaded.config.type_checker.tsconfig.as_deref(),
+            loaded.features.type_checker_jsx_typecheck,
+            loaded.config.language_server.formatting,
+        ),
+        (
+            true,
+            None,
+            project.path().join("tsconfig.app.json").to_str(),
+            false,
+            None,
+        )
+    );
+}
+
+#[test]
+fn empty_editor_workspace_is_valid_without_weakening_explicit_cli_selection() {
+    let project = tempfile::tempdir().unwrap();
+    let loaded = load_lsp_config_snapshot(Some(project.path()));
+    assert_eq!(
+        (
+            loaded.valid,
+            loaded.source_path,
+            loaded.project.source_path,
+            loaded.project.project_root,
+            loaded.features.type_checker_jsx_typecheck,
+        ),
+        (true, None, None, None, true)
+    );
+    assert_eq!(
+        super::try_load_project_config_with_source(Some(project.path())).unwrap_err(),
+        format!(
+            "no vize config file found under {}",
+            project.path().display()
+        )
+    );
+}
+
+#[test]
 fn empty_editor_directory_retains_fresh_defaults_and_strict_cli_checks() {
     let project = tempfile::tempdir().unwrap();
     let loaded = load_lsp_config_snapshot(Some(project.path()));
