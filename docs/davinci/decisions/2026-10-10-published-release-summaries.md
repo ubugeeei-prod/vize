@@ -4,9 +4,12 @@ Related tracker: [#6239](https://github.com/ubugeeei-prod/vize/issues/6239).
 
 The root changelog's latest dated entry was 0.362.0 even after 0.435.0 and
 0.439.0 were published. Add short, grouped summaries for those two actual
-releases, linking every selected change to its merged PR and every summary
-to the complete public comparison. Keep the existing historical entries and
-Unreleased section.
+releases in `docs/release/recent-releases.md`, linking every selected change to
+its merged PR and every summary to the complete public comparison. The root
+changelog links these summaries above its unchanged historical entries and
+Unreleased section. The over-limit historical changelog cannot grow under the
+existing source budget; use a short companion instead of a budget exception or
+unrelated historical restructuring.
 
 ## Source evidence
 
@@ -22,9 +25,9 @@ notice at the top of the 0.439.0 release is inherited context and is not
 treated as newly implemented behavior in that release.
 
 No published 0.436.0, 0.437.0 or 0.438.0 release appears in the current public
-history. Those version metadata candidates do not become changelog release
+history. Those version metadata candidates do not become published release
 entries. The full historical backfill remains unfinished; the changelog
-explicitly links the complete public release history for omitted details.
+and the companion explicitly links the complete public history for omitted details.
 
 The git-cliff configuration also points to the existing Rust helper instead
 of a removed JavaScript path. This change does not run the release operator,
