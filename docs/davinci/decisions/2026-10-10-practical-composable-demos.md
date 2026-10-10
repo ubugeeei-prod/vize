@@ -214,3 +214,12 @@ Keep this next slice unpublished during the current twenty-example admission;
 publish only from a coherent delivered parent/main, obtain fresh exact-source
 Actions and protected actual merge, and require real deployed browser proof.
 The complete #8374 catalogue requirement and broader #6101 remain open.
+
+A repeated follow-on capture observed the denied native query and failed read
+without the reactive permission readout reaching denied. Preserve that failed
+observation; eight independent native repetitions passed and recorded actual
+prompt/denied/granted changes, so no provider defect is inferred from it.
+Explicitly await the initial granted permission query before revocation in both
+direct and embedded checks. Retain the exact denied/restored readout assertions,
+actual clipboard operation results, and the original strict hydration laws.
+Require a fresh full capture and Actions before publishing this prepared slice.

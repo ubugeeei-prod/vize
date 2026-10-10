@@ -5,6 +5,7 @@ import type { FrameLocator, Locator, Page } from "playwright";
 
 /** The real rendered documentation iframe must also retain clipboard access. */
 export async function exerciseEmbeddedClipboard(page: Page, frame: FrameLocator): Promise<void> {
+  await frame.getByText("Clipboard read permission: granted · Last failure: none").waitFor();
   const command = "  vp install @vizejs/composable vue  ";
   await frame.getByRole("textbox", { name: "Install command", exact: true }).fill(command);
   await frame.getByRole("button", { name: "Copy install command", exact: true }).focus();
@@ -54,6 +55,7 @@ async function observePanel(page: Page, panel: Locator, name: string): Promise<n
 
 export async function exerciseObservedBrowserExample(page: Page, name: string): Promise<string[]> {
   if (name === "use-clipboard") {
+    await page.getByText("Clipboard read permission: granted · Last failure: none").waitFor();
     const command = page.getByRole("textbox", { name: "Install command", exact: true });
     const first = "  vp install @vizejs/composable  ";
     await command.fill(first);
