@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy current docs build
+    name: Deploy completed docs build
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: blacksmith-32vcpu-ubuntu-2404
     concurrency:
@@ -29,6 +29,7 @@ jobs:
     permissions:
       actions: read
       contents: read
+      deployments: write
       pages: write
       id-token: write
     environment:
@@ -42,24 +43,23 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Compare docs build with current main
+      - name: Setup deployment validator runtime
+        uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: "package.json"
+          cache: false
+          run-install: false
+
+      - name: Validate completed build and actual Pages publication floor
         id: main
         shell: bash
         env:
-          DOCS_BUILD_SHA: ${{ github.event.workflow_run.head_sha }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          if [[ ! "$DOCS_BUILD_SHA" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "::error title=Invalid docs build SHA::workflow_run.head_sha must be a full lowercase commit SHA"
-            exit 1
-          fi
-          CURRENT_MAIN_SHA="$(git rev-parse HEAD)"
-          if [[ "$DOCS_BUILD_SHA" == "$CURRENT_MAIN_SHA" ]]; then
-            echo "eligible=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "eligible=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping stale docs build $DOCS_BUILD_SHA; current main is $CURRENT_MAIN_SHA"
-          fi
+          # Preserve trusted main validators when the completed source is older.
+          cp tools/support/compat/github/docs-deployment-*.ts "$RUNNER_TEMP/"
+          vp node "$RUNNER_TEMP/docs-deployment-entry.ts" prepare
 
       - name: Checkout docs build
         if: ${{ steps.main.outputs.eligible == 'true' }}
@@ -73,6 +73,7 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           run-id: ${{ github.event.workflow_run.id }}
+          artifact-ids: ${{ steps.main.outputs.artifact_ids }}
           github-token: ${{ github.token }}
           path: artifacts
 
@@ -94,9 +95,22 @@ jobs:
           name: github-pages-${{ github.run_attempt }}
           path: site
 
+      - name: Record Pages artifact custody
+        if: ${{ steps.main.outputs.eligible == 'true' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: vp node "$RUNNER_TEMP/docs-deployment-entry.ts" record
+
       - name: Deploy to GitHub Pages
         id: deployment
         if: ${{ steps.main.outputs.eligible == 'true' }}
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
         with:
           artifact_name: github-pages-${{ github.run_attempt }}
+
+      - name: Confirm actual Pages publication
+        if: ${{ steps.main.outputs.eligible == 'true' && steps.deployment.conclusion == 'success' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PAGES_URL: ${{ steps.deployment.outputs.page_url }}
+        run: vp node "$RUNNER_TEMP/docs-deployment-entry.ts" finish
