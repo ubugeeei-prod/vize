@@ -4,7 +4,7 @@
 //! during template traversal.
 
 use crate::croquis::{ComponentUsage, EventListener, PassedProp, SlotUsage, SpreadProp};
-use crate::drawer::helpers::extract_slot_props;
+use crate::drawer::helpers::extract_retained_slot_prop_bindings;
 use vize_carton::{CompactString, SmallVec, String, cstr};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, SimpleExpressionNode, TemplateChildNode};
 
@@ -240,8 +240,11 @@ fn push_slot_usage(usage: &mut ComponentUsage, dir: &vize_relief::DirectiveNode<
     let scope_vars = dir
         .exp
         .as_ref()
-        .map(|exp| expression_content(exp, source))
-        .map(extract_slot_props)
+        .and_then(|exp| match exp {
+            ExpressionNode::Simple(node) => extract_retained_slot_prop_bindings(node),
+            ExpressionNode::Compound(_) => None,
+        })
+        .map(|bindings| bindings.into_iter().map(|(name, _)| name).collect())
         .unwrap_or_default();
 
     usage.slots.push(SlotUsage {
@@ -279,12 +282,5 @@ fn is_default_slot_child(child: &TemplateChildNode<'_>) -> bool {
         TemplateChildNode::Comment(_) => false,
         TemplateChildNode::Hoisted(_) => false,
         _ => true,
-    }
-}
-
-fn expression_content<'a>(exp: &'a ExpressionNode<'_>, source: &'a str) -> &'a str {
-    match exp {
-        ExpressionNode::Simple(s) => s.content,
-        ExpressionNode::Compound(c) => c.loc.span.slice(source),
     }
 }

@@ -1,0 +1,210 @@
+{
+  "schema": "vize.slot-parameter-entities.complete-compiler-goldens",
+  "version": 1,
+  "beforeSourceRevision": "943702629e503d8b10b4ff9a953c597a268482c0",
+  "expectedSourceRevision": "a80191dfb8dcc7575ea77477513bdf25f7e2a506",
+  "custody": {
+    "sourceCaptureDriverSha256": "478ded96f1ffd26ebaba19d0a4ed984f6fdb2929e62a6c67481cb65b59752355",
+    "beforeObservationSha256": "d8d1fb3c6fc69dfcc50f2d188296af6589362ba580b2704e935e44689b32a4b6",
+    "expectedObservationSha256": "bb660a573b27e0968ef24cd859d1450f4b9a143e92e9b4492fc0e52b1d3e9b36",
+    "comparisonAuditSha256": "61a9071e7fcbf834e5f9338d904dd088f78c4ce83eb489a5d91503cb27f80dd6"
+  },
+  "cases": [
+    {
+      "id": "entity-space",
+      "source": "<Panel v-slot=\"&#32;{ item }\">{{ item }}</Panel>",
+      "independentlyAuthoredPhysicalDeclarationOffset": 22,
+      "knownDeclarationOffset": 18,
+      "knownCoordinateGapBytes": 4,
+      "decodedContent": " { item }",
+      "wholeValueLocation": {
+        "span": {
+          "end": 28,
+          "start": 15
+        }
+      },
+      "before": [
+        {
+          "lane": "selected",
+          "prefixIdentifiers": false,
+          "codegen": {
+            "code": "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx((&#32;{ item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "legacy",
+          "prefixIdentifiers": false,
+          "codegen": {
+            "code": "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx((&#32;{ item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "selected",
+          "prefixIdentifiers": true,
+          "codegen": {
+            "code": "export function render(_ctx, _cache) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx((&#32;{ item }) => [\n      _createTextVNode(_toDisplayString(_ctx.item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "legacy",
+          "prefixIdentifiers": true,
+          "codegen": {
+            "code": "export function render(_ctx, _cache) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx((&#32;{ item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n"
+          },
+          "errors": []
+        }
+      ],
+      "expected": [
+        {
+          "lane": "selected",
+          "prefixIdentifiers": false,
+          "codegen": {
+            "code": "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx((&#32;{ item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "legacy",
+          "prefixIdentifiers": false,
+          "codegen": {
+            "code": "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "selected",
+          "prefixIdentifiers": true,
+          "codegen": {
+            "code": "export function render(_ctx, _cache) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx((&#32;{ item }) => [\n      _createTextVNode(_toDisplayString(_ctx.item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "legacy",
+          "prefixIdentifiers": true,
+          "codegen": {
+            "code": "export function render(_ctx, _cache) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n"
+          },
+          "errors": []
+        }
+      ]
+    },
+    {
+      "id": "literal-space-control",
+      "source": "<Panel v-slot=\" { item }\">{{ item }}</Panel>",
+      "independentlyAuthoredPhysicalDeclarationOffset": 18,
+      "knownDeclarationOffset": 18,
+      "knownCoordinateGapBytes": 0,
+      "decodedContent": " { item }",
+      "wholeValueLocation": {
+        "span": {
+          "end": 24,
+          "start": 15
+        }
+      },
+      "before": [
+        {
+          "lane": "selected",
+          "prefixIdentifiers": false,
+          "codegen": {
+            "code": "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "legacy",
+          "prefixIdentifiers": false,
+          "codegen": {
+            "code": "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "selected",
+          "prefixIdentifiers": true,
+          "codegen": {
+            "code": "export function render(_ctx, _cache) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "legacy",
+          "prefixIdentifiers": true,
+          "codegen": {
+            "code": "export function render(_ctx, _cache) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n"
+          },
+          "errors": []
+        }
+      ],
+      "expected": [
+        {
+          "lane": "selected",
+          "prefixIdentifiers": false,
+          "codegen": {
+            "code": "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "legacy",
+          "prefixIdentifiers": false,
+          "codegen": {
+            "code": "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "const { resolveComponent: _resolveComponent, toDisplayString: _toDisplayString, openBlock: _openBlock, createBlock: _createBlock, createTextVNode: _createTextVNode, withCtx: _withCtx } = Vue\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "selected",
+          "prefixIdentifiers": true,
+          "codegen": {
+            "code": "export function render(_ctx, _cache) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n"
+          },
+          "errors": []
+        },
+        {
+          "lane": "legacy",
+          "prefixIdentifiers": true,
+          "codegen": {
+            "code": "export function render(_ctx, _cache) {\n  const _component_Panel = _resolveComponent(\"Panel\")\n  \n  return (_openBlock(), _createBlock(_component_Panel, null, {\n    default: _withCtx(( { item }) => [\n      _createTextVNode(_toDisplayString(item), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "map": null,
+            "preamble": "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n"
+          },
+          "errors": []
+        }
+      ]
+    }
+  ]
+}

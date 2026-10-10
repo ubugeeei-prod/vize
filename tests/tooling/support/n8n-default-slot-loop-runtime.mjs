@@ -31,13 +31,16 @@ async function pinned(url, sha) {
   return bytes.toString("utf8");
 }
 
+export async function pinnedVueRuntime(runtimeConsole = console) {
+  const code = await pinned(provenance.vueRuntimeUrl, provenance.vueRuntimeSha256);
+  const scope = { console: runtimeConsole, setTimeout, clearTimeout };
+  vm.runInNewContext(code, scope, { filename: provenance.vueRuntimeUrl });
+  assert.equal(scope.Vue.version, provenance.vueVersion);
+  return { Vue: scope.Vue, code, provenance };
+}
 export async function stock(source) {
   assert.equal(hash(source), provenance.authoredTemplateSha256);
-  const code = await pinned(provenance.vueRuntimeUrl, provenance.vueRuntimeSha256);
-  const scope = { console, setTimeout, clearTimeout };
-  vm.runInNewContext(code, scope, { filename: provenance.vueRuntimeUrl });
-  const Vue = scope.Vue;
-  assert.equal(Vue.version, provenance.vueVersion);
+  const { Vue } = await pinnedVueRuntime();
   const compilerCode = await pinned(provenance.compilerUrl, provenance.compilerSha256);
   const compiler = await import(
     `data:text/javascript;base64,${Buffer.from(compilerCode).toString("base64")}`

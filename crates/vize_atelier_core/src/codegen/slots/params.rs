@@ -1,13 +1,11 @@
 //! Slot parameter helpers (scoped slot props parsing and prefixing).
 
 use crate::{DirectiveNode, ExpressionNode};
-use oxc_ast::ast::{BindingPattern, Expression};
+use oxc_ast::ast::{BindingPattern, FormalParameters};
 use oxc_ast_visit::{
     Visit,
     walk::{walk_arrow_function_expression, walk_function, walk_object_property},
 };
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 use vize_croquis::builtins::is_global_allowed;
 use vize_l0::{FxHashSet, String, ToCompactString};
 
@@ -19,37 +17,68 @@ pub(super) fn get_slot_props(dir: &DirectiveNode<'_>, source: &str) -> Option<St
     })
 }
 
-/// Add _ctx. prefix to default value identifiers in destructuring patterns.
-/// e.g., "{ item = defaultItem }" -> "{ item = _ctx.defaultItem }"
-/// Only processes default value expressions, not the param names.
-pub(super) fn prefix_slot_defaults(source: &str) -> String {
-    if !crate::steps::expression::expression_is_safe_to_parse(source) {
-        return String::new(source);
-    }
-
-    let mut wrapped = String::with_capacity(source.len() + 10);
-    wrapped.push('(');
-    wrapped.push_str(source);
-    wrapped.push_str(") => null");
-
-    let allocator = crate::expr_parse_probe::parse_arena();
-    let parser = Parser::new(&allocator, &wrapped, SourceType::ts().with_module(true));
-    let Ok(Expression::ArrowFunctionExpression(arrow)) = parser.parse_expression() else {
-        return String::new(source);
+/// The original slot carrier is the sole declaration/default-RHS authority.
+/// A refused or stale carrier emits the original text without synthesizing
+/// bindings or reparsing a parameter wrapper.
+pub(super) fn slot_parameters(
+    dir: &DirectiveNode<'_>,
+    source: &str,
+) -> Option<(String, Vec<String>)> {
+    let raw = get_slot_props(dir, source)?;
+    let Some(ExpressionNode::Simple(node)) = &dir.exp else {
+        return Some((raw, vec![]));
     };
-
-    let mut slot_params = FxHashSet::default();
-    for param in &arrow.params.items {
-        collect_binding_names(&param.pattern, &mut slot_params);
+    let Some(retained) = node.js_ast else {
+        return Some((raw, vec![]));
+    };
+    if retained.raw != node.content {
+        return Some((raw, vec![]));
     }
+    let Some(Ok(parameters)) = retained.as_slot_parameters() else {
+        return Some((raw, vec![]));
+    };
+    Some(prefix_retained_defaults(retained.raw, parameters))
+}
 
-    let mut visitor = SlotDefaultPrefixVisitor::new(slot_params, 1);
-    for param in &arrow.params.items {
-        collect_default_rewrites(&param.pattern, &mut visitor);
+#[cfg(test)]
+pub(super) fn prefix_slot_defaults(source: &str) -> String {
+    let allocator = oxc_allocator::Allocator::default();
+    let parameters = oxc_parser::Parser::new(
+        &allocator,
+        source,
+        oxc_span::SourceType::ts().with_module(true),
+    )
+    .parse_slot_parameters()
+    .expect("authored parameter grammar");
+    prefix_retained_defaults(source, &parameters).0
+}
+
+fn prefix_retained_defaults(
+    source: &str,
+    parameters: &FormalParameters<'_>,
+) -> (String, Vec<String>) {
+    let mut slot_params = FxHashSet::default();
+    for parameter in &parameters.items {
+        collect_binding_names(&parameter.pattern, &mut slot_params);
+    }
+    if let Some(rest) = &parameters.rest {
+        collect_binding_names(&rest.rest.argument, &mut slot_params);
+    }
+    let mut names: Vec<_> = slot_params.iter().cloned().collect();
+    names.sort();
+    let mut visitor = SlotDefaultPrefixVisitor::new(slot_params, 0);
+    for parameter in &parameters.items {
+        collect_default_rewrites(&parameter.pattern, &mut visitor);
+        if let Some(initializer) = &parameter.initializer {
+            visitor.visit_expression(initializer);
+        }
+    }
+    if let Some(rest) = &parameters.rest {
+        collect_default_rewrites(&rest.rest.argument, &mut visitor);
     }
 
     if visitor.insertions.is_empty() {
-        return String::new(source);
+        return (String::new(source), names);
     }
 
     visitor
@@ -62,7 +91,7 @@ pub(super) fn prefix_slot_defaults(source: &str) -> String {
             result.insert_str(pos, &text);
         }
     }
-    result
+    (result, names)
 }
 
 struct SlotDefaultPrefixVisitor {
@@ -221,13 +250,4 @@ fn collect_binding_names(pattern: &BindingPattern<'_>, names: &mut FxHashSet<Str
             collect_binding_names(&assign.left, names);
         }
     }
-}
-
-/// Extract parameter names from slot props expression
-/// e.g., "{ item }" -> ["item"], "{ item, index }" -> ["item", "index"]
-/// e.g., "slotProps" -> ["slotProps"]
-pub(super) fn extract_slot_params(props_str: &str) -> Vec<String> {
-    let mut params = Vec::new();
-    super::super::v_for::extract_destructure_params(props_str.trim(), &mut params);
-    params
 }

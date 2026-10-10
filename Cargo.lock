@@ -5053,6 +5053,7 @@ version = "0.442.0"
 dependencies = [
  "oxc_ast",
  "oxc_ast_visit",
+ "oxc_diagnostics",
  "oxc_syntax",
  "serde",
  "serde_json",

@@ -20,14 +20,15 @@ impl Drawer {
                     && matches!(&dir.arg, Some(ExpressionNode::Simple(arg)) if arg.content == "ref") =>
             {
                 match &dir.exp {
-                    Some(ExpressionNode::Simple(exp)) => {
-                        exp.js_ast.as_ref().and_then(|js| match js.ast {
+                    Some(ExpressionNode::Simple(exp)) => exp
+                        .js_ast
+                        .and_then(|js| js.as_expression())
+                        .and_then(|js| match js.ast {
                             oxc_ast::ast::Expression::StringLiteral(value) => {
                                 Some(CompactString::new(value.value.as_str()))
                             }
                             _ => None,
-                        })
-                    }
+                        }),
                     _ => None,
                 }
             }

@@ -71,7 +71,12 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         opening_span: Span,
     ) -> (ArenaVec<'a, FormalParameter<'a>>, Option<ArenaBox<'a, FormalParameterRest<'a>>>) {
         let mut list = ArenaVec::new_in(self);
-        let rest = self.parse_formal_parameters_list_into(&mut list, func_kind, opening_span);
+        let rest = self.parse_formal_parameters_list_into(
+            &mut list,
+            func_kind,
+            opening_span,
+            Kind::RParen,
+        );
         (list, rest)
     }
 
@@ -82,6 +87,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         list: &mut ArenaVec<'a, FormalParameter<'a>>,
         func_kind: FunctionKind,
         opening_span: Span,
+        closing: Kind,
     ) -> Option<ArenaBox<'a, FormalParameterRest<'a>>> {
         let mut rest: Option<ArenaBox<'a, FormalParameterRest<'a>>> = None;
         let mut first = true;
@@ -89,7 +95,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
 
         loop {
             let kind = self.cur_kind();
-            if kind == Kind::RParen
+            if kind == closing
                 || matches!(kind, Kind::Eof | Kind::Undetermined)
                 || self.fatal_error.is_some()
             {
@@ -102,7 +108,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
                 let comma_span = self.cur_token().span();
                 if kind != Kind::Comma {
                     let error = diagnostics::expect_closing_or_separator(
-                        Kind::RParen.to_str(),
+                        closing.to_str(),
                         Kind::Comma.to_str(),
                         kind.to_str(),
                         comma_span,
@@ -113,7 +119,7 @@ impl<'a, C: Config> ParserImpl<'a, C> {
                 }
                 self.bump_any();
                 let kind = self.cur_kind();
-                if kind == Kind::RParen {
+                if kind == closing {
                     if rest.is_some() && !self.ctx.has_ambient() {
                         self.error(diagnostics::rest_element_trailing_comma(comma_span));
                     }
@@ -170,6 +176,34 @@ impl<'a, C: Config> ParserImpl<'a, C> {
         }
 
         rest
+    }
+
+    /// A slot value is an original-source arrow parameter list ending at EOF.
+    /// The existing parenthesized grammar selects RParen and remains unchanged.
+    pub(crate) fn parse_slot_parameter_items(&mut self) -> FormalParameters<'a> {
+        let span = self.start_span();
+        let opening_span = self.cur_token().span();
+        if self.is_ts && self.at(Kind::This) {
+            let this_param = self.parse_ts_this_parameter();
+            self.error(diagnostics::ts_arrow_function_this_parameter(this_param.span));
+            if !self.at(Kind::Eof) {
+                self.bump(Kind::Comma);
+            }
+        }
+        let mut list = ArenaVec::new_in(self);
+        let rest = self.parse_formal_parameters_list_into(
+            &mut list,
+            FunctionKind::Expression,
+            opening_span,
+            Kind::Eof,
+        );
+        FormalParameters::new(
+            self.end_span(span),
+            FormalParameterKind::ArrowFormalParameters,
+            list,
+            rest,
+            self,
+        )
     }
 
     fn parse_formal_parameter_with_decorators(

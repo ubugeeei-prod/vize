@@ -222,10 +222,13 @@ fn desugar_scoped_slot_attrs<'a>(allocator: &'a Allocator, el: &mut ElementNode<
         ))
     });
     let exp = slot_props.map(|(props, loc)| {
-        ExpressionNode::Simple(Box::new_in(
-            SimpleExpressionNode::new(props, false, loc),
-            &allocator,
-        ))
+        // This is the original attribute's first compiler parameter admission;
+        // modern directives already receive the same role from Armature.
+        let mut expression = SimpleExpressionNode::new(props, false, loc);
+        expression.js_ast = Some(vize_armature::parser::retain_slot_parameters_in(
+            allocator, props,
+        ));
+        ExpressionNode::Simple(Box::new_in(expression, &allocator))
     });
 
     let v_slot = PropNode::Directive(Box::new_in(

@@ -46,7 +46,7 @@ pub(super) fn is_function_shape(expr: &Expression<'_>) -> bool {
 /// Both paths classify the whole handler, never just its leading expression.
 pub fn is_event_handler_reference_node(node: &SimpleExpressionNode<'_>) -> bool {
     match crate::retained::retained_whole_expression(node) {
-        Some(js) if crate::retained::js_module_compatible(js) => {
+        Some(js) if crate::retained::js_module_compatible(&js) => {
             let result = is_handler_reference_shape(js.ast);
             #[cfg(any(test, feature = "legacy-differential"))]
             differential_shape_check(js.raw, result, is_handler_reference_shape);
@@ -69,7 +69,7 @@ pub fn is_typescript_function_expression_node(node: &SimpleExpressionNode<'_>) -
 
 fn function_expression_node(node: &SimpleExpressionNode<'_>, fallback: fn(&str) -> bool) -> bool {
     match crate::retained::retained_whole_expression(node) {
-        Some(js) if crate::retained::js_module_compatible(js) => {
+        Some(js) if crate::retained::js_module_compatible(&js) => {
             let result = is_function_shape(js.ast);
             #[cfg(any(test, feature = "legacy-differential"))]
             differential_shape_check(js.raw, result, is_function_shape);

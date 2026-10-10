@@ -88,6 +88,7 @@ pub(super) fn model<'a>(
     }
     let value = js(retained, read_operand)?;
     if let Some(js) = value.js {
+        let js = js.as_expression().ok_or(LegacyReason::Binding)?;
         match js.ast {
             Expression::Identifier(_) => {}
             Expression::StaticMemberExpression(member) if !member.optional => {}

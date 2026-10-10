@@ -1,0 +1,1627 @@
+{
+  "schema": "vize.n8n.slot-parameter-controls-v1",
+  "qualification": "Independently authored rule packets, never taken from Vize output; official reference observations stay separate.",
+  "caseCount": 24,
+  "preservedOriginalInputs": {
+    "tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/controls.json": "61b47b1fe1d40748abe3da537042aca582fbd97add1a52b73e1a8e5b193c732a",
+    "tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/consumers.json": "615310bfc29496c17fe7aa63598b1cc77a350eb6a7fd24d5cccbcb7868554e9d",
+    "tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/independent.json": "e7a3f5447f42470879b0499a784d6c40da2f1b09909cb5853aca852cff5dc549",
+    "tests/_fixtures/differential/lint/slot-dynamic-bindings-8142/controls.json": "454296ebb926f0d309ce8a895188f26f411f6cdaac52b7b94393d67b2aec9411",
+    "tests/_fixtures/differential/lint/slot-dynamic-bindings-8142/independent.json": "6843ad37a179742aee79742100fa3534e96b28020905a549f267f448e6ef65e3",
+    "tests/_fixtures/differential/lint/slot-dynamic-bindings-8142/additions.json": "a9ce7c6d9445c1bff1d719492d06ff7cf1407e9af387678978764718b3210239",
+    "tests/_fixtures/differential/lint/slot-directive-validity-8142/cases.json": "633155e4f534b4af9a70d3ef7486b964975c79a127ffe688becd4c47bea22ebb",
+    "tests/_fixtures/differential/lint/slot-directive-validity-8142/independent.json": "8a35507f19cc612404bd208cae61662e0ae259c44607297cc12e9439014b9c9e",
+    "tests/_fixtures/differential/lint/slot-directive-validity-8142/source-before.json": "ee2d29cf706511a6bd040ae374c766825b62540eca978cf888c358f709ecfd7e",
+    "tests/_fixtures/differential/lint/slot-directive-validity-8142/source-after.json": "b4ab143ed6ff7fba9abd1be348934c45058ae54c06ff9672ea889600b35d4963",
+    "tests/tooling/support/n8n-slot-options-acceptance.ts": "3f99467f4bd91bfabbeb7657ba6215729abc0d64e6dc2b8cea7eb6137dbf382d",
+    "tests/tooling/support/n8n-installed-slot-options-acceptance.ts": "11e56e1930b639fb843792b11c1ad8731f4127680d4275c46e50874dbbf32baf",
+    "tests/tooling/patina-slot-dynamic-modifiers-oracle.test.ts": "036ee66b04a639651060d63faa0b1932bca440f7655e199452298637074d91eb"
+  },
+  "cases": [
+    {
+      "id": "shorthand-default-own",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ slot = fallback }\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "ea8cef53e6a00dde8bef315b96f32f6a074f4e4ae87ff168abfd892564f4b00a",
+      "parameterAuthored": "{ slot = fallback }",
+      "parameterRaw": "{ slot = fallback }",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot]=\"{ slot = fallback }\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 62
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 51
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 51
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 62,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 62,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "nested-default-own",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ source: { slot = fallback(outer) } }\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "8cbc01230fc46e0b62437215851172e888742a6e41d2553cb4dffc81936b2ed6",
+      "parameterAuthored": "{ source: { slot = fallback(outer) } }",
+      "parameterRaw": "{ source: { slot = fallback(outer) } }",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot]=\"{ source: { slot = fallback(outer) } }\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 81
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 70
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 70
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 81,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 81,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "positional-default-own",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"slot = fallback(outer, argument)\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "d9126e514e53e13ba8a1f325b9c2aca15588a70ecfb1d5f5dae01f377a8b2390",
+      "parameterAuthored": "slot = fallback(outer, argument)",
+      "parameterRaw": "slot = fallback(outer, argument)",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot]=\"slot = fallback(outer, argument)\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 75
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 64
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 64
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 75,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 75,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "top-rest-own",
+      "source": "<template>\n<FancyPanel><template #[slots.name]=\"...slots\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "a05ad87366f50f2c0bf5c9ba5a2a75bcd9ea94c60f203e65124a7a48ac7c7388",
+      "parameterAuthored": "...slots",
+      "parameterRaw": "...slots",
+      "declaredBindingNames": [
+        "slots"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slots.name]=\"...slots\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 57
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 46
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 46
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 57,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 57,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "typed-object-own",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ slot }: Props\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "e3cc5314ff6991604899626ae0cd0ebeec281bea2edafd8a6ff35788fccb1bd8",
+      "parameterAuthored": "{ slot }: Props",
+      "parameterRaw": "{ slot }: Props",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot]=\"{ slot }: Props\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 58
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 47
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 47
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 58,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 58,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "typed-positional-own",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"slot: Props\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "6dd64a64ff8da9a7e29081591686ccdefc33049ce0b59e6e3047bec822ac239d",
+      "parameterAuthored": "slot: Props",
+      "parameterRaw": "slot: Props",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot]=\"slot: Props\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 54
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 43
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 43
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 54,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 54,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "multiple-second-own",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"props, slot = fallback(outer)\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "c98e6bed8ad7eadf1781f91ae9f61b006317c54680498f1212b5d6f1643ae7dd",
+      "parameterAuthored": "props, slot = fallback(outer)",
+      "parameterRaw": "props, slot = fallback(outer)",
+      "declaredBindingNames": [
+        "props",
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot]=\"props, slot = fallback(outer)\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 72
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 61
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 61
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 72,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 72,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "optional-own",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"slot?: Props\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "8ab61a3b03a4fb83722867ed3f0d07ac23c5c130cb17d089977717ac0c80169e",
+      "parameterAuthored": "slot?: Props",
+      "parameterRaw": "slot?: Props",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot]=\"slot?: Props\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 55
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 44
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 44
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 55,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 55,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "computed-key-read-control",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ [slot]: other }\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "955204e0967b18d8a85f68854c58db0c46415c4209c78dc8a5b523f7f27f0566",
+      "parameterAuthored": "{ [slot]: other }",
+      "parameterRaw": "{ [slot]: other }",
+      "declaredBindingNames": [
+        "other"
+      ],
+      "ownBindingExpected": false,
+      "authored": {
+        "directive": "#[slot]=\"{ [slot]: other }\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 60
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 49
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 49
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "default-rhs-read-control",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ other = slot }\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "e005b4b823805598cd9104811e57fba1e7b85436cbcd474ff35075a301152ae1",
+      "parameterAuthored": "{ other = slot }",
+      "parameterRaw": "{ other = slot }",
+      "declaredBindingNames": [
+        "other"
+      ],
+      "ownBindingExpected": false,
+      "authored": {
+        "directive": "#[slot]=\"{ other = slot }\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 59
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 48
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 48
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "argument-lambda-shadow-control",
+      "source": "<template>\n<FancyPanel><template #[(slot=>slot)(outside)]=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "d7b688bf3a9bd24ef6114d1b9c60216e7dba727c8ed453290bf2293ba38d0a5d",
+      "parameterAuthored": "slot",
+      "parameterRaw": "slot",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": false,
+      "authored": {
+        "directive": "#[(slot=>slot)(outside)]=\"slot\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 64
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 53
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 53
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "argument-lambda-capture-own",
+      "source": "<template>\n<FancyPanel><template #[(other=>slot)(outside)]=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "edd99a467573dc5f8c84542e85af81be98b62c8b99d290df14367cc1df7caa5e",
+      "parameterAuthored": "slot",
+      "parameterRaw": "slot",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[(other=>slot)(outside)]=\"slot\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 65
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 54
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 54
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 65,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 65,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "escaped-binding-own",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"s\\u006cot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "6997b72ab0c2cad80d0aba2f8ebce753848c1773cc2d662921b282f45f3b9877",
+      "parameterAuthored": "s\\u006cot",
+      "parameterRaw": "s\\u006cot",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot]=\"s\\u006cot\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 52
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 41
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 41
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 52,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 52,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "unicode-binding-own",
+      "source": "<template>\n<!-- 注記 🐟 -->\n<FancyPanel><template #[スロット]=\"スロット\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "ec74642e53daeb229140264238d8f11ea0956662ced87b7058bbcdd69350d84b",
+      "parameterAuthored": "スロット",
+      "parameterRaw": "スロット",
+      "declaredBindingNames": [
+        "スロット"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[スロット]=\"スロット\"",
+        "byteSpan": {
+          "start": 54,
+          "end": 84
+        },
+        "scalarRange": {
+          "start": {
+            "line": 2,
+            "character": 22
+          },
+          "end": {
+            "line": 2,
+            "character": 36
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 2,
+            "character": 22
+          },
+          "end": {
+            "line": 2,
+            "character": 36
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 54,
+              "end": 84,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 54,
+              "end": 84,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "entity-binding-own",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"&#x73;lot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "1c74d04eb05a9b3bfa2cf2436f7675ca3503e65417d8e6d8de5fff773c517dc9",
+      "parameterAuthored": "&#x73;lot",
+      "parameterRaw": "slot",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot]=\"&#x73;lot\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 52
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 41
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 41
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 52,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 52,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      },
+      "coordinateLimit": "Retained parameter spans are relative to decoded raw; no physical entity mapping is declared."
+    },
+    {
+      "id": "crlf-block-trivia-own",
+      "source": "<template>\r\n<FancyPanel><template #[slot]=\"\r\n{ slot = fallback }\r\n/* tail */\">ready</template></FancyPanel>\r\n</template>\r\n",
+      "sourceSha256": "b47264f80bea575ba9dfca91bde95c5fe528df0afc1e13f4702473b6d588db97",
+      "parameterAuthored": "\r\n{ slot = fallback }\r\n/* tail */",
+      "parameterRaw": "\r\n{ slot = fallback }\r\n/* tail */",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot]=\"\r\n{ slot = fallback }\r\n/* tail */\"",
+        "byteSpan": {
+          "start": 34,
+          "end": 77
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 3,
+            "character": 11
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 3,
+            "character": 11
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 34,
+              "end": 77,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 34,
+              "end": 77,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "malformed-method-refusal",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ slot() {} }\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "d24d643049ff4e09fee76be82ce16ade3dd9af43758dc5c7667321d9f32a8a06",
+      "parameterAuthored": "{ slot() {} }",
+      "parameterRaw": "{ slot() {} }",
+      "declaredBindingNames": [],
+      "ownBindingExpected": false,
+      "authored": {
+        "directive": "#[slot]=\"{ slot() {} }\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 56
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 45
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 45
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "malformed-accessor-refusal",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ get slot() {} }\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "ac24913ff65ec9f5dfc45602ac9529d4a3b157afa8f868fffb58ec419d306be8",
+      "parameterAuthored": "{ get slot() {} }",
+      "parameterRaw": "{ get slot() {} }",
+      "declaredBindingNames": [],
+      "ownBindingExpected": false,
+      "authored": {
+        "directive": "#[slot]=\"{ get slot() {} }\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 60
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 49
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 49
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "malformed-rest-refusal",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"...slot, other\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "c627e2a9c6e64cefd9dfef8b3de447ac58871461749c86fa9786c2a421faff44",
+      "parameterAuthored": "...slot, other",
+      "parameterRaw": "...slot, other",
+      "declaredBindingNames": [],
+      "ownBindingExpected": false,
+      "authored": {
+        "directive": "#[slot]=\"...slot, other\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 57
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 46
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 46
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "malformed-unbalanced-refusal",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "79c42697dbc64357067500b47e363b59dce9123883e17a8ea78d701570ab951e",
+      "parameterAuthored": "{ slot",
+      "parameterRaw": "{ slot",
+      "declaredBindingNames": [],
+      "ownBindingExpected": false,
+      "authored": {
+        "directive": "#[slot]=\"{ slot\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 49
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 38
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 38
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "default-own-modifier",
+      "source": "<template>\n<FancyPanel><template #[slot].modifier=\"{ slot = fallback }\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "fa27dd4780f515071b52984be1c8c9175a0f6e803716f872579af419314fd6b5",
+      "parameterAuthored": "{ slot = fallback }",
+      "parameterRaw": "{ slot = fallback }",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[slot].modifier=\"{ slot = fallback }\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 71
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 60
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 60
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 71,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            },
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot with a slot argument does not support modifiers by default",
+              "start": 33,
+              "end": 71,
+              "help": "Remove the modifiers or enable allowModifiers",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 2,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 71,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "outer-member-control",
+      "source": "<template>\n<FancyPanel><template #[outside.slot]=\"{ slot = fallback }\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "2af2bca6e34dc5edb237abbbef4120632f7e1b6ddedc51ff40c53a00b9e6edba",
+      "parameterAuthored": "{ slot = fallback }",
+      "parameterRaw": "{ slot = fallback }",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": false,
+      "authored": {
+        "directive": "#[outside.slot]=\"{ slot = fallback }\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 70
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 59
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 59
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "clean-static-typed-control",
+      "source": "<template>\n<FancyPanel><template #header=\"{ slot }: Props\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "1169b9830f3a610624ce4b623cb9e3178ec4ed7e191c134f9986e1bce3088c7f",
+      "parameterAuthored": "{ slot }: Props",
+      "parameterRaw": "{ slot }: Props",
+      "declaredBindingNames": [
+        "slot"
+      ],
+      "ownBindingExpected": false,
+      "authored": {
+        "directive": "#header=\"{ slot }: Props\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 58
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 47
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 47
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "nested-array-rest-own",
+      "source": "<template>\n<FancyPanel><template #[rest.name]=\"[{ slot = fallback(outer) }, ...rest]\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "a855adf7097b8cfb6aa0a85544b82d3f53539edb4a032221f027ea6d601753de",
+      "parameterAuthored": "[{ slot = fallback(outer) }, ...rest]",
+      "parameterRaw": "[{ slot = fallback(outer) }, ...rest]",
+      "declaredBindingNames": [
+        "slot",
+        "rest"
+      ],
+      "ownBindingExpected": true,
+      "authored": {
+        "directive": "#[rest.name]=\"[{ slot = fallback(outer) }, ...rest]\"",
+        "byteSpan": {
+          "start": 33,
+          "end": 85
+        },
+        "scalarRange": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 74
+          }
+        },
+        "utf16Range": {
+          "start": {
+            "line": 1,
+            "character": 22
+          },
+          "end": {
+            "line": 1,
+            "character": 74
+          }
+        }
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 85,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "ParameterSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 85,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    }
+  ],
+  "referenceDifferences": [
+    {
+      "id": "argument-lambda-capture-own",
+      "options": [
+        false,
+        true
+      ],
+      "authoredOwnBinding": true,
+      "officialOwnBinding": false,
+      "statement": "Pinned official responses are clean for the dynamic argument lambda capture. The authored complete-expression read contract reports the captured slot binding. No semantic equivalence is claimed for this case."
+    },
+    {
+      "id": "malformed-rest-refusal",
+      "options": [
+        false,
+        true
+      ],
+      "authoredOwnBinding": false,
+      "officialOwnBinding": true,
+      "statement": "The pinned reference reports an own binding for an incomplete rest parameter list. The retained complete parameter goal refuses the header and supplies no declaration facts. No partial-parse fallback or semantic equivalence is claimed."
+    }
+  ]
+}

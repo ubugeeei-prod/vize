@@ -18,7 +18,7 @@ use super::detect::{
     slots_spread,
 };
 use super::name::{component_root_slot, emit_slot_property_name};
-use super::params::{extract_slot_params, get_slot_props, prefix_slot_defaults};
+use super::params::slot_parameters;
 
 /// Generate slots object for component
 ///
@@ -90,12 +90,11 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
         ctx.push_slot_function(el.loc.span.start);
         ctx.push("(");
         // Slot props (scoped slot params) - use raw source with default value prefix
-        let params = if let Some(props_str) = get_slot_props(slot_dir, &ctx.source) {
-            let processed = prefix_slot_defaults(&props_str);
+        let params = if let Some((processed, params)) = slot_parameters(slot_dir, &ctx.source) {
             ctx.push("(");
             ctx.push(&processed);
             ctx.push(")");
-            extract_slot_params(&props_str)
+            params
         } else {
             ctx.push("()");
             vec![]
@@ -175,16 +174,16 @@ pub fn generate_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
                     ctx.push("(");
 
                     // Slot props - use raw source with default value prefix
-                    let params = if let Some(props_str) = get_slot_props(slot_dir, &ctx.source) {
-                        let processed = prefix_slot_defaults(&props_str);
-                        ctx.push("(");
-                        ctx.push(&processed);
-                        ctx.push(")");
-                        extract_slot_params(&props_str)
-                    } else {
-                        ctx.push("()");
-                        vec![]
-                    };
+                    let params =
+                        if let Some((processed, params)) = slot_parameters(slot_dir, &ctx.source) {
+                            ctx.push("(");
+                            ctx.push(&processed);
+                            ctx.push(")");
+                            params
+                        } else {
+                            ctx.push("()");
+                            vec![]
+                        };
 
                     // Track slot params for stripping _ctx. prefix
                     ctx.add_slot_params(&params);

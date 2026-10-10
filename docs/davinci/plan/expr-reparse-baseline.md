@@ -77,6 +77,30 @@ drives down), while the P1-5 profiler counter of the same name counts
 armature's retained parses and is unchanged by construction (pinned by
 `vize_armature/tests/davinci_expr_parses.rs`).
 
+## Retained slot parameter role (2026-10-10)
+
+The original tables and six ladder fixtures above remain historical evidence.
+The direct, complete Armature slot-parameter producer now supplies both slot
+declarations and parameter/default consumption. SSR removes the eight
+slot-pattern parses and eight synthesized-arrow validations on `large`; Vapor
+removes its eight slot-pattern parses. The unchanged probe therefore observes
+the following exact current floors, asserted by both backend integration
+binaries as the original floor minus those explicit slot removals:
+
+| fixture       | dom | vapor | ssr |
+| ------------- | --: | ----: | --: |
+| small         |   0 |     0 |   0 |
+| medium        |   0 |     0 |   0 |
+| large         |   0 |     0 |   1 |
+| stress-deep   |   0 |     0 |   0 |
+| stress-wide   |   0 |     0 |   0 |
+| stress-interp |   0 |     0 |   0 |
+
+The remaining SSR parse is the existing v-for source sub-expression. These
+counts measure actual consumer re-parses, separately from Armature's one
+role-selected producer attempt per complete directive value. They do not
+qualify an installed release or the complete n8n adoption requirements.
+
 ## Scope and caveats
 
 - Compile path only. `vize_croquis`'s analysis-side parses (13 further oxc

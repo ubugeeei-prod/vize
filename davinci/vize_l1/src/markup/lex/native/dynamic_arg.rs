@@ -43,17 +43,27 @@ fn scan_argument(input: &[u8], start: usize) -> (usize, bool) {
     delimiters.push(b']');
     let mut index = start;
     while let Some(&byte) = input.get(index) {
-        // Directive heads remain HTML attribute names. Preserve their existing
-        // boundaries even inside unfinished JS literals, without lookahead or
-        // backtracking that could swallow subsequent attributes and tags.
-        if is_boundary(byte) {
-            return (index, false);
-        }
         // The stack only empties when the argument's own `]` closes it,
         // which returns below.
         let Some(&delimiter) = delimiters.last() else {
             return (index, true);
         };
+        // An adjacent arrow outside a literal belongs to a dynamic argument,
+        // not an attribute assignment followed by a tag close. Only this exact
+        // token crosses those two boundaries; no search for a later `]` and no
+        // parser retry can swallow a following attribute or unfinished tag.
+        if byte == b'='
+            && input.get(index + 1) == Some(&b'>')
+            && !matches!(delimiter, b'\'' | b'"' | b'`')
+        {
+            index += 2;
+            continue;
+        }
+        // Preserve every other HTML head boundary, including unfinished quoted
+        // literals. The retained JS producer independently validates the token.
+        if is_boundary(byte) {
+            return (index, false);
+        }
         if matches!(delimiter, b'\'' | b'"' | b'`') {
             match byte {
                 b'\\' => {

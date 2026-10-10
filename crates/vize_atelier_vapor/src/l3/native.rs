@@ -4,7 +4,7 @@
 mod emit;
 pub(super) mod validate;
 
-use vize_atelier_core::JsExpression;
+use vize_atelier_core::RetainedJsAst;
 use vize_carton::{Allocator, Vec};
 use vize_l2_to_l3::Lowered;
 
@@ -118,7 +118,7 @@ struct LoopSpans {
 #[derive(Debug, Clone, Copy)]
 struct Expr<'a> {
     text: &'a str,
-    js: Option<JsExpression<'a>>,
+    js: Option<RetainedJsAst<'a>>,
 }
 
 impl<'a> Expr<'a> {

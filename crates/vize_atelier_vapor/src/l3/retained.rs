@@ -11,6 +11,7 @@
 use oxc_allocator::CloneIn;
 use oxc_allocator::HashMap;
 use vize_atelier_core::{JsExpression, retained::js_module_compatible};
+use vize_atelier_core::{RetainedJsAst, RetainedJsAstKind};
 use vize_carton::{Allocator, Span, Vec};
 use vize_l2::{
     expr::{ExprRef, JsExpr},
@@ -21,7 +22,7 @@ pub(crate) struct Retained<'s, 'a> {
     allocator: &'a Allocator,
     // Arena tables: one compile owns them, so they never touch the heap.
     source: HashMap<'a, (u32, u32), &'s JsExpr<'s>>,
-    parsed: HashMap<'a, (u32, u32), JsExpression<'a>>,
+    parsed: HashMap<'a, (u32, u32), RetainedJsAst<'a>>,
 }
 
 impl<'s, 'a> Retained<'s, 'a> {
@@ -117,15 +118,19 @@ impl<'s, 'a> Retained<'s, 'a> {
 
     /// Parse a compound text part once, with L2's admission rule.
     pub(crate) fn parse(&mut self, text: &'a str, span: Span) -> bool {
-        let Ok(js) = JsExpr::parse_in(self.allocator, text, span) else {
+        let Ok(ast) = JsExpr::parse_ast_in(self.allocator, text) else {
             return false;
         };
         let js = JsExpression {
-            ast: js.ast,
+            ast: &ast,
             raw: text,
         };
         let admitted = js_module_compatible(&js);
         if admitted {
+            let js = RetainedJsAst {
+                ast: self.allocator.alloc(RetainedJsAstKind::Expression(ast)),
+                raw: text,
+            };
             self.parsed.insert((span.start, span.end), js);
         }
         admitted
@@ -133,7 +138,7 @@ impl<'s, 'a> Retained<'s, 'a> {
 
     /// The retained AST describing exactly `text` at `span`, in the output
     /// arena, when the generator's retained resolver can consume it.
-    pub(crate) fn expression(&self, text: &'a str, span: Span) -> Option<JsExpression<'a>> {
+    pub(crate) fn expression(&self, text: &'a str, span: Span) -> Option<RetainedJsAst<'a>> {
         let key = (span.start, span.end);
         if let Some(js) = self.parsed.get(&key) {
             return (js.raw == text).then_some(*js);
@@ -143,10 +148,10 @@ impl<'s, 'a> Retained<'s, 'a> {
             return None;
         }
         let oxc = self.allocator.as_oxc();
-        let js = JsExpression {
-            ast: oxc.alloc(js.ast.clone_in(oxc)),
+        let js = RetainedJsAst {
+            ast: oxc.alloc(RetainedJsAstKind::Expression(js.ast.clone_in(oxc))),
             raw: text,
         };
-        js_module_compatible(&js).then_some(js)
+        js_module_compatible(&js.as_expression()?).then_some(js)
     }
 }

@@ -1,4 +1,5 @@
 use super::super::slot_names::slot_argument_is_runtime_dynamic;
+use super::component_reference::expression_identifier;
 use super::dynamic_component_alias::dynamic_component_alias;
 use super::v_for_scope::v_for_scope_bindings;
 use crate::croquis::{TemplateExpression, TemplateExpressionKind};
@@ -6,12 +7,8 @@ use crate::drawer::Drawer;
 use crate::drawer::helpers::{
     extract_identifier_refs_oxc, is_builtin_directive, parse_v_for_scope_expression,
 };
-use oxc_allocator::Allocator;
-use oxc_ast::ast::Expression;
-use oxc_parser::Parser;
-use oxc_span::SourceType;
 use vize_carton::{CompactString, profile};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, JsExpression, PropNode};
+use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 impl Drawer {
     pub(super) fn process_element_conditional_directive(
         &mut self,
@@ -280,66 +277,6 @@ fn is_bind_is_directive(dir: &DirectiveNode<'_>) -> bool {
             dir.arg.as_ref(),
             Some(ExpressionNode::Simple(arg)) if arg.content == "is"
         )
-}
-
-fn expression_identifier(exp: &ExpressionNode<'_>, template_source: &str) -> Option<CompactString> {
-    let (source, retained) = match exp {
-        ExpressionNode::Simple(simple) => (simple.content, simple.js_ast.as_ref()),
-        ExpressionNode::Compound(compound) => (compound.loc.span.slice(template_source), None),
-    };
-    component_reference_expression(source, retained)
-}
-
-/// Recognize `<component :is="...">` targets that name a component: a lone
-/// identifier or a static member chain.
-///
-/// Nodes carrying the parse-once retained AST (P1-5) are shape-checked
-/// directly and the legacy throwaway parse dies for them (Davinci P1-6);
-/// nodes without one (invalid or incomplete text, compound expressions) keep
-/// the legacy parse. Under `cfg(any(test, feature = "legacy-differential"))`
-/// every retained check is dual-run against the legacy parse and divergence
-/// panics — the P1-6 differential lane.
-fn component_reference_expression(
-    source: &str,
-    retained: Option<&JsExpression<'_>>,
-) -> Option<CompactString> {
-    let result = match retained {
-        Some(js) => component_reference_from_ast(js.ast, source),
-        None => parse_component_reference_expression(source),
-    };
-    #[cfg(any(test, feature = "legacy-differential"))]
-    if retained.is_some() {
-        let legacy = parse_component_reference_expression(source);
-        assert_eq!(
-            result, legacy,
-            "davinci-differential (P1-6): retained-AST component-reference check diverged from the legacy parse for expression {source:?}"
-        );
-        crate::drawer::differential::record_component_reference_comparison();
-    }
-    result
-}
-
-fn component_reference_from_ast(ast: &Expression<'_>, source: &str) -> Option<CompactString> {
-    match ast {
-        Expression::Identifier(_) | Expression::StaticMemberExpression(_) => {
-            Some(CompactString::new(source.trim()))
-        }
-        _ => None,
-    }
-}
-
-fn parse_component_reference_expression(source: &str) -> Option<CompactString> {
-    let allocator = Allocator::default();
-    let source_type = SourceType::from_path("expr.ts").unwrap_or_default();
-    let expression = Parser::new(&allocator, source, source_type)
-        .parse_expression()
-        .ok()?;
-    match expression {
-        Expression::Identifier(_) | Expression::StaticMemberExpression(_) => {
-            Some(CompactString::new(source.trim()))
-        }
-        _ => None,
-    }
 }
 
 fn dynamic_component_target_is_known(drawer: &Drawer, target: &str) -> bool {

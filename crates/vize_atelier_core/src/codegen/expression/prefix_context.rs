@@ -110,7 +110,7 @@ pub(super) fn prefix_node_in_scope(
     implicit_event: bool,
 ) -> String {
     if let Some(js) = crate::retained::retained_whole_expression(node)
-        && crate::retained::js_module_compatible(js)
+        && crate::retained::js_module_compatible(&js)
     {
         let result = prefix_via_expr(js.ast, 0, js.raw, ctx, implicit_event);
         #[cfg(any(test, feature = "legacy-differential"))]

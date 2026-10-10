@@ -3,6 +3,28 @@ use oxc_ast::ast::BindingPattern;
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, SmallVec, String, profile};
+use vize_relief::SimpleExpressionNode;
+
+/// Read declarations from the node's complete retained slot parameter goal.
+/// Missing, failed, foreign-role or stale parses cannot produce bindings.
+#[inline]
+pub(in crate::drawer) fn extract_retained_slot_prop_bindings(
+    node: &SimpleExpressionNode<'_>,
+) -> Option<SmallVec<[(CompactString, u32); 4]>> {
+    let retained = node.js_ast?;
+    if retained.raw != node.content {
+        return None;
+    }
+    let parameters = retained.as_slot_parameters()?.ok()?;
+    let mut bindings = SmallVec::new();
+    for parameter in &parameters.items {
+        extract_slot_binding_names(&parameter.pattern, 0, &mut bindings);
+    }
+    if let Some(rest) = &parameters.rest {
+        extract_slot_binding_names(&rest.rest.argument, 0, &mut bindings);
+    }
+    Some(bindings)
+}
 
 /// Extract prop names from v-slot expression pattern
 #[inline]
@@ -160,3 +182,6 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+mod retained_tests;

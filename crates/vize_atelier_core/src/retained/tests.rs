@@ -53,7 +53,7 @@ fn whole_retained_identifier_gate_keeps_dialect_and_original_byte_boundaries() {
             .expect("the complete original expression must be retained");
         assert_eq!(retained.raw, raw);
         assert_eq!(
-            crate::retained::js_module_compatible(retained),
+            crate::retained::js_module_compatible(&retained),
             expected,
             "{raw}"
         );

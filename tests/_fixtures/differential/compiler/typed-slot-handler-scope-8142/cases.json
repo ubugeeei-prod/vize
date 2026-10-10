@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "filename": "typed-slot-alias.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => value</script><template><Panel v-slot=\"{ item: row }: { item: string }\"><button @click=\"record(row)\">{{ row }}</button></Panel><button @click=\"record('outside')\">outside</button></template>"
+    },
+    {
+      "filename": "typed-slot-multiple.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => value</script><template><Panel><template #default=\"{ item, index, even, odd }: ListItem<string>\"><button @click=\"record({ item, index, even, odd })\">{{ item }}</button></template></Panel><button @click=\"record('outside')\">outside</button></template>"
+    },
+    {
+      "filename": "typed-slot-tuple.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => value</script><template><Panel v-slot=\"[item]: [string]\"><button @click=\"record(item)\">{{ item }}</button></Panel><button @click=\"record('outside')\">outside</button></template>"
+    },
+    {
+      "filename": "typed-slot-default.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => value; const fallback = 'default'</script><template><Panel v-slot=\"{ item = fallback }: { item?: string }\"><button @click=\"record(item)\">{{ item }}</button></Panel><button @click=\"record('outside')\">outside</button></template>"
+    },
+    {
+      "filename": "typed-slot-event-name.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => value</script><template><Panel v-slot=\"{ $event }: { $event: string }\"><button @click=\"() => record($event)\">{{ $event }}</button></Panel><button @click=\"record($event)\">outside</button></template>"
+    },
+    {
+      "filename": "unscoped-event-cache.vue",
+      "source": "<script setup lang=\"ts\">const record = (value: unknown) => value</script><template><button @click=\"record($event)\">outside</button><Panel><button @click=\"record('unscoped')\">unscoped</button></Panel></template>"
+    }
+  ]
+}

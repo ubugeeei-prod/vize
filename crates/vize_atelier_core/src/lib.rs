@@ -44,11 +44,11 @@ pub use vize_relief::{
     ElementType, ExpressionNode, ForNode, ForParseResult, FunctionBody, FunctionExpression,
     FunctionParam, FunctionParams, FunctionReturns, IfBranchNode, IfNode, IfStatement,
     IfStatementAlternate, ImportItem, InterpolationNode, JsChildNode, JsExpression, Namespace,
-    NodeType, ObjectExpression, PropNode, Property, PropsExpression, ReturnStatement, ReturnValue,
-    RootNode, RuntimeHelper, SequenceExpression, SimpleExpressionNode, SlotsExpression,
-    SourceLocation, TemplateChildNode, TemplateLiteral, TemplateLiteralElement,
-    TemplateTextChildNode, TextCallContent, TextCallNode, TextNode, VNodeCall, VNodeChildren,
-    VNodeTag,
+    NodeType, ObjectExpression, PropNode, Property, PropsExpression, RetainedJsAst,
+    RetainedJsAstKind, ReturnStatement, ReturnValue, RootNode, RuntimeHelper, SequenceExpression,
+    SimpleExpressionNode, SlotsExpression, SourceLocation, TemplateChildNode, TemplateLiteral,
+    TemplateLiteralElement, TemplateTextChildNode, TextCallContent, TextCallNode, TextNode,
+    VNodeCall, VNodeChildren, VNodeTag,
 };
 pub use vize_relief::{errors, options};
 

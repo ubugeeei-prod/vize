@@ -11,4 +11,5 @@ mod slot_props;
 pub use callbacks::{
     EventHandlerExpression, classify_event_handler, extract_inline_callback_params,
 };
+pub(in crate::drawer) use slot_props::extract_retained_slot_prop_bindings;
 pub use slot_props::{extract_slot_prop_bindings, extract_slot_props};

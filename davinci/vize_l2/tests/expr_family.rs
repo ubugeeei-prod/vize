@@ -103,3 +103,39 @@ fn js_expression_admits_trailing_block_comment_trivia_only() {
         OpaqueReason::ParseRejected
     );
 }
+
+#[test]
+fn owned_ast_entry_keeps_typescript_admission_and_complete_source_refusals() {
+    use oxc_ast::ast::Expression;
+    use oxc_span::GetSpan;
+    use vize_l0::expression_guard::MAX_EXPRESSION_NESTING_DEPTH;
+
+    let arena = Allocator::default();
+    let source = "value as string /* retained trivia */";
+    let ast = JsExpr::parse_ast_in(&arena, source).expect("the shared dialect admits TS");
+    let owned_payload = arena.alloc((ast, source));
+    assert!(matches!(owned_payload.0, Expression::TSAsExpression(_)));
+    assert_eq!(owned_payload.0.span(), oxc_span::Span::new(0, 15));
+    assert_eq!(owned_payload.1, source);
+
+    for source in ["value; other", "value // line comment", "value +"] {
+        assert_eq!(
+            JsExpr::parse_ast_in(&arena, source).unwrap_err(),
+            OpaqueReason::ParseRejected,
+            "{source}"
+        );
+    }
+    let depth = MAX_EXPRESSION_NESTING_DEPTH + 1;
+    let mut source = vize_l0::String::with_capacity(depth * 2 + 5);
+    for _ in 0..depth {
+        source.push('(');
+    }
+    source.push_str("value");
+    for _ in 0..depth {
+        source.push(')');
+    }
+    assert_eq!(
+        JsExpr::parse_ast_in(&arena, &source).unwrap_err(),
+        OpaqueReason::NestingRefused
+    );
+}

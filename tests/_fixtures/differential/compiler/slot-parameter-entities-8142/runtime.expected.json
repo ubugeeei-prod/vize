@@ -1,0 +1,116 @@
+{
+  "schema": "vize.slot-parameter-entities.authored-runtime-expectations",
+  "version": 1,
+  "authority": "Independently authored from a Panel custom renderer invoking the compiled default slot with a reactive item, initial entity-slot-value then updated-slot-value; not harvested from Vize output",
+  "success": {
+    "error": null,
+    "logs": [],
+    "initialTree": {
+      "type": "root",
+      "props": {},
+      "text": null,
+      "children": [
+        {
+          "type": "div",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "entity-slot-value",
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    "updatedTree": {
+      "type": "root",
+      "props": {},
+      "text": null,
+      "children": [
+        {
+          "type": "div",
+          "props": {},
+          "text": null,
+          "children": [
+            {
+              "type": "#text",
+              "props": {},
+              "text": "updated-slot-value",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "syntaxFailure": {
+    "error": {
+      "name": "SyntaxError",
+      "message": "Unexpected token '&'"
+    },
+    "initialTree": null,
+    "updatedTree": null,
+    "hostCalls": []
+  },
+  "cases": [
+    {
+      "id": "entity-space",
+      "lane": "selected",
+      "prefixIdentifiers": false,
+      "beforeExpected": "syntaxFailure",
+      "currentExpected": "syntaxFailure"
+    },
+    {
+      "id": "entity-space",
+      "lane": "selected",
+      "prefixIdentifiers": true,
+      "beforeExpected": "syntaxFailure",
+      "currentExpected": "syntaxFailure"
+    },
+    {
+      "id": "entity-space",
+      "lane": "legacy",
+      "prefixIdentifiers": false,
+      "beforeExpected": "syntaxFailure",
+      "currentExpected": "success"
+    },
+    {
+      "id": "entity-space",
+      "lane": "legacy",
+      "prefixIdentifiers": true,
+      "beforeExpected": "syntaxFailure",
+      "currentExpected": "success"
+    },
+    {
+      "id": "literal-space-control",
+      "lane": "selected",
+      "prefixIdentifiers": false,
+      "beforeExpected": "success",
+      "currentExpected": "success"
+    },
+    {
+      "id": "literal-space-control",
+      "lane": "selected",
+      "prefixIdentifiers": true,
+      "beforeExpected": "success",
+      "currentExpected": "success"
+    },
+    {
+      "id": "literal-space-control",
+      "lane": "legacy",
+      "prefixIdentifiers": false,
+      "beforeExpected": "success",
+      "currentExpected": "success"
+    },
+    {
+      "id": "literal-space-control",
+      "lane": "legacy",
+      "prefixIdentifiers": true,
+      "beforeExpected": "success",
+      "currentExpected": "success"
+    }
+  ]
+}

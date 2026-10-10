@@ -7,7 +7,29 @@ use vize_l0::{SmallVec, String};
 
 use crate::steps::expression::expression_is_safe_to_parse;
 
-/// Extract binding names from a slot props pattern.
+/// Read only the producer's whole parameter role; no raw-header fallback.
+pub(super) fn retained_slot_prop_names(node: &crate::SimpleExpressionNode<'_>) -> Vec<String> {
+    let Some(retained) = node.js_ast else {
+        return Vec::new();
+    };
+    if retained.raw != node.content {
+        return Vec::new();
+    }
+    let Some(Ok(parameters)) = retained.as_slot_parameters() else {
+        return Vec::new();
+    };
+    let mut names = Vec::new();
+    for parameter in &parameters.items {
+        collect_slot_binding_names(&parameter.pattern, &mut names);
+    }
+    if let Some(rest) = &parameters.rest {
+        collect_slot_binding_names(&rest.rest.argument, &mut names);
+    }
+    names
+}
+
+/// Existing public raw-pattern API, also used by separate v-for alias callers.
+/// Retained v-slot product consumers use `retained_slot_prop_names` instead.
 pub fn extract_slot_prop_names(pattern: &str) -> Vec<String> {
     let trimmed = pattern.trim();
     if trimmed.is_empty() || !expression_is_safe_to_parse(trimmed) {

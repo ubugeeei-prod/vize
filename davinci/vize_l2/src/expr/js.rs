@@ -143,6 +143,22 @@ impl<'a> JsExpr<'a> {
         source: &'a str,
         span: Span,
     ) -> Result<&'a Self, OpaqueReason> {
+        let parsed = Self::parse_ast_in(allocator, source)?;
+        Ok(allocator.alloc(Self {
+            ast: allocator.alloc(parsed),
+            source,
+            span,
+            coordinates: None,
+        }))
+    }
+
+    /// Parse with the same complete-expression admission as [`Self::parse_in`],
+    /// returning the owned AST so another arena payload can contain it directly.
+    /// The AST's children borrow `allocator`; no outer AST or `JsExpr` payload is allocated here.
+    pub fn parse_ast_in(
+        allocator: &'a Allocator,
+        source: &'a str,
+    ) -> Result<oxc_ast::ast::Expression<'a>, OpaqueReason> {
         if !expression_is_safe_to_parse(source) {
             return Err(OpaqueReason::NestingRefused);
         }
@@ -157,12 +173,7 @@ impl<'a> JsExpr<'a> {
         if !is_expression_trailing_trivia(rest) {
             return Err(OpaqueReason::ParseRejected);
         }
-        Ok(allocator.alloc(Self {
-            ast: allocator.alloc(parsed),
-            source,
-            span,
-            coordinates: None,
-        }))
+        Ok(parsed)
     }
 }
 

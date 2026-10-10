@@ -137,6 +137,7 @@ fn bound_sink_argument(directive: &DirectiveNode<'_>) -> Option<(u32, u32)> {
         is_html_sink(arg.content)
     } else {
         arg.js_ast
+            .and_then(|parsed| parsed.as_expression())
             .and_then(|parsed| literal_name(parsed.ast))
             .is_some_and(is_html_sink)
     };
@@ -161,7 +162,7 @@ fn report_object_sinks<'a>(
     let Some(ExpressionNode::Simple(expression)) = directive.exp.as_ref() else {
         return;
     };
-    let Some(parsed) = expression.js_ast else {
+    let Some(parsed) = expression.js_ast.and_then(|parsed| parsed.as_expression()) else {
         return;
     };
     if !matches!(

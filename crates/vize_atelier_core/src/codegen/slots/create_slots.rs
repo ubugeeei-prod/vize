@@ -15,7 +15,7 @@ use super::super::expression::generate_expression;
 use super::detect::{child_is_slot_template, slot_children_have_meaningful_content, slots_spread};
 use super::generate::{generate_slot_children, generate_slot_children_where};
 use super::name::generate_slot_entry_name;
-use super::params::{extract_slot_params, get_slot_props, prefix_slot_defaults};
+use super::params::slot_parameters;
 
 /// Generate slots using createSlots for conditional/looped slot templates
 pub(super) fn generate_create_slots(ctx: &mut CodegenContext, el: &ElementNode<'_>) {
@@ -265,12 +265,11 @@ fn generate_slot_object_entry(
         ctx.push("(");
 
         // Slot props
-        let params = if let Some(props_str) = get_slot_props(dir, &ctx.source) {
-            let processed = prefix_slot_defaults(&props_str);
+        let params = if let Some((processed, params)) = slot_parameters(dir, &ctx.source) {
             ctx.push("(");
             ctx.push(&processed);
             ctx.push(")");
-            extract_slot_params(&props_str)
+            params
         } else {
             ctx.push("()");
             vec![]

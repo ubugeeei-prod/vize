@@ -4,7 +4,8 @@
 //! introduce into the template scope, so downstream rules can distinguish
 //! template-local bindings from unresolved identifiers.
 
-use vize_croquis::drawer::{extract_slot_props, parse_v_for_expression};
+use oxc_ast::ast::BindingPattern;
+use vize_croquis::drawer::parse_v_for_expression;
 use vize_l0::CompactString;
 use vize_relief::ExpressionNode;
 
@@ -29,15 +30,54 @@ pub fn parse_v_for_variables(exp: &ExpressionNode) -> Vec<CompactString> {
         .collect::<Vec<_>>()
 }
 
-/// Parse a scoped slot expression to extract variable names.
+/// Read declarations from the scoped slot's original retained parameter goal.
 #[inline]
 pub fn parse_slot_scope_variables(exp: &ExpressionNode) -> Vec<CompactString> {
-    let content = match exp {
-        ExpressionNode::Simple(s) => s.content,
-        ExpressionNode::Compound(_) => return Vec::new(),
+    let ExpressionNode::Simple(node) = exp else {
+        return Vec::new();
     };
+    let Some(retained) = node.js_ast else {
+        return Vec::new();
+    };
+    if retained.raw != node.content {
+        return Vec::new();
+    }
+    let Some(Ok(parameters)) = retained.as_slot_parameters() else {
+        return Vec::new();
+    };
+    let mut names = Vec::new();
+    for parameter in &parameters.items {
+        collect_slot_bindings(&parameter.pattern, &mut names);
+    }
+    if let Some(rest) = &parameters.rest {
+        collect_slot_bindings(&rest.rest.argument, &mut names);
+    }
+    names
+}
 
-    extract_slot_props(content.trim()).into_iter().collect()
+fn collect_slot_bindings(pattern: &BindingPattern<'_>, names: &mut Vec<CompactString>) {
+    match pattern {
+        BindingPattern::BindingIdentifier(identifier) => {
+            names.push(identifier.name.as_str().into())
+        }
+        BindingPattern::ObjectPattern(object) => {
+            for property in &object.properties {
+                collect_slot_bindings(&property.value, names);
+            }
+            if let Some(rest) = &object.rest {
+                collect_slot_bindings(&rest.argument, names);
+            }
+        }
+        BindingPattern::ArrayPattern(array) => {
+            for element in array.elements.iter().flatten() {
+                collect_slot_bindings(element, names);
+            }
+            if let Some(rest) = &array.rest {
+                collect_slot_bindings(&rest.argument, names);
+            }
+        }
+        BindingPattern::AssignmentPattern(default) => collect_slot_bindings(&default.left, names),
+    }
 }
 
 #[cfg(test)]
@@ -51,6 +91,20 @@ mod tests {
             SimpleExpressionNode::new(content, false, vize_relief::SourceLocation::STUB),
             &allocator,
         ))
+    }
+
+    fn make_slot_exp<'a>(allocator: &'a Allocator, content: &str) -> ExpressionNode<'a> {
+        let source = format!("<Panel v-slot=\"{content}\" />");
+        let source = allocator.as_oxc().alloc_str(&source);
+        let (mut root, errors) = vize_armature::parse(allocator, source);
+        assert!(errors.is_empty());
+        let vize_relief::TemplateChildNode::Element(element) = &mut root.children[0] else {
+            panic!("original slot owner");
+        };
+        let vize_relief::PropNode::Directive(directive) = &mut element.props[0] else {
+            panic!("original slot directive");
+        };
+        directive.exp.take().expect("original slot value")
     }
 
     #[test]
@@ -134,7 +188,7 @@ mod tests {
     #[test]
     fn test_parse_slot_scope_object_destructuring() {
         let allocator = Allocator::new();
-        let exp = make_simple_exp(&allocator, "{ open, item: slotItem }");
+        let exp = make_slot_exp(&allocator, "{ open, item: slotItem }");
         let vars = parse_slot_scope_variables(&exp);
         assert_eq!(
             vars,
@@ -145,7 +199,7 @@ mod tests {
     #[test]
     fn test_parse_slot_scope_default_and_rest_bindings() {
         let allocator = Allocator::new();
-        let exp = make_simple_exp(&allocator, "{ open = false, ...rest }");
+        let exp = make_slot_exp(&allocator, "{ open = false, ...rest }");
         let vars = parse_slot_scope_variables(&exp);
         assert_eq!(
             vars,

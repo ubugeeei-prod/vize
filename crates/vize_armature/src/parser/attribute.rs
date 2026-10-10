@@ -326,7 +326,7 @@ impl<'a> Parser<'a> {
             let exp_loc = self.create_loc(v_start, v_end);
             let content = self.freeze_value(&v_content, v_start, v_end);
             let mut exp_node = SimpleExpressionNode::new(content, false, exp_loc);
-            self.retain_expression_ast(&mut exp_node, v_start, v_end);
+            self.retain_value_ast(&mut exp_node, v_start, v_end, dir_node.name);
             let exp_boxed = Box::new_in(exp_node, &self.allocator);
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
         } else if let Some((camelized, s_start, s_end)) = shorthand_exp {

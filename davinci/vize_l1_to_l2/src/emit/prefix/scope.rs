@@ -269,7 +269,10 @@ impl<'b> PrefixScope<'b> {
     }
 
     pub(in crate::emit) fn has_codegen_scope_params(&self) -> bool {
-        !self.slot_params.is_empty() || !self.patterns.is_empty()
+        // Typed slot patterns can bind transform names while the text-only
+        // codegen scanner finds none. The temporary event scope is popped
+        // before callers decide whether a handler can be cached.
+        !self.transform.is_empty() || !self.slot_params.is_empty() || !self.patterns.is_empty()
     }
 
     pub(in crate::emit) fn slot_params(&self) -> &[String] {

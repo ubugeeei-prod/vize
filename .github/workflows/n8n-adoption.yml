@@ -14,9 +14,15 @@ on:
       - tests/tooling/n8n-cli-config-failure-custody.test.mjs
       - tests/tooling/support/n8n-cli-config-*.mjs
       - tests/tooling/support/n8n-slot-options-acceptance.ts
+      - tests/tooling/support/n8n-slot-parameters-acceptance.ts
       - tests/tooling/patina-slot-dynamic-modifiers-oracle.test.ts
+      - tests/tooling/patina-slot-parameter-bindings-oracle.test.ts
       - tests/_fixtures/differential/lint/n8n-cli-config/**
       - tests/_fixtures/differential/lint/slot-dynamic-modifiers-8142/**
+      - tests/_fixtures/differential/lint/slot-parameter-bindings-8142/**
+      - tests/_fixtures/differential/compiler/legacy-slot-binding-handoff-8142/**
+      - tests/_fixtures/differential/compiler/slot-parameter-entities-8142/**
+      - tests/tooling/support/slot-parameter-entity-runtime.mjs
       - tests/tooling/support/n8n-compiler-*.mjs
       - tests/tooling/support/n8n-default-slot-loop*.mjs
       - tests/_fixtures/differential/compiler/n8n-*/**
@@ -35,6 +41,10 @@ on:
       - crates/vize/src/commands/lint/**
       - crates/vize_carton/src/config/**
       - crates/vize_patina/**
+      - crates/vize_armature/**
+      - crates/vize_relief/**
+      - davinci/vize_l1/src/markup/lex/native/dynamic_arg*
+      - vendor/oxc_parser/**
       - npm/cli/**
       - npm/oxlint/**
   merge_group:
@@ -127,8 +137,12 @@ jobs:
           assert.match(after.rustc, /^rustc 1\.99\.0 \(b940084d7 2026-09-28\)/u);
           assert.notEqual(before.binary.sha256, after.binary.sha256, 'distinct production states require distinct producers');
           NODE
+      - name: Verify whole legacy slot binding producer handoff
+        env:
+          VIZE_TEST_REQUIRE_TSGO: "1"
+        run: cargo test --locked --profile ci -p vize_atelier_core --features legacy --test legacy_template_sugar --test legacy_slot_binding_handoff_8142 -- --nocapture
       - name: Verify source SFC default-slot runtime and iterator laws
-        run: cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test n8n_default_slot_loops -- --nocapture
+        run: cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test n8n_default_slot_loops --test slot_parameter_entities_8142 -- --nocapture
       - name: Verify every n8n compiler regression and changed-source refusal
         env:
           VIZE_N8N_CONTROL_PACKET_DIR: ${{ github.workspace }}/target/n8n-compiler-custody/${{ github.run_id }}-${{ github.run_attempt }}/authored
@@ -144,6 +158,21 @@ jobs:
         with:
           name: n8n-compiler-before-after-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/n8n-compiler-custody
+          if-no-files-found: error
+      - name: Upload complete legacy slot binding observations
+        if: ${{ !cancelled() && hashFiles('target/differential/legacy-slot-binding-handoff-8142/whole-packets.json') != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: legacy-slot-binding-handoff-8142-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/differential/legacy-slot-binding-handoff-8142
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload whole slot entity compiler and pinned runtime observations
+        if: ${{ !cancelled() && hashFiles('target/differential/slot-parameter-entities-8142/compiler-packets.json') != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: n8n-slot-entity-runtime-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/differential/slot-parameter-entities-8142
           if-no-files-found: error
 
   authored-editor:
@@ -195,6 +224,11 @@ jobs:
             "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/semantic-routing"
       - name: Verify both slot modifier options through whole source CLI and JSON-RPC packets
         run: vp node tests/tooling/support/n8n-slot-options-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-options"
+      - name: Verify retained parameter grammar through whole source CLI and JSON-RPC packets
+        run: |
+          cargo test --locked --profile ci -p vize_patina --test valid_v_slot_regression --test valid_v_slot_parameter_bindings
+          vp node --test tests/tooling/patina-slot-parameter-bindings-oracle.test.ts
+          vp node tests/tooling/support/n8n-slot-parameters-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-parameters"
       - name: Upload whole CLI and independent oracle packets
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -203,4 +237,6 @@ jobs:
           path: |
             target/n8n-cli-config
             target/differential/lsp-sessions
+            target/differential/slot-parameter-source-packets.json
+            target/differential/slot-parameter-legacy-packets.json
           if-no-files-found: error
