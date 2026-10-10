@@ -59,6 +59,15 @@ Original physical-root execution records remain outside Git. These historical
 records grant no qualification to the fresh source build.
 
 At this test-first checkpoint, production collector bytes remain unchanged.
+The first native Actions run `38050710306` stopped at the capture helper's
+unsupported SHA256 formatting trait before any CLI case executed; it is an
+instrumentation failure, not semantic RED evidence. The successor writes every
+digest byte explicitly and checks complete empty/abc standard vectors. Its
+thirteen-target recipe is an additive literal successor to the unchanged
+twelve-target JSX fixture. Three existing receipt processes share one shell
+source line under the same fail-fast shell, preserving their argv, order and
+failure behavior while keeping the original workflow line ceiling. The generated
+inventory adds only the new test's existing L0 import.
 Actual source-bound Actions RED, the reviewed producer repair, all complete native
 controls, the original unchanged workload measurements, protected qualification
 and actual delivery remain required. No speedup, 10x target, public release,

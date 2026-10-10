@@ -21,6 +21,7 @@ import {
   currentBytes,
   currentOriginalRun,
   currentRequiredRun,
+  jsxRequiredRun,
   bomRequiredRun,
   git,
   put,
@@ -67,7 +68,7 @@ await test("complete authenticated actual C6d/H339 metadata selects all original
   });
 });
 
-await test("ordinary source retains the complete authored twelve-target successor and original downstream flags", () => {
+await test("ordinary source retains the complete authored thirteen-target successor and original downstream flags", () => {
   fixture((f) => {
     f.event.pull_request.head.ref = "fix/current-native";
     f.event.pull_request.body = "";
@@ -78,7 +79,8 @@ await test("ordinary source retains the complete authored twelve-target successo
     const run = parse(currentBytes).jobs["native-phases"].steps.find((s) => s.name === STEP).run;
     const inline = declaredSourceRecipe(run).recipe.replace(/^  /gmu, "");
     assert.equal(inline, currentRequiredRun);
-    assert.equal([...inline.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 12);
+    assert.equal([...inline.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 13);
+    assert.equal([...jsxRequiredRun.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 12);
     assert.equal([...bomRequiredRun.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length, 10);
     assert.equal(
       [...currentOriginalRun.split("\n")[3].matchAll(/--test ([a-z0-9_]+)/gu)].length,
@@ -86,6 +88,7 @@ await test("ordinary source retains the complete authored twelve-target successo
     );
     assert.ok(inline.includes("--test lsp_bare_script_symbols_cli"));
     assert.equal([...inline.matchAll(/--test check_jsx_slot_parameter_types_cli/gu)].length, 1);
+    assert.equal([...inline.matchAll(/--test check_canon_selected_alias_cli/gu)].length, 1);
     assert.ok(run.includes('bash --noprofile --norc -e -o pipefail "$recipe"'));
     assert.ok(run.includes("GITHUB_WORKFLOW_SHA"));
     assert.equal([...run.matchAll(/--test check_tsconfig_types_extends_cli/gu)].length, 1);

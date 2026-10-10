@@ -125,12 +125,14 @@ jobs:
           fi
       - name: Qualify declared template emits and config-scoped Vue helpers in the source CLI and editor
         if: github.event_name == 'pull_request'
-        env: {
-          VIZE_TEST_REQUIRE_TSGO: "1", VIZE_TEMPLATE_EMIT_CAPTURE: "${{ runner.temp }}/template-dollar-emit",
-          VIZE_VUE_HELPER_CAPTURE: "${{ runner.temp }}/config-scoped-vue-helpers", VIZE_TSCONFIG_TYPES_CAPTURE: "${{ runner.temp }}/tsconfig-types-extends",
-          VIZE_JSX_SLOT_CAPTURE: "${{ runner.temp }}/jsx-slot-parameter-types", VIZE_CANON_ALIAS_CAPTURE: "${{ runner.temp }}/canon-selected-alias",
-          GH_TOKEN: "${{ github.token }}"
-        }
+        env:
+          VIZE_TEST_REQUIRE_TSGO: "1"
+          VIZE_TEMPLATE_EMIT_CAPTURE: ${{ runner.temp }}/template-dollar-emit
+          VIZE_VUE_HELPER_CAPTURE: ${{ runner.temp }}/config-scoped-vue-helpers
+          VIZE_TSCONFIG_TYPES_CAPTURE: ${{ runner.temp }}/tsconfig-types-extends
+          VIZE_JSX_SLOT_CAPTURE: ${{ runner.temp }}/jsx-slot-parameter-types
+          VIZE_CANON_ALIAS_CAPTURE: ${{ runner.temp }}/canon-selected-alias
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           [[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags origin "$GITHUB_WORKFLOW_SHA"
@@ -148,9 +150,7 @@ jobs:
             cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_vue_helper_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
             export VIZE_TEMPLATE_EMIT_TS40_CAPTURE="$RUNNER_TEMP/template-emit-ts40-projection"
             cargo test --locked --profile ci-opt -p vize_maestro --test davinci_ts40_projection current_projection_matrix_is_exact_and_non_empty --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
-            node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs
-            node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs
-            node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs
+            node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs; node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs; node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs
             bash tools/benchmarks/scripts/typechecker-native-unknown-options.sh && cargo test --locked --profile ci-opt -p vize_patina --test documented_rule_examples documented_type_aware_examples_match_with_the_required_corsa_runtime --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
             # VIZE_NATIVE_SOURCE_INLINE_END
           fi

@@ -43,7 +43,25 @@ struct Run {
 }
 
 fn digest(bytes: &[u8]) -> String {
-    cstr!("{:x}", Sha256::digest(bytes))
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut encoded = String::with_capacity(64);
+    for byte in Sha256::digest(bytes) {
+        encoded.push(HEX[usize::from(byte >> 4)] as char);
+        encoded.push(HEX[usize::from(byte & 0x0f)] as char);
+    }
+    encoded
+}
+
+#[test]
+fn capture_digest_keeps_complete_standard_sha256_vectors() {
+    assert_eq!(
+        digest(b"").as_str(),
+        "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    );
+    assert_eq!(
+        digest(b"abc").as_str(),
+        "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    );
 }
 
 fn file_digest(path: &Path) -> String {
