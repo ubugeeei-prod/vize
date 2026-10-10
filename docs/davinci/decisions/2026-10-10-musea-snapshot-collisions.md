@@ -30,3 +30,9 @@ manifest support, preserve names for noncolliding captures, and document
 migration of the ambiguous baseline. Do not silently hash an absolute path or
 copy the ambiguous PNG into two trusted baselines. Explicitly reviewing and
 recreating qualified baselines is necessary before claiming completion.
+
+The two Art sources live under `tests/tooling/fixtures/musea/`, because this
+contract tests Musea snapshot naming rather than the compiler remarks corpus.
+The differential JSON record points to the exact persisted sources. Their
+bytes remain unchanged; the original compiler file inventory, remarks and
+golden remain unchanged.

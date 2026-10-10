@@ -7,7 +7,7 @@ import { assertUniqueSnapshotNames } from "./snapshot-collisions.ts";
 import { buildSnapshotName } from "./utils.ts";
 
 const fixtures = fileURLToPath(
-  new URL("../../../../../tests/_fixtures/differential/musea/snapshot-collision/", import.meta.url),
+  new URL("../../../../../tests/tooling/fixtures/musea/snapshot-collision/", import.meta.url),
 );
 
 void test("two genuine same-basename Arts retain separate native identities and cannot share a baseline", async () => {

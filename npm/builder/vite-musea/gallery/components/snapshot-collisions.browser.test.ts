@@ -9,7 +9,7 @@ import type { ArtFileInfo } from "../../src/types/index.ts";
 
 const repository = fileURLToPath(new URL("../../../../../", import.meta.url));
 const output = path.join(repository, "artifacts/musea-snapshot-collisions");
-const fixtureRoot = path.join(repository, "tests/_fixtures/differential/musea/snapshot-collision");
+const fixtureRoot = path.join(repository, "tests/tooling/fixtures/musea/snapshot-collision");
 
 await test(
   "colliding Art baselines are rejected before any real Chromium worker writes",
