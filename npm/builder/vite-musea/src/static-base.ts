@@ -15,6 +15,16 @@ export function rewriteGalleryTextAssetBase(
   return rewriteGalleryBase(Buffer.from(source).toString("utf-8"), basePath);
 }
 
+export function rewriteDevGalleryAsset(
+  source: Uint8Array,
+  relativePath: string,
+  basePath: string,
+): string | Uint8Array {
+  return basePath === "/__musea__"
+    ? source
+    : rewriteGalleryTextAssetBase(source, relativePath, basePath);
+}
+
 export function publicBasePathFromViteBase(viteBase: string | undefined, basePath: string): string {
   return viteBase && viteBase !== "/" && viteBase !== "./"
     ? joinUrlPath(viteBase, basePath)

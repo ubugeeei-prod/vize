@@ -1,0 +1,5 @@
+{
+  "cases": ["/__musea__", "/gallery/vrt", "/gallery/vrt/"],
+  "titles": ["Left", "Right"],
+  "viewport": { "name": "authored-compact", "width": 320, "height": 180 }
+}
