@@ -24,7 +24,7 @@ ${script}`,
   return JSON.parse(result.stdout);
 }
 
-test("PTY phases identify Git transport stages without retaining argument values", () => {
+void test("PTY phases identify Git transport stages without retaining argument values", () => {
   const phases = inspect(`
 commands = [
     [b"git", b"-C", b"/private/credential", b"pull", b"origin", b"main"],
@@ -50,7 +50,7 @@ print(json.dumps([module.command_phase(command) for command in commands]))`);
   assert.doesNotMatch(JSON.stringify(phases), /private|credential@|unknown-operation/);
 });
 
-test("PTY Git phases distinguish global option values from the actual subcommand", () => {
+void test("PTY Git phases distinguish global option values from the actual subcommand", () => {
   const phases = inspect(`
 commands = [
     [b"git", b"config", b"credential.helper", b"pull"],
@@ -90,7 +90,7 @@ print(json.dumps([module.command_phase(command) for command in commands]))`);
   assert.doesNotMatch(JSON.stringify(phases), /private|credential|PRIVATE_VALUE|unknown/);
 });
 
-test("PTY channel scans close their directory at both entry and emitted-channel bounds", () => {
+void test("PTY channel scans close their directory at both entry and emitted-channel bounds", () => {
   const observations = inspect(`
 original_scandir = module.os.scandir
 results = []
@@ -126,7 +126,7 @@ print(json.dumps(results))`);
   ]);
 });
 
-test(
+void test(
   "PTY Linux evidence relates anonymous pipe and socket owners while excluding file paths",
   { skip: process.platform !== "linux" },
   () => {
