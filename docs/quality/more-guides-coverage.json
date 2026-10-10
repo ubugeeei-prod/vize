@@ -7,7 +7,7 @@
       "route": "/architecture/crates",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Complete Japanese body reviewed against English commands, table cells and diagrams; natural terminology and original anchors retained; fresh browser and deployed review remain pending."
     },
     {
       "route": "/architecture/language-engineering-practices",
@@ -19,7 +19,7 @@
       "route": "/architecture/overview",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Complete Japanese body reviewed against English commands, table cells and diagrams; natural terminology and original anchors retained; fresh browser and deployed review remain pending."
     },
     {
       "route": "/architecture/performance",
@@ -37,7 +37,7 @@
       "route": "/architecture/source-guide",
       "locales": ["en", "ja"],
       "entry": "revised",
-      "note": "Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending."
+      "note": "Complete Japanese body reviewed against English commands, table cells and diagrams; natural terminology and original anchors retained; fresh browser and deployed review remain pending."
     },
     {
       "route": "/contributing",

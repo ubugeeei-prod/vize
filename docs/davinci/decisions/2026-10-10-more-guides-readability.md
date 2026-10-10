@@ -76,12 +76,12 @@ explicit review entry. Removed routes may remain in the inventory as historical 
 
 | Route                                          | Locales currently authored | Entry   | Review boundary                                                                                                             |
 | ---------------------------------------------- | -------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `/architecture/crates`                         | en, ja                     | Revised | Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending.         |
+| `/architecture/crates`                         | en, ja                     | Revised | Japanese body reviewed; commands, complete tables/diagrams and anchors retained; browser/deployed review pending.           |
 | `/architecture/language-engineering-practices` | en, ja                     | Revised | Japanese body reviewed against EN; commands, URLs and anchors retained; fresh browser and deployed review pending.          |
-| `/architecture/overview`                       | en, ja                     | Revised | Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending.         |
+| `/architecture/overview`                       | en, ja                     | Revised | Japanese body reviewed; commands, complete tables/diagrams and anchors retained; browser/deployed review pending.           |
 | `/architecture/performance`                    | en, ja                     | Audited | Benchmark claims and provenance are handled in #8367.                                                                       |
 | `/architecture/performance-blacksmith`         | en, ja                     | Audited | Benchmark snapshot and provenance are handled in #8367.                                                                     |
-| `/architecture/source-guide`                   | en, ja                     | Revised | Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending.         |
+| `/architecture/source-guide`                   | en, ja                     | Revised | Japanese body reviewed; commands, complete tables/diagrams and anchors retained; browser/deployed review pending.           |
 | `/contributing`                                | en, ja                     | Audited | Purpose and setup present; Japanese body still needs review.                                                                |
 | `/credits`                                     | en, ja                     | Audited | Attribution retained; Japanese prose still needs body review.                                                               |
 | `/guide/auto-imports`                          | en, ja                     | Revised | Purpose, usage choice, next action and descriptive links revised; complete body and deployed review remain pending.         |
@@ -220,3 +220,31 @@ native renderer is separately checked for every previously published heading des
 This bounded translation review leaves the English contracts unchanged. Fresh exact-source Check
 and full Docs Actions, rendered desktop/mobile reading flow, and final deployed acceptance remain
 required. Other retained More bodies and site-wide acceptance keep #8365 open.
+
+## Complete remaining Japanese architecture bodies and historical source pin
+
+A separate fifth child reviews the Japanese overview, crate reference, and source guide against
+their complete English bodies. The source guide still described obsolete MoonBit automation and
+had a four-column header over three-column crate rows. The overview had collapsed numbered steps
+and mistranslated library names, while its shortened naming table omitted pronunciation and
+analogy columns. All source commands, complete table cells, and unchanged Mermaid diagrams are
+now checked across locales. Natural terminology and published fragments remain; the complete
+Japanese preservation scope applies only to these three reviewed documents. English naming text
+now explicitly describes the existing product crates, matching the separate level-crate boundary.
+
+Primary-source review also found that TypeScript's current main no longer has
+`tests/cases/fourslash`; the GitHub contents API returned 404. The original Vize research commit
+`ef096af180` (#574) did not retain its upstream revision. This change does not invent that provenance.
+The historical JS observations are instead pinned to the independently verified `v5.9.3` commit
+`c63de15a992d37f0d6cec03ac7631872838602cb`, whose
+[contribution guide](https://github.com/microsoft/TypeScript/blob/c63de15a992d37f0d6cec03ac7631872838602cb/CONTRIBUTING.md)
+documents the retained baseline paths and `baseline-accept`, and whose fourslash directory resolves.
+Both locales preserve the original observations and distinguish them from the
+[current native Go contribution guide](https://github.com/microsoft/TypeScript/blob/main/CONTRIBUTING.md).
+Encoded external Markdown filename spelling preserves these primary destinations in the pinned
+native renderer. No upstream comments or changes are involved.
+
+The full-document/table/diagram regression and historical-source link regression both failed on
+the preceding source. Fresh exact-source Check, complete 28-route desktop/mobile Docs Actions,
+and deployed acceptance remain required. This layer is prepared independently of the ready
+native Stack prefix; other More bodies and site-wide acceptance keep #8365 open.
