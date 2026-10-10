@@ -153,7 +153,7 @@ const attempt = (status, tag, large = false) => ({
   ]).toString("hex"),
 });
 
-test("terminal registry failure drains complete large stderr to a slow pipe reader", async () => {
+void test("terminal registry failure drains complete large stderr to a slow pipe reader", async () => {
   const terminal = attempt(255, "terminal", true);
   terminal.stderrHex += Buffer.from("fatal: Authentication failed\n").toString("hex");
   const result = await helper([terminal]);
@@ -161,7 +161,7 @@ test("terminal registry failure drains complete large stderr to a slow pipe read
   assert.equal(result.calls.length, 1);
 });
 
-test("successful registry retry preserves exact ordered streams, inner PIDs and inherited stdin", async () => {
+void test("successful registry retry preserves exact ordered streams, inner PIDs and inherited stdin", async () => {
   const result = await helper([attempt(255, "first"), attempt(0, "second")]);
   assert.equal(result.status, 0);
   assert.equal(result.calls.length, 2);
@@ -172,7 +172,7 @@ const rpc = (http = 504) =>
   `Error: update failed\n\nCaused by:\n  0: failed to clone registry index\n  1: non-zero exit code: exit status: 128\n     git stderr:\n     Cloning into '__CONTROLLED_REGISTRY_INDEX__'...\n     error: RPC failed; HTTP ${http} curl 22 The requested URL returned error: ${http}\n     fatal: expected 'packfile'\n`;
 
 for (const http of [502, 503, 504]) {
-  test(`source-bound registry RPC HTTP ${http} recovers with outer Moon exit255`, async () => {
+  void test(`source-bound registry RPC HTTP ${http} recovers with outer Moon exit255`, async () => {
     const result = await helper([
       { status: 255, stderrHex: Buffer.from(rpc(http)).toString("hex") },
       { status: 0, stdoutHex: Buffer.from("rpc-ready\n").toString("hex") },
@@ -216,7 +216,7 @@ for (const [name, status, stderr] of [
     `${rpc()}fatal: unable to access 'https://example.test/git/index/': The requested URL returned error: 504\n`,
   ],
 ]) {
-  test(`${name} is not admitted as the owned registry RPC profile`, async () => {
+  void test(`${name} is not admitted as the owned registry RPC profile`, async () => {
     const result = await helper([{ status, stderrHex: Buffer.from(stderr).toString("hex") }]);
     assert.equal(result.status, status);
     assert.equal(result.calls.length, 1);
@@ -224,7 +224,7 @@ for (const [name, status, stderr] of [
   });
 }
 
-test("stderr is copied live while the inner Moon child waits for a reader acknowledgement", async () => {
+void test("stderr is copied live while the inner Moon child waits for a reader acknowledgement", async () => {
   const result = await helper(
     [
       {

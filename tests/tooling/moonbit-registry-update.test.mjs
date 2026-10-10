@@ -98,7 +98,7 @@ function assertRaw(result, attempts) {
   }
 }
 
-test("original one-shot installer exits before a recoverable second attempt", () => {
+void test("original one-shot installer exits before a recoverable second attempt", () => {
   const attempts = [failure(), success];
   const result = exercise(attempts, { original: true });
   assert.equal(result.status, 255);
@@ -108,7 +108,7 @@ test("original one-shot installer exits before a recoverable second attempt", ()
 });
 
 for (const http of [502, 503, 504]) {
-  test(`registry HTTP ${http} recovers with unchanged command arguments and environment`, () => {
+  void test(`registry HTTP ${http} recovers with unchanged command arguments and environment`, () => {
     const attempts = [failure(http), success];
     const result = exercise(attempts);
     assert.equal(result.status, 0);
@@ -118,7 +118,7 @@ for (const http of [502, 503, 504]) {
   });
 }
 
-test("three transient failures preserve raw bytes and the last exit status", () => {
+void test("three transient failures preserve raw bytes and the last exit status", () => {
   const attempts = [502, 503, 504].map((http, index) => ({
     status: [255, 128, 19][index],
     stdoutHex: Buffer.from([0, 255, index, 13, 10]).toString("hex"),
@@ -156,7 +156,7 @@ for (const [name, stderr] of [
     transportFailure().replace("failed to clone registry index", "failed to compile package"),
   ],
 ]) {
-  test(`${name} failure is terminal on its first attempt`, () => {
+  void test(`${name} failure is terminal on its first attempt`, () => {
     const attempts = [{ status: 23, stderr }, success];
     const result = exercise(attempts);
     assert.equal(result.status, 23);
@@ -166,7 +166,7 @@ for (const [name, stderr] of [
   });
 }
 
-test("a registry fetch transport failure uses the same bounded retry", () => {
+void test("a registry fetch transport failure uses the same bounded retry", () => {
   const attempts = [
     { status: 255, stderr: transportFailure(503).replace("failed to clone", "failed to fetch") },
     success,
@@ -177,7 +177,7 @@ test("a registry fetch transport failure uses the same bounded retry", () => {
   assertRaw(result, attempts);
 });
 
-test("successful first attempt does not retry diagnostic-looking stderr", () => {
+void test("successful first attempt does not retry diagnostic-looking stderr", () => {
   const attempts = [{ ...success, stderr: transportFailure() }];
   const result = exercise(attempts);
   assert.equal(result.status, 0);
@@ -186,7 +186,7 @@ test("successful first attempt does not retry diagnostic-looking stderr", () => 
   assert.doesNotMatch(result.stderr.toString(), /retrying/);
 });
 
-test(
+void test(
   "a signaled child preserves the original terminal fallback",
   { skip: process.platform === "win32" },
   () => {
@@ -197,14 +197,14 @@ test(
   },
 );
 
-test("a missing executable fails without retry", () => {
+void test("a missing executable fails without retry", () => {
   const result = exercise([], { missing: true });
   assert.equal(result.status, 1);
   assert.equal(result.calls.length, 0);
   assert.doesNotMatch(result.stderr.toString(), /retrying/);
 });
 
-test("only the existing cold-install registry update uses retry", () => {
+void test("only the existing cold-install registry update uses retry", () => {
   assert.equal(source.match(/await updateRegistry\(moonExe, \["update"\], \{/g)?.length, 1);
   assert.ok(
     source.indexOf("await updateRegistry(moonExe") >

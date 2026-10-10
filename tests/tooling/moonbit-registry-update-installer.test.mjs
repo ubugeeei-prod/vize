@@ -114,7 +114,7 @@ else process.exit(91);`;
 }
 
 const unixOnly = { skip: process.platform === "win32" };
-test(
+void test(
   "controlled cold install verifies payload/version, retries update, runs smoke stdin and exports last",
   unixOnly,
   async () => {
@@ -160,7 +160,7 @@ test(
   },
 );
 
-test(
+void test(
   "controlled warm cache skips downloads and updates but runs the original smoke",
   unixOnly,
   async () => {
@@ -179,19 +179,25 @@ test(
   },
 );
 
-for (const [name, options, stages, diagnostic] of [
+/** @type {Array<[string, { tamper?: boolean, wrongVersion?: boolean }, string[], RegExp]>} */
+const terminalInstallCases = [
   ["hash mismatch", { tamper: true }, ["curl"], /installer hash mismatch/],
   ["version mismatch", { wrongVersion: true }, ["curl", "bash", "moonc"], /version mismatch/],
-]) {
-  test(`controlled ${name} fails before registry update, smoke or exports`, unixOnly, async () => {
-    const result = await installer(options);
-    assert.equal(result.status, 1);
-    assert.deepEqual(
-      result.calls.map((call) => call.stage),
-      stages,
-    );
-    assert.match(result.stderr.toString(), diagnostic);
-    assert.deepEqual(result.exports, { path: "", env: "" });
-    assert.doesNotMatch(result.stderr.toString(), /retrying/);
-  });
+];
+for (const [name, options, stages, diagnostic] of terminalInstallCases) {
+  void test(
+    `controlled ${name} fails before registry update, smoke or exports`,
+    unixOnly,
+    async () => {
+      const result = await installer(options);
+      assert.equal(result.status, 1);
+      assert.deepEqual(
+        result.calls.map((call) => call.stage),
+        stages,
+      );
+      assert.match(result.stderr.toString(), diagnostic);
+      assert.deepEqual(result.exports, { path: "", env: "" });
+      assert.doesNotMatch(result.stderr.toString(), /retrying/);
+    },
+  );
 }
