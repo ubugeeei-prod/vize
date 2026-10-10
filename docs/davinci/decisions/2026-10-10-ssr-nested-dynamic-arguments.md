@@ -83,6 +83,15 @@ its full accuracy remains independently unfinished. No upstream change,
 publisher edit, release graph change, or v0.441 inclusion is part of this
 source repair.
 
+Exact `2b192` full Check `38041695808` preserves zero-divergence original
+SSR smoke results but fails to compile the new integration helper with
+`E0583` at the crate-root module declaration. The helper moves byte-exactly
+to `tests/nested_dynamic_arguments/mod.rs`, the ordinary crate-root lookup
+location; fixture path depth, assertions, production, and recipes remain
+unchanged. No new whole SSR runtime packet executed on that failed head.
+Its separate Misskey server RSS result is 130.51 MiB over the unchanged
+128 MiB ceiling; fresh full proof and the real LSP prerequisite remain.
+
 TODO: obtain fresh exact-source full Actions, complete runtime/map packets,
 unchanged performance and protected qualification, and actual merged main.
 Local classifier failure and fixture custody do not replace those witnesses.
