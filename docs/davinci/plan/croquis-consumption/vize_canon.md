@@ -10,8 +10,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 
 | product                        | kind  | module              | files | sites |
 | ------------------------------ | ----- | ------------------- | ----: | ----: |
-| `Analyzer`                     | type  | `analyzer`          |    48 |   176 |
-| `AnalyzerOptions`              | type  | `analyzer`          |    48 |   172 |
+| `Analyzer`                     | type  | `analyzer`          |    49 |   177 |
+| `AnalyzerOptions`              | type  | `analyzer`          |    49 |   173 |
 | `ComponentUsage`               | type  | `croquis::template` |    22 |    48 |
 | `Croquis`                      | type  | `croquis`           |    94 |   225 |
 | `EventHandlerScopeData`        | type  | `scope`             |     7 |     9 |

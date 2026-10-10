@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+import Other from "./Other.vue";
+let modelValue = "";
+let otherValue = "";
+const handleUpdate = (value: string) => value;
+const untouched = "saveItem";
+void untouched;
+</script>
+
+<template>💥 <Child v-model:next-value="modelValue" />
+  <Child v-model:next-value="modelValue" />
+  <Child @update:next-value="handleUpdate" />
+  <Child @update:next-value="handleUpdate" />
+  <Other v-model:save-item="otherValue" />
+  <Other @update:save-item="handleUpdate" />
+</template>
