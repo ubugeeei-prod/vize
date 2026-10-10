@@ -152,6 +152,7 @@ jobs:
           name: mounted-child-custody-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/mounted-child-custody/
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 14
   compare:
     name: Baseline and fresh observer runtime parity
