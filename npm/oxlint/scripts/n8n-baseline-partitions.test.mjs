@@ -47,7 +47,7 @@ const rows = (part) =>
     }),
   );
 
-test("fixed input ranges cover the original ordered1369 once and admit no arbitrary partition", () => {
+void test("fixed input ranges cover the original ordered1369 once and admit no arbitrary partition", () => {
   const actual = baselinePartitions(1369);
   assert.deepEqual(actual, [
     { index: 0, start: 0, end: 685, controls: false },
@@ -79,7 +79,7 @@ test("fixed input ranges cover the original ordered1369 once and admit no arbitr
     );
 });
 
-test("whole51-rule vectors survive validation and missing, duplicate, reordered or substituted rows fail", () => {
+void test("whole51-rule vectors survive validation and missing, duplicate, reordered or substituted rows fail", () => {
   const part = baselinePartitions(3)[0],
     original = rows(part),
     before = structuredClone(original);
@@ -115,7 +115,7 @@ test("whole51-rule vectors survive validation and missing, duplicate, reordered 
   }
 });
 
-test("parent source backing is complete for duplicates and refuses source or stored-byte corruption", () => {
+void test("parent source backing is complete for duplicates and refuses source or stored-byte corruption", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-n8n-source-store-control-"));
   try {
     const fixture = path.join(root, "fixture"),
@@ -160,7 +160,7 @@ const packet = (root) => JSON.parse(fs.readFileSync(path.join(root, "baseline-pr
 const barrier = (index, root) =>
   `const fs=require('node:fs'); const root=${JSON.stringify(root)}; fs.writeFileSync(root+'/${index}.ready',''); const wait=setInterval(()=>{if(!fs.existsSync(root+'/${1 - index}.ready'))return;clearInterval(wait);`;
 
-test("two actual children overlap, close normally and retain complete separate UTF8 byte streams", async () => {
+void test("two actual children overlap, close normally and retain complete separate UTF8 byte streams", async () => {
   const root = make();
   try {
     const result = await runBaselineProcesses(
@@ -201,7 +201,7 @@ test("two actual children overlap, close normally and retain complete separate U
   }
 });
 
-test("one shared byte cap counts both workers and both streams, rather than doubling the old bound", async () => {
+void test("one shared byte cap counts both workers and both streams, rather than doubling the old bound", async () => {
   const root = make();
   try {
     const result = await runBaselineProcesses(
@@ -226,7 +226,7 @@ test("one shared byte cap counts both workers and both streams, rather than doub
   }
 });
 
-test("fatal exit forwards failure and kills/reaps the other owned descendant group before completion", async () => {
+void test("fatal exit forwards failure and kills/reaps the other owned descendant group before completion", async () => {
   const root = make();
   try {
     const result = await runBaselineProcesses(
@@ -259,7 +259,7 @@ test("fatal exit forwards failure and kills/reaps the other owned descendant gro
   }
 });
 
-test("a normally closed worker's ignored-stdio descendant is drained before a later sibling failure", async () => {
+void test("a normally closed worker's ignored-stdio descendant is drained before a later sibling failure", async () => {
   const root = make();
   const ready = path.join(root, "ignored-descendant.ready");
   try {
@@ -306,7 +306,7 @@ test("a normally closed worker's ignored-stdio descendant is drained before a la
   }
 });
 
-test("shared deadline remains a strict failure and all started children close", async () => {
+void test("shared deadline remains a strict failure and all started children close", async () => {
   const root = make();
   try {
     const result = await runBaselineProcesses(
@@ -323,7 +323,7 @@ test("shared deadline remains a strict failure and all started children close", 
   }
 });
 
-test("spawn failure cannot become aggregate success and the active sibling drains", async () => {
+void test("spawn failure cannot become aggregate success and the active sibling drains", async () => {
   const root = make();
   try {
     const selected = jobs(root, () => "setInterval(()=>{},1000);");
@@ -337,7 +337,7 @@ test("spawn failure cannot become aggregate success and the active sibling drain
   }
 });
 
-test("expired source preparation refuses input reads before worker admission", () => {
+void test("expired source preparation refuses input reads before worker admission", () => {
   const expired = () => assert.fail("shared original 900s deadline");
   assert.throws(
     () => seedOriginalSources(inventory, os.tmpdir(), expired),
