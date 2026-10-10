@@ -29,3 +29,12 @@ checks the five localized setup pages at desktop/mobile widths, no-JavaScript
 fallback, all manager panels, keyboard wrapping, clipboard contents, and stored
 selection. Source CI, protected merge, docs deployment, and live-site checks remain
 required before closing #8366; local pure tests alone do not complete it.
+
+The first generated-site run rejected extra translated code panels in the whole
+inline-rule comparison. Retain the exact authored highlighted block in its own
+manager panel and identify it explicitly; compare that complete block while the
+existing SSR/source packets remain unchanged. A focused Chromium replay over a
+separately built site plus these exact enhancement assets preserved all 1,453
+inline code blocks across 276 widgets. Five locales passed 30 command checks,
+keyboard, clipboard and reload persistence. Full exact-head Docs proof is still
+required; this local injection does not establish deployment or publication.

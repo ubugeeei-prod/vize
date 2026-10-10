@@ -59,6 +59,12 @@
     const source = code.textContent ?? "";
     const variants = choices(source);
     if (!variants) return;
+    const sourceName = source.match(
+      /^\s*(vp|vpx|npm|npx|pnpm|yarn|bun|bunx|aube|aubr|aubx)\b/m,
+    )?.[1];
+    const originalManager =
+      { vpx: "vp", npx: "npm", bunx: "bun", aubr: "aube", aubx: "aube" }[sourceName] ?? sourceName;
+    variants.find((value) => value.manager === originalManager).command = source;
     pre.dataset.commandTabsSource = "true";
     const wrapper = document.createElement("div");
     wrapper.className = "vize-command-tabs";
@@ -91,11 +97,15 @@
         panel.append(note);
         if (value.gap !== "registry") panel.append(pre.cloneNode(true));
       } else {
-        const block = document.createElement("pre");
-        const example = document.createElement("code");
-        example.className = "language-bash";
-        example.textContent = value.command;
-        block.append(example);
+        const original = value.manager === originalManager;
+        const block = original ? pre.cloneNode(true) : document.createElement("pre");
+        if (original) block.querySelector("code").dataset.commandTabsOriginal = "true";
+        else {
+          const example = document.createElement("code");
+          example.className = "language-bash";
+          example.textContent = value.command;
+          block.append(example);
+        }
         const copy = document.createElement("button");
         copy.type = "button";
         copy.className = "vize-command-copy";
