@@ -5,6 +5,7 @@ import path from "node:path";
 import { reconcile } from "./instruction-counts-lib.mjs";
 import {
   compareMemoryMetrics,
+  compareStrings,
   loadMemoryAuthority,
   MEMORY_ENVIRONMENT,
   NORMAL_ARGUMENTS,
@@ -110,7 +111,7 @@ try {
     const current = authority.head.planes[plane];
     reconcile(original.registry, current.registry, `${plane} original source registry`);
     manifest.authority[plane] = {
-      ids: [...current.registry].sort(),
+      ids: [...current.registry].sort(compareStrings),
       allocation_budgets: current.allocation_budgets,
       files: {},
     };

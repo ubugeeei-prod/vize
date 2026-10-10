@@ -22,6 +22,7 @@ export const MEMORY_ENVIRONMENT = Object.freeze(normalEnvironment);
 export const NORMAL_ARGUMENTS = Object.freeze(["--bench", "--quick"]);
 export const REPORT_DIRECTORY = "tools/benchmarks/results/davinci";
 export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+export const compareStrings = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
 
 export function memorySuites(root) {
   return [
@@ -83,7 +84,11 @@ function fields(value, keys, label) {
     value && typeof value === "object" && !Array.isArray(value),
     `${label}: expected object`,
   );
-  assert.deepEqual(Object.keys(value).sort(), [...keys].sort(), `${label}: unexpected fields`);
+  assert.deepEqual(
+    Object.keys(value).sort(compareStrings),
+    [...keys].sort(compareStrings),
+    `${label}: unexpected fields`,
+  );
 }
 function integer(value, label) {
   assert.ok(Number.isSafeInteger(value) && value >= 0, `${label}: expected nonnegative integer`);
