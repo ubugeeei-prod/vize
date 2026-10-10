@@ -26,11 +26,16 @@ interface Hold {
 
 /** Delay real response bytes; the relay never invents a session, capture, or artifact. */
 export async function createLifecycleRelay(endpoint: string) {
-  const backend = new URL(endpoint);
-  assert.equal(backend.protocol, "http:");
-  assert.equal(backend.hostname, "127.0.0.1");
-  assert.equal(backend.pathname, "/");
-  assert.equal(backend.username + backend.password + backend.search + backend.hash, "");
+  const validateUpstream = (address: string) => {
+    const url = new URL(address);
+    assert.equal(url.protocol, "http:");
+    assert.equal(url.hostname, "127.0.0.1");
+    assert.equal(url.pathname, "/");
+    assert.equal(url.username + url.password + url.search + url.hash, "");
+    assert.ok(Number(url.port) > 0 && Number(url.port) <= 65535);
+    return url;
+  };
+  let backend = validateUpstream(endpoint);
   const receipts: RelayReceipt[] = [];
   const holds: Array<{
     match: Hold;
@@ -42,13 +47,14 @@ export async function createLifecycleRelay(endpoint: string) {
   }> = [];
   const server = createServer((incoming, outgoing) => {
     const pathname = new URL(incoming.url ?? "/", endpoint).pathname;
+    const target = backend;
     const upstream = request(
       {
-        hostname: backend.hostname,
-        port: backend.port,
+        hostname: target.hostname,
+        port: target.port,
         method: incoming.method,
         path: incoming.url ?? "/",
-        headers: { ...incoming.headers, host: backend.host },
+        headers: { ...incoming.headers, host: target.host },
       },
       (actual) => {
         // Preserve actual service response headers in memory only; artifacts omit them.
@@ -100,9 +106,16 @@ export async function createLifecycleRelay(endpoint: string) {
   });
   const address = server.address();
   assert.ok(address && typeof address !== "string");
+  const relayEndpoint = `http://127.0.0.1:${address.port}`;
   return {
-    endpoint: `http://127.0.0.1:${address.port}`,
+    endpoint: relayEndpoint,
     receipts,
+    /** Existing in-flight responses retain their original actual upstream and buffered bytes. */
+    selectUpstream(address: string) {
+      const target = validateUpstream(address);
+      assert.notEqual(target.origin, relayEndpoint);
+      backend = target;
+    },
     holdNext(match: Hold): HeldResponse {
       let buffered!: (value: { receipt: RelayReceipt; body: Buffer }) => void;
       let release!: () => void;

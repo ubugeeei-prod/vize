@@ -272,7 +272,7 @@ void test(
       });
       observations.push({
         phase: "owned-report-error",
-        receipt: await proveOwnedHostedError(page, session.endpoint, local, output),
+        receipt: await proveOwnedHostedError(page, session, local, output),
       });
       assert.equal((await capture(page, session.endpoint)).summary.passed, 1);
       const beforeTrustRefusal = await storedCaptureBytes(local);

@@ -8,6 +8,7 @@ import { PNG } from "pngjs";
 import { parseArgs } from "./cli/index.ts";
 import { startHostedVrtSession } from "./cli/serve.ts";
 import { buildServiceGallery, repository, sha256 } from "./hosted-vrt-build.fixtures.ts";
+import { proveSessionAuthorityInvalidation } from "./hosted-vrt-authority.fixtures.ts";
 import {
   createSecureHost,
   launchPublicBrowser,
@@ -153,17 +154,19 @@ void test(
               ),
               page.getByRole("button", { name: "Run VRT", exact: true }).click(),
             ]);
-            const captureBytes = await capture.body();
             receipt.postReleaseCapture = {
               origin: new URL(capture.url()).origin,
               pathname: new URL(capture.url()).pathname,
               status: capture.status(),
-              bytes: captureBytes.length,
-              sha256: sha256(captureBytes),
             };
-            await writeFile(path.join(output, "post-delayed-401-capture.body"), captureBytes);
             assert.equal(capture.url(), `${session.endpoint}/capture`);
             assert.equal(capture.status(), 200);
+            const captureBytes = await capture.body();
+            Object.assign(receipt.postReleaseCapture!, {
+              bytes: captureBytes.length,
+              sha256: sha256(captureBytes),
+            });
+            await writeFile(path.join(output, "post-delayed-401-capture.body"), captureBytes);
             assert.equal((JSON.parse(captureBytes.toString()) as Capture).success, true);
             assert.equal(await page.locator(".hosted-vrt-connect [role=alert]").count(), 0);
             await page.waitForFunction(() => {
@@ -253,6 +256,29 @@ void test(
             hold.release();
             receipt.addressSpaces = gallery.spaces.records;
             receipt.errors = gallery.errors;
+            await gallery.close();
+          }
+        },
+      );
+      await t.test(
+        "an actual replacement-session 401 invalidates pending real images",
+        async () => {
+          const gallery = await openGallery();
+          try {
+            observations.push(
+              await proveSessionAuthorityInvalidation({
+                page: gallery.page,
+                objectUrls: gallery.objectUrls,
+                relay,
+                session,
+                options,
+                certificateSpki: host.spki,
+                origin: host.origin,
+                output,
+              }),
+            );
+            assert.deepEqual(gallery.errors, []);
+          } finally {
             await gallery.close();
           }
         },
