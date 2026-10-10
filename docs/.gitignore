@@ -3,6 +3,7 @@ node_modules
 .cache
 public/component-previews/app/
 public/component-previews/browser-evidence.json
+public/component-previews/composables/
 # Reference pages generated at build time by npm/ui/scripts/generate-reference-docs.ts
 content/guide/ui/
 content/guide/composables/

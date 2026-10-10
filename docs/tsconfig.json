@@ -15,10 +15,5 @@
     "resolveJsonModule": true,
     "allowJs": true
   },
-  "include": [
-    "scripts/**/*.ts",
-    "previews/ui/capture.ts",
-    "previews/ui/check-site.ts",
-    "theme/open-graph.ts"
-  ]
+  "include": ["scripts/**/*.ts", "previews/ui/**/*.ts", "theme/open-graph.ts"]
 }

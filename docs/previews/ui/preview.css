@@ -55,3 +55,45 @@ body {
   gap: 12px;
   flex-wrap: wrap;
 }
+
+.preview-stage .composable-example {
+  display: block;
+  max-inline-size: 560px;
+}
+.composable-example > * {
+  margin-block: 0 12px;
+}
+.composable-example input,
+.composable-example select,
+.composable-example button {
+  box-sizing: border-box;
+  max-inline-size: 100%;
+  padding: 8px 12px;
+  border: 1px solid #777;
+  border-radius: 6px;
+  background: #fff;
+  color: #252525;
+  font: inherit;
+}
+.composable-example input {
+  inline-size: 100%;
+}
+.composable-example button:disabled {
+  opacity: 0.55;
+}
+.composable-example :focus-visible {
+  outline: 3px solid #2769b7;
+  outline-offset: 3px;
+}
+.composable-example [aria-invalid="true"] {
+  border-color: #aa2335;
+}
+.composable-example .example-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.composable-example .example-actions output {
+  flex-basis: auto;
+}
