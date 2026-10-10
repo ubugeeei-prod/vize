@@ -61,6 +61,7 @@ onMounted(async () => {
 
   // Dynamic import monaco-editor
   monaco = await import("monaco-editor");
+  if (!containerRef.value) return;
 
   // Define custom dark theme matching musea
   monaco.editor.defineTheme("musea-dark", {

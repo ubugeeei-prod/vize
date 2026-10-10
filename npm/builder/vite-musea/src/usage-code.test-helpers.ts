@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { compile, createSSRApp, defineComponent, h } from "vue";
+import { compile, createSSRApp, defineComponent, h, toRaw } from "vue";
 import { renderToString } from "vue/server-renderer";
 
 export async function assertUsageProps(
@@ -23,7 +23,7 @@ export async function assertUsageProps(
       ]),
     ),
     setup(props, { attrs }) {
-      received = { ...props };
+      received = { ...toRaw(props) };
       receivedAttrs = { ...attrs };
       return () => h("span", "Rendered props");
     },
