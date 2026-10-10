@@ -260,7 +260,8 @@ async function main(): Promise<void> {
   }
 
   const { fileSet, vrt, configDir, previewBasePath } = await loadMuseaConfiguration(
-    options.config, cwd,
+    options.config,
+    cwd,
   );
   options.vrt = vrt;
   options.configDir = configDir;

@@ -133,6 +133,7 @@ void test("VRT and scanning use top-level vize.musea without a dedicated config"
 
   assert.deepEqual(await loadMuseaFileSet("vite.config.mjs", workspace), {
     root: path.join(workspace, "gallery"),
+    projectRoot: path.join(workspace, "gallery"),
     include: ["../stories/**/*.art.vue"],
     exclude: ["**/legacy/**"],
   });
@@ -164,6 +165,7 @@ void test("Musea plugin options override individual shared options", async (t) =
 
   assert.deepEqual(await loadMuseaFileSet("vite.config.ts", workspace), {
     root: workspace,
+    projectRoot: workspace,
     include: ["stories/**/*.art.vue"],
     exclude: ["**/legacy/**"],
   });
@@ -187,6 +189,7 @@ void test("dedicated JSON config remains higher priority than Vite shared settin
 
   assert.deepEqual(await loadMuseaFileSet("vite.config.mjs", workspace), {
     root: workspace,
+    projectRoot: workspace,
     include: ["stories/**/*.art.vue"],
     exclude: ["node_modules/**", "dist/**"],
   });
@@ -212,11 +215,13 @@ void test("a custom Vite config is evaluated once and its vize settings are proj
   assert.deepEqual(await loadMuseaConfiguration(configPath, workspace), {
     fileSet: {
       root: workspace,
+      projectRoot: workspace,
       include: ["serve/**/*.art.vue"],
       exclude: ["node_modules/**", "dist/**"],
     },
     vrt: undefined,
     configDir: workspace,
+    previewBasePath: "/__musea__",
   });
   assert.equal(await fs.promises.readFile(marker, "utf8"), "evaluation\n");
 });
@@ -233,10 +238,47 @@ void test("automatic Vite config discovery supports mjs and its project root", a
   assert.deepEqual(await loadMuseaConfiguration(undefined, workspace), {
     fileSet: {
       root: path.join(workspace, "gallery"),
+      projectRoot: path.join(workspace, "gallery"),
       include: ["stories/**/*.art.vue"],
       exclude: ["node_modules/**", "dist/**"],
     },
     vrt: undefined,
     configDir: workspace,
+    previewBasePath: "/__musea__",
   });
+});
+
+void test("one configuration evaluation retains current project and preview metadata", async (t) => {
+  const workspace = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-current-metadata-"));
+  t.after(() => fs.promises.rm(workspace, { force: true, recursive: true }));
+  const pluginOptionsUrl = pathToFileURL(path.resolve("src/plugin/options.ts")).href;
+  const marker = path.join(workspace, "evaluated.txt");
+  const configPath = path.join(workspace, "gallery.config.mjs");
+  await fs.promises.writeFile(
+    configPath,
+    `import { appendFileSync } from "node:fs";
+    import { attachMuseaOptions } from ${JSON.stringify(pluginOptionsUrl)};
+    appendFileSync(${JSON.stringify(marker)}, "evaluation\\n");
+    export default {
+      root: "gallery", base: "/docs/",
+      vize: { musea: { basePath: "/wrong", exclude: ["**/legacy/**"], vrt: { threshold: 9 } } },
+      plugins: [attachMuseaOptions({ name: "vite-plugin-musea" }, {
+        projectRoot: "..", basePath: "/stories", include: ["stories/**/*.art.vue"],
+        vrt: { threshold: 0 },
+      })],
+    };`,
+  );
+
+  assert.deepEqual(await loadMuseaConfiguration(configPath, workspace), {
+    fileSet: {
+      root: path.join(workspace, "gallery"),
+      projectRoot: workspace,
+      include: ["stories/**/*.art.vue"],
+      exclude: ["**/legacy/**"],
+    },
+    vrt: { threshold: 0 },
+    configDir: workspace,
+    previewBasePath: "/docs/stories",
+  });
+  assert.equal(await fs.promises.readFile(marker, "utf8"), "evaluation\n");
 });
