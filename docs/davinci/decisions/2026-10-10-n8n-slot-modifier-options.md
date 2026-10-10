@@ -69,7 +69,7 @@ checks and historical consumer greens remain historical evidence.
 
 Protected candidate `68478f58` fails the original JSX markup ceiling with
 45,756 instructions against 45,385; all three repetitions agree. The same
-fixture/methodology at parent candidate `2e1bcf07` uses 45,385. Exclusive
+fixture/methodology at parent candidate `2e1bcf07` uses 45,310. Exclusive
 Callgrind delta is chiefly `markup::l2::binding::walk_items` (+381), with small
 changes in other markup callbacks. This measured window uses the unchanged
 default registry; configuration and allocation happen outside it. Do not
@@ -92,3 +92,15 @@ ties. This is a real traversal change with no allocation, raised ceiling or
 benchmark-window change. Fresh source and instruction Actions must qualify
 the resulting cost; other independently green queue profiles establish no
 exclusive cause or transferred acceptance.
+
+Source `f1172d3d` passes the unchanged 100 stage and four formatter instruction
+ceilings; the JSX window measures 42,534 in all three repetitions. Its complete
+75 CLI and 50 JSON-RPC campaign also passes. Full source CI separately catches
+two harness omissions: the seven new traversal tests require two generated
+consumer-inventory rows, and the explicit-false unit-policy test contributes
+exactly three non-literal fixture calls. Regenerate the existing inventory with
+its unchanged producer and declare those three supplemental calls/skips beside
+the original 1,057/87 census. All 869 original literal templates, trace counts,
+source packets, providers and ceilings remain unchanged. Both ordinary Rust and
+the `legacy-differential` entry consume that same exact census. The source
+successor requires fresh complete Actions before protected queue admission.
