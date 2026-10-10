@@ -1,0 +1,135 @@
+{
+  "official181SourceCommit": "0b4e2e67f4193e7ebfcc64982275eb583ae82c83",
+  "official181Tag": "oxlint_v1.81.0",
+  "publicArchive": {
+    "url": "https://registry.npmjs.org/oxlint/-/oxlint-1.81.0.tgz",
+    "sha256": "7ad37cecb1aa27e030dae82e3000ae89e7f74714c492ac7eeff24f2f0cf7c16a",
+    "registrySha512AndSha1Exact": true,
+    "provenancePayloadSubjectAndSourceCommitExact": true,
+    "provenanceCryptographicSignaturesVerified": false
+  },
+  "wholeKernelSourceProof": [
+    {
+      "path": "crates/oxc_diagnostics/src/source_impls.rs",
+      "sha256": "e60ab469988c44bd54415457a6a0e5badd48e2a6b786e41692a9db11baee2794",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/protocol.rs",
+      "sha256": "c960dbfc78043539cae324d4b086ecf2f8462d419a1b4f80199cd6505ceeeb4d",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/named_source.rs",
+      "sha256": "24e94f7f33308e8ec71c6ee491ec16727f4ff678cf7e41963bcc121f432c07dc",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/theme.rs",
+      "sha256": "6b7e036058cf33b5b268eb002c72dbae5eb56c4dc0ac662b4e307f7cffe61555",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/json.rs",
+      "sha256": "0ab910c2ef495a90e7f7af91d2e8d8c40d885c3501a1199669f0b57e382b3794",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/mod.rs",
+      "sha256": "59e4125672992c3c60c9579baf682828ad57b61cd0a863ca1ae4cd25848a6d1a",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/graphical/snippet.rs",
+      "sha256": "cd93c570e374c762a3bcc47e3114bd1c0b711d95097a6a90a2e742891901a0cc",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/graphical/line.rs",
+      "sha256": "75f513b2e486b9da20b3737fa9caf39003fa4e11a7d40aaba2a71345281c2042",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/graphical/handler.rs",
+      "sha256": "fdbf45ce7af11366f4004f0fab463a279607ec07f51b26dcc3f96b21ba7fe6df",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/graphical/report.rs",
+      "sha256": "97f7784ca8dbcbf5607f5793f9ff1f1fa59139adfe1004196b643d382ead3cbb",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/graphical/span.rs",
+      "sha256": "e55b0d05df039e6c3829c1f01d93afcf7f017b6267bf6f885ecc3ac259dc1780",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/graphical/mod.rs",
+      "sha256": "e69a838e8fd0da276b2cb0ea98bda2e06e53e20d5abd3c5d130545ba5a059fc3",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/graphical/label.rs",
+      "sha256": "f070a7c9a56ba5c949b17edba9e03c8bec3042e2649f255c152533a499b94729",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    },
+    {
+      "path": "crates/oxc_diagnostics/src/handlers/graphical/gutter.rs",
+      "sha256": "9d3e7cf35fef3d24fa542c443d500c5f308ad80f625fe563d2984b9730950c8e",
+      "official181GitBlobExact": true,
+      "existing186PinnedSourceExact": true
+    }
+  ],
+  "exact181Equals186Sources": [
+    "apps/oxlint/src/walk.rs",
+    "crates/oxc_config/src/walk.rs",
+    "apps/oxlint/src/command/lint.rs",
+    "apps/oxlint/src/command/ignore.rs",
+    "apps/oxlint/src/agent_detection.rs",
+    "apps/oxlint/src/output_formatter/stylish.rs",
+    "apps/oxlint/src/output_formatter/unix.rs",
+    "crates/oxc_diagnostics/src/service.rs",
+    "crates/oxc_diagnostics/src/reporter.rs"
+  ],
+  "dependencyProof": "All 8 current locked renderer/ignore versions and checksums exactly official181;186 differs only smallvec1.16 vs181/current1.15.2. Existing186 kernel uses existing/current graph.",
+  "noGit": {
+    "official181RequireGit": false,
+    "gitignoreActive": true,
+    "ancestorGitignoreActive": true,
+    "rootPrefilterMatcherRoot": "filesystem root, exact GitignoreChecker fallback",
+    "smallestSeam": [
+      "Explicit181 only may admit noVCS;178/186 MissingGitBoundary original negatives unchanged.",
+      "Add internal has_vcs_boundary bool to Admitted/Selection; apply require_git(bool) consistently to prefilter and walking.",
+      "Use filesystem root as selection matching/source ancestry root noVCS; do not substitute cwd root because ignored ancestors may be pruned by original root prefilter.",
+      "Record entire target/cwd to filesystemroot .gitignore/custom files or absence; no phantom GitInfoExclude source when no actualGit marker.",
+      "Custom ownership boundary remains cwd for noVCS; preserve external-custom ignore refusal abovecwd when !noIgnore.",
+      "Preserve linkedGit/JJ/nestedVCS/symlink/nonregular/nestedconfig/suppression/rootidentity refusals, literal original file bytes, expected reports, budgets and counts."
+    ],
+    "primaryIgnoreArchiveSha256": "00b69833ed729dc5aa7d19541d96d6cf8e9137194207a04916d658e43168402f",
+    "primaryIgnoreSourceCommit": "3fce3b5bb0236da2df6d99672afb8a719642eca7",
+    "primaryReferences": [
+      "apps/oxlint/src/walk.rs:109-114",
+      "crates/oxc_config/src/walk.rs:20-34",
+      "crates/oxc_config/src/walk.rs:73-105",
+      "ignore/src/dir.rs:560-561",
+      "ignore/src/dir.rs:646-652",
+      "ignore/src/incremental.rs:310-345"
+    ]
+  },
+  "repository": "https://github.com/oxc-project/oxc",
+  "scope": "Primary-source identity audit only; no runtime, Actions, protected merge or installed acceptance credit."
+}

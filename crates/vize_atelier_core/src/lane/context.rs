@@ -26,11 +26,11 @@ impl<'a> TransformContext<'a> {
         options: TransformOptions,
         template_syntax_quirks: bool,
     ) -> Self {
-        let ssr = options.ssr;
         Self {
             allocator,
             source,
             interner: Interner::new(allocator),
+            in_ssr: options.ssr,
             options,
             custom_elements: Default::default(),
             root: None,
@@ -49,13 +49,13 @@ impl<'a> TransformContext<'a> {
             scope_chain: vize_croquis::ScopeChain::new(),
             scoped_slots: 0,
             in_v_once: false,
-            in_ssr: ssr,
             errors: std::vec::Vec::new(),
             template_syntax_quirks,
             jsx_compat: super::JsxTransformCompat::default(),
             node_removed_from: None,
             analysis: None,
             hoisted_scope_id: None,
+            frozen_elements: &[],
         }
     }
 

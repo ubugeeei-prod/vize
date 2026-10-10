@@ -127,6 +127,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
         if (options.tokenPreviews === undefined && mc.tokenPreviews !== undefined)
           tokenPreviewConfig = mc.tokenPreviews;
       }
+      if (basePath !== "/") basePath = basePath.replace(/\/+$/, "");
       vueVersion = resolveStaticPreviewVueVersion(vueVersion, resolvedConfig.plugins);
       if (toolbar.length > 0 && vueVersion !== 3 && vueVersion !== "2.7") {
         throw new Error("[musea] Global toolbar controls require Vue 3 or Vue 2.7");

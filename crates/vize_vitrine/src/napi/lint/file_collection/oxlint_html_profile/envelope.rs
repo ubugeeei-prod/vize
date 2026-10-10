@@ -2,7 +2,7 @@ use std::fs;
 use std::path::{Component, Path, PathBuf};
 use vize_l0::ToCompactString;
 
-use super::{Refusal, RefusalKind, Request, Selection, SourceCustody, SourceRole};
+use super::{HostProfile, Refusal, RefusalKind, Request, Selection, SourceCustody, SourceRole};
 
 mod entry;
 pub(super) use entry::entry_refusal;
@@ -11,6 +11,7 @@ pub(super) struct Admitted {
     pub target: PathBuf,
     pub repository: PathBuf,
     pub is_dir: bool,
+    pub has_vcs_boundary: bool,
 }
 
 pub(super) fn admit(request: &Request<'_>) -> Result<Admitted, Refusal> {
@@ -108,12 +109,19 @@ pub(super) fn admit(request: &Request<'_>) -> Result<Admitted, Refusal> {
             Err(error) => return Err(Refusal::io(&marker, error)),
         }
     }
-    let Some(repository) = repository else {
-        return Err(Refusal::new(
-            RefusalKind::MissingGitBoundary,
-            &target,
-            "regular .git ancestor required",
-        ));
+    let has_vcs_boundary = repository.is_some();
+    let repository = match repository {
+        Some(repository) => repository,
+        None if request.host == HostProfile::Oxlint181 => {
+            target.ancestors().last().unwrap_or(&target).to_path_buf()
+        }
+        None => {
+            return Err(Refusal::new(
+                RefusalKind::MissingGitBoundary,
+                &target,
+                "regular .git ancestor required",
+            ));
+        }
     };
     let suppression = request.cwd.join("oxlint-suppressions.json");
     match fs::symlink_metadata(&suppression) {
@@ -153,7 +161,16 @@ pub(super) fn admit(request: &Request<'_>) -> Result<Admitted, Refusal> {
     // Custom parents do not stop at Git boundaries. Refuse undeclared external
     // sources rather than silently substituting repository-only matching.
     if !request.no_ignore {
-        for directory in repository.parent().into_iter().flat_map(Path::ancestors) {
+        let owned_boundary = if has_vcs_boundary {
+            repository.as_path()
+        } else {
+            request.cwd
+        };
+        for directory in owned_boundary
+            .parent()
+            .into_iter()
+            .flat_map(Path::ancestors)
+        {
             let path = directory.join(custom);
             match fs::symlink_metadata(&path) {
                 Ok(_) => {
@@ -172,6 +189,7 @@ pub(super) fn admit(request: &Request<'_>) -> Result<Admitted, Refusal> {
         target,
         repository,
         is_dir: metadata.is_dir(),
+        has_vcs_boundary,
     })
 }
 
@@ -259,6 +277,9 @@ pub(super) fn record_ancestors(
         .take_while(|path| path.starts_with(&repository))
     {
         record_directory(request, parent, selection)?;
+    }
+    if !selection.has_vcs_boundary {
+        return Ok(());
     }
     let info = repository.join(".git/info");
     match fs::symlink_metadata(&info) {

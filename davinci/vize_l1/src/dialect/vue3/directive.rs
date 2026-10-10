@@ -3,9 +3,11 @@
 use crate::markup::directive::{
     ArgSyntax, DirectiveName, DirectiveNameError, DirectivePrefix, DirectiveSyntax,
 };
-use vize_l0::Span;
+use vize_l0::{Allocator, Span, StringBuilder};
 
 mod scan;
+#[cfg(test)]
+mod tests;
 
 /// Maximum simultaneous distinct delimiter runs in the allocation-free hook.
 /// Repeated identical brackets share a counter rather than consuming entries.
@@ -35,12 +37,7 @@ impl DirectiveSyntax for VueDirectives {
             _ => return Ok(None),
         };
         let name_end = if prefix == DirectivePrefix::Full {
-            while bytes
-                .get(index)
-                .is_some_and(|byte| !matches!(byte, b':' | b'.'))
-            {
-                index += 1;
-            }
+            index = full_head_end(bytes);
             index
         } else {
             0
@@ -85,6 +82,42 @@ impl DirectiveSyntax for VueDirectives {
         }
         Ok(Some(result))
     }
+}
+
+/// Freeze the complete name after Vue's `v-pre` boundary. Only the full
+/// directive head's argument separator disappears; the argument and modifiers
+/// are opaque authored bytes, including their quotes and brackets.
+pub fn frozen_attribute_name<'a>(allocator: &'a Allocator, authored: &'a str) -> &'a str {
+    if !authored.starts_with("v-") {
+        return authored;
+    }
+    let end = full_head_end(authored.as_bytes());
+    if authored.as_bytes().get(end) != Some(&b':') {
+        return authored;
+    }
+    let Some((head, tail)) = authored.split_at_checked(end) else {
+        return authored;
+    };
+    let Some(tail) = tail.strip_prefix(':') else {
+        return authored;
+    };
+    let mut out = StringBuilder::with_capacity_in(authored.len() - 1, allocator);
+    out.push_str(head);
+    out.push_str(tail);
+    out.into_str()
+}
+
+/// The existing full directive head boundary, shared without scanning its
+/// argument. Every admitted name has the ASCII `v-` prefix.
+fn full_head_end(bytes: &[u8]) -> usize {
+    let mut index = 2;
+    while bytes
+        .get(index)
+        .is_some_and(|byte| !matches!(byte, b':' | b'.'))
+    {
+        index += 1;
+    }
+    index
 }
 
 /// The complete input range was admitted before any component is constructed.

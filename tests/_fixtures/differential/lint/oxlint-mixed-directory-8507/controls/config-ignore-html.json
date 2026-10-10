@@ -1,0 +1,10 @@
+{
+  "plugins": ["vue"],
+  "jsPlugins": ["oxlint-plugin-vize"],
+  "settings": {
+    "vize": {
+      "preset": "recommended"
+    }
+  },
+  "ignorePatterns": ["**/*.html"]
+}

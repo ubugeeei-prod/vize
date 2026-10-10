@@ -1,0 +1,213 @@
+RootNode {
+    children: Vec(
+        [
+            Element(
+                ElementNode {
+                    ns: Html,
+                    tag: "p",
+                    tag_type: Element,
+                    props: Vec(
+                        [
+                            Attribute(
+                                AttributeNode {
+                                    name: ":title",
+                                    name_loc: SourceLocation {
+                                        span: Span {
+                                            start: 9,
+                                            end: 23,
+                                        },
+                                    },
+                                    value: Some(
+                                        TextNode {
+                                            content: "value",
+                                            loc: SourceLocation {
+                                                span: Span {
+                                                    start: 9,
+                                                    end: 23,
+                                                },
+                                            },
+                                        },
+                                    ),
+                                    loc: SourceLocation {
+                                        span: Span {
+                                            start: 9,
+                                            end: 23,
+                                        },
+                                    },
+                                },
+                            ),
+                        ],
+                    ),
+                    children: Vec(
+                        [
+                            Text(
+                                TextNode {
+                                    content: "{{ literal }}",
+                                    loc: SourceLocation {
+                                        span: Span {
+                                            start: 24,
+                                            end: 37,
+                                        },
+                                    },
+                                },
+                            ),
+                            Element(
+                                ElementNode {
+                                    ns: Html,
+                                    tag: "i",
+                                    tag_type: Element,
+                                    props: Vec(
+                                        [
+                                            Attribute(
+                                                AttributeNode {
+                                                    name: "@click",
+                                                    name_loc: SourceLocation {
+                                                        span: Span {
+                                                            start: 40,
+                                                            end: 46,
+                                                        },
+                                                    },
+                                                    value: Some(
+                                                        TextNode {
+                                                            content: "f",
+                                                            loc: SourceLocation {
+                                                                span: Span {
+                                                                    start: 48,
+                                                                    end: 49,
+                                                                },
+                                                            },
+                                                        },
+                                                    ),
+                                                    loc: SourceLocation {
+                                                        span: Span {
+                                                            start: 40,
+                                                            end: 50,
+                                                        },
+                                                    },
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    children: Vec(
+                                        [
+                                            Text(
+                                                TextNode {
+                                                    content: "{{nested}}",
+                                                    loc: SourceLocation {
+                                                        span: Span {
+                                                            start: 51,
+                                                            end: 61,
+                                                        },
+                                                    },
+                                                },
+                                            ),
+                                        ],
+                                    ),
+                                    is_self_closing: false,
+                                    loc: SourceLocation {
+                                        span: Span {
+                                            start: 37,
+                                            end: 51,
+                                        },
+                                    },
+                                    inner_loc: None,
+                                    hoisted_props_index: None,
+                                },
+                            ),
+                        ],
+                    ),
+                    is_self_closing: false,
+                    loc: SourceLocation {
+                        span: Span {
+                            start: 0,
+                            end: 24,
+                        },
+                    },
+                    inner_loc: None,
+                    hoisted_props_index: None,
+                },
+            ),
+            Interpolation(
+                InterpolationNode {
+                    content: Simple(
+                        SimpleExpressionNode {
+                            content: "normal",
+                            is_static: false,
+                            const_type: NotConstant,
+                            loc: SourceLocation {
+                                span: Span {
+                                    start: 71,
+                                    end: 77,
+                                },
+                            },
+                            js_ast: Some(
+                                JsExpression {
+                                    ast: Identifier(
+                                        IdentifierReference {
+                                            span: Span {
+                                                start: 0,
+                                                end: 6,
+                                            },
+                                            node_id: Cell {
+                                                value: NodeId(0),
+                                            },
+                                            reference_id: Cell {
+                                                value: None,
+                                            },
+                                            name: "normal",
+                                        },
+                                    ),
+                                    raw: "normal",
+                                },
+                            ),
+                            hoisted: None,
+                            identifiers: None,
+                            is_handler_key: false,
+                            is_ref_transformed: false,
+                        },
+                    ),
+                    loc: SourceLocation {
+                        span: Span {
+                            start: 69,
+                            end: 79,
+                        },
+                    },
+                    raw: false,
+                },
+            ),
+        ],
+    ),
+    comments: Vec(
+        [],
+    ),
+    helpers: Vec(
+        [],
+    ),
+    components: Vec(
+        [],
+    ),
+    directives: Vec(
+        [],
+    ),
+    filters: Vec(
+        [],
+    ),
+    hoists: Vec(
+        [],
+    ),
+    imports: Vec(
+        [],
+    ),
+    cached: Vec(
+        [],
+    ),
+    temps: 0,
+    source: "<p v-pre :title='value'>{{ literal }}<i @click='f'>{{nested}}</i></p>{{normal}}",
+    loc: SourceLocation {
+        span: Span {
+            start: 0,
+            end: 0,
+        },
+    },
+    transformed: false,
+}

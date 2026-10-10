@@ -1,0 +1,267 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/8507",
+  "host": "1.81.0",
+  "baseFiles": ["package.json", ".oxlintrc.json", "app/index.html", "app/App.vue"],
+  "gitInit": false,
+  "formats": ["default", "json", "unix", "stylish"],
+  "cases": [
+    {
+      "name": "reported-mixed-directory",
+      "surface": "cli",
+      "argv": ["app"],
+      "expectedExit": 0,
+      "expectedDiagnostics": [],
+      "selectedHtml": ["app/index.html"],
+      "expectedHtmlExecutions": 1
+    },
+    {
+      "name": "reported-cli-ignore-html",
+      "surface": "cli",
+      "argv": ["app", "--ignore-pattern", "**/*.html"],
+      "expectedExit": 0,
+      "expectedDiagnostics": [],
+      "selectedHtml": [],
+      "expectedHtmlExecutions": 0
+    },
+    {
+      "name": "reported-config-ignore-html",
+      "surface": "cli",
+      "argv": ["app"],
+      "overlay": {
+        ".oxlintrc.json": "controls/config-ignore-html.json"
+      },
+      "expectedExit": 0,
+      "expectedDiagnostics": [],
+      "selectedHtml": [],
+      "expectedHtmlExecutions": 0
+    },
+    {
+      "name": "reported-explicit-vue",
+      "surface": "cli",
+      "argv": ["app/App.vue"],
+      "expectedExit": 0,
+      "expectedDiagnostics": [],
+      "selectedHtml": [],
+      "expectedHtmlExecutions": 0
+    },
+    {
+      "name": "mixed-directory-keeps-vue-error",
+      "surface": "cli",
+      "argv": ["app"],
+      "overlay": {
+        ".oxlintrc.json": "controls/config-html-error.json",
+        "app/App.vue": "controls/App-error.vue"
+      },
+      "expectedExit": 1,
+      "expectedDiagnostics": [
+        {
+          "path": "app/App.vue",
+          "rule": "vue/no-duplicate-attributes",
+          "severity": "error",
+          "message": "Duplicate attribute 'id'",
+          "start": 80,
+          "end": 91,
+          "help": "Remove the duplicate attribute"
+        }
+      ],
+      "selectedHtml": ["app/index.html"],
+      "expectedHtmlExecutions": 1
+    },
+    {
+      "name": "cli-ignore-html-keeps-vue-error",
+      "surface": "cli",
+      "argv": ["app", "--ignore-pattern", "**/*.html"],
+      "overlay": {
+        ".oxlintrc.json": "controls/config-html-error.json",
+        "app/App.vue": "controls/App-error.vue"
+      },
+      "expectedExit": 1,
+      "expectedDiagnostics": [
+        {
+          "path": "app/App.vue",
+          "rule": "vue/no-duplicate-attributes",
+          "severity": "error",
+          "message": "Duplicate attribute 'id'",
+          "start": 80,
+          "end": 91,
+          "help": "Remove the duplicate attribute"
+        }
+      ],
+      "selectedHtml": [],
+      "expectedHtmlExecutions": 0
+    },
+    {
+      "name": "config-ignore-html-keeps-vue-error",
+      "surface": "cli",
+      "argv": ["app"],
+      "overlay": {
+        ".oxlintrc.json": "controls/config-ignore-html-error.json",
+        "app/App.vue": "controls/App-error.vue"
+      },
+      "expectedExit": 1,
+      "expectedDiagnostics": [
+        {
+          "path": "app/App.vue",
+          "rule": "vue/no-duplicate-attributes",
+          "severity": "error",
+          "message": "Duplicate attribute 'id'",
+          "start": 80,
+          "end": 91,
+          "help": "Remove the duplicate attribute"
+        }
+      ],
+      "selectedHtml": [],
+      "expectedHtmlExecutions": 0
+    },
+    {
+      "name": "explicit-vue-keeps-same-error",
+      "surface": "cli",
+      "argv": ["app/App.vue"],
+      "overlay": {
+        ".oxlintrc.json": "controls/config-html-error.json",
+        "app/App.vue": "controls/App-error.vue"
+      },
+      "expectedExit": 1,
+      "expectedDiagnostics": [
+        {
+          "path": "app/App.vue",
+          "rule": "vue/no-duplicate-attributes",
+          "severity": "error",
+          "message": "Duplicate attribute 'id'",
+          "start": 80,
+          "end": 91,
+          "help": "Remove the duplicate attribute"
+        }
+      ],
+      "selectedHtml": [],
+      "expectedHtmlExecutions": 0
+    },
+    {
+      "name": "included-html-is-actually-linted",
+      "surface": "cli",
+      "argv": ["app"],
+      "overlay": {
+        ".oxlintrc.json": "controls/config-html-error.json",
+        "app/index.html": "controls/index-error.html"
+      },
+      "expectedExit": 1,
+      "expectedDiagnostics": [
+        {
+          "path": "app/index.html",
+          "rule": "vue/no-duplicate-attributes",
+          "severity": "error",
+          "message": "Duplicate attribute 'id'",
+          "start": 42,
+          "end": 52,
+          "help": "Remove the duplicate attribute"
+        }
+      ],
+      "selectedHtml": ["app/index.html"],
+      "expectedHtmlExecutions": 1
+    },
+    {
+      "name": "nogit-own-gitignore",
+      "surface": "native",
+      "target": "app",
+      "overlay": {
+        ".gitignore": "controls/ignore-html.txt"
+      },
+      "selectedHtml": [],
+      "rootDecision": "Eligible"
+    },
+    {
+      "name": "nogit-own-gitignore-under-no-ignore",
+      "surface": "native",
+      "target": "app",
+      "noIgnore": true,
+      "overlay": {
+        ".gitignore": "controls/ignore-html.txt"
+      },
+      "selectedHtml": [],
+      "rootDecision": "Eligible"
+    },
+    {
+      "name": "nogit-parent-gitignore",
+      "surface": "native",
+      "target": "app",
+      "parentFiles": {
+        ".gitignore": "controls/ignore-parent-html.txt"
+      },
+      "projectDirectory": "repro",
+      "selectedHtml": [],
+      "rootDecision": "Eligible"
+    },
+    {
+      "name": "nogit-parent-ignored-cwd",
+      "surface": "native",
+      "target": "app",
+      "parentFiles": {
+        ".gitignore": "controls/ignore-parent-cwd.txt"
+      },
+      "projectDirectory": "repro",
+      "selectedHtml": [],
+      "rootDecision": "VcsExcluded"
+    },
+    {
+      "name": "nogit-parent-ignored-explicit-html",
+      "surface": "native",
+      "target": "app/index.html",
+      "parentFiles": {
+        ".gitignore": "controls/ignore-parent-cwd.txt"
+      },
+      "projectDirectory": "repro",
+      "selectedHtml": ["app/index.html"],
+      "rootDecision": "Eligible"
+    },
+    {
+      "name": "nogit-nested-config-refusal",
+      "surface": "native",
+      "target": "app",
+      "overlay": {
+        "app/.oxlintrc.json": "controls/nested-config.json"
+      },
+      "refusal": "NestedConfig"
+    },
+    {
+      "name": "nogit-external-custom-ignore-refusal",
+      "surface": "native",
+      "target": "app",
+      "parentFiles": {
+        ".eslintignore": "controls/custom-parent.txt"
+      },
+      "projectDirectory": "repro",
+      "refusal": "ExternalCustomIgnore"
+    },
+    {
+      "name": "nogit-nested-vcs-refusal",
+      "surface": "native",
+      "target": "app",
+      "directories": ["app/nested/.git"],
+      "overlay": {
+        "app/nested/index.html": "app/index.html"
+      },
+      "refusal": "NestedVcs"
+    }
+  ],
+  "historicalBefore": {
+    "host": "1.81.0",
+    "pluginVersions": ["0.435.0", "0.439.0", "0.441.0"],
+    "cases": [
+      "reported-mixed-directory",
+      "reported-cli-ignore-html",
+      "reported-config-ignore-html",
+      "reported-explicit-vue",
+      "mixed-directory-keeps-vue-error",
+      "cli-ignore-html-keeps-vue-error",
+      "config-ignore-html-keeps-vue-error",
+      "explicit-vue-keeps-same-error"
+    ],
+    "status": "not executed"
+  },
+  "preserveExisting": [
+    "All original 41 HTML CLI cases and complete expected reports.",
+    "Existing 1.78.0 and 1.86.0 MissingGitBoundary negatives.",
+    "Existing unsupported-host negative.",
+    "All original sources, output formats, whole reports, observation counts and instruction/batching ceilings."
+  ]
+}

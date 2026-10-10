@@ -27,7 +27,7 @@ test("the actual caller stages standalone and emits its exact owned path only wh
     "utf8",
   );
   const start = caller.indexOf("const staged = stageProjectNative(");
-  const end = caller.indexOf("const n8nReplay =", start);
+  const end = caller.indexOf("const mixedDirectory8507 =", start);
   assert.ok(start >= 0 && end > start, "the complete live staging paragraph must be present");
   const context = {
     artifacts: undefined,

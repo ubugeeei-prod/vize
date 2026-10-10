@@ -146,6 +146,8 @@
 "tests/_fixtures/differential/lint-regressions/router-app-reachability-7932/supplemental/two-independent-apps/project/src/alpha/RouteView.vue"
 "tests/_fixtures/differential/lint-regressions/router-app-reachability-7932/supplemental/two-independent-apps/project/src/beta/App.vue"
 "tests/_fixtures/differential/lint-regressions/router-app-reachability-7932/supplemental/two-independent-apps/project/src/beta/RouteView.vue"
+"tests/_fixtures/differential/lint/oxlint-mixed-directory-8507/app/App.vue"
+"tests/_fixtures/differential/lint/oxlint-mixed-directory-8507/controls/App-error.vue"
 "tests/_fixtures/differential/lsp/binding-occurrences-original/Field.vue"
 "tests/_fixtures/differential/nuxt/explicit-page-meta/App.vue"
 "tests/_fixtures/differential/typechecker/vite-plus-relative-tsconfig/src/Counter.vue"

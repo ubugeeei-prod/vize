@@ -11,6 +11,7 @@ mod component_fixtures;
 mod control_fixtures;
 mod fixtures;
 mod slot_fixtures;
+mod ssr_key_boundaries;
 mod vue_align_fixtures;
 
 use vize_atelier_core::TemplateSyntaxMode;
@@ -22,7 +23,7 @@ use crate::compile::{SsrLane, compile_ssr_on_lane};
 use crate::options::{SsrCompilerExperimentalOptions, SsrCompilerOptions};
 
 /// The option surfaces every admitted fixture runs under.
-fn option_sets() -> std::vec::Vec<(
+pub(super) fn option_sets() -> std::vec::Vec<(
     &'static str,
     SsrCompilerOptions,
     SsrCompilerExperimentalOptions,
@@ -74,7 +75,7 @@ fn option_sets() -> std::vec::Vec<(
     ]
 }
 
-fn assert_parity(
+pub(super) fn assert_parity(
     source: &str,
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
@@ -108,12 +109,22 @@ fn assert_parity(
     );
 }
 
-fn selection(
+pub(super) fn selection(
     source: &str,
     options: &SsrCompilerOptions,
     experimental: &SsrCompilerExperimentalOptions,
 ) -> SsrL4Selection {
     let allocator = Allocator::new();
+    let (root, errors, frozen) = vize_atelier_core::parser::Parser::with_options(
+        &allocator,
+        source,
+        crate::stage_options::parser_options(options),
+    )
+    .parse_with_frozen_elements();
+    assert!(
+        !errors.iter().any(|error| !error.is_recoverable()),
+        "{errors:?}"
+    );
     select_ssr_lane(
         &allocator,
         source,
@@ -123,6 +134,7 @@ fn selection(
             template_syntax: TemplateSyntaxMode::Standard,
             has_custom_elements: false,
             slotted: true,
+            frozen: Some((&root, &frozen)),
         },
     )
 }

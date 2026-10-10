@@ -1,0 +1,242 @@
+[
+  {
+    "kind": "dom",
+    "name": "own-empty",
+    "result": {
+      "bindings": null,
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"slot\"))\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><slot v-pre></slot></template>"
+  },
+  {
+    "kind": "vapor",
+    "name": "own-empty",
+    "result": {
+      "bindings": null,
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<slot></slot>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><slot v-pre></slot></template>"
+  },
+  {
+    "kind": "ssr",
+    "name": "own-empty",
+    "result": {
+      "bindings": null,
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<slot${_ssrRenderAttrs(_attrs)}></slot>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><slot v-pre></slot></template>"
+  },
+  {
+    "kind": "ssr",
+    "name": "own-empty",
+    "result": {
+      "bindings": null,
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<slot${_ssrRenderAttrs(_attrs)}></slot>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "explicit-legacy",
+    "source": "<template><slot v-pre></slot></template>"
+  },
+  {
+    "kind": "dom",
+    "name": "inherited-empty",
+    "result": {
+      "bindings": null,
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"slot\")\n  ]))\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><div v-pre><slot></slot></div></template>"
+  },
+  {
+    "kind": "vapor",
+    "name": "inherited-empty",
+    "result": {
+      "bindings": null,
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div><slot></slot></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><div v-pre><slot></slot></div></template>"
+  },
+  {
+    "kind": "ssr",
+    "name": "inherited-empty",
+    "result": {
+      "bindings": null,
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><slot></slot></div>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><div v-pre><slot></slot></div></template>"
+  },
+  {
+    "kind": "ssr",
+    "name": "inherited-empty",
+    "result": {
+      "bindings": null,
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><slot></slot></div>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "explicit-legacy",
+    "source": "<template><div v-pre><slot></slot></div></template>"
+  },
+  {
+    "kind": "dom",
+    "name": "normal-outlet",
+    "result": {
+      "bindings": null,
+      "code": "import { renderSlot as _renderSlot } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return _renderSlot(_ctx.$slots, \"default\")\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><slot></slot></template>"
+  },
+  {
+    "kind": "vapor",
+    "name": "normal-outlet",
+    "result": {
+      "bindings": null,
+      "code": "import { createSlot as _createSlot } from 'vue';\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = _createSlot(\"default\")\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><slot></slot></template>"
+  },
+  {
+    "kind": "ssr",
+    "name": "normal-outlet",
+    "result": {
+      "bindings": null,
+      "code": "import { ssrRenderSlot as _ssrRenderSlot } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _ssrRenderSlot(_ctx.$slots, \"default\", {}, null, _push, _parent)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><slot></slot></template>"
+  },
+  {
+    "kind": "ssr",
+    "name": "normal-outlet",
+    "result": {
+      "bindings": null,
+      "code": "import { ssrRenderSlot as _ssrRenderSlot } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _ssrRenderSlot(_ctx.$slots, \"default\", {}, null, _push, _parent)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "explicit-legacy",
+    "source": "<template><slot></slot></template>"
+  },
+  {
+    "kind": "dom",
+    "name": "original-nonempty",
+    "result": {
+      "bindings": null,
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"slot\", null, \"{{ not }} an interpolation\"))\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><slot v-pre>{{ not }} an interpolation</slot></template>"
+  },
+  {
+    "kind": "vapor",
+    "name": "original-nonempty",
+    "result": {
+      "bindings": null,
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<slot>{{ not }} an interpolation</slot>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><slot v-pre>{{ not }} an interpolation</slot></template>"
+  },
+  {
+    "kind": "ssr",
+    "name": "original-nonempty",
+    "result": {
+      "bindings": null,
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<slot${_ssrRenderAttrs(_attrs)}>{{ not }} an interpolation</slot>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "selected",
+    "source": "<template><slot v-pre>{{ not }} an interpolation</slot></template>"
+  },
+  {
+    "kind": "ssr",
+    "name": "original-nonempty",
+    "result": {
+      "bindings": null,
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<slot${_ssrRenderAttrs(_attrs)}>{{ not }} an interpolation</slot>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    },
+    "route": "explicit-legacy",
+    "source": "<template><slot v-pre>{{ not }} an interpolation</slot></template>"
+  }
+]

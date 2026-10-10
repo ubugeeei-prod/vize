@@ -206,6 +206,16 @@ impl SsrCodegenContext<'_> {
                     entries.push(component_prop_entry(&key, &value, false));
                 } else {
                     let key = self.dynamic_arg_to_string(arg);
+                    let key = if dir
+                        .modifiers
+                        .iter()
+                        .any(|modifier| modifier.content == "camel")
+                    {
+                        self.use_core_helper(RuntimeHelper::Camelize);
+                        cstr!("_camelize(({key}) || \"\")")
+                    } else {
+                        key
+                    };
                     entries.push(component_prop_entry(&key, &value, true));
                 }
             }
