@@ -15,7 +15,7 @@ export function render(_ctx) {
     title: () => (_ctx.form.title),
     "onUpdate:title": () => ($event => ((_ctx.form.title) = $event)),
     titleModifiers: () => ({ "trim": true })
-  }, null, true)
+  }, null, false)
   _renderEffect(() => _setText(x3, _toDisplayString(_ctx.form.title)))
   return n1
 }

@@ -255,7 +255,14 @@ fn creation_flags(
             .is_none_or(|expression| !expression.is_static)
     {
         "4"
-    } else {
+    } else if ctx.keep_alive_slot
+        || ctx.transition_slot
+        || ctx.root_components.contains(&component.id)
+    {
         "true"
+    } else {
+        // Nested in an element, a slot, a `v-for`, or among sibling roots: not the owner's single
+        // root, so the owner's fallthrough attrs must not reach it.
+        "false"
     }
 }

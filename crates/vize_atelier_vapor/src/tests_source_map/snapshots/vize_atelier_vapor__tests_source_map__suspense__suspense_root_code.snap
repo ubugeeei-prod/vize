@@ -9,7 +9,7 @@ export function render(_ctx) {
   const _component_AsyncChild = _resolveComponent("AsyncChild")
   const n4 = _createComponent(_Suspense, null, {
     "default": () => {
-      const n0 = _createComponentWithFallback(_component_AsyncChild, { label: () => (_ctx.label) }, null, true)
+      const n0 = _createComponentWithFallback(_component_AsyncChild, { label: () => (_ctx.label) }, null, false)
       return n0
     },
     "fallback": () => {

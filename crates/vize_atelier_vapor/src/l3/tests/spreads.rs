@@ -107,7 +107,7 @@ fn object_payload_mutations_drive_generation() {
     let render = code.split_once("export").map_or("", |(_, render)| render);
     assert_eq!(
         render,
-        " function render(_ctx) {\n  const n1 = t0()\n  const _component_MyComp = _resolveComponent(\"MyComp\")\n  _setInsertionState(n1)\n  const n0 = _createComponentWithFallback(_component_MyComp, { $: [() => (_ctx.r)] }, null, true)\n  _renderEffect(() => _setDynamicProps(n1, [{ title: \"u\" }, _ctx.q]))\n  return n1\n}\n"
+        " function render(_ctx) {\n  const n1 = t0()\n  const _component_MyComp = _resolveComponent(\"MyComp\")\n  _setInsertionState(n1)\n  const n0 = _createComponentWithFallback(_component_MyComp, { $: [() => (_ctx.r)] }, null, false)\n  _renderEffect(() => _setDynamicProps(n1, [{ title: \"u\" }, _ctx.q]))\n  return n1\n}\n"
     );
 }
 

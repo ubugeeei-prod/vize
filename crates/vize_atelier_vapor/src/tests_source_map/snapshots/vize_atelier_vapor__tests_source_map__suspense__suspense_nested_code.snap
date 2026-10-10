@@ -23,7 +23,7 @@ export function render(_ctx) {
         _renderEffect(() => _setText(x6, _toDisplayString(_ctx.waiting)))
         return n6
       }
-    }, true)
+    }, false)
     return n8
   })
   return n0

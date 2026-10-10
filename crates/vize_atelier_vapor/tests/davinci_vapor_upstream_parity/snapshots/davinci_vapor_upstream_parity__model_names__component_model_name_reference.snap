@@ -17,7 +17,7 @@ export function render(_ctx) {
     () => ({ [(_ctx.name)]: _ctx.value }),
     () => ({ [(_toHandlerKey("update:" + (_ctx.name)))]: $event => ((_ctx.value) = $event) }),
     () => ({ [((_ctx.name) + "Modifiers")]: { "trim": true } })
-  ] }, null, true)
+  ] }, null, false)
   _renderEffect(() => _setText(x3, _toDisplayString(_ctx.value)))
   return n1
 }

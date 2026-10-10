@@ -17,7 +17,7 @@ export function render(_ctx) {
     () => ({ [(_ctx.name.toLowerCase())]: _ctx.value }),
     () => ({ [(_toHandlerKey("update:" + (_ctx.name.toLowerCase())))]: $event => ((_ctx.value) = $event) }),
     () => ({ [((_ctx.name.toLowerCase()) + "Modifiers")]: { "trim": true } })
-  ] }, null, true)
+  ] }, null, false)
   _renderEffect(() => _setText(x3, _toDisplayString(_ctx.value)))
   return n1
 }

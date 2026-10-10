@@ -41,6 +41,9 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) is_fragment: bool,
     /// A dynamic component at this KeepAlive slot root needs SLOT_ROOT (4).
     pub(crate) keep_alive_slot: bool,
+    /// Components that are the render's single root (directly, or inside a lone root `v-if`
+    /// branch or keyed fragment), which alone receive the owner's fallthrough attrs.
+    pub(crate) root_components: FxHashSet<usize>,
     /// Structural slot bodies keep authored inline handler wrapper anchors.
     pub(crate) structural_slot_spans: bool,
     /// A Transition/TransitionGroup slot root owns its runtime boundary flags.
@@ -90,6 +93,7 @@ impl<'a> GenerateContext<'a> {
             node_positions: FxHashMap::default(),
             is_fragment: false,
             keep_alive_slot: false,
+            root_components: FxHashSet::default(),
             structural_slot_spans: false,
             transition_slot: false,
             for_scopes: std::vec::Vec::new(),

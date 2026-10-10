@@ -14,7 +14,7 @@ export function render(_ctx) {
   const n0 = _createDynamicComponent(() => (_ctx.view), {
     modelValue: () => (_ctx.value),
     "onUpdate:modelValue": () => ($event => ((_ctx.value) = $event))
-  }, null, true)
+  }, null, false)
   _renderEffect(() => _setText(x3, _toDisplayString(_ctx.value)))
   return n1
 }
