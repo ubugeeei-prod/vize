@@ -214,7 +214,12 @@ function normalizePropName(name: string): string {
 
 function generateTypescript(palette: PaletteResponse): string {
   const fields = palette.controls
-    .map((control) => `  ${control.name}${control.required ? "" : "?"}: ${controlTsType(control)};`)
+    .map((control) => {
+      const name = /^[$_\p{ID_Start}][$\u200c\u200d\p{ID_Continue}]*$/u.test(control.name)
+        ? control.name
+        : JSON.stringify(control.name);
+      return `  ${name}${control.required ? "" : "?"}: ${controlTsType(control)};`;
+    })
     .join("\n");
   return `export interface ${pascalCase(palette.title)}Props {\n${fields}\n}\n`;
 }
