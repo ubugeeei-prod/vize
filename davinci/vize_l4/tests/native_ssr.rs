@@ -43,7 +43,7 @@ fn native_file<'a>(arena: &'a Allocator, source: &'a str) -> vize_l2::file::File
 }
 
 #[test]
-fn eleven_native_complete_modules_match_pinned_ssr_function_bytes_and_original_maps() {
+fn native_complete_modules_match_pinned_ssr_function_bytes_and_original_maps() {
     let pack: serde_json::Value =
         serde_json::from_str(include_str!("fixtures/native-ssr-vue-3.5.35.json")).unwrap();
     let mut captured = Vec::new();
@@ -109,9 +109,14 @@ fn eleven_native_complete_modules_match_pinned_ssr_function_bytes_and_original_m
         let sfc = assemble(parts).unwrap().into_document();
         let sfc_map: serde_json::Value =
             serde_json::from_str(&sfc.source_map("NativeSsr.vue", source)).unwrap();
-        captured.push(serde_json::json!({"id": id, "source": source, "code": document.as_str(), "map": map, "sfcCode": sfc.as_str(), "sfcMap": sfc_map, "outcome": "complete_module"}));
+        let links = |document: &vize_l4::write::EmitDocument| {
+            document.links().iter().map(|link| {
+                serde_json::json!({"authored":{"start":link.authored.start,"end":link.authored.end},"generated":{"start":link.generated.start,"end":link.generated.end},"name":link.name.as_deref(),"segment":link.segment})
+            }).collect::<Vec<_>>()
+        };
+        captured.push(serde_json::json!({"id": id, "source": source, "filename":"NativeSsr.vue", "code": document.as_str(), "map": map, "links":links(&document), "sfcCode": sfc.as_str(), "sfcMap": sfc_map, "sfcLinks":links(&sfc), "outcome": "complete_module"}));
     }
-    assert_eq!(captured.len(), 11);
+    assert_eq!(captured.len(), 25);
     if let Ok(path) = std::env::var("VIZE_L4_SSR_NATIVE_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&captured).unwrap()).unwrap();
     }
@@ -142,7 +147,6 @@ fn wrong_policy_and_unsupported_whole_file_return_no_writer() {
     assert!(error.node.is_some());
     assert_eq!(analysis.artifact().provenance(), original);
     for source in [
-        "<div class=\"a\"/>",
         "<div style=\"color:red\"/>",
         "<input value=\"a\">",
         "<input true-value=\"a\">",

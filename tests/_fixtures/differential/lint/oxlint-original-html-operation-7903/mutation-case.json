@@ -1,0 +1,36 @@
+{
+  "name": "retained-originals-once-after-owned-mutation",
+  "rationale": "During first actual engine callback, overwrite root JSON and both physical HTML inputs; the retained original bytes and plan must produce the original warning twice, once per selected path, without another read or root decode.",
+  "target": ".",
+  "root": "{\"rules\":{\"vize/vue/no-v-html\":\"warn\"}}\n",
+  "files": {
+    "b/Live.html": "@Warning.html",
+    "a/Live.html": "@Warning.html"
+  },
+  "selected": [
+    {
+      "path": "a/Live.html",
+      "packet": "warning"
+    },
+    {
+      "path": "b/Live.html",
+      "packet": "warning"
+    }
+  ],
+  "projection": {
+    "rules": [
+      {
+        "name": "vue/no-v-html",
+        "severity": "warning",
+        "active": true,
+        "authored_options": []
+      }
+    ],
+    "settings": {
+      "locale": "en",
+      "help_level": "full",
+      "preset": "incremental"
+    },
+    "deny_warnings": false
+  }
+}
