@@ -1,0 +1,43 @@
+{
+  "sourceHead": "4e7ac99e1a6293903471f49818fb7f7fba46b2d0",
+  "productionHead": "a9e7dbbefd210e6aecb27360a2a5f2948880bb4a",
+  "nativeProbeSha256": "c72b80652f6b137c6038dece16f257a6d244635dc5bff1a25334ecfb7252226f",
+  "cases": [
+    {
+      "input": "AfsStepperDialog.stories.tsx.txt",
+      "mode": "vdom",
+      "inputSha256": "8b46599f16d4ac31ed91677a729c9058087ebf2978fd5e62490d512db9e04b8f",
+      "output": "AfsStepperDialog.stories.vdom.runtime.json.txt",
+      "outputSha256": "99a37e84067ba4e87133f74daefc0891ea4b22db913d6d389831f5187ee14b18",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "input": "AfsStepperDialog.stories.tsx.txt",
+      "mode": "vapor",
+      "inputSha256": "8b46599f16d4ac31ed91677a729c9058087ebf2978fd5e62490d512db9e04b8f",
+      "output": "AfsStepperDialog.stories.vapor.runtime.json.txt",
+      "outputSha256": "5c259e1823d7289cb0defd73dcf3f42ad4533f144bc664fab28af013d98549ac",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "input": "native-nested-controls.tsx.txt",
+      "mode": "vdom",
+      "inputSha256": "b107ba38eab500483adb74742186eae4ea4791ee21f3ddbcadf0f3edafa22952",
+      "output": "native-nested-controls.vdom.runtime.json.txt",
+      "outputSha256": "6055039f768a3aa2374114f297505bf0beabccc9b97c8df3afe34fb09f9e5e97",
+      "exitCode": 0,
+      "stderr": ""
+    },
+    {
+      "input": "native-nested-controls.tsx.txt",
+      "mode": "vapor",
+      "inputSha256": "b107ba38eab500483adb74742186eae4ea4791ee21f3ddbcadf0f3edafa22952",
+      "output": "native-nested-controls.vapor.runtime.json.txt",
+      "outputSha256": "1cc74e8645519479e2b80cabeb9fead93d1ef27f0b8b5068c9445049d11748f8",
+      "exitCode": 0,
+      "stderr": ""
+    }
+  ]
+}

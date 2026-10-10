@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_jsx/src/compile/tests.rs
+expression: packet
+---
+(
+    "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx, createElementBlock as _createElementBlock } from \"vue\"\n\n// 日本語 😀\r\nconst View = () => (() => {\nreturn ((_ctx, _cache) => {\n  const _component_Host = _resolveComponent(\"Host\")\n  \n  return (_openBlock(), _createBlock(_component_Host, null, {\n    named: _withCtx((props) => [\n      _createElementVNode(\"span\", null, _toDisplayString(props.value), 1 /* TEXT */)\n    ]),\n    other: _withCtx(({ value }) => [\n      _createElementVNode(\"b\", null, _toDisplayString(value), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n})(undefined, [])\n})();\r\nconst Styled = () => (() => {\nreturn ((_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"p\", {\n      class: \"view\",\n      \"data-v-46cced53\": \"\"\n    }, \"ok\")\n  ]))\n})(undefined, [])\n})();",
+    Some(
+        "{\"file\":\"module.tsx\",\"mappings\":\";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,EAAE,CAAC;AACV,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;6CAAE;;SAAD;IAAS,OAAO;2BAA+B,8BAAM;;IAAqB,OAAO;2BAAkD,2BAAG;;;;;IAAuB,CAAC,CAAC;AAClL,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC;yBAAoD;MAAEA,QAAM;;QAAO;;;IAAY\",\"names\":[\"class\"],\"sources\":[\"module.tsx\"],\"sourcesContent\":[\"// 日本語 😀\\r\\nconst View = () => <Host>{{ named: (props: { value: string }) => <span>{props.value}</span>, other: function ({ value }: { value: number }) { return <b>{value}</b>; } }}</Host>;\\r\\nconst Styled = () => <div><style scoped>{`.view { color: red; }`}</style><p class=\\\"view\\\">ok</p></div>;\"],\"version\":3}",
+    ),
+    [
+        (
+            Some(
+                "View",
+            ),
+            None,
+            Vdom,
+            "export function render(_ctx, _cache) {\n  const _component_Host = _resolveComponent(\"Host\")\n  \n  return (_openBlock(), _createBlock(_component_Host, null, {\n    named: _withCtx((props) => [\n      _createElementVNode(\"span\", null, _toDisplayString(props.value), 1 /* TEXT */)\n    ]),\n    other: _withCtx(({ value }) => [\n      _createElementVNode(\"b\", null, _toDisplayString(value), 1 /* TEXT */)\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            "import { resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n",
+            Some(
+                "{\"file\":\"template.vue\",\"mappings\":\"AACmB;6CAAC;;SAAD;IAAS,OAAO;2BAA+B,8BAAM;;IAAqB,OAAO;2BAAkD,2BAAG\",\"names\":[],\"sources\":[\"template.vue\"],\"sourcesContent\":[\"// 日本語 😀\\r\\nconst View = () => <Host>{{ named: (props: { value: string }) => <span>{props.value}</span>, other: function ({ value }: { value: number }) { return <b>{value}</b>; } }}</Host>;\\r\\nconst Styled = () => <div><style scoped>{`.view { color: red; }`}</style><p class=\\\"view\\\">ok</p></div>;\"],\"version\":3}",
+            ),
+            None,
+            [],
+        ),
+        (
+            Some(
+                "Styled",
+            ),
+            None,
+            Vdom,
+            "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"p\", {\n      class: \"view\",\n      \"data-v-46cced53\": \"\"\n    }, \"ok\")\n  ]))\n}",
+            "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+            Some(
+                "{\"file\":\"template.vue\",\"mappings\":\"AAEqB;SAAA,oCAAC;yBAAoD;MAAEA,QAAM;;QAAO\",\"names\":[\"class\"],\"sources\":[\"template.vue\"],\"sourcesContent\":[\"// 日本語 😀\\r\\nconst View = () => <Host>{{ named: (props: { value: string }) => <span>{props.value}</span>, other: function ({ value }: { value: number }) { return <b>{value}</b>; } }}</Host>;\\r\\nconst Styled = () => <div><style scoped>{`.view { color: red; }`}</style><p class=\\\"view\\\">ok</p></div>;\"],\"version\":3}",
+            ),
+            Some(
+                ScopedStyle {
+                    scope_id: "data-v-46cced53",
+                    css: ".view[data-v-46cced53]{ color: red; }",
+                },
+            ),
+            [],
+        ),
+    ],
+    [],
+)

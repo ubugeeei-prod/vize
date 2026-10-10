@@ -1,0 +1,252 @@
+{
+  "schema": 1,
+  "observationsSha256": "65c4946126d029f6ae7a1202d9d5079380775bed79cbca7d7086dfca9b259610",
+  "archiveSha256": "f1bf5ff9270a1dee35fa8966f0bf06207b16d973f0654635576ec9f1467f706b",
+  "files": [
+    {
+      "path": "correct-arrow/Child.vue",
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "size": 139
+    },
+    {
+      "path": "correct-arrow/Consumer.tsx",
+      "sha256": "34074a69d7242fd081428782cf302b8fab93580b0d756fd4d4e84c291dd7a025",
+      "size": 150
+    },
+    {
+      "path": "correct-arrow/native-journal.ndjson",
+      "sha256": "d146f4598391079ed25b298ac170504bc406c78aa5df5da8a1c2ef48a0bb5096",
+      "size": 1663
+    },
+    {
+      "path": "correct-arrow/process.json",
+      "sha256": "396095671ebd3a60e401c4612913145dbcacda80d5e49ee7c085241af31854e7",
+      "size": 445
+    },
+    {
+      "path": "correct-arrow/stderr.raw",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "correct-arrow/stdout.raw",
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "size": 663
+    },
+    {
+      "path": "correct-arrow/tsconfig.json",
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "size": 185
+    },
+    {
+      "path": "correct-arrow/vize.config.json",
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "size": 38
+    },
+    {
+      "path": "independent-body-error/Child.vue",
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "size": 139
+    },
+    {
+      "path": "independent-body-error/Consumer.tsx",
+      "sha256": "5df3133917b304bd8d3c177bfbdf3f94add9568230f8643e809b23619bd5b6c5",
+      "size": 154
+    },
+    {
+      "path": "independent-body-error/native-journal.ndjson",
+      "sha256": "754f14ced14f8cd3efeb14ad364a9586c51cc225210692ffbd48c59fedeec57a",
+      "size": 1575
+    },
+    {
+      "path": "independent-body-error/process.json",
+      "sha256": "f820481f0eba0aad16188c4c286be8d535a32a1a71e38439d6924314ffa2e43f",
+      "size": 444
+    },
+    {
+      "path": "independent-body-error/stderr.raw",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "independent-body-error/stdout.raw",
+      "sha256": "ed94ec7f883d94c69f35611e0945ea0028bb997017f740d10be64ff79d611feb",
+      "size": 756
+    },
+    {
+      "path": "independent-body-error/tsconfig.json",
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "size": 185
+    },
+    {
+      "path": "independent-body-error/vize.config.json",
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "size": 38
+    },
+    {
+      "path": "observations.json",
+      "sha256": "65c4946126d029f6ae7a1202d9d5079380775bed79cbca7d7086dfca9b259610",
+      "size": 9478
+    },
+    {
+      "path": "untyped-clean/Child.vue",
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "size": 139
+    },
+    {
+      "path": "untyped-clean/Consumer.tsx",
+      "sha256": "39a108e1fe8820782b95d1cf13050a54a3b4229b7bee5c2d0fab0d3208178e6b",
+      "size": 129
+    },
+    {
+      "path": "untyped-clean/native-journal.ndjson",
+      "sha256": "588d879401e40fcb1e398fd2f0f738f4402ef870d11f708fdca84a224a1973f4",
+      "size": 1659
+    },
+    {
+      "path": "untyped-clean/process.json",
+      "sha256": "0bb7c3648f777c37b437cda646e1304c5708e1a41507f70ef1fdd81b57a765e6",
+      "size": 444
+    },
+    {
+      "path": "untyped-clean/stderr.raw",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "untyped-clean/stdout.raw",
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "size": 663
+    },
+    {
+      "path": "untyped-clean/tsconfig.json",
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "size": 185
+    },
+    {
+      "path": "untyped-clean/vize.config.json",
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "size": 38
+    },
+    {
+      "path": "wrong-arrow/Child.vue",
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "size": 139
+    },
+    {
+      "path": "wrong-arrow/Consumer.tsx",
+      "sha256": "1fd5f540cb5c0e16010e3872cf00502627ff9b9fce1c7d07e13da8111104ca0f",
+      "size": 140
+    },
+    {
+      "path": "wrong-arrow/native-journal.ndjson",
+      "sha256": "e2415ae69c1077fb834af61c4b34a33b52c88515bbf82a7218fce814a01f9665",
+      "size": 1663
+    },
+    {
+      "path": "wrong-arrow/process.json",
+      "sha256": "973fd4c9fac817e6dd2b3ea91c04f9788e7ceb180d4fd36baedb7d393aa6cb5d",
+      "size": 445
+    },
+    {
+      "path": "wrong-arrow/stderr.raw",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "wrong-arrow/stdout.raw",
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "size": 663
+    },
+    {
+      "path": "wrong-arrow/tsconfig.json",
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "size": 185
+    },
+    {
+      "path": "wrong-arrow/vize.config.json",
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "size": 38
+    },
+    {
+      "path": "wrong-destructure/Child.vue",
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "size": 139
+    },
+    {
+      "path": "wrong-destructure/Consumer.tsx",
+      "sha256": "d2e382f24a1ccff2f70faf58af5dec1325a200713f17648f82e3e8242f255293",
+      "size": 138
+    },
+    {
+      "path": "wrong-destructure/native-journal.ndjson",
+      "sha256": "cc9276fd8b8fd2f66e787bcc362dd9e89da6c207d192f250da9c30bfc2b3acc4",
+      "size": 1659
+    },
+    {
+      "path": "wrong-destructure/process.json",
+      "sha256": "63ee251cf627b6a35216d39ef1b3ec551b2849799bacc070eeb482b2ef37cbad",
+      "size": 444
+    },
+    {
+      "path": "wrong-destructure/stderr.raw",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "wrong-destructure/stdout.raw",
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "size": 663
+    },
+    {
+      "path": "wrong-destructure/tsconfig.json",
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "size": 185
+    },
+    {
+      "path": "wrong-destructure/vize.config.json",
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "size": 38
+    },
+    {
+      "path": "wrong-function/Child.vue",
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "size": 139
+    },
+    {
+      "path": "wrong-function/Consumer.tsx",
+      "sha256": "32c6d395e5f30956a7c3cc233179962ce436d276e0b5a586aacbb623f1eed858",
+      "size": 158
+    },
+    {
+      "path": "wrong-function/native-journal.ndjson",
+      "sha256": "3888f6f2b43aec2f6175bd00d3f345298f7d734eb2e1c99b153d958032e7275c",
+      "size": 1655
+    },
+    {
+      "path": "wrong-function/process.json",
+      "sha256": "580879a45f4e270494650382ed39e60d923b4bdcdda2dd74f742d85bf76878bf",
+      "size": 443
+    },
+    {
+      "path": "wrong-function/stderr.raw",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "wrong-function/stdout.raw",
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "size": 663
+    },
+    {
+      "path": "wrong-function/tsconfig.json",
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "size": 185
+    },
+    {
+      "path": "wrong-function/vize.config.json",
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "size": 38
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+// 日本語 😀
+import Child from './Child.vue';
+const view = <Child>{{ default: (props: { value: string }) => props.value }}</Child>;

@@ -160,7 +160,11 @@ export const moonScript = (name: string, ...args: string[]) =>
  * changed. Regular development tasks keep the cheaper initialize-once path.
  */
 export const moonScriptWithFreshRegistry = (name: string, ...args: string[]) =>
-  moonScriptCommand(moonRegistryRefreshCommand, name, args);
+  moonScriptCommand(
+    `node tools/support/release/moon-registry-update.mjs ${moonRegistryRefreshCommand}`,
+    name,
+    args,
+  );
 
 export const devApp = (target?: string) =>
   target == null ? moonScript("dev_app") : moonScript("dev_app", target);

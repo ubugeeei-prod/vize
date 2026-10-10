@@ -1,0 +1,8 @@
+{
+  "archive": "native-red-evidence.tar.gz",
+  "archiveSha256": "31ac79a142a2b34725fa3ba5151764a369c544daacaa9af126babf9b9e969e53",
+  "regularFileCount": 62,
+  "original12ResultSha256": "7b677c87f9cad4528a4f44cb8c92328c65b374d329b538cf160921df5c1c380c",
+  "nativeControlsResultSha256": "397b391453c7756d3f8195a13a9e4ae940d85e0122b33a7d7ed28b517f6e4263",
+  "generatedManifestSha256": "eabf9a6c11e32df80424b13fc5f5fe976c309486c01170d0aa712c0bdbc12aee"
+}

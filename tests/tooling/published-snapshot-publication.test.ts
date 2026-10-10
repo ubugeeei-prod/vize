@@ -12,6 +12,7 @@ import {
 import { RESULT_PATH } from "../../tools/benchmarks/scripts/published-snapshot-render.mjs";
 import { SNAPSHOT_LOCALES } from "../../tools/benchmarks/scripts/published-snapshot-locales.mjs";
 import { diagnosticText } from "../../tools/benchmarks/scripts/published-snapshot-diagnostics.mjs";
+import { PROVENANCE_LABELS } from "../../tools/benchmarks/scripts/benchmark-provenance.mjs";
 import {
   updateReadme,
   updatePerformance,
@@ -23,7 +24,11 @@ const artifact = JSON.parse(read(RESULT_PATH));
 test("one publisher reproduces the README, JSON and all ten public pages exactly", async () => {
   const outputs = await preparePublication(artifact, read);
   assert.equal(outputs.size, 12);
-  for (const [file, content] of outputs) assert.equal(content, read(file), file);
+  for (const [file, content] of outputs) {
+    assert.equal(content, read(file), file);
+    if (file !== RESULT_PATH)
+      assert.equal(content.match(/<details class="benchmark-provenance">/g)?.length, 1, file);
+  }
   assert.deepEqual(await publishSnapshot({ check: true }), []);
 });
 
@@ -90,6 +95,48 @@ test("missing or duplicate markers fail closed before any files can be published
       ),
       /missing or ambiguous/,
     );
+  }
+});
+
+test("every locale puts measured results before labeled, full binary provenance", async () => {
+  const outputs = await preparePublication(artifact, read);
+  const toolNames = {
+    vize: "Vize",
+    tsgo: "tsgo",
+    vueTsc: "vue-tsc",
+    verterTsc: "verter-tsc",
+    golar: "Golar",
+    eslint: "ESLint",
+    prettier: "Prettier",
+  };
+  for (const locale of Object.keys(SNAPSHOT_LOCALES)) {
+    const source = outputs.get(
+      performancePath(locale).replace(/performance\.md$/u, "performance-blacksmith.md"),
+    );
+    const start = source.indexOf('<details class="benchmark-provenance">');
+    const end = source.indexOf("</details>", start);
+    assert.ok(start > source.indexOf("| Vize"), `${locale}: result table before metadata`);
+    assert.ok(
+      start > source.indexOf(SNAPSHOT_LOCALES[locale].note),
+      `${locale}: explanation first`,
+    );
+    const details = source.slice(start, end);
+    assert.ok(details.includes(`<summary>${PROVENANCE_LABELS[locale][0]}</summary>`));
+    const rows = details.split("\n").filter((line: string) => line.startsWith("|"));
+    for (const [key, label] of Object.entries(toolNames)) {
+      const row = rows.find((line: string) => line.split("|")[1].trim() === label);
+      assert.ok(row, `${locale}: ${label} has its own row`);
+      assert.deepEqual(
+        row
+          .split("|")
+          .slice(1, -1)
+          .map((cell: string) => cell.trim()),
+        [label, `<code>${artifact.versions[key]}</code>`, `<code>${artifact.binaries[key]}</code>`],
+        `${locale}: complete version and SHA-256 stay associated`,
+      );
+      assert.equal(artifact.binaries[key].length, 64);
+    }
+    assert.ok(!source.includes("Binaries (sha256):"));
   }
 });
 

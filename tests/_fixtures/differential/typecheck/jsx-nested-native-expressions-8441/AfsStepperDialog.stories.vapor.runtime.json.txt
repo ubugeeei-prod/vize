@@ -1,0 +1,52 @@
+{
+  "components": [
+    {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "map": null,
+      "mode": "Vapor",
+      "name": "AfsStepperDialog",
+      "preamble": "",
+      "setup": "None",
+      "style": "None"
+    },
+    {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<button></button>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "map": null,
+      "mode": "Vapor",
+      "name": "AfsButton",
+      "preamble": "",
+      "setup": "None",
+      "style": "None"
+    },
+    {
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}\n",
+      "map": null,
+      "mode": "Vapor",
+      "name": "AfsTabs",
+      "preamble": "",
+      "setup": "None",
+      "style": "None"
+    },
+    {
+      "code": "import { createDynamicComponent as _createDynamicComponent, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div> </div>\")\nconst t1 = _template(\"Next\")\n\nexport function render(_ctx) {\n  const n5 = _createDynamicComponent(() => (AfsStepperDialog), {\n    value: () => (isOpen.value),\n    items: () => (items.value),\n    currentStepIndex: () => (currentStepIndex.value),\n    \"onUpdate:current-step-index\": () => (updateStepIndex)\n  }, {\n    \"content1\": () => {\n      const n0 = t0()\n      const x0 = _txt(n0)\n      _renderEffect(() => _setText(x0, _toDisplayString(Array.from({ length: 3 }, (_, i) => (\n            <p key={i}>sample {i + 1}</p>\n          )))))\n      return n0\n    },\n    \"actions\": () => {\n      const n3 = _createDynamicComponent(() => (AfsButton), { onClick: () => (next) }, {\n        \"default\": () => {\n          const n2 = t1()\n          return n2\n        }\n      }, true)\n      return n3\n    }\n  }, true)\n  return n5\n}\n",
+      "map": null,
+      "mode": "Vapor",
+      "name": "Stepper",
+      "preamble": "",
+      "setup": "None",
+      "style": "None"
+    },
+    {
+      "code": "import { createDynamicComponent as _createDynamicComponent, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<span>  </span>\")\n\nexport function render(_ctx) {\n  const n2 = _createDynamicComponent(() => (AfsTabs), {\n    value: () => (activeTab.value),\n    items: () => (args.items)\n  }, {\n    \"label\": (_slotProps0) => {\n      const n0 = t0()\n      const x0 = _txt(n0)\n      _renderEffect(() => _setText(x0, _toDisplayString(_slotProps0.item.label) + _toDisplayString(<span class=\"mdi mdi-help-circle-outline\" />)))\n      return n0\n    }\n  }, true)\n  return n2\n}\n",
+      "map": null,
+      "mode": "Vapor",
+      "name": "Tabs",
+      "preamble": "",
+      "setup": "None",
+      "style": "None"
+    }
+  ],
+  "diagnostics": "[JsxDiagnostic { severity: Error, message: \"Vapor/SSR authored module preservation is not supported for imports, exports or captured setup bindings; use VDOM output or consume the per-component renderer\", start: 561, end: 1031 }]",
+  "module": "",
+  "moduleMap": null
+}

@@ -401,7 +401,13 @@
       "status": "mapped"
     },
     "vue/no-deprecated-functional-template": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-deprecated-functional-template",
       "patinaSeverity": "error",
       "status": "mapped"
@@ -499,7 +505,13 @@
       "status": "mapped"
     },
     "vue/no-deprecated-v-on-number-modifiers": {
-      "patinaPresets": [],
+      "patinaPresets": [
+        "ecosystem",
+        "essential",
+        "general-recommended",
+        "nuxt",
+        "opinionated"
+      ],
       "patinaRule": "vue/no-deprecated-v-on-number-modifiers",
       "patinaSeverity": "error",
       "status": "mapped"

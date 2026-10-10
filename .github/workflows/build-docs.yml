@@ -57,7 +57,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-script
 
       - name: Install JS dependencies
-        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...'
+        run: moon run --target native tools/moon/cmd/github/vp_install -- --filter './docs...' --filter './npm/builder/vite...' --filter './npm/cli...' --filter './npm/native...' --filter './npm/ui...' --filter './npm/compose/core...'
 
       - name: Build @vizejs/vite-plugin
         run: rust-script tools/commands/ci/github/run-many.rs vp run --filter './npm/native' build:ci -- vp run --filter './npm/cli' build -- vp run --filter './npm/builder/vite' build
@@ -72,6 +72,12 @@ jobs:
         # The page manifest records this exact source SHA; do not replay an
         # earlier script result when only other source files changed.
         run: vp run --no-cache --filter './docs' build
+
+      - name: Verify reviewed Japanese editorial reading paths
+        run: vp node docs/scripts/verify-ja-editorial-render.ts
+
+      - name: Verify static analysis reading flows
+        run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/static-analysis,/ja/guide/static-analysis --output docs-render-evidence/static-analysis
 
       - name: Verify rendered navigation and adoption guides
         run: vp node docs/scripts/verify-navigation-render.ts
