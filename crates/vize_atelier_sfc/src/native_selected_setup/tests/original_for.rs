@@ -2,6 +2,7 @@
 use super::*;
 use vize_l2::{op::Op, resolution::Usage};
 use vize_l3::decision::dom::{DomChild, DomChildren, DomDependency};
+mod class_successor;
 mod refusal;
 
 #[test]

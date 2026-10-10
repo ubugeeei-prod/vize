@@ -291,6 +291,13 @@ export function generateVrtJsonReport(results: VrtResult[], summary: VrtSummary)
       summary,
       results: results.map((r) => ({
         art: path.basename(r.artPath, ".art.vue"),
+        artPath: r.artPath,
+        variantName: r.variantName,
+        snapshotPath: r.snapshotPath,
+        currentPath: r.currentPath,
+        diffPath: r.diffPath,
+        diffPixels: r.diffPixels,
+        totalPixels: r.totalPixels,
         variant: r.variantName,
         viewport: r.viewport.name || `${r.viewport.width}x${r.viewport.height}`,
         status: r.error ? "error" : r.isNew ? "new" : r.passed ? "passed" : "failed",

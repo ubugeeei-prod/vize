@@ -640,6 +640,16 @@
           "type": "string",
           "enum": ["always", "never"]
         },
+        "vue/valid-v-slot": {
+          "type": "object",
+          "properties": {
+            "allowModifiers": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "musea/prefer-design-tokens": {
           "$ref": "#/definitions/MuseaPreferDesignTokensOptions"
         }

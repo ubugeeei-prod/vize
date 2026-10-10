@@ -12,7 +12,7 @@ Default severity: `error`
 Presets: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 Automatic fix: None; review the suggested change  
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it  
-Options: No rule-specific options. Severity and preset selection are configurable.
+Options: See [typed options and defaults](../options.md).
 
 ## Configuration (Vite+)
 

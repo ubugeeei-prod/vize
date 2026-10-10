@@ -8,6 +8,7 @@
 /// }
 module vize.Config
 import "SortImportsConfig.pkl"
+import "LintRuleOptionTypes.pkl"
 typealias CompilerMode = "module" | "function"
 typealias TemplateSyntax = "standard" | "strict" | "quirks"
 typealias Whitespace = "condense" | "preserve" | "vue2-line-breaks"
@@ -146,9 +147,7 @@ class StrictBooleanExpressionsOptions {
   allowAny: Boolean = false
 }
 
-class ContentDirectivesOptions {
-  contentDirectives: Listing<String> = new Listing {}
-}
+class ContentDirectivesOptions extends LintRuleOptionTypes.ContentDirectivesOptions {}
 
 /// Style for props destructuring; matches eslint-plugin-vue's default.
 class DefinePropsDestructuringOptions {
@@ -169,6 +168,7 @@ class LintRuleOptions {
   `vue/html-self-closing`: HtmlSelfClosingOptions? = null
   `vue/v-on-event-hyphenation`: HyphenationStyle? = null
   `vue/attribute-hyphenation`: HyphenationStyle? = null
+  `vue/valid-v-slot`: LintRuleOptionTypes.ValidVSlotOptions? = null
   `musea/prefer-design-tokens`: MuseaPreferDesignTokensOptions? = null
 }
 

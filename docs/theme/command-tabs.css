@@ -1,0 +1,65 @@
+.vize-command-tabs {
+  margin: 1.2rem 0;
+  border: 1px solid var(--octc-color-border);
+  border-radius: 0.4rem;
+  overflow: hidden;
+}
+.vize-command-tablist {
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--octc-color-border);
+  background: var(--octc-color-bg-alt);
+}
+.vize-command-tablist button {
+  flex: 0 0 auto;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--octc-color-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.vize-command-tablist button[aria-selected="true"] {
+  border-bottom-color: var(--octc-color-text);
+  color: var(--octc-color-text);
+}
+.vize-command-tablist button:focus-visible,
+.vize-command-copy:focus-visible,
+.vize-command-panel:focus-visible {
+  outline: 2px solid var(--octc-color-text);
+  outline-offset: -3px;
+}
+.vize-command-panel {
+  position: relative;
+}
+.vize-command-panel[hidden] {
+  display: none;
+}
+.vize-command-panel pre {
+  margin: 0;
+  padding-top: 3rem;
+  border-radius: 0;
+}
+.vize-command-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.6rem;
+  z-index: 1;
+  border: 1px solid var(--octc-color-border);
+  border-radius: 0.2rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--octc-color-bg);
+  color: var(--octc-color-text);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.vize-command-copy-status,
+.vize-command-gap {
+  display: block;
+  padding: 0.7rem 1rem;
+}
+.vize-command-copy-status:empty {
+  display: none;
+}
