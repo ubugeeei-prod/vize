@@ -67,8 +67,37 @@ once after native staging, before baseline preparation and the existing host
 workers; retain its result and walltime separately. All incoming workers and
 their complete original transport controls remain unchanged.
 
-No regression campaign has completed. Require fresh exact-head
+The 5a7 source attempt preserves 29 passing CLI cells and 59 complete original
+stock/wrapper observations before its unchanged whole-driver 180-second bound
+interrupts the next wrapper. Its four preceding discovery children returned
+normally; no individual hang or semantic mismatch is established. The staged
+addon is 959,014,364 bytes and every Node startup still checks its physical SHA.
+Use two fixed independent cell partitions with separate complete journals,
+the same shared 180-second deadline and original 60-second child bounds. Reject
+duplicate or missing observations, join all 98 in original logical order, and
+require exactly 45 CLI plus eight native cells. A fatal worker terminates both
+owned process groups and preserves their fully drained terminal packets.
+
+The original staging-only VM test must end immediately before the new async
+qualification, retaining its whole staging/output/ownership assertions. The
+separate native run measures only two new L1 corpus paths and their three new
+remarks: 500 files, 1,090 remarks, 200 applied and 890 missed. Keep all 1,087 old
+remarks byte exact and derive only the additive census/backlog entries from
+that run's complete printed corpus. These are observer/census repairs; neither
+the old failed source/native attempts nor local process-only controls qualify
+the regression campaign. Fresh exact-source Actions remain required.
+
+No installed regression campaign has completed. Require fresh exact-head
 Actions and protected actual merge, then the first genuinely included published
 release and its official installed consumer replay before closing #8507. The
 existing #7903 installed whole mixed/four-format campaign remains a separate
 unfinished acceptance contract. No current release version is chosen here.
+
+The 3854 source Check `38074179421`, literal native `38074179267` and n8n
+`38074179344` all completed successfully. Preserve their original source
+projection `227e0e1d` and raw cases separately. Actual main `58cf824` then
+exposes only the shared canonical-row conflict. Compose once onto that actual
+main, preserving every incoming body, all owned runtime/fixture bytes and the
+original four commit messages. The coherent successor requires fresh Actions
+and actual protected merge; earlier green runs do not qualify that successor
+or a public release.

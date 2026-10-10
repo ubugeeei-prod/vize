@@ -4,9 +4,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { createHash } from "node:crypto";
-import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { installMixedHost, qualifyHistoricalMixedDirectory } from "./mixed-directory-history.mjs";
+import {
+  joinMixedCaptures,
+  runMixedWorkers,
+} from "../src/test-support/mixed-directory-8507-workers.mjs";
 
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const errorPacket = (error) =>
@@ -16,7 +19,7 @@ const errorPacket = (error) =>
         name: error.name,
         ...Object.fromEntries(Object.getOwnPropertyNames(error).map((key) => [key, error[key]])),
       };
-export function qualifyMixedDirectory8507({ root, packageDir, artifacts, receipt, binary }) {
+export async function qualifyMixedDirectory8507({ root, packageDir, artifacts, receipt, binary }) {
   assert.equal(process.env.GITHUB_ACTIONS, "true");
   assert.equal(receipt.source.head, process.env.GITHUB_SHA);
   assert.equal(hash(fs.readFileSync(binary)), receipt.frozen.sha256);
@@ -54,40 +57,45 @@ export function qualifyMixedDirectory8507({ root, packageDir, artifacts, receipt
     const preload = fileURLToPath(new URL("./project-html-custody.cjs", import.meta.url));
     invocation.phase = "source-after";
     save();
-    const argv = ["src/mixed-directory-8507.test.mjs"];
-    const result = spawnSync(process.execPath, argv, {
-      cwd: packageDir,
-      timeout: 180_000,
-      maxBuffer: 64 * 1024 * 1024,
-      env: {
+    const records = await runMixedWorkers({
+      packageDir,
+      output,
+      custody,
+      preload,
+      environment: {
         ...process.env,
-        NODE_OPTIONS:
-          `${process.env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(preload)}`.trim(),
-        VIZE_OXLINT_NATIVE_CUSTODY: configuration,
         VIZE_OXLINT_TEST_ENTRYPOINT: provider.engine,
-        VIZE_OXLINT_SOURCE_BIN: path.join(packageDir, "dist/cli.mjs"),
-        VIZE_OXLINT_MIXED_CAPTURE: path.join(output, "source-after.json"),
       },
     });
-    const record = {
-      command: [process.execPath, ...argv],
-      cwd: packageDir,
-      status: result.status,
-      signal: result.signal,
-      error: errorPacket(result.error),
-      stdoutBytes: Array.from(result.stdout ?? []),
-      stderrBytes: Array.from(result.stderr ?? []),
-    };
-    fs.writeFileSync(
-      path.join(output, "source-process.json"),
-      JSON.stringify(record, null, 2) + "\n",
+    const plan = JSON.parse(
+      fs.readFileSync(
+        path.join(
+          root,
+          "tests/_fixtures/differential/lint/oxlint-mixed-directory-8507/controls.json",
+        ),
+      ),
     );
-    process.stdout.write(result.stdout ?? "");
-    process.stderr.write(result.stderr ?? "");
-    assert.equal(record.signal, null);
-    assert.equal(record.error, null);
-    assert.equal(record.status, 0);
-    const capture = JSON.parse(fs.readFileSync(path.join(output, "source-after.json")));
+    const captures = records.map((record) => JSON.parse(fs.readFileSync(record.capture)));
+    const journals = records.map((record) => fs.readFileSync(record.calls));
+    fs.writeFileSync(custody.calls, Buffer.concat(journals));
+    for (const [index, journal] of journals.entries()) {
+      assert.deepEqual(
+        journal
+          .toString("utf8")
+          .trim()
+          .split("\n")
+          .map((line) => JSON.parse(line)),
+        [
+          ...captures[index].initialEvents,
+          ...captures[index].observations.flatMap((record) => record.events),
+        ],
+      );
+    }
+    const capture = joinMixedCaptures(plan, custody, captures);
+    fs.writeFileSync(
+      path.join(output, "source-after.json"),
+      JSON.stringify(capture, null, 2) + "\n",
+    );
     assert.equal(capture.complete, true);
     assert.deepEqual(capture.source, receipt.source);
     assert.deepEqual(capture.passed, { cli: 45, native: 8 });
