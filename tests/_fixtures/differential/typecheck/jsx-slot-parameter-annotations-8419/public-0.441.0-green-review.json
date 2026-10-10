@@ -1,0 +1,3454 @@
+{
+  "schema": "vize-installed-jsx-slot-portable-whole-nine-review-v1",
+  "issue": 8419,
+  "source": {
+    "C": "61e0e3309a85dcb319fd5133d36c7d7f4f44964f",
+    "H": "bb83dd9817837ab4a87b09b32646389fb570a705",
+    "tag": "v0.441.0",
+    "R": "38037918678"
+  },
+  "sourcePr": 8428,
+  "signedSourceMerge": "cdc31c192503b992dc9568e81ebae5cd0aa7c696",
+  "fixtureSourceHead": "4e7ac99e1a6293903471f49818fb7f7fba46b2d0",
+  "releaseSourcePrScope": {
+    "number": 8473,
+    "state": "CLOSED_UNMERGED",
+    "claim": "Names frozen release H; actual canonical metadata delivery is merged signed PR8474/M9c9."
+  },
+  "scope": "Nine original authored check CLI complete diagnostic packets, including files/programs/compiler options/diagnostic text and positions/counts/raw stdout/stderr/actual process/native return custody. No installed map API claim.",
+  "artifactAuthorities": {
+    "greenArchive": {
+      "path": "public-0.441.0-green.tar.gz",
+      "sha256": "22f1bd9ccf27fdb2546260e00252625f7555706b466db4170e3ac495e5a12b2e",
+      "bytes": 203433,
+      "regularMembers": 160,
+      "originalSha256": "591277d38b5c8d5d407b5d866f95110b5b1522f9f69ea54ed8a321f5a07ccfbe",
+      "originalBytes": 203365
+    },
+    "greenManifest": {
+      "path": "public-0.441.0-green-manifest.json",
+      "sha256": "9d3e81e709103699f0118d388412083de0bee740d55c30c2338e5a69cd58e425",
+      "bytes": 76523,
+      "originalSha256": "06d89b6f5112d403663075d0be9b5cdc4dc27ee75f7a4307bb6ebd05dde78b6e",
+      "originalBytes": 32282
+    },
+    "campaignReceipt": {
+      "path": "<LOCAL_TMP>/vize-jsx8419-installed-green-20261010-v0441/receipt.json",
+      "sha256": "7965aa3b1b0b336272d4d0a13e549e551bb7039cfdc1b7119ccd136e5bde60de",
+      "bytes": 63025
+    },
+    "publicReceipt": {
+      "path": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/receipts/public-authority.json",
+      "sha256": "d9a29f1029bbd386b722d7ddbcc5fe876649050fdf78c19bd913b193eb29557b"
+    },
+    "finiteInstallSealSha256": "34bed9bfe51de91f2188bf8037f995eba5b099ebf1fe78dba73fe424b67fb66d",
+    "runnerSha256": "e3e9eebaa48615b807d43435517d1557d6587ca21e6e2c50f423d92c877f2adc",
+    "redVerifierSha256": "d800640bbf60c53f07226bb3ee93c4796dadbd57647fb21fed151d545a3a21ef",
+    "runnerClosureSha256": "08665030f1120b8e28402ee98188b71884b6eeb76ad244b5328511e0ddf1dc54",
+    "originalVueReceiptSha256": "8f1ec3f613e8d36ac6efead9aacbaf60feccbe0f74b490dd2c6557c3f86c300a",
+    "originalVueGraphSha256": "acb6facfe5aba5583a5bbfc9de5407007fe16bdcc4d036a874bd97f0cd402da0",
+    "collectorAuthoritySha256": "a26411442a3fde2590d969160fd83b97685e9019d2de4decb0c103a376f10786",
+    "packageLockSha256": "3e206c57cc3332945db1d972d2e8c9f519f6e21845da9a0463c41fc78fb505bb",
+    "payloadManifestSha256": "8320e719a5cc13c9c3632e63009dbc66af2eecc017487abec992f44912b16d2e",
+    "nativeSha256": "ae34cabe31ceaa80d5aaeb98b043a40c601cf583c58be7b80fc8296b36aa365e",
+    "corsaSha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+    "nodeSha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+  },
+  "allArchiveMembers": [
+    {
+      "path": "authored-inputs/Child.vue.txt",
+      "originalBytes": 139,
+      "originalSha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "bytes": 139,
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authored-inputs/cases.json",
+      "originalBytes": 2147,
+      "originalSha256": "8223b97c0cfc5dfa42a31e51395244c6330e20befb092f486688e3225edc98d4",
+      "bytes": 2147,
+      "sha256": "8223b97c0cfc5dfa42a31e51395244c6330e20befb092f486688e3225edc98d4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authored-inputs/correct-arrow.tsx.txt",
+      "originalBytes": 150,
+      "originalSha256": "34074a69d7242fd081428782cf302b8fab93580b0d756fd4d4e84c291dd7a025",
+      "bytes": 150,
+      "sha256": "34074a69d7242fd081428782cf302b8fab93580b0d756fd4d4e84c291dd7a025",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authored-inputs/correct-default.tsx.txt",
+      "originalBytes": 165,
+      "originalSha256": "09f68924957652a08a66f5161ad27046192502e95d5e0466fefd9eb91869b031",
+      "bytes": 165,
+      "sha256": "09f68924957652a08a66f5161ad27046192502e95d5e0466fefd9eb91869b031",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authored-inputs/correct-optional.tsx.txt",
+      "originalBytes": 152,
+      "originalSha256": "c95cb7e7d1c81ab4a3d7f9e4b5f2767859bc4e4102f92cc497531f6de36600a6",
+      "bytes": 152,
+      "sha256": "c95cb7e7d1c81ab4a3d7f9e4b5f2767859bc4e4102f92cc497531f6de36600a6",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authored-inputs/independent-body-error.tsx.txt",
+      "originalBytes": 154,
+      "originalSha256": "5df3133917b304bd8d3c177bfbdf3f94add9568230f8643e809b23619bd5b6c5",
+      "bytes": 154,
+      "sha256": "5df3133917b304bd8d3c177bfbdf3f94add9568230f8643e809b23619bd5b6c5",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authored-inputs/untyped-clean.tsx.txt",
+      "originalBytes": 129,
+      "originalSha256": "39a108e1fe8820782b95d1cf13050a54a3b4229b7bee5c2d0fab0d3208178e6b",
+      "bytes": 129,
+      "sha256": "39a108e1fe8820782b95d1cf13050a54a3b4229b7bee5c2d0fab0d3208178e6b",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authored-inputs/untyped-host.tsx.txt",
+      "originalBytes": 144,
+      "originalSha256": "72680b483ebf7bd6762761349056b1db5941656db5982f33627de3ddaf1d6b31",
+      "bytes": 144,
+      "sha256": "72680b483ebf7bd6762761349056b1db5941656db5982f33627de3ddaf1d6b31",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authored-inputs/wrong-arrow.tsx.txt",
+      "originalBytes": 140,
+      "originalSha256": "1fd5f540cb5c0e16010e3872cf00502627ff9b9fce1c7d07e13da8111104ca0f",
+      "bytes": 140,
+      "sha256": "1fd5f540cb5c0e16010e3872cf00502627ff9b9fce1c7d07e13da8111104ca0f",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authored-inputs/wrong-destructure.tsx.txt",
+      "originalBytes": 138,
+      "originalSha256": "d2e382f24a1ccff2f70faf58af5dec1325a200713f17648f82e3e8242f255293",
+      "bytes": 138,
+      "sha256": "d2e382f24a1ccff2f70faf58af5dec1325a200713f17648f82e3e8242f255293",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authored-inputs/wrong-function.tsx.txt",
+      "originalBytes": 158,
+      "originalSha256": "32c6d395e5f30956a7c3cc233179962ce436d276e0b5a586aacbb623f1eed858",
+      "bytes": 158,
+      "sha256": "32c6d395e5f30956a7c3cc233179962ce436d276e0b5a586aacbb623f1eed858",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authority/acceptance-launcher.py",
+      "originalBytes": 1961,
+      "originalSha256": "48162b4099cf6dbd79bee4cb972e91982f82b60a8efeca02ecd1b454264b6f4f",
+      "bytes": 1952,
+      "sha256": "742e4c89f6aa9f8b047e92c31dc06981975771fecb84630606f58d4cc3712d7f",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 1
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 5
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/acceptance-runner.mjs",
+      "originalBytes": 12318,
+      "originalSha256": "e3e9eebaa48615b807d43435517d1557d6587ca21e6e2c50f423d92c877f2adc",
+      "bytes": 12291,
+      "sha256": "d685db9770d9f59f948de14d2d07c13db4f542a537e65442e4163a1969c4da8a",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 5
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/archive-exporter.py",
+      "originalBytes": 5985,
+      "originalSha256": "619199def82d011c9e6c75fedaaea664837f63eecc9ee1d6791ad72d28cb63e7",
+      "bytes": 5967,
+      "sha256": "73b7f2abe5e665cdda32c7432e971dba6afe50d26f8ef3cf7e24181baab06a28",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 10
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/child-independent-review.json",
+      "originalBytes": 21644,
+      "originalSha256": "a02c22412039f8a191db2ec4c0a17cf7ed07405717ad4087a42ed9ac782978f5",
+      "bytes": 21636,
+      "sha256": "752249c69d5e09cddd4110f7ad67b02b65b3813156455e0d59d058010f09a45e",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 4
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 32
+        },
+        {
+          "placeholder": "<SYSTEM_TMP>",
+          "count": 5
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/collector-argv.json",
+      "originalBytes": 826,
+      "originalSha256": "9059bf60c8a44ef88344d366810119e422830cf7ac5b6e44f375233669e12d43",
+      "bytes": 808,
+      "sha256": "916eb4166a4ec24a19aeeddbcb7b26625c1ca80af56b6f0fd34d6e9857ce2d24",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 4
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/collector.stderr",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authority/collector.stdout",
+      "originalBytes": 300,
+      "originalSha256": "2c5503ddff818c15812432cea6e9187fd65f05fe2e6b31e2ba306856d9e22358",
+      "bytes": 299,
+      "sha256": "c5adbfe213b6b0adf6fbeb76cfb912772464a311c2ae4de6b0cdfbff42100cfd",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 1
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/finite-install-custody-seal.json",
+      "originalBytes": 6071,
+      "originalSha256": "34bed9bfe51de91f2188bf8037f995eba5b099ebf1fe78dba73fe424b67fb66d",
+      "bytes": 6051,
+      "sha256": "99aa46829dd594823ec360769ab877f5a1f90fd96bd6052569c99f5b6e2f60fd",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 20
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/independent-custody-review.json",
+      "originalBytes": 1359,
+      "originalSha256": "bf23f15cbfd9275ec6c65fce7faf51054119cd6d4e286e24f2d0e28a4ba297a8",
+      "bytes": 1358,
+      "sha256": "0663a689968660a72daaa05073c352aa2749fd09fe4a39aebbaf12317800923f",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 1
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/install-launcher.py",
+      "originalBytes": 6362,
+      "originalSha256": "301df43457edc32e8c7121c0d1db33a19445904061f21d5ec3944ec3c50fb00e",
+      "bytes": 6337,
+      "sha256": "2ce737cfe0b8e64ad5b720baeada273cf654dbbdd70ff92c6e7bf5b135cbaad9",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 8
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 1
+        },
+        {
+          "placeholder": "<SYSTEM_TMP>",
+          "count": 1
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/jsx8419-green.stderr",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authority/jsx8419-green.stdout",
+      "originalBytes": 239,
+      "originalSha256": "262e5f5471b56f4387941ed3c7c0734032376d0d4c6e202a41272bd3eb9261d3",
+      "bytes": 238,
+      "sha256": "58b6fa3b58acf69af81c8c0dcd93517122740077374c75f8ec4107f9757088c0",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 1
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/jsx8419-launch.json",
+      "originalBytes": 1205,
+      "originalSha256": "cb4e49e7f16e935dacf5932888259ed50fe3ecee24be2324369865f38d22d992",
+      "bytes": 1198,
+      "sha256": "528a2f7150ca159ab517d763acb21a053d77e425de7a1077f4c192267c31667f",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 1
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 3
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/launch.json",
+      "originalBytes": 2324,
+      "originalSha256": "052f721c99ddbc706639484d6c730c641e058b7737f7b7d9c10c1710b92d218d",
+      "bytes": 2314,
+      "sha256": "f29de9da04b95b9d3414bb061d027a62667bb68d5720e4beba58cd93d6d72b3a",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/npm-install.stderr",
+      "originalBytes": 405,
+      "originalSha256": "0c08f435b0162898e1e6eb14ff3f4b85cf8a9ace7fd31ca646dab412ca76f66e",
+      "bytes": 405,
+      "sha256": "0c08f435b0162898e1e6eb14ff3f4b85cf8a9ace7fd31ca646dab412ca76f66e",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authority/npm-install.stdout",
+      "originalBytes": 138,
+      "originalSha256": "b1d65b8b5759bdf284f041ea3c4a94ddbd31c154218a168540f7098de6b179bb",
+      "bytes": 138,
+      "sha256": "b1d65b8b5759bdf284f041ea3c4a94ddbd31c154218a168540f7098de6b179bb",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authority/original-vue-receipt.json",
+      "originalBytes": 248099,
+      "originalSha256": "8f1ec3f613e8d36ac6efead9aacbaf60feccbe0f74b490dd2c6557c3f86c300a",
+      "bytes": 248007,
+      "sha256": "9b4b03e9bcad5138e4b00aacb7fc16a8435b5c980fa56f0c38d77e6797a5aabc",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 84
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/public-authority.json",
+      "originalBytes": 17463,
+      "originalSha256": "d9a29f1029bbd386b722d7ddbcc5fe876649050fdf78c19bd913b193eb29557b",
+      "bytes": 17441,
+      "sha256": "b900208a9625f43357946457010e440a4e0d82cc2e6d1420a9bc5f7032f65e87",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 14
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/public-authority.json.native-journal.jsonl",
+      "originalBytes": 1527,
+      "originalSha256": "e738cc557108583e8fd7242193c3292090eefde6d7200daffcaf9bb5c2065fa0",
+      "bytes": 1512,
+      "sha256": "678c3e4253b34d59d4befc9bcadaf10ccd142ea0e86377bbf5f91e207e6a435b",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/public-authority.json.public-payload-files.json",
+      "originalBytes": 62679,
+      "originalSha256": "8320e719a5cc13c9c3632e63009dbc66af2eecc017487abec992f44912b16d2e",
+      "bytes": 62471,
+      "sha256": "861b894ac7e4c5d4e60e44f51efe68cbfe4e5e08b1b5aaea55d418d2e64251b4",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 208
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/red-archive-verifier.mjs",
+      "originalBytes": 4797,
+      "originalSha256": "d800640bbf60c53f07226bb3ee93c4796dadbd57647fb21fed151d545a3a21ef",
+      "bytes": 4797,
+      "sha256": "d800640bbf60c53f07226bb3ee93c4796dadbd57647fb21fed151d545a3a21ef",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authority/reviewed-collector-authority.json",
+      "originalBytes": 1539,
+      "originalSha256": "63b3cb723183494657f133ed719f6d8c8191a68fb5c70438f6188092baa0cbfc",
+      "bytes": 1539,
+      "sha256": "63b3cb723183494657f133ed719f6d8c8191a68fb5c70438f6188092baa0cbfc",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authority/reviewed-collector-snapshot.tar.gz",
+      "originalBytes": 11194,
+      "originalSha256": "44dbbb739b74fcc45f939d002d65749d3f577b47d80ffffcfde51e808366a1eb",
+      "bytes": 11194,
+      "sha256": "44dbbb739b74fcc45f939d002d65749d3f577b47d80ffffcfde51e808366a1eb",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authority/runner-module-closure.json",
+      "originalBytes": 35287,
+      "originalSha256": "08665030f1120b8e28402ee98188b71884b6eeb76ad244b5328511e0ddf1dc54",
+      "bytes": 35283,
+      "sha256": "d07de04c94d81ebf1111522ad4a683f6a332323055832a8ad53390108166509e",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 1
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/source-merge-cdc31c19.json",
+      "originalBytes": 125073,
+      "originalSha256": "8f7ba4ee045c90911fb72320c1d685661b5c620d329ba1855063f21ceaa64177",
+      "bytes": 125072,
+      "sha256": "31aa3f1b0c2b5dec8a7f9d60ffbd3e79742d9fe6328448dc51348531338a6fc3",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 1
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/source-pr8428.json",
+      "originalBytes": 20719,
+      "originalSha256": "024c71d673c8f4f942e092df9a7bba93a24c3627570f35ae8cd5d26945da9cd9",
+      "bytes": 20719,
+      "sha256": "024c71d673c8f4f942e092df9a7bba93a24c3627570f35ae8cd5d26945da9cd9",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authority/terminal-publication-seal.json",
+      "originalBytes": 4098,
+      "originalSha256": "f0f2f6b0059db36174611ca53c8b99e222c86f39da54341ec44024c340e6922b",
+      "bytes": 4138,
+      "sha256": "4480ec984df4b564b6ee635ad8422024fb31b2369261e0decb8087a4a8ef7d10",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<SYSTEM_TMP>",
+          "count": 5
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "authority/terminal-release-run.json",
+      "originalBytes": 12898,
+      "originalSha256": "e2a71f92e5ff1edeb2b096a60d380adf791ecb33f0551a6f45cdc22454d2cd91",
+      "bytes": 12898,
+      "sha256": "e2a71f92e5ff1edeb2b096a60d380adf791ecb33f0551a6f45cdc22454d2cd91",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "authority/whole-payload-auditor.py",
+      "originalBytes": 6485,
+      "originalSha256": "9a460e43975719cd34ff0778db6f11b379002b3566af23567f95fae74f94031c",
+      "bytes": 6479,
+      "sha256": "b00f400d4a6ef456232c0c519e3f4230bbb6d1fa507c89f671f8fff4e68f0c36",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 1
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/correct-arrow/Child.vue",
+      "originalBytes": 139,
+      "originalSha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "bytes": 139,
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-arrow/Consumer.tsx",
+      "originalBytes": 150,
+      "originalSha256": "34074a69d7242fd081428782cf302b8fab93580b0d756fd4d4e84c291dd7a025",
+      "bytes": 150,
+      "sha256": "34074a69d7242fd081428782cf302b8fab93580b0d756fd4d4e84c291dd7a025",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-arrow/expected-report.json",
+      "originalBytes": 663,
+      "originalSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "bytes": 663,
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-arrow/native-journal.ndjson",
+      "originalBytes": 1663,
+      "originalSha256": "d9bed556f2b53d0c23ce828a2ea20650c7815e80f6b0a76ba5dd07a70a38f557",
+      "bytes": 1648,
+      "sha256": "79c6c97fad98f2255e9dcf57ba5ad49608ac0b99f7916a038690b5fed2c2c614",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/correct-arrow/process.json",
+      "originalBytes": 730,
+      "originalSha256": "27737fa3ebf13660bbb6fb11fbe26dbf16049a4d7d83fa8dfa020abe0f67b9ee",
+      "bytes": 720,
+      "sha256": "6e6ef3341861e61dc279efd7bda931724b6712132c37b4c5f301cc960095d36f",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/correct-arrow/stderr.raw",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-arrow/stdout.raw",
+      "originalBytes": 663,
+      "originalSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "bytes": 663,
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-arrow/tsconfig.json",
+      "originalBytes": 185,
+      "originalSha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "bytes": 185,
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-arrow/vize.config.json",
+      "originalBytes": 38,
+      "originalSha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-default/Child.vue",
+      "originalBytes": 139,
+      "originalSha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "bytes": 139,
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-default/Consumer.tsx",
+      "originalBytes": 165,
+      "originalSha256": "09f68924957652a08a66f5161ad27046192502e95d5e0466fefd9eb91869b031",
+      "bytes": 165,
+      "sha256": "09f68924957652a08a66f5161ad27046192502e95d5e0466fefd9eb91869b031",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-default/expected-report.json",
+      "originalBytes": 663,
+      "originalSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "bytes": 663,
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-default/native-journal.ndjson",
+      "originalBytes": 1663,
+      "originalSha256": "12f5f538a305b0b1c02016b773a318bcfe9119dab3ca697b944ab264861bd103",
+      "bytes": 1648,
+      "sha256": "c3251fca7e18dfb3f43ad53d0d93579ce88ff50e392f4b56becd594499b79182",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/correct-default/process.json",
+      "originalBytes": 732,
+      "originalSha256": "744f3086573b90190bf554651938246bce83562c14d03473b216ebda5114373f",
+      "bytes": 722,
+      "sha256": "a4b675ba32255a236dd0214003d863309c999bd786822f7fa7de6ce84ed7d392",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/correct-default/stderr.raw",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-default/stdout.raw",
+      "originalBytes": 663,
+      "originalSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "bytes": 663,
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-default/tsconfig.json",
+      "originalBytes": 185,
+      "originalSha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "bytes": 185,
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-default/vize.config.json",
+      "originalBytes": 38,
+      "originalSha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-optional/Child.vue",
+      "originalBytes": 139,
+      "originalSha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "bytes": 139,
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-optional/Consumer.tsx",
+      "originalBytes": 152,
+      "originalSha256": "c95cb7e7d1c81ab4a3d7f9e4b5f2767859bc4e4102f92cc497531f6de36600a6",
+      "bytes": 152,
+      "sha256": "c95cb7e7d1c81ab4a3d7f9e4b5f2767859bc4e4102f92cc497531f6de36600a6",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-optional/expected-report.json",
+      "originalBytes": 663,
+      "originalSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "bytes": 663,
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-optional/native-journal.ndjson",
+      "originalBytes": 1663,
+      "originalSha256": "0fef83868a64ac9e76b7842fd9461385d984b72ae8f86981fd8ce487abead408",
+      "bytes": 1648,
+      "sha256": "fbbdb466a982eeec08279007b85de6c1d756bfa052bf97940139412304e602a7",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/correct-optional/process.json",
+      "originalBytes": 733,
+      "originalSha256": "f28fe10c8bc9c0e4c130255fad17494a7b34ae0eca9fcc89962ed264f986d35b",
+      "bytes": 723,
+      "sha256": "42103f4ac077b69db1d06370de7bb1f020af3a349d9c6d20072611bada797296",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/correct-optional/stderr.raw",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-optional/stdout.raw",
+      "originalBytes": 663,
+      "originalSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "bytes": 663,
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-optional/tsconfig.json",
+      "originalBytes": 185,
+      "originalSha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "bytes": 185,
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/correct-optional/vize.config.json",
+      "originalBytes": 38,
+      "originalSha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/independent-body-error/Child.vue",
+      "originalBytes": 139,
+      "originalSha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "bytes": 139,
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/independent-body-error/Consumer.tsx",
+      "originalBytes": 154,
+      "originalSha256": "5df3133917b304bd8d3c177bfbdf3f94add9568230f8643e809b23619bd5b6c5",
+      "bytes": 154,
+      "sha256": "5df3133917b304bd8d3c177bfbdf3f94add9568230f8643e809b23619bd5b6c5",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/independent-body-error/expected-report.json",
+      "originalBytes": 756,
+      "originalSha256": "ed94ec7f883d94c69f35611e0945ea0028bb997017f740d10be64ff79d611feb",
+      "bytes": 756,
+      "sha256": "ed94ec7f883d94c69f35611e0945ea0028bb997017f740d10be64ff79d611feb",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/independent-body-error/native-journal.ndjson",
+      "originalBytes": 1578,
+      "originalSha256": "25b307bd2d5c6926f6c3181c4286c7ccee32b74274b8c96efde43f9097f264cd",
+      "bytes": 1563,
+      "sha256": "155c06fe94c4e2469293221245d525f69153c1d21797306ddf6ed6b61ad239c9",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/independent-body-error/process.json",
+      "originalBytes": 739,
+      "originalSha256": "59497f49238498a50b863108c5eb05c24833ab8e1c4f50c44a03f3821b4e7485",
+      "bytes": 729,
+      "sha256": "8f910918b1e9dd0f6e94c8b896723b995590d0cee79f1a305d921ca21ff14459",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/independent-body-error/stderr.raw",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/independent-body-error/stdout.raw",
+      "originalBytes": 756,
+      "originalSha256": "ed94ec7f883d94c69f35611e0945ea0028bb997017f740d10be64ff79d611feb",
+      "bytes": 756,
+      "sha256": "ed94ec7f883d94c69f35611e0945ea0028bb997017f740d10be64ff79d611feb",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/independent-body-error/tsconfig.json",
+      "originalBytes": 185,
+      "originalSha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "bytes": 185,
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/independent-body-error/vize.config.json",
+      "originalBytes": 38,
+      "originalSha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/receipt.json",
+      "originalBytes": 63025,
+      "originalSha256": "7965aa3b1b0b336272d4d0a13e549e551bb7039cfdc1b7119ccd136e5bde60de",
+      "bytes": 62815,
+      "sha256": "b87d7978cc7940912903aa9810e060b2bfa322978725b8ec6d25450e57ff3ba6",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 48
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 18
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/untyped-clean/Child.vue",
+      "originalBytes": 139,
+      "originalSha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "bytes": 139,
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-clean/Consumer.tsx",
+      "originalBytes": 129,
+      "originalSha256": "39a108e1fe8820782b95d1cf13050a54a3b4229b7bee5c2d0fab0d3208178e6b",
+      "bytes": 129,
+      "sha256": "39a108e1fe8820782b95d1cf13050a54a3b4229b7bee5c2d0fab0d3208178e6b",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-clean/expected-report.json",
+      "originalBytes": 663,
+      "originalSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "bytes": 663,
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-clean/native-journal.ndjson",
+      "originalBytes": 1663,
+      "originalSha256": "e47120203037b6d66c65ff58f839b3f0e63ec03af160dfdc9c09443f993a8b70",
+      "bytes": 1648,
+      "sha256": "77a4af18da042ddefd97925240cb719488a579de0f46fbbf6ce929f23d8c683d",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/untyped-clean/process.json",
+      "originalBytes": 730,
+      "originalSha256": "13632ef9a987c72c818b6d482f544df0cf624fa3525c407a0cbc303dc27c9738",
+      "bytes": 720,
+      "sha256": "6372e15b3d4be8cc08b1503b72ed18aa5e736c911998146824d7a838d625ff12",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/untyped-clean/stderr.raw",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-clean/stdout.raw",
+      "originalBytes": 663,
+      "originalSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "bytes": 663,
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-clean/tsconfig.json",
+      "originalBytes": 185,
+      "originalSha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "bytes": 185,
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-clean/vize.config.json",
+      "originalBytes": 38,
+      "originalSha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-host/Child.vue",
+      "originalBytes": 139,
+      "originalSha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "bytes": 139,
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-host/Consumer.tsx",
+      "originalBytes": 144,
+      "originalSha256": "72680b483ebf7bd6762761349056b1db5941656db5982f33627de3ddaf1d6b31",
+      "bytes": 144,
+      "sha256": "72680b483ebf7bd6762761349056b1db5941656db5982f33627de3ddaf1d6b31",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-host/expected-report.json",
+      "originalBytes": 663,
+      "originalSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "bytes": 663,
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-host/native-journal.ndjson",
+      "originalBytes": 1663,
+      "originalSha256": "94cc11148d2581ebe9cad761669ee935c497f957c67447ff172261cb97ef406b",
+      "bytes": 1648,
+      "sha256": "b1ca2e1d729792c0974d4b29158e346833e81b29fd2de978f9f22733a704f1bf",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/untyped-host/process.json",
+      "originalBytes": 729,
+      "originalSha256": "ed5ae9f24d3237f8fe25872bc4b7a120a736d034f59908333b6f62a939182734",
+      "bytes": 719,
+      "sha256": "82584812f3fe75250fb27a73855f585acbf2d06c5c5268ce9f2020b38fd75432",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/untyped-host/stderr.raw",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-host/stdout.raw",
+      "originalBytes": 663,
+      "originalSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "bytes": 663,
+      "sha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-host/tsconfig.json",
+      "originalBytes": 185,
+      "originalSha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "bytes": 185,
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/untyped-host/vize.config.json",
+      "originalBytes": 38,
+      "originalSha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-arrow/Child.vue",
+      "originalBytes": 139,
+      "originalSha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "bytes": 139,
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-arrow/Consumer.tsx",
+      "originalBytes": 140,
+      "originalSha256": "1fd5f540cb5c0e16010e3872cf00502627ff9b9fce1c7d07e13da8111104ca0f",
+      "bytes": 140,
+      "sha256": "1fd5f540cb5c0e16010e3872cf00502627ff9b9fce1c7d07e13da8111104ca0f",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-arrow/expected-report.json",
+      "originalBytes": 1069,
+      "originalSha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "bytes": 1069,
+      "sha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-arrow/native-journal.ndjson",
+      "originalBytes": 1578,
+      "originalSha256": "f6848a9f2060d5af45cfbcbbf3693a78355e7d5aa112089ab67d4f5e56a58fc9",
+      "bytes": 1563,
+      "sha256": "911d26431624e1aa1454c3f15c35ae80438970edfb49dda51dd29e4687b2fc3f",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/wrong-arrow/process.json",
+      "originalBytes": 728,
+      "originalSha256": "de5d0c7a802c6b6a5b273814a5a667f411a672cd66bbb93c9674d507d4c51865",
+      "bytes": 718,
+      "sha256": "28573720e1a457b012db2b968391a997fbe42a7b632734dd5815c8390f434947",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/wrong-arrow/stderr.raw",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-arrow/stdout.raw",
+      "originalBytes": 1069,
+      "originalSha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "bytes": 1069,
+      "sha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-arrow/tsconfig.json",
+      "originalBytes": 185,
+      "originalSha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "bytes": 185,
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-arrow/vize.config.json",
+      "originalBytes": 38,
+      "originalSha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-destructure/Child.vue",
+      "originalBytes": 139,
+      "originalSha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "bytes": 139,
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-destructure/Consumer.tsx",
+      "originalBytes": 138,
+      "originalSha256": "d2e382f24a1ccff2f70faf58af5dec1325a200713f17648f82e3e8242f255293",
+      "bytes": 138,
+      "sha256": "d2e382f24a1ccff2f70faf58af5dec1325a200713f17648f82e3e8242f255293",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-destructure/expected-report.json",
+      "originalBytes": 1071,
+      "originalSha256": "9495bac10d6527d8dd1a26d9531865191f1c71dce0a8f6457d69f158ab218f66",
+      "bytes": 1071,
+      "sha256": "9495bac10d6527d8dd1a26d9531865191f1c71dce0a8f6457d69f158ab218f66",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-destructure/native-journal.ndjson",
+      "originalBytes": 1578,
+      "originalSha256": "464e6fed893957304063f397a1547c7a3ad0ae4d4c8290b79872c6c62f61c4cd",
+      "bytes": 1563,
+      "sha256": "3cce73a6cb28d05600dcf7a82b3b534521fc0fc485f9272065dd8890adb98696",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/wrong-destructure/process.json",
+      "originalBytes": 734,
+      "originalSha256": "444c56d0dad41109502a580b46b51e6b3f193ac4c07172650063e22f80e79dda",
+      "bytes": 724,
+      "sha256": "58762a5e78f338eb5625181458dc452b267b9dd8e0b32e18aeb1028b28cc4d63",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/wrong-destructure/stderr.raw",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-destructure/stdout.raw",
+      "originalBytes": 1071,
+      "originalSha256": "9495bac10d6527d8dd1a26d9531865191f1c71dce0a8f6457d69f158ab218f66",
+      "bytes": 1071,
+      "sha256": "9495bac10d6527d8dd1a26d9531865191f1c71dce0a8f6457d69f158ab218f66",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-destructure/tsconfig.json",
+      "originalBytes": 185,
+      "originalSha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "bytes": 185,
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-destructure/vize.config.json",
+      "originalBytes": 38,
+      "originalSha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-function/Child.vue",
+      "originalBytes": 139,
+      "originalSha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "bytes": 139,
+      "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-function/Consumer.tsx",
+      "originalBytes": 158,
+      "originalSha256": "32c6d395e5f30956a7c3cc233179962ce436d276e0b5a586aacbb623f1eed858",
+      "bytes": 158,
+      "sha256": "32c6d395e5f30956a7c3cc233179962ce436d276e0b5a586aacbb623f1eed858",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-function/expected-report.json",
+      "originalBytes": 1069,
+      "originalSha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "bytes": 1069,
+      "sha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-function/native-journal.ndjson",
+      "originalBytes": 1578,
+      "originalSha256": "c0d1dbd1ce2c98a9357f90c0a28c7e9e3ecd088ec8f96bf32de8003cda2a1b98",
+      "bytes": 1563,
+      "sha256": "490cade4b312ad3d228b52dfaff6734dfd00020887eef2dbff0b8cf88130654d",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 7
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/wrong-function/process.json",
+      "originalBytes": 731,
+      "originalSha256": "6567876725f8e2bce8e91e4b7c1c002cf009596f9c849bcc46d9b93e98fe9251",
+      "bytes": 721,
+      "sha256": "9dce8c3a3e73bf582af2d7e89550c494d4a8bcf11bbf9cfcb1fa318d1dc0bd7d",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<USER_HOME>",
+          "count": 2
+        },
+        {
+          "placeholder": "<LOCAL_TMP>",
+          "count": 2
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "campaign/wrong-function/stderr.raw",
+      "originalBytes": 0,
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-function/stdout.raw",
+      "originalBytes": 1069,
+      "originalSha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "bytes": 1069,
+      "sha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-function/tsconfig.json",
+      "originalBytes": 185,
+      "originalSha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "bytes": 185,
+      "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "campaign/wrong-function/vize.config.json",
+      "originalBytes": 38,
+      "originalSha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "collector-source/tools/commands/release/npm/collect-public-install.rs",
+      "originalBytes": 1761,
+      "originalSha256": "9c5166037f0a3c7b0fe4496a3bfeea3c09217450f0d269856a20abcaf11821a7",
+      "bytes": 1761,
+      "sha256": "9c5166037f0a3c7b0fe4496a3bfeea3c09217450f0d269856a20abcaf11821a7",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "collector-source/tools/support/release/public_install/archive.py",
+      "originalBytes": 3250,
+      "originalSha256": "a7b83aa40594e2a1ad5c7bf1e28af04560874bdf0caac5f1b2e27e792f42dad6",
+      "bytes": 3250,
+      "sha256": "a7b83aa40594e2a1ad5c7bf1e28af04560874bdf0caac5f1b2e27e792f42dad6",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "collector-source/tools/support/release/public_install/authority-schema.ts",
+      "originalBytes": 2139,
+      "originalSha256": "aff2a2f4d6d78f1ee1f002a1d0fb459b2ebd3332c1cb3eb1b8a332305a56263b",
+      "bytes": 2139,
+      "sha256": "aff2a2f4d6d78f1ee1f002a1d0fb459b2ebd3332c1cb3eb1b8a332305a56263b",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "collector-source/tools/support/release/public_install/collect.py",
+      "originalBytes": 10471,
+      "originalSha256": "27237ea89cc86b0ea4753b83de2f0e82e24d10a9948ce79dac523aa289ae6396",
+      "bytes": 10471,
+      "sha256": "27237ea89cc86b0ea4753b83de2f0e82e24d10a9948ce79dac523aa289ae6396",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "collector-source/tools/support/release/public_install/identity.py",
+      "originalBytes": 6856,
+      "originalSha256": "72bca139522e967108e6fc92f7712cad0eb6c5d84a2bfe035b63eb919d22fdb7",
+      "bytes": 6856,
+      "sha256": "72bca139522e967108e6fc92f7712cad0eb6c5d84a2bfe035b63eb919d22fdb7",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "collector-source/tools/support/release/public_install/native-custody.cjs",
+      "originalBytes": 3979,
+      "originalSha256": "5c24ecbde9d579d7490ea515941ce9a017b45d9173b638d2d2210c2b7c0c222f",
+      "bytes": 3979,
+      "sha256": "5c24ecbde9d579d7490ea515941ce9a017b45d9173b638d2d2210c2b7c0c222f",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "collector-source/tools/support/release/public_install/probe.py",
+      "originalBytes": 5378,
+      "originalSha256": "43ff8c47bf252cc2a25c6508949d18e74bb9ef793092b640b1ab9c7bf1e1580a",
+      "bytes": 5378,
+      "sha256": "43ff8c47bf252cc2a25c6508949d18e74bb9ef793092b640b1ab9c7bf1e1580a",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "collector-source/tools/support/release/public_install/registry.py",
+      "originalBytes": 4187,
+      "originalSha256": "4c38433deaa361ad598c5d8b480ea4bf3fdfb54b285a9cd7828eb8ab1f792b19",
+      "bytes": 4187,
+      "sha256": "4c38433deaa361ad598c5d8b480ea4bf3fdfb54b285a9cd7828eb8ab1f792b19",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/differential/harness.mjs",
+      "originalBytes": 5770,
+      "originalSha256": "72587f8cb7ff23f9597b3dcb0bf2311be390b577afaa7a178f3efde5c4d92af7",
+      "bytes": 5770,
+      "sha256": "72587f8cb7ff23f9597b3dcb0bf2311be390b577afaa7a178f3efde5c4d92af7",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/differential/manifest.mjs",
+      "originalBytes": 4185,
+      "originalSha256": "849bacb78f595ce65ca401a2593035421b8fd90f7310f30917bc0b2fb333528a",
+      "bytes": 4185,
+      "sha256": "849bacb78f595ce65ca401a2593035421b8fd90f7310f30917bc0b2fb333528a",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/differential/sha256.ts",
+      "originalBytes": 197,
+      "originalSha256": "2edd1fc61e667219e59283a7ee9c65c4040b3f803f063df76ecdedac9df7197d",
+      "bytes": 197,
+      "sha256": "2edd1fc61e667219e59283a7ee9c65c4040b3f803f063df76ecdedac9df7197d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/performance/support/warm-type-backed-runtime.ts",
+      "originalBytes": 3764,
+      "originalSha256": "0a4f2307ccf00ba05e6bf2c8062f9b167c3068d243c4598f87767fdf51b46571",
+      "bytes": 3764,
+      "sha256": "0a4f2307ccf00ba05e6bf2c8062f9b167c3068d243c4598f87767fdf51b46571",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/lsp-installed-original-alias-replay.ts",
+      "originalBytes": 2284,
+      "originalSha256": "4ba3408d19822b5d2c7e0866e012b806c398891c84bbc627a3e0107970288948",
+      "bytes": 2284,
+      "sha256": "4ba3408d19822b5d2c7e0866e012b806c398891c84bbc627a3e0107970288948",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/lsp-installed-original-event-slot-replay.ts",
+      "originalBytes": 2319,
+      "originalSha256": "05981bdd1569798382c118f7712a01ebdb1a7ab990d6a52e99b6de162882ef88",
+      "bytes": 2319,
+      "sha256": "05981bdd1569798382c118f7712a01ebdb1a7ab990d6a52e99b6de162882ef88",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/apply.ts",
+      "originalBytes": 7396,
+      "originalSha256": "8afbd39088ddb2b49828285c03c99db77b5764d19018b82d425fd6cfeeee88b0",
+      "bytes": 7396,
+      "sha256": "8afbd39088ddb2b49828285c03c99db77b5764d19018b82d425fd6cfeeee88b0",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/authority-schema.ts",
+      "originalBytes": 1714,
+      "originalSha256": "3eb249e5f9fa128fff82e6b0df5ff79685ec295725fcab2d348f3581d675e2c6",
+      "bytes": 1714,
+      "sha256": "3eb249e5f9fa128fff82e6b0df5ff79685ec295725fcab2d348f3581d675e2c6",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/authority.ts",
+      "originalBytes": 6804,
+      "originalSha256": "2a14b547020aa582f2fd7ddf0f4d4bffb00371bd315e92e5f17e3c56c5a62cf3",
+      "bytes": 6804,
+      "sha256": "2a14b547020aa582f2fd7ddf0f4d4bffb00371bd315e92e5f17e3c56c5a62cf3",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/cases.ts",
+      "originalBytes": 9415,
+      "originalSha256": "e8972b9fe788753f039452e080a5f3b4a7123c742d3b46bfd782aecd6e79bf54",
+      "bytes": 9416,
+      "sha256": "7f62563d4fd1b2dda206dbc101ef8e6396cb9fc46dda22b8ccd6e03879eb7fbe",
+      "rootSubstitutions": [
+        {
+          "placeholder": "<RUNNER_HOME>",
+          "count": 1
+        }
+      ],
+      "wholeByteInverseCorrespondence": true,
+      "changed": true
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/custody.ts",
+      "originalBytes": 4560,
+      "originalSha256": "c76d8112e32b1ac2c4bdf8f128654852a56d64c99120a20f7cdc2101207bee7d",
+      "bytes": 4560,
+      "sha256": "c76d8112e32b1ac2c4bdf8f128654852a56d64c99120a20f7cdc2101207bee7d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/dispatch.ts",
+      "originalBytes": 2281,
+      "originalSha256": "6f58461d34a2be6a545bea061ac01846240d638cc8bc5b429dad578fa213f16d",
+      "bytes": 2281,
+      "sha256": "6f58461d34a2be6a545bea061ac01846240d638cc8bc5b429dad578fa213f16d",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/frames.ts",
+      "originalBytes": 1476,
+      "originalSha256": "fb42f42206a224c7c93d068af62b4775d0e0c181dad10a7fddfe5d2b8dafe0d0",
+      "bytes": 1476,
+      "sha256": "fb42f42206a224c7c93d068af62b4775d0e0c181dad10a7fddfe5d2b8dafe0d0",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/payload.ts",
+      "originalBytes": 3109,
+      "originalSha256": "c7da152a7b647c81cd943b851b39780bd5d90c77006a613f1c632242b675345b",
+      "bytes": 3109,
+      "sha256": "c7da152a7b647c81cd943b851b39780bd5d90c77006a613f1c632242b675345b",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/protocol-types.ts",
+      "originalBytes": 1721,
+      "originalSha256": "4f1f8cfcce48bf892b3655aa48032b762597d4205befc02c031d1fb182c8379f",
+      "bytes": 1721,
+      "sha256": "4f1f8cfcce48bf892b3655aa48032b762597d4205befc02c031d1fb182c8379f",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/protocol.ts",
+      "originalBytes": 11646,
+      "originalSha256": "e904add7c59bd5c2e7d4033728fdac33a9cbc35c654b343519da9692de1198e8",
+      "bytes": 11646,
+      "sha256": "e904add7c59bd5c2e7d4033728fdac33a9cbc35c654b343519da9692de1198e8",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/raw-git.ts",
+      "originalBytes": 6673,
+      "originalSha256": "40c0e3c3a7898a889b2a1b7d84c5dfcccefd8deef877cc8be8c4e50ed1f0e495",
+      "bytes": 6673,
+      "sha256": "40c0e3c3a7898a889b2a1b7d84c5dfcccefd8deef877cc8be8c4e50ed1f0e495",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/runner.ts",
+      "originalBytes": 6715,
+      "originalSha256": "076f6d446d8d46f5e3c9fe9969d1e1a6912887232944291f31934815bbe1654f",
+      "bytes": 6715,
+      "sha256": "076f6d446d8d46f5e3c9fe9969d1e1a6912887232944291f31934815bbe1654f",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/source-delivery.ts",
+      "originalBytes": 1704,
+      "originalSha256": "9f7c0926fcae0c2b3102e0529035444860414674ddfbf38b2027e22846eeb07c",
+      "bytes": 1704,
+      "sha256": "9f7c0926fcae0c2b3102e0529035444860414674ddfbf38b2027e22846eeb07c",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/transactions.ts",
+      "originalBytes": 5383,
+      "originalSha256": "47443b19c5a9234c65b1266ce9e46781ba233ac6f244015f6d39fb40ca6f1607",
+      "bytes": 5383,
+      "sha256": "47443b19c5a9234c65b1266ce9e46781ba233ac6f244015f6d39fb40ca6f1607",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-alias-replay/vue.ts",
+      "originalBytes": 10108,
+      "originalSha256": "e4d06d2f92aa554feb69132a6c059e4a5fecbc2fb6b45be2380da94b4403d406",
+      "bytes": 10108,
+      "sha256": "e4d06d2f92aa554feb69132a6c059e4a5fecbc2fb6b45be2380da94b4403d406",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-event-slot-replay/bound.ts",
+      "originalBytes": 14821,
+      "originalSha256": "1a4abe9cc7b1becc31adb1cdd435af3ca822a957b00d68f4417b39cd2ad4e225",
+      "bytes": 14821,
+      "sha256": "1a4abe9cc7b1becc31adb1cdd435af3ca822a957b00d68f4417b39cd2ad4e225",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-event-slot-replay/events-slots-cases.ts",
+      "originalBytes": 10867,
+      "originalSha256": "9ee9912a0d9af226cf007eecf095589f8b88fa4fc47ea036f937bbcaae9c8676",
+      "bytes": 10867,
+      "sha256": "9ee9912a0d9af226cf007eecf095589f8b88fa4fc47ea036f937bbcaae9c8676",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-event-slot-replay/events-slots.ts",
+      "originalBytes": 9274,
+      "originalSha256": "626f5c26d25a1a13f98edd5e0def3766500590445770e2ecc2ec490ea5fa2bf5",
+      "bytes": 9274,
+      "sha256": "626f5c26d25a1a13f98edd5e0def3766500590445770e2ecc2ec490ea5fa2bf5",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-event-slot-replay/library-oracles.ts",
+      "originalBytes": 9526,
+      "originalSha256": "4b2289db9af8a3cd8eec197b608ead385ad6270aab0e51c9139903229d438438",
+      "bytes": 9526,
+      "sha256": "4b2289db9af8a3cd8eec197b608ead385ad6270aab0e51c9139903229d438438",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-event-slot-replay/library.ts",
+      "originalBytes": 11744,
+      "originalSha256": "18c82e287d94961b3db48857b4a229c89f20437019575bdee76df3c339947687",
+      "bytes": 11744,
+      "sha256": "18c82e287d94961b3db48857b4a229c89f20437019575bdee76df3c339947687",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-event-slot-replay/runner-guard.ts",
+      "originalBytes": 4185,
+      "originalSha256": "03d7ece5554a80655019d5d2f214c9426971681cdba580afccaa2ba3752ccda6",
+      "bytes": 4185,
+      "sha256": "03d7ece5554a80655019d5d2f214c9426971681cdba580afccaa2ba3752ccda6",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-event-slot-replay/runner-scopes.ts",
+      "originalBytes": 6762,
+      "originalSha256": "b64ad4a609add796022a9968be50f48a1469843b827a785c700065934e73dbf8",
+      "bytes": 6762,
+      "sha256": "b64ad4a609add796022a9968be50f48a1469843b827a785c700065934e73dbf8",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-event-slot-replay/runner.ts",
+      "originalBytes": 11785,
+      "originalSha256": "11b362b818dbbf77d6f2909a9dcedd6cb8c10aec07b25f4e5362464e812adbef",
+      "bytes": 11785,
+      "sha256": "11b362b818dbbf77d6f2909a9dcedd6cb8c10aec07b25f4e5362464e812adbef",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    },
+    {
+      "path": "runner-source/tests/tooling/support/lsp/installed-event-slot-replay/stock-authority.ts",
+      "originalBytes": 4668,
+      "originalSha256": "d4569cd887a663ce62ca8e23e5c34eeb6f84ab41edb45e04a454f145357f7624",
+      "bytes": 4668,
+      "sha256": "d4569cd887a663ce62ca8e23e5c34eeb6f84ab41edb45e04a454f145357f7624",
+      "rootSubstitutions": [],
+      "wholeByteInverseCorrespondence": true,
+      "changed": false
+    }
+  ],
+  "archivedAuthorityFileDigests": [
+    {
+      "archivePath": "authority/acceptance-launcher.py",
+      "bytes": 1952,
+      "sha256": "742e4c89f6aa9f8b047e92c31dc06981975771fecb84630606f58d4cc3712d7f",
+      "originalSha256": "48162b4099cf6dbd79bee4cb972e91982f82b60a8efeca02ecd1b454264b6f4f",
+      "originalBytes": 1961
+    },
+    {
+      "archivePath": "authority/acceptance-runner.mjs",
+      "bytes": 12291,
+      "sha256": "d685db9770d9f59f948de14d2d07c13db4f542a537e65442e4163a1969c4da8a",
+      "originalSha256": "e3e9eebaa48615b807d43435517d1557d6587ca21e6e2c50f423d92c877f2adc",
+      "originalBytes": 12318
+    },
+    {
+      "archivePath": "authority/archive-exporter.py",
+      "bytes": 5967,
+      "sha256": "73b7f2abe5e665cdda32c7432e971dba6afe50d26f8ef3cf7e24181baab06a28",
+      "originalSha256": "619199def82d011c9e6c75fedaaea664837f63eecc9ee1d6791ad72d28cb63e7",
+      "originalBytes": 5985
+    },
+    {
+      "archivePath": "authority/child-independent-review.json",
+      "bytes": 21636,
+      "sha256": "752249c69d5e09cddd4110f7ad67b02b65b3813156455e0d59d058010f09a45e",
+      "originalSha256": "a02c22412039f8a191db2ec4c0a17cf7ed07405717ad4087a42ed9ac782978f5",
+      "originalBytes": 21644
+    },
+    {
+      "archivePath": "authority/collector-argv.json",
+      "bytes": 808,
+      "sha256": "916eb4166a4ec24a19aeeddbcb7b26625c1ca80af56b6f0fd34d6e9857ce2d24",
+      "originalSha256": "9059bf60c8a44ef88344d366810119e422830cf7ac5b6e44f375233669e12d43",
+      "originalBytes": 826
+    },
+    {
+      "archivePath": "authority/collector.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalBytes": 0
+    },
+    {
+      "archivePath": "authority/collector.stdout",
+      "bytes": 299,
+      "sha256": "c5adbfe213b6b0adf6fbeb76cfb912772464a311c2ae4de6b0cdfbff42100cfd",
+      "originalSha256": "2c5503ddff818c15812432cea6e9187fd65f05fe2e6b31e2ba306856d9e22358",
+      "originalBytes": 300
+    },
+    {
+      "archivePath": "authority/finite-install-custody-seal.json",
+      "bytes": 6051,
+      "sha256": "99aa46829dd594823ec360769ab877f5a1f90fd96bd6052569c99f5b6e2f60fd",
+      "originalSha256": "34bed9bfe51de91f2188bf8037f995eba5b099ebf1fe78dba73fe424b67fb66d",
+      "originalBytes": 6071
+    },
+    {
+      "archivePath": "authority/independent-custody-review.json",
+      "bytes": 1358,
+      "sha256": "0663a689968660a72daaa05073c352aa2749fd09fe4a39aebbaf12317800923f",
+      "originalSha256": "bf23f15cbfd9275ec6c65fce7faf51054119cd6d4e286e24f2d0e28a4ba297a8",
+      "originalBytes": 1359
+    },
+    {
+      "archivePath": "authority/install-launcher.py",
+      "bytes": 6337,
+      "sha256": "2ce737cfe0b8e64ad5b720baeada273cf654dbbdd70ff92c6e7bf5b135cbaad9",
+      "originalSha256": "301df43457edc32e8c7121c0d1db33a19445904061f21d5ec3944ec3c50fb00e",
+      "originalBytes": 6362
+    },
+    {
+      "archivePath": "authority/jsx8419-green.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalBytes": 0
+    },
+    {
+      "archivePath": "authority/jsx8419-green.stdout",
+      "bytes": 238,
+      "sha256": "58b6fa3b58acf69af81c8c0dcd93517122740077374c75f8ec4107f9757088c0",
+      "originalSha256": "262e5f5471b56f4387941ed3c7c0734032376d0d4c6e202a41272bd3eb9261d3",
+      "originalBytes": 239
+    },
+    {
+      "archivePath": "authority/jsx8419-launch.json",
+      "bytes": 1198,
+      "sha256": "528a2f7150ca159ab517d763acb21a053d77e425de7a1077f4c192267c31667f",
+      "originalSha256": "cb4e49e7f16e935dacf5932888259ed50fe3ecee24be2324369865f38d22d992",
+      "originalBytes": 1205
+    },
+    {
+      "archivePath": "authority/launch.json",
+      "bytes": 2314,
+      "sha256": "f29de9da04b95b9d3414bb061d027a62667bb68d5720e4beba58cd93d6d72b3a",
+      "originalSha256": "052f721c99ddbc706639484d6c730c641e058b7737f7b7d9c10c1710b92d218d",
+      "originalBytes": 2324
+    },
+    {
+      "archivePath": "authority/npm-install.stderr",
+      "bytes": 405,
+      "sha256": "0c08f435b0162898e1e6eb14ff3f4b85cf8a9ace7fd31ca646dab412ca76f66e",
+      "originalSha256": "0c08f435b0162898e1e6eb14ff3f4b85cf8a9ace7fd31ca646dab412ca76f66e",
+      "originalBytes": 405
+    },
+    {
+      "archivePath": "authority/npm-install.stdout",
+      "bytes": 138,
+      "sha256": "b1d65b8b5759bdf284f041ea3c4a94ddbd31c154218a168540f7098de6b179bb",
+      "originalSha256": "b1d65b8b5759bdf284f041ea3c4a94ddbd31c154218a168540f7098de6b179bb",
+      "originalBytes": 138
+    },
+    {
+      "archivePath": "authority/original-vue-receipt.json",
+      "bytes": 248007,
+      "sha256": "9b4b03e9bcad5138e4b00aacb7fc16a8435b5c980fa56f0c38d77e6797a5aabc",
+      "originalSha256": "8f1ec3f613e8d36ac6efead9aacbaf60feccbe0f74b490dd2c6557c3f86c300a",
+      "originalBytes": 248099
+    },
+    {
+      "archivePath": "authority/public-authority.json",
+      "bytes": 17441,
+      "sha256": "b900208a9625f43357946457010e440a4e0d82cc2e6d1420a9bc5f7032f65e87",
+      "originalSha256": "d9a29f1029bbd386b722d7ddbcc5fe876649050fdf78c19bd913b193eb29557b",
+      "originalBytes": 17463
+    },
+    {
+      "archivePath": "authority/public-authority.json.native-journal.jsonl",
+      "bytes": 1512,
+      "sha256": "678c3e4253b34d59d4befc9bcadaf10ccd142ea0e86377bbf5f91e207e6a435b",
+      "originalSha256": "e738cc557108583e8fd7242193c3292090eefde6d7200daffcaf9bb5c2065fa0",
+      "originalBytes": 1527
+    },
+    {
+      "archivePath": "authority/public-authority.json.public-payload-files.json",
+      "bytes": 62471,
+      "sha256": "861b894ac7e4c5d4e60e44f51efe68cbfe4e5e08b1b5aaea55d418d2e64251b4",
+      "originalSha256": "8320e719a5cc13c9c3632e63009dbc66af2eecc017487abec992f44912b16d2e",
+      "originalBytes": 62679
+    },
+    {
+      "archivePath": "authority/red-archive-verifier.mjs",
+      "bytes": 4797,
+      "sha256": "d800640bbf60c53f07226bb3ee93c4796dadbd57647fb21fed151d545a3a21ef",
+      "originalSha256": "d800640bbf60c53f07226bb3ee93c4796dadbd57647fb21fed151d545a3a21ef",
+      "originalBytes": 4797
+    },
+    {
+      "archivePath": "authority/reviewed-collector-authority.json",
+      "bytes": 1539,
+      "sha256": "63b3cb723183494657f133ed719f6d8c8191a68fb5c70438f6188092baa0cbfc",
+      "originalSha256": "63b3cb723183494657f133ed719f6d8c8191a68fb5c70438f6188092baa0cbfc",
+      "originalBytes": 1539
+    },
+    {
+      "archivePath": "authority/reviewed-collector-snapshot.tar.gz",
+      "bytes": 11194,
+      "sha256": "44dbbb739b74fcc45f939d002d65749d3f577b47d80ffffcfde51e808366a1eb",
+      "originalSha256": "44dbbb739b74fcc45f939d002d65749d3f577b47d80ffffcfde51e808366a1eb",
+      "originalBytes": 11194
+    },
+    {
+      "archivePath": "authority/runner-module-closure.json",
+      "bytes": 35283,
+      "sha256": "d07de04c94d81ebf1111522ad4a683f6a332323055832a8ad53390108166509e",
+      "originalSha256": "08665030f1120b8e28402ee98188b71884b6eeb76ad244b5328511e0ddf1dc54",
+      "originalBytes": 35287
+    },
+    {
+      "archivePath": "authority/source-merge-cdc31c19.json",
+      "bytes": 125072,
+      "sha256": "31aa3f1b0c2b5dec8a7f9d60ffbd3e79742d9fe6328448dc51348531338a6fc3",
+      "originalSha256": "8f7ba4ee045c90911fb72320c1d685661b5c620d329ba1855063f21ceaa64177",
+      "originalBytes": 125073
+    },
+    {
+      "archivePath": "authority/source-pr8428.json",
+      "bytes": 20719,
+      "sha256": "024c71d673c8f4f942e092df9a7bba93a24c3627570f35ae8cd5d26945da9cd9",
+      "originalSha256": "024c71d673c8f4f942e092df9a7bba93a24c3627570f35ae8cd5d26945da9cd9",
+      "originalBytes": 20719
+    },
+    {
+      "archivePath": "authority/terminal-publication-seal.json",
+      "bytes": 4138,
+      "sha256": "4480ec984df4b564b6ee635ad8422024fb31b2369261e0decb8087a4a8ef7d10",
+      "originalSha256": "f0f2f6b0059db36174611ca53c8b99e222c86f39da54341ec44024c340e6922b",
+      "originalBytes": 4098
+    },
+    {
+      "archivePath": "authority/terminal-release-run.json",
+      "bytes": 12898,
+      "sha256": "e2a71f92e5ff1edeb2b096a60d380adf791ecb33f0551a6f45cdc22454d2cd91",
+      "originalSha256": "e2a71f92e5ff1edeb2b096a60d380adf791ecb33f0551a6f45cdc22454d2cd91",
+      "originalBytes": 12898
+    },
+    {
+      "archivePath": "authority/whole-payload-auditor.py",
+      "bytes": 6479,
+      "sha256": "b00f400d4a6ef456232c0c519e3f4230bbb6d1fa507c89f671f8fff4e68f0c36",
+      "originalSha256": "9a460e43975719cd34ff0778db6f11b379002b3566af23567f95fae74f94031c",
+      "originalBytes": 6485
+    }
+  ],
+  "counts": {
+    "cases": 9,
+    "nativeSessions": 9,
+    "status1ActualProcessProofs": 4,
+    "status0NodeExitEvents": 5,
+    "publicPayloadFiles": 202,
+    "publicLockNonRootEntries": 38,
+    "collectorFiles": 8,
+    "runnerClosureFiles": 30,
+    "historicalRedRegularFiles": 49,
+    "sharedHistoricalInputFiles": 24,
+    "vueGraphPackages": 26,
+    "vuePayloadFiles": 745,
+    "vueResolvedEdges": 51,
+    "sealedArchiveRegularMembers": 160
+  },
+  "cases": [
+    {
+      "id": "wrong-arrow",
+      "literalFixtureConsumerSha256": "1fd5f540cb5c0e16010e3872cf00502627ff9b9fce1c7d07e13da8111104ca0f",
+      "fourInputs": [
+        {
+          "path": "wrong-arrow/Child.vue",
+          "size": 139,
+          "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01"
+        },
+        {
+          "path": "wrong-arrow/Consumer.tsx",
+          "size": 140,
+          "sha256": "1fd5f540cb5c0e16010e3872cf00502627ff9b9fce1c7d07e13da8111104ca0f"
+        },
+        {
+          "path": "wrong-arrow/tsconfig.json",
+          "size": 185,
+          "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d"
+        },
+        {
+          "path": "wrong-arrow/vize.config.json",
+          "size": 38,
+          "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+        }
+      ],
+      "rawStdoutSha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "expectedReportSha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "processRecordSha256": "28573720e1a457b012db2b968391a997fbe42a7b632734dd5815c8390f434947",
+      "process": {
+        "node": {
+          "path": "<USER_HOME>/.vite-plus/js_runtime/node/24.14.0/bin/node",
+          "version": "v24.14.0",
+          "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+        },
+        "argv": [
+          "--require",
+          "<USER_HOME>/Source/github.com/ubugeeei-prod/vize.repair-lsp-event-slot-stack8301-20261010/tools/support/release/public_install/native-custody.cjs",
+          "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/vize/bin/vize",
+          "check",
+          "Consumer.tsx",
+          "Child.vue",
+          "--format",
+          "json",
+          "--quiet"
+        ],
+        "cwd": "<LOCAL_TMP>/vize-jsx8419-installed-green-20261010-v0441/wrong-arrow",
+        "pid": 91135,
+        "exitCode": 1,
+        "signal": null,
+        "error": null
+      },
+      "journalSha256": "911d26431624e1aa1454c3f15c35ae80438970edfb49dda51dd29e4687b2fc3f",
+      "journalEvents": ["initialized", "attempt", "returned"],
+      "nativePath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "nativeSha256": "ae34cabe31ceaa80d5aaeb98b043a40c601cf583c58be7b80fc8296b36aa365e",
+      "automaticallySelectedCorsaPath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+      "expectedWholeReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": [
+              "error:3:33 [TS2345] Argument of type '(props: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.\nTypes of parameters 'props' and 'payload' are incompatible.\nType '{ value: number; }' is not assignable to type '{ value: string; }'.\nTypes of property 'value' are incompatible.\nType 'number' is not assignable to type 'string'."
+            ]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "wholeRawActualReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": [
+              "error:3:33 [TS2345] Argument of type '(props: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.\nTypes of parameters 'props' and 'payload' are incompatible.\nType '{ value: number; }' is not assignable to type '{ value: string; }'.\nTypes of property 'value' are incompatible.\nType 'number' is not assignable to type 'string'."
+            ]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "independentWholeLiteralOracleEqual": true,
+      "nodeExitEventCredited": false,
+      "status1Proof": "actual process exitCode; no invented Node exit event",
+      "success": true,
+      "originalProcessRecordSha256": "de5d0c7a802c6b6a5b273814a5a667f411a672cd66bbb93c9674d507d4c51865",
+      "originalJournalSha256": "f6848a9f2060d5af45cfbcbbf3693a78355e7d5aa112089ab67d4f5e56a58fc9"
+    },
+    {
+      "id": "wrong-function",
+      "literalFixtureConsumerSha256": "32c6d395e5f30956a7c3cc233179962ce436d276e0b5a586aacbb623f1eed858",
+      "fourInputs": [
+        {
+          "path": "wrong-function/Child.vue",
+          "size": 139,
+          "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01"
+        },
+        {
+          "path": "wrong-function/Consumer.tsx",
+          "size": 158,
+          "sha256": "32c6d395e5f30956a7c3cc233179962ce436d276e0b5a586aacbb623f1eed858"
+        },
+        {
+          "path": "wrong-function/tsconfig.json",
+          "size": 185,
+          "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d"
+        },
+        {
+          "path": "wrong-function/vize.config.json",
+          "size": 38,
+          "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+        }
+      ],
+      "rawStdoutSha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "expectedReportSha256": "ad1b66849844adc9bdbaf0d6f680e86ed3399e5b6c1cc830c4786febbe56b680",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "processRecordSha256": "9dce8c3a3e73bf582af2d7e89550c494d4a8bcf11bbf9cfcb1fa318d1dc0bd7d",
+      "process": {
+        "node": {
+          "path": "<USER_HOME>/.vite-plus/js_runtime/node/24.14.0/bin/node",
+          "version": "v24.14.0",
+          "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+        },
+        "argv": [
+          "--require",
+          "<USER_HOME>/Source/github.com/ubugeeei-prod/vize.repair-lsp-event-slot-stack8301-20261010/tools/support/release/public_install/native-custody.cjs",
+          "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/vize/bin/vize",
+          "check",
+          "Consumer.tsx",
+          "Child.vue",
+          "--format",
+          "json",
+          "--quiet"
+        ],
+        "cwd": "<LOCAL_TMP>/vize-jsx8419-installed-green-20261010-v0441/wrong-function",
+        "pid": 91147,
+        "exitCode": 1,
+        "signal": null,
+        "error": null
+      },
+      "journalSha256": "490cade4b312ad3d228b52dfaff6734dfd00020887eef2dbff0b8cf88130654d",
+      "journalEvents": ["initialized", "attempt", "returned"],
+      "nativePath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "nativeSha256": "ae34cabe31ceaa80d5aaeb98b043a40c601cf583c58be7b80fc8296b36aa365e",
+      "automaticallySelectedCorsaPath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+      "expectedWholeReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": [
+              "error:3:33 [TS2345] Argument of type '(props: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.\nTypes of parameters 'props' and 'payload' are incompatible.\nType '{ value: number; }' is not assignable to type '{ value: string; }'.\nTypes of property 'value' are incompatible.\nType 'number' is not assignable to type 'string'."
+            ]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "wholeRawActualReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": [
+              "error:3:33 [TS2345] Argument of type '(props: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.\nTypes of parameters 'props' and 'payload' are incompatible.\nType '{ value: number; }' is not assignable to type '{ value: string; }'.\nTypes of property 'value' are incompatible.\nType 'number' is not assignable to type 'string'."
+            ]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "independentWholeLiteralOracleEqual": true,
+      "nodeExitEventCredited": false,
+      "status1Proof": "actual process exitCode; no invented Node exit event",
+      "success": true,
+      "originalProcessRecordSha256": "6567876725f8e2bce8e91e4b7c1c002cf009596f9c849bcc46d9b93e98fe9251",
+      "originalJournalSha256": "c0d1dbd1ce2c98a9357f90c0a28c7e9e3ecd088ec8f96bf32de8003cda2a1b98"
+    },
+    {
+      "id": "wrong-destructure",
+      "literalFixtureConsumerSha256": "d2e382f24a1ccff2f70faf58af5dec1325a200713f17648f82e3e8242f255293",
+      "fourInputs": [
+        {
+          "path": "wrong-destructure/Child.vue",
+          "size": 139,
+          "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01"
+        },
+        {
+          "path": "wrong-destructure/Consumer.tsx",
+          "size": 138,
+          "sha256": "d2e382f24a1ccff2f70faf58af5dec1325a200713f17648f82e3e8242f255293"
+        },
+        {
+          "path": "wrong-destructure/tsconfig.json",
+          "size": 185,
+          "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d"
+        },
+        {
+          "path": "wrong-destructure/vize.config.json",
+          "size": 38,
+          "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+        }
+      ],
+      "rawStdoutSha256": "9495bac10d6527d8dd1a26d9531865191f1c71dce0a8f6457d69f158ab218f66",
+      "expectedReportSha256": "9495bac10d6527d8dd1a26d9531865191f1c71dce0a8f6457d69f158ab218f66",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "processRecordSha256": "58762a5e78f338eb5625181458dc452b267b9dd8e0b32e18aeb1028b28cc4d63",
+      "process": {
+        "node": {
+          "path": "<USER_HOME>/.vite-plus/js_runtime/node/24.14.0/bin/node",
+          "version": "v24.14.0",
+          "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+        },
+        "argv": [
+          "--require",
+          "<USER_HOME>/Source/github.com/ubugeeei-prod/vize.repair-lsp-event-slot-stack8301-20261010/tools/support/release/public_install/native-custody.cjs",
+          "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/vize/bin/vize",
+          "check",
+          "Consumer.tsx",
+          "Child.vue",
+          "--format",
+          "json",
+          "--quiet"
+        ],
+        "cwd": "<LOCAL_TMP>/vize-jsx8419-installed-green-20261010-v0441/wrong-destructure",
+        "pid": 91165,
+        "exitCode": 1,
+        "signal": null,
+        "error": null
+      },
+      "journalSha256": "3cce73a6cb28d05600dcf7a82b3b534521fc0fc485f9272065dd8890adb98696",
+      "journalEvents": ["initialized", "attempt", "returned"],
+      "nativePath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "nativeSha256": "ae34cabe31ceaa80d5aaeb98b043a40c601cf583c58be7b80fc8296b36aa365e",
+      "automaticallySelectedCorsaPath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+      "expectedWholeReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": [
+              "error:3:33 [TS2345] Argument of type '({ value }: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.\nTypes of parameters '__0' and 'payload' are incompatible.\nType '{ value: number; }' is not assignable to type '{ value: string; }'.\nTypes of property 'value' are incompatible.\nType 'number' is not assignable to type 'string'."
+            ]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "wholeRawActualReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": [
+              "error:3:33 [TS2345] Argument of type '({ value }: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.\nTypes of parameters '__0' and 'payload' are incompatible.\nType '{ value: number; }' is not assignable to type '{ value: string; }'.\nTypes of property 'value' are incompatible.\nType 'number' is not assignable to type 'string'."
+            ]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "independentWholeLiteralOracleEqual": true,
+      "nodeExitEventCredited": false,
+      "status1Proof": "actual process exitCode; no invented Node exit event",
+      "success": true,
+      "originalProcessRecordSha256": "444c56d0dad41109502a580b46b51e6b3f193ac4c07172650063e22f80e79dda",
+      "originalJournalSha256": "464e6fed893957304063f397a1547c7a3ad0ae4d4c8290b79872c6c62f61c4cd"
+    },
+    {
+      "id": "correct-arrow",
+      "literalFixtureConsumerSha256": "34074a69d7242fd081428782cf302b8fab93580b0d756fd4d4e84c291dd7a025",
+      "fourInputs": [
+        {
+          "path": "correct-arrow/Child.vue",
+          "size": 139,
+          "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01"
+        },
+        {
+          "path": "correct-arrow/Consumer.tsx",
+          "size": 150,
+          "sha256": "34074a69d7242fd081428782cf302b8fab93580b0d756fd4d4e84c291dd7a025"
+        },
+        {
+          "path": "correct-arrow/tsconfig.json",
+          "size": 185,
+          "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d"
+        },
+        {
+          "path": "correct-arrow/vize.config.json",
+          "size": 38,
+          "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+        }
+      ],
+      "rawStdoutSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "expectedReportSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "processRecordSha256": "6e6ef3341861e61dc279efd7bda931724b6712132c37b4c5f301cc960095d36f",
+      "process": {
+        "node": {
+          "path": "<USER_HOME>/.vite-plus/js_runtime/node/24.14.0/bin/node",
+          "version": "v24.14.0",
+          "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+        },
+        "argv": [
+          "--require",
+          "<USER_HOME>/Source/github.com/ubugeeei-prod/vize.repair-lsp-event-slot-stack8301-20261010/tools/support/release/public_install/native-custody.cjs",
+          "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/vize/bin/vize",
+          "check",
+          "Consumer.tsx",
+          "Child.vue",
+          "--format",
+          "json",
+          "--quiet"
+        ],
+        "cwd": "<LOCAL_TMP>/vize-jsx8419-installed-green-20261010-v0441/correct-arrow",
+        "pid": 91295,
+        "exitCode": 0,
+        "signal": null,
+        "error": null
+      },
+      "journalSha256": "79c6c97fad98f2255e9dcf57ba5ad49608ac0b99f7916a038690b5fed2c2c614",
+      "journalEvents": ["initialized", "attempt", "returned", "exit"],
+      "nativePath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "nativeSha256": "ae34cabe31ceaa80d5aaeb98b043a40c601cf583c58be7b80fc8296b36aa365e",
+      "automaticallySelectedCorsaPath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+      "expectedWholeReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "wholeRawActualReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "independentWholeLiteralOracleEqual": true,
+      "nodeExitEventCredited": true,
+      "status1Proof": null,
+      "success": true,
+      "originalProcessRecordSha256": "27737fa3ebf13660bbb6fb11fbe26dbf16049a4d7d83fa8dfa020abe0f67b9ee",
+      "originalJournalSha256": "d9bed556f2b53d0c23ce828a2ea20650c7815e80f6b0a76ba5dd07a70a38f557"
+    },
+    {
+      "id": "untyped-clean",
+      "literalFixtureConsumerSha256": "39a108e1fe8820782b95d1cf13050a54a3b4229b7bee5c2d0fab0d3208178e6b",
+      "fourInputs": [
+        {
+          "path": "untyped-clean/Child.vue",
+          "size": 139,
+          "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01"
+        },
+        {
+          "path": "untyped-clean/Consumer.tsx",
+          "size": 129,
+          "sha256": "39a108e1fe8820782b95d1cf13050a54a3b4229b7bee5c2d0fab0d3208178e6b"
+        },
+        {
+          "path": "untyped-clean/tsconfig.json",
+          "size": 185,
+          "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d"
+        },
+        {
+          "path": "untyped-clean/vize.config.json",
+          "size": 38,
+          "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+        }
+      ],
+      "rawStdoutSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "expectedReportSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "processRecordSha256": "6372e15b3d4be8cc08b1503b72ed18aa5e736c911998146824d7a838d625ff12",
+      "process": {
+        "node": {
+          "path": "<USER_HOME>/.vite-plus/js_runtime/node/24.14.0/bin/node",
+          "version": "v24.14.0",
+          "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+        },
+        "argv": [
+          "--require",
+          "<USER_HOME>/Source/github.com/ubugeeei-prod/vize.repair-lsp-event-slot-stack8301-20261010/tools/support/release/public_install/native-custody.cjs",
+          "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/vize/bin/vize",
+          "check",
+          "Consumer.tsx",
+          "Child.vue",
+          "--format",
+          "json",
+          "--quiet"
+        ],
+        "cwd": "<LOCAL_TMP>/vize-jsx8419-installed-green-20261010-v0441/untyped-clean",
+        "pid": 91399,
+        "exitCode": 0,
+        "signal": null,
+        "error": null
+      },
+      "journalSha256": "77a4af18da042ddefd97925240cb719488a579de0f46fbbf6ce929f23d8c683d",
+      "journalEvents": ["initialized", "attempt", "returned", "exit"],
+      "nativePath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "nativeSha256": "ae34cabe31ceaa80d5aaeb98b043a40c601cf583c58be7b80fc8296b36aa365e",
+      "automaticallySelectedCorsaPath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+      "expectedWholeReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "wholeRawActualReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "independentWholeLiteralOracleEqual": true,
+      "nodeExitEventCredited": true,
+      "status1Proof": null,
+      "success": true,
+      "originalProcessRecordSha256": "13632ef9a987c72c818b6d482f544df0cf624fa3525c407a0cbc303dc27c9738",
+      "originalJournalSha256": "e47120203037b6d66c65ff58f839b3f0e63ec03af160dfdc9c09443f993a8b70"
+    },
+    {
+      "id": "independent-body-error",
+      "literalFixtureConsumerSha256": "5df3133917b304bd8d3c177bfbdf3f94add9568230f8643e809b23619bd5b6c5",
+      "fourInputs": [
+        {
+          "path": "independent-body-error/Child.vue",
+          "size": 139,
+          "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01"
+        },
+        {
+          "path": "independent-body-error/Consumer.tsx",
+          "size": 154,
+          "sha256": "5df3133917b304bd8d3c177bfbdf3f94add9568230f8643e809b23619bd5b6c5"
+        },
+        {
+          "path": "independent-body-error/tsconfig.json",
+          "size": 185,
+          "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d"
+        },
+        {
+          "path": "independent-body-error/vize.config.json",
+          "size": 38,
+          "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+        }
+      ],
+      "rawStdoutSha256": "ed94ec7f883d94c69f35611e0945ea0028bb997017f740d10be64ff79d611feb",
+      "expectedReportSha256": "ed94ec7f883d94c69f35611e0945ea0028bb997017f740d10be64ff79d611feb",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "processRecordSha256": "8f910918b1e9dd0f6e94c8b896723b995590d0cee79f1a305d921ca21ff14459",
+      "process": {
+        "node": {
+          "path": "<USER_HOME>/.vite-plus/js_runtime/node/24.14.0/bin/node",
+          "version": "v24.14.0",
+          "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+        },
+        "argv": [
+          "--require",
+          "<USER_HOME>/Source/github.com/ubugeeei-prod/vize.repair-lsp-event-slot-stack8301-20261010/tools/support/release/public_install/native-custody.cjs",
+          "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/vize/bin/vize",
+          "check",
+          "Consumer.tsx",
+          "Child.vue",
+          "--format",
+          "json",
+          "--quiet"
+        ],
+        "cwd": "<LOCAL_TMP>/vize-jsx8419-installed-green-20261010-v0441/independent-body-error",
+        "pid": 91464,
+        "exitCode": 1,
+        "signal": null,
+        "error": null
+      },
+      "journalSha256": "155c06fe94c4e2469293221245d525f69153c1d21797306ddf6ed6b61ad239c9",
+      "journalEvents": ["initialized", "attempt", "returned"],
+      "nativePath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "nativeSha256": "ae34cabe31ceaa80d5aaeb98b043a40c601cf583c58be7b80fc8296b36aa365e",
+      "automaticallySelectedCorsaPath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+      "expectedWholeReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": [
+              "error:3:75 [TS2339] Property 'toUpperCase' does not exist on type 'number'."
+            ]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "wholeRawActualReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": [
+              "error:3:75 [TS2339] Property 'toUpperCase' does not exist on type 'number'."
+            ]
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 1,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "independentWholeLiteralOracleEqual": true,
+      "nodeExitEventCredited": false,
+      "status1Proof": "actual process exitCode; no invented Node exit event",
+      "success": true,
+      "originalProcessRecordSha256": "59497f49238498a50b863108c5eb05c24833ab8e1c4f50c44a03f3821b4e7485",
+      "originalJournalSha256": "25b307bd2d5c6926f6c3181c4286c7ccee32b74274b8c96efde43f9097f264cd"
+    },
+    {
+      "id": "correct-optional",
+      "literalFixtureConsumerSha256": "c95cb7e7d1c81ab4a3d7f9e4b5f2767859bc4e4102f92cc497531f6de36600a6",
+      "fourInputs": [
+        {
+          "path": "correct-optional/Child.vue",
+          "size": 139,
+          "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01"
+        },
+        {
+          "path": "correct-optional/Consumer.tsx",
+          "size": 152,
+          "sha256": "c95cb7e7d1c81ab4a3d7f9e4b5f2767859bc4e4102f92cc497531f6de36600a6"
+        },
+        {
+          "path": "correct-optional/tsconfig.json",
+          "size": 185,
+          "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d"
+        },
+        {
+          "path": "correct-optional/vize.config.json",
+          "size": 38,
+          "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+        }
+      ],
+      "rawStdoutSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "expectedReportSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "processRecordSha256": "42103f4ac077b69db1d06370de7bb1f020af3a349d9c6d20072611bada797296",
+      "process": {
+        "node": {
+          "path": "<USER_HOME>/.vite-plus/js_runtime/node/24.14.0/bin/node",
+          "version": "v24.14.0",
+          "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+        },
+        "argv": [
+          "--require",
+          "<USER_HOME>/Source/github.com/ubugeeei-prod/vize.repair-lsp-event-slot-stack8301-20261010/tools/support/release/public_install/native-custody.cjs",
+          "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/vize/bin/vize",
+          "check",
+          "Consumer.tsx",
+          "Child.vue",
+          "--format",
+          "json",
+          "--quiet"
+        ],
+        "cwd": "<LOCAL_TMP>/vize-jsx8419-installed-green-20261010-v0441/correct-optional",
+        "pid": 91532,
+        "exitCode": 0,
+        "signal": null,
+        "error": null
+      },
+      "journalSha256": "fbbdb466a982eeec08279007b85de6c1d756bfa052bf97940139412304e602a7",
+      "journalEvents": ["initialized", "attempt", "returned", "exit"],
+      "nativePath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "nativeSha256": "ae34cabe31ceaa80d5aaeb98b043a40c601cf583c58be7b80fc8296b36aa365e",
+      "automaticallySelectedCorsaPath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+      "expectedWholeReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "wholeRawActualReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "independentWholeLiteralOracleEqual": true,
+      "nodeExitEventCredited": true,
+      "status1Proof": null,
+      "success": true,
+      "originalProcessRecordSha256": "f28fe10c8bc9c0e4c130255fad17494a7b34ae0eca9fcc89962ed264f986d35b",
+      "originalJournalSha256": "0fef83868a64ac9e76b7842fd9461385d984b72ae8f86981fd8ce487abead408"
+    },
+    {
+      "id": "correct-default",
+      "literalFixtureConsumerSha256": "09f68924957652a08a66f5161ad27046192502e95d5e0466fefd9eb91869b031",
+      "fourInputs": [
+        {
+          "path": "correct-default/Child.vue",
+          "size": 139,
+          "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01"
+        },
+        {
+          "path": "correct-default/Consumer.tsx",
+          "size": 165,
+          "sha256": "09f68924957652a08a66f5161ad27046192502e95d5e0466fefd9eb91869b031"
+        },
+        {
+          "path": "correct-default/tsconfig.json",
+          "size": 185,
+          "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d"
+        },
+        {
+          "path": "correct-default/vize.config.json",
+          "size": 38,
+          "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+        }
+      ],
+      "rawStdoutSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "expectedReportSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "processRecordSha256": "a4b675ba32255a236dd0214003d863309c999bd786822f7fa7de6ce84ed7d392",
+      "process": {
+        "node": {
+          "path": "<USER_HOME>/.vite-plus/js_runtime/node/24.14.0/bin/node",
+          "version": "v24.14.0",
+          "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+        },
+        "argv": [
+          "--require",
+          "<USER_HOME>/Source/github.com/ubugeeei-prod/vize.repair-lsp-event-slot-stack8301-20261010/tools/support/release/public_install/native-custody.cjs",
+          "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/vize/bin/vize",
+          "check",
+          "Consumer.tsx",
+          "Child.vue",
+          "--format",
+          "json",
+          "--quiet"
+        ],
+        "cwd": "<LOCAL_TMP>/vize-jsx8419-installed-green-20261010-v0441/correct-default",
+        "pid": 91642,
+        "exitCode": 0,
+        "signal": null,
+        "error": null
+      },
+      "journalSha256": "c3251fca7e18dfb3f43ad53d0d93579ce88ff50e392f4b56becd594499b79182",
+      "journalEvents": ["initialized", "attempt", "returned", "exit"],
+      "nativePath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "nativeSha256": "ae34cabe31ceaa80d5aaeb98b043a40c601cf583c58be7b80fc8296b36aa365e",
+      "automaticallySelectedCorsaPath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+      "expectedWholeReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "wholeRawActualReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "independentWholeLiteralOracleEqual": true,
+      "nodeExitEventCredited": true,
+      "status1Proof": null,
+      "success": true,
+      "originalProcessRecordSha256": "744f3086573b90190bf554651938246bce83562c14d03473b216ebda5114373f",
+      "originalJournalSha256": "12f5f538a305b0b1c02016b773a318bcfe9119dab3ca697b944ab264861bd103"
+    },
+    {
+      "id": "untyped-host",
+      "literalFixtureConsumerSha256": "72680b483ebf7bd6762761349056b1db5941656db5982f33627de3ddaf1d6b31",
+      "fourInputs": [
+        {
+          "path": "untyped-host/Child.vue",
+          "size": 139,
+          "sha256": "ff64994c0e3f994b46b4a9b3a9001d02e19815b6893f9385b2965dc1a1086e01"
+        },
+        {
+          "path": "untyped-host/Consumer.tsx",
+          "size": 144,
+          "sha256": "72680b483ebf7bd6762761349056b1db5941656db5982f33627de3ddaf1d6b31"
+        },
+        {
+          "path": "untyped-host/tsconfig.json",
+          "size": 185,
+          "sha256": "0579756b6fd40cf68ec9deb8a0db351a03f578ff6d7d8351cdbd58ee1ad2a31d"
+        },
+        {
+          "path": "untyped-host/vize.config.json",
+          "size": 38,
+          "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+        }
+      ],
+      "rawStdoutSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "expectedReportSha256": "26433e5d08404b6d0c42c2d49a6b2be9d4037e2d9d1f55f56696c80061798ef4",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "processRecordSha256": "82584812f3fe75250fb27a73855f585acbf2d06c5c5268ce9f2020b38fd75432",
+      "process": {
+        "node": {
+          "path": "<USER_HOME>/.vite-plus/js_runtime/node/24.14.0/bin/node",
+          "version": "v24.14.0",
+          "sha256": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55"
+        },
+        "argv": [
+          "--require",
+          "<USER_HOME>/Source/github.com/ubugeeei-prod/vize.repair-lsp-event-slot-stack8301-20261010/tools/support/release/public_install/native-custody.cjs",
+          "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/vize/bin/vize",
+          "check",
+          "Consumer.tsx",
+          "Child.vue",
+          "--format",
+          "json",
+          "--quiet"
+        ],
+        "cwd": "<LOCAL_TMP>/vize-jsx8419-installed-green-20261010-v0441/untyped-host",
+        "pid": 91762,
+        "exitCode": 0,
+        "signal": null,
+        "error": null
+      },
+      "journalSha256": "b1ca2e1d729792c0974d4b29158e346833e81b29fd2de978f9f22733a704f1bf",
+      "journalEvents": ["initialized", "attempt", "returned", "exit"],
+      "nativePath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "nativeSha256": "ae34cabe31ceaa80d5aaeb98b043a40c601cf583c58be7b80fc8296b36aa365e",
+      "automaticallySelectedCorsaPath": "<LOCAL_TMP>/vize-lsp441-20261010-bb83dd98/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+      "expectedWholeReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "wholeRawActualReport": {
+        "files": [
+          {
+            "file": "Child.vue",
+            "diagnostics": []
+          },
+          {
+            "file": "Consumer.tsx",
+            "diagnostics": []
+          }
+        ],
+        "programs": [
+          {
+            "root": ".",
+            "tsconfig": "tsconfig.json",
+            "compilerOptions": {
+              "jsx": "preserve",
+              "module": "ESNext",
+              "moduleResolution": "Bundler",
+              "skipLibCheck": true,
+              "strict": true,
+              "target": "ES2022",
+              "types": ["vue/jsx"]
+            },
+            "files": ["Child.vue", "Consumer.tsx", "node_modules/vue/jsx.d.ts"]
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 0,
+        "fileCount": 2
+      },
+      "independentWholeLiteralOracleEqual": true,
+      "nodeExitEventCredited": true,
+      "status1Proof": null,
+      "success": true,
+      "originalProcessRecordSha256": "ed5ae9f24d3237f8fe25872bc4b7a120a736d034f59908333b6f62a939182734",
+      "originalJournalSha256": "94cc11148d2581ebe9cad761669ee935c497f957c67447ff172261cb97ef406b"
+    }
+  ],
+  "historicalRed": {
+    "sha256": "f1bf5ff9270a1dee35fa8966f0bf06207b16d973f0654635576ec9f1467f706b",
+    "manifestSha256": "da3f604cf1eea6e71255fb3b894cd9592c8158d012974a79fd9a4ddaf3c98873",
+    "observationsSha256": "65c4946126d029f6ae7a1202d9d5079380775bed79cbca7d7086dfca9b259610",
+    "cases": [
+      "wrong-arrow",
+      "correct-arrow",
+      "wrong-function",
+      "wrong-destructure",
+      "untyped-clean",
+      "independent-body-error"
+    ]
+  },
+  "runtimeProvidersLaunchedByThisReview": 0,
+  "installsByThisReview": 0,
+  "acceptanceRunsByThisReview": 0,
+  "registryCallsByThisReview": 0,
+  "installedConsumerOrCampaignMutationsByThisReview": 0,
+  "limitations": [
+    "Scope is the nine explicit opt-in JSX typecheck CLI diagnostic packets. No installed source-map API, default JSX behavior, worker acceptance/performance, broader contracts or #1497 closure claim.",
+    "Source4e7 Child/Consumer/cases literals and complete expected report schema are original. All four public campaign input files are byte-identical to historical public439 for its six cases; source Rust fixture tsconfig serialization uses explicit files rather than public campaign include.",
+    "Status1 Rust termination retains no Node exit event; actual process records prove status1 and native attempt/return journals prove successful original native loading.",
+    "npm user/global config files were not inspected or hashed for public441; no stronger hermetic-environment claim.",
+    "Provenance binding has no cryptographic signature verification claim; source H/tag unsigned and actual metadata merge M signed.",
+    "Current byte checks confirm custody against sealed records; this review launches no provider and does not manufacture a new observed runtime result."
+  ],
+  "success": true,
+  "originalCheckedAt": "2026-10-10T10:55:20.694441+00:00",
+  "originalReviewerTask": "/root/lsp_delivery/event_slot_review",
+  "representation": {
+    "kind": "portable derivative of sealed original execution records",
+    "transformation": "Only the listed physical-root byte prefixes are replaced. No execution-time normalization is claimed.",
+    "placeholders": [
+      {
+        "placeholder": "<USER_HOME>",
+        "originalPrefixSha256": "d70ce39ba0382f573d6f43dd747c07895704fba5fe4b8cf45626abce7520301c"
+      },
+      {
+        "placeholder": "<LOCAL_TMP>",
+        "originalPrefixSha256": "11fe14a563f7aed66191800dc08fe0d15049ef7d9dac5f5ab4b0ca20b28e193d"
+      },
+      {
+        "placeholder": "<RUNNER_HOME>",
+        "originalPrefixSha256": "b1cbc5f347543a03701354923cd95344068142e4aa08c74d259fbfe7c62984fc"
+      },
+      {
+        "placeholder": "<SYSTEM_TMP>",
+        "originalPrefixSha256": "e9671acd244849c57167c658fa2f969752048f7ab184a3dcf5c46cb4d56ae124"
+      }
+    ],
+    "originalArchiveSha256": "591277d38b5c8d5d407b5d866f95110b5b1522f9f69ea54ed8a321f5a07ccfbe",
+    "originalArchiveBytes": 203365,
+    "originalManifestSha256": "06d89b6f5112d403663075d0be9b5cdc4dc27ee75f7a4307bb6ebd05dde78b6e",
+    "originalIndependentReviewSha256": "80d34405e7e74a71faae68f5e9b84d6072b3a61d4923444a68af3cebd9a4500b",
+    "all160MemberWholeByteInverseCorrespondencesVerified": true,
+    "originalRecordsPreservedOutsideGit": true,
+    "embeddedExecutionHashesScope": "Hashes inside derivative archive members identify original sealed execution/source bytes. The index supplies original and derived hashes for each member.",
+    "authoredDiagnosticPacketAndInputBytesUnchanged": true,
+    "portableSourceScriptsWereExecuted": false,
+    "newInstallsOrAcceptanceRuns": 0
+  },
+  "originalExecutionReviewChecks": {
+    "safeUniqueComplete160RegularMembersAndManifestHashesSizes": true,
+    "allAuthorityArchiveBytesEqualOriginalCurrentPaths": true,
+    "allElevenAuthoredInputFilesEqualRaw4e7GitAndCurrentFixture": true,
+    "allNineWholeOraclesDerivedFromOriginalLiteralCasesBeforeActualComparison": true,
+    "allNineProgramsOptionsDiagnosticsTextPositionsCountsStatusesRawStreamsEqual": true,
+    "allNineDistinctNativeNodePIDArgvOriginalAttemptReturnAndAutomaticCorsa": true,
+    "historical439Archive49CompleteDigestsAndWholeSixRedReportsUnchanged": true,
+    "sixHistoricalCasesShareAll24FourInputBytesExactly": true,
+    "originalVue26WholeManifestGraph745PayloadFiles51DeclaredResolvedEdgesLockAndSourceUnchanged": true,
+    "nineProjectVueNodeModulesLinksStillOriginalGraph": true,
+    "complete202PublicPayloadPathsSizesBytesAndLock38Unchanged": true,
+    "approvedCollector8SnapshotCurrentArchivedFilesAndAggregateEqualA264": true,
+    "approvedRunner30Raw076GitCurrentArchivedFilesAndClosureEqual": true,
+    "signedSourcePR8428FrozenRawRecordsAndSourceIncludedInActualRawCAncestry": true,
+    "signedSourceCAncestryCommitsExamined": 6,
+    "finiteInstallSeal15RetainedFileHashesAuthenticate": true,
+    "rawLaunchersExporterVerifierWholeAuditorSourceAndRawProcessesRetained": true,
+    "noSourceExecutableOrProviderFallbackInApprovedRunner": true
+  },
+  "portableDerivativeChecks": {
+    "all160OriginalMemberHashesMatchSealedOriginalManifest": true,
+    "all160DerivedMemberHashesMatchPortableIndex": true,
+    "all160WholeByteInverseCorrespondences": true,
+    "allAuthoredInputsAndWholeDiagnosticPacketBytesUnchanged": true,
+    "noPhysicalRootsInPortableRepresentation": true,
+    "deterministicArchiveBytes": true,
+    "newExecutionOrInstall": false
+  }
+}
