@@ -1,0 +1,69 @@
+{
+  "nativeSHA256": "b884696038e3e6c09054b73d9532a3ab490d2cd296a5770d836561b0be245d1d",
+  "scope": "Finite unchanged source-baseline healthy/error fixedpoints only; no changed-source or installed qualification.",
+  "processes": [
+    {
+      "id": "healthy-min",
+      "source": "<style>a{opacity:min(10%,90%)}</style>",
+      "options": {},
+      "exit": 0,
+      "stdout": "[{\"pass\":1,\"input\":\"<style>a{opacity:min(10%,90%)}</style>\",\"actual\":{\"code\":\"<style>\\na {\\n  opacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":true}},{\"pass\":2,\"input\":\"<style>\\na {\\n  opacity: min(10%,90%);\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\na {\\n  opacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":false}},{\"pass\":3,\"input\":\"<style>\\na {\\n  opacity: min(10%,90%);\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\na {\\n  opacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":false}}]\n",
+      "stderr": ""
+    },
+    {
+      "id": "healthy-color",
+      "source": "<style>a{color:hsl(0 50% 0%)}</style>",
+      "options": {},
+      "exit": 0,
+      "stdout": "[{\"pass\":1,\"input\":\"<style>a{color:hsl(0 50% 0%)}</style>\",\"actual\":{\"code\":\"<style>\\na {\\n  color: hsl(0 50% 0%);\\n}\\n</style>\\n\",\"changed\":true}},{\"pass\":2,\"input\":\"<style>\\na {\\n  color: hsl(0 50% 0%);\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\na {\\n  color: hsl(0 50% 0%);\\n}\\n</style>\\n\",\"changed\":false}},{\"pass\":3,\"input\":\"<style>\\na {\\n  color: hsl(0 50% 0%);\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\na {\\n  color: hsl(0 50% 0%);\\n}\\n</style>\\n\",\"changed\":false}}]\n",
+      "stderr": ""
+    },
+    {
+      "id": "healthy-size",
+      "source": "<style>a{text-size-adjust:50%}</style>",
+      "options": {},
+      "exit": 0,
+      "stdout": "[{\"pass\":1,\"input\":\"<style>a{text-size-adjust:50%}</style>\",\"actual\":{\"code\":\"<style>\\na {\\n  text-size-adjust: 50%;\\n}\\n</style>\\n\",\"changed\":true}},{\"pass\":2,\"input\":\"<style>\\na {\\n  text-size-adjust: 50%;\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\na {\\n  text-size-adjust: 50%;\\n}\\n</style>\\n\",\"changed\":false}},{\"pass\":3,\"input\":\"<style>\\na {\\n  text-size-adjust: 50%;\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\na {\\n  text-size-adjust: 50%;\\n}\\n</style>\\n\",\"changed\":false}}]\n",
+      "stderr": ""
+    },
+    {
+      "id": "invalid-css",
+      "source": "<style>}</style>",
+      "options": {},
+      "exit": 0,
+      "stdout": "[{\"pass\":1,\"input\":\"<style>}</style>\",\"actual\":{\"code\":\"<style>\\n}\\n</style>\\n\",\"changed\":true}},{\"pass\":2,\"input\":\"<style>\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\n}\\n</style>\\n\",\"changed\":false}},{\"pass\":3,\"input\":\"<style>\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\n}\\n</style>\\n\",\"changed\":false}}]\n",
+      "stderr": ""
+    },
+    {
+      "id": "healthy-four-spaces",
+      "source": "<style>a{opacity:min(10%,90%)}</style>",
+      "options": {
+        "tabWidth": 4
+      },
+      "exit": 0,
+      "stdout": "[{\"pass\":1,\"input\":\"<style>a{opacity:min(10%,90%)}</style>\",\"actual\":{\"code\":\"<style>\\na {\\n    opacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":true}},{\"pass\":2,\"input\":\"<style>\\na {\\n    opacity: min(10%,90%);\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\na {\\n    opacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":false}},{\"pass\":3,\"input\":\"<style>\\na {\\n    opacity: min(10%,90%);\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\na {\\n    opacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":false}}]\n",
+      "stderr": ""
+    },
+    {
+      "id": "healthy-tabs",
+      "source": "<style>a{opacity:min(10%,90%)}</style>",
+      "options": {
+        "tabWidth": 4,
+        "useTabs": true
+      },
+      "exit": 0,
+      "stdout": "[{\"pass\":1,\"input\":\"<style>a{opacity:min(10%,90%)}</style>\",\"actual\":{\"code\":\"<style>\\na {\\n\\topacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":true}},{\"pass\":2,\"input\":\"<style>\\na {\\n\\topacity: min(10%,90%);\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\na {\\n\\topacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":false}},{\"pass\":3,\"input\":\"<style>\\na {\\n\\topacity: min(10%,90%);\\n}\\n</style>\\n\",\"actual\":{\"code\":\"<style>\\na {\\n\\topacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":false}}]\n",
+      "stderr": ""
+    },
+    {
+      "id": "healthy-crlf",
+      "source": "<style>a{opacity:min(10%,90%)}</style>",
+      "options": {
+        "endOfLine": "crlf"
+      },
+      "exit": 0,
+      "stdout": "[{\"pass\":1,\"input\":\"<style>a{opacity:min(10%,90%)}</style>\",\"actual\":{\"code\":\"<style>\\r\\na {\\r\\n  opacity: min(10%,90%);\\r\\n}\\r\\n</style>\\r\\n\",\"changed\":true}},{\"pass\":2,\"input\":\"<style>\\r\\na {\\r\\n  opacity: min(10%,90%);\\r\\n}\\r\\n</style>\\r\\n\",\"actual\":{\"code\":\"<style>\\r\\na {\\r\\n  opacity: min(10%,90%);\\r\\n}\\r\\n</style>\\r\\n\",\"changed\":false}},{\"pass\":3,\"input\":\"<style>\\r\\na {\\r\\n  opacity: min(10%,90%);\\r\\n}\\r\\n</style>\\r\\n\",\"actual\":{\"code\":\"<style>\\r\\na {\\r\\n  opacity: min(10%,90%);\\r\\n}\\r\\n</style>\\r\\n\",\"changed\":false}}]\n",
+      "stderr": ""
+    }
+  ]
+}
