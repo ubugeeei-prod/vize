@@ -66,7 +66,7 @@ export function planSourceChecks(
       result.tooling = true;
       continue;
     }
-    if (path.startsWith("tests/expected/")) {
+    if (path.startsWith("tests/expected/") || path.startsWith("tests/davinci_test_support/")) {
       result.rust = true;
       continue;
     }

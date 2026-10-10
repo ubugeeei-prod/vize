@@ -89,3 +89,49 @@ provider descriptors and node:vm compileFunction for genuine stock-generated
 render code. Production, all whole inputs/expected contracts, current-reference
 hashes and every ceiling remain unchanged. Re-run the same140 stock states
 and custody laws; all source-built acceptance requires fresh successor Actions.
+
+## Original report closure (2026-10-09)
+
+The original [#7876 report](https://github.com/ubugeeei-prod/vize/issues/7876)
+describes an 87-column attribute and a 197-column whitespace-sensitive
+paragraph at `printWidth: 80`. Both reported defects are fixed on main,
+including signed [#8307](https://github.com/ubugeeei-prod/vize/pull/8307)
+merge `09dc856cc6a3b1d98bc1e46bb02f1684e65b7595`.
+Its [protected Check](https://github.com/ubugeeei-prod/vize/actions/runs/37772908396)
+and four protected real-project workflows completed successfully. The
+291-SFC count describes the reporter's project; it is not an additional
+acceptance gate for the two original examples.
+
+A bounded replay retains the literal complete Example and TypeScript
+configuration from the issue without rewriting either. Input SHA-256 is
+`cda86e54a1e3f15b9c45652171e664c8fad2aa8e57064dfa6ee6998940e633fb`;
+config SHA-256 is
+`7f877b7d4e19c930cb35ba081beffae553c5245606bf2790c85627bd84a1ea0e`.
+Initial `fmt --check` exits 1. Three `fmt --write` / `fmt --check` pairs
+exit 0 and retain exactly the already sealed
+[original Example expected output](../../../tests/_fixtures/differential/formatter-regressions/continuation-prefix-width-7876/original-example.expected),
+SHA-256 `e379010d0e5b534b84dad6f3d6774c599e59ed7845243799ca42ec62432190c7`.
+Its longest line is 75 columns. The existing
+[seven original stock contracts](../../../tests/_fixtures/differential/formatter-regressions/continuation-prefix-width-7876/original-example.stock-contract.json)
+also pass for both original and formatted sources: whole DOM, text, SSR and
+event observations preserve the reported whitespace behavior.
+
+This replay uses the retained native CLI built at
+`5ed1feff6b2a2b74905bb14b46f970906679a511`, binary SHA-256
+`e0f42e98c2a33a35d5e284f02725cec1470fceffbbbd8d89d219c40e0f8a76d6`,
+with the real installed Node 24.14.0 runtime for unchanged TS config loading.
+The relevant formatter, CLI/config, parser and vendor source blobs match
+qualified source `29493199d01d3579b6f81b4d38cd7ceaf33b7f76` and observed
+main `7d645dbca9d3be2e0c96feae7cd826f0f49b02fa`; workspace version metadata
+differs. This is source verification, not an installed release assertion.
+Whole CLI receipt SHA-256 is
+`17067e17fdee2df4531d3c83ea03c90c3de2fcf9406d1c1deae2e945c74ffa2e`;
+whole runtime receipt SHA-256 is
+`a4b04115f7928706de59b8a6e7b7311c473041acf587c203dd0e1e7a84c32071`.
+The earlier missing-runtime attempt and comparison against a different
+historical probe remain retained; no frozen reference was edited.
+
+The earlier broader TODOs remain historical and independently scoped. They
+do not reopen these two original defects or add a closure condition.
+Publication remains pending. This addendum changes no product, fixture,
+test, instruction ceiling or release gate.

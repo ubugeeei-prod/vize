@@ -1,0 +1,81 @@
+{
+  "source": "3390cb6044d53d655a9d64e112d2618375cff5ca",
+  "readActualMain": "b41811e3b33676f68a0843a693c9ed4898f2e86a",
+  "native": "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+  "nativeSHA256": "b884696038e3e6c09054b73d9532a3ab490d2cd296a5770d836561b0be245d1d",
+  "scope": "finite source-baseline child processes; not installed/public qualification",
+  "processes": [
+    {
+      "id": "percentage-original",
+      "operation": "parseCssAst",
+      "css": "a{opacity:abs(-50%)}",
+      "args": [
+        "/Users/ubugeeei/.vite-plus/js_runtime/node/24.14.0/bin/node",
+        "-e",
+        "const m=require(process.argv[1]); const op=process.argv[2]; const css=process.argv[3]; console.log(JSON.stringify(m[op](op==='formatSfc'?'<style>'+css+'</style>':css)));",
+        "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+        "parseCssAst",
+        "a{opacity:abs(-50%)}"
+      ],
+      "exit": 0,
+      "stdout": "{\"errors\":[\"CSS parse error: unsupported math function in a percentage context (upstream lightningcss defect; see vize issue #3295)\"],\"warnings\":[]}\n",
+      "stderr": "",
+      "stdoutHex": "7b226572726f7273223a5b22435353207061727365206572726f723a20756e737570706f72746564206d6174682066756e6374696f6e20696e20612070657263656e7461676520636f6e746578742028757073747265616d206c696768746e696e67637373206465666563743b207365652076697a6520697373756520233332393529225d2c227761726e696e6773223a5b5d7d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "percentage-original",
+      "operation": "formatSfc",
+      "css": "a{opacity:abs(-50%)}",
+      "args": [
+        "/Users/ubugeeei/.vite-plus/js_runtime/node/24.14.0/bin/node",
+        "-e",
+        "const m=require(process.argv[1]); const op=process.argv[2]; const css=process.argv[3]; console.log(JSON.stringify(m[op](op==='formatSfc'?'<style>'+css+'</style>':css)));",
+        "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+        "formatSfc",
+        "a{opacity:abs(-50%)}"
+      ],
+      "exit": -6,
+      "stdout": "",
+      "stderr": "\nthread '<unnamed>' (106455567) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfatal runtime error: failed to initiate panic, error 5, aborting\n",
+      "stdoutHex": "",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036343535353637292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a666174616c2072756e74696d65206572726f723a206661696c656420746f20696e6974696174652070616e69632c206572726f7220352c2061626f7274696e670a"
+    },
+    {
+      "id": "percentage-neighbor",
+      "operation": "parseCssAst",
+      "css": "a{opacity:min(10%,90%)}",
+      "args": [
+        "/Users/ubugeeei/.vite-plus/js_runtime/node/24.14.0/bin/node",
+        "-e",
+        "const m=require(process.argv[1]); const op=process.argv[2]; const css=process.argv[3]; console.log(JSON.stringify(m[op](op==='formatSfc'?'<style>'+css+'</style>':css)));",
+        "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+        "parseCssAst",
+        "a{opacity:min(10%,90%)}"
+      ],
+      "exit": 0,
+      "stdout": "{\"errors\":[],\"warnings\":[],\"ast\":{\"licenseComments\":[],\"rules\":[{\"type\":\"style\",\"value\":{\"declarations\":{\"declarations\":[{\"property\":\"opacity\",\"value\":0.10000000149011612}],\"importantDeclarations\":[]},\"loc\":{\"column\":1,\"line\":0,\"source_index\":0},\"rules\":[],\"selectors\":[[{\"name\":\"a\",\"type\":\"type\"}]]}}],\"sourceMapUrls\":[null],\"sources\":[\"style.css\"]}}\n",
+      "stderr": "",
+      "stdoutHex": "7b226572726f7273223a5b5d2c227761726e696e6773223a5b5d2c22617374223a7b226c6963656e7365436f6d6d656e7473223a5b5d2c2272756c6573223a5b7b2274797065223a227374796c65222c2276616c7565223a7b226465636c61726174696f6e73223a7b226465636c61726174696f6e73223a5b7b2270726f7065727479223a226f706163697479222c2276616c7565223a302e31303030303030303134393031313631327d5d2c22696d706f7274616e744465636c61726174696f6e73223a5b5d7d2c226c6f63223a7b22636f6c756d6e223a312c226c696e65223a302c22736f757263655f696e646578223a307d2c2272756c6573223a5b5d2c2273656c6563746f7273223a5b5b7b226e616d65223a2261222c2274797065223a2274797065227d5d5d7d7d5d2c22736f757263654d617055726c73223a5b6e756c6c5d2c22736f7572636573223a5b227374796c652e637373225d7d7d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "percentage-neighbor",
+      "operation": "formatSfc",
+      "css": "a{opacity:min(10%,90%)}",
+      "args": [
+        "/Users/ubugeeei/.vite-plus/js_runtime/node/24.14.0/bin/node",
+        "-e",
+        "const m=require(process.argv[1]); const op=process.argv[2]; const css=process.argv[3]; console.log(JSON.stringify(m[op](op==='formatSfc'?'<style>'+css+'</style>':css)));",
+        "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+        "formatSfc",
+        "a{opacity:min(10%,90%)}"
+      ],
+      "exit": 0,
+      "stdout": "{\"code\":\"<style>\\na {\\n  opacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":true}\n",
+      "stderr": "",
+      "stdoutHex": "7b22636f6465223a223c7374796c653e5c6e61207b5c6e20206f7061636974793a206d696e283130252c393025293b5c6e7d5c6e3c2f7374796c653e5c6e222c226368616e676564223a747275657d0a",
+      "stderrHex": ""
+    }
+  ]
+}

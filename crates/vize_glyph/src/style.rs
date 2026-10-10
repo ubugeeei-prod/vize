@@ -10,6 +10,7 @@ mod chunk;
 mod color;
 mod comment_scan;
 mod declaration;
+mod engine_boundary;
 mod number;
 mod rule_layout;
 mod stabilization;

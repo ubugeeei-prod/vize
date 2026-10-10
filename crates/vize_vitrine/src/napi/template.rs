@@ -56,7 +56,6 @@ fn compile_scoped(
     let template_syntax = resolve_template_syntax(opts.template_syntax.as_deref())
         .map_err(|message| Error::new(Status::InvalidArg, message))?;
 
-    // Parse
     let custom_element_patterns =
         crate::types::custom_element_patterns(opts.custom_elements.as_deref());
     let custom_elements =
@@ -64,6 +63,7 @@ fn compile_scoped(
     let parser_opts = ParserOptions {
         whitespace,
         is_pre_tag: |tag| tag == "pre",
+        is_native_tag: Some(vize_l0::is_native_tag),
         custom_renderer: opts.custom_renderer.unwrap_or(false),
         experimental_in_tag_comments: opts.experimental_in_tag_comments.unwrap_or(false),
         ..Default::default()

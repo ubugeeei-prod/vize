@@ -208,9 +208,10 @@ fn scan_colors(source: &str, value: std::ops::Range<usize>, spans: &mut Vec<(usi
 }
 
 fn is_color(source: &str, start: usize, end: usize) -> bool {
-    source
-        .get(start..end)
-        .is_some_and(|token| CssColor::parse_string(token).is_ok())
+    source.get(start..end).is_some_and(|token| {
+        super::engine_boundary::catch(|| CssColor::parse_string(token))
+            .is_ok_and(|result| result.is_ok())
+    })
 }
 
 fn skip_string(bytes: &[u8], start: usize) -> usize {

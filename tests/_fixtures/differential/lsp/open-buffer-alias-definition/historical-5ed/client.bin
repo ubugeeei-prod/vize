@@ -1,0 +1,19 @@
+Content-Length: 440
+
+{"jsonrpc":"2.0","method":"initialize","params":{"processId":13930,"rootUri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project","capabilities":{},"workspaceFolders":[{"uri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project","name":"alias-open-buffer-project"}],"initializationOptions":{"editor":true,"lint":false,"typecheck":false,"definition":true}},"id":1}Content-Length: 52
+
+{"jsonrpc":"2.0","method":"initialized","params":{}}Content-Length: 282
+
+{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/components/Child.vue","languageId":"vue","version":1,"text":"<template><button>Child</button></template>\n"}}}Content-Length: 353
+
+{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue","languageId":"vue","version":1,"text":"<script setup lang=\"ts\">\nimport Child from \"./components/Child.vue\";\n</script>\n<template><Child /></template>\n"}}}Content-Length: 241
+
+{"jsonrpc":"2.0","method":"textDocument/definition","params":{"textDocument":{"uri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/RelativeParent.vue"},"position":{"line":3,"character":12}},"id":2}Content-Length: 341
+
+{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue","languageId":"vue","version":1,"text":"<script setup lang=\"ts\">\nimport Child from \"@ui/Child.vue\";\n</script>\n<template><Child /></template>\n"}}}Content-Length: 238
+
+{"jsonrpc":"2.0","method":"textDocument/definition","params":{"textDocument":{"uri":"file:///private/tmp/vize-lsp-next-correctness-readonly-20261009/alias-open-buffer-project/AliasParent.vue"},"position":{"line":3,"character":12}},"id":3}Content-Length: 44
+
+{"jsonrpc":"2.0","method":"shutdown","id":4}Content-Length: 33
+
+{"jsonrpc":"2.0","method":"exit"}

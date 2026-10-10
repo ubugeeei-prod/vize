@@ -1,0 +1,10 @@
+{
+  "surface": "@vizejs/native.compile",
+  "original": "<div><div is=\"vue:my-thing\">x</div></div>",
+  "equivalent": "<div><my-thing>x</my-thing></div>",
+  "options": {
+    "mode": "function",
+    "ssr": false,
+    "hoistStatic": false
+  }
+}
