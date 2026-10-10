@@ -60,7 +60,24 @@ The genuine main26031 refresh passes the same 30 focused tests and deterministic
 generation, plus strict type-aware lint for all 66 changed/new modules across
 both slices. Every one of the 66 native page source/HTML hashes, copied code
 blocks, retained fragments and payload sizes equals the original sealed child.
-No additional executable docs change was needed for this refresh.
+The initial refresh needed no additional executable docs change.
+
+## Hosted type-check correction
+
+The original #8355 source job
+[114104968371](https://github.com/ubugeeei-prod/vize/actions/runs/38015576041/job/114104968371)
+reports four TS7053 errors before repository checks: foreign dictionary
+aggregates infer a union of literal-key objects and indexed records. Give the
+shared locale aggregate an explicit catalogue translation contract, retaining
+checked dynamic rule/support lookups and fail-closed missing entries. This adds
+erasable types only; all translation text, examples and native page outputs stay
+unchanged. The original failed run remains evidence. Fresh successor exact-head
+Actions are required before any protected admission.
+
+The successor passes the actual local TypeScript 7.0.2 docs project check,
+strict type-aware lint, deterministic generation and all 30 focused tests.
+All 66 native page source/HTML hashes and payload sizes remain exact; hosted
+successor qualification is still pending.
 
 ## Remaining acceptance
 

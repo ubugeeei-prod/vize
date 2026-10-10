@@ -23,7 +23,14 @@ import { commonVueText, vueCategoryLabels, type VueLocale } from "./vue-category
 import { localizeVueReference, translatedVuePurpose } from "./vue-category-translations.ts";
 
 type TranslatedLocale = Exclude<VueLocale, "en" | "ja">;
-const locales = {
+interface CatalogueTranslation {
+  packets: Readonly<Record<string, readonly [string, string, string]>>;
+  shared: Readonly<Record<string, string>>;
+  titles: Record<keyof typeof frenchCategoryTitles, string>;
+  intro: string;
+  crossIntro: string;
+}
+const locales: Record<TranslatedLocale, CatalogueTranslation> = {
   fr: {
     packets: frenchPackets,
     shared: frenchShared,
