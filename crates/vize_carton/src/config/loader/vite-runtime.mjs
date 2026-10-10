@@ -103,13 +103,13 @@ export async function resolveViteConfigExport(exported, env, configDir) {
   const root = typeof source.root === "string" ? resolve(configDir ?? ".", source.root) : configDir;
   if (Array.isArray(shared)) {
     return [
-      { ...projectConfigDefaults(), ...(root ? { projectRoot: root } : {}) },
+      { ...projectConfigDefaults(), ...(root ? { __vizeProjectRoot: root } : {}) },
       ...shared.map((entry) => projectPaths(entry, root, true)),
       projectPaths(overrides, root, false),
     ];
   }
   const config = merge(merge(projectConfigDefaults(), shared ?? {}), overrides);
-  return root ? { ...projectPaths(config, root, false), projectRoot: root } : config;
+  return root ? { ...projectPaths(config, root, false), __vizeProjectRoot: root } : config;
 }
 
 // Vite-owned settings use its root. Dedicated Vize files keep their established

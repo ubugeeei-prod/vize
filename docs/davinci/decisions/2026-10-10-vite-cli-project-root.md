@@ -3,7 +3,8 @@
 Issue: [#8371](https://github.com/ubugeeei-prod/vize/issues/8371).
 
 The native projection retains the selected Vite project's root as auxiliary
-document identity. It resolves a relative root from the discovered config's
+document identity under the reserved `__vizeProjectRoot` projection key. It
+resolves a relative root from the discovered config's
 directory. Stable `VizeConfig`, `TypeCheckerConfig`, and existing loaded-config
 models keep their public fields. The formatter's non-exhaustive snapshot and a
 new non-exhaustive project snapshot carry this identity from one evaluation.
