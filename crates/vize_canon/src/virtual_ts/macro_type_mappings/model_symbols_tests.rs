@@ -1,5 +1,6 @@
 use super::MacroTypeMappings;
-use crate::virtual_ts::{VirtualTsOptions, generate_virtual_ts_with_offsets};
+use crate::virtual_ts::generator::generate_virtual_ts_with_offsets_and_checks;
+use crate::virtual_ts::{VirtualTsGenerationOptions, VirtualTsOptions};
 use std::ops::Range;
 
 fn model_rows(script: Option<&str>, ts: &str, name: &str) -> Vec<(Range<usize>, Range<usize>)> {
@@ -103,13 +104,17 @@ fn generated_model_prop_and_event_rows_retain_authored_ast_contents() {
         analyzer.analyze_script_setup(script);
         analyzer.analyze_template(&root);
         let summary = analyzer.finish();
-        let output = generate_virtual_ts_with_offsets(
+        let output = generate_virtual_ts_with_offsets_and_checks(
             &summary,
             Some(script),
             Some(&root),
             100,
             0,
             &VirtualTsOptions::default(),
+            VirtualTsGenerationOptions {
+                preserve_event_navigation: true,
+                ..Default::default()
+            },
         );
         let prop_start = output
             .code

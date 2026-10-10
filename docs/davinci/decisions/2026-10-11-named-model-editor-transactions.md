@@ -64,6 +64,51 @@ flag was not enabled (`rawTraceDir` is null); it does not establish decoded
 process/executable custody or raw wire-frame evidence. Keep that limitation
 separate from the native diagnostic guard and whole editor-packet failures.
 
+## Distinct native model identities and protocol compatibility
+
+The exact `fc9d06cfbccaca882ada61be2e256f2c2fbdb83c` required-native and
+separate ordinary Actions observations fixed every original
+definition/prepare packet, but lost both
+parent `update:` references and edits from child/`v-model` origins. The 12
+complete packets contain 100 reference and 100 rename mismatches, with eight
+incorrect version-2 applications; update-origin requests and the diagnostic
+repair guard still passed. These are retained failures, not a qualified fix.
+
+A model prop and its `update:` member are distinct native identities. Follow
+both identities through the existing exact reverse-mapping helper, using the
+retained authored model declaration to own each location. Share the same
+resolver between reference discovery and the existing rename follow-up loop;
+ordinary and unrelated locations cannot acquire a model link. Keep the
+original native query/deadline and independently authored packet contracts.
+Require a direct row owned by the exact retained name or its matching quoted
+range, with equal source/generated lengths. A short name can round-trip
+through the synthesized `update:` prefix, which has no authored counterpart;
+controls for lengths 1, 5, 7 and 8 require only the prop and event-name endpoints.
+A broad setup statement can round-trip the original string argument,
+but that coordinate is not a third prop/event identity. The generic reverse
+mapper and existing declaration scanner remain unchanged; model controls
+require exactly two native endpoints and reject a script-only projection.
+
+Native mappings retain name contents. Protocol-v1 mappings instead preserve
+the original complete quoted prop and whole model-event alias: interior event
+aliases would split otherwise exact scoped/public prop rows during protocol
+normalization. Recognize only the producer's verified model event triplet and
+its owned prop pair; the original non-model quoted-pair corpus remains intact.
+The added producer test enables its existing event-navigation option rather
+than changing ordinary generation defaults. Whole generated text remains
+unchanged; only declared native coordinate mappings may change a baseline.
+
+The exact-source [native TS-40 capture](https://github.com/ubugeeei-prod/vize/actions/runs/38083628470)
+retains the complete `define-model` text and mappings. Reversing only the
+verified `title` rows recovers the original whole Canon mapping digest (25
+rows), Maestro mapping digest (22 rows), and authored-hit digest (26 hits).
+The corrected native geometry has 28/23 rows and 27 hits respectively; its
+whole generated text, import maps, semantic links and diagnostics are unchanged.
+Update only those three native coordinate records. Keep the original Content
+Mapper baseline normative for the quoted-protocol restoration and require fresh
+Actions for the complete corrected source; the earlier failing capture does
+not qualify the new references/rename resolver.
+
 ## Qualification boundary
 
 The original failures are retained; the bounded producer repair is prepared.

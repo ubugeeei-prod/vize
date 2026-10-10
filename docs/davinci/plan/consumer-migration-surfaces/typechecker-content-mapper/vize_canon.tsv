@@ -2,5 +2,7 @@ consumer_id	consumer	class	file	first_line	surface_id	surface	surface_group	matc
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_alias.rs	1	l0	L0	stage	vize_l0	preferred	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_component_name.rs	3	l0	L0	stage	vize_l0	preferred	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_directives.rs	11	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	test/dev	crates/vize_canon/src/batch/virtual_project/content_mapper_model_quoted_spans_tests.rs	10	l0	L0	stage	vize_l0	preferred	5
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_protocol.rs	4	l0	L0	stage	vize_l0	preferred	1
+typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper_quoted_spans.rs	6	l0	L0	stage	vize_l0	preferred	1
 typechecker-content-mapper	Typechecker content-mapper	source	crates/vize_canon/src/batch/virtual_project/content_mapper.rs	8	l0	L0	stage	vize_l0	preferred	2

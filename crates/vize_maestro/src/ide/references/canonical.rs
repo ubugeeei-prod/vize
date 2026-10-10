@@ -100,7 +100,7 @@ pub(super) async fn references(
         component_prop_references(ctx, bridge, &document, line, character, include_declaration)
             .await;
     locations.extend(prop_locations);
-    let mut linked = linked_positions(&document, &locations);
+    let mut linked = linked_positions(ctx, &document, &locations);
     if attribute.is_none() {
         for mut position in
             corsa_support::materialized_semantic_positions(&document, ctx.uri, ctx.offset)
@@ -128,7 +128,7 @@ pub(super) async fn references(
             .references(&document.request_uri, line, character, true)
             .await
             .ok()?;
-        linked.extend(linked_positions(&document, &discovery));
+        linked.extend(linked_positions(ctx, &document, &discovery));
     }
     for position in linked {
         let extra = bridge
@@ -292,13 +292,22 @@ fn collect_style_locations(
 }
 
 fn linked_positions(
+    ctx: &IdeContext<'_>,
     document: &corsa_support::CanonicalVirtualDocument,
     locations: &[vize_canon::LspLocation],
 ) -> FxHashSet<corsa_support::CanonicalSemanticPosition> {
     locations
         .iter()
         .flat_map(|location| {
-            corsa_support::linked_semantic_positions(document, &location.uri, &location.range)
+            let mut positions =
+                corsa_support::linked_semantic_positions(document, &location.uri, &location.range);
+            positions.extend(corsa_support::model_linked_semantic_positions(
+                ctx,
+                document,
+                &location.uri,
+                &location.range,
+            ));
+            positions
         })
         .collect()
 }
