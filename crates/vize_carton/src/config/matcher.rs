@@ -19,22 +19,37 @@ impl ProjectIgnoreSet {
             return None;
         }
         let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+        let config_dir = absolute_path(config_dir, &cwd);
         let mut groups: Vec<(Option<String>, Vec<String>)> = Vec::new();
         for ignore in ignores {
-            if groups
-                .last()
-                .is_none_or(|(base, _)| *base != ignore.base_path)
-            {
-                groups.push((ignore.base_path.clone(), Vec::new()));
-            }
-            let patterns = &mut groups.last_mut().unwrap().1;
-            patterns.push(ignore.pattern.clone());
-            // Preserve the existing nested dependency ignore expansion without
-            // changing authored negation or escaped metacharacters.
+            let mut base = resolve_base_dir(ignore.base_path.as_deref(), &config_dir);
             let (sign, pattern) = ignore
                 .pattern
                 .strip_prefix('!')
                 .map_or(("", ignore.pattern.as_str()), |pattern| ("!", pattern));
+            // An authored absolute pattern has the same matching meaning as
+            // before projection. Rebase it without interpreting glob syntax;
+            // an in-project absolute negative stays in the preceding sequence.
+            let path = Path::new(pattern);
+            let pattern = if path.is_absolute() {
+                let relative = if let Ok(relative) = path.strip_prefix(&base) {
+                    relative
+                } else {
+                    base = path.ancestors().last().unwrap().to_path_buf();
+                    path.strip_prefix(&base).unwrap()
+                };
+                normalize_path(relative)
+            } else {
+                String::from(pattern)
+            };
+            let base = Some(normalize_path(&base));
+            if groups.last().is_none_or(|(existing, _)| *existing != base) {
+                groups.push((base, Vec::new()));
+            }
+            let patterns = &mut groups.last_mut().unwrap().1;
+            patterns.push(crate::cstr!("{sign}{pattern}"));
+            // Preserve the existing nested dependency ignore expansion without
+            // changing authored negation or escaped metacharacters.
             let suffix = "node_modules/**";
             if let Some(prefix) = pattern.strip_suffix(suffix)
                 && !pattern.ends_with("**/node_modules/**")
@@ -46,7 +61,7 @@ impl ProjectIgnoreSet {
             scopes: groups
                 .into_iter()
                 .map(|(base, patterns)| {
-                    LintPlanScope::new(base.as_deref(), None, &patterns, config_dir, &cwd)
+                    LintPlanScope::new(base.as_deref(), None, &patterns, &config_dir, &cwd)
                 })
                 .collect(),
             cwd,

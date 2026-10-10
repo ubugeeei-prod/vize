@@ -307,17 +307,6 @@ fn prepare_and_execute(
     })
 }
 
-fn validate_config_arg(args: &CheckArgs) {
-    if let Some(path) = args.config.as_deref()
-        && !args.no_config
-        && let Err(error) = crate::config::validate_explicit_config_path(path)
-    {
-        let style = TextStyle::stderr();
-        eprintln!("{} {}", style.red("Error:"), error);
-        std::process::exit(2);
-    }
-}
-
 #[cfg(not(feature = "legacy"))]
 fn warn_for_disabled_legacy(requested: bool) {
     if requested {

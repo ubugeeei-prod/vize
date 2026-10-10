@@ -72,12 +72,17 @@ fn escaped_metacharacters_match_literals_in_files_and_ignores() {
 fn project_ignore_sequences_preserve_root_negation_and_literal_metacharacters() {
     let project = tempfile::tempdir().unwrap();
     let root = project.path().join("app");
+    let absolute = root.join("absolute/**");
+    let outside = project.path().join("outside/**");
     let ignores = [
         "generated/**",
         "!generated/KeepItem.vue",
         r"src/\[id\].vue",
         "node_modules/**",
         "!node_modules/keep.vue",
+        absolute.to_str().unwrap(),
+        "!absolute/KeepItem.vue",
+        outside.to_str().unwrap(),
     ]
     .into_iter()
     .map(|pattern| crate::config::ConfigEntryIgnore {
@@ -94,6 +99,9 @@ fn project_ignore_sequences_preserve_root_negation_and_literal_metacharacters() 
         "generated/DropItem.vue",
         "app/src/node_modules/drop.vue",
         "app/node_modules/keep.vue",
+        "app/absolute/DropItem.vue",
+        "app/absolute/KeepItem.vue",
+        "outside/DropItem.vue",
     ]
     .into_iter()
     .map(|name| (name, set.is_ignored(&project.path().join(name))))
@@ -108,6 +116,9 @@ fn project_ignore_sequences_preserve_root_negation_and_literal_metacharacters() 
             ("generated/DropItem.vue", false),
             ("app/src/node_modules/drop.vue", true),
             ("app/node_modules/keep.vue", false),
+            ("app/absolute/DropItem.vue", true),
+            ("app/absolute/KeepItem.vue", false),
+            ("outside/DropItem.vue", true),
         ]
     );
 }
