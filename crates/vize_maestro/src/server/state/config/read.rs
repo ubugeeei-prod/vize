@@ -5,6 +5,16 @@ use super::super::{LspFeatureConfig, ServerState};
 mod tests;
 
 impl ServerState {
+    /// Effective project Vue version used by type checking and formatting.
+    #[cfg(any(
+        feature = "native",
+        feature = "glyph",
+        feature = "experimental-source-navigation"
+    ))]
+    pub(crate) fn type_checker_vue_version(&self) -> vize_l0::config::VueVersion {
+        *self.type_checker_vue_version.read()
+    }
+
     pub(super) fn install_type_checker_snapshot(
         &self,
         config: vize_l0::config::TypeCheckerConfig,

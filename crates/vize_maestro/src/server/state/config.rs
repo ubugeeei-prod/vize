@@ -164,16 +164,6 @@ impl ServerState {
         *self.type_checker_jsx_typecheck.read()
     }
 
-    /// Effective project Vue version used by type checking and formatting.
-    #[cfg(any(
-        feature = "native",
-        feature = "glyph",
-        feature = "experimental-source-navigation"
-    ))]
-    pub(crate) fn type_checker_vue_version(&self) -> vize_l0::config::VueVersion {
-        *self.type_checker_vue_version.read()
-    }
-
     /// Build the config-file LSP section, folding in the `languageServer`
     /// switches that are not stable carton model fields. They ride on
     /// [`LspConfigSection`] rather than being applied afterwards so the
