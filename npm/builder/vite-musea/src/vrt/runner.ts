@@ -17,6 +17,7 @@ import type {
 import fs from "node:fs";
 import path from "node:path";
 
+import { assertUniqueSnapshotNames } from "./snapshot-collisions.js";
 import { fileExists, matchGlob } from "./comparison.js";
 import { captureAndCompare } from "./runner-comparison.js";
 import { buildSnapshotName, buildVariantUrl, computeSummary } from "./utils.js";
@@ -150,6 +151,7 @@ export class MuseaVrtRunner {
 
     const retries = this.ci.retries ?? 0;
     const jobs = createVrtJobs(artFiles, this.options.viewports);
+    assertUniqueSnapshotNames(jobs);
 
     return runJobsWithWorkers(jobs, this.options.workers, async (job) => {
       let result: VrtResult | null = null;
