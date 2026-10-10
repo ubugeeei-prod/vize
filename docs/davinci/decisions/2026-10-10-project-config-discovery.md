@@ -73,3 +73,13 @@ Vite `root` selects the bundler root; standalone source selection still follows
 the invocation and explicit patterns/TypeScript project. Root parity remains
 unfinished without a source-bound public regression. This change does not
 close #8371's complete acceptance until these remaining boundaries are resolved.
+
+The authored #8371 acceptance deliberately enables usable formatting in fresh
+projects without dedicated configuration. The Zed regression's original complete
+`case.json`, five dedicated/explicit vectors, source bytes and hashes remain
+archival authority. `current-default-policy.json` declares only the no-config
+formatting-capability successor, pins the historical manifest hash, and requires
+the entire formatted buffer after applying every protocol edit. An additive
+explicit `formatting: false` control retains absent-provider and null-result
+behavior. No other historical expectation or public JSX contract is relaxed.
+The Nix source filter must retain the canonical embedded `.mjs` runtime asset.
