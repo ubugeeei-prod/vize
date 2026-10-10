@@ -16,7 +16,7 @@ export const defaults = { brand: "default", scheme: "light", locale: "en" };
 export const changed = { brand: "ocean", scheme: "dark", locale: "ja" };
 export const fixtureRoot = path.join(
   repository,
-  "tests/_fixtures/differential/musea/static-variant-name",
+  "tests/tooling/fixtures/musea/static-variant-name",
 );
 export const sha256 = (bytes: Uint8Array | string) =>
   crypto.createHash("sha256").update(bytes).digest("hex");

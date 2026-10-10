@@ -6,6 +6,7 @@ on:
       [
         "npm/builder/vite-musea/**",
         "tests/_fixtures/differential/musea/**",
+        "tests/tooling/fixtures/musea/**",
         "examples/vite-musea/src/**",
         "examples/vite-musea/musea.preview.ts",
         "examples/vite-musea/src/components/MuseaButton.vue",
