@@ -101,3 +101,16 @@ and every parent workflow byte beside the added configuration gate. The sealed
 reader recipes, original complete dedicated workflow archive, and all six
 regressions remain unchanged. Earlier parent/head receipts grant no acceptance
 to this necessary final source composition.
+
+## Composition with the delivered native and hosting prerequisites
+
+The current parent genuinely inherits the merged native JSX repairs and the
+required source-target and Moon setup contracts. Retain its complete workflow
+and localized CLI anchor changes. The English Musea guide now links to the full
+Vite recipe in the configuration reference; retarget only that source locator
+in the existing six regressions, preserving all recipe, scope, and locale
+assertions. Append the parent's complete shared recipe beside the unchanged
+18-line dedicated workflow archive. Keep the delivered Japanese hosting link
+and its complete CLI examples at the linked hosting route. Fresh source and
+full Docs qualification, protected merge, release, and public reading-path
+acceptance still belong to this actual composed source.
