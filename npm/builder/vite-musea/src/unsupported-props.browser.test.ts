@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { chromium, type Browser } from "playwright";
 import { createServer, type ViteDevServer } from "vite";
 import vize from "../../vite/src/index.ts";
+import type { PaletteApiResponse } from "../gallery/api.ts";
 import { getPaletteStateStorageKey } from "../gallery/composables/paletteState.ts";
 import { musea } from "./plugin/index.ts";
 import {
@@ -104,9 +105,9 @@ for (const mode of ["dev", "static"] as const) {
           await page.locator(".props-json-code code").waitFor();
         };
         await openProps();
-        const palette =
+        const palette: PaletteApiResponse =
           mode === "static"
-            ? payload!.details[artPath].palette
+            ? (payload!.details[artPath].palette as PaletteApiResponse)
             : await (
                 await context.request.get(
                   `${gallery}api/arts/${encodeURIComponent(artPath)}/palette`,
@@ -183,11 +184,12 @@ for (const mode of ["dev", "static"] as const) {
         assert.equal(copied.includes("__proto__"), false);
         assert.match(copied, /CompactProbe/);
         await buildUnsupportedPropsCopy(root, copied);
+        let copyOrigin = origin;
         if (!host) {
           host = createUnsupportedPropsHost(path.join(root, "dist"));
-          observed.copyOrigin = await listenUnsupportedPropsHost(host);
+          copyOrigin = await listenUnsupportedPropsHost(host);
+          observed.copyOrigin = copyOrigin;
         }
-        const copyOrigin = mode === "static" ? origin : observed.copyOrigin;
         const copiedPage = await context.newPage();
         observePage(copiedPage);
         await copiedPage.goto(`${copyOrigin}/site/clipboard.html`);
@@ -255,9 +257,9 @@ for (const mode of ["dev", "static"] as const) {
         await openProps(rawTitle);
         await waitUnsupportedProps(page, {});
         const rawPath = path.join(root, "src", rawFilename);
-        const rawPalette =
+        const rawPalette: PaletteApiResponse =
           mode === "static"
-            ? payload!.details[rawPath].palette
+            ? (payload!.details[rawPath].palette as PaletteApiResponse)
             : await (
                 await context.request.get(
                   `${gallery}api/arts/${encodeURIComponent(rawPath)}/palette`,

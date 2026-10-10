@@ -7,6 +7,7 @@ import { build } from "vite";
 import vize from "../../vite/src/index.ts";
 import { compactPropsArtSource, compactPropsFixture } from "./compact-props-fixtures.ts";
 import { musea } from "./plugin/index.ts";
+import type { StaticGalleryPayload } from "./static-data.ts";
 
 export const vueAlias = fileURLToPath(import.meta.resolve("vue/dist/vue.runtime.esm-bundler.js"));
 export const rawTitle = "Raw / Own Keys";
@@ -31,7 +32,7 @@ export async function writeUnsupportedPropsFixture(root: string) {
   return { fixture, vector };
 }
 
-export async function buildUnsupportedPropsGallery(root: string) {
+export async function buildUnsupportedPropsGallery(root: string): Promise<StaticGalleryPayload> {
   await build({
     root,
     configFile: false,
@@ -40,7 +41,9 @@ export async function buildUnsupportedPropsGallery(root: string) {
     plugins: [vize(), musea({ include: ["src/**/*.art.vue"] })],
     build: { outDir: path.join(root, "dist"), emptyOutDir: true },
   });
-  return JSON.parse(await readFile(path.join(root, "dist/__musea__/api/static.json"), "utf8"));
+  return JSON.parse(
+    await readFile(path.join(root, "dist/__musea__/api/static.json"), "utf8"),
+  ) as StaticGalleryPayload;
 }
 
 /** Serve emitted files directly, with no Vite server, API emulation, or SPA fallback. */

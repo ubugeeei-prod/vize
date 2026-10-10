@@ -24,15 +24,15 @@ const retained = computed(() =>
   gap: 0.375rem;
   color: var(--musea-text-secondary);
   font-size: 0.75rem;
-}
-.unsupported-prop-control input {
-  padding: 0.375rem 0.625rem;
-  background: var(--musea-bg-tertiary);
-  border: 1px solid var(--musea-border);
-  border-radius: var(--musea-radius-sm);
-  color: var(--musea-text-muted);
-}
-.unsupported-prop-control span {
-  font-size: 0.6875rem;
+  input {
+    padding: 0.375rem 0.625rem;
+    background: var(--musea-bg-tertiary);
+    border: 1px solid var(--musea-border);
+    border-radius: var(--musea-radius-sm);
+    color: var(--musea-text-muted);
+  }
+  span {
+    font-size: 0.6875rem;
+  }
 }
 </style>
