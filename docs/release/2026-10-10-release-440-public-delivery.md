@@ -6,20 +6,20 @@ and [#8329](https://github.com/ubugeeei-prod/vize/issues/8329).
 
 ## Immutable source and promotion
 
-| Receipt | Exact identity |
-| --- | --- |
-| Cut C | `e5702be6d0119a716499827fa7b918ce8c9dcbae` |
-| Source H | `bf2cd911c268605588b2ceedbc011e36c79d113c` |
-| Source PR | [#8401](https://github.com/ubugeeei-prod/vize/pull/8401), closed after verified publication, never merged |
-| Pin object | `8a529462dcbe9b5489b1882e195ae9e82ada6c31` |
-| Metadata head | `510d72772ebfc0348e0392e66e425481a790eccf` |
-| Metadata PR | [#8402](https://github.com/ubugeeei-prod/vize/pull/8402), merged 2026-10-10 06:45:27 UTC |
-| Protected candidate and actual merge M | `2f723955e866d8cdb273fbb4e56966a002866d74` |
-| Actual M parent | `c3a5d2e94609dbdc434cf2ccf694161190a8a423` |
-| Annotated tag object T | `e6a4a955e5374e5748157dc261208e49747d10b2` |
-| Tag target | `v0.440.0` points to exact H |
-| Pinned Release R | [38026960473](https://github.com/ubugeeei-prod/vize/actions/runs/38026960473) |
-| Official operator | [38026768251](https://github.com/ubugeeei-prod/vize/actions/runs/38026768251) |
+| Receipt                                | Exact identity                                                                                            |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Cut C                                  | `e5702be6d0119a716499827fa7b918ce8c9dcbae`                                                                |
+| Source H                               | `bf2cd911c268605588b2ceedbc011e36c79d113c`                                                                |
+| Source PR                              | [#8401](https://github.com/ubugeeei-prod/vize/pull/8401), closed after verified publication, never merged |
+| Pin object                             | `8a529462dcbe9b5489b1882e195ae9e82ada6c31`                                                                |
+| Metadata head                          | `510d72772ebfc0348e0392e66e425481a790eccf`                                                                |
+| Metadata PR                            | [#8402](https://github.com/ubugeeei-prod/vize/pull/8402), merged 2026-10-10 06:45:27 UTC                  |
+| Protected candidate and actual merge M | `2f723955e866d8cdb273fbb4e56966a002866d74`                                                                |
+| Actual M parent                        | `c3a5d2e94609dbdc434cf2ccf694161190a8a423`                                                                |
+| Annotated tag object T                 | `e6a4a955e5374e5748157dc261208e49747d10b2`                                                                |
+| Tag target                             | `v0.440.0` points to exact H                                                                              |
+| Pinned Release R                       | [38026960473](https://github.com/ubugeeei-prod/vize/actions/runs/38026960473)                             |
+| Official operator                      | [38026768251](https://github.com/ubugeeei-prod/vize/actions/runs/38026768251)                             |
 
 H has the sole parent C. The metadata PR head's complete tree equals H.
 The final protected candidate equals the actual metadata merge. Its current-main
@@ -139,13 +139,27 @@ It authenticates the public consumer used for bounded supplemental native and
 n8n observations. It does not prove those campaigns completed or assert a
 cryptographic signature verification.
 
+A separate reviewed native consumer then preserved the reporter's exact
+multiline template and trailing LF, passed 18 complete DOM/SSR template packets,
+executed nine complete SFC SSR renders, and verified 18 whole browser DOM
+observations across initial rendering and prop updates. Its browser receipt
+SHA256 is `b4feb893176b7a1fd1b2ad6d6fb592bb3d9c3edfd798aca3190a144d5a735515`;
+the linked native/SSR receipt SHA256 is
+`eb708649ad8f29b38668bcc1ab461cf66f941890a005f41259ef3525dd6a92a6`.
+The official consumer's full payload and lock remained unchanged after the
+browser ran. Root's independent review SHA256 is
+`f62d20375c2159ce41be63cca73cba803f0ac7486d9810fd00804103b0023917`.
+The retained scripts, source fixtures, raw receipts and browser capture archive
+SHA256 is `8d9e2050a9903657724b37af00c4363f7d63e6c5a8b066b8e18e9f80490cd368`.
+This completes the bounded original #8328 path; it grants no Musea credit.
+
 ## Following finite minor
 
 After terminal 0.440 publication and complete planned-channel verification,
 publication-authority and manifest holds may be released for separately reviewed,
 exact-head-green source work. Those changes are excluded from H. The next minor
 uses a fresh finite snapshot of actually merged main, including the third-party
-CSS repair #8358 and other coherent fixes merged after C. If exact public 0.440
-Musea still fails, its focused resolver repair must actually merge before the
+CSS repair #8358 and other coherent fixes merged after C. The reproduced public 0.440
+Musea failure requires its focused resolver repair to actually merge before the
 next source pin. Do not wait for every umbrella issue, rewrite the 0.440 tag,
 or count a source-only receipt as released acceptance.
