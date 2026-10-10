@@ -23,6 +23,20 @@ directory, repeated comparison, a real source color change under the authored
 threshold, baseline update and a clean subsequent comparison. Fresh full source,
 native/browser, protected actual delivery and publication remain required.
 
+[The watcher decision](https://github.com/ubugeeei-prod/vize/issues/8477#issuecomment-6095868116)
+retains the first corrected source `6087698fb2bb9215ecc49a9c2813b9de5c29fcbb`, which
+proves the authored first capture and repeat, then retains generated report HTML
+triggering a real gallery reload. The production watcher now excludes only the
+owned `.vize/reports` directory. No test-only watcher override is used. The
+actual gallery Document must survive repeat captures; an authored Art edit
+still performs its normal navigation before the test re-enters VRT.
+Native [38039242572](https://github.com/ubugeeei-prod/vize/actions/runs/38039242572)
+at `61253ff217f391281993a516aee261a4cb95b69c` passes three controls with no skips:
+one 320x180 capture, zero-diff repeat, a physical color change producing
+9.215277777777779% difference under the authored threshold, baseline update,
+then another zero-diff comparison. Full source/protected and publication
+acceptance are still pending.
+
 Two unfinished follow-ups stay separate: per-Art reports use basename-derived
 filenames that can collide, and a hosted browser VRT action requires a Node
 screenshot service. The existing hosted CLI remains available.
