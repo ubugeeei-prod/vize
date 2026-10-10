@@ -9,6 +9,16 @@ Art overwrites the first complete report despite distinct native PNG owners.
 The byte-exact blue Left and red Right Art fixtures remain outside the
 differential compiler collector; a JSON history fixture authenticates them.
 
+Actual native [Actions 38039504300](https://github.com/ubugeeei-prod/vize/actions/runs/38039504300)
+at `db37087a0984461a3e191fd63e29a4cad675def5` failed only the report-path
+inequality; original native inline/globals, project-options and Chromium
+controls passed. Complete physical Left and Right JSON/HTML/PNG were retained.
+Both report paths were identical, and final physical JSON/HTML were exactly
+Right's retained bytes. The distinct PNG SHA256 values were
+`376028536bd4122df82cb30bd85aed4fc0aea24661237df77a77c6d67372579f`
+and `c7c74a69d3d9d530ddcaa7bf5d8a185da929a3270a06c74db9a9f9cdc3990564`.
+This authentic old-source failure grants no successor qualification.
+
 Use the existing portable project-relative Art identity. Retain ordinary safe
 basename report names when the complete discovered Art set has no
 case-insensitive collision. Qualify colliding or unsafe names with a full SHA

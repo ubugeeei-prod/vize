@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { createServer as createTcpServer } from "node:net";
 import os from "node:os";
 import path from "node:path";
@@ -60,6 +60,26 @@ async function capture(page: Page, output: string, phase: string): Promise<Retai
   await writeFile(path.join(destination, "snapshot.png"), png);
   await page.getByRole("button", { name: "Run VRT", exact: true }).waitFor();
   return { data, json, html, png };
+}
+
+async function physicalInventory(root: string, directory = root): Promise<unknown[]> {
+  const files: unknown[] = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...(await physicalInventory(root, file)));
+    else {
+      const info = await stat(file, { bigint: true });
+      files.push({
+        path: path.relative(root, file),
+        sha256: createHash("sha256")
+          .update(await readFile(file))
+          .digest("hex"),
+        mtimeNs: String(info.mtimeNs),
+        size: String(info.size),
+      });
+    }
+  }
+  return files.sort((left, right) => JSON.stringify(left).localeCompare(JSON.stringify(right)));
 }
 
 void test(
@@ -175,6 +195,52 @@ void test(
         previous.json = actual.json;
         previous.html = actual.html;
       }
+      // Keep a genuine old-shape Right report at the ambiguous basename; removing Right cannot adopt it for Left.
+      const reportDir = path.dirname(right.data.artifacts.jsonReportPath);
+      const { reportOwner: _owner, ...legacyReport } = JSON.parse(right.json.toString());
+      const legacyJson = JSON.stringify(legacyReport, null, 2);
+      const legacyJsonPath = path.join(reportDir, "vrt-Button-report.json");
+      const legacyHtmlPath = path.join(reportDir, "vrt-Button-report.html");
+      await writeFile(legacyJsonPath, legacyJson);
+      await writeFile(legacyHtmlPath, right.html);
+      await rm(paths.right);
+      await page.waitForFunction(async (removedPath) => {
+        const arts = await (await fetch("/__musea__/api/arts")).json();
+        return arts.length === 1 && arts.every((art: { path: string }) => art.path !== removedPath);
+      }, paths.right);
+      await page.goto(`http://127.0.0.1:${address.port}/__musea__/`);
+      await page.locator(".art-item").filter({ hasText: "Left" }).click();
+      await page
+        .frameLocator(".variant-card iframe")
+        .getByRole("button", { name: "Left", exact: true })
+        .waitFor();
+      await page.getByRole("button", { name: "VRT", exact: true }).click();
+      const snapshotsBefore = await physicalInventory(path.join(root, "reviewed-baselines"));
+      const reportsBefore = await physicalInventory(reportDir);
+      const response = page.waitForResponse((item) => item.url().endsWith("/api/run-vrt"));
+      await page.getByRole("button", { name: "Run VRT", exact: true }).click();
+      const refused = await response;
+      const refusal = await refused.text();
+      observations.push({
+        phase: "removed-owner-refusal",
+        status: refused.status(),
+        body: refusal,
+      });
+      await writeFile(path.join(output, "removed-owner-refusal.json"), refusal);
+      assert.equal(refused.status(), 500);
+      assert.match(JSON.parse(refusal).error, /Ambiguous VRT report ownership.*Archive or move/);
+      await page.locator(".vrt-error").filter({ hasText: "Archive or move" }).waitFor();
+      assert.deepEqual(
+        await physicalInventory(path.join(root, "reviewed-baselines")),
+        snapshotsBefore,
+      );
+      assert.deepEqual(await physicalInventory(reportDir), reportsBefore);
+      assert.equal(await readFile(legacyJsonPath, "utf8"), legacyJson);
+      assert.deepEqual(await readFile(legacyHtmlPath), right.html);
+      await writeFile(
+        path.join(output, "refusal-inventory.json"),
+        JSON.stringify({ snapshotsBefore, reportsBefore }, null, 2),
+      );
       assert.deepEqual(errors, []);
       await page.screenshot({ path: path.join(output, "gallery.png"), fullPage: true });
     } catch (error) {
