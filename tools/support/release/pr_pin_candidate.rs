@@ -44,6 +44,33 @@ fn integration_fields(
     Ok((source_number, head, cut, tag))
 }
 
+fn raw_commit_identity(candidate: &str, root: &Path) -> Result<(String, Vec<String>), String> {
+    pr_contract::sha(candidate)?;
+    // Authenticate object headers, not traversal state (shallow boundaries,
+    // grafts or replacement refs). The public install verifier uses this too.
+    let object = github::git(
+        &["--no-replace-objects", "cat-file", "commit", candidate],
+        root,
+    )?;
+    let mut trees = Vec::new();
+    let mut parents = Vec::new();
+    for header in object.lines().take_while(|line| !line.is_empty()) {
+        if let Some(tree) = header.strip_prefix("tree ") {
+            pr_contract::sha(tree)?;
+            trees.push(tree.to_owned());
+        } else if let Some(parent) = header.strip_prefix("parent ") {
+            pr_contract::sha(parent)?;
+            parents.push(parent.to_owned());
+        }
+    }
+    if trees.len() != 1 {
+        return Err(format!(
+            "Invalid raw commit tree header: candidate={candidate} observed={trees:?} expected=one tree"
+        ));
+    }
+    Ok((trees.remove(0), parents))
+}
+
 fn candidate_parents(
     candidate: &str,
     base: &str,
@@ -51,14 +78,16 @@ fn candidate_parents(
     queue: bool,
     root: &Path,
 ) -> Result<(), String> {
-    let row = github::git(&["rev-list", "--parents", "-n", "1", candidate], root)?;
+    let (_, observed) = raw_commit_identity(candidate, root)?;
     let expected = if queue {
-        format!("{candidate} {base}")
+        vec![base.to_owned()]
     } else {
-        format!("{candidate} {base} {head}")
+        vec![base.to_owned(), head.to_owned()]
     };
-    if row != expected {
-        return Err("Candidate parents do not bind the exact PR merge or own queue base.".into());
+    if observed != expected {
+        return Err(format!(
+            "Candidate parents do not bind the exact PR merge or own queue base. stage=candidate identity candidate={candidate} observed={observed:?} expected={expected:?}"
+        ));
     }
     Ok(())
 }
@@ -97,10 +126,14 @@ fn current_pr_snapshot(
     // candidate; accept the refresh only after authenticating both complete
     // parent vectors and trees. Merge-group identity never uses this path.
     github::git(&["fetch", "--no-tags", "origin", current], root)?;
-    candidate_parents(current, base, head, false, root)?;
-    let tree = |sha: &str| github::git(&["rev-parse", &format!("{sha}^{{tree}}")], root);
-    if tree(candidate)? != tree(current)? {
-        return Err("The current synthetic PR merge changed its complete tree.".into());
+    candidate_parents(current, base, head, false, root)
+        .map_err(|error| format!("stage=current PR refresh: {error}"))?;
+    let expected = raw_commit_identity(candidate, root)?.0;
+    let observed = raw_commit_identity(current, root)?.0;
+    if observed != expected {
+        return Err(format!(
+            "The current synthetic PR merge changed its complete tree. stage=current PR refresh candidate={current} observed={observed} expected={expected} event={candidate}"
+        ));
     }
     Ok(())
 }
@@ -202,7 +235,8 @@ fn verify(
         ],
         root,
     )?;
-    candidate_parents(candidate, base, head, queue, root)?;
+    candidate_parents(candidate, base, head, queue, root)
+        .map_err(|error| format!("stage=event candidate: {error}"))?;
     if !queue {
         current_pr_snapshot(
             candidate,
@@ -281,3 +315,7 @@ pub fn check_candidate(number: u64, root: &Path) -> Result<(), String> {
 #[cfg(test)]
 #[path = "pr_pin_candidate_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "pr_pin_candidate_identity_tests.rs"]
+mod identity_tests;
