@@ -138,11 +138,11 @@ test("normal workflow exact-head and ancestry guards remain separate from histor
   assert.equal(workflow.match(/\[\[ "\$HEAD_SHA" == "\$DISPATCH_SHA" \]\]/gu)?.length, 2);
   assert.match(
     workflow,
-    /criterion-ab:\n    if: \$\{\{ !inputs.production_only && !inputs.historical_sfc_parse \}\}/u,
+    /criterion-ab:\n    if: \$\{\{ !inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only \}\}/u,
   );
   assert.match(
     workflow,
-    /production-pairs:\n    if: \$\{\{ inputs.production_only && !inputs.historical_sfc_parse \}\}/u,
+    /production-pairs:\n    if: \$\{\{ inputs.production_only && !inputs.historical_sfc_parse && !inputs.level_memory_only \}\}/u,
   );
   assert.match(workflow, /uses: \.\/\.github\/workflows\/sfc-parse-replay.yml/u);
 });

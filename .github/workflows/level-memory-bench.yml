@@ -1,0 +1,78 @@
+name: Complete Level Memory Comparison
+
+on:
+  workflow_call:
+    inputs:
+      base_sha: { required: true, type: string }
+      head_sha: { required: true, type: string }
+      conflicting_modes: { required: true, type: boolean }
+
+permissions:
+  contents: read
+
+jobs:
+  memory:
+    name: Original104 normal-mode memory pairs
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 45
+    env:
+      CARGO_TERM_COLOR: never
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      MEMORY_BASE_SHA: ${{ inputs.base_sha }}
+      MEMORY_HEAD_SHA: ${{ inputs.head_sha }}
+      MEMORY_CONFLICTING_MODES: ${{ inputs.conflicting_modes }}
+    steps:
+      - name: Checkout candidate and collector
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.head_sha }}
+          path: head
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout baseline
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ inputs.base_sha }}
+          path: base
+          persist-credentials: false
+      - name: Validate exact dispatch and pair before build
+        run: |
+          set -euo pipefail
+          [[ "$MEMORY_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$MEMORY_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$MEMORY_CONFLICTING_MODES" == false ]]
+          [[ "$MEMORY_BASE_SHA" != "$MEMORY_HEAD_SHA" ]]
+          [[ "$MEMORY_HEAD_SHA" == "$GITHUB_SHA" ]]
+          [[ "$(git -C base rev-parse HEAD)" == "$MEMORY_BASE_SHA" ]]
+          [[ "$(git -C head rev-parse HEAD)" == "$MEMORY_HEAD_SHA" ]]
+          git -C head merge-base --is-ancestor "$MEMORY_BASE_SHA" "$MEMORY_HEAD_SHA"
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: head/package.json
+          run-install: false
+      - name: Install exact repository Rust and Callgrind identity provider
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends valgrind
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with:
+          wild-version: "0.9.0"
+      - uses: ./head/.github/actions/setup-rust-sticky-cache
+        with:
+          key: level-memory-v1
+          target-path: head/target
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./head/.github/actions/setup-rust-script
+      - name: Test missing, stale, forged and partial evidence refusal
+        run: node --test head/tests/tooling/level-memory-collector.test.mjs
+      - name: Build all thirteen original providers and collect all paired observations
+        run: node head/tools/benchmarks/scripts/level-memory.mjs "$GITHUB_WORKSPACE/base" "$GITHUB_WORKSPACE/head" "$GITHUB_WORKSPACE/level-memory"
+      - name: Retain whole reports and process provenance on success or failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: level-memory-${{ inputs.head_sha }}-${{ github.run_attempt }}
+          path: level-memory/
+          if-no-files-found: warn
+          retention-days: 30
