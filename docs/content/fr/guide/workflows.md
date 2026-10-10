@@ -2,7 +2,7 @@
 title: Flux de travail utilisateurs
 ---
 
-<!-- Generated translation; source: guide/workflows.md -->
+<!-- Reviewed translation; source: guide/workflows.md; scope: native configuration guidance -->
 
 # Flux de travail utilisateurs
 
@@ -42,27 +42,28 @@ développeurs puissent isoler la mise en forme, le lint, la vérification de typ
 
 ## Configurer une fois
 
-Créez `vize.config.ts` à la racine du projet lorsque les valeurs par défaut ne suffisent pas :
+Pour modifier les valeurs par défaut, ajoutez les options natives à l'objet `vize` à la racine de votre `vite.config.*` existant. Le [guide de configuration](./configuration.md) décrit la recherche, la disponibilité par version et les formats dédiés facultatifs.
 
 ```ts
-import { defineConfig } from "vize";
-
-export default defineConfig({
-  formatter: {
-    printWidth: 100,
+// vite.config.ts
+export default {
+  vize: {
+    formatter: {
+      printWidth: 100,
+    },
+    linter: {
+      preset: "happy-path",
+    },
+    typeChecker: {
+      enabled: true,
+      strict: true,
+      tsconfig: "tsconfig.json",
+    },
+    vite: {
+      scanPatterns: ["src/**/*.vue"],
+    },
   },
-  linter: {
-    preset: "happy-path",
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-    tsconfig: "tsconfig.json",
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
+};
 ```
 
 Voir [Configuration](./configuration.md) pour les entrées monorepo plates, PKL, JSON, les options du compilateur et

@@ -1,12 +1,14 @@
 ---
 title: Configuration
-description: Put Vite+ settings in vite.config.ts; use vize.config.ts for standalone commands.
+description: Share Vize settings from your existing Vite config and TypeScript project.
 ---
 
 # Configuration
 
-For Vite+ projects, configure Vize in **`vite.config.ts`** using the integration
-helper. Start with the options you need; the defaults require no extra file.
+Keep Vize settings in `vite.config.ts` and the TypeScript project in `tsconfig.json`. Defaults need no dedicated Vize configuration file.
+
+> [!NOTE]
+> Shared Vite config discovery for the native CLI/editor and init without a dedicated config are being prepared for the next release. Until that release, published native tools still require the existing dedicated format for custom shared settings. The [reference](./configuration-reference.md) documents that format.
 
 ## Vite+ configuration
 
@@ -21,26 +23,19 @@ export default defineConfig({
 });
 ```
 
-Settings are grouped by the tool that consumes them:
-
 | Location | Controls | Run |
 | --- | --- | --- |
 | `compiler` | Vue compilation | `vp dev`, `vp build` |
-| `lint.vize` | Vize's Vue rules | `vp run lint` |
-| Other `lint` fields | Oxlint | `vp run lint` |
-| `fmt.vize` | Vize's Vue formatting | `vp run fmt:check` |
-| Other `fmt` fields | Oxfmt | `vp run fmt:check` |
-| `typecheck` | Native Vue type checking | `vp run typecheck` |
-| `pack.vize` | Vue library declarations | `vp run pack` |
+| `lint.vize` | Vue lint rules | `vp run lint` |
+| `fmt.vize` | Vue formatting | `vp run fmt:check` |
+| `typecheck` | Vue type checking | `vp run typecheck` |
+| `pack.vize` | Library declarations | `vp run pack` |
 
-`vp run check` combines the checks above. Built-in `vp check`, `vp lint`, and
-`vp fmt` retain Vite+'s own behavior; use the generated tasks for Vize.
-Existing scripts can rename generated tasks to `vize:<name>`.
-See [Vite+ integration](./vite-plus.md#tasks) for task overrides and all integration options.
+Use `vp run check` for combined Vize tasks. Built-in `vp check`, `vp lint`, and `vp fmt` retain Vite+'s own behavior. Existing scripts can rename generated tasks to `vize:<name>`; see [task names and overrides](./vite-plus.md#tasks).
 
 ## Change one rule
 
-Keep Vize rule names under `lint.vize.rules` and Oxlint rules under `lint.rules`:
+Put Vue rules in `lint.vize.rules` and Oxlint rules in `lint.rules`. Use [Rule Options](../rules/options.md) for option objects and [the rule catalogue](../rules/all.md) for complete examples.
 
 ```ts
 export default defineConfig({
@@ -51,69 +46,51 @@ export default defineConfig({
 });
 ```
 
-[Browse rules and examples](../rules/all.md). Vize's native linter already runs
-alongside Oxlint in this integration; no `oxlint-plugin-vize` registration is needed.
-
 ### Lint Rule Options
 
-Use [Rule Options](../rules/options.md) for rule-specific option objects and complete examples.
+Use [Rule Options](../rules/options.md) for the complete typed option objects and bad/good examples. Unknown option fields are rejected.
 
 ## Choose which features to adopt
 
-Set `compiler`, `typecheck`, `lint.vize`, or `fmt.vize` to `false` to disable that
-part of the integration. For example, `compiler: false` keeps your existing Vue
-compiler plugin. Other Vite+ settings stay in the same `vite.config.ts`.
-
-Vize formats Vue files and Oxfmt handles other files. `fmt.ignorePatterns`
-excludes files from both. See [ownership and conflict handling](./vite-plus.md#lint-and-formatter-ownership).
+Set `compiler`, `typecheck`, `lint.vize`, or `fmt.vize` to `false` to disable that feature. Vize formats Vue files; Oxfmt handles other files. See [ownership and conflict handling](./vite-plus.md#lint-and-formatter-ownership).
 
 ## Ordinary Vite
 
-Use plugin options directly in `vite.config.ts`:
+Use the plugin for compilation and a top-level `vize` object for settings shared with the CLI and editor. Importing the plugin also supplies the Vite config types.
 
 ```ts
 import { defineConfig } from "vite";
 import vize from "@vizejs/vite-plugin";
 
 export default defineConfig({
-  plugins: [vize({ sourceMap: true })],
+  plugins: [vize()],
+  vize: {
+    linter: { preset: "essential" },
+    formatter: { printWidth: 100 },
+    typeChecker: { strict: true },
+  },
 });
 ```
 
-See [Vite plugin options](./vite-plugin.md#compiler-options). A standalone shared
-config is optional for settings also consumed by CLI or LSP commands.
-
 ## Standalone CLI
 
-Install `vize` when running standalone commands or importing its config helper:
+Install `vize` and run commands from the target package root. The CLI reads `vite.config.*` and your TypeScript project. Vite+ `compiler`, `typecheck`, `lint.vize`, and `fmt.vize` settings are translated for native commands too. Explicit native settings in top-level `vize` take precedence over that translation.
 
 ```bash
 vp install -D vize
 vp exec vize check
 ```
 
-Its configuration belongs in **`vize.config.ts`**:
+Discovery stops at the nearest `package.json`, `tsconfig.json`, or `jsconfig.json`. In a monorepo, run from the target package or use `vize.entries`, and select the editor's workspace folders explicitly. Automatic per-document nested Vite discovery is still being completed.
 
-```ts
-import { defineConfig } from "vize";
+With Vite config, `build`, `lint`, `fmt`, and `check` without an input argument use the selected Vite `root`. A relative `root` resolves from the config directory. Vite-owned `typeChecker` paths and scoped `basePath` resolve from that root; dedicated-config paths retain their config-directory base. Explicit CLI file/glob arguments and `--tsconfig` remain relative to the directory where you run the command.
 
-export default defineConfig({
-  linter: { preset: "essential" },
-  formatter: { printWidth: 100 },
-  typeChecker: { strict: true },
-});
-```
+Shared global ignores exclude files from CLI discovery and editor lint. An ignored file opened in the editor still receives parser, type and navigation diagnostics. Ordered ignore patterns, including `!` negation, retain their authored meaning.
 
-The standalone names `linter`, `formatter`, and `typeChecker` differ from the
-Vite+ integration's `lint.vize`, `fmt.vize`, and `typecheck`.
-Use [CLI commands](./cli.md) for this path; it does not require Vite+ tasks.
+## Optional dedicated configuration
+
+An existing `vize.config.*` remains supported and takes priority over Vite config in the same directory. CLI `--config` selects a file explicitly. Direct plugin options and explicit editor feature switches override shared settings; `config: false` disables automatic plugin config loading.
 
 ## Detailed reference
 
-[Standalone configuration reference](./configuration-reference.md) preserves
-file discovery and precedence, JSON/PKL examples, scoped entries, all compiler
-options, template syntax modes, project Vue type resolution, and LSP/Musea settings.
-For library declarations or editor setup, use the [Vite+ integration guide](./vite-plus.md).
-
-Experimental compiler flags are opt-in; consult [Experimentals](./experimentals.md)
-for supported names and their current scope.
+The [shared configuration reference](./configuration-reference.md) covers file discovery, dedicated TypeScript/JSON/PKL examples, scoped entries, Vue type resolution, and native LSP/Musea settings. Use the [compiler reference](./compiler-configuration-reference.md) for compiler options and syntax modes, and [Experimentals](./experimentals.md) for opt-in features.

@@ -2,7 +2,7 @@
 title: CLI
 ---
 
-<!-- Generated translation; source: guide/cli.md -->
+<!-- Reviewed translation; source: guide/cli.md; scope: native configuration guidance -->
 
 # Referência CLI
 
@@ -69,7 +69,7 @@ cargo install --path crates/vize --force --locked
 | Pacotes de scripts para build, formatar, lint, check, ready e upgrade       | `vp run vize:*` do pacote NPM |
 | Verificação de tipos apoiada por projetos em `.vue`, `.ts`, `.tsx`e `.d.ts` | Ferrugem `vize check`         |
 | LSP, configuração do IDE, `check-server`e artefatos de perfilamento         | Ferrugem `vize` binário       |
-| Plugin Shared Vite, comando npm package e configurações da CLI do Rust      | `vize.config.*`               |
+| Plugin Shared Vite, comando npm package e configurações da CLI do Rust      | [Vite config](./configuration.md#standalone-cli)               |
 
 ## Comandos
 

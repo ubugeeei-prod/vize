@@ -1,12 +1,18 @@
 ---
-title: 単独 CLI の設定リファレンス
+title: 共通設定のリファレンス
 ---
 
-# 単独 CLI の設定リファレンス
+<!-- Reviewed translation; source: guide/configuration-reference.md; scope: introduction and discovery -->
 
-Vize は、共有 npm パッケージ コマンド、Vite プラグイン、および Rust CLI 設定に `vize.config.*` を使用します。
+<span id="単独-cli-の設定リファレンス"></span>
+
+# 共通設定のリファレンス
+
+まずは既存の `vite.config.*` と `tsconfig.json` を使ってください。[設定ガイド](./configuration.md)で導入方法を説明しています。このページでは、共通のネイティブ設定と、必要な場合に使える専用設定をまとめます。
 
 ## 設定ファイル
+
+最も近いプロジェクトの同じディレクトリに専用設定がない場合は、Vite の設定を読み込みます。CLI の `--config` で明示することもできます。プラグインに直接渡したオプションやエディターで明示した機能の設定が優先されます。専用設定内の相対パスは設定ファイルのディレクトリを基準に解決します。Vite の `typeChecker` 内のパスとスコープの `basePath` は、選択した Vite の `root` が基準です。CLI へ明示した入力は実行ディレクトリを基準にします。パッケージの対象範囲は `vize.entries` と、そのパッケージの TypeScript プロジェクトで指定します。
 
 npm パッケージ コマンドと `@vizejs/vite-plugin` は、このファイルのプロジェクト ルートからこれらのファイルをロードします。
 優先順位:
@@ -271,3 +277,28 @@ export default defineConfig({
 
 `previewCss`、`previewSetup`、`tokensPath`、`theme`、および
 `storybookOutDir` を `vite.config.ts` の `musea()` に直接変換します。
+
+## 既存の専用設定を使うワークフロー
+
+専用の `vize.config.*` をすでに使っているプロジェクトでは、次の設定例を引き続き利用できます。新しく導入する場合は、[日常の開発ワークフロー](./workflows.md)にある既存の Vite 設定を使います。公開済みリリースの対応状況は[設定ガイド](./configuration.md)を参照してください。
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  formatter: {
+    printWidth: 100,
+  },
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+    tsconfig: "tsconfig.json",
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
+```

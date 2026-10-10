@@ -2,7 +2,7 @@
 title: Musea
 ---
 
-<!-- Generated translation; source: guide/musea.md -->
+<!-- Reviewed translation; source: guide/musea.md; scope: shared native configuration -->
 
 # Musea
 
@@ -70,27 +70,31 @@ vp exec vize musea --build
 
 ## Configuração Compartilhada
 
-`musea()` opções sobrepõem a configuração compartilhada. Coloque os padrões estáveis do projeto no `vize.config.ts` e mantenha
-configurações apenas de pré-visualização no `vite.config.ts`.
+Coloque os valores compartilhados em `vize.musea`, no nível superior de `vite.config.*`. As opções passadas diretamente a `musea()` substituem os valores correspondentes. Uma configuração específica existente no mesmo projeto Vite mantém sua prioridade.
 
 ```ts
-// vize.config.ts
-import { defineConfig } from "vize";
+// vite.config.ts
+import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
+import { musea } from "@vizejs/vite-plugin-musea";
 
 export default defineConfig({
-  musea: {
-    include: ["src/**/*.art.vue"],
-    exclude: ["node_modules/**", "dist/**"],
-    basePath: "/__musea__",
-    storybookCompat: false,
-    inlineArt: false,
+  plugins: [musea()],
+  vize: {
+    musea: {
+      include: ["src/**/*.art.vue"],
+      exclude: ["node_modules/**", "dist/**"],
+      basePath: "/__musea__",
+      storybookCompat: false,
+      inlineArt: false,
+    },
   },
 });
 ```
 
-A configuração compartilhada atualmente cobre `include`, `exclude`, `basePath`, `storybookCompat`e
-`inlineArt`. Passe `previewCss`, `previewSetup`, `tokensPath`, `theme`e `storybookOutDir`
-diretamente para `musea()`.
+As opções compartilhadas são `include`, `exclude`, `basePath`, `storybookCompat` e `inlineArt`. Passe `previewCss`, `previewSetup`, `tokensPath`, `theme` e `storybookOutDir` diretamente a `musea()`.
+
+`musea-vrt` também lê `include`, `exclude` e `vrt` dessa configuração Vite. `vrt.outDir` define o diretório das capturas; as opções `vrt` do plugin substituem os valores compartilhados correspondentes. `vize musea new` cria um arquivo Art com a descoberta padrão, sem gerar uma configuração específica.
+
 
 ## Arquivos de Arte
 
@@ -119,20 +123,13 @@ const pressed = ref(false);
 </art>
 ```
 
-`defineArt(source, options)` é uma macro de compilador. Ele declara o componente que o Musea deve carregar,
-além de metadados que antes permaneciam em `<art>`. Prefere uma cadeia de caminho de componente relativa, como
-`defineArt("./MyButton.vue", { title: "MyButton" })`; O Musea importa esse componente em código gerado
-em tempo de execução e o servidor de linguagem usa a mesma fonte para inferência de prop e slot.
-A cadeia de origem participa da conclusão de caminhos, diagnósticos de arquivos não resolvidos, links de documentos e
-go-to-definition.
+`defineArt(source, options)` é uma macro de compilador. Ele declara o componente que o Musea deve carregar, além de metadados que antes permaneciam em `<art>`. Prefere uma cadeia de caminho de componente relativa, como `defineArt("./MyButton.vue", { title: "MyButton" })`; O Musea importa esse componente em código gerado em tempo de execução e o servidor de linguagem usa a mesma fonte para inferência de prop e slot. A cadeia de origem participa da conclusão de caminhos, diagnósticos de arquivos não resolvidos, links de documentos e go-to-definition.
 
-`<art title="..." component="...">` ainda funciona para compatibilidade, e atributos explícitos `<art>`
-sobrepor `defineArt` metadados quando ambos estão presentes.
+`<art title="..." component="...">` ainda funciona para compatibilidade, e atributos explícitos `<art>` sobrepor `defineArt` metadados quando ambos estão presentes.
 
 ### Estado variante-local
 
-O estado da `<script setup>` raiz é isolado por padrão por variante. Cada variante recebe sua própria configuração
-instância, então referências e valores computados em uma variante não vazam para outra:
+O estado da `<script setup>` raiz é isolado por padrão por variante. Cada variante recebe sua própria configuração instância, então referências e valores computados em uma variante não vazam para outra:
 
 ```art-vue
 <script setup lang="ts">
@@ -154,8 +151,7 @@ const doubled = computed(() => count.value * 2);
 </art>
 ```
 
-Use `<script setup isolate="false">` apenas quando o arquivo de arte precisar intencionalmente de uma configuração
-instância compartilhada em cada variante:
+Use `<script setup isolate="false">` apenas quando o arquivo de arte precisar intencionalmente de uma configuração instância compartilhada em cada variante:
 
 ```art-vue
 <script setup lang="ts" isolate="false">
@@ -191,8 +187,7 @@ src/components/Button.vue
 src/components/Button.art.vue
 ```
 
-Use um diretório `stories` ou `art` separado quando um sistema de projeto possui muitos exemplos transversais,
-ou quando a descoberta automática de componentes Nuxt escanear o diretório de componentes:
+Use um diretório `stories` ou `art` separado quando um sistema de projeto possui muitos exemplos transversais, ou quando a descoberta automática de componentes Nuxt escanear o diretório de componentes:
 
 ```txt
 src/components/Button.vue
@@ -202,8 +197,7 @@ stories/navigation/Menu.art.vue
 
 ## Arte Inline
 
-Quando `inlineArt` está ativado, arquivos de `.vue` normais que contenham um bloco `<art>` podem aparecer na galeria de
-. Isso é útil para componentes pequenos onde exemplos devem estar no mesmo arquivo.
+Quando `inlineArt` está ativado, arquivos de `.vue` normais que contenham um bloco `<art>` podem aparecer na galeria de . Isso é útil para componentes pequenos onde exemplos devem estar no mesmo arquivo.
 
 ```ts
 musea({
@@ -236,8 +230,7 @@ O pipeline de paletas pode inferir controles interativos a partir de metadados d
 
 ![Musea Design Tokens](/musea-tokens.png)
 
-`@vizejs/vite-plugin-musea` pode ingerir um arquivo de token compatível com o Dicionário de Estilos e expô-lo em
-a interface da galeria.
+`@vizejs/vite-plugin-musea` pode ingerir um arquivo de token compatível com o Dicionário de Estilos e expô-lo em a interface da galeria.
 
 ```ts
 musea({
@@ -297,17 +290,9 @@ vp dev --host 0.0.0.0
 vp exec musea-vrt --base-url http://localhost:5173 --ci --json
 ```
 
-O fluxo de trabalho: commit linhas de base sob o diretório snapshot, rodar `musea-vrt --ci --json` contra um servidor de desenvolvimento
-rodando, depois inspecionar `vrt-report.json`/`vrt-report.html` mais `snapshots/current` e
-`snapshots/diff` em caso de falha. Execute novamente com `--update` (ou `approve` para variantes selecionadas) para
-mudanças intencionais, e execute `clean` após remover arquivos de arte para que as linhas de base obsoletas não escondam lacunas.
-`--ci` sai diferente de zero para diferenças visuais e erros de prévia/captura (rota ausente, falha do
-do navegador, tempo de extinção do seletor); Novas linhas de base são reportadas como `new`, então execute `--update` localmente primeiro.
+O fluxo de trabalho: commit linhas de base sob o diretório snapshot, rodar `musea-vrt --ci --json` contra um servidor de desenvolvimento rodando, depois inspecionar `vrt-report.json`/`vrt-report.html` mais `snapshots/current` e `snapshots/diff` em caso de falha. Execute novamente com `--update` (ou `approve` para variantes selecionadas) para mudanças intencionais, e execute `clean` após remover arquivos de arte para que as linhas de base obsoletas não escondam lacunas. `--ci` sai diferente de zero para diferenças visuais e erros de prévia/captura (rota ausente, falha do do navegador, tempo de extinção do seletor); Novas linhas de base são reportadas como `new`, então execute `--update` localmente primeiro.
 
-O aplicativo de exemplo também conecta o caminho VRT nativo do Playwright (`examples/vite-musea`, executado via
-`vp run test:vrt` / `vp run test:vrt:update`). Snapshots vivem em `e2e/vrt/__snapshots__`, falhas
-artefatos em `e2e/vrt/test-results`, e o relatório HTML em `playwright-report`; O GitHub Actions
-as envia em caso de falha para que os revisores possam inspecionar as imagens base, atuais e diferenciais.
+O aplicativo de exemplo também conecta o caminho VRT nativo do Playwright (`examples/vite-musea`, executado via `vp run test:vrt` / `vp run test:vrt:update`). Snapshots vivem em `e2e/vrt/__snapshots__`, falhas artefatos em `e2e/vrt/test-results`, e o relatório HTML em `playwright-report`; O GitHub Actions as envia em caso de falha para que os revisores possam inspecionar as imagens base, atuais e diferenciais.
 
 ## Gerar arquivos de arte
 
@@ -317,8 +302,7 @@ Use o gerador para criar um primeiro `.art.vue` a partir de um componente existe
 vp exec musea-vrt generate src/components/Button.vue
 ```
 
-O arquivo gerado é um ponto de partida. Revise as variantes, títulos, tags e a cobertura dos adereços antes de
-comprometer o projeto.
+O arquivo gerado é um ponto de partida. Revise as variantes, títulos, tags e a cobertura dos adereços antes de comprometer o projeto.
 
 ## Produção de Livros de Fadas
 
@@ -333,8 +317,7 @@ musea({
 
 ## CLI Status
 
-`vize musea` existe na CLI do Rust, mas o fluxo de trabalho recomendado para o Musea hoje ainda é o caminho do plugin Vite
-. Trate o subcomando Rust como experimental enquanto o fluxo de trabalho dedicado da galeria se estabiliza.
+`vize musea` existe na CLI do Rust, mas o fluxo de trabalho recomendado para o Musea hoje ainda é o caminho do plugin Vite . Trate o subcomando Rust como experimental enquanto o fluxo de trabalho dedicado da galeria se estabiliza.
 
 O subcomando Rust pode estruturar um projeto artístico inicial:
 
