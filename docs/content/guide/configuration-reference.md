@@ -265,6 +265,31 @@ export default defineConfig({
 Pass presentation-focused options such as `previewCss`, `previewSetup`, `tokensPath`, `theme`, and
 `storybookOutDir` directly to `musea()` in `vite.config.ts`.
 
+## Existing dedicated workflow settings
+
+Projects already using a dedicated `vize.config.*` can retain this complete workflow preset. For new projects, prefer the existing Vite configuration in [User Workflows](./workflows.md); published-release availability is explained in [Configuration](./configuration.md).
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  formatter: {
+    printWidth: 100,
+  },
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+    tsconfig: "tsconfig.json",
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
+```
+
 ## Musea shared configuration
 
 Put shared defaults in the top-level `vize.musea` option of `vite.config.*`.

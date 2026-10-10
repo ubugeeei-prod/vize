@@ -277,3 +277,28 @@ export default defineConfig({
 
 `previewCss`、`previewSetup`、`tokensPath`、`theme`、および
 `storybookOutDir` を `vite.config.ts` の `musea()` に直接変換します。
+
+## 既存の専用設定を使うワークフロー
+
+専用の `vize.config.*` をすでに使っているプロジェクトでは、次の設定例を引き続き利用できます。新しく導入する場合は、[日常の開発ワークフロー](./workflows.md)にある既存の Vite 設定を使います。公開済みリリースの対応状況は[設定ガイド](./configuration.md)を参照してください。
+
+```ts
+import { defineConfig } from "vize";
+
+export default defineConfig({
+  formatter: {
+    printWidth: 100,
+  },
+  linter: {
+    preset: "happy-path",
+  },
+  typeChecker: {
+    enabled: true,
+    strict: true,
+    tsconfig: "tsconfig.json",
+  },
+  vite: {
+    scanPatterns: ["src/**/*.vue"],
+  },
+});
+```

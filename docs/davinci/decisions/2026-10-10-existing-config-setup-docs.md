@@ -75,3 +75,20 @@ its old native bookmark, and retain complete typed options/bad-good examples
 in the existing reference. Japanese uses a natural heading instead of the
 old English heading literal. All 172 old targets must occur exactly once.
 Every original code fence and all 43 desktop/mobile browser routes remain.
+
+## Composition with delivered Japanese reading paths
+
+The genuine config parent still follows the merged native JSX prerequisite.
+Compose the now-delivered Japanese workflow prose from main with this child's
+Vite recipe, retaining every historical bookmark. Preserve the original complete
+18-line dedicated workflow recipe in both detailed references; the new custody
+regression fails on the prior missing recipes and passes only with exact source
+bytes. The original 172 heading targets and 42 whole configuration examples
+remain unchanged. This adds a sixth regression without weakening the first five.
+
+Keep the main Japanese and static-analysis browser gates alongside all 43
+configuration reading routes, global navigation, and Open Graph verification.
+The next genuine parent incorporates the actual merged Japanese browser
+producer; no foreign implementation is duplicated in this documentation child.
+Fresh exact-head source and full Docs Actions, protected Stack merge, release
+availability, and deployed reader acceptance remain pending after this correction.

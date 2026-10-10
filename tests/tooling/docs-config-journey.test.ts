@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
@@ -131,5 +132,23 @@ void test("library and Musea shared examples keep the same native scope in every
     assert.match(library.source, /`vite\.config\.mjs`/);
     assert.match(library.source, /`vize\.lib`/);
     assert.match(library.source, /`vize\.config\.json`/);
+  }
+});
+
+void test("the complete original dedicated workflow recipe remains in both detailed references", () => {
+  const retained = JSON.parse(
+    readFileSync(
+      resolve(import.meta.dirname, "fixtures/docs-workflow-dedicated-config.json"),
+      "utf8",
+    ),
+  ) as { base: string; code: string; codeSha256: string };
+  assert.equal(retained.base, "878d7833c2a12391bb4111c6894dbe1d2c11fda3");
+  assert.equal(createHash("sha256").update(retained.code).digest("hex"), retained.codeSha256);
+  assert.equal(retained.code.split("\n").length, 18);
+  for (const locale of ["", "ja/"]) {
+    const reference = render(`docs/content/${locale}guide/configuration-reference.md`);
+    assert.equal(fences(reference.source).filter((code) => code === retained.code).length, 1);
+    const workflow = render(`docs/content/${locale}guide/workflows.md`);
+    assert.ok(fences(workflow.source).some((code) => code.includes("// vite.config.ts")));
   }
 });
