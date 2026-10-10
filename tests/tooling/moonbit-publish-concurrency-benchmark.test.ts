@@ -8,7 +8,7 @@ import { runMoonScript } from "./_helpers/moonbit.ts";
 import {
   controlledPublishFixture,
   maxActivePublishers,
-} from "./moonbit-publish-concurrency.test.ts";
+} from "./support/moonbit-publish-concurrency-fixture.ts";
 
 const receiptPath = process.env.VIZE_PUBLISH_BENCHMARK_RECEIPT;
 

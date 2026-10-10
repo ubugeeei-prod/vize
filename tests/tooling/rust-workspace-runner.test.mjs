@@ -50,7 +50,7 @@ function fixture(mode, failure = "", version = "0.9.146") {
   return observed;
 }
 
-test("full nextest keeps workspace selection, pinned version, and explicit doctests", () => {
+void test("full nextest keeps workspace selection, pinned version, and explicit doctests", () => {
   const f = fixture("nextest");
   assert.equal(f.result.status, 0, f.result.stderr);
   assert.deepEqual(f.calls, [
@@ -62,13 +62,13 @@ test("full nextest keeps workspace selection, pinned version, and explicit docte
   assert.equal(f.receipt.phases.length, 2);
 });
 
-test("serial reference invokes the original complete cargo workspace recipe", () => {
+void test("serial reference invokes the original complete cargo workspace recipe", () => {
   const f = fixture("cargo");
   assert.equal(f.result.status, 0, f.result.stderr);
   assert.deepEqual(f.calls, [["test", "--locked", "--workspace"]]);
 });
 
-test("failure in either ordinary tests or doctests fails the complete receipt", () => {
+void test("failure in either ordinary tests or doctests fails the complete receipt", () => {
   for (const phase of ["nextest", "--doc"]) {
     const f = fixture("nextest", phase);
     assert.equal(f.result.status, 37, f.result.stderr);
@@ -78,7 +78,7 @@ test("failure in either ordinary tests or doctests fails the complete receipt", 
   }
 });
 
-test("unknown runner or foreign nextest fails before executing test commands", () => {
+void test("unknown runner or foreign nextest fails before executing test commands", () => {
   for (const [mode, version] of [
     ["unknown", "0.9.146"],
     ["nextest", "0.9.145"],

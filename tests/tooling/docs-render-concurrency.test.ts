@@ -124,7 +124,7 @@ test("failed pages retain failed timings, close their contexts and do not get su
     ),
   );
   assert.deepEqual(
-    closed.toSorted(),
+    closed.toSorted((a, b) => a - b),
     jobs.map(({ index }) => index),
   );
   assert.deepEqual(

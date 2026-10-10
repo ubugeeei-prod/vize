@@ -19,8 +19,10 @@ publication barriers. They do not claim the roadmap's T0 latency target is met.
    Feature-enabled differential recipes and required TSGO remain unchanged.
 4. Publish native platform packages with at most four asynchronous child
    publishers. Each keeps the existing provenance, retry, visibility and
-   idempotency checks. Await every child and reject the aggregate if any fails;
-   publish the parent package only after the platform step succeeds.
+   idempotency checks. On the first observed failure, stop queued launches and
+   await every active child. Retain sorted results, skipped package identities
+   and complete decoded UTF8 child diagnostics; reject any failed aggregate.
+   Publish the parent package only after the platform step succeeds.
 
 ## Measurement
 
@@ -58,3 +60,47 @@ comparisons remain failed evidence and cannot establish a speedup.
   release before reporting a production publishing speedup.
 
 Results are pending the first exact-source Actions comparison.
+
+## First source correction
+
+The original `bdc08716` source Actions failed on six lint warnings, the staging
+paragraph location/output guard, two files crossing the existing 350-line
+limit, and the Check workflow growing beyond its unchanged 690-line allowance. Keep those failures as evidence. Explicit promise handling and numeric
+sorting fix lint; extraction preserves every page operation and seven unchanged
+publisher laws. The staging law still checks the actual source paragraph,
+exclusive native ownership, whole staged bytes, and exact additive output paths.
+
+The original scheduler also launched remaining packages after a failed serial
+publisher. Restore serial stop-first behavior and stop queued concurrent launches
+before releasing the failed task's semaphore slot; active publishers still finish.
+Independent barrier laws require one or four launched children, complete failure
+results, all active process exits, seven or four skipped identities, and exact
+CRLF/boundary-whitespace diagnostics. A receipt records complete decoded UTF8
+texts, rather than claiming binary-byte custody. Wrapper publication still needs
+all platform publishers and their registry visibility checks to succeed.
+
+Public release acceptance recognizes exactly the old native invocation or the new
+four-worker/provenance/quoted receipt invocation, retaining the original release
+plan vectors and refusing missing, duplicate or hostile publication commands.
+The full-workspace artifact upload uses a dedicated upload-only composite at its
+original top-level Check position. Both the outer call and its sole upload step
+keep `always()`, so preceding setup failures and runner/feature-tail failures all
+retain the original upload attempt without running tests that previously skipped.
+The SHA/run-attempt name, path, missing-file warning and retention remain exact.
+The shared Rust recipe remains byte-identical. Only typed-equivalent flow
+formatting of the global and Clippy environment maps recovers three lines; Check
+retains its original 690-line allowance. The rejected inner-only extraction is
+retained as failure-boundary evidence.
+
+The two new benchmark Rust setup calls use their proven reachable provider parent
+with explicit stable; the 86 inherited generated-provider pin findings are handled
+by a separate security change. Preserve existing explicit versions, channels,
+components and targets when that actual merged main is incorporated.
+
+The first paired Docs run failed the unchanged Musea link checker before its
+serial measurement. Its concurrent step completed all 90 original jobs, which is
+standalone historical evidence only. The two inherited Musea links are repaired
+separately in #8509 and must be incorporated after that actual merge.
+
+Focused source laws are local evidence only. Fresh exact-head Actions, complete
+paired measurements, protected merge and actual publication remain required.

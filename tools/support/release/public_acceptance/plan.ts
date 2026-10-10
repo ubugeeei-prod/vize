@@ -161,11 +161,19 @@ export function derivePublicationPlan(root: string, head: string): PublicationPl
     ) && Object.keys(native.optionalDependencies ?? {}).length === nativeNames.length,
     "native optional dependencies differ from source catalog",
   );
+  const nativeCommands = workflow
+    .split("\n")
+    .filter(
+      (line) =>
+        !line.trimStart().startsWith("#") &&
+        /tools\/moon\/cmd\/publish_npm_package_dirs\s/.test(line),
+    );
+  requireValue(nativeCommands.length === 1, "one native target publication required");
   requireValue(
-    /^\s*(?:-\s+)?run: moon run --target native tools\/moon\/cmd\/publish_npm_package_dirs -- npm\/native\/npm --provenance\s*$/m.test(
-      workflow,
+    /^\s*(?:-\s+)?run: moon run --target native tools\/moon\/cmd\/publish_npm_package_dirs -- npm\/native\/npm (?:--provenance|--concurrency 4 --provenance --receipt "\$RUNNER_TEMP\/native-platform-publish\.json")\s*$/.test(
+      nativeCommands[0],
     ),
-    "native target publication missing",
+    "unsupported native target publication command in H release workflow",
   );
   npm.push(...nativeNames.map((name) => ({ name, version })));
   unique(

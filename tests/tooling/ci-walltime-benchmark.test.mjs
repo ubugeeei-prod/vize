@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parse } from "yaml";
 
-test("walltime comparisons use the same source and runner without publishing authority", () => {
+void test("walltime comparisons use the same source and runner without publishing authority", () => {
   const workflow = parse(
     readFileSync(
       new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),

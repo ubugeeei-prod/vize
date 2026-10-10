@@ -7,12 +7,20 @@ struct PublishResult {
 } derive(ToJson)
 
 ///|
-/// Keep diagnostics out of the receipt and serialize writes to async stdio.
+/// Keep each launched child's complete decoded UTF8 diagnostic streams.
 struct PublishOutput {
   result : PublishResult
   stdout : String
   stderr : String
 }
+
+///|
+/// Preserve complete decoded child texts beside the original result metadata.
+struct PublishDiagnostics {
+  package_dir : String
+  stdout : String
+  stderr : String
+} derive(ToJson)
 
 ///|
 /// Versioned receipt for controlled benchmarks and release diagnostics.
@@ -24,6 +32,8 @@ struct PublishReceipt {
   walltime_ms : Int
   exit_code : Int
   results : Array[PublishResult]
+  skipped : Array[String]
+  diagnostics : Array[PublishDiagnostics]
 } derive(ToJson)
 
 ///|
@@ -66,11 +76,7 @@ async fn publish_package(
       child_args,
       cwd=current_dir,
     )
-    (
-      exit_code,
-      stdout.text().trim().to_owned(),
-      stderr.text().trim().to_owned(),
-    )
+    (exit_code, stdout.text(), stderr.text())
   } catch {
     err if @async.is_being_cancelled() => raise err
     err => (1, "", "Failed to run publisher for \{package_dir}: \{err}")
@@ -89,8 +95,8 @@ async fn publish_package(
 ///|
 /// Main entry point for publishing generated npm package directories.
 /// Serial execution is the compatible default; release opts into bounded
-/// concurrency. The parent exits only after every package result is collected,
-/// and a nonzero result prevents the subsequent native wrapper publish step.
+/// concurrency. A failed child stops queued launches while active children are
+/// reaped with complete diagnostics. Any failure prevents the wrapper publish.
 async fn run_app() -> Int {
   let args = @tool.cli_args()
   if args.is_empty() {
@@ -156,32 +162,66 @@ async fn run_app() -> Int {
   }
 
   let started = @env.now()
-  let tasks : Array[async () -> PublishOutput] = package_directories.map(package_dir => {
+  let mut stop_launching = false
+  let tasks : Array[async () -> PublishOutput?] = package_directories.map(package_dir => {
     () => {
-      publish_package(
+      // The semaphore admits this body only when a slot is available. No await
+      // separates the stop check from launch or the failure from its stop flag.
+      if stop_launching {
+        return None
+      }
+      let output = publish_package(
         moon_bin, script_path, current_dir, package_dir, forward_args,
       )
+      if output.result.exit_code != 0 && !stop_launching {
+        stop_launching = true
+        // Only the first failure writes this progress marker. Child streams
+        // remain buffered until collection, so async stderr has one writer.
+        @stdio.stderr.write(
+          "Stopping queued package launches after publisher failure: \{package_dir}\n",
+        )
+      }
+      Some(output)
     }
   })
-  // @async.all uses a task group and semaphore. It waits for every child and
-  // returns input order, while max_concurrent bounds running subprocesses.
+  // Structured collection reaps active publishers without launching queued
+  // packages after an observed failure, and retains original package order.
   let outputs = @async.all(tasks, max_concurrent=concurrency)
   let walltime_ms = (@env.now() - started).to_int()
   let results = []
+  let skipped = []
+  let diagnostics = []
+  let mut output_index = 0
   let mut exit_code = 0
-  for output in outputs {
+  for item in outputs {
+    let package_dir = package_directories[output_index]
+    output_index += 1
+    let output = match item {
+      Some(output) => output
+      None => {
+        skipped.push(package_dir)
+        println(
+          "Skipped queued package after publisher failure: \{package_dir}",
+        )
+        continue
+      }
+    }
     let result = output.result
     results.push(result)
+    diagnostics.push({
+      package_dir,
+      stdout: output.stdout,
+      stderr: output.stderr,
+    })
     println(
       "Publish result for \{result.package_dir}: exit \{result.exit_code}",
     )
     if output.stdout != "" {
-      println(output.stdout)
+      @stdio.stdout.write(output.stdout)
     }
     if output.stderr != "" {
-      @stdio.stderr.write(
-        "Publish diagnostics for \{result.package_dir}:\n\{output.stderr}\n",
-      )
+      @stdio.stderr.write("Publish diagnostics for \{result.package_dir}:\n")
+      @stdio.stderr.write(output.stderr)
     }
     if exit_code == 0 && result.exit_code != 0 {
       exit_code = if result.exit_code > 0 { result.exit_code } else { 1 }
@@ -194,6 +234,8 @@ async fn run_app() -> Int {
     walltime_ms,
     exit_code,
     results,
+    skipped,
+    diagnostics,
   }
   println(
     "Platform package publish summary: \{receipt.package_count} packages, concurrency \{concurrency}, \{receipt.walltime_ms} ms, exit \{exit_code}",
