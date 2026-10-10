@@ -6,6 +6,7 @@ import type {
   ComposableUtilityMetadata,
 } from "../../../compose/core/src/catalog.ts";
 import { moduleExports, moduleInterfaces, moduleSummary, moduleTypeAliases } from "./extract.ts";
+import { composableExampleSection } from "./composable-examples.ts";
 import { GENERATED_NOTICE, blocks, cell, frontmatter, membersTable, table } from "./markdown.ts";
 
 /** Entries that describe the package rather than ship behavior. */
@@ -123,7 +124,15 @@ export function renderComposablePage(
     ? [...interfaces.map((item) => item.name), ...aliases.map((item) => item.name)]
     : entry.runtimeExports;
   const usage = [
-    "## Usage",
+    "## Minimal setup",
+    "",
+    "Use a Vue 3.5+ project with Vue SFC compilation configured (see [Vite+ integration](../vite-plus.md)).",
+    "",
+    "```bash",
+    "vp install @vizejs/composable",
+    "```",
+    "",
+    "Import the entry directly. Call lifecycle-bound utilities inside `<script setup>` so cleanup follows the component scope; consult the runtime contract for this entry's SSR and hydration behavior.",
     "",
     "```ts",
     `import ${typeOnly ? "type " : ""}{ ${importNames.join(", ")} } from "@vizejs/composable/${name}";`,
@@ -136,6 +145,7 @@ export function renderComposablePage(
     summary,
     facts,
     usage,
+    composableExampleSection(packageRoot, name),
     contract === "" ? "" : `## Runtime contract\n\n${contract}`,
     api === "" ? "" : `## API\n\n${api}`,
     types === "" && aliasTypes === ""

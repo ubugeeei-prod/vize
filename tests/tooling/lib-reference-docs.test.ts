@@ -11,6 +11,11 @@ import {
 } from "../../npm/ui/scripts/generate-reference-docs.ts";
 import { uiFamilyCatalog } from "../../npm/ui/src/catalog/family-catalog.ts";
 import { featuredExamples, publicExample } from "../../npm/ui/scripts/reference-docs/examples.ts";
+import {
+  composableExamples,
+  composableExampleSource,
+} from "../../npm/ui/scripts/reference-docs/composable-examples.ts";
+import { previewComposableExamples } from "../../docs/previews/ui/build-config.ts";
 import { repoRoot } from "./_helpers/moonbit.ts";
 
 await import("../../docs/theme/i18n/sitemap.js");
@@ -165,4 +170,48 @@ void test("component hub guides tasks in English and Japanese and links real cap
       family,
     );
   }
+});
+
+void test("practical composable examples share complete source with their live preview", () => {
+  const packageRoot = path.join(repoRoot, "npm/compose/core");
+  const exports = JSON.parse(readFileSync(path.join(packageRoot, "package.json"), "utf8")).exports;
+  assert.equal(composableExamples.length, 6);
+  assert.equal(new Set(composableExamples.map((example) => example.name)).size, 6);
+  for (const example of composableExamples) {
+    const source = composableExampleSource(packageRoot, example.name);
+    const preview = previewComposableExamples.find((item) => item.name === example.name);
+    assert.equal(preview?.source, source, `${example.name}: exact runtime source`);
+    const page = rendered.get(`guide/composables/${example.name}.md`) ?? "";
+    assert.ok(page.includes(source.trim()), `${example.name}: complete displayed SFC`);
+    assert.ok(
+      page.includes(`index.html?composable=${example.name}`),
+      `${example.name}: live preview`,
+    );
+    for (const explanation of [example.purpose, example.observe, example.context])
+      assert.ok(page.includes(explanation));
+    assert.doesNotMatch(source, /from ["']\./, "examples must be usable in a consumer project");
+    for (const match of source.matchAll(/from ["']@vizejs\/composable\/([^"']+)["']/g))
+      assert.ok(exports[`./${match[1]}`], `${example.name}: public import`);
+  }
+  assert.throws(
+    () => composableExampleSource(packageRoot, "missing-public-entry"),
+    /no public composable entry/,
+  );
+});
+
+void test("all reference entries show setup and composable hubs disclose preview coverage", () => {
+  for (const [file, page] of rendered) {
+    if (/^guide\/(ui|composables)\/(?!index\.md)/.test(file))
+      assert.match(page, /## Minimal setup/, file);
+  }
+  for (const prefix of ["", "ja/", "zh-CN/", "pt-BR/", "fr/"]) {
+    const hub = rendered.get(`${prefix}guide/composables/index.md`) ?? "";
+    assert.match(hub, /vp install @vizejs\/composable/);
+    for (const example of composableExamples)
+      assert.ok(hub.includes(`${example.name}.md)`), `${prefix}${example.name}`);
+  }
+  assert.match(
+    rendered.get("guide/composables/index.md") ?? "",
+    /checks currently cover the six examples/,
+  );
 });
