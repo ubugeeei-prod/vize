@@ -66,6 +66,29 @@ execution credit or a successful summary. Successful campaigns recheck all
 package/config/input bytes. Observer hashing and capture time are not adoption
 performance measurements.
 
+## Observed native lint exit (2026-10-10)
+
+An actual public 0.440.0 configuration invocation retained the complete
+`initialized`, pinned native `attempt` and successful `returned` journal, then
+exited with status 1, no signal and no spawn error. The native CLI's
+`std::process::exit(1)` bypasses Node's `exit` listener, so requiring that hook
+event rejected the invocation before its complete report could be compared.
+
+Admit this boundary only when the actual spawn result is status 1 with no signal
+or error and the complete journal ends in its unique successful pinned native
+return. Preserve all original NDJSON, PID, Node/CLI argv, native digest and Corsa
+checks. An ordinary hook exit must remain unique, final and match the actual
+status. Missing successful load, failed/rejected loader events, duplicate or
+conflicting events, a foreign final return and success without a hook exit still
+refuse; never synthesize an exit event.
+
+Ten inert custody laws pass. Read-only validation of the retained failed
+invocation now accepts its unchanged journal and process result; this is
+validator qualification, not a fresh invocation or complete campaign pass.
+Fresh exact-head Actions, root review, protected delivery and complete installed
+replays remain required, and #8142 stays open. Original corpus, provider,
+collector, hook, packet and upstream bytes remain untouched.
+
 ## Prepared release and commands
 
 Local source authoring uses complete signed C

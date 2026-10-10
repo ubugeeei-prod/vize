@@ -124,6 +124,9 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
                 if let Some(node) = self.lower_control_flow_child(expression, container.span) {
                     return Some(node);
                 }
+                if let Some(expression) = expression.as_expression() {
+                    self.retain_nested_typecheck_roots(expression);
+                }
                 let content = self.dyn_expr(expression.span());
                 Some(self.interpolation(content, container.span))
             }

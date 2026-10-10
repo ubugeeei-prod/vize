@@ -1,0 +1,42 @@
+[
+  {
+    "run": 37743192231,
+    "name": "rust-test-shard-1-37743192231-1",
+    "id": 11534913271,
+    "zipSHA256": "4f019e232c0dbbc71a13367a9f4594bfca7f17f2ed4309aa2f4a950e90239644",
+    "path": "/private/tmp/vize-lsp-9fe-evidence/rust-test-shard-1-37743192231-1",
+    "files": 183
+  },
+  {
+    "run": 37743192231,
+    "name": "rust-test-shard-2-37743192231-1",
+    "id": 11534364698,
+    "zipSHA256": "213800be84a553cee8cc210c8fa0e5801d0d91f2e6da11fc4c56edeb104b4eb2",
+    "path": "/private/tmp/vize-lsp-9fe-evidence/rust-test-shard-2-37743192231-1",
+    "files": 117
+  },
+  {
+    "run": 37743192231,
+    "name": "rust-test-shard-3-37743192231-1",
+    "id": 11534413040,
+    "zipSHA256": "b26cfa4f78f80168f2ec94fddccf0adb4d7ad6161f586002c48e9b9a5fb9415c",
+    "path": "/private/tmp/vize-lsp-9fe-evidence/rust-test-shard-3-37743192231-1",
+    "files": 75
+  },
+  {
+    "run": 37743192231,
+    "name": "rust-test-shard-4-37743192231-1",
+    "id": 11534484194,
+    "zipSHA256": "f865836a9ab1e571efe67d9808ff66d4ca17f04fbabb6ba7754c3e90b2629dca",
+    "path": "/private/tmp/vize-lsp-9fe-evidence/rust-test-shard-4-37743192231-1",
+    "files": 533
+  },
+  {
+    "run": 37743191081,
+    "name": "canon-distinct-host-paired-original-400",
+    "id": 11535066970,
+    "zipSHA256": "8acabac4e5d5a55713a5f907ba747048a64a1bd07e92e871ca254842e47e7e02",
+    "path": "/private/tmp/vize-lsp-9fe-evidence/canon-distinct-host-paired-original-400",
+    "files": 810
+  }
+]

@@ -68,6 +68,23 @@ struct RootLowerer<'l, 'a, 'm, 's> {
 }
 
 impl RootLowerer<'_, '_, '_, '_> {
+    fn append_typecheck_roots(&mut self, mode: Option<JsxOutputMode>) {
+        for retained in self.lowerer.take_typecheck_roots() {
+            let root = retained.root;
+            let (scoped_css, scoped_style_exprs) = Self::scoped_style(retained.scoped_style);
+            let l2 = l2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
+            self.roots.push(LoweredRoot {
+                root,
+                l2,
+                mode,
+                component_name: self.current_name(),
+                component_setup: None,
+                scoped_css,
+                scoped_style_exprs,
+            });
+        }
+    }
+
     fn current_mode(&self) -> Option<JsxOutputMode> {
         self.scopes.iter().rev().find_map(|scope| scope.mode)
     }
@@ -82,8 +99,10 @@ impl RootLowerer<'_, '_, '_, '_> {
     /// Drain the current root's `<style scoped>` blocks into the raw CSS (for
     /// the scoping backends) and the public interpolation spans (for the type
     /// checker), mapping each internal [`ScopedStyleExpr`] to a [`StyleExprSpan`].
-    fn take_scoped_style(&mut self) -> (Option<String>, std::vec::Vec<StyleExprSpan>) {
-        match self.lowerer.take_scoped_styles() {
+    fn scoped_style(
+        styles: Option<(String, std::vec::Vec<ScopedStyleExpr>)>,
+    ) -> (Option<String>, std::vec::Vec<StyleExprSpan>) {
+        match styles {
             None => (None, std::vec::Vec::new()),
             Some((css, exprs)) => {
                 let spans = exprs
@@ -290,7 +309,8 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
             .set_current_output_mode(mode.unwrap_or(self.default_mode));
         let root = self.lowerer.lower_element_root(element);
         let l2 = l2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
-        let (scoped_css, scoped_style_exprs) = self.take_scoped_style();
+        let (scoped_css, scoped_style_exprs) =
+            Self::scoped_style(self.lowerer.take_scoped_styles());
         self.roots.push(LoweredRoot {
             root,
             l2,
@@ -300,6 +320,7 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
             scoped_css,
             scoped_style_exprs,
         });
+        self.append_typecheck_roots(mode);
     }
 
     fn visit_jsx_fragment(&mut self, fragment: &JSXFragment<'ast>) {
@@ -308,7 +329,8 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
             .set_current_output_mode(mode.unwrap_or(self.default_mode));
         let root = self.lowerer.lower_fragment_root(fragment);
         let l2 = l2::try_lower_root(self.lowerer.bump(), self.lowerer.mapper().source(), &root);
-        let (scoped_css, scoped_style_exprs) = self.take_scoped_style();
+        let (scoped_css, scoped_style_exprs) =
+            Self::scoped_style(self.lowerer.take_scoped_styles());
         self.roots.push(LoweredRoot {
             root,
             l2,
@@ -318,5 +340,6 @@ impl<'ast> Visit<'ast> for RootLowerer<'_, '_, '_, '_> {
             scoped_css,
             scoped_style_exprs,
         });
+        self.append_typecheck_roots(mode);
     }
 }

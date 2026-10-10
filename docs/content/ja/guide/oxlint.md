@@ -2,20 +2,18 @@
 title: Oxlint プラグイン
 ---
 
-<!-- Generated translation; source: guide/oxlint.md -->
+<!-- Reviewed translation; source: guide/oxlint.md -->
 
 # Oxlint プラグイン
 
-`oxlint-plugin-vize` を使用すると、Oxlint は Oxlint の JS プラグイン システムを通じて Vize Patina 診断を実行できます。
-Oxlint の Rust ネイティブ JS および TS ルールと Vize の Vue 対応ルールが必要な場合に使用します。
-診断を 1 回の実行で実行できます。
+`oxlint-plugin-vize` を使うと、Oxlint の JavaScript プラグインとして Vize の Vue ルールを実行できます。
+Oxlint の JavaScript / TypeScript ルールと Vue の診断を、同じコマンドで検査したい場合に使います。
 
-Oxlint 外部のネイティブ lint および型チェック パイプラインについては、を参照してください。
-[静的解析](./static-analysis.md)。
+Vize 単独で lint や型チェックを実行する方法は、[静的解析](./static-analysis.md)を参照してください。
 
-> [!重要]
-> パッケージは npm で入手できますが、統合はまだ初期段階です。人間が読める端末の場合
-> 出力では、オリジナルの SFC 範囲の忠実度が向上し続ける一方で、`oxlint-vize -f stylish` を優先します。
+> [!IMPORTANT]
+> npm からインストールできますが、統合はまだ初期段階です。元の SFC の位置を表示する処理は改善中です。
+> ターミナルで診断を読む場合は、`oxlint-vize -f stylish` を使ってください。
 
 ## インストール
 
@@ -54,7 +52,7 @@ vp install -D oxlint oxlint-plugin-vize
 }
 ```
 
-JS または TS Oxlint 構成を使用する場合、パッケージはプリセット ルール マップもエクスポートします。
+Oxlint の設定を JavaScript や TypeScript で書く場合は、パッケージが提供するプリセットのルール設定を使えます。
 
 ```js
 import { configs } from "oxlint-plugin-vize";
@@ -73,7 +71,7 @@ export default {
 };
 ```
 
-利用可能なプリセットのエクスポートには次のものがあります。
+次のプリセットを利用できます。
 
 - `configs.recommended`
 - `configs.essential`
@@ -98,15 +96,15 @@ export default defineConfig({
 ```
 
 生成されたタスクは `vp run lint` で実行します。既存の package script が `lint` を使う場合は
-`vp run vize:lint` になり、明示したタスク名が優先されます。ルール設定は [Rules](../rules/index.md) を参照してください。
+`vp run vize:lint` になり、明示したタスク名が優先されます。ルール設定は[ルール一覧](../rules/index.md)を参照してください。
 `vp lint` を直接呼ぶと、引き続き Oxlint の JS プラグイン経路が選ばれます。
 
 ```bash
 vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
 
-`oxlint-vize` は、スクリプトレスの `.vue` エッジ ケースをスムーズにする、`oxlint` の薄いラッパーです。
-一方、上流の JS プラグインのカバー範囲は引き続き改善されています。
+`oxlint-vize` は、スクリプトを持たない `.vue` ファイルにも対応するための `oxlint` ラッパーです。
+Oxlint 本体の JavaScript プラグインの対応範囲も引き続き改善されています。
 
 ## 設定
 
@@ -128,30 +126,32 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 - `locale` は診断言語を制御します。
 - `preset` は、`"general-recommended"`/`"happy-path"`、`"essential"`、`"ecosystem"`、`"incremental"`、`"opinionated"`、または `"nuxt"` を受け入れます。
 - `preset` のデフォルトは `"general-recommended"` です。
-- `incremental` は、明示的に構成したルールのみを実行します。
+- `incremental` は、明示的に設定したルールだけを実行します。
 - `helpLevel` は、`"full"`、`"short"`、または `"none"` を受け入れます。
-- `typeAware: true` は、共有 Patina パス中に Corsa 支援の `vize/type/*` ルールを有効にします。
-- `corsaPath` は、型を認識したリンティング用に Corsa または `tsgo` 実行可能ファイルを選択します。
+- `typeAware: true` は、共有の Patina 処理で Corsa を使う `vize/type/*` ルールを有効にします。
+- `corsaPath` は、型情報を使う lint で使用する Corsa または `tsgo` 実行ファイルを指定します。
 - `showHelp` および `settings.patina` は、下位互換性のために引き続き受け入れられます。
 
 ## 現在の制限事項
 
 - Oxlint 1.78 と 1.86 の直接の `oxlint`、`vp lint`、対応する `vp check` の lint 経路では、
-  scriptless `.vue` の Vize callback が呼び出されません。テンプレートのみの SFC には、
+  スクリプトのない `.vue` では Vize のコールバックが呼び出されません。テンプレートのみの SFC には、
   ネイティブの `vp run lint` タスクか `oxlint-vize` を使ってください。
 - Oxlint JS プラグインは抽出されたスクリプト プログラムに範囲を固定するため、テンプレートとスタイル
-  診断では、すべてのフォーマッタで元の SFC 範囲がまだ保持されていません。
-- `stylish` は、現在、Oxlint と Vize の混合出力に最適な人間が判読できるフォーマッタです。 JSONと
-  他の機械可読形式は、元のテンプレート/スタイルのベストエフォートとして扱われる必要があります。
-  ポジション。
-- タイプ認識ルールのエクスポートは実験的なものです。 `*WithTypeAware` 構成を使用して設定します
-  `settings.vize.typeAware: true` 共有フルファイル パスでこれらのルールを積極的に実行する場合。
+  診断では、出力形式によって元の SFC の位置が失われる場合があります。
+- `stylish` は、Oxlint と Vize の診断をターミナルで読むための推奨形式です。JSON などの機械可読形式では、
+  元のテンプレートやスタイルの位置情報に制約があります。
+- 型情報を使うルールは実験段階です。SFC 全体を対象にこれらのルールを実行するには、
+  `*WithTypeAware` プリセットと `settings.vize.typeAware: true` を設定します。
 
-source-built n8n fixture replay は、ライセンス対象の 1,369 SFC、51 Vize ルールと options、
-6 ファイルのルール override をネイティブ bridge と `oxlint-vize` で検証しています。19 の scriptless 入力も含みますが、
-それらの直接の SDK callback を検証したことにはなりません。n8n 固有の 2 プラグインと workspace 全体の設定は検証対象外です。
+ソースからビルドした n8n の再現テストでは、ライセンス対象の 1,369 SFC、51 の Vize ルールとそのオプション、
+6 ファイルのルール上書きを、ネイティブ連携と `oxlint-vize` で検証しています。スクリプトのない入力も 19 件含みます。
+ただし、それらに対して SDK のコールバックが直接実行されることは検証していません。
+n8n 固有の 2 つのプラグインと、ワークスペース全体の設定も検証対象外です。
 
-## 地域開発
+<span id="地域開発"></span>
+
+## ローカルでの開発
 
 ```bash
 nix develop

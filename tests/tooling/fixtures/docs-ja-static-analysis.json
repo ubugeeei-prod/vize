@@ -1,0 +1,39 @@
+{
+  "base": "2e7f5e1e2cbd740c0ed4bfd97286c4ee7c43ff10",
+  "file": "docs/content/ja/guide/static-analysis.md",
+  "headings": [
+    "静的解析",
+    "パイプライン",
+    "糸くず",
+    "反応性オーバーレイ",
+    "緑青ルールモデル",
+    "移行プラグマとカスタム-ルール",
+    "クロスファイルルール",
+    "型チェック",
+    "npm-パッケージ-スクリプトと-rust-cli-の比較",
+    "オクスリント",
+    "導入パス"
+  ],
+  "code": [
+    "{\n  \"scripts\": {\n    \"vize:lint\": \"vize lint src\"\n  }\n}",
+    "vp run vize:lint",
+    "{\n  \"scripts\": {\n    \"vize:lint:ci\": \"vize lint --preset essential --max-warnings 0 src\",\n    \"vize:lint:opinionated\": \"vize lint --preset opinionated --help-level short src\",\n    \"vize:lint:fix\": \"vize lint --fix src\",\n    \"vize:lint:json\": \"vize lint --format json src\"\n  }\n}",
+    "vp run vize:lint:ci\nvp run vize:lint:opinionated\nvp run vize:lint:fix\nvp run vize:lint:json",
+    "{\n  \"scripts\": {\n    \"vize:lint:cross-file\": \"vize lint --cross-file src\",\n    \"vize:lint:cross-file-tree\": \"vize lint --cross-file --cross-file-tree src\",\n    \"vize:lint:strict-reactivity\": \"vize lint --strict-reactivity src\"\n  }\n}",
+    "vp run vize:lint:cross-file\nvp run vize:lint:cross-file-tree\nvp run vize:lint:strict-reactivity",
+    "{\n  \"linter\": {\n    \"rules\": {\n      \"script/no-restricted-globals\": \"error\",\n      \"script/no-restricted-members\": \"error\"\n    },\n    \"ruleOptions\": {\n      \"script/no-restricted-globals\": {\n        \"globals\": [\n          { \"name\": \"process\", \"message\": \"Read env via a typed helper.\" },\n          { \"name\": \"alert\" }\n        ]\n      },\n      \"script/no-restricted-members\": {\n        \"members\": [\n          { \"object\": \"window\", \"property\": \"localStorage\", \"message\": \"Use authStorage.\" }\n        ]\n      }\n    }\n  }\n}",
+    "vp run vize:lint:cross-file\nvp run vize:lint:cross-file-tree",
+    "{\n  \"scripts\": {\n    \"vize:check\": \"vize check\",\n    \"vize:check:src\": \"vize check src\",\n    \"vize:check:app\": \"vize check --tsconfig tsconfig.app.json\",\n    \"vize:check:json\": \"vize check --format json --quiet\",\n    \"vize:check:virtual-ts\": \"vize check --show-virtual-ts src/components/App.vue\",\n    \"vize:check:profile\": \"vize check --profile src\",\n    \"vize:check:single-server\": \"vize check --servers 1 src\",\n    \"vize:check:declarations\": \"vize check --declaration --declaration-dir dist/types\"\n  }\n}",
+    "vp run vize:check\nvp run vize:check:src\nvp run vize:check:app\nvp run vize:check:json",
+    "vp run vize:check:virtual-ts\nvp run vize:check:profile\nvp run vize:check:single-server",
+    "vp run vize:check:declarations",
+    "{\n  \"include\": [\"src/**/*.ts\", \"src/**/*.tsx\", \"src/**/*.vue\", \"src/**/*.d.ts\"]\n}",
+    "// src/types/vue-app.d.ts\ndeclare module \"vue\" {\n  interface ComponentCustomProperties {\n    $t: (key: string) => string;\n    $route: { path: string };\n  }\n}",
+    "vp run vize:check:app",
+    "{\n  \"scripts\": {\n    \"vize:lint\": \"vize lint src\",\n    \"vize:check\": \"vize check src --strict\",\n    \"vize:ready\": \"vize ready src\"\n  }\n}",
+    "vp run vize:lint\nvp run vize:check\nvp run vize:ready",
+    "nix run github:ubugeeei-prod/vize#vize -- check --tsconfig tsconfig.app.json --profile src\nvize check --tsconfig tsconfig.app.json --profile src\nvize lsp",
+    "vp install -D oxlint oxlint-plugin-vize\nvp exec oxlint-vize -c .oxlintrc.json -f stylish src",
+    "{\n  \"plugins\": [\"vue\"],\n  \"jsPlugins\": [\"oxlint-plugin-vize\"],\n  \"settings\": {\n    \"vize\": {\n      \"preset\": \"essential\",\n      \"helpLevel\": \"short\"\n    }\n  },\n  \"rules\": {\n    \"eqeqeq\": \"error\",\n    \"vize/vue/require-v-for-key\": \"error\",\n    \"vize/vue/no-v-html\": \"warn\"\n  }\n}"
+  ]
+}

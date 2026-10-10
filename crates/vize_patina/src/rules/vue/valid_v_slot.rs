@@ -34,6 +34,8 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Error,
 };
 
+mod dynamic_binding;
+
 /// Valid v-slot rule
 #[derive(Default)]
 pub struct ValidVSlot;
@@ -143,6 +145,14 @@ impl Rule for ValidVSlot {
                 ctx.t("vue/valid-v-slot.invalid_modifier"),
                 &directive.loc,
                 ctx.t("vue/valid-v-slot.modifier_help"),
+            );
+        }
+
+        if dynamic_binding::references_own_binding(directive) {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-slot.dynamic_scope"),
+                &directive.loc,
+                ctx.t("vue/valid-v-slot.dynamic_scope_help"),
             );
         }
 

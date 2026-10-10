@@ -55,9 +55,17 @@ export function validateNativeJournal(
     argv: string[];
     pid: number;
     status: number;
+    signal: string | null;
+    error?: unknown;
     corsaPath: string;
   },
 ): void {
+  assert.equal(expected.error, undefined, "native custody requires a successful process spawn");
+  assert.equal(expected.signal, null, "native custody requires an observed ordinary process exit");
+  assert.ok(
+    expected.status === 0 || expected.status === 1,
+    "only CLI success or lint failure exits are admitted",
+  );
   assert.ok(raw.length > 0 && raw.endsWith("\n"), "complete native journal required");
   const events = raw
     .trimEnd()
@@ -77,7 +85,13 @@ export function validateNativeJournal(
     assert.equal(event.schema, "vize-public-native-custody-event-v1");
     assert.equal(event.pid, expected.pid);
     assert.ok(["initialized", "attempt", "returned", "exit"].includes(event.event));
+    if (event.event === "attempt" || event.event === "returned") {
+      assert.equal(typeof event.expectedNative, "boolean");
+      if (event.actualPath === expected.nativePath)
+        assert.equal(event.expectedNative, true, "the pinned native cannot be reported as foreign");
+    }
     if (event.expectedNative === true) {
+      assert.ok(event.event === "attempt" || event.event === "returned");
       assert.equal(event.actualPath, expected.nativePath);
       assert.equal(event.sha256, expected.nativeSha256);
       if (event.event === "attempt") attempts++;
@@ -91,9 +105,19 @@ export function validateNativeJournal(
   }
   assert.equal(attempts, 1);
   assert.equal(returned, 1, "actual native loader must return successfully");
-  assert.equal(events.filter(({ event }) => event === "exit").length, 1);
-  assert.equal(events.at(-1)?.event, "exit");
-  assert.equal(events.at(-1)?.code, expected.status);
+  const exits = events.filter(({ event }) => event === "exit");
+  if (exits.length === 0) {
+    // Rust std::process::exit(1) terminates the native CLI without running
+    // Node's exit listener. Keep the original journal; the observed spawn
+    // result and final successful pinned native return provide this boundary.
+    assert.equal(expected.status, 1, "a successful CLI still requires its hook exit");
+    assert.equal(events.at(-1)?.event, "returned");
+    assert.equal(events.at(-1)?.expectedNative, true);
+  } else {
+    assert.equal(exits.length, 1);
+    assert.equal(events.at(-1)?.event, "exit");
+    assert.equal(exits[0].code, expected.status);
+  }
 }
 
 export function installedCliRuntime(output: string, planPath: string) {
@@ -258,6 +282,8 @@ export function installedCliRuntime(output: string, planPath: string) {
       argv: [authority.node.path, binary, ...args],
       pid: result.pid,
       status: result.status,
+      signal: result.signal,
+      error: result.error,
       corsaPath: authority.bundledCorsa.path,
     });
     assert.equal(sha256(fs.readFileSync(authority.native.path)), authority.native.sha256);
