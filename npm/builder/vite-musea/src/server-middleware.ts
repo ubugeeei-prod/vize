@@ -11,7 +11,7 @@ import type { ArtFileInfo } from "./types/index.js";
 import { generatePreviewModule, generatePreviewHtml } from "./preview/index.js";
 import { generateArtModule } from "./art-module.js";
 import { decodeUrlComponent, HttpError, resolveUrlPathInside } from "./security.js";
-import { toPascalCase } from "./utils.js";
+import { variantComponentNames } from "./variant-bindings.js";
 import { previewModuleId } from "./preview-module-id.js";
 import type { MuseaTokenPreviewConfig } from "./tokens/preview.js";
 import { generateDevGlobalsScript } from "./gallery/globals.js";
@@ -229,7 +229,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
       return;
     }
 
-    const variantComponentName = toPascalCase(variant.name);
+    const variantComponentName = variantComponentNames(art.variants).get(variant.name)!;
     const moduleCode = generatePreviewModule(
       art,
       variantComponentName,
