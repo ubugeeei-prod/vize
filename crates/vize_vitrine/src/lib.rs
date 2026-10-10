@@ -23,7 +23,28 @@ mod lint_fix_tests;
 #[cfg(all(test, not(feature = "napi")))]
 #[path = "napi/lint/file_collection"]
 mod oxlint_html_profile_tests {
-    mod oxlint_html_profile;
+    pub(crate) mod oxlint_html_profile;
+}
+
+// Execute the private operation through the same real engine without Node's
+// N-API linker symbols. Reuse the existing profile module so its 45 laws run once.
+#[cfg(all(test, not(feature = "napi")))]
+#[path = "napi/lint"]
+#[expect(
+    dead_code,
+    reason = "test-only inclusion retains the unchanged optional FFI DTOs and converters"
+)]
+mod oxlint_html_operation_tests {
+    mod file_collection {
+        pub(crate) use crate::oxlint_html_profile_tests::oxlint_html_profile;
+    }
+    #[expect(
+        clippy::disallowed_types,
+        reason = "the unchanged FFI DTOs use owned JavaScript strings"
+    )]
+    mod lint_options;
+    mod oxlint_html;
+    mod rule_metadata;
 }
 
 // The P4-16 JS plugin host's pure half (document, facts, batch), tested the
