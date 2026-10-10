@@ -9,6 +9,7 @@ import {
   mdiChevronUp,
 } from "@mdi/js";
 import { useA11y, type A11yResult } from "../composables/useA11y";
+import { useMessageListener } from "../composables/usePostMessage";
 import { getPreviewUrl, vMuseaGlobals } from "../api";
 import { safeUrl } from "../utils/safeUrl";
 import MdiIcon from "./MdiIcon.vue";
@@ -38,9 +39,13 @@ onMounted(() => {
   init();
 });
 
-function onIframeLoad() {
-  iframeReady.value = true;
-}
+useMessageListener("musea:ready", (_payload, event) => {
+  if (event.source === iframeRef.value?.contentWindow) iframeReady.value = true;
+});
+
+watch(previewUrl, () => {
+  iframeReady.value = false;
+});
 function runTest() {
   if (!iframeRef.value || !iframeReady.value) return;
   hasRun.value = true;
@@ -106,7 +111,6 @@ watch(result, (nextResult) => {
       class="a11y-iframe"
       title="Accessibility test preview"
       sandbox="allow-scripts allow-same-origin"
-      @load="onIframeLoad"
     />
 
     <div class="a11y-header">

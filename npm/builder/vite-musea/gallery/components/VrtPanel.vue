@@ -2,6 +2,7 @@
 import { ref, computed } from "vue";
 import { mdiLoading, mdiImageOutline } from "@mdi/js";
 import { runVrt } from "../api";
+import { isStaticGallery } from "../staticApi";
 import MdiIcon from "./MdiIcon.vue";
 
 const props = defineProps<{
@@ -85,7 +86,7 @@ function getStatusIcon(result: VrtResult): string {
   <div class="vrt-panel">
     <div class="vrt-header">
       <h3 class="vrt-title">Visual Regression Testing</h3>
-      <div class="vrt-actions">
+      <div v-if="!isStaticGallery" class="vrt-actions">
         <label class="vrt-update-label">
           <input v-model="updateSnapshots" type="checkbox" class="vrt-checkbox" />
           Update snapshots
@@ -98,7 +99,12 @@ function getStatusIcon(result: VrtResult): string {
       </div>
     </div>
 
-    <div v-if="error" class="vrt-error">
+    <div v-if="isStaticGallery" class="vrt-empty">
+      <p>Run screenshot comparisons from your project with <code>vp exec musea-vrt</code>.</p>
+      <p class="vrt-hint">The Run VRT button requires the Musea development server.</p>
+    </div>
+
+    <div v-else-if="error" class="vrt-error">
       <p>{{ error }}</p>
       <p class="vrt-hint">Make sure Playwright is installed: <code>npm install playwright</code></p>
     </div>

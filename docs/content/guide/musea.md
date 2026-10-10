@@ -66,6 +66,16 @@ vp exec vize musea
 vp exec vize musea --build
 ```
 
+The built gallery can run accessibility checks in its preview iframes. Install
+`axe-core` before building so the export includes the audit bundle. Asynchronous
+`previewSetup` hooks are supported: checks wait for the mounted preview, and
+loading or audit errors appear as failed tests. Host the complete output,
+including its `vendor` directory, beneath the configured Vite base path.
+
+Screenshot comparisons and baseline updates need Node and Playwright. Run
+`vp exec musea-vrt` from your project or use **Run VRT** in the development
+gallery; the static VRT panel shows these instructions.
+
 ## Shared Config
 
 `musea()` options override shared config. Put stable defaults in `vize.config.ts` when several tools need them, and keep preview settings in `vite.config.ts`.
