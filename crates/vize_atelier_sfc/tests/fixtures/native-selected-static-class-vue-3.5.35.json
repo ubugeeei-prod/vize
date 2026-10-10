@@ -766,5 +766,3794 @@
     "css": ".a[data-v-static-class]:empty{color:red}",
     "cssSource": ".a:empty{color:red}"
   },
-  "nativeCapture": null
+  "nativeCapture": [
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a b\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 235,
+            "start": 230
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 242,
+            "start": 237
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA,SAAK,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\" a  b \"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\" a  b \"/></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"a b\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root",
+      "links": [
+        {
+          "authored": {
+            "end": 31,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 245,
+            "start": 240
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 252,
+            "start": 247
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 10
+          },
+          "generated": {
+            "end": 271,
+            "start": 268
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU,mCAAK,OAAA,qBAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\" a  b \"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\" a  b \"/></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a b\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\" a  b \"/></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"a b\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\" a  b \"/></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    title: \"before\",\n    class: \"a b\",\n    id: \"authored\"\n  }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-props",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 59,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 239,
+            "start": 234
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 249,
+            "start": 241
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 43,
+            "start": 30
+          },
+          "generated": {
+            "end": 260,
+            "start": 255
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 43,
+            "start": 30
+          },
+          "generated": {
+            "end": 267,
+            "start": 262
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 57,
+            "start": 44
+          },
+          "generated": {
+            "end": 275,
+            "start": 273
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 57,
+            "start": 44
+          },
+          "generated": {
+            "end": 287,
+            "start": 277
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA;IAAK,OAAA;IAAe,OAAA;IAAc,IAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div title=\"before\" class=\" a\tb \" id=\"authored\"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div title=\"before\" class=\" a\tb \" id=\"authored\"/></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    title: \"before\",\n    class: \"a b\",\n    id: \"authored\"\n  }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-props",
+      "links": [
+        {
+          "authored": {
+            "end": 59,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 249,
+            "start": 244
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 259,
+            "start": 251
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 43,
+            "start": 30
+          },
+          "generated": {
+            "end": 270,
+            "start": 265
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 43,
+            "start": 30
+          },
+          "generated": {
+            "end": 277,
+            "start": 272
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 57,
+            "start": 44
+          },
+          "generated": {
+            "end": 285,
+            "start": 283
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 57,
+            "start": 44
+          },
+          "generated": {
+            "end": 297,
+            "start": 287
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 59,
+            "start": 10
+          },
+          "generated": {
+            "end": 318,
+            "start": 315
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU;IAAK,OAAA;IAAe,OAAA;IAAc,IAAA;iBAAlC",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div title=\"before\" class=\" a\tb \" id=\"authored\"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div title=\"before\" class=\" a\tb \" id=\"authored\"/></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    title: \"before\",\n    class: \"a b\",\n    id: \"authored\"\n  }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-props",
+      "links": [],
+      "map": null,
+      "source": "<template><div title=\"before\" class=\" a\tb \" id=\"authored\"/></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    title: \"before\",\n    class: \"a b\",\n    id: \"authored\"\n  }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-props",
+      "links": [],
+      "map": null,
+      "source": "<template><div title=\"before\" class=\" a\tb \" id=\"authored\"/></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a b c d e\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 229,
+            "start": 229
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 48,
+            "start": 10
+          },
+          "generated": {
+            "end": 269,
+            "start": 264
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 15,
+            "start": 15
+          },
+          "generated": {
+            "end": 283,
+            "start": 283
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 15
+          },
+          "generated": {
+            "end": 309,
+            "start": 303
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 40,
+            "start": 21
+          },
+          "generated": {
+            "end": 318,
+            "start": 313
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 40,
+            "start": 21
+          },
+          "generated": {
+            "end": 331,
+            "start": 320
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA;IAAK,oBAAA,UAAM,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><span class=\" a\tb\nc\rd\fe \"/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><span class=\" a\tb\nc\rd\fe \"/></div></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"a b c d e\"></span></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested",
+      "links": [
+        {
+          "authored": {
+            "end": 48,
+            "start": 10
+          },
+          "generated": {
+            "end": 160,
+            "start": 157
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 15
+          },
+          "generated": {
+            "end": 192,
+            "start": 188
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 40,
+            "start": 21
+          },
+          "generated": {
+            "end": 198,
+            "start": 193
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 40,
+            "start": 21
+          },
+          "generated": {
+            "end": 209,
+            "start": 200
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 15
+          },
+          "generated": {
+            "end": 217,
+            "start": 213
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 48,
+            "start": 10
+          },
+          "generated": {
+            "end": 223,
+            "start": 220
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;UAAU,+BAAK,KAAM,OAAA,aAAN,OAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><span class=\" a\tb\nc\rd\fe \"/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><span class=\" a\tb\nc\rd\fe \"/></div></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a b c d e\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested",
+      "links": [],
+      "map": null,
+      "source": "<template><div><span class=\" a\tb\nc\rd\fe \"/></div></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"a b c d e\"></span></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested",
+      "links": [],
+      "map": null,
+      "source": "<template><div><span class=\" a\tb\nc\rd\fe \"/></div></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"div\", { class: \"a b\" }),\n    _createElementVNode(\"span\", { class: \"c d\" })\n  ], 64 /* STABLE_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-fragment",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 310,
+            "start": 310
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 10
+          },
+          "generated": {
+            "end": 335,
+            "start": 330
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 344,
+            "start": 339
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 351,
+            "start": 346
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 31
+          },
+          "generated": {
+            "end": 360,
+            "start": 360
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 52,
+            "start": 31
+          },
+          "generated": {
+            "end": 386,
+            "start": 380
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 50,
+            "start": 37
+          },
+          "generated": {
+            "end": 395,
+            "start": 390
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 50,
+            "start": 37
+          },
+          "generated": {
+            "end": 402,
+            "start": 397
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;IAAU,oBAAA,SAAK,OAAA;IAAgB,oBAAA,UAAM,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\" a  b \"/><span class=\" c d \"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\" a  b \"/><span class=\" c d \"/></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "const _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><div class=\"a b\"></div><span class=\"c d\"></span><!--]-->`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-fragment",
+      "links": [
+        {
+          "authored": {
+            "end": 31,
+            "start": 10
+          },
+          "generated": {
+            "end": 95,
+            "start": 92
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 101,
+            "start": 96
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 106,
+            "start": 103
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 10
+          },
+          "generated": {
+            "end": 113,
+            "start": 110
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 52,
+            "start": 31
+          },
+          "generated": {
+            "end": 119,
+            "start": 115
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 50,
+            "start": 37
+          },
+          "generated": {
+            "end": 125,
+            "start": 120
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 50,
+            "start": 37
+          },
+          "generated": {
+            "end": 130,
+            "start": 127
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 52,
+            "start": 31
+          },
+          "generated": {
+            "end": 138,
+            "start": 134
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;kBAAU,IAAK,OAAA,OAAL,KAAqB,KAAM,OAAA,OAAN",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\" a  b \"/><span class=\" c d \"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\" a  b \"/><span class=\" c d \"/></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"div\", { class: \"a b\" }),\n    _createElementVNode(\"span\", { class: \"c d\" })\n  ], 64 /* STABLE_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-fragment",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\" a  b \"/><span class=\" c d \"/></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "const _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><div class=\"a b\"></div><span class=\"c d\"></span><!--]-->`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-fragment",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\" a  b \"/><span class=\" c d \"/></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-bare",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 22,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 20,
+            "start": 15
+          },
+          "generated": {
+            "end": 235,
+            "start": 230
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 20,
+            "start": 15
+          },
+          "generated": {
+            "end": 239,
+            "start": 237
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA,SAAK,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class/></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-bare",
+      "links": [
+        {
+          "authored": {
+            "end": 22,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 20,
+            "start": 15
+          },
+          "generated": {
+            "end": 245,
+            "start": 240
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 20,
+            "start": 15
+          },
+          "generated": {
+            "end": 249,
+            "start": 247
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 22,
+            "start": 10
+          },
+          "generated": {
+            "end": 268,
+            "start": 265
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU,mCAAK,OAAA,kBAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class/></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-bare",
+      "links": [],
+      "map": null,
+      "source": "<template><div class/></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-bare",
+      "links": [],
+      "map": null,
+      "source": "<template><div class/></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-empty",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 25,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 23,
+            "start": 15
+          },
+          "generated": {
+            "end": 235,
+            "start": 230
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 23,
+            "start": 15
+          },
+          "generated": {
+            "end": 239,
+            "start": 237
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA,SAAK,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\"\"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\"\"/></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-empty",
+      "links": [
+        {
+          "authored": {
+            "end": 25,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 23,
+            "start": 15
+          },
+          "generated": {
+            "end": 245,
+            "start": 240
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 23,
+            "start": 15
+          },
+          "generated": {
+            "end": 249,
+            "start": 247
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 25,
+            "start": 10
+          },
+          "generated": {
+            "end": 268,
+            "start": 265
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU,mCAAK,OAAA,kBAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\"\"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\"\"/></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-empty",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\"\"/></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-root-empty",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\"\"/></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested-bare",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 229,
+            "start": 229
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 34,
+            "start": 10
+          },
+          "generated": {
+            "end": 269,
+            "start": 264
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 15,
+            "start": 15
+          },
+          "generated": {
+            "end": 283,
+            "start": 283
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 28,
+            "start": 15
+          },
+          "generated": {
+            "end": 309,
+            "start": 303
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 26,
+            "start": 21
+          },
+          "generated": {
+            "end": 318,
+            "start": 313
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 26,
+            "start": 21
+          },
+          "generated": {
+            "end": 322,
+            "start": 320
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA;IAAK,oBAAA,UAAM,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><span class/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><span class/></div></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class></span></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested-bare",
+      "links": [
+        {
+          "authored": {
+            "end": 34,
+            "start": 10
+          },
+          "generated": {
+            "end": 160,
+            "start": 157
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 28,
+            "start": 15
+          },
+          "generated": {
+            "end": 192,
+            "start": 188
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 26,
+            "start": 21
+          },
+          "generated": {
+            "end": 198,
+            "start": 193
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 28,
+            "start": 15
+          },
+          "generated": {
+            "end": 205,
+            "start": 201
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 34,
+            "start": 10
+          },
+          "generated": {
+            "end": 211,
+            "start": 208
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;UAAU,+BAAK,KAAM,QAAN,OAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><span class/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><span class/></div></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested-bare",
+      "links": [],
+      "map": null,
+      "source": "<template><div><span class/></div></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class></span></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested-bare",
+      "links": [],
+      "map": null,
+      "source": "<template><div><span class/></div></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested-empty",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 229,
+            "start": 229
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 37,
+            "start": 10
+          },
+          "generated": {
+            "end": 269,
+            "start": 264
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 15,
+            "start": 15
+          },
+          "generated": {
+            "end": 283,
+            "start": 283
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 15
+          },
+          "generated": {
+            "end": 309,
+            "start": 303
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 21
+          },
+          "generated": {
+            "end": 318,
+            "start": 313
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 21
+          },
+          "generated": {
+            "end": 322,
+            "start": 320
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA;IAAK,oBAAA,UAAM,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><span class=\"\"/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><span class=\"\"/></div></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"\"></span></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested-empty",
+      "links": [
+        {
+          "authored": {
+            "end": 37,
+            "start": 10
+          },
+          "generated": {
+            "end": 160,
+            "start": 157
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 15
+          },
+          "generated": {
+            "end": 192,
+            "start": 188
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 21
+          },
+          "generated": {
+            "end": 198,
+            "start": 193
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 21
+          },
+          "generated": {
+            "end": 200,
+            "start": 200
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 15
+          },
+          "generated": {
+            "end": 208,
+            "start": 204
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 37,
+            "start": 10
+          },
+          "generated": {
+            "end": 214,
+            "start": 211
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;UAAU,+BAAK,KAAM,OAAA,IAAN,OAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><span class=\"\"/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><span class=\"\"/></div></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested-empty",
+      "links": [],
+      "map": null,
+      "source": "<template><div><span class=\"\"/></div></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"\"></span></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-nested-empty",
+      "links": [],
+      "map": null,
+      "source": "<template><div><span class=\"\"/></div></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a&amp;b \\\"<>'\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-entities",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 229,
+            "start": 229
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 76,
+            "start": 10
+          },
+          "generated": {
+            "end": 269,
+            "start": 264
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 15,
+            "start": 15
+          },
+          "generated": {
+            "end": 283,
+            "start": 283
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 70,
+            "start": 15
+          },
+          "generated": {
+            "end": 309,
+            "start": 303
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 68,
+            "start": 21
+          },
+          "generated": {
+            "end": 318,
+            "start": 313
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 68,
+            "start": 21
+          },
+          "generated": {
+            "end": 335,
+            "start": 320
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA;IAAK,oBAAA,UAAM,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"a&amp;amp;b &quot;&lt;&gt;&#39;\"></span></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-entities",
+      "links": [
+        {
+          "authored": {
+            "end": 76,
+            "start": 10
+          },
+          "generated": {
+            "end": 160,
+            "start": 157
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 70,
+            "start": 15
+          },
+          "generated": {
+            "end": 192,
+            "start": 188
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 68,
+            "start": 21
+          },
+          "generated": {
+            "end": 198,
+            "start": 193
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 68,
+            "start": 21
+          },
+          "generated": {
+            "end": 231,
+            "start": 200
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 70,
+            "start": 15
+          },
+          "generated": {
+            "end": 239,
+            "start": 235
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 76,
+            "start": 10
+          },
+          "generated": {
+            "end": 245,
+            "start": 242
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;UAAU,+BAAK,KAAM,OAAA,mCAAN,OAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a&amp;b \\\"<>'\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-entities",
+      "links": [],
+      "map": null,
+      "source": "<template><div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"a&amp;amp;b &quot;&lt;&gt;&#39;\"></span></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-entities",
+      "links": [],
+      "map": null,
+      "source": "<template><div><span class=\" a&amp;amp;b &#32; &quot;&lt;&gt;&#39; \"/></div></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"ready\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unquoted",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 26,
+            "start": 15
+          },
+          "generated": {
+            "end": 235,
+            "start": 230
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 26,
+            "start": 15
+          },
+          "generated": {
+            "end": 244,
+            "start": 237
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA,SAAK,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=ready /></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=ready /></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"ready\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unquoted",
+      "links": [
+        {
+          "authored": {
+            "end": 29,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 26,
+            "start": 15
+          },
+          "generated": {
+            "end": 245,
+            "start": 240
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 26,
+            "start": 15
+          },
+          "generated": {
+            "end": 254,
+            "start": 247
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 10
+          },
+          "generated": {
+            "end": 273,
+            "start": 270
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU,mCAAK,OAAA,uBAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=ready /></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=ready /></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"ready\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unquoted",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=ready /></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"ready\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unquoted",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=ready /></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"雪🌸\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unicode-trim",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 44,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 15
+          },
+          "generated": {
+            "end": 235,
+            "start": 230
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 15
+          },
+          "generated": {
+            "end": 248,
+            "start": 237
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA,SAAK,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\"﻿ 雪🌸 ﻿\"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\"﻿ 雪🌸 ﻿\"/></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"雪🌸\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unicode-trim",
+      "links": [
+        {
+          "authored": {
+            "end": 44,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 15
+          },
+          "generated": {
+            "end": 245,
+            "start": 240
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 15
+          },
+          "generated": {
+            "end": 258,
+            "start": 247
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 44,
+            "start": 10
+          },
+          "generated": {
+            "end": 277,
+            "start": 274
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU,mCAAK,OAAA,sBAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\"﻿ 雪🌸 ﻿\"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\"﻿ 雪🌸 ﻿\"/></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"雪🌸\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unicode-trim",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\"﻿ 雪🌸 ﻿\"/></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"雪🌸\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unicode-trim",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\"﻿ 雪🌸 ﻿\"/></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a b﻿c​de\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unicode-inner",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 229,
+            "start": 229
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 52,
+            "start": 10
+          },
+          "generated": {
+            "end": 269,
+            "start": 264
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 15,
+            "start": 15
+          },
+          "generated": {
+            "end": 283,
+            "start": 283
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 46,
+            "start": 15
+          },
+          "generated": {
+            "end": 309,
+            "start": 303
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 44,
+            "start": 21
+          },
+          "generated": {
+            "end": 318,
+            "start": 313
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 44,
+            "start": 21
+          },
+          "generated": {
+            "end": 337,
+            "start": 320
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA;IAAK,oBAAA,UAAM,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><span class=\"a b﻿c​de\"/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><span class=\"a b﻿c​de\"/></div></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"a b﻿c​de\"></span></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unicode-inner",
+      "links": [
+        {
+          "authored": {
+            "end": 52,
+            "start": 10
+          },
+          "generated": {
+            "end": 160,
+            "start": 157
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 46,
+            "start": 15
+          },
+          "generated": {
+            "end": 192,
+            "start": 188
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 44,
+            "start": 21
+          },
+          "generated": {
+            "end": 198,
+            "start": 193
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 44,
+            "start": 21
+          },
+          "generated": {
+            "end": 215,
+            "start": 200
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 46,
+            "start": 15
+          },
+          "generated": {
+            "end": 223,
+            "start": 219
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 52,
+            "start": 10
+          },
+          "generated": {
+            "end": 229,
+            "start": 226
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;UAAU,+BAAK,KAAM,OAAA,aAAN,OAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><span class=\"a b﻿c​de\"/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><span class=\"a b﻿c​de\"/></div></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"span\", { class: \"a b﻿c​de\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unicode-inner",
+      "links": [],
+      "map": null,
+      "source": "<template><div><span class=\"a b﻿c​de\"/></div></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><span class=\"a b﻿c​de\"></span></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-unicode-inner",
+      "links": [],
+      "map": null,
+      "source": "<template><div><span class=\"a b﻿c​de\"/></div></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"br\", { class: \"a b\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-void",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 229,
+            "start": 229
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 41,
+            "start": 10
+          },
+          "generated": {
+            "end": 269,
+            "start": 264
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 15,
+            "start": 15
+          },
+          "generated": {
+            "end": 283,
+            "start": 283
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 35,
+            "start": 15
+          },
+          "generated": {
+            "end": 307,
+            "start": 303
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 33,
+            "start": 19
+          },
+          "generated": {
+            "end": 316,
+            "start": 311
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 33,
+            "start": 19
+          },
+          "generated": {
+            "end": 323,
+            "start": 318
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA;IAAK,oBAAA,QAAI,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><br class=\" a  b \"/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><br class=\" a  b \"/></div></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><br class=\"a b\"></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-void",
+      "links": [
+        {
+          "authored": {
+            "end": 41,
+            "start": 10
+          },
+          "generated": {
+            "end": 160,
+            "start": 157
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 35,
+            "start": 15
+          },
+          "generated": {
+            "end": 190,
+            "start": 188
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 33,
+            "start": 19
+          },
+          "generated": {
+            "end": 196,
+            "start": 191
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 33,
+            "start": 19
+          },
+          "generated": {
+            "end": 201,
+            "start": 198
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 41,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;UAAU,+BAAK,GAAI,OAAA,OAAT",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div><br class=\" a  b \"/></div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div><br class=\" a  b \"/></div></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"br\", { class: \"a b\" })\n  ]))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-void",
+      "links": [],
+      "map": null,
+      "source": "<template><div><br class=\" a  b \"/></div></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><br class=\"a b\"></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-void",
+      "links": [],
+      "map": null,
+      "source": "<template><div><br class=\" a  b \"/></div></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\"kept\"),\n    _createElementVNode(\"div\", { class: \"a b\" })\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-comment-root",
+      "links": [
+        {
+          "authored": {
+            "end": 21,
+            "start": 10
+          },
+          "generated": {
+            "end": 379,
+            "start": 373
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 21,
+            "start": 21
+          },
+          "generated": {
+            "end": 386,
+            "start": 386
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 21
+          },
+          "generated": {
+            "end": 411,
+            "start": 406
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 40,
+            "start": 26
+          },
+          "generated": {
+            "end": 420,
+            "start": 415
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 40,
+            "start": 26
+          },
+          "generated": {
+            "end": 427,
+            "start": 422
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;wBAAU;IAAW,oBAAA,SAAK,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><!--kept--><div class=\" a  b \"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><!--kept--><div class=\" a  b \"/></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><!--kept--><div${_ssrRenderAttrs(_mergeProps({ class: \"a b\" }, _attrs))}></div><!--]-->`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-comment-root",
+      "links": [
+        {
+          "authored": {
+            "end": 21,
+            "start": 10
+          },
+          "generated": {
+            "end": 220,
+            "start": 216
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 21
+          },
+          "generated": {
+            "end": 227,
+            "start": 224
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 40,
+            "start": 26
+          },
+          "generated": {
+            "end": 264,
+            "start": 259
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 40,
+            "start": 26
+          },
+          "generated": {
+            "end": 271,
+            "start": 266
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 21
+          },
+          "generated": {
+            "end": 290,
+            "start": 287
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;qBAAU,QAAW,mCAAK,OAAA,qBAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><!--kept--><div class=\" a  b \"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><!--kept--><div class=\" a  b \"/></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createCommentVNode as _createCommentVNode, createElementVNode as _createElementVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createCommentVNode(\"kept\"),\n    _createElementVNode(\"div\", { class: \"a b\" })\n  ], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-comment-root",
+      "links": [],
+      "map": null,
+      "source": "<template><!--kept--><div class=\" a  b \"/></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[--><!--kept--><div${_ssrRenderAttrs(_mergeProps({ class: \"a b\" }, _attrs))}></div><!--]-->`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-comment-root",
+      "links": [],
+      "map": null,
+      "source": "<template><!--kept--><div class=\" a  b \"/></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a&amp;b\" }, \"x\"))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-original-7502",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 34,
+            "start": 15
+          },
+          "generated": {
+            "end": 235,
+            "start": 230
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 34,
+            "start": 15
+          },
+          "generated": {
+            "end": 246,
+            "start": 237
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 36,
+            "start": 35
+          },
+          "generated": {
+            "end": 253,
+            "start": 250
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA,SAAK,OAAA,aAAoB",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\"a&amp;amp;b\">x</div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\"a&amp;amp;b\">x</div></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"a&amp;b\" }, _attrs))}>x</div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-original-7502",
+      "links": [
+        {
+          "authored": {
+            "end": 42,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 34,
+            "start": 15
+          },
+          "generated": {
+            "end": 245,
+            "start": 240
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 34,
+            "start": 15
+          },
+          "generated": {
+            "end": 256,
+            "start": 247
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 36,
+            "start": 35
+          },
+          "generated": {
+            "end": 271,
+            "start": 270
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 42,
+            "start": 10
+          },
+          "generated": {
+            "end": 276,
+            "start": 273
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU,mCAAK,OAAA,uBAAoB,GAAzB",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\"a&amp;amp;b\">x</div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\"a&amp;amp;b\">x</div></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a&amp;b\" }, \"x\"))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-original-7502",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\"a&amp;amp;b\">x</div></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"a&amp;b\" }, _attrs))}>x</div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-original-7502",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\"a&amp;amp;b\">x</div></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    title: \"first\",\n    class: \"a b\",\n    \"data-last\": \"&amp;雪🌸\"\n  }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-suffix",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 74,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 28,
+            "start": 15
+          },
+          "generated": {
+            "end": 239,
+            "start": 234
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 28,
+            "start": 15
+          },
+          "generated": {
+            "end": 248,
+            "start": 241
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 43,
+            "start": 29
+          },
+          "generated": {
+            "end": 259,
+            "start": 254
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 43,
+            "start": 29
+          },
+          "generated": {
+            "end": 266,
+            "start": 261
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 72,
+            "start": 44
+          },
+          "generated": {
+            "end": 283,
+            "start": 272
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 72,
+            "start": 44
+          },
+          "generated": {
+            "end": 299,
+            "start": 285
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA;IAAK,OAAA;IAAc,OAAA;IAAe,aAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    title: \"first\",\n    class: \"a b\",\n    \"data-last\": \"&amp;雪🌸\"\n  }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-suffix",
+      "links": [
+        {
+          "authored": {
+            "end": 74,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 28,
+            "start": 15
+          },
+          "generated": {
+            "end": 249,
+            "start": 244
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 28,
+            "start": 15
+          },
+          "generated": {
+            "end": 258,
+            "start": 251
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 43,
+            "start": 29
+          },
+          "generated": {
+            "end": 269,
+            "start": 264
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 43,
+            "start": 29
+          },
+          "generated": {
+            "end": 276,
+            "start": 271
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 72,
+            "start": 44
+          },
+          "generated": {
+            "end": 293,
+            "start": 282
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 72,
+            "start": 44
+          },
+          "generated": {
+            "end": 309,
+            "start": 295
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 74,
+            "start": 10
+          },
+          "generated": {
+            "end": 330,
+            "start": 327
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU;IAAK,OAAA;IAAc,OAAA;IAAe,aAAA;iBAAlC",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    title: \"first\",\n    class: \"a b\",\n    \"data-last\": \"&amp;雪🌸\"\n  }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-suffix",
+      "links": [],
+      "map": null,
+      "source": "<template><div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({\n    title: \"first\",\n    class: \"a b\",\n    \"data-last\": \"&amp;雪🌸\"\n  }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-suffix",
+      "links": [],
+      "map": null,
+      "source": "<template><div title=\"first\" class=\" a\t b \" data-last=\"&amp;amp;雪🌸\"/></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a b c\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-encoded-spaces",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 50,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 48,
+            "start": 15
+          },
+          "generated": {
+            "end": 235,
+            "start": 230
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 48,
+            "start": 15
+          },
+          "generated": {
+            "end": 244,
+            "start": 237
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA,SAAK,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\" a&#13;&#10;&#9;b &#12;c \"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\" a&#13;&#10;&#9;b &#12;c \"/></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"a b c\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-encoded-spaces",
+      "links": [
+        {
+          "authored": {
+            "end": 50,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 48,
+            "start": 15
+          },
+          "generated": {
+            "end": 245,
+            "start": 240
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 48,
+            "start": 15
+          },
+          "generated": {
+            "end": 254,
+            "start": 247
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 50,
+            "start": 10
+          },
+          "generated": {
+            "end": 273,
+            "start": 270
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU,mCAAK,OAAA,uBAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class=\" a&#13;&#10;&#9;b &#12;c \"/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class=\" a&#13;&#10;&#9;b &#12;c \"/></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"a b c\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-encoded-spaces",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\" a&#13;&#10;&#9;b &#12;c \"/></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"a b c\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-encoded-spaces",
+      "links": [],
+      "map": null,
+      "source": "<template><div class=\" a&#13;&#10;&#9;b &#12;c \"/></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"static\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-former-scriptless-refusal",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 235,
+            "start": 230
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 245,
+            "start": 237
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA,SAAK,OAAA",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class='static'/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class='static'/></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"static\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-former-scriptless-refusal",
+      "links": [
+        {
+          "authored": {
+            "end": 31,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 245,
+            "start": 240
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 29,
+            "start": 15
+          },
+          "generated": {
+            "end": 255,
+            "start": 247
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 10
+          },
+          "generated": {
+            "end": 274,
+            "start": 271
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU,mCAAK,OAAA,wBAAL",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class='static'/></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class='static'/></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"static\" }))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-former-scriptless-refusal",
+      "links": [],
+      "map": null,
+      "source": "<template><div class='static'/></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"static\" }, _attrs))}></div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-former-scriptless-refusal",
+      "links": [],
+      "map": null,
+      "source": "<template><div class='static'/></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"&lt;\" }, \"x\"))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-former-lower-refusal",
+      "links": [
+        {
+          "authored": {
+            "end": 10,
+            "start": 10
+          },
+          "generated": {
+            "end": 186,
+            "start": 186
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 39,
+            "start": 10
+          },
+          "generated": {
+            "end": 226,
+            "start": 221
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 15
+          },
+          "generated": {
+            "end": 235,
+            "start": 230
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 15
+          },
+          "generated": {
+            "end": 243,
+            "start": 237
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 33,
+            "start": 32
+          },
+          "generated": {
+            "end": 250,
+            "start": 247
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;SAAU,mCAAA,SAAK,OAAA,UAAiB",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class='&amp;lt;'>x</div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class='&amp;lt;'>x</div></template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"&lt;\" }, _attrs))}>x</div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-former-lower-refusal",
+      "links": [
+        {
+          "authored": {
+            "end": 39,
+            "start": 10
+          },
+          "generated": {
+            "end": 208,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 15
+          },
+          "generated": {
+            "end": 245,
+            "start": 240
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 31,
+            "start": 15
+          },
+          "generated": {
+            "end": 253,
+            "start": 247
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 33,
+            "start": 32
+          },
+          "generated": {
+            "end": 268,
+            "start": 267
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 39,
+            "start": 10
+          },
+          "generated": {
+            "end": 273,
+            "start": 270
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU,mCAAK,OAAA,oBAAiB,GAAtB",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><div class='&amp;lt;'>x</div></template>"
+        ],
+        "version": 3
+      },
+      "source": "<template><div class='&amp;lt;'>x</div></template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", { class: \"&lt;\" }, \"x\"))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-former-lower-refusal",
+      "links": [],
+      "map": null,
+      "source": "<template><div class='&amp;lt;'>x</div></template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"&lt;\" }, _attrs))}>x</div>`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-former-lower-refusal",
+      "links": [],
+      "map": null,
+      "source": "<template><div class='&amp;lt;'>x</div></template>",
+      "sourceMap": false,
+      "target": "ssr"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_mergeProps({ class: \"a\" }, _attrs))} data-v-static-class></p>`)\n}\n_sfc_main.ssrRender = ssrRender\n_sfc_main.__scopeId = \"data-v-static-class\"\nexport default _sfc_main\n",
+      "css": ".a[data-v-static-class]:empty{color:red}",
+      "cssLinks": [
+        {
+          "authored": {
+            "end": 51,
+            "start": 49
+          },
+          "generated": {
+            "end": 2,
+            "start": 0
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 68,
+            "start": 51
+          },
+          "generated": {
+            "end": 40,
+            "start": 23
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "cssMap": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": "AAAiD,uBAAE",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><p class='a'/></template><style scoped>.a:empty{color:red}</style>"
+        ],
+        "version": 3
+      },
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-former-scoped-refusal",
+      "links": [
+        {
+          "authored": {
+            "end": 24,
+            "start": 10
+          },
+          "generated": {
+            "end": 206,
+            "start": 205
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 22,
+            "start": 13
+          },
+          "generated": {
+            "end": 243,
+            "start": 238
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 22,
+            "start": 13
+          },
+          "generated": {
+            "end": 248,
+            "start": 245
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 24,
+            "start": 10
+          },
+          "generated": {
+            "end": 285,
+            "start": 284
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeSelectedClass.vue",
+        "mappings": ";;;;;UAAU,iCAAG,OAAA,uCAAH",
+        "names": [],
+        "sources": [
+          "NativeSelectedClass.vue"
+        ],
+        "sourcesContent": [
+          "<template><p class='a'/></template><style scoped>.a:empty{color:red}</style>"
+        ],
+        "version": 3
+      },
+      "scopeId": "data-v-static-class",
+      "source": "<template><p class='a'/></template><style scoped>.a:empty{color:red}</style>",
+      "sourceMap": true,
+      "target": "scoped-ssr"
+    },
+    {
+      "code": "import { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\nconst _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<p${_ssrRenderAttrs(_mergeProps({ class: \"a\" }, _attrs))} data-v-static-class></p>`)\n}\n_sfc_main.ssrRender = ssrRender\n_sfc_main.__scopeId = \"data-v-static-class\"\nexport default _sfc_main\n",
+      "css": ".a[data-v-static-class]:empty{color:red}",
+      "cssLinks": [],
+      "cssMap": null,
+      "filename": "NativeSelectedClass.vue",
+      "id": "class-former-scoped-refusal",
+      "links": [],
+      "map": null,
+      "scopeId": "data-v-static-class",
+      "source": "<template><p class='a'/></template><style scoped>.a:empty{color:red}</style>",
+      "sourceMap": false,
+      "target": "scoped-ssr"
+    }
+  ]
 }

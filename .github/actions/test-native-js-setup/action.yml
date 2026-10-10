@@ -50,7 +50,6 @@ runs:
         if-no-files-found: error
         retention-days: 7
     - name: Capture whole original selected SFC components and runtime
-      if: ${{ always() }}
       uses: ./.github/actions/test-native-selected-sfc-dom
     - name: Capture original block-local handler components and runtime
       uses: ./.github/actions/test-native-handler-local-sfc-dom
