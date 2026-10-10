@@ -32,6 +32,7 @@ type PaletteControl = {
 type PaletteResponse = {
   title: string;
   componentTagName?: string;
+  unsupportedProps?: string[];
   controls: PaletteControl[];
   groups: string[];
   json: string;
@@ -105,6 +106,12 @@ export async function handleArtPalette(
 
       if (analysis.props.length > 0) {
         mergeSfcPropsIntoPalette(palette, analysis.props);
+      }
+      if (
+        isVueSourcePath(resolvedComponentPath) &&
+        analysis.props.some((prop) => prop.name === "__proto__")
+      ) {
+        palette.unsupportedProps = ["__proto__"];
       }
     } catch {
       // Ignore errors reading component file.

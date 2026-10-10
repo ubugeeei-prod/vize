@@ -8,6 +8,7 @@ import { sendMessage } from "../composables/usePostMessage";
 import { indentUsage, usagePropsAttributes, usageScript } from "../utils/usageCode";
 import { safeUrl } from "../utils/safeUrl";
 import { getControlComponent } from "./controlComponent";
+import { supportedProps, unsupportedPropEdit } from "../utils/supportedProps";
 import SlotEditor from "./SlotEditor.vue";
 import HighlightedCode from "./HighlightedCode.vue";
 
@@ -44,6 +45,11 @@ const iframeReady = ref(false);
 const slotContent = shallowRef<Record<string, string>>({});
 const copiedUsage = ref(false);
 const art = computed(() => getArt(props.artPath));
+const unsupported = computed(() => new Set(palette.value?.unsupportedProps ?? []));
+const appliedValues = computed(() => supportedProps(mergedValues.value, unsupported.value));
+const retainedUnsupported = computed(() =>
+  Object.keys(mergedValues.value).filter((name) => unsupported.value.has(name)),
+);
 const controlsMode = ref<"controls" | "code">("controls");
 const saveStatus = ref<"idle" | "saved">("idle");
 
@@ -56,6 +62,7 @@ const showAddForm = ref(false);
 const newPropName = ref("");
 const newPropControl = ref("text");
 const newPropDefault = ref("");
+const newPropError = ref<string | null>(null);
 
 const previewUrl = computed(() => {
   if (!props.defaultVariantName) return "";
@@ -73,9 +80,9 @@ watch(
   { immediate: true },
 );
 
-// Send props to iframe when mergedValues change
+// Send only supported props; retain unsupported raw values in the editor.
 watch(
-  mergedValues,
+  appliedValues,
   (newValues) => {
     const iframe = iframeRef.value;
     if (!iframe || !iframeReady.value) return;
@@ -129,8 +136,8 @@ function onCodeEditorUpdate(newContent: string) {
   try {
     const parsed = JSON.parse(newContent);
     if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
-      codeError.value = null;
-      setAllValues(parsed as Record<string, unknown>);
+      codeError.value = unsupportedPropEdit(mergedValues.value, parsed, unsupported.value) ?? null;
+      if (!codeError.value) setAllValues(parsed as Record<string, unknown>);
     } else {
       codeError.value = "JSON must be an object";
     }
@@ -149,8 +156,8 @@ function onReadyMessage(event: MessageEvent) {
   // Send initial props if any
   const iframe = iframeRef.value;
   if (!iframe) return;
-  if (Object.keys(mergedValues.value).length > 0) {
-    sendMessage(iframe, "musea:set-props", { props: mergedValues.value });
+  if (Object.keys(appliedValues.value).length > 0) {
+    sendMessage(iframe, "musea:set-props", { props: appliedValues.value });
   }
   if (Object.keys(slotContent.value).length > 0) {
     sendMessage(iframe, "musea:set-slots", { slots: slotContent.value });
@@ -173,7 +180,7 @@ function onResetValues() {
   saveStatus.value = "idle";
   const iframe = iframeRef.value;
   if (!iframe || !iframeReady.value) return;
-  sendMessage(iframe, "musea:set-props", { props: mergedValues.value });
+  sendMessage(iframe, "musea:set-props", { props: appliedValues.value });
   sendMessage(iframe, "musea:set-slots", { slots: {} });
 }
 
@@ -187,6 +194,7 @@ function setControlsMode(mode: "controls" | "code") {
 }
 
 function openAddForm() {
+  newPropError.value = null;
   showAddForm.value = true;
 }
 
@@ -201,6 +209,11 @@ function onSlotsUpdate(slots: Record<string, string>) {
 function onAddProp() {
   const name = newPropName.value.trim();
   if (!name) return;
+  if (unsupported.value.has(name)) {
+    newPropError.value = `${name} cannot be applied by Vue.`;
+    return;
+  }
+  newPropError.value = null;
   let defaultValue: unknown = newPropDefault.value;
   if (newPropControl.value === "number") {
     defaultValue = Number(newPropDefault.value) || 0;
@@ -228,7 +241,7 @@ const hasSlotContent = computed(() => {
 const usageCode = computed(() => {
   if (!palette.value) return "";
   const componentName = palette.value.componentTagName || palette.value.title || "Component";
-  const propsStr = usagePropsAttributes(mergedValues.value);
+  const propsStr = usagePropsAttributes(appliedValues.value);
   const templateOnly = (() => {
     if (!propsStr && !hasSlotContent.value) {
       return `<${componentName} />`;
@@ -395,6 +408,11 @@ const controlKindOptions = [
             </div>
           </div>
 
+          <p v-if="retainedUnsupported.length" class="props-code-error" role="note">
+            {{ retainedUnsupported.join(", ") }} is retained only. Preview and copied usage contain
+            supported props.
+          </p>
+
           <!-- Controls Mode -->
           <template v-if="controlsMode === 'controls'">
             <div class="props-grid">
@@ -410,7 +428,7 @@ const controlKindOptions = [
                   >
                     <div class="props-control-content">
                       <component
-                        :is="getControlComponent(control.control)"
+                        :is="getControlComponent(control.control, unsupported.has(control.name))"
                         :label="control.name"
                         :description="control.description"
                         :required="control.required"
@@ -454,7 +472,7 @@ const controlKindOptions = [
                 >
                   <div class="props-control-content">
                     <component
-                      :is="getControlComponent(control.control)"
+                      :is="getControlComponent(control.control, unsupported.has(control.name))"
                       :label="control.name"
                       :description="control.description"
                       :required="control.required"
@@ -494,6 +512,9 @@ const controlKindOptions = [
             <!-- Add Prop -->
             <div class="props-add-section">
               <div v-if="showAddForm" class="props-add-form">
+                <p v-if="newPropError" class="props-code-error props-add-error" role="alert">
+                  {{ newPropError }}
+                </p>
                 <input
                   v-model="newPropName"
                   type="text"

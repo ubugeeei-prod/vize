@@ -90,7 +90,14 @@ void test("actual native Art analysis and palette retain complete compact type-l
         observed[endpoint] = { body, parsed: JSON.parse(body) };
         assert.deepEqual(
           JSON.parse(body),
-          endpoint === "analysis" ? vector.expected : expectations.get(vector.name),
+          endpoint === "analysis"
+            ? vector.expected
+            : {
+                ...(expectations.get(vector.name) as Record<string, unknown>),
+                ...(vector.expected.props.some((prop) => prop.name === "__proto__")
+                  ? { unsupportedProps: ["__proto__"] }
+                  : {}),
+              },
           vector.name,
         );
         if (endpoint === "palette") {

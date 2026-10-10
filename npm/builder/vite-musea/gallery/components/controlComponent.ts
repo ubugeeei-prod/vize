@@ -5,8 +5,10 @@ import RangeControl from "./controls/RangeControl.vue";
 import SelectControl from "./controls/SelectControl.vue";
 import ColorControl from "./controls/ColorControl.vue";
 import ObjectControl from "./controls/ObjectControl.vue";
+import UnsupportedPropControl from "./controls/UnsupportedPropControl.vue";
 
-export function getControlComponent(kind: string) {
+export function getControlComponent(kind: string, unsupported = false) {
+  if (unsupported) return UnsupportedPropControl;
   switch (kind) {
     case "text":
       return TextControl;

@@ -94,6 +94,10 @@ for path completion, missing-file diagnostics, go-to-definition, and prop/slot i
 The source may be a `.vue`, `.ts`, `.tsx`, `.js`, or `.jsx` file. For render-function components,
 Musea reads statically declared runtime `props` and `emits` for the analysis and props panel.
 
+Vue 3.5.41 does not apply a component prop literally named `__proto__`. Retaining its raw editor
+value does not make it a rendered prop. Avoid this prop name; [#8533](https://github.com/ubugeeei-prod/vize/issues/8533)
+tracks explicit editor refusal and release acceptance.
+
 ## TypeScript and Editor Setup
 
 Add the client types once, usually in `src/env.d.ts`:
