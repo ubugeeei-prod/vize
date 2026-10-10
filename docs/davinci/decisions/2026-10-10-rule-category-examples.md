@@ -134,3 +134,16 @@ prose, examples, routes,
 native annotation metadata and payload sizes are unchanged. Obtain fresh
 successor source Actions before protected admission; the failed earlier run
 remains evidence of the stale assertion rather than a passing source receipt.
+
+## Protected delivery rebase
+
+Rebase this genuine native Stack child onto its refreshed Vue-category
+parent after actual main exposed the parent's canonical-record conflict.
+Retain every original category, all five locale examples, native assertions
+and copy-byte contract. Move only this slice's complete unchanged canonical
+clause beside its parent in the existing tooling-input paragraph. All
+incoming source ratchets and decisions remain whole. Previous green
+receipts supply historical evidence only; exact fresh Check, full Docs,
+protected Stack merge and deployed reader verification are still required.
+Bounded route start/completion logs make long complete-page capture progress
+visible without changing source packets, screenshots or acceptance gates.

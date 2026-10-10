@@ -95,16 +95,21 @@ try {
     verifyCaptureRenderControls(activeBrowser, origin, output),
   );
   await verifyLocaleRenderControls(activeBrowser, origin, output);
-  results = await runRenderJobs(jobs, workers, async (job, phase) =>
-    withRenderContext(
+  let completedCaptures = 0;
+  results = await runRenderJobs(jobs, workers, async (job, phase) => {
+    console.log(`Capturing ${job.device} ${job.route} with complete source and page pixels`);
+    const report = await withRenderContext(
       () =>
         phase("context", () =>
           activeBrowser.newContext({ viewport: job.viewport, reducedMotion: "reduce" }),
         ),
       (context) => verifyNavigationRenderJob(context, job, phase, { origin, output, linkedPages }),
       (close) => phase("context-close", close),
-    ),
-  );
+    );
+    completedCaptures += 1;
+    console.log(`Verified ${job.device} ${job.route}; ${completedCaptures} route captures complete`);
+    return report;
+  });
   reports = collectRenderReceipts(jobs, results);
   const failures = results.filter(({ timing }) => timing.status === "failed");
   assert.equal(
