@@ -74,8 +74,21 @@ for (const mode of ["dev", "static"] as const) {
           origin = await listenUnsupportedPropsHost(host);
         }
         const gallery = `${origin}${mode === "static" ? "/site" : ""}/__musea__/`;
+        const artPath = path.join(root, "src", vector.filename.replace(".vue", ".art.vue"));
+        const storageKey = getPaletteStateStorageKey(artPath);
+        const seed = Object.fromEntries(vector.names.map((name) => [name, `Retained ${name}`]));
+        const serialized = JSON.stringify({
+          version: 1,
+          values: seed,
+          customProps: [],
+          deletedPaletteProps: [],
+        });
         const context = await browser.newContext({
           permissions: ["clipboard-read", "clipboard-write"],
+          storageState: {
+            cookies: [],
+            origins: [{ origin, localStorage: [{ name: storageKey, value: serialized }] }],
+          },
         });
         const page = await context.newPage();
         const observePage = (current: typeof page) => {
@@ -85,24 +98,6 @@ for (const mode of ["dev", "static"] as const) {
           });
         };
         observePage(page);
-        const artPath = path.join(root, "src", vector.filename.replace(".vue", ".art.vue"));
-        const storageKey = getPaletteStateStorageKey(artPath);
-        const seed = Object.fromEntries(vector.names.map((name) => [name, `Retained ${name}`]));
-        await page.goto(gallery);
-        await page.evaluate(
-          ({ key, serialized }) => {
-            localStorage.setItem(key, serialized);
-          },
-          {
-            key: storageKey,
-            serialized: JSON.stringify({
-              version: 1,
-              values: seed,
-              customProps: [],
-              deletedPaletteProps: [],
-            }),
-          },
-        );
         const openProps = async (title = vector.title) => {
           await page.goto(gallery);
           await page.locator(".art-item").filter({ hasText: title }).first().click();
