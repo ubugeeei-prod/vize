@@ -39,16 +39,15 @@ export async function loadMuseaFileSet(
 ): Promise<MuseaFileSet> {
   const loaded = await loadViteConfig(configPath, cwd);
   const pluginOptions = loaded ? readPluginMuseaOptions(loaded.plugins) : undefined;
-  const vizeOptions =
-    pluginOptions?.include && pluginOptions?.projectRoot !== undefined
-      ? undefined
-      : await readVizeMuseaOptions(loaded?.configDir ?? cwd);
+  const vizeOptions = pluginOptions?.include
+    ? undefined
+    : await readVizeMuseaOptions(loaded?.configDir ?? cwd);
   const include = pluginOptions?.include ?? vizeOptions?.include ?? DEFAULT_INCLUDE;
   const exclude = pluginOptions?.exclude ?? vizeOptions?.exclude ?? DEFAULT_EXCLUDE;
   const root = loaded?.root ?? cwd;
   return {
     root,
-    projectRoot: path.resolve(root, pluginOptions?.projectRoot ?? vizeOptions?.projectRoot ?? "."),
+    projectRoot: path.resolve(root, pluginOptions?.projectRoot ?? "."),
     include,
     exclude,
   };
@@ -112,7 +111,7 @@ function readPluginMuseaOptions(plugins: unknown[]): MuseaOptions | undefined {
 
 async function readVizeMuseaOptions(
   dir: string,
-): Promise<Pick<MuseaOptions, "include" | "exclude" | "basePath" | "projectRoot"> | undefined> {
+): Promise<Pick<MuseaOptions, "include" | "exclude" | "basePath"> | undefined> {
   for (const name of VIZE_CONFIG_NAMES) {
     const file = path.join(dir, name);
     if (!(await fileExists(file))) continue;
@@ -127,16 +126,10 @@ async function readVizeMuseaOptions(
         file,
       );
       const config = loaded?.config as
-        | { musea?: Pick<MuseaOptions, "include" | "exclude" | "basePath" | "projectRoot"> }
+        | { musea?: Pick<MuseaOptions, "include" | "exclude" | "basePath"> }
         | undefined;
       const musea = config?.musea;
-      if (
-        musea?.include ||
-        musea?.exclude ||
-        musea?.basePath !== undefined ||
-        musea?.projectRoot !== undefined
-      )
-        return musea;
+      if (musea?.include || musea?.exclude || musea?.basePath !== undefined) return musea;
     } catch {
       continue;
     }

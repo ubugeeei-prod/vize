@@ -122,6 +122,12 @@ await test(
       );
       const repeated = await capture("repeat", 0);
       assert.equal(repeated.summary.passed, 16);
+      await mkdir(path.join(output, "initial"), { recursive: true });
+      for (const result of first.results)
+        await copyFile(
+          path.resolve(output, result.snapshotPath),
+          path.join(output, "initial", path.basename(result.snapshotPath)),
+        );
       const indexPath = path.join(output, "reports/snapshots/identities.json");
       const initialIndex = await readFile(indexPath, "utf8");
       machineB = await buildMachine("machine-b");
