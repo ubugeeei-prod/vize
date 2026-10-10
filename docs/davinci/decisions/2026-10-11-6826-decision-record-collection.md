@@ -24,8 +24,9 @@ rule in `AGENTS.md`.
 
 Future decisions are recorded in a dedicated, uniquely named file and a
 concise comment on their existing issue in the same change. The GitHub
-directory listing and local file search provide the complete index. A new
-decision does not require appending to the shared foundation or README.
+directory offers browsing, and recursive local file search enumerates the
+complete collection. A new decision does not require appending to the shared
+foundation or README.
 Explicit supersession links define changes to earlier decisions; dates alone
 do not establish authority or implementation completion.
 

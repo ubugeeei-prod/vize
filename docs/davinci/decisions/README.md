@@ -10,7 +10,8 @@ companions, and the issue-specific records in this directory. Start with:
 
 Browse [all records on GitHub](https://github.com/ubugeeei-prod/vize/tree/main/docs/davinci/decisions),
 or list them locally with `rg --files docs/davinci/decisions -g '*.md'`.
-The directory listing is the complete index, including older filenames.
+The directory is the browsable index, including older filenames.
+Local file search recursively enumerates the complete collection.
 Adding a record requires no entry in this README or the shared foundation.
 
 ## Recording a decision
