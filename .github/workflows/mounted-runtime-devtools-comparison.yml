@@ -36,7 +36,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/mounted-child-custody/cores"
           source_sha=1d0f18e51a73f627922690bc4592689c927e080e
           git fetch --no-tags origin "$source_sha"
-          git diff --exit-code "$source_sha" HEAD -- crates davinci npm tests Cargo.toml Cargo.lock package.json pnpm-lock.yaml pnpm-workspace.yaml rust-toolchain.toml tools ':!tools/support/compat/github/mounted-child-custody.cjs'
+          git diff --exit-code "$source_sha" HEAD -- crates davinci npm tests Cargo.toml Cargo.lock package.json pnpm-lock.yaml pnpm-workspace.yaml rust-toolchain.toml tools ':!tools/support/compat/github/mounted-child-custody.cjs' ':!tools/support/compat/github/mounted-child-saturation.py' ':!tools/support/compat/github/mounted-child-capsule'
           git rev-parse HEAD "$source_sha^{tree}" > "$RUNNER_TEMP/mounted-child-custody/source.txt"
           echo "VIZE_MOUNTED_CHILD_SOURCE_SHA=$source_sha" >> "$GITHUB_ENV"
           echo "VIZE_MOUNTED_CHILD_CUSTODY=$RUNNER_TEMP/mounted-child-custody" >> "$GITHUB_ENV"
@@ -71,6 +71,18 @@ jobs:
           export NODE_OPTIONS="${NODE_OPTIONS:-} --require=$GITHUB_WORKSPACE/tools/support/compat/github/mounted-child-custody.cjs"
           export VIZE_MOUNTED_TRACE_OBSERVATIONS=1
           cargo nextest run --locked --cargo-profile ci --profile pr --package vize_atelier_vapor --test davinci_mounted_behavior --test-threads 4 --no-fail-fast 2>&1 | tee "$VIZE_MOUNTED_CHILD_CUSTODY/original-tests.log"
+      - name: Verify labeled core custody and saturate the unchanged failing input
+        run: |
+          set -euo pipefail
+          ulimit -c unlimited
+          export NODE_OPTIONS="${NODE_OPTIONS:-} --require=$GITHUB_WORKSPACE/tools/support/compat/github/mounted-child-custody.cjs"
+          set +e
+          VIZE_MOUNTED_CHILD_ROLE=controlled-sigsegv node -e 'process.kill(process.pid, "SIGSEGV")' > "$VIZE_MOUNTED_CHILD_CUSTODY/controlled-sigsegv.stdout" 2> "$VIZE_MOUNTED_CHILD_CUSTODY/controlled-sigsegv.stderr"
+          status=$?
+          set -e
+          echo "$status" > "$VIZE_MOUNTED_CHILD_CUSTODY/controlled-sigsegv.status"
+          test "$status" -eq 139
+          python3 tools/support/compat/github/mounted-child-saturation.py
       - name: Retain genuine core backtraces without changing failed exits
         if: ${{ always() }}
         run: |

@@ -40,6 +40,7 @@ if (directory) {
         argv: process.argv,
         cwd: process.cwd(),
         sourceSha: process.env.VIZE_MOUNTED_CHILD_SOURCE_SHA,
+        role: process.env.VIZE_MOUNTED_CHILD_ROLE ?? "original-mounted-tests",
         addons,
       })}\n`,
     );
