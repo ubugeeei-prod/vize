@@ -73,6 +73,9 @@ jobs:
         # earlier script result when only other source files changed.
         run: vp run --no-cache --filter './docs' build
 
+      - name: Verify reviewed Japanese editorial reading paths
+        run: vp node docs/scripts/verify-ja-editorial-render.ts
+
       - name: Verify rendered navigation and adoption guides
         run: vp node docs/scripts/verify-navigation-render.ts
 

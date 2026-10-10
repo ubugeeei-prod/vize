@@ -9,8 +9,8 @@ description: Vize のサポート区分、互換性の方針、実験的な機�
 
 Vize は v1 アルファ版を目指して開発中です。早期に導入できる機能と、変更が続く内部実装・実験的な統合を区別します。
 ツールチェーン全体が本番利用に十分な状態になった、という意味ではありません。
-導入判断には[本番利用の準備状況](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/production-readiness.md)を、
-非推奨期間やバージョンごとのサポートには[サポート方針](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/support-policy.md)を参照してください。
+導入判断には[本番利用の準備状況](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/production-readiness%2Emd)を、
+非推奨期間やバージョンごとのサポートには[サポート方針](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/support-policy%2Emd)を参照してください。
 
 <span id="バージョニング契約"></span>
 
@@ -145,6 +145,6 @@ CI が認識する破壊的変更の印は、Conventional Commits のタイト�
 すべての Vue 構文、パッケージマネージャーの配置、エディター機能、フレームワークとの互換性を保証するわけではありません。
 Vize のガイドが意図した違いを明記していない限り、公式の Vue ツールの結果を互換性の基準として扱ってください。
 リリースを止めるコンパイラ・型チェック・ランタイム・Vite ビルドの検証項目は、
-[Vue 互換性マトリックス](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/vue-parity-matrix.md)にまとめています。
+[Vue 互換性マトリックス](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/vue-parity-matrix%2Emd)にまとめています。
 
 セキュリティ上の問題は `SECURITY.md`、開発への参加と修正の流れは `CONTRIBUTING.md` を参照してください。
