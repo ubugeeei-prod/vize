@@ -34,6 +34,7 @@ export async function startHostedVrtSession(options: CliOptions, certificateSpki
   let host = "";
   let busy: Promise<void> | undefined;
   let closing = false;
+  let closeTask: Promise<void> | undefined;
   const server = createServer((request, response) => {
     if (!authorizeSession(request, response, gallery.origin, host, token)) return;
     if (closing) {
@@ -55,12 +56,16 @@ export async function startHostedVrtSession(options: CliOptions, certificateSpki
     }
     busy = (async () => {
       let runner: MuseaVrtRunner | undefined;
+      let outcome: { body: unknown; status: number } = {
+        body: { error: "Capture incomplete" },
+        status: 500,
+      };
       try {
         const input = await captureInput(request);
         const hosted = await loadHostedGallery(gallery.href);
         const art = hosted.arts.find((item) => item.path === input.artPath);
         if (!art) {
-          json(response, { error: "Art not found" }, 404);
+          outcome = { body: { error: "Art not found" }, status: 404 };
           return;
         }
         // HTTP redirects are refused before planning; browser redirects are guarded before PNG writes.
@@ -100,22 +105,36 @@ export async function startHostedVrtSession(options: CliOptions, certificateSpki
         await writeFile(target.htmlReportPath, html);
         artifacts.clear();
         const uiResults = await artifacts.results(results);
-        json(response, {
-          success: true,
-          results: uiResults,
-          summary,
-          reports: {
-            json: artifacts.add(rawJson, "application/json"),
-            html: artifacts.add(html, "text/html"),
+        outcome = {
+          status: 200,
+          body: {
+            success: true,
+            results: uiResults,
+            summary,
+            reports: {
+              json: artifacts.add(rawJson, "application/json"),
+              html: artifacts.add(html, "text/html"),
+            },
           },
-        });
+        };
       } catch (error) {
-        json(response, { error: error instanceof Error ? error.message : String(error) }, 400);
+        outcome = {
+          status: 400,
+          body: { error: error instanceof Error ? error.message : String(error) },
+        };
       } finally {
-        await runner?.close();
+        try {
+          await runner?.close();
+        } catch (error) {
+          outcome = { status: 500, body: { error: `Capture cleanup failed: ${String(error)}` } };
+        }
+        busy = undefined;
+        if (!response.destroyed) json(response, outcome.body, outcome.status);
       }
-    })().finally(() => {
+    })().catch((error) => {
       busy = undefined;
+      if (!response.destroyed && !response.headersSent)
+        json(response, { error: String(error) }, 500);
     });
   });
   await new Promise<void>((resolve, reject) => {
@@ -128,13 +147,15 @@ export async function startHostedVrtSession(options: CliOptions, certificateSpki
   return {
     endpoint: `http://${host}`,
     token,
-    async close() {
-      closing = true;
-      await busy;
-      artifacts.clear();
-      await new Promise<void>((resolve, reject) =>
-        server.close((error) => (error ? reject(error) : resolve())),
-      );
+    close() {
+      return (closeTask ??= (async () => {
+        closing = true;
+        await busy;
+        artifacts.clear();
+        await new Promise<void>((resolve, reject) =>
+          server.close((error) => (error ? reject(error) : resolve())),
+        );
+      })());
     },
   };
 }
@@ -143,9 +164,15 @@ export async function runServe(options: CliOptions): Promise<void> {
   const session = await startHostedVrtSession(options);
   console.log(`  VRT endpoint: ${session.endpoint}\n  Session token: ${session.token}\n`);
   const stop = () => {
-    void session.close().then(() => {
-      process.exitCode = 0;
-    });
+    void session.close().then(
+      () => {
+        process.exitCode = 0;
+      },
+      (error) => {
+        console.error("VRT session cleanup failed:", error);
+        process.exitCode = 1;
+      },
+    );
   };
   process.once("SIGINT", stop);
   process.once("SIGTERM", stop);

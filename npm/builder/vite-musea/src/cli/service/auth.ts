@@ -47,12 +47,15 @@ export async function captureInput(
   request: IncomingMessage,
 ): Promise<{ artPath: string; update: boolean }> {
   if (request.headers["content-type"] !== "application/json") throw new Error("Expected JSON");
-  let body = "";
+  const chunks: Buffer[] = [];
+  let size = 0;
   for await (const chunk of request) {
-    body += String(chunk);
-    if (Buffer.byteLength(body) > 4096) throw new Error("Capture input is too large");
+    if (!Buffer.isBuffer(chunk)) throw new Error("Expected HTTP bytes");
+    size += chunk.length;
+    if (size > 4096) throw new Error("Capture input is too large");
+    chunks.push(chunk);
   }
-  const input: unknown = JSON.parse(body);
+  const input: unknown = JSON.parse(Buffer.concat(chunks).toString("utf8"));
   if (
     !input ||
     typeof input !== "object" ||
