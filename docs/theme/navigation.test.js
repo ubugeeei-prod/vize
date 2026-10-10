@@ -219,5 +219,9 @@ void test("navigation opens the current goal and keeps generated leaf pages out 
     groups.map((group) => group.getAttribute("open") !== null),
     [true, true, false],
   );
+  assert.deepEqual(
+    groups.map((group) => group.querySelector(".nav-list").inert),
+    [false, false, true],
+  );
   assert.equal(groups[0].querySelector(".nav-title").tagName, "SUMMARY");
 });

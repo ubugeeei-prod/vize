@@ -1,5 +1,20 @@
 import assert from "node:assert/strict";
+import { createRequire } from "node:module";
 import type { Page } from "playwright";
+
+const require = createRequire(import.meta.url);
+const native = createRequire(require.resolve("@ox-content/vite-plugin"))("@ox-content/napi") as {
+  transform(
+    source: string,
+    options: { codeAnnotations: boolean },
+  ): { html: string; errors: unknown[] };
+};
+const annotationSource =
+  'const label: string = "Readable";\n// Comment outside the focused line\nconst ready = true;';
+const annotation = native.transform('```ts annotate="focus:1"\n' + annotationSource + "\n```", {
+  codeAnnotations: true,
+});
+assert.deepEqual(annotation.errors, []);
 
 export async function verifySidebarMotion(page: Page, device: string) {
   const sidebar = page.locator(".sidebar");
@@ -49,6 +64,7 @@ export async function verifySidebarMotion(page: Page, device: string) {
         intermediate,
         expanded: section.getBoundingClientRect().height,
         listHeight: list.getBoundingClientRect().height,
+        listScrollHeight: list.scrollHeight,
         animations: animations.length,
         supported: CSS.supports("interpolate-size", "allow-keywords"),
         open: section.open,
@@ -60,12 +76,22 @@ export async function verifySidebarMotion(page: Page, device: string) {
       assert(frames.intermediate < frames.expanded, "Disclosure must interpolate its height");
     }
     assert(frames.listHeight > 0, "Expanded links must have visible geometry");
+    assert(frames.listHeight + 1 >= frames.listScrollHeight, "Expanded links must not be clipped");
     await page.keyboard.press("Enter");
     assert.equal(
       await summary.evaluate((element) => (element.parentElement as HTMLDetailsElement).open),
       false,
     );
     assert.equal(await summary.evaluate((element) => element === document.activeElement), true);
+    await page.keyboard.press("Tab");
+    assert.equal(
+      await summary.evaluate((element) =>
+        element.parentElement!.querySelector("ul")!.contains(document.activeElement),
+      ),
+      false,
+      "Closing disclosure links must leave the keyboard sequence immediately",
+    );
+    await summary.focus();
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.keyboard.press("Enter");
     const reduced = await summary.evaluate((element) => ({
@@ -88,6 +114,29 @@ export async function verifySidebarMotion(page: Page, device: string) {
 }
 
 export async function verifyThemeReadability(page: Page) {
+  // A native focus annotation exercises dimmed comments even when authored
+  // guides on this route contain only plain or add/remove code examples.
+  const fixture = await page.evaluate(
+    ({ html, source }) => {
+      const content = document.querySelector(".content");
+      if (!content) return false;
+      const container = document.createElement("div");
+      container.setAttribute("data-render-annotation-control", "");
+      container.innerHTML = html;
+      content.append(container);
+      (
+        globalThis as typeof globalThis & {
+          __vizeDocsSyntax: { highlightAll(root: Element): void };
+        }
+      ).__vizeDocsSyntax.highlightAll(container);
+      if (container.querySelector("code")?.textContent !== source + "\n")
+        throw new Error("Native annotation source changed during highlighting");
+      if (!container.querySelector(".ox-code-line--dimmed"))
+        throw new Error("Native annotation control did not emit dimmed lines");
+      return true;
+    },
+    { html: annotation.html, source: annotationSource },
+  );
   await page.evaluate(async () => {
     await Promise.all(
       document
@@ -153,6 +202,8 @@ export async function verifyThemeReadability(page: Page) {
         return true;
       });
   });
+  if (fixture)
+    await page.locator("[data-render-annotation-control]").evaluate((element) => element.remove());
   for (const token of contrast) {
     assert(
       token.ratio >= 4.5,
@@ -184,4 +235,15 @@ export async function verifyIntroductoryNavigation(page: Page, route: string) {
   const analysis = groups.find((group) => group.paths.includes(`${prefix}/guide/static-analysis`));
   assert(analysis?.paths.includes(mapper), `${locale}: Content Mapper belongs in static analysis`);
   assert.equal(groups.filter((group) => group.paths.includes(mapper)).length, 1);
+}
+
+export async function switchDocsTheme(page: Page, theme: string, device: string) {
+  if ((await page.locator("html").getAttribute("data-theme")) === theme) return;
+  const entry = device === "desktop" && (await page.locator("body.entry-page").count()) > 0;
+  if (entry) {
+    await page.evaluate(() => scrollTo({ top: 120, behavior: "instant" }));
+    await page.locator(".header.header-visible").waitFor();
+  }
+  await page.locator(device === "mobile" ? "[data-mobile-theme]" : ".theme-toggle").click();
+  if (entry) await page.evaluate(() => scrollTo({ top: 0, behavior: "instant" }));
 }

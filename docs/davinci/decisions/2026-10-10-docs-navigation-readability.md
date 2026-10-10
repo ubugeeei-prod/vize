@@ -18,8 +18,10 @@ links used that stable fragment while translated heading slugs did not provide i
 
 Keep native details/summary semantics for sidebar groups. Short CSS size and
 chevron transitions respect reduced motion; browsers without intrinsic-size
-interpolation retain functional native disclosure. The mobile sheet animates
-its existing transform. A closed sheet is inert immediately, its controls expose
+interpolation retain functional native disclosure.
+Each closed group immediately makes its list inert, so links painted during
+the collapse transition cannot retain focus or re-enter the keyboard sequence.
+The mobile sheet animates its existing transform. A closed sheet is inert immediately, its controls expose
 the actual expanded state, and Escape closes it and returns focus to its trigger.
 
 Deepen the warm light background and its alternate/border surfaces by a few RGB

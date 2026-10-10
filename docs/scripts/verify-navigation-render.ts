@@ -14,6 +14,7 @@ import {
   verifyIntroductoryNavigation,
   verifySidebarMotion,
   verifyThemeReadability,
+  switchDocsTheme,
 } from "./theme-render-assertions.ts";
 
 type FontUsage = { familyName: string; glyphCount: number };
@@ -302,8 +303,7 @@ try {
       ) {
         const controlSelector = device === "mobile" ? "[data-mobile-theme]" : ".theme-toggle";
         for (const theme of ["light", "dark"]) {
-          if ((await page.locator("html").getAttribute("data-theme")) !== theme)
-            await page.locator(controlSelector).click();
+          await switchDocsTheme(page, theme, device);
           assert.equal(await page.locator("html").getAttribute("data-theme"), theme);
           assert.equal(await page.evaluate(() => localStorage.getItem("theme")), theme);
           const codeContrast = await verifyThemeReadability(page);

@@ -62,6 +62,16 @@ const vizeDocsI18nNavigation = (() => {
       list.append(item);
     }
     section.append(list);
+    list.inert = !open;
+    if (typeof MutationObserver !== "undefined") {
+      // Size interpolation keeps the closing content painted briefly. Inert
+      // removes its links from focus/accessibility as soon as open changes.
+      new MutationObserver(() => {
+        const expanded = section.hasAttribute("open");
+        if (!expanded && list.contains(document.activeElement)) heading.focus();
+        list.inert = !expanded;
+      }).observe(section, { attributes: true, attributeFilter: ["open"] });
+    }
 
     return section;
   }
