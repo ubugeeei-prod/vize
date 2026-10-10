@@ -65,20 +65,23 @@ export function restorePaletteState(
   saved: SavedPaletteState,
 ): RestoredPaletteState {
   const paletteNames = new Set(controls.map((control) => control.name));
+  const deletedPaletteProps = new Set(
+    saved.deletedPaletteProps.filter((name) => paletteNames.has(name)),
+  );
   const customProps: CustomProp[] = [];
   const customNames = new Set<string>();
 
   for (const customProp of saved.customProps) {
-    if (paletteNames.has(customProp.name) || customNames.has(customProp.name)) {
+    if (
+      (paletteNames.has(customProp.name) && !deletedPaletteProps.has(customProp.name)) ||
+      customNames.has(customProp.name)
+    ) {
       continue;
     }
     customNames.add(customProp.name);
     customProps.push(customProp);
   }
 
-  const deletedPaletteProps = new Set(
-    saved.deletedPaletteProps.filter((name) => paletteNames.has(name)),
-  );
   const allowedNames = new Set([...paletteNames, ...customNames]);
   const restoredValues = initialPaletteValues(controls);
 

@@ -87,28 +87,51 @@ pub(crate) fn resolve_dependency_with_inputs(
         return probe_candidates_with_inputs(&importer_dir.join(&specifier));
     }
 
-    let mut best: Option<(usize, PathBuf)> = None;
+    // Select the authored pattern before probing its targets. An exact key
+    // wins even when it has no files; otherwise only the longest matching
+    // wildcard prefix wins. Equal prefixes retain their incoming order.
+    let mut selected: Option<(&str, Option<&str>, usize)> = None;
+    for (pattern, _) in aliases {
+        if !pattern.contains('*') && specifier == *pattern {
+            selected = Some((pattern, None, 0));
+            break;
+        }
+        let Some((prefix, suffix)) = pattern.split_once('*') else {
+            continue;
+        };
+        if suffix.contains('*') {
+            continue;
+        }
+        let Some(capture) = specifier
+            .strip_prefix(prefix)
+            .and_then(|rest| rest.strip_suffix(suffix))
+        else {
+            continue;
+        };
+        if selected.is_none_or(|(_, _, length)| prefix.len() > length) {
+            selected = Some((pattern, Some(capture), prefix.len()));
+        }
+    }
+    let Some((selected_pattern, capture, _)) = selected else {
+        return (None, Vec::new());
+    };
     let mut inputs = Vec::new();
     for (pattern, target) in aliases {
-        let substituted = if let Some((prefix, suffix)) = pattern.split_once('*') {
-            let capture = specifier
-                .strip_prefix(prefix)
-                .and_then(|rest| rest.strip_suffix(suffix));
-            match (capture, target.split_once('*')) {
-                (Some(capture), Some((target_prefix, target_suffix)))
-                    if !suffix.contains('*') && !target_suffix.contains('*') =>
-                {
-                    let mut joined = target_prefix.to_owned();
-                    joined.push_str(capture);
-                    joined.push_str(target_suffix);
-                    Some(joined)
+        if pattern != selected_pattern {
+            continue;
+        }
+        let substituted = if let Some(capture) = capture {
+            target.split_once('*').and_then(|(prefix, suffix)| {
+                if suffix.contains('*') {
+                    return None;
                 }
-                _ => None,
-            }
-        } else if specifier == *pattern {
-            Some(target.clone())
+                let mut joined = prefix.to_owned();
+                joined.push_str(capture);
+                joined.push_str(suffix);
+                Some(joined)
+            })
         } else {
-            None
+            Some(target.clone())
         };
         let Some(substituted) = substituted else {
             continue;
@@ -118,20 +141,13 @@ pub(crate) fn resolve_dependency_with_inputs(
         } else {
             project_root.join(&substituted)
         };
-        // A suffix must not outweigh a longer wildcard prefix. Preserve the
-        // previous scores of every literal and trailing-wildcard key.
-        let rank = pattern
-            .split_once('*')
-            .map_or(pattern.len(), |(prefix, _)| prefix.len() + 1);
-        if best.as_ref().is_none_or(|(len, _)| rank > *len) {
-            let (resolved, consulted) = probe_candidates_with_inputs(&absolute);
-            inputs.extend(consulted);
-            if let Some(resolved) = resolved {
-                best = Some((rank, resolved));
-            }
+        let (resolved, consulted) = probe_candidates_with_inputs(&absolute);
+        inputs.extend(consulted);
+        if resolved.is_some() {
+            return (resolved, inputs);
         }
     }
-    (best.map(|(_, path)| path), inputs)
+    (None, inputs)
 }
 
 pub(super) fn probe_candidates(base: &Path) -> Option<PathBuf> {
@@ -195,3 +211,7 @@ fn probe_candidates_with_inputs(base: &Path) -> (Option<PathBuf>, Vec<PathBuf>) 
 #[cfg(test)]
 #[path = "alias_tests.rs"]
 mod alias_tests;
+
+#[cfg(test)]
+#[path = "precedence_tests.rs"]
+mod precedence_tests;

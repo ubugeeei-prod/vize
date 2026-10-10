@@ -1,0 +1,280 @@
+{
+  "schema": "vize.n8n.slot-dynamic-controls",
+  "cases": [
+    {
+      "id": "array-binding",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"[slot]\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+            "start": 33,
+            "end": 49,
+            "help": "Use a binding from the enclosing scope to choose the slot name",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "sourceSha256": "cf5ea678472dc81ed8bcb02f535175ac7ea2b24494fa4307fde4727a4b015656"
+    },
+    {
+      "id": "array-hole",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"[, slot]\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+            "start": 33,
+            "end": 51,
+            "help": "Use a binding from the enclosing scope to choose the slot name",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "sourceSha256": "f07654eca016404ab2a1344d0b67f0da1285f411c8a536b228c57be225684254"
+    },
+    {
+      "id": "array-rest",
+      "source": "<template>\n<FancyPanel><template #[rest]=\"[first, ...rest]\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+            "start": 33,
+            "end": 59,
+            "help": "Use a binding from the enclosing scope to choose the slot name",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "sourceSha256": "6709b4a3ea64b6c7fd650cbecb3863e9948443ac04bda1ab9fd1b401076a473b"
+    },
+    {
+      "id": "object-rest",
+      "source": "<template>\n<FancyPanel><template #[rest.name]=\"{ first, ...rest }\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+            "start": 33,
+            "end": 66,
+            "help": "Use a binding from the enclosing scope to choose the slot name",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "sourceSha256": "5cd8ed78ed10c0376830b1746fa0ccf24f368bc4c16b96cf79b42cfdabe22c8e"
+    },
+    {
+      "id": "nested-array",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ source: [slot] }\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+            "start": 33,
+            "end": 61,
+            "help": "Use a binding from the enclosing scope to choose the slot name",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "sourceSha256": "4af689bfeb04edd3f0e59f1e2e904a3850c679564657150c97acfef4fa530c7e"
+    },
+    {
+      "id": "renamed-default",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ source: slot = name }\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+            "start": 33,
+            "end": 66,
+            "help": "Use a binding from the enclosing scope to choose the slot name",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "sourceSha256": "e5bf9c847a5f34ac18d293468094bdb313a964cbf359af2e604a479db6efd8e0"
+    },
+    {
+      "id": "top-default",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"slot = name\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+            "start": 33,
+            "end": 54,
+            "help": "Use a binding from the enclosing scope to choose the slot name",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "sourceSha256": "5274910ff29dacde32acc614a69f499047ae7937bc7a0e2975a8246ad17affbe"
+    },
+    {
+      "id": "array-default",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"[slot = name]\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+            "start": 33,
+            "end": 56,
+            "help": "Use a binding from the enclosing scope to choose the slot name",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "sourceSha256": "f91b17152c0b1ac2b99ddc1dcfb7dfa5a75d85d8289d39f93886e76dc88bcfc3"
+    },
+    {
+      "id": "default-initializer-read",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ source: other = slot }\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "sourceSha256": "2221611300ab6a1a037d35155ca71fe3d6505fb27d76b4d11bd919adcc297274"
+    },
+    {
+      "id": "computed-key-read",
+      "source": "<template>\n<FancyPanel><template #[slot]=\"{ [slot]: other }\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "sourceSha256": "955204e0967b18d8a85f68854c58db0c46415c4209c78dc8a5b523f7f27f0566"
+    },
+    {
+      "id": "array-other-control",
+      "source": "<template>\n<FancyPanel><template #[name]=\"[slot]\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "sourceSha256": "2a10d6eb3c9d84fe3b61d5b2b3bed5570308586f305f020b7bb902b5fce473db"
+    },
+    {
+      "id": "object-property-control",
+      "source": "<template>\n<FancyPanel><template #[outside.slot]=\"{ slot }\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "sourceSha256": "c93e8ef1743a598b0efdc555d5ebe571e275bbdcd648c0a1ae88708d811457bd"
+    },
+    {
+      "id": "string-control",
+      "source": "<template>\n<FancyPanel><template #['slot']=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "sourceSha256": "7c7a578794033d7f49f4d2617fdf7c063fccaa315e5f5e345bc704b089c52338"
+    },
+    {
+      "id": "call-capture",
+      "source": "<template>\n<FancyPanel><template #[choose(slot)]=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+            "start": 33,
+            "end": 55,
+            "help": "Use a binding from the enclosing scope to choose the slot name",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "sourceSha256": "c2e5f2509b285aa649896de3795707dff52fdd28d5c0e4536826944c7652e7ce"
+    },
+    {
+      "id": "call-outer-control",
+      "source": "<template>\n<FancyPanel><template #[choose(name)]=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "sourceSha256": "495aa07b356fd1e5923f7cf59560501d5f821d33dd661702a6af6b7e44423594"
+    },
+    {
+      "id": "computed-member-control",
+      "source": "<template>\n<FancyPanel><template #[outside['slot']]=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "expected": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "sourceSha256": "013c7c55dfb68c3d5dc2fbcf38b5b3569c79ea526752ef8293f9764884a05d59"
+    }
+  ]
+}

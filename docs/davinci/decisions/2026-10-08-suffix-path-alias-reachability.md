@@ -85,3 +85,8 @@ The current frozen v0.437 release candidate excludes this change. Source
 delivery and later publication must be recorded independently.
 
 Reference: [TypeScript's `paths` contract](https://www.typescriptlang.org/docs/handbook/modules/reference#paths).
+
+The subsequent [pattern-selection decision](./2026-10-10-path-alias-pattern-selection.md)
+owns the separately reproduced exact-key and cross-pattern fallback correction.
+It preserves this suffix corpus and does not retroactively change its source or
+delivery evidence. Authored equal-prefix config order remains a separate TODO.
