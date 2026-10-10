@@ -19,12 +19,6 @@ pub(super) fn default_fmt_patterns() -> Vec<std::string::String> {
 }
 
 #[inline]
-#[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
-pub(super) fn has_explicit_patterns(patterns: &[std::string::String]) -> bool {
-    patterns != default_fmt_patterns().as_slice()
-}
-
-#[inline]
 pub(super) fn is_format_extension(extension: &str) -> bool {
     FORMAT_EXTENSIONS.contains(&extension)
 }

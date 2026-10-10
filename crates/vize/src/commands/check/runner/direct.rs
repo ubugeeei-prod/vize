@@ -8,38 +8,36 @@ use std::{
 use super::{
     CanonicalPathCache, CheckArgs, CheckerSettings, TsconfigInputCache, build_virtual_ts_options,
     collect_roots, dialect_from_features, exit_after_execution_error, explicit_input_root,
-    finish_executions, load_check_ignore_set, prepare_and_execute, report_no_inputs,
-    resolve_from_config_dir, resolve_invocation_program, resolve_nuxt_project_root,
-    split_program_candidates, template_syntax_mode, validate_config_arg,
-    validate_corsa_server_count, warn_for_disabled_legacy,
+    finish_executions, prepare_and_execute, report_no_inputs, resolve_from_config_dir,
+    resolve_invocation_program, resolve_nuxt_project_root, split_program_candidates,
+    template_syntax_mode, validate_corsa_server_count, warn_for_disabled_legacy,
 };
 
 /// Run type checking directly with materialized Corsa projects.
 pub(crate) fn run_direct(args: &CheckArgs) {
     let start = Instant::now();
     args.profile_export.begin(args.profile);
-    validate_config_arg(args);
-
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let loaded_config = if args.no_config {
-        crate::config::LoadedConfigWithFeatures {
-            config: crate::config::VizeConfig::default(),
-            source_path: None,
-            features: crate::config::ConfigFeatureFlags::default(),
-        }
+    let project_config = if args.no_config {
+        crate::config::LoadedProjectConfig::default()
     } else {
-        crate::config::load_config_with_features_and_source(args.config.as_deref())
+        crate::config::try_load_project_config_with_source(args.config.as_deref()).unwrap_or_else(
+            |error| {
+                eprintln!("\x1b[31mError:\x1b[0m {error}");
+                std::process::exit(2);
+            },
+        )
+    };
+    let experimental_vue = project_config.document.experimental_vue_flags();
+    let compiler_template_syntax = project_config.document.compiler_template_syntax();
+    let ignores = project_config.document.entry_ignores();
+    let (config, features) = project_config.document.into_config_and_features();
+    let loaded_config = crate::config::LoadedConfigWithFeatures {
+        config,
+        features,
+        source_path: project_config.source_path,
     };
     crate::config::write_schema_for_config(loaded_config.source_path.as_deref());
-    let experimental_vue = if args.no_config {
-        crate::config::ConfigExperimentalVueFlags::default()
-    } else {
-        crate::config::load_config_experimental_vue_flags_with_source(args.config.as_deref()).flags
-    };
-    let compiler_template_syntax = loaded_config
-        .source_path
-        .as_deref()
-        .and_then(|path| crate::config::load_compiler_template_syntax(Some(path)));
     let dialect = dialect_from_features(loaded_config.features.vue_version);
     let options_api = loaded_config.features.type_checker_options_api;
     let jsx_typecheck = loaded_config.features.type_checker_jsx_typecheck;
@@ -77,8 +75,13 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         std::process::exit(2);
     }
 
+    let default_root = if args.patterns.is_empty() && args.tsconfig.is_none() {
+        project_config.project_root.as_deref().unwrap_or(&cwd)
+    } else {
+        &cwd
+    };
     let (invocation_project_root, invocation_tsconfig_path) =
-        resolve_invocation_program(effective_tsconfig.as_deref(), &cwd);
+        resolve_invocation_program(effective_tsconfig.as_deref(), default_root);
     let nuxt_project_root = resolve_nuxt_project_root(
         effective_tsconfig.as_deref(),
         &cwd,
@@ -88,12 +91,12 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let mut tsconfig_input_cache = TsconfigInputCache::default();
     let mut canonical_paths = CanonicalPathCache::default();
     let mut package_route_resolver = vize_canon::PackageRouteResolver::default();
-    let check_ignore_set = load_check_ignore_set(args, config_dir);
+    let check_ignore_set = super::ignores::CheckIgnoreSet::new(&ignores, config_dir);
     let collect_start = Instant::now();
     let collected = collect_roots(
         args,
         &invocation_project_root,
-        &cwd,
+        default_root,
         invocation_tsconfig_path.as_deref(),
         jsx_typecheck,
         &mut tsconfig_input_cache,

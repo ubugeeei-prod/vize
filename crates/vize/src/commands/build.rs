@@ -58,7 +58,6 @@ pub struct BuildArgs {
     /// quote patterns in the shell.
     /// Backslashes are separators, not escapes. Use [*], [?], [[], or []] for
     /// literal *, ?, [, or ].
-    #[arg(default_value = "./**/*.vue")]
     pub patterns: Vec<String>,
 
     /// Output directory (default: ./dist)

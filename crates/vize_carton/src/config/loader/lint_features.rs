@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use super::{
     LoadedConfigWithFeatures, LoadedRawConfig, load_raw_config_checked, load_raw_config_with_source,
@@ -141,6 +141,16 @@ pub fn try_load_linter_execution_with_source(
     path: Option<&Path>,
 ) -> Result<LoadedLintExecutionConfig, std::string::String> {
     load_raw_config_checked(path).map(linter_execution_snapshot)
+}
+
+/// Derive the lint plan and Vite project identity from the same evaluation.
+pub fn try_load_linter_execution_with_project(
+    path: Option<&Path>,
+) -> Result<(LoadedLintExecutionConfig, Option<PathBuf>), std::string::String> {
+    load_raw_config_checked(path).map(|loaded| {
+        let root = loaded.project_root();
+        (linter_execution_snapshot(loaded), root)
+    })
 }
 
 fn linter_execution_snapshot(loaded: LoadedRawConfig) -> LoadedLintExecutionConfig {

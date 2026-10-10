@@ -158,6 +158,9 @@ impl Default for ConfigFeatureFlags {
 pub(crate) struct RawVizeConfig {
     #[serde(rename = "$schema")]
     pub schema: Option<String>,
+    /// Project identity projected by a Vite host; not a stable config field.
+    #[serde(rename = "projectRoot")]
+    pub project_root: Option<String>,
     #[serde(rename = "basePath")]
     pub base_path: Option<String>,
     pub files: Option<Vec<String>>,
@@ -249,6 +252,7 @@ impl RawVizeConfig {
     pub(crate) fn into_config_and_features(self) -> (VizeConfig, ConfigFeatureFlags) {
         let RawVizeConfig {
             schema,
+            project_root: _,
             base_path: _,
             files: _,
             dialect,

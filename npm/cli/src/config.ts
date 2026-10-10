@@ -61,8 +61,9 @@ export function defineConfig(config: UserConfigExport): UserConfigExport {
 export async function resolveViteConfigExport(
   exported: unknown,
   env?: ConfigEnv,
+  configDir?: string,
 ): Promise<ResolvedVizeConfig> {
-  return normalizeLoadedConfig(await projectViteConfigExport(exported, env));
+  return normalizeLoadedConfig(await projectViteConfigExport(exported, env, configDir));
 }
 
 /**
@@ -224,7 +225,7 @@ async function resolveFileExport(
   env?: ConfigEnv,
 ): Promise<ResolvedVizeConfig> {
   return isViteConfigFile(filePath)
-    ? resolveViteConfigExport(exported, env)
+    ? resolveViteConfigExport(exported, env, path.dirname(filePath))
     : resolveConfigExport(exported, env);
 }
 

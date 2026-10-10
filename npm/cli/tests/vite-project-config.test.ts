@@ -113,3 +113,39 @@ test("automatic discovery stops at an unconfigured monorepo package boundary", a
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("Vite root projects scoped paths while preserving global entries and authored values", async () => {
+  const root = path.join(os.tmpdir(), "vize-vite-root-fixture");
+  const source = {
+    root: "app",
+    vize: {
+      files: ["src/**/*.vue"],
+      ignores: ["src/Ignored.vue"],
+      typeChecker: { tsconfig: "tsconfig.json", corsaPath: "tools/corsa" },
+      entries: [
+        { files: ["src/**/*.vue"], linter: { rules: { "a11y/alt-text": "error" } } },
+        { basePath: "packages/ui", files: ["*.vue"] },
+      ],
+    },
+  };
+  const original = JSON.stringify(source);
+  const resolved = await resolveViteConfigExport(source, undefined, root);
+  assert.equal(resolved.projectRoot, path.join(root, "app"));
+  assert.equal(resolved.basePath, path.join(root, "app"));
+  assert.deepEqual(resolved.ignores, [path.join(root, "app/src/Ignored.vue")]);
+  assert.equal(resolved.typeChecker.tsconfig, path.join(root, "app/tsconfig.json"));
+  assert.equal(resolved.typeChecker.corsaPath, path.join(root, "app/tools/corsa"));
+  assert.equal(resolved.entries[0].basePath, path.join(root, "app"));
+  assert.equal(resolved.entries[1].basePath, path.join(root, "app/packages/ui"));
+  assert.equal(JSON.stringify(source), original);
+
+  const entries = await resolveViteConfigExport(
+    { root: "app", vize: [{ formatter: { singleQuote: true } }, { files: ["src/*.vue"] }] },
+    undefined,
+    root,
+  );
+  assert.equal(entries[0].projectRoot, path.join(root, "app"));
+  assert.equal(entries[1].basePath, undefined);
+  assert.equal(entries[1].formatter.singleQuote, true);
+  assert.equal(entries[2].basePath, path.join(root, "app"));
+});
