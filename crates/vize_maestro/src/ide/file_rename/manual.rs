@@ -5,6 +5,7 @@
     reason = "tower-lsp lsp_types take std String/HashMap values, built with to_string/format!"
 )]
 
+mod documents;
 mod path;
 mod script;
 
@@ -17,6 +18,8 @@ use std::{
 
 use ignore::{WalkBuilder, WalkState};
 use tower_lsp::lsp_types::{FileRename, Range, TextEdit, Url, WorkspaceEdit};
+
+pub(super) use documents::rename_open_documents;
 
 pub(super) use self::path::{
     RESOLVABLE_SCRIPT_EXTENSIONS, RenderStyle, apply_all_path_renames, candidate_exists,
@@ -131,42 +134,6 @@ pub(super) fn collect_import_rename_edits(
     }
 }
 
-pub(super) fn rename_open_documents(
-    state: &ServerState,
-    renames: &[FileRename],
-) -> Vec<(Url, Url)> {
-    let rename_targets = rename_targets(renames);
-    if rename_targets.is_empty() {
-        return Vec::new();
-    }
-
-    let mut renamed_documents = Vec::new();
-    let open_uris = state.documents.uris();
-
-    for old_uri in open_uris {
-        let Some(new_uri) = apply_all_uri_renames(&old_uri, &rename_targets) else {
-            continue;
-        };
-
-        if new_uri == old_uri {
-            continue;
-        }
-
-        if state.rename_document(&old_uri, new_uri.clone()) {
-            state.remove_virtual_docs(&old_uri);
-
-            if let Some(document) = state.documents.get(&new_uri) {
-                let content = document.text();
-                drop(document);
-                state.update_virtual_docs(&new_uri, &content);
-            }
-
-            renamed_documents.push((old_uri, new_uri));
-        }
-    }
-
-    renamed_documents
-}
 
 fn process_importer_path(
     state: &ServerState,
