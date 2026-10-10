@@ -1,3 +1,5 @@
+import type { OxlintHtmlOptions, OxlintHtmlOutcome } from "@vizejs/native";
+
 export interface PatinaPosition {
   line: number;
   column: number;
@@ -34,6 +36,7 @@ export interface PatinaRuleMeta {
 }
 
 export interface PatinaBinding {
+  lintOxlintHtml?: (options: OxlintHtmlOptions) => OxlintHtmlOutcome;
   lintPatinaSfc(
     source: string,
     options?: {

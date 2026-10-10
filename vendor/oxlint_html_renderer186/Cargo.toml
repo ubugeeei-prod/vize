@@ -1,0 +1,17 @@
+[package]
+name = "oxlint_html_renderer186"
+version = "0.0.0"
+edition = "2024"
+license = "MIT"
+publish = false
+description = "Private frozen Oxlint 1.86 renderer kernel"
+
+[dependencies]
+oxc_span.workspace = true
+bytecount = "=0.6.9"
+itoa = "=1.0.18"
+memchr.workspace = true
+smallvec.workspace = true
+textwrap = "=0.16.2"
+unicode-width.workspace = true
+unicode-segmentation.workspace = true

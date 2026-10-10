@@ -20,6 +20,20 @@ import {
 import { projectOutputFormat, unavailableProjectTransport } from "./project-output.ts";
 
 export interface OxlintProcessResult {
+  rawStdout?: Uint8Array;
+  rawStderr?: Uint8Array;
+  phases?: NonNullable<OxlintProcessResult["observation"]>[];
+  observation?: {
+    executable: string;
+    args: string[];
+    cwd: string;
+    status: number | null;
+    signal: NodeJS.Signals | null;
+    error: string | null;
+    stdoutBytes: Uint8Array;
+    stderrBytes: Uint8Array;
+    environment: Record<string, string | null>;
+  };
   status: number | null;
   stderr: string;
   stdout: string;
@@ -79,14 +93,18 @@ export async function prepareScopedSelection(
         ),
       };
     if (!vueFiles.some((file) => selected.includes(file))) return { result: original };
+    const suffix =
+      "Script-safe Vue transport requires one regular JSON or TS/MTS object config; " +
+      "the original engine report is retained, but Vize transport is unqualified.\n";
     return {
       result: {
         ...original,
         status: Math.max(original.status ?? 1, 1),
-        stderr:
-          original.stderr +
-          "Script-safe Vue transport requires one regular JSON or TS/MTS object config; " +
-          "the original engine report is retained, but Vize transport is unqualified.\n",
+        stderr: original.stderr + suffix,
+        rawStderr: Buffer.concat([
+          original.rawStderr ?? Buffer.from(original.stderr),
+          Buffer.from(suffix),
+        ]),
       },
     };
   }

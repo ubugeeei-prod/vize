@@ -1,0 +1,16 @@
+{
+  "label": "native7",
+  "command": [
+    "__TEMP_ROOT__/vize-lsp439-20261010-fb402f3b/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc",
+    "--project",
+    "tsconfig.json",
+    "--pretty",
+    "false"
+  ],
+  "cwd": "__TEMP_ROOT__/vize-canon3984-collector-gap-20261010/selected-exact-missing/tsx",
+  "status": 1,
+  "signal": null,
+  "error": null,
+  "stdout": "App.tsx(1,23): error TS2307: Cannot find module '@x' or its corresponding type declarations.\n",
+  "stderr": ""
+}

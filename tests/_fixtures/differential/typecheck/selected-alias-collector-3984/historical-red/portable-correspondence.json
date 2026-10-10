@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "kind": "portable-historical-report-derivatives",
+  "executionClaim": "No producer, provider, build or historical replay was executed for this transformation.",
+  "transformation": {
+    "algorithm": "Ordered UTF-8 byte-prefix substitution at a trailing slash boundary; JSON formatting and every other byte are preserved.",
+    "rules": [
+      {
+        "placeholder": "__SOURCE_WORKSPACE__",
+        "role": "Historical source worktree parent; the worktree leaf and executable suffix remain literal."
+      },
+      {
+        "placeholder": "__NODE_RUNTIMES__",
+        "role": "Historical Node runtime parent; the version and bin/node suffix remain literal."
+      },
+      {
+        "placeholder": "__TEMP_ROOT__",
+        "role": "Historical temporary-root parent; authority, package, project and case suffixes remain literal."
+      }
+    ],
+    "inverseVerification": "Each replacement was inverted using the privately retained original prefix correspondence; the result matched every original byte.",
+    "originalCustody": "Original whole report bytes and the full inverse correspondence are retained outside Git; no machine-root prefix is published here."
+  },
+  "scope": {
+    "authoredInputsAndExpectedReports": "Unchanged byte for byte.",
+    "historicalEightCaseArchive": "Unchanged byte for byte.",
+    "semanticClaim": "The records retain historical process returns, command suffixes, hashes, input sizes and complete diagnostics; placeholder paths are archival references, not runnable current paths."
+  },
+  "records": [
+    {
+      "file": "source.json",
+      "originalBytes": 1688,
+      "originalSha256": "9fb9d989004ea7a7b91d2c76c84a822a80cd2c667aeee34045f23c1686c48f58",
+      "portableBytes": 1665,
+      "portableSha256": "c3eddf3c8abec9548e811c9af34f295f70bfc434a41910391c2b5ea0b6f4bca0",
+      "replacements": {
+        "__SOURCE_WORKSPACE__": 1,
+        "__NODE_RUNTIMES__": 0,
+        "__TEMP_ROOT__": 4
+      },
+      "wholeByteInverseVerified": true
+    },
+    {
+      "file": "native7.json",
+      "originalBytes": 500,
+      "originalSha256": "05e12e56e2d6f45666142a3fda6ccc31a9f0a1f256f71f1fad334a8f6366d7fe",
+      "portableBytes": 502,
+      "portableSha256": "c6f67483795c326eb7805eab992eb18a34a34cc1cc09f4966cf5e6ed7de61ea0",
+      "replacements": {
+        "__SOURCE_WORKSPACE__": 0,
+        "__NODE_RUNTIMES__": 0,
+        "__TEMP_ROOT__": 2
+      },
+      "wholeByteInverseVerified": true
+    },
+    {
+      "file": "ts6.json",
+      "originalBytes": 535,
+      "originalSha256": "37d4a26f9b2b818b8fc4952c9b05f5e929647049df35c6e31a43aeda611f0e6e",
+      "portableBytes": 512,
+      "portableSha256": "4b650dd0fe853ecc68233a0d28308c554a77f7bc621fcc1d741d348a66f24a73",
+      "replacements": {
+        "__SOURCE_WORKSPACE__": 0,
+        "__NODE_RUNTIMES__": 1,
+        "__TEMP_ROOT__": 2
+      },
+      "wholeByteInverseVerified": true
+    },
+    {
+      "file": "results.json",
+      "originalBytes": 2784,
+      "originalSha256": "8f87dcb66227c8875ec107f8e140aa0972382d6a5058440f71626474f5bd078b",
+      "portableBytes": 2786,
+      "portableSha256": "bea42b13d465a755ba194b5cdcc44328ccbc69d6735b0d7f0f9cb43bf67a1781",
+      "replacements": {
+        "__SOURCE_WORKSPACE__": 0,
+        "__NODE_RUNTIMES__": 0,
+        "__TEMP_ROOT__": 2
+      },
+      "wholeByteInverseVerified": true
+    }
+  ]
+}

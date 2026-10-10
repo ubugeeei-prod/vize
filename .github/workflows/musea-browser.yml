@@ -61,7 +61,7 @@ jobs:
         env:
           VIZE_MUSEA_NATIVE_BROWSER_TESTS: "1"
         run: |
-          vp exec tsx --test src/art-component.test.ts src/inline-art.browser.test.ts src/vrt-api.browser.test.ts src/vrt-report.browser.test.ts src/vrt/report-identity.test.ts
+          vp exec tsx --test src/art-component.test.ts src/inline-art.browser.test.ts src/vrt-api.browser.test.ts src/vrt-report.browser.test.ts src/vrt/report-identity.test.ts src/usage-component.browser.test.ts
           vp exec tsx --test src/inline-art-static.browser.test.ts
       - name: Retain native inline Art browser observations
         if: always()

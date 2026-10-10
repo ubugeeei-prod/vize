@@ -146,6 +146,7 @@ void test("public native evidence remains reachable after prior build or package
       "target/oxlint-original-project-checks-7903.json",
       "target/oxlint-script-safe-carrier-7903.json",
       "target/oxlint-original-project-transport/**",
+      "target/oxlint-original-html-binding-7903/**",
       "",
     ].join("\n"),
     "if-no-files-found": "warn",

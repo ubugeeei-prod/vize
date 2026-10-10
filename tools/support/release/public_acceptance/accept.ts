@@ -17,6 +17,8 @@ import { publicInputs } from "./inputs.ts";
 import { rejectOverrides } from "./installed.ts";
 import { derivePublicationPlan, readRawBlob } from "./plan.ts";
 import { verifyPublication } from "./registry.ts";
+import { materializeVrtInputs, vrtHarness } from "./vrt_fixtures.ts";
+import { assertVrtCustody } from "./vrt_artifacts.ts";
 
 rejectOverrides();
 const source = publicInputs(process.env);
@@ -40,6 +42,7 @@ const consumerHarness = [
   "browser.ts",
   "gallery.ts",
   "browser_observation.ts",
+  ...vrtHarness,
 ];
 
 if (process.argv[2] === "prepare") {
@@ -134,17 +137,20 @@ export default function publicSetup(app, context) {
   for (const name of consumerHarness) {
     copyFileSync(path.join(toolDirectory, name), path.join(consumer, name));
   }
+  const vrtInputs = materializeVrtInputs(consumer, (file) => readRawBlob(root, source.head, file));
   const consumerSources = [
     "package.json",
     "preview.setup.ts",
     "preview.one-argument.ts",
     ...fixtures.map((fixture) => fixture.file.slice(fixturePrefix.length)),
+    ...vrtInputs.map((entry) => entry.file),
   ].map((file) => ({ file, sha256: digest(readFileSync(path.join(consumer, file))) }));
   save("preparation.json", {
     source,
     consumer,
     version,
     fixtures,
+    vrtInputs,
     consumerSources,
     authority: authority(),
     toolingCommit: execFileSync("git", ["--no-replace-objects", "-C", root, "rev-parse", "HEAD"], {
@@ -176,8 +182,9 @@ export default function publicSetup(app, context) {
     );
   }
   const native = load("native.json"),
-    musea = load("musea.json");
-  for (const receipt of [native, musea]) {
+    musea = load("musea.json"),
+    vrt = load("vrt.json");
+  for (const receipt of [native, musea, vrt]) {
     assert.equal(receipt.version, preparation.version);
     assert.equal(receipt.success, true);
   }
@@ -194,6 +201,7 @@ export default function publicSetup(app, context) {
     native.loaded,
     "both probes loaded the same native provider bytes",
   );
+  assertVrtCustody(vrt, native);
   const lock = readFileSync(path.join(preparation.consumer, "package-lock.json"));
   copyFileSync(
     path.join(preparation.consumer, "package-lock.json"),
@@ -207,10 +215,11 @@ export default function publicSetup(app, context) {
     publication,
     native,
     musea,
+    vrt,
     lockSha256: digest(lock),
     success: true,
     scope:
-      "Postpublication exact public npm native/Musea cases and mandatory planned channel observations. Optional Open VSX is recorded separately. No cryptographic signature claim.",
+      "Postpublication exact public npm native/Musea/VRT cases and mandatory planned channel observations. Optional Open VSX is recorded separately. No cryptographic signature claim.",
   });
   console.log(JSON.stringify({ source, version: preparation.version, success: true }));
 } else {
