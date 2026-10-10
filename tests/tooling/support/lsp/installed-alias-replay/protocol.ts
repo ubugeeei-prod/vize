@@ -4,8 +4,10 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { FrameDecoder } from "./frames.ts";
+import { settlePublication, settleReply } from "./dispatch.ts";
 import {
   InstalledAliasError,
+  validateInstalledLaunch,
   type Packet,
   type InstalledAliasLaunch,
   type Outcome,
@@ -36,17 +38,7 @@ export class InstalledAliasSession {
   private finishing: Promise<ReturnType<InstalledAliasSession["receipt"]>> | undefined;
 
   private constructor(launch: InstalledAliasLaunch) {
-    for (const name of [
-      "nodePath",
-      "cliPath",
-      "custodyHookPath",
-      "projectRoot",
-      "outputRoot",
-    ] as const) {
-      if (!path.isAbsolute(launch[name])) throw new Error(`${name} must be absolute`);
-    }
-    if (!Number.isSafeInteger(launch.timeoutMs) || launch.timeoutMs <= 0)
-      throw new Error("invalid deadline");
+    validateInstalledLaunch(launch);
     this.launch = launch;
     mkdirSync(launch.outputRoot, { recursive: true });
     this.directory = mkdtempSync(path.join(launch.outputRoot, "session-"));
@@ -98,7 +90,7 @@ export class InstalledAliasSession {
         rootUri: pathToFileURL(realpathSync(launch.projectRoot)).href,
         capabilities: {},
         initializationOptions: {
-          lint: false,
+          lint: launch.lint ?? false,
           typecheck: true,
           hover: true,
           crossFile: launch.crossFile,
@@ -116,8 +108,20 @@ export class InstalledAliasSession {
   }
 
   request(method: string, params?: unknown): Promise<Packet> {
+    return this.ask(method, params, false);
+  }
+  /** Only explicitly uncontracted observations may retain whole RPC error replies. */
+  requestObserved(method: string, params?: unknown): Promise<Packet> {
+    return this.ask(method, params, true);
+  }
+  private ask(method: string, params: unknown, observed: boolean): Promise<Packet> {
     const id = this.nextId++;
-    const outcome: Outcome = { id, method, status: "pending" };
+    const outcome: Outcome = {
+      id,
+      method,
+      status: "pending",
+      ...(observed ? { observed: true } : {}),
+    };
     this.outcomes.push(outcome);
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
@@ -128,7 +132,7 @@ export class InstalledAliasSession {
         this.persist();
         reject(new InstalledAliasError(outcome.error));
       }, this.launch.timeoutMs);
-      this.pending.set(id, { resolve, reject, timer, outcome });
+      this.pending.set(id, { resolve, reject, timer, outcome, observed });
       try {
         this.send({ jsonrpc: "2.0", id, method, ...(params === undefined ? {} : { params }) });
       } catch (error) {
@@ -141,9 +145,9 @@ export class InstalledAliasSession {
     this.send({ jsonrpc: "2.0", method, ...(params === undefined ? {} : { params }) });
   }
 
-  open(uri: string, text: string): Promise<Packet> {
-    return this.publish(uri, 1, "textDocument/didOpen", {
-      textDocument: { uri, languageId: "vue", version: 1, text },
+  open(uri: string, text: string, version = 1): Promise<Packet> {
+    return this.publish(uri, version, "textDocument/didOpen", {
+      textDocument: { uri, languageId: "vue", version, text },
     });
   }
 
@@ -154,17 +158,48 @@ export class InstalledAliasSession {
     });
   }
 
+  changeWithPublications(
+    uri: string,
+    text: string,
+    version: number,
+    count: number,
+  ): Promise<Packet[]> {
+    return this.publishMany(
+      uri,
+      version,
+      "textDocument/didChange",
+      {
+        textDocument: { uri, version },
+        contentChanges: [{ text }],
+      },
+      count,
+    );
+  }
   private publish(uri: string, version: number, method: string, params: unknown): Promise<Packet> {
+    return this.publishMany(uri, version, method, params, 1).then((packets) => packets[0]);
+  }
+  /** One deadline covers the complete ordered publication sequence, including equal packets. */
+  private publishMany(
+    uri: string,
+    version: number,
+    method: string,
+    params: unknown,
+    count: number,
+  ): Promise<Packet[]> {
     if (!Number.isSafeInteger(version) || version < 1) throw new Error("invalid document version");
+    if (!Number.isSafeInteger(count) || count < 1) throw new Error("invalid publication count");
     return new Promise((resolve, reject) => {
       const wait: PublicationWait = {
         uri,
         version,
         after: this.notifications.length,
+        packets: [],
+        count,
         resolve,
         reject,
         timer: setTimeout(() => {
-          this.publications.splice(this.publications.indexOf(wait), 1);
+          const index = this.publications.indexOf(wait);
+          if (index >= 0) this.publications.splice(index, 1);
           const error = new Error(
             `diagnostics ${uri} version ${version} timed out after ${this.launch.timeoutMs}ms`,
           );
@@ -206,42 +241,10 @@ export class InstalledAliasSession {
     if (typeof packet.method === "string" && packet.id === undefined) {
       this.notifications.push(packet);
       if (packet.method !== "textDocument/publishDiagnostics") return;
-      const params = packet.params as Packet | undefined;
-      // Matching waits are removed below, so retain the complete original snapshot.
-      for (const wait of this.publications.slice()) {
-        if (
-          this.notifications.length <= wait.after ||
-          params?.uri !== wait.uri ||
-          params?.version !== wait.version
-        )
-          continue;
-        clearTimeout(wait.timer);
-        this.publications.splice(this.publications.indexOf(wait), 1);
-        if (Array.isArray(params.diagnostics)) wait.resolve(packet);
-        else {
-          this.failures.push("malformed diagnostic publication");
-          wait.reject(new InstalledAliasError("malformed diagnostic publication", packet));
-        }
-      }
+      settlePublication(packet, this.notifications.length, this.publications, this.failures);
       return;
     }
-    if (typeof packet.id !== "number" || packet.method !== undefined) return;
-    const pending = this.pending.get(packet.id);
-    if (!pending) return;
-    clearTimeout(pending.timer);
-    this.pending.delete(packet.id);
-    pending.outcome.response = packet;
-    pending.outcome.status = "error" in packet ? "rpc-error" : "response";
-    if ("error" in packet) {
-      pending.outcome.error = `JSON-RPC error for ${pending.outcome.method}: ${JSON.stringify(packet.error)}`;
-      this.failures.push(pending.outcome.error);
-      pending.reject(new InstalledAliasError(pending.outcome.error, packet));
-    } else if (!("result" in packet)) {
-      pending.outcome.status = "malformed-response";
-      pending.outcome.error = "response has neither result nor error";
-      this.failures.push(pending.outcome.error);
-      pending.reject(new InstalledAliasError(pending.outcome.error, packet));
-    } else pending.resolve(packet);
+    settleReply(packet, this.pending, this.failures);
   }
 
   private rejectPending(error: Error): void {
@@ -306,14 +309,14 @@ export class InstalledAliasSession {
         this.failures.push(`exit: ${String(error)}`);
       }
       try {
-        this.child.stdin.end();
+        if (!this.launch.keepStdinOpenAfterExit) this.child.stdin.end();
       } catch (error) {
         this.failures.push(`stdin end: ${String(error)}`);
       }
       const kill = setTimeout(() => {
         this.failures.push("shutdown deadline: SIGKILL");
         this.child.kill("SIGKILL");
-      }, this.launch.timeoutMs);
+      }, this.launch.exitTimeoutMs ?? this.launch.timeoutMs);
       await this.closed;
       clearTimeout(kill);
     }

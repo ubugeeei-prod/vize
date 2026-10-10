@@ -1,0 +1,7 @@
+{
+  "archive": "native-style-scope-red.tar.gz",
+  "archiveSha256": "4d96f84cf71a343c0127171aef0718f4707e30d8ee2fcc3c84402f59741d9b59",
+  "regularFileCount": 20,
+  "sourceBuildRecipeSealed": false,
+  "scope": "Actual pre-repair native CLI packet plus independently executed original TS6/native7 packets, inputs and raw bytes; exact commit qualification remains Actions."
+}

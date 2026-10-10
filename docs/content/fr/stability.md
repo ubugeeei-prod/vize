@@ -11,9 +11,9 @@ Vize se dirige vers une version alpha v1. Le contrat alpha est intentionnellemen
 v1 stable : il nomme les surfaces qui devraient être utilisables par les premiers adopteurs, tout en laissant la place pour
 modifier rapidement les internes et les intégrations expérimentales. Le projet complet n’est pas encore une chaîne d’outils entièrement
 prête pour la production ; Les décisions de publication doivent utiliser les
-[production-readiness checklist](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/production-readiness.md).
+[production-readiness checklist](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/production-readiness%2Emd).
 fenêtres de dépréciation, règles SemVer et support des lignes de sortie sont précisés dans le
-[support policy](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/support-policy.md).
+[support policy](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/support-policy%2Emd).
 
 ## Contrat de gestion de versions
 
@@ -145,7 +145,7 @@ manager, chaque capacité d’édition, ni toute intégration de framework. Lors
 'outil officiel de Vue, considérez la sortie officielle comme la base de compatibilité, sauf si un guide Vize
 documente explicitement un comportement différent. Le compilateur bloqueant la libération, la vérification de type, l’exécution, les surfaces de compilation
 et Vite sont nommés dans les
-[Vue parity matrix](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/vue-parity-matrix.md).
+[Vue parity matrix](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/vue-parity-matrix%2Emd).
 
 Pour la gestion de la sécurité, voir le dépôt `SECURITY.md`. Pour les flux de travail de contribution et de correction, voir
 `CONTRIBUTING.md`.

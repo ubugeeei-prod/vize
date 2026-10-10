@@ -55,6 +55,7 @@ export function resolveArtComponent(
         ) ?? undefined)
       : art.componentPath;
     componentTagName = "MuseaComponent";
+    componentBindingName = componentTagName;
   } else if (defineArtComponentSource || art.metadata.component) {
     // .art.vue: resolve component from defineArt(source, ...) or the legacy component attribute.
     const componentSource = defineArtComponentSource ?? art.metadata.component;

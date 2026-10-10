@@ -1,0 +1,2 @@
+// 日本語 😀
+const view = <Host>{{ content: () => <div>{Array.from({ length: 3 }, (_, i) => <p>{i.toFixed(1)}{(() => <span>{i + 1}</span>)()}</p>)}{(() => <aside>{42}</aside>)()}{"<p>literal</p>"}<style scoped>{`p { color: ${color}; }`}</style></div> }}</Host>;

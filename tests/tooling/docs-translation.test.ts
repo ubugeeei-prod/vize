@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parse } from "yaml";
+import { createRequire } from "node:module";
 
 import { createTranslationClient } from "../../docs/scripts/i18n/client.ts";
 import { normalizeMarkdownDocument, protectMarkdown } from "../../docs/scripts/i18n/markdown.ts";
@@ -58,6 +59,45 @@ void test("all translation providers retain inline source, authored links and Ma
   for (const provider of ["edge", "google", "argos"] as const) {
     const protectedSource = protectMarkdown(source, provider);
     assert.equal(protectedSource.restore(protectedSource.text), source, provider);
+  }
+});
+
+void test("translated Japanese punctuation retains native-rendered emphasis and literal source", () => {
+  const require = createRequire(new URL("../../docs/package.json", import.meta.url));
+  const native = createRequire(require.resolve("@ox-content/vite-plugin"))("@ox-content/napi");
+  const source = [
+    "# **見出し:**Vize",
+    "> **⚠️ 進行中の作業:**Vize",
+    "文章**（強調）**です。文章*（斜体）*です。",
+    "本文**`false`**です。",
+    "`**literal:**Vize` and server_binary_mib",
+    "[link](https://example.invalid/vuerend_%26_Vize) https://example.invalid/a_b_c",
+    "",
+    "```ts",
+    "const input = '**⚠️ 進行中の作業:**Vize';",
+    "```",
+  ].join("\n");
+  const normalized = normalizeMarkdownDocument(source);
+  assert.equal(normalizeMarkdownDocument(normalized), normalized);
+  assert.ok(normalized.includes("`**literal:**Vize` and server_binary_mib"));
+  assert.ok(normalized.includes("[link](https://example.invalid/vuerend_%26_Vize)"));
+  assert.ok(normalized.includes("https://example.invalid/a_b_c"));
+  assert.ok(normalized.includes("const input = '**⚠️ 進行中の作業:**Vize';"));
+  const result = native.transform(normalized, {});
+  assert.deepEqual(result.errors, []);
+  assert.match(result.html, /<strong>見出し:<\/strong> Vize/);
+  assert.match(result.html, /<strong>⚠️ 進行中の作業:<\/strong> Vize/);
+  assert.match(result.html, /文章 <strong>（強調）<\/strong> です/);
+  assert.match(result.html, /文章 <em>（斜体）<\/em> です/);
+  assert.match(result.html, /本文 <strong><code>false<\/code><\/strong> です/);
+  for (const control of [
+    "**Warning:** Vize",
+    "**Aviso:** Vize",
+    "**提示：** Vize",
+    "**注意:** Vize",
+  ]) {
+    assert.equal(normalizeMarkdownDocument(control), control);
+    assert.match(native.transform(control, {}).html, /<strong>/);
   }
 });
 

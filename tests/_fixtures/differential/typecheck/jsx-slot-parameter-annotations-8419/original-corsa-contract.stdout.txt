@@ -1,0 +1,10 @@
+contract.ts(3,6): error TS2345: Argument of type '(props: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.
+  Types of parameters 'props' and 'payload' are incompatible.
+    Type '{ value: number; }' is not assignable to type '{ value: string; }'.
+      Types of property 'value' are incompatible.
+        Type 'number' is not assignable to type 'string'.
+contract.ts(4,6): error TS2345: Argument of type '({ value }: { value: string; }) => any' is not assignable to parameter of type '(payload: { value: number; }) => unknown'.
+  Types of parameters '__0' and 'payload' are incompatible.
+    Type '{ value: number; }' is not assignable to type '{ value: string; }'.
+      Types of property 'value' are incompatible.
+        Type 'number' is not assignable to type 'string'.

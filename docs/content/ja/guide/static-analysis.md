@@ -2,37 +2,35 @@
 title: 静的解析
 ---
 
-<!-- Generated translation; source: guide/static-analysis.md -->
+<!-- Reviewed translation; source: guide/static-analysis.md -->
 
 # 静的解析
 
-Vize の分析スタックは、コンパイラー、リンター、型チェッカー、エディター サーバー、および Musea によって共有されます。
-ツーリング。目標は、Vue SFC を一度解析し、豊富なセマンティック情報を保持し、それを再利用することです。
-各コマンドを別個のツールとして扱うのではなく、診断とコード生成に使用します。
+Vize の解析結果は、コンパイラー、リンター、型チェッカー、言語サーバー、Musea で共有します。Vue SFC を一度解析して得た意味情報を診断やコード生成に再利用し、それぞれのコマンドで同じ解析を繰り返すことを避けます。
 
-以下の例では、`vize` npm パッケージがインストールされ、プロジェクト スクリプトから呼び出されることを前提としています。
-はアプリケーションに推奨されるワークフローです。
+以下の例では、`vize` npm パッケージをインストールし、アプリケーションの `package.json` に登録したスクリプトから実行します。
 
-## パイプライン
+<span id="パイプライン"></span>
 
-| レイヤー     | 何をするのか                                                                                                                       | 使用者                             |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| アーマチュア | Vue テンプレートと SFC 構造をトークン化して解析します                                                                              | コンパイラ、リンター、フォーマッタ |
-| クロッキー   | スコープ、バインディングメタデータ、マクロ情報、ファイル間グラフを構築します。コンパイラ、lint、型認識チェック                     |
-| 緑青         | Vue、スクリプト、CSS、a11y、SSR、Vapor、Musea、および型認識の lint ルールを実行します。 `vize lint`、エディタ診断、Oxlint ブリッジ |
-| キヤノン     | 仮想 TypeScript を生成し、診断を Vue ファイルにマッピングします。 `vize check`、エディターの種類のチェック                         |
-| マエストロ   | LSP を通じて診断機能とエディター機能を公開します                                                                                   | `vize lsp`、VS コード、ゼッド      |
+## 解析の流れ
 
-これは、静的分析はリンティングだけではないことを意味します。テンプレートバインディング、コンパイラマクロ、コンポーネント
-メタデータ、提供/注入関係、反応性フロー、生成された仮想 TypeScript、および
-コンポーネント ギャラリーのメタデータはすべて、同じ下位レベルの分析作業に依存します。
+| レイヤー | 役割 | 利用する機能 |
+| --- | --- | --- |
+| Armature | Vue テンプレートと SFC の構造を字句解析・構文解析する | コンパイラー、リンター、フォーマッター |
+| Croquis | スコープ、バインディング、マクロ情報、ファイル間のグラフを構築する | コンパイラー、lint、型情報を使う検査 |
+| Patina | Vue、スクリプト、CSS、アクセシビリティ、SSR、Vapor、Musea、型情報の lint ルールを実行する | `vize lint`、エディターの診断、Oxlint 連携 |
+| Canon | 仮想 TypeScript を生成し、診断を元の Vue ファイルに対応付ける | `vize check`、エディターの型チェック |
+| Maestro | LSP を通じて診断とエディターの機能を提供する | `vize lsp`、VS Code、Zed |
 
-具体的なルール名、デフォルト、発行できるファイル間診断コードについては、を参照してください。
-[ルール](../rules/index.md)。
+静的解析には lint 以外も含まれます。テンプレートのバインディング、コンパイラーマクロ、コンポーネントのメタデータ、provide/inject の関係、リアクティビティの流れ、仮想 TypeScript、コンポーネントギャラリーの情報も、共通の解析結果を利用します。
 
-## 糸くず
+実際のルール名、既定の設定、ファイル間診断のコードは[ルール一覧](../rules/index.md)で確認できます。
 
-デフォルトのプリセットから始めます。
+<span id="糸くず"></span>
+
+## lint
+
+まずは既定のプリセットで実行します。
 
 ```json
 {
@@ -46,9 +44,7 @@ Vize の分析スタックは、コンパイラー、リンター、型チェッ
 vp run vize:lint
 ```
 
-正確性のみの CI には `essential` を使用し、デフォルトの推奨バンドルには `happy-path` を使用します。
-より強力な規則が必要な場合は `opinionated`、Nuxt を意識した前提の場合は `nuxt`、
-`incremental` 明示的に構成されたルールのみを実行したい場合。
+エラーの検出を中心に CI を始める場合は `essential`、既定の推奨ルールを使う場合は `happy-path` を選びます。チームの規約も検査するなら `opinionated`、Nuxt の自動インポートを前提とするなら `nuxt`、明示したルールだけを有効にするなら `incremental` を使います。
 
 ```json
 {
@@ -68,7 +64,7 @@ vp run vize:lint:fix
 vp run vize:lint:json
 ```
 
-基本的な lint パスが安定した後でのみ、ファイル間および型認識チェックをオプトインします。
+基本の lint が安定してから、ファイル間の検査や型情報を使う検査を追加します。
 
 ```json
 {
@@ -86,71 +82,55 @@ vp run vize:lint:cross-file-tree
 vp run vize:lint:strict-reactivity
 ```
 
-ファイル間のリンティングは、一連のファイル間の提供/注入や反応性フローなどの関係を分析します。
-Vue ファイル。 `--strict-reactivity` はネイティブ チェッカーを利用した反応性損失ルールを有効にするため、期待できます。
-通常のテンプレートおよびスクリプトの lint ルールよりも遅くなります。
+ファイル間の lint は、複数の Vue ファイルにまたがる provide/inject やリアクティビティの流れを調べます。`--strict-reactivity` はネイティブの型チェッカーを使うリアクティビティ消失のルールを有効にするため、通常のテンプレートやスクリプトの lint より時間がかかります。
 
-## 反応性オーバーレイ
+<span id="反応性オーバーレイ"></span>
 
-Croquis は、分析された各 SFC の安定した反応性オーバーレイを公開します: 反応性ソース、`.value`
-要件、反応性損失サイト、およびソースマッピングを使用した効果グラフエッジ。同じコンパクトでも
-JSON モデルは、診断、レポート、エディター サーフェス、および Playground の**反応**タブにフィードを提供します。
+## リアクティビティの解析情報
 
-## 緑青ルールモデル
+Croquis は、解析した各 SFC について、リアクティブな値の生成元、`.value` が必要な箇所、リアクティビティが失われる箇所、エフェクト間の関係を、元のソース位置とともに提供します。共通のコンパクトな JSON モデルを、診断、レポート、エディター、Playground の **Reactivity** タブで利用します。
 
-Patina は lint ルール レイヤーです。ルールは、SFC ソース、テンプレート ルート、
-テンプレート要素、ディレクティブ、`v-for`、`v-if`、補間。各ルールにはメタデータが含まれます。
-ルール名、カテゴリ、デフォルトの重大度、ヘルプ テキスト、修正可能かどうか。プリセットはただ
-どのルールを一緒に有効にするかを決定するレジストリ。
+<span id="緑青ルールモデル"></span>
 
-| エリア             | ルールの例                                                                                   | 内容                                                                 |
-| ------------------ | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Vue の正確性       | `vue/require-v-for-key`、`vue/valid-v-model`、`vue/no-use-v-if-with-v-for`                   | 1 つのコンポーネントにローカルなテンプレート セマンティクス          |
-| Vue のセキュリティ | `vue/no-v-html`、`vue/no-unsafe-url`                                                         | XSS が発生しやすい HTML および URL シンク                            |
-| Vue の構造         | `vue/sfc-element-order`、`vue/require-scoped-style`、`vue/no-unused-components`              | SFCの形状と部品の使い方とメンテナンス性                              |
-| スクリプトの規則   | `script/no-options-api`、`script/no-get-current-instance`、`script/prefer-import-from-vue`   | Vue 構成 API とコンパイラ マクロの規則                               |
-| CSS                | `css/no-important`、`css/no-hardcoded-values`、`css/prefer-logical-properties`               | スタイル ブロックとデザイン システムに適した CSS                     |
-| アクセシビリティ   | `a11y/img-alt`、`a11y/anchor-has-content`、`a11y/label-has-for`                              | アクセシブルなマークアップとインタラクション パターン                |
-| HTML               | `html/deprecated-element`、`html/id-duplication`、`html/no-empty-palpable-content`           | HTML の有効性とセマンティック マークアップ                           |
-| SSR                | `ssr/no-browser-globals-in-ssr`、`ssr/no-hydration-mismatch`                                 | サーバー/クライアント レンダリングの危険                             |
-| 蒸気               | `vapor/no-vue-lifecycle-events`、`vapor/no-inline-template`、`vapor/require-vapor-attribute` | 蒸気指向のテンプレート制約                                           |
-| 美術館             | `musea/require-title`、`musea/valid-variant`、`musea/prefer-design-tokens`                   | コンポーネント ギャラリーとバリアント オーサリング                   |
-| タイプ認識分析     | `type/require-typed-props`、`type/require-typed-emits`、`type/no-reactivity-loss`            | セマンティックまたはチェッカーに基づくコンテキストを必要とするルール |
+## Patina のルールモデル
 
-組み込みのプリセットは、段階的な導入をサポートすることを目的としています。
+Patina は lint のレイヤーです。各ルールは SFC のソース、テンプレートのルートや要素、ディレクティブ、`v-for`、`v-if`、補間などを訪問して検査します。ルール名、カテゴリ、既定の重大度、説明、自動修正の可否をメタデータとして持ちます。プリセットは、一緒に有効にするルールをまとめたものです。
 
-| プリセット    | 形状                                                                                |
-| ------------- | ----------------------------------------------------------------------------------- |
-| `essential`   | エラーに重点を置いた Vue の正確性、セキュリティ、最小限の HTML チェック             |
-| `happy-path`  | 正確性、セキュリティ、a11y、SSR、セマンティック チェックのためのデフォルト バンドル |
-| `opinionated` | `happy-path` に加えて、より強力な規則、スクリプト ルール、および型ルール            |
-| `nuxt`        | Nuxt の自動インポートの前提に合わせて調整された独自のルール                         |
-| `incremental` | ホスト主導のルールごとの導入のための空の出発点                                      |
+| 分野 | ルールの例 | 検査する内容 |
+| --- | --- | --- |
+| Vue の正確性 | `vue/require-v-for-key`、`vue/valid-v-model`、`vue/no-use-v-if-with-v-for` | コンポーネント内のテンプレートの意味 |
+| Vue のセキュリティ | `vue/no-v-html`、`vue/no-unsafe-url` | XSS につながる HTML や URL の使用 |
+| Vue の構造 | `vue/sfc-element-order`、`vue/require-scoped-style`、`vue/no-unused-components` | SFC の構造、コンポーネントの利用、保守性 |
+| スクリプトの規約 | `script/no-options-api`、`script/no-get-current-instance`、`script/prefer-import-from-vue` | Composition API とコンパイラーマクロの使い方 |
+| CSS | `css/no-important`、`css/no-hardcoded-values`、`css/prefer-logical-properties` | style ブロックとデザインシステムに適した CSS |
+| アクセシビリティ | `a11y/img-alt`、`a11y/anchor-has-content`、`a11y/label-has-for` | アクセシブルなマークアップと操作 |
+| HTML | `html/deprecated-element`、`html/id-duplication`、`html/no-empty-palpable-content` | HTML の妥当性と要素の意味 |
+| SSR | `ssr/no-browser-globals-in-ssr`、`ssr/no-hydration-mismatch` | サーバーとクライアントの描画で生じる問題 |
+| Vapor | `vapor/no-vue-lifecycle-events`、`vapor/no-inline-template`、`vapor/require-vapor-attribute` | Vapor テンプレートの制約 |
+| Musea | `musea/require-title`、`musea/valid-variant`、`musea/prefer-design-tokens` | ギャラリーとバリアントの記述 |
+| 型情報を使う解析 | `type/require-typed-props`、`type/require-typed-emits`、`type/no-reactivity-loss` | 意味情報や型チェッカーの結果が必要な検査 |
 
-## 移行プラグマとカスタム ルール
+組み込みのプリセットを使って、段階的に導入できます。
 
-Patina は、ルール名を一致させるための既存の ESLint 無効化プラグマを受け入れます。
-`eslint-disable`、`eslint-enable`、`eslint-disable-next-line`、および `eslint-disable-line`。これにより、
-プロジェクトは、すべての抑制コメントを書き換えることなく、`vue/require-v-for-key` などのルールを移行します。
-前に。
+| プリセット | 内容 |
+| --- | --- |
+| `essential` | エラーを中心に、Vue の正確性、セキュリティ、最小限の HTML を検査する |
+| `happy-path` | 正確性、セキュリティ、アクセシビリティ、SSR、意味の検査を含む既定の推奨セット |
+| `opinionated` | `happy-path` に、より強い規約、スクリプト、型情報のルールを追加する |
+| `nuxt` | Nuxt の自動インポートに合わせて `opinionated` を調整する |
+| `incremental` | ルールを個別に導入するため、最初は何も有効にしない |
 
-プロジェクトローカル JavaScript ルール モジュールは、まだ安定した Vize ランタイム API ではありません。移行中は、
-これらのルールを ESLint または Oxlint で実行し、`vize lint` の横で実行するか、`incremental` プリセットを使用して
-すでにポリシーに一致する組み込みの Vize ルールのみを有効にします。 `rules` 構成オブジェクト コントロール
-組み込みの Vize ルールの重大度を名前で表示します。
+<span id="移行プラグマとカスタム-ルール"></span>
 
-ランタイム環境グローバル (次のような典型的なサイドカー ESLint ルール) を禁止する一般的なケースの場合
-`no-access-process`、`no-access-local-storage`、または `no-restricted-globals` 対 `localStorage` /
-`sessionStorage`)、オプトインの組み込み `script/no-restricted-globals` ルールを維持する代わりに有効にします。
-ESLint はそれら専用にインストールされています。デフォルトの拒否リストは `process`、`localStorage`、および
-`sessionStorage`、それぞれの裸のリファレンスについて報告されています。
+## 抑制コメントの移行とカスタムルール
 
-2 つのスクリプト ルールは、`linter.ruleOptions` (#1891) でプロジェクト ローカル構成も受け入れるため、チーム
-`vize lint` を通じて独自のアーキテクチャ規則を強制できます。 `script/no-restricted-globals`
-組み込みのデフォルトのリストを**置き換える**`globals` リストを受け取ります。 `script/no-restricted-members`は
-設定され、`<object>.<property>` フラグが `members` リストからアクセスされるまでオフ。オプションが入力されています
-(`name` / `object` / `property` とオプションの `message`、不明なキーは拒否されます);行方不明の
-`message` は一般的な勧告に戻ります。
+Patina は、対応するルール名について `eslint-disable`、`eslint-enable`、`eslint-disable-next-line`、`eslint-disable-line` を受け付けます。`vue/require-v-for-key` などのルールを移行するときに、すべての抑制コメントを先に書き換える必要はありません。
+
+プロジェクト固有の JavaScript ルールを実行する安定した API は、まだありません。移行中は、そのルールを ESLint や Oxlint で `vize lint` と併用するか、`incremental` プリセットで方針に合う組み込みルールだけを有効にします。`rules` で、組み込みルールごとに重大度を指定できます。
+
+実行環境のグローバル変数を禁止する場合は、組み込みの `script/no-restricted-globals` を明示的に有効にできます。`process`、`localStorage`、`sessionStorage` の直接参照を既定で検出します。これらだけを検査するための `no-access-process`、`no-access-local-storage`、`no-restricted-globals` などを置き換えられます。
+
+複数のルールは `linter.ruleOptions` で設定できます。型付きオプションの全体は[ルールオプション](../rules/options.md)を参照してください。以下の例では、`script/no-restricted-globals` の既定の禁止リストを置き換え、`script/no-restricted-members` で指定した `<object>.<property>` へのアクセスを検出します。
 
 ```json
 {
@@ -176,47 +156,41 @@ ESLint はそれら専用にインストールされています。デフォル�
 }
 ```
 
-## クロスファイルルール
+<span id="クロスファイルルール"></span>
 
-クロスファイル分析は Croquis 内に存在し、緑青診断を通じてリントにさらされます。それは
-モジュール レジストリ、インポート グラフ、コンポーネント使用状況グラフなどを構築するため、オプトインします。
-分析されたすべての Vue ファイルのインデックスを作成します。
+## ファイル間のルール
 
-現在、`vize lint --cross-file` により、マッチングの提供/挿入、一意の要素 ID チェックが可能になります。
-反応性の追跡、および非同期競合状態の分析。 `--cross-file-tree` は、
-これらの診断の上にツリーを提供/注入します。
+Croquis のファイル間解析を、Patina の診断を通じて lint から利用します。解析対象の Vue ファイル全体からモジュール一覧、インポートグラフ、コンポーネントの利用関係、索引を構築するため、明示的に有効にする機能です。
+
+現在の `vize lint --cross-file` は、provide/inject の対応、要素 ID の一意性、リアクティビティ、非同期処理の競合を検査します。`--cross-file-tree` を追加すると、診断に加えて provide/inject のツリーも表示します。
 
 ```bash
 vp run vize:lint:cross-file
 vp run vize:lint:cross-file-tree
 ```
 
-下位レベルのクロスファイル エンジンは、現在の CLI サーフェスよりも広範です。
+下位レイヤーのファイル間解析には、現在の CLI で公開する範囲より多くの機能があります。
 
-| ファイル間オプション      | 意図された診断または事実                                                               |
-| ------------------------- | -------------------------------------------------------------------------------------- |
-| `provide_inject`          | 一致しないインジェクト、未使用のプロバイダー、文字列キーの警告、非リアクティブなフロー |
-| `unique_ids`              | 重複 ID と非固有 ID がループ内に導入される                                             |
-| `reactivity_tracking`     | プロップの構造破壊、エイリアシング、およびコンポーネント間の反応性の損失               |
-| `race_conditions`         | 提供された状態または共有された状態を介して競合できる非同期状態の更新                   |
-| `fallthrough_attrs`       | `$attrs`、`inheritAttrs`、およびマルチルートフォールスルーの危険                       |
-| `component_emits`         | 宣言されていないエミット、未使用のエミット、プロデューサーのないリスナー               |
-| `event_bubbling`          | 処理されずにコンポーネントの境界を飛び越えるイベント                                   |
-| `server_client_boundary`  | SSR/クライアント境界付近のブラウザ API の使用とハイドレーションのリスク                |
-| `error_suspense_boundary` | 有用なサスペンスまたはエラー境界のない非同期コンポーネント                             |
-| `circular_dependencies`   | 輸入サイクルと深い輸入チェーン                                                         |
-| `component_resolution`    | 未登録または未解決のコンポーネントの使用法                                             |
-| `props_validation`        | 必要なプロパティが欠落しており、子プロパティのタイプが一致しません。                   |
+| ファイル間のオプション | 対象となる診断や情報 |
+| --- | --- |
+| `provide_inject` | 対応しない inject、未使用の provide、文字列キー、リアクティブでない値の流れ |
+| `unique_ids` | 重複する ID や、ループ内で一意でなくなる ID |
+| `reactivity_tracking` | props の分割代入、別名参照、コンポーネント間のリアクティビティ消失 |
+| `race_conditions` | provide や共有状態を通じて競合する非同期の状態更新 |
+| `fallthrough_attrs` | `$attrs`、`inheritAttrs`、複数ルートへの属性の引き継ぎによる問題 |
+| `component_emits` | 未宣言・未使用の emit、対応する emit のないリスナー |
+| `event_bubbling` | 処理されずにコンポーネントの境界を越えるイベント |
+| `server_client_boundary` | SSR とクライアントの境界付近のブラウザー API やハイドレーションの問題 |
+| `error_suspense_boundary` | 適切な Suspense やエラー境界のない非同期コンポーネント |
+| `circular_dependencies` | 循環インポートや深いインポートの連鎖 |
+| `component_resolution` | 未登録・未解決のコンポーネント |
+| `props_validation` | 必須 props の欠落や、子コンポーネントに渡す props の型の不一致 |
 
-方向性は、デフォルトで単一ファイルのリンティングを高速に保ち、ファイル間のグループを明示的に公開することです。
-これらは成熟し、信頼性の高いプロジェクトの事実を、
-CLI、Oxlint ブリッジ、およびエディター サーバー。
+単一ファイルの lint は既定で高速に保ちます。ファイル間の検査は成熟したものから明示的に公開し、信頼できるプロジェクト情報を CLI、Oxlint 連携、エディター共通の診断に反映する方針です。
 
 ## 型チェック
 
-`vize check` は Vue SFC 用の仮想 TypeScript を生成し、Corsa プロジェクト セッションに
-診断。 `.vue`、`.ts`、`.tsx`、および `.d.ts` 入力をチェックし、診断をマッピングし直します。
-オリジナルのソースファイル。
+`vize check` は Vue SFC の仮想 TypeScript を生成し、Corsa のプロジェクトセッションで診断を取得します。`.vue`、`.ts`、`.tsx`、`.d.ts` を検査し、診断を元のソースファイルに対応付けます。
 
 ```json
 {
@@ -240,9 +214,7 @@ vp run vize:check:app
 vp run vize:check:json
 ```
 
-パスが指定されていない場合、`vize check` は `tsconfig.json` `files`、`include`、および `exclude` を読み取ります。
-プロジェクト構成が利用可能な場合はフィールド。生成されたコードをデバッグする場合は、`--show-virtual-ts` を使用します。
-`--profile` `node_modules/.vize` でタイミングと仮想ファイルのアーティファクトが必要な場合。
+パスを指定しない場合は、利用できる `tsconfig.json` の `files`、`include`、`exclude` に従って対象を決めます。生成コードを調べるときは `--show-virtual-ts`、実行時間や仮想ファイルの結果を `node_modules/.vize` に残したいときは `--profile` を使います。
 
 ```bash
 vp run vize:check:virtual-ts
@@ -250,15 +222,13 @@ vp run vize:check:profile
 vp run vize:check:single-server
 ```
 
-宣言出力は、具体化されたチェッカー プロジェクトから入手できます。
+型チェッカーが構築したプロジェクトから型宣言を出力できます。
 
 ```bash
 vp run vize:check:declarations
 ```
 
-プロジェクト全体のテンプレート値と生成された宣言ファイルは TypeScript を通じて表示される必要があります
-プロジェクトの構成。 `tsconfig` に含まれるパスの下にアンビエント宣言を配置して渡します
-必要に応じて、そのプロジェクト ファイルをチェッカーに送信します。
+プロジェクト全体で使うテンプレートの値や型宣言は、TypeScript のプロジェクト設定から参照できるようにします。`tsconfig` に含まれる場所にアンビエント宣言を置き、必要ならそのプロジェクトファイルを型チェッカーに指定します。
 
 ```json
 {
@@ -280,9 +250,11 @@ declare module "vue" {
 vp run vize:check:app
 ```
 
-## npm パッケージ スクリプトと Rust CLI の比較
+<span id="npm-パッケージ-スクリプトと-rust-cli-の比較"></span>
 
-npm `vize` パッケージはパッケージ スクリプトを対象としており、パッケージ化された NAPI バインディングを使用します。
+## npm のスクリプトと Rust CLI
+
+npm の `vize` は、パッケージに含まれる NAPI バインディングを通じて Rust CLI を呼び出します。アプリケーションのスクリプトに登録して実行できます。
 
 ```json
 {
@@ -300,7 +272,7 @@ vp run vize:check
 vp run vize:ready
 ```
 
-Rust CLI には現在、プロジェクトに裏付けられたより完全な型チェック サーフェイスがあります。
+Rust CLI を直接インストールした場合も、同じコマンドを実行できます。
 
 ```bash
 nix run github:ubugeeei-prod/vize#vize -- check --tsconfig tsconfig.app.json --profile src
@@ -308,14 +280,13 @@ vize check --tsconfig tsconfig.app.json --profile src
 vize lsp
 ```
 
-アプリケーションにインストール可能なワークフローが必要な場合は、npm パッケージ スクリプトを使用します。次の場合に Rust CLI を使用します。
-`check-server`、LSP、IDE 管理、または Corsa がサポートするプロジェクト診断パスが必要です
-Vue および TypeScript ファイル。
+アプリケーションの依存関係と実行環境を管理したい場合は npm のスクリプトを使います。Rust CLI は Nix などで直接インストールする方法もあります。npm の実行時には同梱の TypeScript ランタイムを探し、`CORSA_PATH` などの明示的な指定があればその設定を優先します。
 
-## オクスリント
+<span id="オクスリント"></span>
 
-チームがすでに Oxlint を実行していて、Vue 対応の診断を必要とする場合は、`oxlint-plugin-vize` を使用します。
-同じコマンド:
+## Oxlint
+
+すでに Oxlint を使っているチームは、`oxlint-plugin-vize` で Vue の診断を同じコマンドに追加できます。
 
 ```bash
 vp install -D oxlint oxlint-plugin-vize
@@ -340,14 +311,14 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 }
 ```
 
-## 導入パス
+<span id="導入パス"></span>
 
-1. `vize lint --preset essential src` などの `vize:lint:ci` パッケージ スクリプトを CI に追加します。
-2. 正確性診断が正常になったら、`happy-path` または `opinionated` に切り替えます。
-3. `vize:check` パッケージ スクリプトをプロジェクト `tsconfig.json` に追加します。
-4. 最初にエディターのリンティングを有効にし、CI 出力が安定したら型チェックを有効にします。
-5. より深い分析の恩恵を受けるプロジェクトに対して、ファイル間および厳密な反応性チェックを追加します。
+## 導入の順序
 
-単一の品質ゲートの場合、`vize ready src` を実行する `vize:ready` パッケージ スクリプトは `fmt を実行します。
+1. `vize lint --preset essential src` などを `vize:lint:ci` に登録し、CI で実行します。
+2. エラーが解消してから `happy-path` や `opinionated` に切り替えます。
+3. プロジェクトの `tsconfig.json` を使う `vize:check` を登録します。
+4. エディターでは先に lint を有効にし、CI の結果が安定してから型チェックを追加します。
+5. より深い解析が必要なプロジェクトでは、ファイル間の検査と厳密なリアクティビティの検査を追加します。
 
-- -write`, `lint`, `check`, and `build` を順番に実行し、最初に失敗したステップで停止します。
+`vize:ready` に `vize ready src` を登録すると、`fmt --write`、`lint`、`check`、`build` を順番に実行し、最初に失敗した段階で停止します。
