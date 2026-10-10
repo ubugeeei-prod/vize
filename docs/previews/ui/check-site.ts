@@ -10,6 +10,7 @@ import type { AddressInfo } from "node:net";
 import { resolvePuppeteerExecutablePath } from "../../browser-path.js";
 import { captureComposablePreviews } from "./capture-composables.ts";
 import { previewComposableExamples } from "./build-config.ts";
+import { exerciseEmbeddedClipboard } from "./interactions-observed-browser.ts";
 
 const docsRoot = path.resolve(import.meta.dirname, "../..");
 const root = path.join(docsRoot, "dist");
@@ -80,6 +81,10 @@ try {
         "/ja/guide/composables/",
         ...previewComposableExamples.map((example) => `/guide/composables/${example.name}/`),
       ]) {
+        if (route === "/guide/composables/use-clipboard/")
+          await page.context().grantPermissions(["clipboard-read", "clipboard-write"], {
+            origin: new URL(base).origin,
+          });
         const response = await page.goto(`${base}${route}`, { waitUntil: "domcontentloaded" });
         assert.equal(response!.status(), 200, route);
         assert.ok(await page.locator("h1").first().textContent(), `${route}: heading`);
@@ -105,6 +110,7 @@ try {
             await frame.locator("html").getAttribute("data-preview-hydration-retained"),
             "true",
           );
+          if (example.name === "use-clipboard") await exerciseEmbeddedClipboard(page, frame);
         }
         assert.equal(
           await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),

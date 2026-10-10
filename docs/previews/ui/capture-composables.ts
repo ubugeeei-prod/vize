@@ -13,6 +13,8 @@ import { formStateExamples } from "../../../npm/ui/scripts/reference-docs/form-s
 import { exerciseFormStateExample } from "./interactions-form-state.ts";
 import { domInteractionExamples } from "../../../npm/ui/scripts/reference-docs/dom-interaction-examples.ts";
 import { exerciseDomExample } from "./interactions-dom.ts";
+import { observedBrowserExamples } from "../../../npm/ui/scripts/reference-docs/observed-browser-examples.ts";
+import { exerciseObservedBrowserExample } from "./interactions-observed-browser.ts";
 import { verifyUnavailableStorage } from "./capture-unavailable-storage.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
@@ -29,6 +31,8 @@ async function exercise(page: Page, name: string): Promise<string[]> {
     return exerciseFormStateExample(page, name);
   if (domInteractionExamples.some((example) => example.name === name))
     return exerciseDomExample(page, name);
+  if (observedBrowserExamples.some((example) => example.name === name))
+    return exerciseObservedBrowserExample(page, name);
   if (name === "use-toggle") {
     assert.equal(await page.getByText("Free delivery in 2–3 business days.").count(), 0);
     await activate(page, "Show delivery details");
@@ -207,6 +211,10 @@ export async function captureComposablePreviews(
       await page.clock.install({ time: 0 });
       await page.clock.pauseAt(1000);
       for (const example of previewComposableExamples) {
+        if (example.name === "use-clipboard")
+          await page.context().grantPermissions(["clipboard-read", "clipboard-write"], {
+            origin: new URL(baseUrl).origin,
+          });
         const response = await page.goto(`${baseUrl}index.html?composable=${example.name}`, {
           waitUntil: "networkidle",
         });

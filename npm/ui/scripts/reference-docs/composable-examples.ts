@@ -7,6 +7,7 @@ import { asyncEffectExamples } from "./async-effect-examples.ts";
 import { browserEffectExamples } from "./browser-effect-examples.ts";
 import { formStateExamples } from "./form-state-examples.ts";
 import { domInteractionExamples } from "./dom-interaction-examples.ts";
+import { observedBrowserExamples } from "./observed-browser-examples.ts";
 
 const stateExamples = [
   {
@@ -77,6 +78,7 @@ export const composableExamples = [
   ...browserEffectExamples,
   ...formStateExamples,
   ...domInteractionExamples,
+  ...observedBrowserExamples,
 ] as const;
 
 export function composableExampleSource(packageRoot: string, name: string): string {
@@ -118,7 +120,7 @@ export function composableHub(locale: string, linkPrefix: string): string {
   return blocks(
     ja ? "## 動作から選ぶ" : "## Try a behavior",
     ja
-      ? "入力、検証、検索、履歴、ページ切り替え、非同期処理、タイマー、保存、画面サイズ、フォーカス、フォーム、手順、選択、循環する案内を実例で試せます。各リンクのプレビューと表示コードは同じ Vue SFC を使っています (英語)。"
+      ? "入力、検証、検索、履歴、ページ切り替え、非同期処理、タイマー、保存、画面サイズ、フォーカス、フォーム、手順、選択、循環する案内、クリップボード、スクロール、要素のサイズと表示範囲を実例で試せます。各リンクのプレビューと表示コードは同じ Vue SFC を使っています (英語)。"
       : "See how reactive state changes an interface. Each live preview and its copyable code come from the same complete Vue SFC.",
     table(
       [ja ? "やりたいこと" : "Goal", "Composable"],

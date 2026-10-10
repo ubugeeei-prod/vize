@@ -39,12 +39,14 @@ browser checks with its normal OG-image configuration.
 
 ## Composable examples
 
-Twenty complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
+Twenty-four complete SFCs in `npm/compose/core/examples/` demonstrate disclosure,
 bounded quantities, debounced local search, blur validation, undo/redo, and
 pagination, plus async results, interval/timeout controls, browser storage,
 media queries, document focus, form submission, multistep navigation, bounded
 selection, cyclic tips, individual/group focus, outside dismissal, scoped keyboard
-shortcuts, and retargetable native input observation. Their displayed source and compiled preview share the same complete SFC packet,
+shortcuts, retargetable native input observation, explicit clipboard operations,
+element scrolling, panel size observation, and bounded-root card visibility.
+Their displayed source and compiled preview share the same complete SFC packet,
 with a SHA-256 identity exposed by each iframe. They use public composable
 imports and can be copied into a Vue 3.5+ project. The preview shell's CSS is
 optional presentation; the examples themselves use native controls.
@@ -69,7 +71,11 @@ and reset, step boundaries and preserved input, stable selected keys after data
 replacement, and cyclic list boundaries. `interactions-dom.ts` additionally checks
 actual descendant focus, frozen stopped observations, ignored/inside/outside clicks,
 drag origin, Escape focus return, key-repeat suppression, target replacement, and
-listener pause/resume. Eighty real PNGs and a JSON receipt record source hashes, image hashes,
+listener pause/resume. `interactions-observed-browser.ts` checks real clipboard
+contents and denied/restored browser permissions, replacement copy feedback,
+native keyboard scrolling and element boundaries, actual content-box dimensions,
+observer target replacement, and pause/resume/stop of native visibility observation.
+Ninety-six real PNGs and a JSON receipt record source hashes, image hashes,
 and individual interaction results under the ignored
 `public/component-previews/composables/` build output. Each reference page
 offers initial/after images in a native disclosure alongside its live preview.
@@ -81,9 +87,11 @@ reload returns to the default. The storage page shows that fallback capture.
 Field status reports only recorded validation until the next blur. The batching
 law uses meaningful whitespace trimming and requires Undo to restore it exactly.
 
-After the real SSG build, `check-site.ts` verifies thirty routes at desktop
-and mobile widths, including the twenty exact displayed SFC packets and their
+After the real SSG build, `check-site.ts` verifies thirty-four routes at desktop
+and mobile widths, including the twenty-four exact displayed SFC packets and their
 iframe identities, then runs the unchanged composable interaction checks.
+The clipboard route also exercises keyboard copy/read inside the actual rendered
+iframe, including denied and restored browser read permission.
 Its default receipts and captures live in repository-level
 `docs-render-evidence/component-previews/`, regardless of whether the command
 starts from the workspace root or the docs package. The existing Actions
@@ -95,6 +103,6 @@ vp node docs/previews/ui/check-site.ts --site https://vizejs.dev --output docs-r
 ```
 
 The supplied deployed URL must expose the expected source hashes; an older
-deployment fails instead of receiving current-source credit. These twenty
+deployment fails instead of receiving current-source credit. These twenty-four
 examples are a bounded acceptance slice, not complete live coverage of the
 composable catalogue. #8374 and the broader #6101 remain open for that work.

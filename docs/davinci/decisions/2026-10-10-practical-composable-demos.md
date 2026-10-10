@@ -174,3 +174,43 @@ two-entry options/event/key capacity limits. Exact-source Check 38033941359
 identified the omitted inventory, and the unchanged live-scan/storage test
 passes after regeneration. A separate canonical-fixture checkout assertion
 failure remains in the CI repair lane and must not be hidden by this update.
+
+## Clipboard and element observation extension
+
+Paired [issue decision](https://github.com/ubugeeei-prod/vize/issues/8374#issuecomment-6096095990).
+
+Prepare four further complete public-import SFCs for editable install-command
+copy/read, native guide scrolling, selected-panel size observation, and featured
+card visibility in a bounded native viewport. The source group now contains
+twenty-four SFC packets, ninety-six normal initial/interacted desktop/mobile
+captures plus two disabled-storage captures, and thirty-four rendered routes.
+Keep the previous twenty examples and their interaction laws unchanged.
+
+Use actual browser capabilities and CSS geometry. Clipboard actions explicitly
+write or request a read only after native button activation; support does not
+promise read permission. Prove exact whitespace-preserving clipboard contents,
+the replacement feedback deadline, a real denied read retaining the prior text,
+and permission restoration clearing failure. Browser permission grants are
+additive, so reset the context before granting only write permission. Wait for
+the second asynchronous copy's displayed text before advancing its real timer.
+The post-SSG checker also exercises this behavior inside the actual same-origin
+documentation iframe, rather than assuming top-level clipboard proof suffices.
+
+Scroll the actual readonly textarea through writable y, scrollTo, and native
+PageDown. Edge controls follow rendered dimensions. Native keyboard animation
+must finish with scrollend before comparing its final offset with the readout;
+advancing JavaScript timers alone does not finish the browser's scroll animation.
+Size callbacks report real contentRect, follow the selected template target,
+disconnect on replacement, and retain the last delivered readout after stop
+while native checkboxes continue resizing both panels. Visibility callbacks use
+an actual ancestor root and 0.6 threshold. isActive means requested observation;
+the example explicitly ignores inactive queued entries to retain its paused
+readout. Resume observes current geometry; stop permanently disables reconnect.
+
+Retain the full initial SSR markup and all element identities without hydration
+exceptions. All browser hosts remain real; no synthetic clipboard or observer
+is supplied to an example. Autosize stays deferred under the prior decision.
+Keep this next slice unpublished during the current twenty-example admission;
+publish only from a coherent delivered parent/main, obtain fresh exact-source
+Actions and protected actual merge, and require real deployed browser proof.
+The complete #8374 catalogue requirement and broader #6101 remain open.
