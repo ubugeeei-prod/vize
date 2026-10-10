@@ -4238,8 +4238,8 @@ Chaque style statique répète une propriété ; `margin` et `MARGIN` sont égal
 
 ```vue annotate="remove:2,3"
 <template>
-<div style="color: red; color: blue">text</div>
-<div style="margin: 0; MARGIN: 1px">text</div>
+  <div style="color: red; color: blue">text</div>
+  <div style="margin: 0; MARGIN: 1px">text</div>
 </template>
 ```
 
@@ -4251,8 +4251,8 @@ Le style statique utilise des propriétés distinctes de couleur et d’arrière
 
 ```vue annotate="add:2,3"
 <template>
-<div style="color: red; background: blue">text</div>
-<div :style="{ color: a, color: b }">text</div>
+  <div style="color: red; background: blue">text</div>
+  <div :style="{ color: a, color: b }">text</div>
 </template>
 ```
 
@@ -4301,7 +4301,7 @@ La liste de classes statique répète le nom `btn`.
 
 ```vue annotate="remove:2"
 <template>
-<div class="btn btn primary">click</div>
+  <div class="btn btn primary">click</div>
 </template>
 ```
 
@@ -4313,7 +4313,7 @@ La liste de classes conserve une seule occurrence de `btn` et le nom distinct `p
 
 ```vue annotate="add:2"
 <template>
-<div class="btn primary">click</div>
+  <div class="btn primary">click</div>
 </template>
 ```
 
@@ -5415,7 +5415,7 @@ L’option de composant `name: 'my-component'` utilise kebab-case, alors que cet
 ```vue annotate="remove:3"
 <script lang="ts">
 export default {
-name: 'my-component' // kebab-case
+  name: 'my-component' // kebab-case
 }
 </script>
 ```
@@ -5429,7 +5429,7 @@ name: 'my-component' // kebab-case
 ```vue annotate="add:3"
 <script lang="ts">
 export default {
-name: 'MyComponent'
+  name: 'MyComponent'
 }
 </script>
 ```
@@ -5797,15 +5797,15 @@ Le watcher `value` de l’Options API et le gestionnaire imbriqué `other.handle
 ```vue annotate="remove:4,5,9"
 <script lang="ts">
 export default {
-watch: {
-// `this` is not the component instance inside an arrow function.
-value: () => {
-this.doSomething()
-},
-other: {
-handler: () => {}
-}
-}
+  watch: {
+    // `this` is not the component instance inside an arrow function.
+    value: () => {
+      this.doSomething()
+    },
+    other: {
+      handler: () => {}
+    }
+  }
 }
 </script>
 ```
@@ -5819,15 +5819,15 @@ Les deux gestionnaires deviennent des méthodes ordinaires, ce qui permet à Vue
 ```vue annotate="add:4,8,9"
 <script lang="ts">
 export default {
-watch: {
-value(newValue, oldValue) {
-this.doSomething()
-},
-other: {
-handler(newValue) {},
-deep: true
-}
-}
+  watch: {
+    value(newValue, oldValue) {
+      this.doSomething()
+    },
+    other: {
+      handler(newValue) {},
+      deep: true
+    }
+  }
 }
 </script>
 ```
@@ -5953,11 +5953,11 @@ vp run lint
 ```vue annotate="remove:4,5,6"
 <script lang="ts">
 export default {
-props: {
-// Boolean props already default to false; an explicit default is confusing.
-disabled: { type: Boolean, default: true },
-checked: { type: Boolean, default: false }
-}
+  props: {
+    // Boolean props already default to false; an explicit default is confusing.
+    disabled: { type: Boolean, default: true },
+    checked: { type: Boolean, default: false }
+  }
 }
 </script>
 ```
@@ -5971,15 +5971,15 @@ Les props exclusivement booléennes omettent `default` et utilisent la valeur fa
 ```vue annotate="add:4,5,6,7,8,9,10"
 <script lang="ts">
 export default {
-props: {
-// No explicit default: defaults to false.
-disabled: { type: Boolean },
-disabled2: Boolean,
-// Union type may legitimately need a default.
-value: { type: [Boolean, String], default: '' },
-// Non-Boolean prop.
-count: { type: Number, default: 0 }
-}
+  props: {
+    // No explicit default: defaults to false.
+    disabled: { type: Boolean },
+    disabled2: Boolean,
+    // Union type may legitimately need a default.
+    value: { type: [Boolean, String], default: '' },
+    // Non-Boolean prop.
+    count: { type: Number, default: 0 }
+  }
 }
 </script>
 ```
@@ -6093,10 +6093,10 @@ L’option `data` de l’Options API est un objet littéral, une forme de Vue 2 
 ```vue annotate="remove:3,4,5"
 <script lang="ts">
 export default {
-// `data` must be a function in Vue 3, not an object literal.
-data: {
-count: 0
-}
+  // `data` must be a function in Vue 3, not an object literal.
+  data: {
+    count: 0
+  }
 }
 </script>
 ```
@@ -6110,9 +6110,9 @@ count: 0
 ```vue annotate="add:3,4"
 <script lang="ts">
 export default {
-data() {
-return { count: 0 }
-}
+  data() {
+    return { count: 0 }
+  }
 }
 </script>
 ```
@@ -6423,21 +6423,21 @@ La valeur par défaut et le validateur de la prop lisent `this`, mais ces foncti
 ```vue annotate="remove:6,7,8,13,14"
 <script lang="ts">
 export default {
-props: {
-size: {
-type: Number,
-// `this` is not the component instance in Vue 3.
-default() {
-return this.defaultSize
-}
-},
-value: {
-type: Number,
-validator() {
-return this.value > 0
-}
-}
-}
+  props: {
+    size: {
+      type: Number,
+      // `this` is not the component instance in Vue 3.
+      default() {
+        return this.defaultSize
+      }
+    },
+    value: {
+      type: Number,
+      validator() {
+        return this.value > 0
+      }
+    }
+  }
 }
 </script>
 ```
@@ -6451,21 +6451,21 @@ La fonction de valeur par défaut lit `props.baseSize` dans son argument, et le 
 ```vue annotate="add:6,7,8,13,14"
 <script lang="ts">
 export default {
-props: {
-size: {
-type: Number,
-// Vue 3 passes the raw props as the first argument instead.
-default(props) {
-return props.baseSize
-}
-},
-value: {
-type: Number,
-validator(value) {
-return value > 0
-}
-}
-}
+  props: {
+    size: {
+      type: Number,
+      // Vue 3 passes the raw props as the first argument instead.
+      default(props) {
+        return props.baseSize
+      }
+    },
+    value: {
+      type: Number,
+      validator(value) {
+        return value > 0
+      }
+    }
+  }
 }
 </script>
 ```
@@ -6516,16 +6516,16 @@ vp run lint
 ```vue annotate="remove:5,8,9,10,11"
 <script lang="ts">
 export default {
-props: ['foo'],
-data() {
-return { foo: 1 } // duplicate of prop `foo`
-},
-computed: {
-bar() { return 2 }
-},
-methods: {
-bar() {} // duplicate of computed `bar`
-}
+  props: ['foo'],
+  data() {
+    return { foo: 1 } // duplicate of prop `foo`
+  },
+  computed: {
+    bar() { return 2 }
+  },
+  methods: {
+    bar() {} // duplicate of computed `bar`
+  }
 }
 </script>
 ```
@@ -6539,13 +6539,13 @@ Les déclarations de prop, de données et de propriété calculée utilisent des
 ```vue annotate="add:5,8"
 <script lang="ts">
 export default {
-props: ['foo'],
-data() {
-return { bar: 1 }
-},
-computed: {
-baz() { return 2 }
-}
+  props: ['foo'],
+  data() {
+    return { bar: 1 }
+  },
+  computed: {
+    baz() { return 2 }
+  }
 }
 </script>
 ```
@@ -7481,17 +7481,17 @@ vp run lint
 
 `ref` et `$foo` dans la forme objet, ainsi que `key` dans la forme tableau, sont des noms de props réservés. `ref` et `key` sont des mécanismes du framework, et les noms préfixés par `$` sont rejetés.
 
-```vue annotate="remove:4,5,6,8,9,10"
+```vue annotate="remove:4,5,8,9,10,11"
 <script lang="ts">
 export default {
-props: {
-ref: String,   // reserved
-$foo: Number    // `$`-prefixed names are reserved
-}
+  props: {
+    ref: String,   // reserved
+    $foo: Number    // `$`-prefixed names are reserved
+  }
 }
 
 export default {
-props: ['key']    // reserved (array form)
+  props: ['key']    // reserved (array form)
 }
 </script>
 ```
@@ -7505,10 +7505,10 @@ Les noms de props ordinaires `name` et `refValue` évitent les noms réservés t
 ```vue annotate="add:4,5"
 <script lang="ts">
 export default {
-props: {
-name: String,
-refValue: Number
-}
+  props: {
+    name: String,
+    refValue: Number
+  }
 }
 </script>
 ```
@@ -7700,18 +7700,18 @@ vp run lint
 ```vue annotate="remove:8,9,12"
 <script lang="ts">
 export default {
-data() {
-return { count: 0, items: [] }
-},
-computed: {
-doubled() {
-this.count = this.count * 2 // side effect: assigns to data
-return this.count
-},
-reversed() {
-return this.items.reverse() // side effect: mutates the array
-}
-}
+  data() {
+    return { count: 0, items: [] }
+  },
+  computed: {
+    doubled() {
+      this.count = this.count * 2 // side effect: assigns to data
+      return this.count
+    },
+    reversed() {
+      return this.items.reverse() // side effect: mutates the array
+    }
+  }
 }
 </script>
 ```
@@ -7725,17 +7725,17 @@ return this.items.reverse() // side effect: mutates the array
 ```vue annotate="add:8,11"
 <script lang="ts">
 export default {
-data() {
-return { count: 0, items: [] }
-},
-computed: {
-doubled() {
-return this.count * 2
-},
-reversed() {
-return [...this.items].reverse() // operate on a copy
-}
-}
+  data() {
+    return { count: 0, items: [] }
+  },
+  computed: {
+    doubled() {
+      return this.count * 2
+    },
+    reversed() {
+      return [...this.items].reverse() // operate on a copy
+    }
+  }
 }
 </script>
 ```
@@ -7790,9 +7790,9 @@ const count = ref(0)
 const user = reactive({ name: '' })
 
 export default {
-setup() {
-return { count, user }
-}
+  setup() {
+    return { count, user }
+  }
 }
 </script>
 ```
@@ -7815,15 +7815,15 @@ const API_URL = 'https://api.example.com'
 
 // Functions that create state are fine
 function createState() {
-return reactive({ count: 0 })
+  return reactive({ count: 0 })
 }
 
 export default {
-setup() {
-// Create state inside setup
-const count = ref(0)
-return { count }
-}
+  setup() {
+    // Create state inside setup
+    const count = ref(0)
+    return { count }
+  }
 }
 </script>
 ```
@@ -8205,8 +8205,8 @@ La méthode `data()` montrée donne au script une véritable logique de l’Opti
 <script lang="ts">
 // Real options logic — keep the plain script.
 export default {
-name: 'MyComponent',
-data() { return { count: 0 } },
+  name: 'MyComponent',
+  data() { return { count: 0 } },
 }
 </script>
 ```
@@ -8320,8 +8320,8 @@ L’état est créé avec `reactive`, contrairement à la préférence de cette 
 <script setup lang="ts">
 // reactive requires careful handling to avoid losing reactivity
 const state = reactive({
-count: 0,
-name: 'foo'
+  count: 0,
+  name: 'foo'
 })
 </script>
 ```
@@ -8592,7 +8592,7 @@ import { ref } from 'vue'
 const input = ref<HTMLInputElement | null>(null)
 </script>
 <template>
-<input ref="input" />
+  <input ref="input" />
 </template>
 ```
 
@@ -8611,8 +8611,8 @@ const input = useTemplateRef<HTMLInputElement>('input')
 const error = ref(null)
 </script>
 <template>
-<input ref="input" />
-<p>{{ error }}</p>
+  <input ref="input" />
+  <p>{{ error }}</p>
 </template>
 ```
 
@@ -8662,11 +8662,11 @@ vp run lint
 ```vue annotate="remove:4,5,6"
 <script lang="ts">
 export default {
-props: {
-// optional, non-Boolean, no default
-name: String,
-age: { type: Number },
-}
+  props: {
+    // optional, non-Boolean, no default
+    name: String,
+    age: { type: Number },
+  }
 }
 </script>
 ```
@@ -8680,11 +8680,11 @@ age: { type: Number },
 ```vue annotate="add:4,5,6"
 <script lang="ts">
 export default {
-props: {
-name: { type: String, default: '' },
-enabled: Boolean,                 // Boolean defaults to false
-id: { type: Number, required: true },
-}
+  props: {
+    name: { type: String, default: '' },
+    enabled: Boolean,                 // Boolean defaults to false
+    id: { type: Number, required: true },
+  }
 }
 </script>
 ```
@@ -8861,11 +8861,11 @@ vp run lint
 ```vue annotate="remove:2,6"
 <script setup lang="ts">
 const add = (a: number, b: number) => {
-return a + b
+  return a + b
 }
 
 function greet(name: string) {
-return `Hello, ${name}`
+  return `Hello, ${name}`
 }
 </script>
 ```
@@ -8879,11 +8879,11 @@ return `Hello, ${name}`
 ```vue annotate="add:2,6"
 <script setup lang="ts">
 const add = (a: number, b: number): number => {
-return a + b
+  return a + b
 }
 
 function greet(name: string): string {
-return `Hello, ${name}`
+  return `Hello, ${name}`
 }
 </script>
 ```
@@ -8934,12 +8934,12 @@ Les déclarations de props utilisent les chaînes `"String"` et `"Number"` comme
 ```vue annotate="remove:4,5,6,7"
 <script lang="ts">
 export default {
-props: {
-// The type should be the `String` constructor, not the string "String".
-name: "String",
-age: { type: "Number" },
-id: { type: ["String", "Number"] }
-}
+  props: {
+    // The type should be the `String` constructor, not the string "String".
+    name: "String",
+    age: { type: "Number" },
+    id: { type: ["String", "Number"] }
+  }
 }
 </script>
 ```
@@ -8953,11 +8953,11 @@ Les déclarations utilisent les véritables identifiants `String` et `Number`, y
 ```vue annotate="add:4,5,6"
 <script lang="ts">
 export default {
-props: {
-name: String,
-age: { type: Number },
-id: { type: [String, Number] }
-}
+  props: {
+    name: String,
+    age: { type: Number },
+    id: { type: [String, Number] }
+  }
 }
 </script>
 ```
@@ -9008,14 +9008,14 @@ L’entrée du tableau ne déclare que le nom `status` ; la valeur `null` et le 
 ```vue annotate="remove:3,4,5,6,8,9"
 <script lang="ts">
 export default {
-props: ['status']            // array form: no types
+  props: ['status']            // array form: no types
 }
 
 export default {
-props: {
-status: null,              // no type
-other: {}                  // empty descriptor: no type
-}
+  props: {
+    status: null,              // no type
+    other: {}                  // empty descriptor: no type
+  }
 }
 </script>
 ```
@@ -9029,10 +9029,10 @@ other: {}                  // empty descriptor: no type
 ```vue annotate="add:4,5"
 <script lang="ts">
 export default {
-props: {
-status: String,
-other: { type: Number, default: 0 }
-}
+  props: {
+    status: String,
+    other: { type: Number, default: 0 }
+  }
 }
 </script>
 ```
@@ -9291,12 +9291,12 @@ Les props Number et Boolean reçoivent des valeurs scalaires par défaut incompa
 ```vue annotate="remove:4,5,6,7"
 <script lang="ts">
 export default {
-props: {
-count: { type: Number, default: '0' },     // string default for Number
-enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
-items: { type: Array, default: [] },        // literal must be a factory
-config: { type: Object, default: {} }       // literal must be a factory
-}
+  props: {
+    count: { type: Number, default: '0' },     // string default for Number
+    enabled: { type: Boolean, default: 1 },     // non-boolean default for Boolean
+    items: { type: Array, default: [] },        // literal must be a factory
+    config: { type: Object, default: {} }       // literal must be a factory
+  }
 }
 </script>
 ```
@@ -9310,13 +9310,13 @@ Les valeurs scalaires par défaut deviennent `0` et `false` ; les valeurs par d�
 ```vue annotate="add:4,5,6,7,8"
 <script lang="ts">
 export default {
-props: {
-count: { type: Number, default: 0 },
-enabled: { type: Boolean, default: false },
-items: { type: Array, default: () => [] },
-config: { type: Object, default: () => ({}) },
-label: { type: [String, Number], default: '' }
-}
+  props: {
+    count: { type: Number, default: 0 },
+    enabled: { type: Boolean, default: false },
+    items: { type: Array, default: () => [] },
+    config: { type: Object, default: () => ({}) },
+    label: { type: [String, Number], default: '' }
+  }
 }
 </script>
 ```
@@ -17806,7 +17806,7 @@ Le template du SFC possède l’attribut functional supprimé et lit l’ancien 
 
 ```vue annotate="remove:1,2"
 <template functional>
-<div>{{ props.msg }}</div>
+  <div>{{ props.msg }}</div>
 </template>
 ```
 
@@ -17818,7 +17818,7 @@ Le template ordinaire omet functional et lit directement la liaison msg du compo
 
 ```vue annotate="add:1,2"
 <template>
-<div>{{ msg }}</div>
+  <div>{{ msg }}</div>
 </template>
 ```
 
@@ -17867,7 +17867,7 @@ Un div natif utilise l’ancien attribut is sans préfixe pour demander un compo
 
 ```vue annotate="remove:2"
 <template>
-<div is="MyComponent" />
+  <div is="MyComponent" />
 </template>
 ```
 
@@ -17879,8 +17879,8 @@ Un composant dynamique utilise :is ; la syntaxe sur un élément natif utilise e
 
 ```vue annotate="add:2,3"
 <template>
-<component :is="MyComponent" />
-<div is="vue:MyComponent" />
+  <component :is="MyComponent" />
+  <div is="vue:MyComponent" />
 </template>
 ```
 
@@ -17990,7 +17990,7 @@ RouterLink utilise la prop tag supprimée pour demander un élément button.
 
 ```vue annotate="remove:2"
 <template>
-<router-link to="/home" tag="button">Home</router-link>
+  <router-link to="/home" tag="button">Home</router-link>
 </template>
 ```
 
@@ -18002,9 +18002,9 @@ Le slot fournit navigate à un bouton explicitement écrit dans le template.
 
 ```vue annotate="add:2,3,4"
 <template>
-<router-link to="/home" v-slot="{ navigate }">
-<button @click="navigate">Home</button>
-</router-link>
+  <router-link to="/home" v-slot="{ navigate }">
+    <button @click="navigate">Home</button>
+  </router-link>
 </template>
 ```
 
@@ -18114,10 +18114,10 @@ Le slot header est sélectionné au moyen de l’ancien attribut slot.
 
 ```vue annotate="remove:3,4"
 <template>
-<Foo>
-<template slot="header"><h1>Title</h1></template>
-<div :slot="name">Title</div>
-</Foo>
+  <Foo>
+    <template slot="header"><h1>Title</h1></template>
+    <div :slot="name">Title</div>
+  </Foo>
 </template>
 ```
 
@@ -18129,9 +18129,9 @@ v-slot:header sélectionne explicitement le slot header avec la directive actuel
 
 ```vue annotate="add:3"
 <template>
-<Foo>
-<template v-slot:header><h1>Title</h1></template>
-</Foo>
+  <Foo>
+    <template v-slot:header><h1>Title</h1></template>
+  </Foo>
 </template>
 ```
 
@@ -18572,7 +18572,7 @@ Chaque bloc conservé contient du balisage, des déclarations de script ou des d
 
 ```vue annotate="add:1,2,3,5,6,7,9,10"
 <template>
-<div>Hello</div>
+  <div>Hello</div>
 </template>
 
 <script setup>
@@ -19349,7 +19349,7 @@ La racine du composant elle-même apparaît et disparaît sous le contrôle de v
 
 ```vue annotate="remove:2"
 <template>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </template>
 ```
 
@@ -19361,9 +19361,9 @@ Un div externe stable reste la racine, tandis que le paragraphe imbriqué porte 
 
 ```vue annotate="add:2,3,4"
 <template>
-<div>
-<p v-if="show">content</p>
-</div>
+  <div>
+    <p v-if="show">content</p>
+  </div>
 </template>
 ```
 
@@ -21464,7 +21464,7 @@ L’enfant statique à l’intérieur de `<Transition>` n’a ni visibilité con
 ```vue annotate="remove:3"
 <template>
 <transition>
-<div>content</div>
+  <div>content</div>
 </transition>
 </template>
 ```
@@ -21478,7 +21478,7 @@ L’enfant statique à l’intérieur de `<Transition>` n’a ni visibilité con
 ```vue annotate="add:3"
 <template>
 <transition>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </transition>
 </template>
 ```
@@ -22457,7 +22457,7 @@ Un `<template>` imbriqué ordinaire occupe la racine du template sans directive 
 
 ```vue annotate="remove:2"
 <template>
-<template>content</template>
+  <template>content</template>
 </template>
 ```
 
@@ -22469,7 +22469,7 @@ Le `<div>` est un élément racine qui peut être affiché. Cet exemple n’impo
 
 ```vue annotate="add:2"
 <template>
-<div>content</div>
+  <div>content</div>
 </template>
 ```
 

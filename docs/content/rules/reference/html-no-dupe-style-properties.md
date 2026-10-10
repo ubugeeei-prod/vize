@@ -41,8 +41,8 @@ Each static style repeats one property; `margin` and `MARGIN` also count as the 
 
 ```vue
 <template>
-<div style="color: red; color: blue">text</div>
-<div style="margin: 0; MARGIN: 1px">text</div>
+  <div style="color: red; color: blue">text</div>
+  <div style="margin: 0; MARGIN: 1px">text</div>
 </template>
 ```
 
@@ -52,8 +52,8 @@ The static style uses distinct color and background properties. Dynamic style bi
 
 ```vue
 <template>
-<div style="color: red; background: blue">text</div>
-<div :style="{ color: a, color: b }">text</div>
+  <div style="color: red; background: blue">text</div>
+  <div :style="{ color: a, color: b }">text</div>
 </template>
 ```
 

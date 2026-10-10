@@ -41,7 +41,7 @@ RouterLink の廃止された tag で button を指定しています。
 
 ```vue
 <template>
-<router-link to="/home" tag="button">Home</router-link>
+  <router-link to="/home" tag="button">Home</router-link>
 </template>
 ```
 
@@ -51,9 +51,9 @@ slot から navigate を受け取り、明示的に記述した button で実行
 
 ```vue
 <template>
-<router-link to="/home" v-slot="{ navigate }">
-<button @click="navigate">Home</button>
-</router-link>
+  <router-link to="/home" v-slot="{ navigate }">
+    <button @click="navigate">Home</button>
+  </router-link>
 </template>
 ```
 

@@ -310,8 +310,8 @@ Each static style repeats one property; `margin` and `MARGIN` also count as the 
 
 ```vue annotate="remove:2,3"
 <template>
-<div style="color: red; color: blue">text</div>
-<div style="margin: 0; MARGIN: 1px">text</div>
+  <div style="color: red; color: blue">text</div>
+  <div style="margin: 0; MARGIN: 1px">text</div>
 </template>
 ```
 
@@ -323,8 +323,8 @@ The static style uses distinct color and background properties. Dynamic style bi
 
 ```vue annotate="add:2,3"
 <template>
-<div style="color: red; background: blue">text</div>
-<div :style="{ color: a, color: b }">text</div>
+  <div style="color: red; background: blue">text</div>
+  <div :style="{ color: a, color: b }">text</div>
 </template>
 ```
 
@@ -373,7 +373,7 @@ The static class list repeats the `btn` token.
 
 ```vue annotate="remove:2"
 <template>
-<div class="btn btn primary">click</div>
+  <div class="btn btn primary">click</div>
 </template>
 ```
 
@@ -385,7 +385,7 @@ The class list keeps one `btn` token and the distinct `primary` token.
 
 ```vue annotate="add:2"
 <template>
-<div class="btn primary">click</div>
+  <div class="btn primary">click</div>
 </template>
 ```
 

@@ -42,11 +42,11 @@ Both `add` and `greet` annotate their parameters but omit a return-type annotati
 ```vue
 <script setup lang="ts">
 const add = (a: number, b: number) => {
-return a + b
+  return a + b
 }
 
 function greet(name: string) {
-return `Hello, ${name}`
+  return `Hello, ${name}`
 }
 </script>
 ```
@@ -58,11 +58,11 @@ return `Hello, ${name}`
 ```vue
 <script setup lang="ts">
 const add = (a: number, b: number): number => {
-return a + b
+  return a + b
 }
 
 function greet(name: string): string {
-return `Hello, ${name}`
+  return `Hello, ${name}`
 }
 </script>
 ```

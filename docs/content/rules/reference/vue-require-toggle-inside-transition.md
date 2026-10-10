@@ -42,7 +42,7 @@ The static child inside `<Transition>` has no conditional visibility or dynamic 
 ```vue
 <template>
 <transition>
-<div>content</div>
+  <div>content</div>
 </transition>
 </template>
 ```
@@ -54,7 +54,7 @@ The static child inside `<Transition>` has no conditional visibility or dynamic 
 ```vue
 <template>
 <transition>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </transition>
 </template>
 ```

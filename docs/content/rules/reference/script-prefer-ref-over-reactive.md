@@ -43,8 +43,8 @@ The state is created with `reactive`, contrary to this opinionated rule’s pref
 <script setup lang="ts">
 // reactive requires careful handling to avoid losing reactivity
 const state = reactive({
-count: 0,
-name: 'foo'
+  count: 0,
+  name: 'foo'
 })
 </script>
 ```

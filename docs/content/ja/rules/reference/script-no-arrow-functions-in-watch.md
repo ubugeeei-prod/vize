@@ -42,15 +42,15 @@ Options API の watcher `value` と `other.handler` がアロー関数です。�
 ```vue
 <script lang="ts">
 export default {
-watch: {
-// `this` is not the component instance inside an arrow function.
-value: () => {
-this.doSomething()
-},
-other: {
-handler: () => {}
-}
-}
+  watch: {
+    // `this` is not the component instance inside an arrow function.
+    value: () => {
+      this.doSomething()
+    },
+    other: {
+      handler: () => {}
+    }
+  }
 }
 </script>
 ```
@@ -62,15 +62,15 @@ handler: () => {}
 ```vue
 <script lang="ts">
 export default {
-watch: {
-value(newValue, oldValue) {
-this.doSomething()
-},
-other: {
-handler(newValue) {},
-deep: true
-}
-}
+  watch: {
+    value(newValue, oldValue) {
+      this.doSomething()
+    },
+    other: {
+      handler(newValue) {},
+      deep: true
+    }
+  }
 }
 </script>
 ```

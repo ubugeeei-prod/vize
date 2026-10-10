@@ -41,7 +41,7 @@ The component root itself appears and disappears under v-if.
 
 ```vue
 <template>
-<div v-if="show">content</div>
+  <div v-if="show">content</div>
 </template>
 ```
 
@@ -51,9 +51,9 @@ A stable outer div remains the root while the nested paragraph carries the visib
 
 ```vue
 <template>
-<div>
-<p v-if="show">content</p>
-</div>
+  <div>
+    <p v-if="show">content</p>
+  </div>
 </template>
 ```
 

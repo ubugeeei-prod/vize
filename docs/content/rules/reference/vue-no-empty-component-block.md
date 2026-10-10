@@ -54,7 +54,7 @@ Each retained block contains actual markup, script declarations, or style declar
 
 ```vue
 <template>
-<div>Hello</div>
+  <div>Hello</div>
 </template>
 
 <script setup>

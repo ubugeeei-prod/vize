@@ -42,18 +42,18 @@ vp run lint
 ```vue
 <script lang="ts">
 export default {
-data() {
-return { count: 0, items: [] }
-},
-computed: {
-doubled() {
-this.count = this.count * 2 // side effect: assigns to data
-return this.count
-},
-reversed() {
-return this.items.reverse() // side effect: mutates the array
-}
-}
+  data() {
+    return { count: 0, items: [] }
+  },
+  computed: {
+    doubled() {
+      this.count = this.count * 2 // side effect: assigns to data
+      return this.count
+    },
+    reversed() {
+      return this.items.reverse() // side effect: mutates the array
+    }
+  }
 }
 </script>
 ```
@@ -65,17 +65,17 @@ return this.items.reverse() // side effect: mutates the array
 ```vue
 <script lang="ts">
 export default {
-data() {
-return { count: 0, items: [] }
-},
-computed: {
-doubled() {
-return this.count * 2
-},
-reversed() {
-return [...this.items].reverse() // operate on a copy
-}
-}
+  data() {
+    return { count: 0, items: [] }
+  },
+  computed: {
+    doubled() {
+      return this.count * 2
+    },
+    reversed() {
+      return [...this.items].reverse() // operate on a copy
+    }
+  }
 }
 </script>
 ```

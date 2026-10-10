@@ -41,7 +41,7 @@ The static class list repeats the `btn` token.
 
 ```vue
 <template>
-<div class="btn btn primary">click</div>
+  <div class="btn btn primary">click</div>
 </template>
 ```
 
@@ -51,7 +51,7 @@ The class list keeps one `btn` token and the distinct `primary` token.
 
 ```vue
 <template>
-<div class="btn primary">click</div>
+  <div class="btn primary">click</div>
 </template>
 ```
 
