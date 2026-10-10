@@ -26,7 +26,7 @@ export const SUPPORTED_LANGUAGE_IDS = [
 ] as const;
 export const SUPPORTED_URI_SCHEMES = ["file", "untitled"] as const;
 
-/** Filenames the CLI discovers as project config. Any one is workspace LSP config. */
+/** Dedicated config filenames retained for compatibility with existing projects. */
 export const WORKSPACE_LSP_CONFIG_FILES = [
   "vize.config.pkl",
   "vize.config.ts",
@@ -34,6 +34,20 @@ export const WORKSPACE_LSP_CONFIG_FILES = [
   "vize.config.mjs",
   "vize.config.json",
 ] as const;
+export const WORKSPACE_PROJECT_CONFIG_FILES = [
+  "vite.config.ts",
+  "vite.config.mts",
+  "vite.config.cts",
+  "vite.config.js",
+  "vite.config.mjs",
+  "vite.config.cjs",
+  "tsconfig.json",
+] as const;
+export const WORKSPACE_PROJECT_CONFIG_GLOB = `**/{${[
+  ...WORKSPACE_LSP_CONFIG_FILES,
+  ...WORKSPACE_PROJECT_CONFIG_FILES,
+  "tsconfig.*.json",
+].join(",")}}`;
 export const FEATURE_SETTING_KEYS = [
   "lint.enable",
   "diagnostics.enable",
