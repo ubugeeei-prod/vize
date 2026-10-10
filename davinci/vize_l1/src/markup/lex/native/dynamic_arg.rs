@@ -38,7 +38,7 @@ fn is_boundary(byte: u8) -> bool {
     byte == b'=' || is_end_of_tag_section(byte)
 }
 
-fn scan_argument(input: &[u8], start: usize) -> (usize, bool) {
+pub(super) fn scan_argument(input: &[u8], start: usize) -> (usize, bool) {
     let mut delimiters = SmallVec::<[u8; 8]>::new();
     delimiters.push(b']');
     let mut index = start;

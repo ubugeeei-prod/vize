@@ -25,6 +25,16 @@ use sequences::Sequence;
 pub(crate) use types::State;
 pub use types::{is_end_of_tag_section, is_tag_start_char, is_whitespace};
 
+/// Find the closing `]` of a dynamic directive argument, using the lexer's
+/// quote, escape, nested-delimiter, and HTML attribute recovery rules.
+///
+/// `text` starts immediately after the authored opening `[`. The returned byte
+/// offset points at the closing `]`, an HTML boundary, or the end of `text`;
+/// the boolean is true only when the argument's own closing `]` was found.
+pub fn dynamic_argument_boundary(text: &str) -> (usize, bool) {
+    dynamic_arg::scan_argument(text.as_bytes(), 0)
+}
+
 /// Interpolation delimiters, `{{`/`}}` by default.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Delimiters<'a> {

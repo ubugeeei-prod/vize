@@ -17,6 +17,8 @@ use vize_atelier_sfc::{
 };
 use vize_atelier_ssr::differential::{record_lanes, with_legacy_lane};
 
+mod nested_dynamic_arguments;
+
 fn compile(source: &str) -> String {
     let descriptor = parse_sfc(source, SfcParseOptions::default()).expect("parse");
     let filename: vize_l0::String = "Fixture.vue".into();

@@ -1,0 +1,33 @@
+{
+  "origin": {
+    "runId": 38035331735,
+    "jobId": 114164470517,
+    "sourceSha": "7bebe6f30b0a34c14b154188548a7fc0b37b633b",
+    "rawLogSha256": "d7cded45e2c4c1d05b411f8fdc88607f751115efddebafe1df94e45d5509d3ed"
+  },
+  "scope": "Four selected-versus-legacy whole SSR output differences, two unique parent spellings; original completed DOM/Vapor status was successful. Historical fatal child cause and engine remain unknown.",
+  "files": {
+    "Child.vue.txt": {
+      "bytes": 1005,
+      "sha256": "c4560f416b1ef6f8cb5306b605ce78a4f96800d80fa2c34ef83b81c886c4cd47",
+      "originalPacket": "326274-100/child.vue"
+    },
+    "Longhand.vue.txt": {
+      "bytes": 347,
+      "sha256": "89af421cdeb8adc60e5e412de64635e2bdd2c4dcfe8a134781448fe3f0cc4d41",
+      "originalPacket": "326274-100/source.vue"
+    },
+    "Shorthand.vue.txt": {
+      "bytes": 337,
+      "sha256": "9d9da696776f57ca7b424b858f20480327d7ae5100d6d659fce30bc139cd59c0",
+      "originalPacket": "326274-24/source.vue"
+    }
+  },
+  "beforeFullSsrLog": {
+    "path": "before.full-ssr.log.txt",
+    "bytes": 16354,
+    "sha256": "cfb96d482c8adc35529227d3a7f1e5dd30346743aea67b07e2a2430c1d434a0e",
+    "rawLogLines": [29845, 30066],
+    "disposition": "literal timestamped whole emitted selected/legacy SFC modules from four actual RED records; no baseline SSR Node execution receipt"
+  }
+}
