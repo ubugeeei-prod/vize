@@ -85,6 +85,8 @@ test("wrong or changed SHA-pinned install receipt is refused before provider sta
     t.after(() => fs.rmSync(temporary, { recursive: true, force: true }));
     const receipt = path.join(temporary, "inert-receipt.json");
     const value = plan();
+    const { C, H, tag, R } = value.source;
+    const rejectedSource = { C, H: "1".repeat(40), tag, R };
     value.installReceipt.path = receipt;
     fs.writeFileSync(
       receipt,
@@ -92,12 +94,16 @@ test("wrong or changed SHA-pinned install receipt is refused before provider sta
         schema: "vize-public-registry-install-v1",
         success: true,
         version: "0.439.0",
-        source: { ...value.source, H: "1".repeat(40) },
+        source: rejectedSource,
       }),
     );
     assert.throws(() => installedAuthority(value, root), /reviewed install receipt changed/u);
     value.installReceipt.sha256 = sha256(fs.readFileSync(receipt));
-    assert.throws(() => installedAuthority(value, root), assert.AssertionError);
+    assert.throws(() => installedAuthority(value, root), {
+      name: "AssertionError",
+      actual: rejectedSource,
+      expected: { C, H, tag, R },
+    });
     fs.appendFileSync(receipt, "\n");
     assert.throws(() => installedAuthority(value, root), /reviewed install receipt changed/u);
     const output = path.join(temporary, "no-output");

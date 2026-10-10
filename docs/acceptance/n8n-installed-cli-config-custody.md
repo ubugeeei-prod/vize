@@ -1,8 +1,8 @@
 # Installed n8n CLI/config custody
 
 Tracker: [#8142](https://github.com/ubugeeei-prod/vize/issues/8142).
-The paired issue decision is prepared locally; posting and remote delivery remain
-with the release coordinator.
+The [paired issue decision](https://github.com/ubugeeei-prod/vize/issues/8142#issuecomment-6092527830)
+and canonical decision record retain the campaign's scope and remaining obligations.
 
 This standalone typed campaign runs the existing bounded n8n CLI/config contracts
 against a genuinely npm-installed `vize` and its `vize/config` export. It does not
@@ -40,6 +40,10 @@ and after the campaign. It verifies the separately reviewed collector files,
 CLI wrapper/dist, config export, Node executable and native/Corsa identities.
 This reuses the collector's registry/archive evidence; JSON syntax alone does
 not establish publication or replace the coordinator's reviewed receipt digest.
+
+The wrong-H inert law uses exactly C/H/tag/R and checks both complete rejected
+and expected source objects. Weakening H comparison must fail this law; an
+unrelated envelope error cannot satisfy it.
 
 The existing official collector currently owns Darwin ARM64. This adapter
 preserves that boundary; another platform needs its own genuine collector
