@@ -81,6 +81,16 @@ outcomes are frozen only after source-built evidence is independently reviewed.
 The original V1 gate is also run independently on pinned 815. No historical
 archive is overwritten and no refusal is silently removed from a reviewed law.
 
+The existing `native_vapor` lower-event test keeps all four original template
+bytes. Its named static-class case now requires complete original L2/L3 File,
+attribute observation, decoded-value pointer, root and span custody, then the
+exact L4 `AttributeSemantics` error at bytes 16..25 in both output sinks.
+Its three other lower refusals and all twelve original whole Vapor modules/maps
+are unchanged. The entire original `native_vapor` test also runs unchanged on
+pinned 815 in the isolated historical Cargo target: a ninth mandatory process
+retains its raw streams/status and a typed original source/fixture/capture receipt.
+This successor supplies no Vapor class module or broader refusal allowance.
+
 Instruction budgets are unchanged. The 10x type-checker target has no new
 measurement here. Source and protected full qualification, actual Stack merge,
 Vapor class support, complete native products and #6880 closure remain separate

@@ -41,6 +41,19 @@ complete captures remain required in the source-bound historical receipt. The
 original scriptless archive hash stays
 `42d07bc4f7c6d19c67d83e4f3d13221e68700aa8c01a8cf7ccad4847088b4773`.
 
+The eight existing historical steps remain mandatory and unchanged. A ninth
+`vapor-build` process runs the original pinned `native_vapor` integration test,
+including its original static-class lower refusal and all twelve whole modules
+and maps. Its exact original test source SHA-256 is
+`5903289dae43f4efa359612a243976365bf0280536fd5dead194b8bc959f19b9`;
+its unchanged whole fixture SHA-256 is
+`c68a4b876c510879d0f70071e6469d175f53c0040be382e95e9e563c73636651`.
+The isolated historical target, actual zero status, full raw stdout/stderr,
+complete capture and typed `vapor` receipt are required; copied prior evidence
+cannot qualify this execution. On current source only that named class case
+moves to complete original L3 custody and exact L4 `AttributeSemantics` refusal
+at its original attribute span. Every other authored case and fixture stays exact.
+
 The same Action separately builds the current source and executes all fourteen
 original inputs through the same public DOM, SSR and Vapor selected-SFC entries,
 unchanged descriptor/target defaults and both Recorded/NoLinks modes. V2 names
@@ -63,7 +76,7 @@ negative evidence. Correct pinned Vue 3.5.35 DOM/SSR controls and the unchanged
 original HTML interpreted by real DOM/template clones supply semantic authority.
 Whole raw maps, complete source contents, original links and every segment anchor
 remain mandatory. Removing a class anchor must fail the map judge. Vapor class retains complete
-lower original storage and typed L3 `AttributeSemantics` refusal, never fabricated
+lower original storage and typed L4 `AttributeSemantics` refusal, never fabricated
 accepted L3 side facts.
 
 The current qualification joins the historical receipt to the exact current
@@ -74,10 +87,11 @@ an archive is not a compiler fix-history acceptance decision.
 
 ## Honest incomplete delivery
 
-`reviewed_output_v2.json` is deliberately unfrozen/null. Both current Rust and
-hosted comparisons fail closed until the combined genuine class provider has
-produced a complete exact-source Actions capture, independent source/module/map/
-link/runtime review has approved it, and the entire packet is frozen. Pure
+`reviewed_output_v2.json` now freezes the entire independently reviewed actual
+source-built 84-row packet, including every unchanged non-class row, without
+slicing or generated-byte rewrites. Fresh current Rust and hosted comparisons
+still fail closed unless their complete actual output equals those bytes and
+all historical, upstream, map and runtime gates pass. Pure
 schema/mutation contracts and source formatting grant no native execution credit.
 The historical source is executed on Actions, not locally for preparation.
 

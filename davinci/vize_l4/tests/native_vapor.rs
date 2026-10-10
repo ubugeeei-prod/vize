@@ -1,4 +1,8 @@
 //! Whole original-selected modules, independent maps and all-or-nothing refusal.
+mod native_vapor {
+    pub(crate) mod class_successor;
+}
+
 use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},
@@ -163,10 +167,19 @@ fn unsupported_original_lower_events_cannot_authorize_the_target() {
         {
             let mut walk = owner.begin().unwrap();
             let selected = walk.selected();
-            assert!(walk.child(selected.children().next().unwrap()).is_err());
+            if template == "<span class=\"x\">x</span>" {
+                walk.child(selected.children().next().unwrap()).unwrap();
+                walk.complete().unwrap();
+            } else {
+                assert!(walk.child(selected.children().next().unwrap()).is_err());
+            }
         }
         let refused = owner.finish();
-        assert!(refused.view().is_err(), "{template}");
+        if template == "<span class=\"x\">x</span>" {
+            native_vapor::class_successor::assert_current(&refused, &source);
+        } else {
+            assert!(refused.view().is_err(), "{template}");
+        }
     }
 }
 

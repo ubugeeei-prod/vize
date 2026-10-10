@@ -12,6 +12,7 @@ import {
   hash7502,
 } from "./native-attribute-values-7502-inputs.ts";
 import { validateScriptlessHistory7502 } from "./native-attribute-values-7502-scriptless-history.ts";
+import { validateVaporHistory7502 } from "./native-attribute-values-7502-vapor-history.ts";
 import { root7502 } from "./native-attribute-values-7502-source.ts";
 
 export const historySteps7502 = [
@@ -23,6 +24,7 @@ export const historySteps7502 = [
   "judge",
   "scriptless-build",
   "scriptless-judge",
+  "vapor-build",
 ];
 export function historyCommands7502(worktree: string, history: string) {
   return [
@@ -48,6 +50,21 @@ export function historyCommands7502(worktree: string, history: string) {
       ],
     ],
     ["vp", ["node", "--test", "tests/tooling/native-sfc-scriptless-ssr-reference.test.ts"]],
+    [
+      "cargo",
+      [
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_l4",
+        "--test",
+        "native_vapor",
+        "--",
+        "--nocapture",
+      ],
+    ],
   ] as const;
 }
 export function validateHistory7502(receipt: any, current: any, directory: string) {
@@ -67,6 +84,7 @@ export function validateHistory7502(receipt: any, current: any, directory: strin
     "captureSha256",
     "envelopesSha256",
     "scriptless",
+    "vapor",
     "failure",
   ]);
   assert.equal(receipt.schema, "vize.native-attribute-values-7502.history");
@@ -208,6 +226,7 @@ export function validateHistory7502(receipt: any, current: any, directory: strin
     }
   }
   validateScriptlessHistory7502(receipt.scriptless, history);
+  validateVaporHistory7502(receipt.vapor, history);
   assert.equal(qualification.captureSha256, receipt.captureSha256);
   assert.equal(qualification.envelopesSha256, receipt.envelopesSha256);
 }

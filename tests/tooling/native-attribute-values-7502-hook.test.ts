@@ -5,6 +5,7 @@ import path from "node:path";
 import { test } from "node:test";
 import { nativeAttributeValues7502CaptureRequired } from "../../tools/support/compat/github/native-attribute-values-7502-capture.mjs";
 import { validateScriptlessHistory7502 } from "./support/native-attribute-values-7502-scriptless-history.ts";
+import { validateVaporHistory7502 } from "./support/native-attribute-values-7502-vapor-history.ts";
 import { baseline7502, hash7502 } from "./support/native-attribute-values-7502-inputs.ts";
 import { toolingShardMatrix } from "../../tools/support/compat/github/tooling-test-shards.ts";
 
@@ -54,6 +55,7 @@ test("genuine value producers, consumers, writers and capture dependencies quali
     "tests/tooling/support/native-attribute-values-7502-history.ts",
     "tests/tooling/support/native-attribute-values-7502-history-protocol.ts",
     "tests/tooling/support/native-attribute-values-7502-scriptless-history.ts",
+    "tests/tooling/support/native-attribute-values-7502-vapor-history.ts",
     "npm/ui/package.json",
     "npm/plugin-sdk/sandbox.js",
     "pnpm-lock.yaml",
@@ -249,4 +251,61 @@ test("the pinned historical workspace cannot overwrite current transitive Cargo 
   );
   assert(history.includes('CARGO_TARGET_DIR: path.join(worktree, ".target-history")'));
   assert(!history.includes('CARGO_TARGET_DIR: path.join(root7502, "target")'));
+});
+
+test("the historical Vapor receipt rejects changed source, complete code, maps and populations", () => {
+  // Synthetic data checks receipt validation, never actual historical execution.
+  const directory = mkdtempSync(path.join(tmpdir(), "native-vapor-history-law-"));
+  try {
+    const bytes = readFileSync(
+      new URL(
+        "../../davinci/vize_l4/tests/fixtures/native-vapor-vue-3.6.0-rc.9.json",
+        import.meta.url,
+      ),
+    );
+    const fixture = JSON.parse(bytes.toString("utf8"));
+    const rows = fixture.fixtures.map((row: any) => ({
+      id: row.id,
+      source: row.source,
+      code: row.code,
+      map: row.map,
+      nodes: 1,
+      roots: 1,
+    }));
+    const capture = Buffer.from(JSON.stringify(rows));
+    writeFileSync(path.join(directory, "vapor.capture.json"), capture);
+    const receipt = {
+      sourceRevision: baseline7502.revision,
+      sourceTree: baseline7502.tree,
+      testSourceSha256: "5903289dae43f4efa359612a243976365bf0280536fd5dead194b8bc959f19b9",
+      fixtureSha256: hash7502(bytes),
+      captureSha256: hash7502(capture),
+    };
+    validateVaporHistory7502(receipt, directory);
+    for (const field of [
+      "sourceRevision",
+      "sourceTree",
+      "testSourceSha256",
+      "fixtureSha256",
+      "captureSha256",
+    ] as const)
+      assert.throws(() => validateVaporHistory7502({ ...receipt, [field]: "changed" }, directory));
+    for (const mutate of [
+      (rows: any[]) => rows.pop(),
+      (rows: any[]) => (rows[0].code += "\n"),
+      (rows: any[]) => (rows[0].source += "\n"),
+      (rows: any[]) => (rows[0].map.mappings += "A"),
+      (rows: any[]) => (rows[0].nodes = 0),
+    ]) {
+      const changed = structuredClone(rows);
+      mutate(changed);
+      const modified = Buffer.from(JSON.stringify(changed));
+      writeFileSync(path.join(directory, "vapor.capture.json"), modified);
+      assert.throws(() =>
+        validateVaporHistory7502({ ...receipt, captureSha256: hash7502(modified) }, directory),
+      );
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

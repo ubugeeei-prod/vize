@@ -167,7 +167,7 @@ test("the named successor retains every original byte and every unaffected whole
 });
 
 test("pinned history also requires its unchanged whole scriptless Rust and runtime gates", () => {
-  assert.deepEqual(historyCommands7502("/baseline", "/history").slice(-2), [
+  assert.deepEqual(historyCommands7502("/baseline", "/history").slice(6, 8), [
     [
       "cargo",
       [
@@ -184,6 +184,26 @@ test("pinned history also requires its unchanged whole scriptless Rust and runti
       ],
     ],
     ["vp", ["node", "--test", "tests/tooling/native-sfc-scriptless-ssr-reference.test.ts"]],
+  ]);
+});
+
+test("pinned history retains the original native Vapor lower-refusal gate", () => {
+  const commands = historyCommands7502("/baseline", "/history");
+  assert.equal(commands.length, 9);
+  assert.deepEqual(commands[8], [
+    "cargo",
+    [
+      "test",
+      "--locked",
+      "--profile",
+      "ci",
+      "-p",
+      "vize_l4",
+      "--test",
+      "native_vapor",
+      "--",
+      "--nocapture",
+    ],
   ]);
 });
 
@@ -245,6 +265,7 @@ test("historical source and command substitutions fail before evidence can grant
     captureSha256: null,
     envelopesSha256: null,
     scriptless: null,
+    vapor: null,
     failure: null,
   };
   for (const mutate of [
@@ -268,6 +289,7 @@ test("historical source and command substitutions fail before evidence can grant
     "judge",
     "scriptless-build",
     "scriptless-judge",
+    "vapor-build",
   ].map((step, index) => ({
     step,
     executable: commands[index][0],
