@@ -1,5 +1,4 @@
 name: Criterion Bench
-
 on:
   workflow_dispatch:
     inputs:
@@ -26,11 +25,9 @@ on:
         required: false
         default: false
         type: boolean
-
 concurrency:
   group: criterion-bench-${{ inputs.base_sha }}-${{ inputs.head_sha }}-${{ inputs.production_only || false }}-${{ inputs.historical_sfc_parse || false }}
   cancel-in-progress: true
-
 env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -38,7 +35,6 @@ env:
   CRITERION_AB_THRESHOLD: ""
   DIALECT_GUARD_FILE_COUNT: 400
   DIALECT_GUARD_THRESHOLD_PERCENT: 2
-
 jobs:
   criterion-ab:
     if: ${{ !inputs.production_only && !inputs.historical_sfc_parse }}
@@ -55,14 +51,12 @@ jobs:
           ref: ${{ inputs.head_sha }}
           fetch-depth: 0
           persist-credentials: false
-
       - name: Checkout base
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: base
           ref: ${{ inputs.base_sha }}
           persist-credentials: false
-
       - name: Validate exact benchmark commits
         env:
           BASE_SHA: ${{ inputs.base_sha }}
@@ -77,10 +71,8 @@ jobs:
           [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
           [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
           git -C head merge-base --is-ancestor "$BASE_SHA" "$HEAD_SHA"
-
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
-
       # The A/B driver is plain Node (no npm deps); pin the runtime so the
       # script never runs under an unexpected runner-default Node version.
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -88,7 +80,6 @@ jobs:
           node-version-file: "head/package.json"
           cache: true
           run-install: false
-
       - name: Select affected Criterion suites
         id: impact
         env:
@@ -109,13 +100,11 @@ jobs:
           if node -e 'const s = require(process.argv[1]); process.exit(s.selected.includes("vize_atelier_vapor") ? 0 : 1)' "$GITHUB_WORKSPACE/criterion-impact.json"; then
             echo 'vapor_selected=true' >> "$GITHUB_OUTPUT"
           fi
-
       - name: Setup Wild linker
         uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: steps.impact.outputs.has_suites == 'true'
         with:
           wild-version: "0.9.0"
-
       # Criterion stores base/head build artifacts in isolated subdirectories
       # under head/target, while the surrounding cache keeps both sides warm.
       - name: Mount Criterion cache
@@ -125,7 +114,6 @@ jobs:
           key: criterion-bench
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
           target-path: head/target
-
       - name: Cache critcmp
         id: cache-critcmp
         if: steps.impact.outputs.has_suites == 'true'
@@ -133,11 +121,9 @@ jobs:
         with:
           path: ~/.cargo/bin/critcmp
           key: ${{ runner.os }}-critcmp-0.1.8
-
       - name: Install critcmp
         if: steps.impact.outputs.has_suites == 'true' && steps.cache-critcmp.outputs.cache-hit != 'true'
         run: cargo install critcmp --version 0.1.8 --locked
-
       # The runner compares exported baseline snapshots, so base/head builds do
       # not share one Cargo target graph.
       - name: Run criterion A/B
@@ -149,12 +135,10 @@ jobs:
             --selection "$GITHUB_WORKSPACE/criterion-impact.json" \
             ${CRITERION_AB_THRESHOLD:+--threshold "$CRITERION_AB_THRESHOLD"} \
             --out "$GITHUB_WORKSPACE/criterion-ab-summary.md"
-
       - name: Install pinned official compiler-vapor
         if: steps.impact.outputs.vapor_selected == 'true'
         working-directory: head
         run: vp install --filter @vize/bench... --frozen-lockfile --prefer-offline
-
       - name: Compare Vapor L3, retained and official compiler on exact head
         if: steps.impact.outputs.vapor_selected == 'true'
         env:
@@ -165,7 +149,6 @@ jobs:
             --criterion "$GITHUB_WORKSPACE/head/target/criterion-ab-head.json" \
             --out "$GITHUB_WORKSPACE/vapor-compiler-comparison.json" \
             --summary "$GITHUB_WORKSPACE/vapor-compiler-comparison.md"
-
       - name: Upload criterion A/B summary
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -176,7 +159,6 @@ jobs:
             vapor-compiler-comparison.md
           if-no-files-found: warn
           retention-days: 14
-
   dialect-guard:
     if: ${{ !inputs.production_only && !inputs.historical_sfc_parse }}
     name: dialect-guard
@@ -189,38 +171,30 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           ref: ${{ inputs.head_sha }}
-
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: stable }
-
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
-
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: dialect-guard
           cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
-
       # The corpus generator and guard driver are plain Node (no npm deps).
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
           cache: true
           run-install: false
-
       # A vize binary with the legacy Vue feature OFF (the shipped Vue 3 build)
       # and one with it ON. Distinct target dirs keep the two feature sets from
       # invalidating each other's incremental cache.
       - name: Build vize (legacy OFF)
         run: cargo build --profile ci-opt -p vize --target-dir target/off
-
       - name: Build vize (legacy ON)
         run: cargo build --profile ci-opt -p vize --features legacy --target-dir target/on
-
       - name: Generate Vue 3 corpus
         run: node tools/benchmarks/scripts/generate.mjs "$DIALECT_GUARD_FILE_COUNT"
-
       - name: Compare legacy OFF vs ON
         run: |
           node tools/benchmarks/scripts/dialect-guard.mjs \
@@ -229,7 +203,6 @@ jobs:
             --on-bin target/on/ci-opt/vize \
             --out-dir "$GITHUB_WORKSPACE/dialect-guard-out" \
             --threshold "$DIALECT_GUARD_THRESHOLD_PERCENT"
-
   production-pairs:
     if: ${{ inputs.production_only && !inputs.historical_sfc_parse }}
     name: production-pairs (${{ matrix.repetition }})
@@ -307,7 +280,6 @@ jobs:
           path: production-perf/
           if-no-files-found: warn
           retention-days: 30
-
   production-summary:
     if: ${{ inputs.production_only && !inputs.historical_sfc_parse }}
     needs: production-pairs
@@ -335,7 +307,6 @@ jobs:
           path: production-perf/summary.md
           if-no-files-found: error
           retention-days: 30
-
   sfc-parse-replay:
     if: ${{ inputs.historical_sfc_parse }}
     strategy:
