@@ -56,3 +56,13 @@ Register this successor in the native Stack and queue only a current-head-green
 contiguous prefix. Follow actual signed merges and a later immutable public
 release: frozen 0.440 excludes these slot changes. n8n upstream stays strictly
 read-only, and the original adoption umbrella remains open.
+
+Fresh source `490a700d` passes all 75 CLI and 50 JSON-RPC observations, but its
+tooling check rejects a private configured Rule implementation outside its
+metadata owner's file. Move the unchanged variant, factory and Rule methods
+beside the existing single META in `valid_v_slot.rs`; keep the public unit rule,
+all option behavior and the metadata anchor unchanged. The complete bilingual
+options-table control also requires the declared new rule in both languages.
+Add the Japanese option row and examples and preserve the full table comparison.
+These are source successors and require new exact-head Actions; failed source
+checks and historical consumer greens remain historical evidence.
