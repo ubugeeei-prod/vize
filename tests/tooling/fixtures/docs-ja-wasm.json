@@ -1,0 +1,35 @@
+{
+  "base": "0cfbdcb98c8df2aff2e526076deb44fb1d9a1ee5",
+  "file": "docs/content/ja/guide/wasm.md",
+  "headings": [
+    "wasm-バインディング",
+    "インストール",
+    "api",
+    "コンパイラオプションの互換性",
+    "sfc-をコンパイルする",
+    "リント-sfc",
+    "sfc-のフォーマット",
+    "初期化",
+    "使用例",
+    "遊び場",
+    "ドキュメント",
+    "教育",
+    "ci-cd",
+    "ソースからのビルド",
+    "国際化",
+    "バンドルのサイズ"
+  ],
+  "code": [
+    "vp install @vizejs/wasm",
+    "import init, { compileSfc } from \"@vizejs/wasm\";\n\nawait init();\n\nconst result = compileSfc(\n  `<template>\n    <div>{{ msg }}</div>\n  </template>\n\n  <script setup lang=\"ts\">\n  const msg = ref('Hello Vize!')\n  </script>`,\n  { filename: \"App.vue\" },\n);\n\nconsole.log(result.script.code); // compiled <script> / <script setup>\nconsole.log(result.template?.code); // compiled render function, when a template exists\nconsole.log(result.css); // compiled styles, when styles exist",
+    "import init, { lintSfc } from \"@vizejs/wasm\";\n\nawait init();\n\nconst result = lintSfc(source, {\n  filename: \"App.vue\",\n  locale: \"en\", // 'en' | 'ja' | 'zh'\n});\n\nfor (const diagnostic of result.diagnostics) {\n  console.log(\n    `${diagnostic.severity}: ${diagnostic.message} (line ${diagnostic.location.start.line})`,\n  );\n}",
+    "import init, { formatSfc } from \"@vizejs/wasm\";\n\nawait init();\n\nconst formatted = formatSfc(source, { printWidth: 80 });\n\nconsole.log(formatted.code);",
+    "import init from \"@vizejs/wasm\";\n\n// Basic initialization\nawait init();\n\n// With custom WASM URL (useful for CDN or bundler setups)\nawait init(\"https://cdn.example.com/vize_vitrine_bg.wasm\");",
+    "// React to editor changes and compile in real-time\neditor.onChange((source) => {\n  const result = compileSfc(source, {\n    filename: \"Playground.vue\",\n  });\n\n  if (result.errors.length === 0) {\n    preview.update({\n      script: result.script.code,\n      template: result.template?.code,\n      css: result.css,\n    });\n  } else {\n    diagnostics.show(result.errors);\n  }\n});",
+    "// Compile documentation examples on the fly\nconst examples = document.querySelectorAll(\"[data-vue-example]\");\nfor (const el of examples) {\n  const result = compileSfc(el.textContent, {\n    filename: `example-${el.id}.vue`,\n  });\n  // Use result.script.code, result.template?.code, and result.css to mount it.\n}",
+    "# Install wasm-bindgen-cli\ncargo install wasm-bindgen-cli\n\n# Build WASM\ncargo build --release -p vize_vitrine \\\n  --no-default-features \\\n  --features wasm \\\n  --target wasm32-unknown-unknown\n\n# Generate JS bindings\nwasm-bindgen \\\n  target/wasm32-unknown-unknown/release/vize_vitrine.wasm \\\n  --out-dir npm/wasm \\\n  --target web",
+    "const result = lintSfc(source, {\n  filename: \"App.vue\",\n  locale: \"ja\", // Lint messages in Japanese\n});\n\nconsole.log(result.diagnostics);",
+    "// Lazy-load the compiler only when needed\nconst compiler = await import(\"@vizejs/wasm\");\nawait compiler.default(); // init()\nconst result = compiler.compileSfc(source, opts);\nconsole.log(result.script.code, result.template?.code, result.css);"
+  ],
+  "links": ["https://viteplus.dev/guide/install", "https://vizejs.dev/play"]
+}

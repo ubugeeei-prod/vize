@@ -82,6 +82,9 @@ jobs:
       - name: Verify reviewed reference reading flows
         run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/compiler-configuration-reference,/ja/guide/compiler-configuration-reference,/guide/experimentals-reference,/ja/guide/experimentals-reference --output docs-render-evidence/ja-references
 
+      - name: Verify reviewed WASM reading flows
+        run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/wasm,/ja/guide/wasm --output docs-render-evidence/ja-wasm
+
       - name: Verify JSX and Compiler Inspector reading paths
         run: vp node docs/scripts/verify-navigation-render.ts --routes /guide/jsx,/ja/guide/jsx,/guide/jsx-babel-compat,/ja/guide/jsx-babel-compat,/guide/compiler-inspector,/ja/guide/compiler-inspector --output docs-render-evidence/compiler-tools
 
