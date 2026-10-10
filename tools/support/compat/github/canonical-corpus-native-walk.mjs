@@ -6,6 +6,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  realpathSync,
   readlinkSync,
   statSync,
   writeFileSync,
@@ -90,10 +91,14 @@ export function collectNativePhysical(root, nodes, children) {
   const files = [];
   const rejected = [];
   let successfulFollows = 0;
-  const visit = (directory) => {
-    for (const name of readdirSync(directory).sort(pathOrder)) {
+  // Retain raw logical metadata calls for the witnessed original kernel boundary.
+  // Directory enumeration and whole-byte reads use the already shortened parent,
+  // so those syscalls cannot exhaust a different lookup budget on the same alias.
+  const visit = (directory, physicalDirectory) => {
+    for (const name of readdirSync(physicalDirectory).sort(pathOrder)) {
       if (excluded(name)) continue;
       const path = join(directory, name);
+      const physicalPath = join(physicalDirectory, name);
       const logical = relative(root, path).split(sep).join("/");
       let isDirectory;
       try {
@@ -109,16 +114,16 @@ export function collectNativePhysical(root, nodes, children) {
         // Untracked Git metadata has no committed source node and no Vue inputs.
         if (nodes.has(logical))
           successfulFollows = Math.max(successfulFollows, resolveLogical(nodes, logical).followed);
-        if (!excluded(name)) visit(path);
+        if (!excluded(name)) visit(path, realpathSync(physicalPath));
       } else if (extname(name) === ".vue") {
-        const bytes = readFileSync(path); // Any unreadable Vue remains fatal.
+        const bytes = readFileSync(physicalPath); // Any unreadable Vue remains fatal.
         const node = resolveLogical(nodes, logical);
         successfulFollows = Math.max(successfulFollows, node.followed);
         files.push([logical, digest(bytes), bytes.length, gitObjectId("blob", bytes)]);
       }
     }
   };
-  visit(root);
+  visit(root, realpathSync(root));
   assert(rejected.length > 0, "Missing actual native kernel boundary observation");
   const firstRejected = rejected[0].followed;
   assert(

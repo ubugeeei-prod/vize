@@ -111,23 +111,20 @@ impl<'facts, 'owner, 'arena, F: DomExpressionFacts, R: FileReads<'owner, 'arena>
                 if element.tag == "search" {
                     self.reject(id, span, DomUnsupported::ElementRole);
                 }
-                // Complete original entries already refuse these names in
-                // L2. Generic routes retain their old short-circuit policy;
-                // a later name admission must consume suffix slots here.
-                if element
-                    .attributes
-                    .iter()
-                    .enumerate()
-                    .any(|(slot, attribute)| {
+                // Observe every original slot during this same canonical
+                // visit, including suffixes after a target-only refusal.
+                if element.attributes.iter().enumerate().fold(
+                    false,
+                    |special, (slot, attribute)| {
                         crate::decision::attribute_value::observe(
                             original_values,
                             id,
                             element,
                             slot,
                         );
-                        matches!(attribute.name, "class" | "style" | "key" | "ref")
-                    })
-                {
+                        special || matches!(attribute.name, "style" | "key" | "ref")
+                    },
+                ) {
                     self.reject(id, span, DomUnsupported::SpecialAttribute);
                 }
                 None

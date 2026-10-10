@@ -25,6 +25,8 @@ on:
       - "tools/benchmarks/scripts/benchmark-binary.mjs"
       - "tests/_fixtures/differential/typechecker/**"
       - "crates/vize_canon/**"
+      - "crates/vize_atelier_jsx/**"
+      - "tests/_fixtures/differential/typecheck/jsx-slot-parameter-annotations-8419/**"
       - ".github/actions/check-*/**"
       - "tests/tooling/**"
       - "tests/_fixtures/differential/lsp/**"
@@ -40,8 +42,7 @@ on:
       - "Cargo.toml"
       - "Cargo.lock"
       - "pnpm-lock.yaml"
-permissions:
-  contents: read
+permissions: { contents: read }
 concurrency:
   group: typechecker-native-phases-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: true
@@ -64,8 +65,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - name: Pin immutable driver, source and freshly fetched main baseline
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        env: { BASE_SHA: "${{ github.event.pull_request.base.sha }}" }
         run: |
           set -euo pipefail
           [[ "$DRIVER_SHA" =~ ^[0-9a-f]{40}$ && "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
@@ -109,7 +109,7 @@ jobs:
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: typechecker-native-phases
-          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+          cache-key-suffix: "${{ runner.os }}-${{ runner.arch }}"
           target-path: target
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
         with: { node-version-file: package.json, run-install: false }
@@ -130,6 +130,7 @@ jobs:
           VIZE_TEMPLATE_EMIT_CAPTURE: ${{ runner.temp }}/template-dollar-emit
           VIZE_VUE_HELPER_CAPTURE: ${{ runner.temp }}/config-scoped-vue-helpers
           VIZE_TSCONFIG_TYPES_CAPTURE: ${{ runner.temp }}/tsconfig-types-extends
+          VIZE_JSX_SLOT_CAPTURE: ${{ runner.temp }}/jsx-slot-parameter-types
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
@@ -142,7 +143,7 @@ jobs:
             # VIZE_NATIVE_SOURCE_INLINE_BEGIN
             unset VIZE_TEST_DISABLE_TSGO
             cd "$NATIVE_PHASE_SOURCE_ROOT"
-            VIZE_UNCHECKED_INDEX_CAPTURE="$RUNNER_TEMP/unchecked-index-access" cargo test --locked --profile ci-opt -p vize --test check_template_emit_cli --test check_vue_helper_scope_cli --test lint_unchecked_indexed_access_cli --test check_canon_define_model_modifiers_cli --test lsp_generic_prop_hover_cli --test lsp_data_aria_attributes_cli --test tsconfig_diamond --test check_tsconfig_types_extends_cli --test lsp_bare_script_symbols_cli --test check_tsconfig_bom_cli --test check_tsconfig_ignore_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+            VIZE_UNCHECKED_INDEX_CAPTURE="$RUNNER_TEMP/unchecked-index-access" cargo test --locked --profile ci-opt -p vize --test check_template_emit_cli --test check_vue_helper_scope_cli --test lint_unchecked_indexed_access_cli --test check_canon_define_model_modifiers_cli --test lsp_generic_prop_hover_cli --test lsp_data_aria_attributes_cli --test tsconfig_diamond --test check_tsconfig_types_extends_cli --test lsp_bare_script_symbols_cli --test check_tsconfig_bom_cli --test check_tsconfig_ignore_cli --test check_jsx_slot_parameter_types_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
             export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_TEMPLATE_EMIT_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')"
             cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_emit_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
             cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_vue_helper_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
@@ -287,8 +288,7 @@ jobs:
           import { existsSync, readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
           import { dirname, join } from 'node:path';
           import { spawnSync } from 'node:child_process';
-          const root = process.env.VIZE_DEFAULT_PROP_CAPTURE;
-          const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory() && !['editor-inputs', 'imported-runtime-controls'].includes(e.name)).map(e => e.name).sort();
+          const root = process.env.VIZE_DEFAULT_PROP_CAPTURE; const cases = readdirSync(root, { withFileTypes: true }).filter(e => e.isDirectory() && !['editor-inputs', 'imported-runtime-controls'].includes(e.name)).map(e => e.name).sort();
           assert.deepEqual(cases, ['imported_callable_default_remains_defined_in_all_template_prop_views', 'undefined_callable_default_keeps_original_cli_conditions_optional', 'undefined_callable_default_still_rejects_unguarded_template_calls']);
           assert.deepEqual(JSON.parse(readFileSync(join(root, 'editor-diagnostics.json'), 'utf8')), []);
           assert(existsSync(join(root, 'editor-hover.json')));
@@ -296,8 +296,7 @@ jobs:
           const hash = file => createHash('sha256').update(readFileSync(file)).digest('hex');
           assert.equal(hash(join(root, 'imported-runtime-props.fixture.rs')), '73fc6c23f5a91296bb9bce4ef133b5781f27d7b8c0d4f1a5f8d3b10de018aaa8');
           assert.equal(readFileSync(join(root, 'imported-runtime-props.status.txt'), 'utf8'), '0\n');
-          const importedRuntime = JSON.parse(readFileSync(join(root, 'imported-runtime-props.runtime.json'), 'utf8'));
-          assert.equal(importedRuntime.sourceSha, process.env.SOURCE_SHA);
+          const importedRuntime = JSON.parse(readFileSync(join(root, 'imported-runtime-props.runtime.json'), 'utf8')); assert.equal(importedRuntime.sourceSha, process.env.SOURCE_SHA);
           assert.equal(realpathSync(importedRuntime.nativeBinary), realpathSync(editorRuntime.nativeBinary));
           const runtimeOutput = readFileSync(join(root, 'imported-runtime-props.stdout.txt'), 'utf8');
           for (const name of ['imported_runtime_define_props_reach_script_and_template', 'type_based_with_defaults_omit_imported_defaults', 'imported_runtime_props_cache_rebinds_local_define_props_name']) assert(runtimeOutput.includes(`test batch::type_checker::tests::recent_issues::imported_runtime_props::${name} ... ok`));
@@ -335,6 +334,7 @@ jobs:
             ${{ runner.temp }}/template-dollar-emit/
             ${{ runner.temp }}/config-scoped-vue-helpers/
             ${{ runner.temp }}/tsconfig-types-extends/
+            ${{ runner.temp }}/jsx-slot-parameter-types/
             ${{ runner.temp }}/unchecked-index-access/
             ${{ runner.temp }}/unknown-template-options/
             ${{ runner.temp }}/template-emit-ts40-projection/
