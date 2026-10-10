@@ -265,3 +265,57 @@ await test("both catalogue pages retain all 317 complete reference examples and 
       assert.ok(anchors.has(anchor), `${locale}: missing same-page ${anchor}`);
   }
 });
+
+await test("all five Vue categories keep every rule and whole Bad/Good source on the current page", () => {
+  const names = [...implementations()].filter((name) => name.startsWith("vue/")).sort();
+  assert.equal(names.length, 104);
+  const sources = (markdown: string) =>
+    [...markdown.matchAll(/```(\w+)[^\n]*\n([\s\S]*?)\n```/g)].map((match) => [match[1], match[2]]);
+  const legacyAnchors: Record<string, readonly string[]> = {
+    "zh-CN/": ["句法与风格规则"],
+    "pt-BR/": ["regras-do-vue", "regras-de-sintaxe-e-estilo"],
+    "fr/": ["syntaxe-et-règles-de-style"],
+  };
+  for (const locale of ["", "ja/", "zh-CN/", "pt-BR/", "fr/"]) {
+    const category = read(`docs/content/generated/rules/${locale.slice(0, -1) || "en"}/vue.md`);
+    for (const anchor of legacyAnchors[locale] ?? [])
+      assert.equal(
+        category.split(`<span id="${anchor}"></span>`).length,
+        2,
+        `${locale}: preserve existing category fragment ${anchor}`,
+      );
+    const targets = [...category.matchAll(/^### `([^`]+)`$/gm)];
+    assert.deepEqual(
+      targets.map((match) => match[1]).sort(),
+      names,
+      `${locale}: complete Vue rules`,
+    );
+    for (let index = 0; index < targets.length; index += 1) {
+      const [, name] = targets[index];
+      const slug = name.replaceAll(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
+      const section = category.slice(targets[index].index, targets[index + 1]?.index);
+      const reference = read(
+        `docs/content/${locale === "ja/" ? locale : ""}rules/reference/${slug}.md`,
+      );
+      assert.deepEqual(
+        sources(section),
+        sources(reference),
+        `${locale}${name}: whole copyable bytes`,
+      );
+      for (const kind of ["bad", "good"]) {
+        assert.equal(section.split(`<span id="${slug}-${kind}"></span>`).length, 2);
+        assert.ok(category.includes(`](#${slug}-${kind})`), `${locale}${name}: local ${kind} link`);
+      }
+    }
+    assert.match(category, /```vue annotate="remove:/, `${locale}: native removed-line metadata`);
+    assert.match(category, /```vue annotate="add:/, `${locale}: native added-line metadata`);
+    assert.doesNotMatch(category, /\]\(\.\/all\.md#vue-/, `${locale}: examples stay on this page`);
+    assert.doesNotMatch(
+      category.split("### `")[0],
+      /`&lt;(?:template|component|KeepAlive)&gt;`/,
+      `${locale}: inline-code element names retain literal spelling`,
+    );
+    const noProducer = category.split("### `vue/no-preprocessor-lang`")[1].split("### `")[0];
+    assert.match(noProducer, /`no-sfc-finding`/, `${locale}: support boundary remains explicit`);
+  }
+});

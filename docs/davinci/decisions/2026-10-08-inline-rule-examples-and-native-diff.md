@@ -79,6 +79,14 @@ line-height spacing in desktop/mobile light/dark; whole deployed flows remain
 required. Each catalogue rule also has its own complete inline code packet checked
 against the existing authored reference, including both Bad/Good anchors.
 
+The fresh Vue-category Docs runs 38047410369 and 38047411969 preserve all authored
+source but fail when the caller also counts five generated package-manager panels.
+Apply the catalogue caller's existing retained-original command marker to the Vue
+caller. Every 104-rule/416-block packet remains byte-exact; a missing, changed or
+duplicated original still fails the whole-source assertion. Keep both failed logs
+and require fresh exact-head native, complete Docs and protected/public acceptance.
+No example source, command generation, renderer or capture control changes.
+
 ## TypeScript ownership
 
 All handwritten executable Docs `.mjs` modules migrate to erasable `.ts`, with
