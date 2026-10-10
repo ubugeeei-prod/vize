@@ -111,3 +111,13 @@ same-page indexes. Rebase both genuine layers onto that actual main once and
 regenerate with the unchanged metadata producer. All 416 original complete Vue
 code blocks remain byte-identical in each locale. Both layers require their
 own fresh source and full Docs Actions, protected merge, and deployed acceptance.
+
+## Composition with delivered navigation controls
+
+Actual signed main `538c07ac7eca17db3151fe68cdf38586bc561bb0` introduces the
+shared navigation route list and motion, contrast, command-tab and theme checks.
+Both that main and the observed future queue projection conflict in the browser
+verifier. Compose the genuine parent once, retaining every incoming route and
+control, all five localized Vue routes, both devices/themes and complete pixels.
+All 104-rule/416-block controls remain unchanged. Old runs are historical;
+the composed source requires fresh full Actions, protected and deployed proof.
