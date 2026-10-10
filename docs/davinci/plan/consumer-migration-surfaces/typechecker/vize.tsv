@@ -9,6 +9,7 @@ typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases
 typechecker	Typechecker	source	crates/vize/src/commands/check/dts_import_aliases.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/dts_rewrite.rs	3	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/dts.rs	5	l0	L0	stage	vize_l0	preferred	1
+typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_aliases_selection_tests.rs	6	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/imports_aliases.rs	4	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	source	crates/vize/src/commands/check/imports_cache.rs	9	l0	L0	stage	vize_l0	preferred	1
 typechecker	Typechecker	test/dev	crates/vize/src/commands/check/imports_generated_tests.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1

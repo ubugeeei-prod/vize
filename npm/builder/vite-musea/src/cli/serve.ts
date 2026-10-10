@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { createServer, type ServerResponse } from "node:http";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { MuseaVrtRunner, generateVrtJsonReport, generateVrtReport } from "../vrt.js";
 import {
@@ -13,6 +13,7 @@ import { createVrtOptions } from "./commands.js";
 import type { CliOptions } from "./index.js";
 import { authorizeSession, captureInput } from "./service/auth.js";
 import { SessionArtifacts } from "./service/artifacts.js";
+import { writeSessionReport } from "./service/reports.js";
 
 function json(response: ServerResponse, value: unknown, status = 200): void {
   response.setHeader("Content-Type", "application/json");
@@ -96,13 +97,14 @@ export async function startHostedVrtSession(options: CliOptions, certificateSpki
         await runner.init({ hostedCertificateSpki: certificateSpki });
         const results = await runner.runAllTests([art], gallery.origin);
         const summary = runner.getSummary(results);
+        // A hosted request fails closed on any runner error, including blocked navigation.
         if ((summary.errors ?? 0) > 0) throw new Error(results.find((item) => item.error)!.error);
         if (input.update) await runner.updateBaselines(results);
         const rawJson = attachArtReportOwner(generateVrtJsonReport(results, summary), target);
         const html = generateVrtReport(results, summary);
         await mkdir(reportDir, { recursive: true });
-        await writeFile(target.jsonReportPath, rawJson);
-        await writeFile(target.htmlReportPath, html);
+        await writeSessionReport(target.jsonReportPath, rawJson);
+        await writeSessionReport(target.htmlReportPath, html);
         artifacts.clear();
         const uiResults = await artifacts.results(results);
         outcome = {

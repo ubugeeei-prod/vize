@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { mdiLoading, mdiImageOutline } from "@mdi/js";
 import { runVrt } from "../api";
 import { isStaticGallery } from "../staticApi";
@@ -24,8 +24,24 @@ const error = ref<string | null>(null);
 const updateSnapshots = ref(false);
 const artifacts = ref<VrtArtifacts | null>(null);
 const hosted = useHostedVrt();
+let hostedAuthority = 0;
+watch(
+  hosted.connected,
+  () => {
+    if (!isStaticGallery) return;
+    hostedAuthority++;
+    isRunning.value = false;
+    hasRun.value = false;
+    results.value = [];
+    summary.value = null;
+    artifacts.value = null;
+    error.value = null;
+  },
+  { flush: "sync" },
+);
 
 async function runTest() {
+  const authority = hostedAuthority;
   isRunning.value = true;
   error.value = null;
 
@@ -33,14 +49,16 @@ async function runTest() {
     const data = isStaticGallery
       ? await hosted.run(props.artPath, updateSnapshots.value)
       : await runVrt(props.artPath, updateSnapshots.value);
+    if (isStaticGallery && authority !== hostedAuthority) return;
     results.value = data.results;
     summary.value = data.summary;
     artifacts.value = data.artifacts ?? null;
     hasRun.value = true;
   } catch (e) {
+    if (isStaticGallery && authority !== hostedAuthority) return;
     error.value = e instanceof Error ? e.message : String(e);
   } finally {
-    isRunning.value = false;
+    if (!isStaticGallery || authority === hostedAuthority) isRunning.value = false;
   }
 }
 </script>

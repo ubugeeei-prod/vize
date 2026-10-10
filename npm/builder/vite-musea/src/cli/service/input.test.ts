@@ -61,3 +61,55 @@ void test("a capture Art path preserves authored UTF-8 across actual HTTP chunks
     );
   }
 });
+
+void test("capture HTTP media types accept JSON parameters and preserve bounded refusal messages", async () => {
+  const authored = { artPath: "src/ボタン😀.art.vue", update: false };
+  const server = createServer((incoming, response) => {
+    void captureInput(incoming).then(
+      (input) => response.end(JSON.stringify(input)),
+      (error) => response.writeHead(400).end(String(error)),
+    );
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+  assert.ok(address && typeof address !== "string");
+  try {
+    const url = `http://127.0.0.1:${address.port}/capture`;
+    for (const type of [
+      "application/json",
+      "application/json; charset=utf-8",
+      "Application/JSON; Charset=UTF-8",
+    ]) {
+      const actual = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": type },
+        body: JSON.stringify(authored),
+      });
+      assert.equal(actual.status, 200, type);
+      assert.deepEqual(await actual.json(), authored);
+    }
+    for (const [type, body, message] of [
+      ["text/plain", JSON.stringify(authored), "Expected JSON"],
+      ["application/json", "{", "Capture input must contain valid JSON"],
+      [
+        "application/json",
+        JSON.stringify({ ...authored, update: "yes" }),
+        "Capture requires a known artPath and boolean update",
+      ],
+      [
+        "application/json",
+        JSON.stringify({ ...authored, extra: true }),
+        "Capture requires a known artPath and boolean update",
+      ],
+      ["application/json", " ".repeat(4097), "Capture input is too large"],
+    ]) {
+      const actual = await fetch(url, { method: "POST", headers: { "Content-Type": type }, body });
+      assert.equal(actual.status, 400);
+      assert.equal(await actual.text(), `Error: ${message}`);
+    }
+  } finally {
+    await new Promise<void>((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+});

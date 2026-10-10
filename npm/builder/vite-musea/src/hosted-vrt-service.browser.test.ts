@@ -9,7 +9,7 @@ import { parseArgs } from "./cli/index.ts";
 import { startHostedVrtSession } from "./cli/serve.ts";
 import { buildServiceGallery, repository, sha256 } from "./hosted-vrt-build.fixtures.ts";
 import { proveOwnedHostedError } from "./hosted-vrt-errors.fixtures.ts";
-import { proveCompiledSession } from "./hosted-vrt-cli.fixtures.ts";
+import { proveCompiledSession, proveCompiledStartupRefusal } from "./hosted-vrt-cli.fixtures.ts";
 import {
   createSecureHost,
   launchPublicBrowser,
@@ -113,6 +113,10 @@ void test(
       observations.push({
         phase: "compiled-cli-lifecycle",
         receipt: await proveCompiledSession(host, options.galleryUrl!, root, output),
+      });
+      observations.push({
+        phase: "compiled-cli-startup-refusal",
+        receipt: await proveCompiledStartupRefusal(host, root, output),
       });
       observations.push({
         phase: "input-refusals",

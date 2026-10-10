@@ -207,16 +207,10 @@ export async function observeObjectUrls(page: Page) {
 }
 
 /** Resolve for the actual GET's finish or cancellation, without replacing its fetch. */
-export function nextArtifactSettlement(page: Page, endpoint: string): Promise<string> {
+export function nextArtifactSettlement(page: Page, url: string): Promise<string> {
   return new Promise((resolve) => {
     const settle = (request: Request, outcome: string) => {
-      const url = new URL(request.url());
-      if (
-        request.method() !== "GET" ||
-        url.origin !== endpoint ||
-        !url.pathname.startsWith("/artifacts/")
-      )
-        return;
+      if (request.method() !== "GET" || request.url() !== url) return;
       page.off("requestfinished", finished);
       page.off("requestfailed", failed);
       resolve(outcome);

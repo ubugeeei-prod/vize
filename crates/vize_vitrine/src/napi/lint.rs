@@ -19,20 +19,20 @@ use super::lint_fix::{lint_file_with_optional_fix, lint_source};
 mod empty_result;
 mod file_collection;
 mod lint_options;
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "private original HTML operation awaits its public child"
-    )
-)]
 mod oxlint_html;
+mod oxlint_html_binding;
 mod rule_metadata;
 use lint_options::{
     LintOptionsNapi, LintResultNapi, PatinaLintOptionsNapi, configure_patina_rule_options,
     configure_type_aware_lint, create_patina_linter, patina_help_level_from_option,
     patina_locale_from_option, patina_preset_from_option,
 };
+pub use oxlint_html_binding::dto::{
+    OxlintHtmlCompleted, OxlintHtmlDiagnostic, OxlintHtmlFile, OxlintHtmlLabel, OxlintHtmlOptions,
+    OxlintHtmlOriginal, OxlintHtmlOutcome, OxlintHtmlPresentation, OxlintHtmlProjection,
+    OxlintHtmlRefusal, OxlintHtmlRule, OxlintHtmlSettings, OxlintHtmlSource,
+};
+pub use oxlint_html_binding::lint_oxlint_html;
 use rule_metadata::collect_patina_rule_metadata;
 
 fn create_position_object(line: u32, column: u32, offset: u32) -> Value {

@@ -73,6 +73,19 @@ jobs:
         working-directory: ${{ env.PUBLIC_CONSUMER }}
         shell: bash
         run: node browser.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/musea.json" 2>&1 | tee "$PUBLIC_OUTPUT/musea.log"
+      - name: Observe installed public Musea VRT and hosted audits
+        id: vrt
+        if: >-
+          ${{ !cancelled() &&
+              steps.guard.outcome == 'success' &&
+              steps.prepare.outcome == 'success' &&
+              steps.install.outcome == 'success' &&
+              steps.chromium.outcome == 'success' &&
+              (steps.native.outcome == 'success' || steps.native.outcome == 'failure') &&
+              (steps.browser.outcome == 'success' || steps.browser.outcome == 'failure') }}
+        working-directory: ${{ env.PUBLIC_CONSUMER }}
+        shell: bash
+        run: node vrt_observer.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/vrt.json" 2>&1 | tee "$PUBLIC_OUTPUT/vrt.log"
       - name: Seal installed public acceptance
         if: ${{ success() && steps.native.outcome == 'success' && steps.browser.outcome == 'success' }}
         shell: bash

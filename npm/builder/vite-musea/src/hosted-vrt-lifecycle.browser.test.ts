@@ -201,7 +201,6 @@ void test(
           try {
             await submitConnection(page, relay.endpoint, session.token);
             await page.getByText("Connected to your local VRT session.", { exact: true }).waitFor();
-            const settled = nextArtifactSettlement(page, relay.endpoint);
             const [capture] = await Promise.all([
               page.waitForResponse(
                 (response) =>
@@ -223,6 +222,9 @@ void test(
               data,
             };
             const held = await hold.buffered;
+            const heldUrl = `${relay.endpoint}${held.receipt.pathname}`;
+            const settled = nextArtifactSettlement(page, heldUrl);
+            receipt.heldRequestUrl = heldUrl;
             assert.ok(Object.values(data.results[0].images).includes(held.receipt.pathname));
             const png = PNG.sync.read(held.body);
             assert.deepEqual([png.width, png.height], [320, 180]);

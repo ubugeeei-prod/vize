@@ -266,7 +266,12 @@ async function main(): Promise<void> {
 
   options.vrt = await loadMuseaVrtOptions(options.config, cwd);
   if (options.command === "serve") {
-    await runServe(options);
+    try {
+      await runServe(options);
+    } catch (error) {
+      console.error("\n  Error:", error);
+      process.exit(1);
+    }
     return;
   }
   options.previewBasePath =

@@ -44,8 +44,9 @@ jobs:
           [[ "$PR_BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
           [[ "$(git rev-parse HEAD)" == "$HEAD_SHA" ]]
           echo "BASE_SHA=$(git merge-base "$PR_BASE_SHA" "$HEAD_SHA")" >> "$GITHUB_ENV"
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
         with:
+          toolchain: stable
           components: clippy
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with:

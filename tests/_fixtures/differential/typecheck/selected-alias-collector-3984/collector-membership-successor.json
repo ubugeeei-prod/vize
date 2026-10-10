@@ -1,0 +1,48 @@
+{
+  "schema": "vize-canon-cli-selected-alias-membership-successor-v1",
+  "originalCasesSha256": "e90eb1c9d258c2f707fe5b78f03e1f2c71b4721a8519a2b212f362f67cfe5afa",
+  "originalArchiveSha256": "52da08c9f047d83dabe0e400b242df84649ec914757b53ff1c196f678602282b",
+  "collectorSources": {
+    "historical": "5a612ebb5f2e263a404c8692fc5847862929842e07d837c0e6eb1d22bf4ffd5b",
+    "selected": "f2f15711265c21874d604f5b4b32d9f0c3d138ec9b353a35f5b21176e8c0a63e"
+  },
+  "resolverSources": {
+    "historical": "5a43aa38a8beb0f4005afb4e7ef94e2fcf96dfef53c9b19166471d10e7add833",
+    "selected": "3d97f55712486403c0accc0db1121391ab70140177deb8630ce591e4df4781e8"
+  },
+  "cases": [
+    {
+      "id": "exact-clean",
+      "files": ["App.tsx", "exact.tsx"]
+    },
+    {
+      "id": "exact-broken",
+      "files": ["App.tsx", "exact.tsx"]
+    },
+    {
+      "id": "exact-equal-rank",
+      "files": ["App.tsx", "exact.tsx"]
+    },
+    {
+      "id": "exact-target-array-fallback",
+      "files": ["App.tsx", "exact.tsx"]
+    },
+    {
+      "id": "selected-exact-missing",
+      "files": ["App.tsx"]
+    },
+    {
+      "id": "selected-longer-wildcard-missing",
+      "files": ["App.tsx"]
+    },
+    {
+      "id": "unaffected-exact-clean",
+      "files": ["App.tsx", "exact.tsx"]
+    },
+    {
+      "id": "unaffected-exact-broken",
+      "files": ["App.tsx", "exact.tsx"]
+    }
+  ],
+  "scope": "Literal selected-pattern membership derived from authored paths semantics. Original inputs/oracle remain unchanged. Unknown source hashes fail closed; no later source automatically qualifies."
+}

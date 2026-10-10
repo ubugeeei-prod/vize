@@ -46,7 +46,8 @@ export function authorizeSession(
 export async function captureInput(
   request: IncomingMessage,
 ): Promise<{ artPath: string; update: boolean }> {
-  if (request.headers["content-type"] !== "application/json") throw new Error("Expected JSON");
+  const type = (request.headers["content-type"] ?? "").split(";")[0].trim().toLowerCase();
+  if (type !== "application/json") throw new Error("Expected JSON");
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of request) {
@@ -55,7 +56,12 @@ export async function captureInput(
     if (size > 4096) throw new Error("Capture input is too large");
     chunks.push(chunk);
   }
-  const input: unknown = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  let input: unknown;
+  try {
+    input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } catch {
+    throw new Error("Capture input must contain valid JSON");
+  }
   if (
     !input ||
     typeof input !== "object" ||
