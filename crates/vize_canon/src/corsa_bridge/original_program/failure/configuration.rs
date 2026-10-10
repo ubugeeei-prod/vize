@@ -1,7 +1,6 @@
 //! Inherited options can change while the authored source/root config stay exact.
 
 use super::*;
-use std::os::unix::fs::PermissionsExt;
 
 #[test]
 fn inherited_option_change_at_real_lsp_startup_refuses_and_reaps_original_checks() {
@@ -27,11 +26,16 @@ fn inherited_option_change_at_real_lsp_startup_refuses_and_reaps_original_checks
         std::fs::write(&changed_file, &changed).unwrap();
         let pid_path = root.path().join("overlay.pid");
         let wrapper = root.path().join("tsc");
-        std::fs::write(&wrapper, cstr!(
-            "#!/bin/sh\nif [ \"$1\" = \"--lsp\" ]; then\n echo \"$$\" > {}\n cat {} > {}\nfi\nexec {} \"$@\"\n",
-            shell_quote(&pid_path), shell_quote(&changed_file), shell_quote(&base), shell_quote(&backend())
-        )).unwrap();
-        std::fs::set_permissions(&wrapper, std::fs::Permissions::from_mode(0o755)).unwrap();
+        write_executable(
+            &wrapper,
+            &cstr!(
+                "#!/bin/sh\nif [ \"$1\" = \"--lsp\" ]; then\n echo \"$$\" > {}\n cat {} > {}\nfi\nexec {} \"$@\"\n",
+                shell_quote(&pid_path),
+                shell_quote(&changed_file),
+                shell_quote(&base),
+                shell_quote(&backend())
+            ),
+        );
         let bridge = CorsaBridge::with_config(CorsaBridgeConfig {
             corsa_path: Some(wrapper),
             working_dir: Some(root.path().to_path_buf()),
