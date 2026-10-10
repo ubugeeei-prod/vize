@@ -75,6 +75,9 @@ export interface LoadConfigOptions {
    */
   configFile?: string;
 
+  /** Read Vite settings during discovery. Integrations with an already loaded Vite config use false. */
+  viteConfig?: boolean;
+
   /**
    * Config environment for dynamic config resolution
    */

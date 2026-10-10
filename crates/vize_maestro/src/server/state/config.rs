@@ -226,6 +226,10 @@ impl ServerState {
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
     pub fn load_workspace_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        self.apply_project_formatting_default(loaded.source_path.as_deref());
+        if loaded.source_path.is_none() {
+            self.apply_config_features(loaded.features);
+        }
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             let config = loaded.config;
@@ -257,6 +261,10 @@ impl ServerState {
     /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
     pub fn load_lsp_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        self.apply_project_formatting_default(loaded.source_path.as_deref());
+        if loaded.source_path.is_none() {
+            self.apply_config_features(loaded.features);
+        }
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             let config = loaded.config;
@@ -276,6 +284,25 @@ impl ServerState {
                 ),
                 config.dialect,
                 &source,
+            );
+        }
+    }
+
+    // Keep dedicated-config users' opt-in formatting behavior. Fresh projects
+    // expose the formatter alongside the existing recommended editor profile;
+    // authored project and editor switches are applied afterwards.
+    fn apply_project_formatting_default(&self, source: Option<&Path>) {
+        let dedicated = source
+            .and_then(Path::file_name)
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.starts_with("vize.config."));
+        if !dedicated {
+            self.apply_lsp_config(
+                LspConfigSection::from(vize_l0::config::LanguageServerConfig {
+                    formatting: Some(true),
+                    ..Default::default()
+                }),
+                "project defaults",
             );
         }
     }
