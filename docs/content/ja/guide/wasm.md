@@ -2,7 +2,7 @@
 title: WASM バインディング
 ---
 
-<!-- Reviewed translation; source: guide/wasm.md; scope: introduction, headings and reading order -->
+<!-- Reviewed translation; source: guide/wasm.md -->
 
 # WASM バインディング
 
@@ -17,7 +17,7 @@ WASM API は実験段階です。採用時は [サポート区分](../stability.
 
 ## インストール
 
-[Vite+ インストール ガイド](https://viteplus.dev/guide/install) から `vp` を一度インストールし、パッケージを追加します。
+[Vite+ のインストールガイド](https://viteplus.dev/guide/install)に従って `vp` を一度インストールし、パッケージを追加します。
 
 ```bash
 vp install @vizejs/wasm
@@ -27,7 +27,7 @@ vp install @vizejs/wasm
 
 ### SFC をコンパイルする
 
-Vue の単一ファイル コンポーネントを JavaScript にコンパイルします。
+Vue の単一ファイルコンポーネントを JavaScript にコンパイルします。
 
 ```javascript
 import init, { compileSfc } from "@vizejs/wasm";
@@ -50,9 +50,11 @@ console.log(result.template?.code); // compiled render function, when a template
 console.log(result.css); // compiled styles, when styles exist
 ```
 
-### リント SFC
+<span id="リント-sfc"></span>
 
-SFC で Vue 固有の lint ルールを実行します。
+### SFC の lint
+
+SFC に対して Vue 固有の lint ルールを実行します。
 
 ```javascript
 import init, { lintSfc } from "@vizejs/wasm";
@@ -87,7 +89,8 @@ console.log(formatted.code);
 
 ## 初期化
 
-`init()` 関数は、他の API を使用する前に 1 回呼び出す必要があります。 WebAssembly モジュールをロードしてインスタンス化します。
+他の API を使う前に、`init()` を一度呼び出してください。
+WebAssembly モジュールを読み込み、インスタンスを生成します。
 
 ```javascript
 import init from "@vizejs/wasm";
@@ -101,9 +104,12 @@ await init("https://cdn.example.com/vize_vitrine_bg.wasm");
 
 ## 使用例
 
-### 遊び場
+<span id="遊び場"></span>
 
-完全にブラウザ内で実行されるインタラクティブな Vue コンパイル プレイグラウンドを構築します。公式 [Vize Playground](https://vizejs.dev/play) は、リアルタイム コンパイルに WASM バインディングを使用します。
+### プレイグラウンド
+
+ブラウザー内で動く、インタラクティブな Vue コンパイルのプレイグラウンドを作れます。
+公式の [Vize Playground](https://vizejs.dev/play) も、リアルタイムのコンパイルに WASM バインディングを使っています。
 
 ```javascript
 // React to editor changes and compile in real-time
@@ -126,7 +132,7 @@ editor.onChange((source) => {
 
 ### ドキュメント
 
-ライブで編集可能な Vue の例をドキュメントに埋め込みます。
+その場で編集・実行できる Vue の例を、ドキュメントに埋め込めます。
 
 ```javascript
 // Compile documentation examples on the fly
@@ -141,11 +147,13 @@ for (const el of examples) {
 
 ### 教育
 
-リアルタイムでコンパイル出力を表示するインタラクティブなコンパイラ探索ツールを作成し、開発者が Vue テンプレートがどのように変換されるかを理解できるようにします。
+コンパイル結果をリアルタイムで表示する、インタラクティブなコンパイラの学習ツールを作れます。
+Vue のテンプレートがどのように変換されるかを理解する助けになります。
 
 ### CI/CD
 
-ネイティブバイナリが利用できない環境（Cloudflare Workers、Deno Deploy、ブラウザベースのCIなど）での軽量コンパイルにはWASMバインディングを使用します。
+Cloudflare Workers、Deno Deploy、ブラウザー上の CI など、ネイティブバイナリを利用できない環境でも、
+WASM バインディングで軽量なコンパイルを実行できます。
 
 ## ソースからのビルド
 
@@ -187,7 +195,9 @@ const result = lintSfc(source, {
 console.log(result.diagnostics);
 ```
 
-## バンドルのサイズ
+<span id="バンドルのサイズ"></span>
+
+## バンドルサイズ
 
 WASM モジュールには、Vue のコンパイラーパイプライン（構文解析・意味解析・コード生成）が含まれます。圧縮後のサイズは、ビルドと生成物によって変わります。ソースからのビルド手順を実行したあと、`gzip -c npm/wasm/vize_vitrine_bg.wasm | wc -c` で、実際に生成したモジュールの gzip サイズをバイト数で測れます。
 
@@ -207,12 +217,15 @@ console.log(result.script.code, result.template?.code, result.css);
 
 ### コンパイラオプションの互換性
 
-`CompilerOptions` タイプは、`compile`、`compileVapor`、
-`parseTemplate`、および `compileSfc`。不明なオブジェクト キーは JavaScript 境界で無視され、
-互換性を保証するものではありません。 `vueParserQuirks` は、非推奨のエイリアスとして残ります。
-`templateSyntax: "quirks"`;明示的な `templateSyntax` が常に優先されます。共有されたRust
-フィールド `experimentalServerScript` は予約されており、WASM コンパイラーの段階まで公開されません。
-それを実装します。各ファサードは、コンパイラ ステージに適用されないサポートされているフィールドを無視します。
-`bindingMetadata` は、テンプレートの直接コンパイルにのみ適用されます。ランタイム名は生成されたものに適用されます
-VDOM モジュールと SFC クライアント出力 (VDOM または Vapor)。ソース マップは、以下を含む VDOM 出力に適用されます。
-`compileSfc` によって返されたテンプレートの結果。 `outputMode` および `scriptExt` は SFC コンパイルにのみ適用されます。
+`CompilerOptions` 型は、`compile`、`compileVapor`、`parseTemplate`、`compileSfc` が対応する設定項目の一覧です。
+未知のオブジェクトキーは JavaScript からの入力時に無視され、互換性の保証には含まれません。
+`vueParserQuirks` は `templateSyntax: "quirks"` の非推奨の別名として残っています。
+`templateSyntax` を明示した場合は、常にそちらが優先されます。
+共有の Rust 型にある `experimentalServerScript` は予約済みの項目で、WASM のコンパイラ段階で実装されるまでは公開しません。
+
+各 API は、対応する設定項目であっても、自身のコンパイラ段階に関係しないものを無視します。
+`bindingMetadata` が適用されるのは、テンプレートの直接コンパイルだけです。
+ランタイム名は、生成する VDOM モジュールと SFC のクライアント出力（VDOM または Vapor）に適用されます。
+ソースマップは、`compileSfc` が返すテンプレートの結果を含め、VDOM 出力に適用されます。
+`outputMode` と `scriptExt` は、SFC のコンパイルにだけ適用されます。
+
