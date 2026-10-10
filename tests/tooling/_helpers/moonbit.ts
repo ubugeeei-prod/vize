@@ -39,7 +39,7 @@ function resolveRunnerShim(env: NodeJS.ProcessEnv): string | undefined {
   return fs.existsSync(shimPath) ? shimPath : undefined;
 }
 
-function resolveMoonCommand(env: NodeJS.ProcessEnv): string {
+export function resolveMoonCommand(env: NodeJS.ProcessEnv): string {
   if (env.MOON_BIN) {
     return env.MOON_BIN;
   }
