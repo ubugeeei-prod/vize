@@ -1,0 +1,174 @@
+{
+  "schema": "vize-misskey-symbol-worker-rss-before-v1",
+  "scope": "Original Actions job logs and complete original metrics; no independent binary/PSS/true-peak proof.",
+  "failures": [
+    {
+      "case": "8454-c70",
+      "sourceHead": "c70dd1f1c69ec5f9cdc1075c19413dd36af69829",
+      "actionsRun": "38038369897",
+      "actionsJob": "114173487502",
+      "metricsSha256": "cb51016e6e7ac5b377272d83656e2a41b7feff7821df9299fa6b653e2545b7c8",
+      "sampledServerPeak": {
+        "label": "file-lifecycle-3",
+        "serverKiB": 131336,
+        "treeKiB": 330652,
+        "treeProcesses": 3,
+        "members": [
+          {
+            "pid": 81304,
+            "parentPid": 81281,
+            "rssKiB": 131336,
+            "executable": "vize"
+          },
+          {
+            "pid": 81567,
+            "parentPid": 81304,
+            "rssKiB": 67240,
+            "executable": "tsc"
+          },
+          {
+            "pid": 81397,
+            "parentPid": 81304,
+            "rssKiB": 132076,
+            "executable": "tsc"
+          }
+        ]
+      },
+      "fixtureRevision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+      "corpus": {
+        "vueFiles": 583,
+        "vueAndTypeScriptFiles": 888
+      },
+      "budget": {
+        "scale": 1,
+        "suite": "misskey-lsp-churn",
+        "cyclesPerPhase": 20,
+        "hardTimeoutMs": 60000,
+        "budgetsMs": {
+          "initialize": 1000,
+          "coldOpen": 8000,
+          "cycle": 9000,
+          "fileLifecycle": 9000,
+          "phaseFence": 1500,
+          "cancellationConverge": 6000,
+          "closeClear": 3000
+        },
+        "maxPeakRssMiB": 128,
+        "maxPeakProcessTreeRssMiB": 384,
+        "maxProcessTreeSize": 3,
+        "maxTailToHeadLatencyRatio": 3
+      },
+      "actualBinaryDigestRetained": false
+    },
+    {
+      "case": "8459-156",
+      "sourceHead": "156dfb1db81dff4c5665681d9dbe4f9b29351b61",
+      "actionsRun": "38033465773",
+      "actionsJob": "114158996019",
+      "metricsSha256": "7cf07ff8aa1ca41b9dfc726b9ef8ee6f432e223eda338994996e68e20c355de0",
+      "sampledServerPeak": {
+        "label": "file-lifecycle-0",
+        "serverKiB": 131768,
+        "treeKiB": 331084,
+        "treeProcesses": 3,
+        "members": [
+          {
+            "pid": 81056,
+            "parentPid": 81033,
+            "rssKiB": 131768,
+            "executable": "vize"
+          },
+          {
+            "pid": 81317,
+            "parentPid": 81056,
+            "rssKiB": 67880,
+            "executable": "tsc"
+          },
+          {
+            "pid": 81148,
+            "parentPid": 81056,
+            "rssKiB": 131436,
+            "executable": "tsc"
+          }
+        ]
+      },
+      "fixtureRevision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+      "corpus": {
+        "vueFiles": 583,
+        "vueAndTypeScriptFiles": 888
+      },
+      "budget": {
+        "scale": 1,
+        "suite": "misskey-lsp-churn",
+        "cyclesPerPhase": 20,
+        "hardTimeoutMs": 60000,
+        "budgetsMs": {
+          "initialize": 1000,
+          "coldOpen": 8000,
+          "cycle": 9000,
+          "fileLifecycle": 9000,
+          "phaseFence": 1500,
+          "cancellationConverge": 6000,
+          "closeClear": 3000
+        },
+        "maxPeakRssMiB": 128,
+        "maxPeakProcessTreeRssMiB": 384,
+        "maxProcessTreeSize": 3,
+        "maxTailToHeadLatencyRatio": 3
+      },
+      "actualBinaryDigestRetained": false
+    }
+  ],
+  "files": [
+    {
+      "path": "8454-c70/metrics.json",
+      "size": 127020,
+      "sha256": "cb51016e6e7ac5b377272d83656e2a41b7feff7821df9299fa6b653e2545b7c8"
+    },
+    {
+      "path": "8454-c70/summary.md",
+      "size": 603,
+      "sha256": "ab8bbffc31b21752884f8f88da5d404fc7e5c3b2e2855393cb670ad085f4b550"
+    },
+    {
+      "path": "8454-c70/symbols.rs",
+      "size": 4490,
+      "sha256": "0674427b95a167625c20aea961cf525b1e662714d51130e6f7f9cf902c970346"
+    },
+    {
+      "path": "8454-c70/vue-parity.log",
+      "size": 265825,
+      "sha256": "8f789229663a167c58cd57ff65ea4e7f010d59e693ba73bd31d1b9b4e13698e0"
+    },
+    {
+      "path": "8454-c70/workspace_project_files.rs",
+      "size": 9055,
+      "sha256": "6834433eb01b65304309321d2f7e903b9b79718e442452303f67824875dfe2f8"
+    },
+    {
+      "path": "8459-156/metrics.json",
+      "size": 127013,
+      "sha256": "7cf07ff8aa1ca41b9dfc726b9ef8ee6f432e223eda338994996e68e20c355de0"
+    },
+    {
+      "path": "8459-156/summary.md",
+      "size": 603,
+      "sha256": "c780c0b684d66252d68598c349815a15eeda70fd1eaa96049f31337767efe665"
+    },
+    {
+      "path": "8459-156/symbols.rs",
+      "size": 4490,
+      "sha256": "0674427b95a167625c20aea961cf525b1e662714d51130e6f7f9cf902c970346"
+    },
+    {
+      "path": "8459-156/vue-parity.log",
+      "size": 263690,
+      "sha256": "77f42ea46847e480634ccfe096efae1d04f80dc5f20c0aceea23dc53244dda8f"
+    },
+    {
+      "path": "8459-156/workspace_project_files.rs",
+      "size": 9055,
+      "sha256": "6834433eb01b65304309321d2f7e903b9b79718e442452303f67824875dfe2f8"
+    }
+  ]
+}
