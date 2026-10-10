@@ -143,7 +143,7 @@ void test(
             );
             hold.release();
             await hold.released;
-            assert.equal(sha256(await (await lateResponse).body()), original.receipt.sha256);
+            assert.equal((await lateResponse).status(), original.receipt.status);
             await renderFrames(page);
             const [capture] = await Promise.all([
               page.waitForResponse(

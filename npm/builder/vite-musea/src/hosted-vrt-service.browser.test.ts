@@ -8,6 +8,7 @@ import type { Page } from "playwright";
 import { parseArgs } from "./cli/index.ts";
 import { startHostedVrtSession } from "./cli/serve.ts";
 import { buildServiceGallery, repository, sha256 } from "./hosted-vrt-build.fixtures.ts";
+import { proveOwnedHostedError } from "./hosted-vrt-errors.fixtures.ts";
 import {
   createSecureHost,
   launchPublicBrowser,
@@ -269,6 +270,11 @@ void test(
         phase: "serial-capture",
         receipt: await proveSerialCapture(session, host.origin, built.artPath),
       });
+      observations.push({
+        phase: "owned-report-error",
+        receipt: await proveOwnedHostedError(page, session.endpoint, local, output),
+      });
+      assert.equal((await capture(page, session.endpoint)).summary.passed, 1);
       const beforeTrustRefusal = await storedCaptureBytes(local);
       const wrongPinSession = await startHostedVrtSession(
         options,
