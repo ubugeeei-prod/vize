@@ -1,0 +1,10 @@
+/// Typed config-only policy options shared by the public schema.
+module vize.LintRuleOptionTypes
+
+open class ContentDirectivesOptions {
+  contentDirectives: Listing<String> = new Listing {}
+}
+
+class ValidVSlotOptions {
+  allowModifiers: Boolean = false
+}

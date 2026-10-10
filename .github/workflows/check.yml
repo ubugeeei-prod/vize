@@ -78,8 +78,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-        with:
-          components: rustfmt
+        with: { components: rustfmt }
       - name: Format Rust
         run: cargo fmt --all -- --check
   check-js:
@@ -90,8 +89,7 @@ jobs:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          fetch-depth: 2
+        with: { fetch-depth: 2 }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: "package.json"
@@ -298,8 +296,10 @@ jobs:
       - name: Check configured Router page CLI and editor types
         uses: ./.github/actions/check-router-page-types
       - name: Prepare plugin runtime and test native JS setup
+        if: ${{ always() }}
         uses: ./.github/actions/test-native-js-setup
       - name: Capture original native attribute values and fixed fresh mounts
+        if: ${{ always() }}
         uses: ./.github/actions/test-native-attribute-values-7502
       - name: Install CSS formatter reference browser
         uses: ./.github/actions/install-formatter-css-browser

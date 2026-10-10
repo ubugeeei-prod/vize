@@ -4,7 +4,7 @@ title: Musea
 
 # Musea
 
-> **⚠️ 進行中の作業:**Musea はまだ進化中です。ファイル形式、API、UI の動作は変更される可能性があります。
+> **⚠️ 進行中の作業:** Musea はまだ進化中です。ファイル形式、API、UI の動作は変更される可能性があります。
 
 Musea は、自分のコンポーネントをギャラリーで一覧し、状態の違いを比較・検証するためのツールです。
 [すぐに使える UI の使用例](./ui/index.md)を試してから、自分のコンポーネントのバリエーションを `*.art.vue` に書きます。
@@ -81,12 +81,7 @@ vp dev
 http://localhost:5173/__musea__
 ```
 
-`vize` npm パッケージをインストールすると、`vp exec vize musea` は Vite の便利なラッパーになります。
-
-```bash
-vp exec vize musea
-vp exec vize musea --build
-```
+CLI ラッパー、静的ホスト、テストの要件は [Musea のホスティング](./musea-hosting) を参照してください。
 
 ## 共有構成
 

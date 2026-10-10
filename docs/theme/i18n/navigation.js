@@ -62,6 +62,16 @@ const vizeDocsI18nNavigation = (() => {
       list.append(item);
     }
     section.append(list);
+    list.inert = !open;
+    if (typeof MutationObserver !== "undefined") {
+      // Size interpolation keeps the closing content painted briefly. Inert
+      // removes its links from focus/accessibility as soon as open changes.
+      new MutationObserver(() => {
+        const expanded = section.hasAttribute("open");
+        if (!expanded && list.contains(document.activeElement)) heading.focus();
+        list.inert = !expanded;
+      }).observe(section, { attributes: true, attributeFilter: ["open"] });
+    }
 
     return section;
   }
@@ -206,6 +216,51 @@ const vizeDocsI18nNavigation = (() => {
     applyNavigationOrder(root);
     applyLocalizedChrome(root);
     installLocaleSwitcher(root);
+    installMobileNavigation(root);
+  }
+
+  function installMobileNavigation(root) {
+    const sidebar = root.querySelector?.(".sidebar");
+    if (!sidebar || sidebar.dataset.vizeMobileNavigation || !window.matchMedia) return;
+    sidebar.dataset.vizeMobileNavigation = "ready";
+    sidebar.id ||= "docs-navigation";
+    const controls = [...root.querySelectorAll(".menu-toggle, [data-mobile-menu]")];
+    const mobile = window.matchMedia("(max-width: 768px)");
+    let trigger = controls.at(-1);
+    const sync = () => {
+      const open = !mobile.matches || sidebar.classList.contains("open");
+      if (!open && sidebar.contains(document.activeElement)) trigger?.focus();
+      sidebar.inert = !open;
+      for (const control of controls) {
+        control.setAttribute("aria-controls", sidebar.id);
+        control.setAttribute("aria-expanded", String(open));
+      }
+    };
+    for (const control of controls) {
+      control.addEventListener("click", () => {
+        trigger = control;
+        // The site runtime owns the open class. Read its state after its handler.
+        queueMicrotask(sync);
+      });
+    }
+    root.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        !event.defaultPrevented &&
+        mobile.matches &&
+        sidebar.classList.contains("open") &&
+        (sidebar.contains(event.target) || event.target === trigger)
+      ) {
+        event.preventDefault();
+        sidebar.classList.remove("open");
+        root.querySelector(".overlay")?.classList.remove("open");
+        sync();
+        trigger?.focus();
+      }
+    });
+    new MutationObserver(sync).observe(sidebar, { attributes: true, attributeFilter: ["class"] });
+    mobile.addEventListener("change", sync);
+    sync();
   }
 
   return {
@@ -213,6 +268,7 @@ const vizeDocsI18nNavigation = (() => {
     canonicalPath,
     currentLocale,
     initialize,
+    installMobileNavigation,
   };
 })();
 

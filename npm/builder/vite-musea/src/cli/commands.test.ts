@@ -69,7 +69,7 @@ void test("CLI VRT options preserve config threshold when CLI threshold is omitt
   const options = parseArgs([]);
   options.vrt = {
     threshold: 0,
-    capture: { settleTime: 250 },
+    capture: { waitForPreviewReady: true, settleTime: 250 },
     comparison: { antiAliasing: false },
     viewports: [{ width: 320, height: 240, name: "tiny" }],
     workers: 4,
@@ -78,7 +78,7 @@ void test("CLI VRT options preserve config threshold when CLI threshold is omitt
   assert.deepEqual(createVrtOptions(options), {
     snapshotDir: ".vize/snapshots",
     threshold: 0,
-    capture: { settleTime: 250 },
+    capture: { waitForPreviewReady: true, settleTime: 250 },
     comparison: { antiAliasing: false },
     viewports: [{ width: 320, height: 240, name: "tiny" }],
     workers: 4,
@@ -97,6 +97,7 @@ void test("CLI threshold overrides configured VRT threshold", () => {
     snapshotDir: ".vize/snapshots",
     threshold: 0,
     workers: 8,
+    capture: { waitForPreviewReady: true },
     comparison: { antiAliasing: false },
   });
 });
@@ -107,7 +108,7 @@ void test("CLI uses vrt.snapshotDir resolved against the config file directory",
     snapshotDir: path.join("vrt", "baseline"),
     threshold: 0,
     viewports: [{ width: 320, height: 200, name: "small" }],
-    capture: { settleTime: 250 },
+    capture: { waitForPreviewReady: true, settleTime: 250 },
     comparison: { antiAliasing: false },
     workers: 2,
   };
@@ -117,7 +118,7 @@ void test("CLI uses vrt.snapshotDir resolved against the config file directory",
     snapshotDir: path.resolve("project", "vrt", "baseline"),
     threshold: 0,
     viewports: [{ width: 320, height: 200, name: "small" }],
-    capture: { settleTime: 250 },
+    capture: { waitForPreviewReady: true, settleTime: 250 },
     comparison: { antiAliasing: false },
     workers: 2,
   });

@@ -28,6 +28,16 @@ export function createVrtOptions(options: CliOptions): ExtendedVrtOptions {
   const configured = withoutA11y(options.vrt);
   const vrtOptions: ExtendedVrtOptions = {
     ...configured,
+    ...(options.projectRoot !== undefined ? { projectRoot: options.projectRoot } : {}),
+    ...(options.snapshotIdentities !== undefined
+      ? { snapshotIdentities: options.snapshotIdentities }
+      : {}),
+    ...(options.adoptLegacySnapshots !== undefined
+      ? { adoptLegacySnapshots: options.adoptLegacySnapshots }
+      : {}),
+    capture: { waitForPreviewReady: true, ...configured.capture },
+    ...(options.previewBasePath !== undefined ? { previewBasePath: options.previewBasePath } : {}),
+    ...(options.previewUrls !== undefined ? { previewUrls: options.previewUrls } : {}),
     // run, approve, and clean all read this directory.
     snapshotDir: resolveVrtSnapshotDir(options, configured.snapshotDir),
     threshold: options.thresholdProvided
@@ -138,11 +148,13 @@ export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Prom
           console.log(
             `  CI mode: ${a11ySummary.erroredVariants} variant(s) could not be audited\n`,
           );
-          process.exit(1);
+          process.exitCode = 1;
+          return;
         }
         if (options.ci && (a11ySummary.criticalCount > 0 || a11ySummary.seriousCount > 0)) {
           console.log("  CI mode: Accessibility violations found\n");
-          process.exit(1);
+          process.exitCode = 1;
+          return;
         }
       } catch (e) {
         console.warn("  A11y audits skipped:", e instanceof Error ? e.message : String(e));
@@ -176,7 +188,7 @@ export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Prom
     // CI mode - exit with error if visual diffs or runner errors occurred.
     if (options.ci && hasCiBlockingVrtResult(summary)) {
       console.log("  CI mode: Exiting with error due to failures or errors\n");
-      process.exit(1);
+      process.exitCode = 1;
     }
   } finally {
     await runner.close();
@@ -219,7 +231,12 @@ export async function runClean(options: CliOptions, artFiles: ArtFileInfo[]): Pr
 
   console.log("  Scanning for orphaned snapshots...\n");
 
-  const cleaned = await runner.cleanOrphans(artFiles);
+  let cleaned: number;
+  try {
+    cleaned = await runner.cleanOrphans(artFiles);
+  } finally {
+    await runner.close();
+  }
 
   if (cleaned === 0) {
     console.log("  No orphaned snapshots found.\n");

@@ -1,0 +1,368 @@
+{
+  "schema": "vize.native-static-class-history-successor",
+  "version": 1,
+  "compilerVersion": "3.5.35",
+  "source": "<template>prefix<div data-first='kept' class='a  b'>unvisited</div>tail</template>",
+  "sourceSha256": "8580d6cccb496f2feb82948cc31f434a0c5035a85f6bbe47dd7ee7ee9a0a6645",
+  "template": "prefix<div data-first='kept' class='a  b'>unvisited</div>tail",
+  "options": {
+    "mode": "module",
+    "hoistStatic": false,
+    "prefixIdentifiers": true,
+    "comments": true,
+    "filename": "NativeClassHistory.vue",
+    "sourceMap": true,
+    "bindingMetadata": {},
+    "cacheHandlers": false
+  },
+  "dom": {
+    "development": {
+      "code": "import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createTextVNode(\"prefix\"),\n    _createElementVNode(\"div\", {\n      \"data-first\": \"kept\",\n      class: \"a b\"\n    }, \"unvisited\"),\n    _createTextVNode(\"tail\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeClassHistory.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;qBAAA,QAAM;IAAA,oBAAmD;MAA9C,YAAU,EAAC,MAAM;MAAC,KAAK,EAAC,KAAM;OAAC,WAAS;qBAAM,MAAI",
+        "sourcesContent": [
+          "prefix<div data-first='kept' class='a  b'>unvisited</div>tail"
+        ]
+      },
+      "codeSha256": "30bf40ed75ffa3367620e15526fe91c8684d89d25b49c4c96f3351a1f446bb33",
+      "mapSha256": "2c40464cb147db12df5a594a1acb82423986c9539dc583773198e8fe35dcfe11"
+    },
+    "production": {
+      "code": "import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createTextVNode(\"prefix\"),\n    _createElementVNode(\"div\", {\n      \"data-first\": \"kept\",\n      class: \"a b\"\n    }, \"unvisited\"),\n    _createTextVNode(\"tail\")\n  ], 64))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeClassHistory.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;qBAAA,QAAM;IAAA,oBAAmD;MAA9C,YAAU,EAAC,MAAM;MAAC,KAAK,EAAC,KAAM;OAAC,WAAS;qBAAM,MAAI",
+        "sourcesContent": [
+          "prefix<div data-first='kept' class='a  b'>unvisited</div>tail"
+        ]
+      },
+      "codeSha256": "214ea158129b32a7c971ca474c5bee502cd96735f647c117b502c66b49df1a9a",
+      "mapSha256": "2c40464cb147db12df5a594a1acb82423986c9539dc583773198e8fe35dcfe11"
+    }
+  },
+  "ssr": {
+    "development": {
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<!--[-->prefix<div data-first=\"kept\" class=\"a b\">unvisited</div>tail<!--]-->`)\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeClassHistory.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "prefix<div data-first='kept' class='a  b'>unvisited</div>tail"
+        ]
+      },
+      "codeSha256": "1feefb2bc8ec6880666cd90ae04fe66878129de0e23c3de9f0f4747e4ba8b427",
+      "mapSha256": "a7169c28f950824561c334ea3748ee3147d76c352a718a01eed7ea6dbda5231a"
+    },
+    "production": {
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<!--[-->prefix<div data-first=\"kept\" class=\"a b\">unvisited</div>tail<!--]-->`)\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeClassHistory.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "prefix<div data-first='kept' class='a  b'>unvisited</div>tail"
+        ]
+      },
+      "codeSha256": "1feefb2bc8ec6880666cd90ae04fe66878129de0e23c3de9f0f4747e4ba8b427",
+      "mapSha256": "a7169c28f950824561c334ea3748ee3147d76c352a718a01eed7ea6dbda5231a"
+    }
+  },
+  "nativeCapture": [
+    {
+      "code": "import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createTextVNode(\"prefix\"),\n    _createElementVNode(\"div\", {\n      \"data-first\": \"kept\",\n      class: \"a b\"\n    }, \"unvisited\"),\n    _createTextVNode(\"tail\")\n  ], 64 /* STABLE_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeClassHistory.vue",
+      "id": "original-late-class-header",
+      "links": [
+        {
+          "authored": {
+            "end": 16,
+            "start": 10
+          },
+          "generated": {
+            "end": 372,
+            "start": 364
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 16,
+            "start": 16
+          },
+          "generated": {
+            "end": 379,
+            "start": 379
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 67,
+            "start": 16
+          },
+          "generated": {
+            "end": 404,
+            "start": 399
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 38,
+            "start": 21
+          },
+          "generated": {
+            "end": 426,
+            "start": 414
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 38,
+            "start": 21
+          },
+          "generated": {
+            "end": 434,
+            "start": 428
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 51,
+            "start": 39
+          },
+          "generated": {
+            "end": 447,
+            "start": 442
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 51,
+            "start": 39
+          },
+          "generated": {
+            "end": 454,
+            "start": 449
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 61,
+            "start": 52
+          },
+          "generated": {
+            "end": 473,
+            "start": 462
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 71,
+            "start": 67
+          },
+          "generated": {
+            "end": 503,
+            "start": 497
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeClassHistory.vue",
+        "mappings": ";;;;;qBAAU;IAAM,oBAAA;MAAK,cAAA;MAAkB,OAAA;OAAa;qBAAe",
+        "names": [],
+        "sources": [
+          "NativeClassHistory.vue"
+        ],
+        "sourcesContent": [
+          "<template>prefix<div data-first='kept' class='a  b'>unvisited</div>tail</template>"
+        ],
+        "version": 3
+      },
+      "source": "<template>prefix<div data-first='kept' class='a  b'>unvisited</div>tail</template>",
+      "sourceMap": true,
+      "target": "dom"
+    },
+    {
+      "code": "const _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[-->prefix<div data-first=\"kept\" class=\"a b\">unvisited</div>tail<!--]-->`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeClassHistory.vue",
+      "id": "original-late-class-header",
+      "links": [
+        {
+          "authored": {
+            "end": 16,
+            "start": 10
+          },
+          "generated": {
+            "end": 97,
+            "start": 91
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 67,
+            "start": 16
+          },
+          "generated": {
+            "end": 101,
+            "start": 98
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 38,
+            "start": 21
+          },
+          "generated": {
+            "end": 112,
+            "start": 102
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 38,
+            "start": 21
+          },
+          "generated": {
+            "end": 118,
+            "start": 114
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 51,
+            "start": 39
+          },
+          "generated": {
+            "end": 125,
+            "start": 120
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 51,
+            "start": 39
+          },
+          "generated": {
+            "end": 130,
+            "start": 127
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 61,
+            "start": 52
+          },
+          "generated": {
+            "end": 141,
+            "start": 132
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 67,
+            "start": 16
+          },
+          "generated": {
+            "end": 146,
+            "start": 143
+          },
+          "name": null,
+          "segment": true
+        },
+        {
+          "authored": {
+            "end": 71,
+            "start": 67
+          },
+          "generated": {
+            "end": 151,
+            "start": 147
+          },
+          "name": null,
+          "segment": true
+        }
+      ],
+      "map": {
+        "file": "NativeClassHistory.vue",
+        "mappings": ";;;iBAAU,OAAM,IAAK,YAAA,MAAkB,OAAA,KAAa,WAApC,IAAmD",
+        "names": [],
+        "sources": [
+          "NativeClassHistory.vue"
+        ],
+        "sourcesContent": [
+          "<template>prefix<div data-first='kept' class='a  b'>unvisited</div>tail</template>"
+        ],
+        "version": 3
+      },
+      "source": "<template>prefix<div data-first='kept' class='a  b'>unvisited</div>tail</template>",
+      "sourceMap": true,
+      "target": "ssr"
+    },
+    {
+      "code": "import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\nconst _sfc_main = {}\n;\nfunction render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createTextVNode(\"prefix\"),\n    _createElementVNode(\"div\", {\n      \"data-first\": \"kept\",\n      class: \"a b\"\n    }, \"unvisited\"),\n    _createTextVNode(\"tail\")\n  ], 64 /* STABLE_FRAGMENT */))\n}\n_sfc_main.render = render\nexport default _sfc_main\n",
+      "filename": "NativeClassHistory.vue",
+      "id": "original-late-class-header",
+      "links": [],
+      "map": null,
+      "source": "<template>prefix<div data-first='kept' class='a  b'>unvisited</div>tail</template>",
+      "sourceMap": false,
+      "target": "dom"
+    },
+    {
+      "code": "const _sfc_main = {}\n;\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<!--[-->prefix<div data-first=\"kept\" class=\"a b\">unvisited</div>tail<!--]-->`)\n}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n",
+      "filename": "NativeClassHistory.vue",
+      "id": "original-late-class-header",
+      "links": [],
+      "map": null,
+      "source": "<template>prefix<div data-first='kept' class='a  b'>unvisited</div>tail</template>",
+      "sourceMap": false,
+      "target": "ssr"
+    }
+  ]
+}

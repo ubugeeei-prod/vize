@@ -11,6 +11,8 @@ import { browserEffectExamples } from "../../../npm/ui/scripts/reference-docs/br
 import { exerciseBrowserExample } from "./interactions-browser-effects.ts";
 import { formStateExamples } from "../../../npm/ui/scripts/reference-docs/form-state-examples.ts";
 import { exerciseFormStateExample } from "./interactions-form-state.ts";
+import { domInteractionExamples } from "../../../npm/ui/scripts/reference-docs/dom-interaction-examples.ts";
+import { exerciseDomExample } from "./interactions-dom.ts";
 import { verifyUnavailableStorage } from "./capture-unavailable-storage.ts";
 
 async function activate(page: Page, label: string): Promise<void> {
@@ -25,6 +27,8 @@ async function exercise(page: Page, name: string): Promise<string[]> {
     return exerciseBrowserExample(page, name);
   if (formStateExamples.some((example) => example.name === name))
     return exerciseFormStateExample(page, name);
+  if (domInteractionExamples.some((example) => example.name === name))
+    return exerciseDomExample(page, name);
   if (name === "use-toggle") {
     assert.equal(await page.getByText("Free delivery in 2–3 business days.").count(), 0);
     await activate(page, "Show delivery details");

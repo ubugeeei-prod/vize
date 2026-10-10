@@ -1,0 +1,592 @@
+{
+  "schema": "vize.n8n.slot-modifier-options-v1",
+  "cases": [
+    {
+      "id": "dynamic-name",
+      "source": "<template>\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "9c86a25ac8dfef94f7ec8b16e3602ad793a931d81fae6f799974005f1a264252",
+      "authored": "#[name].modifier=\"{ item }\"",
+      "added": [
+        {
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "message": "v-slot with a slot argument does not support modifiers by default",
+          "start": 33,
+          "end": 60,
+          "help": "Remove the modifiers or enable allowModifiers",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot with a slot argument does not support modifiers by default",
+              "start": 33,
+              "end": 60,
+              "help": "Remove the modifiers or enable allowModifiers",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "dynamic-chain",
+      "source": "<template>\n<FancyPanel><template v-slot:[name].one.two=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "9a3ce55bfaa2ae73e89ac87347f72de356e0ee60f7dc6df94f12247c17e071ed",
+      "authored": "v-slot:[name].one.two=\"slot\"",
+      "added": [
+        {
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "message": "v-slot with a slot argument does not support modifiers by default",
+          "start": 33,
+          "end": 61,
+          "help": "Remove the modifiers or enable allowModifiers",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot with a slot argument does not support modifiers by default",
+              "start": 33,
+              "end": 61,
+              "help": "Remove the modifiers or enable allowModifiers",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "dynamic-member",
+      "source": "<template>\n<FancyPanel><template #[names.current].modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "c18aa68bddaaa0f835a16d16f8ce0e76cf63665bac719e22ddef39dfe80bdcc2",
+      "authored": "#[names.current].modifier=\"slot\"",
+      "added": [
+        {
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "message": "v-slot with a slot argument does not support modifiers by default",
+          "start": 33,
+          "end": 65,
+          "help": "Remove the modifiers or enable allowModifiers",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot with a slot argument does not support modifiers by default",
+              "start": 33,
+              "end": 65,
+              "help": "Remove the modifiers or enable allowModifiers",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "dynamic-own",
+      "source": "<template>\n<FancyPanel><template #[slot.name].modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "a2127773cee6aa59bc1f61c2aec5f677211a7f7fda6b2d2d0991ff44da3a4e21",
+      "authored": "#[slot.name].modifier=\"slot\"",
+      "added": [
+        {
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "message": "v-slot with a slot argument does not support modifiers by default",
+          "start": 33,
+          "end": 61,
+          "help": "Remove the modifiers or enable allowModifiers",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+            "start": 33,
+            "end": 61,
+            "help": "Use a binding from the enclosing scope to choose the slot name",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 61,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            },
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot with a slot argument does not support modifiers by default",
+              "start": 33,
+              "end": 61,
+              "help": "Remove the modifiers or enable allowModifiers",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 2,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot",
+              "start": 33,
+              "end": 61,
+              "help": "Use a binding from the enclosing scope to choose the slot name",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "dynamic-utf8",
+      "source": "<template>\n<!-- 備考 🐟 -->\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "bc0558e93b32dc8e962720c704558c9969a3556ca0e34422e88e05b9d5c8d784",
+      "authored": "#[name].modifier=\"{ item }\"",
+      "added": [
+        {
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "message": "v-slot with a slot argument does not support modifiers by default",
+          "start": 54,
+          "end": 81,
+          "help": "Remove the modifiers or enable allowModifiers",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot with a slot argument does not support modifiers by default",
+              "start": 54,
+              "end": 81,
+              "help": "Remove the modifiers or enable allowModifiers",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "dynamic-crlf",
+      "source": "<template>\r\n<!-- 備考 🐟 -->\r\n<FancyPanel><template #[name].modifier=\"{ item }\">ready</template></FancyPanel>\r\n</template>\r\n",
+      "sourceSha256": "e218527b53b5c20ca7a8d647f7bc2a4793ba7ebf3565517af884aac5fa70f587",
+      "authored": "#[name].modifier=\"{ item }\"",
+      "added": [
+        {
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "message": "v-slot with a slot argument does not support modifiers by default",
+          "start": 56,
+          "end": 83,
+          "help": "Remove the modifiers or enable allowModifiers",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot with a slot argument does not support modifiers by default",
+              "start": 56,
+              "end": 83,
+              "help": "Remove the modifiers or enable allowModifiers",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "static-dotted",
+      "source": "<template>\n<FancyPanel><template #item.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "0d76034ff86be7bd53bd7dcb40e0d37e91316e34fc4d9fed1d711f7ff6113af6",
+      "authored": "#item.memo=\"slot\"",
+      "added": [
+        {
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "message": "v-slot with a slot argument does not support modifiers by default",
+          "start": 33,
+          "end": 50,
+          "help": "Remove the modifiers or enable allowModifiers",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot with a slot argument does not support modifiers by default",
+              "start": 33,
+              "end": 50,
+              "help": "Remove the modifiers or enable allowModifiers",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "static-longhand",
+      "source": "<template>\n<FancyPanel><template v-slot:item.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "eed257653014187a38f45049156f1553b4e5175a0d02bbf22781a8ce35874128",
+      "authored": "v-slot:item.memo=\"slot\"",
+      "added": [
+        {
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "message": "v-slot with a slot argument does not support modifiers by default",
+          "start": 33,
+          "end": 56,
+          "help": "Remove the modifiers or enable allowModifiers",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot with a slot argument does not support modifiers by default",
+              "start": 33,
+              "end": 56,
+              "help": "Remove the modifiers or enable allowModifiers",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "static-default",
+      "source": "<template>\n<FancyPanel><template #default.memo=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "234f69b66172c90de64b821cce1c328738f03f05a7753c8366c8ff1c70ba98f8",
+      "authored": "#default.memo=\"slot\"",
+      "added": [
+        {
+          "rule_name": "vue/valid-v-slot",
+          "severity": "error",
+          "message": "v-slot with a slot argument does not support modifiers by default",
+          "start": 33,
+          "end": 53,
+          "help": "Remove the modifiers or enable allowModifiers",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot with a slot argument does not support modifiers by default",
+              "start": 33,
+              "end": 53,
+              "help": "Remove the modifiers or enable allowModifiers",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "argless-modifier",
+      "source": "<template>\n<FancyPanel><template v-slot.modifier=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "901102369c2ff59932cc03ad504e82f31a05df65cec9cf3c62807cf3fff405ea",
+      "authored": "v-slot.modifier=\"slot\"",
+      "added": [],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [
+          {
+            "rule_name": "vue/valid-v-slot",
+            "severity": "error",
+            "message": "v-slot without a slot argument does not support modifiers",
+            "start": 33,
+            "end": 55,
+            "help": "Remove the modifier from the v-slot directive",
+            "labels": [],
+            "fix": null
+          }
+        ],
+        "error_count": 1,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot without a slot argument does not support modifiers",
+              "start": 33,
+              "end": 55,
+              "help": "Remove the modifier from the v-slot directive",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [
+            {
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "message": "v-slot without a slot argument does not support modifiers",
+              "start": 33,
+              "end": 55,
+              "help": "Remove the modifier from the v-slot directive",
+              "labels": [],
+              "fix": null
+            }
+          ],
+          "error_count": 1,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "dynamic-no-modifier",
+      "source": "<template>\n<FancyPanel><template #[name]=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "66585e5bc2e14c2865785ec6052fa6fe9e2bef421484c4a41dab626ee1501cd5",
+      "authored": "#[name]=\"slot\"",
+      "added": [],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    },
+    {
+      "id": "dynamic-expression-no-modifier",
+      "source": "<template>\n<FancyPanel><template #[names.current]=\"slot\">ready</template></FancyPanel>\n</template>\n",
+      "sourceSha256": "7154edeb1e2a2931aca2823506a6ae7a2660c69c873972898c690f7011b787d6",
+      "authored": "#[names.current]=\"slot\"",
+      "added": [],
+      "declaredParentProjection": {
+        "filename": "DynamicSlot.vue",
+        "diagnostics": [],
+        "error_count": 0,
+        "warning_count": 0
+      },
+      "expectedByOption": {
+        "false": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        },
+        "true": {
+          "filename": "DynamicSlot.vue",
+          "diagnostics": [],
+          "error_count": 0,
+          "warning_count": 0
+        }
+      }
+    }
+  ]
+}

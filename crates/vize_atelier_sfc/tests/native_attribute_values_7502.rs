@@ -8,8 +8,9 @@ mod native_attribute_values_7502 {
     pub(super) mod envelopes;
     pub(super) mod inputs;
     pub(super) mod refusals;
+    pub(super) mod successor;
 }
-use native_attribute_values_7502::{capture, envelopes, inputs, refusals};
+use native_attribute_values_7502::{capture, envelopes, inputs, refusals, successor};
 
 type Test<T = ()> = Result<T, String>;
 
@@ -36,8 +37,9 @@ fn complete_original_attribute_value_outputs_require_independent_review() -> Tes
     let second = capture::packet(&inputs);
     check(first == second, "complete fresh captures differ")?;
     refusals::validate(&first)?;
+    successor::unchanged(&first)?;
     let reviewed: serde_json::Value = serde_json::from_slice(include_bytes!(
-        "fixtures/native_attribute_values_7502/reviewed_output.json"
+        "fixtures/native_attribute_values_7502/reviewed_output_v2.json"
     ))
     .map_err(|error| error.to_compact_string())?;
     check(
@@ -45,7 +47,7 @@ fn complete_original_attribute_value_outputs_require_independent_review() -> Tes
             object.len() == 4
                 && object.get("schema").and_then(serde_json::Value::as_str)
                     == Some("vize.native-attribute-values-7502.reviewed-output")
-                && object.get("version").and_then(serde_json::Value::as_u64) == Some(1)
+                && object.get("version").and_then(serde_json::Value::as_u64) == Some(2)
                 && object.get("state").and_then(serde_json::Value::as_str) == Some("reviewed")
                 && object
                     .get("capture")

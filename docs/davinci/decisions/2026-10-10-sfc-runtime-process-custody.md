@@ -120,3 +120,16 @@ in 30 seconds). Its complete log SHA-256 is
 No rerun of this superseded source changes either original failure. Fresh
 corrected-source full and protected outcomes remain required; actual Node
 identity and the older opaque SFC cause remain unknown.
+
+At `c70dd1f1c69ec5f9cdc1075c19413dd36af69829`, source Check
+[38038348273](https://github.com/ubugeeei-prod/vize/actions/runs/38038348273)
+passed; full [38038369897](https://github.com/ubugeeei-prod/vize/actions/runs/38038369897)
+retained all 302 normal/production packets and passed the original runtime laws,
+but failed the unchanged LSP server RSS ceiling (131,336 KiB > 128 MiB).
+Its complete Rust log SHA-256 is
+`31805698b253d8b14b21fb8f0c3f5a89554729407341c9b0c34b4d7aa866bb38`;
+the RSS failure remains failed. Compose once with actual signed main `f9a9bc55`,
+which includes worker repair #8481 at `8302ed8f`, then require fresh source,
+full, original resource ceilings and protected qualification before actual merge.
+This composition grants no intermittent RSS cause attribution, old child engine
+identity or historical opaque-failure closure.

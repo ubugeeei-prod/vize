@@ -16,7 +16,10 @@ const root = path.join(docsRoot, "dist");
 const { values } = parseArgs({
   options: {
     site: { type: "string" },
-    output: { type: "string", default: "docs-render-evidence/component-previews" },
+    output: {
+      type: "string",
+      default: path.resolve(docsRoot, "../docs-render-evidence/component-previews"),
+    },
   },
 });
 const require = createRequire(path.join(docsRoot, "package.json"));

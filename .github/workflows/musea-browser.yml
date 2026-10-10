@@ -1,11 +1,11 @@
 name: Musea accessibility and capture
 on:
   pull_request:
-    branches: [main]
     paths:
       [
         "npm/builder/vite-musea/**",
         "tests/_fixtures/differential/musea/**",
+        "tests/tooling/fixtures/musea/**",
         "examples/vite-musea/src/components/MuseaButton.vue",
         ".github/workflows/musea-browser.yml",
       ]
@@ -58,15 +58,19 @@ jobs:
         working-directory: npm/builder/vite-musea
         env:
           VIZE_MUSEA_NATIVE_BROWSER_TESTS: "1"
-        run: vp exec tsx --test src/art-component.test.ts src/inline-art.browser.test.ts
+        run: vp exec tsx --test src/art-component.test.ts src/inline-art.browser.test.ts src/vrt-api.browser.test.ts src/vrt-report.browser.test.ts src/vrt/report-identity.test.ts
       - name: Retain native inline Art browser observations
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: musea-native-inline-${{ github.sha }}
-          path: artifacts/musea-native-inline/**
+          path: |
+            artifacts/musea-native-inline/**
+            artifacts/musea-native-vrt-api/**
+            artifacts/musea-native-vrt-reports/**
           if-no-files-found: warn
           retention-days: 14
+          include-hidden-files: true
   musea-browser:
     name: Musea real Chromium contracts
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -98,7 +102,10 @@ jobs:
         working-directory: npm/builder/vite-musea
         env:
           VIZE_MUSEA_BROWSER_TESTS: "1"
-        run: vp exec tsx --test src/a11y/browser-contracts.test.ts src/a11y/node-report.test.ts gallery/components/code-display.browser.test.ts gallery/components/global-toolbar.browser.test.ts
+        run: |
+          vp exec tsx --test src/a11y/browser-contracts.test.ts src/a11y/node-report.test.ts gallery/components/code-display.browser.test.ts gallery/components/global-toolbar.browser.test.ts gallery/components/public-browser-observation.browser.test.ts gallery/components/hosted-tests.browser.test.ts gallery/components/snapshot-collisions.browser.test.ts
+          vp exec tsx --test gallery/components/hosted-vrt.browser.test.ts
+          vp exec tsx --test gallery/components/snapshot-identities.browser.test.ts
       - name: Retain gallery browser observations and screenshots
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -109,6 +116,14 @@ jobs:
             artifacts/musea-code/observations.json
             artifacts/musea-globals/*.png
             artifacts/musea-globals/observations.json
+            artifacts/musea-hosted/*.png
+            artifacts/musea-hosted/observations.json
+            artifacts/musea-hosted-vrt/**/*.png
+            artifacts/musea-hosted-vrt/*.json
+            artifacts/musea-snapshot-identities/**/*.png
+            artifacts/musea-snapshot-identities/**/*.json
+            artifacts/musea-snapshot-collisions/*.png
+            artifacts/musea-snapshot-collisions/*.json
           if-no-files-found: error
           retention-days: 7
           include-hidden-files: false
