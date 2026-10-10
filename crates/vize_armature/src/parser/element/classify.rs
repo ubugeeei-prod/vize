@@ -14,7 +14,10 @@ impl<'a> Parser<'a> {
             && element.tag_type == ElementType::Element
             && (!self.options.custom_renderer || vize_l0::is_html_tag(element.tag))
             && !(self.options.is_void_tag)(element.tag)
-            && !(frozen && !vize_l0::is_native_tag(element.tag) && self.is_component(element))
+            && !(self.frozen_elements.is_some()
+                && frozen
+                && !vize_l0::is_native_tag(element.tag)
+                && self.is_component(element))
     }
 
     /// Determine element type (element, component, slot, template)
@@ -23,11 +26,12 @@ impl<'a> Parser<'a> {
         element: &ElementNode<'a>,
     ) -> ElementType {
         let tag = element.tag;
-        if self.in_v_pre
-            || element.props.iter().any(|prop| {
-                matches!(prop,
-            PropNode::Directive(dir) if dir.name == "pre")
-            })
+        if self.frozen_elements.is_some()
+            && (self.in_v_pre
+                || element
+                    .props
+                    .iter()
+                    .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre")))
         {
             return ElementType::Element;
         }

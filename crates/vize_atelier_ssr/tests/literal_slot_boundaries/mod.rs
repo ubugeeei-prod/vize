@@ -75,17 +75,25 @@ fn compile(
 }
 
 #[test]
-fn public_dom_vapor_ssr_keep_literal_and_outlet_slot_ownership() {
+fn public_ssr_keeps_compiler_owned_literal_and_outlet_slot_ownership() {
     let expected: serde_json::Value = serde_json::from_str(include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/public-slot.expected.json"
     )))
     .expect("sixteen complete fixed public compiler packets");
     assert_eq!(expected.as_array().expect("whole module pins").len(), 16);
+    let expected = expected
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|packet| packet["kind"] == "ssr")
+        .cloned()
+        .collect::<Vec<_>>();
+    assert_eq!(expected.len(), 8, "the same eight historical SSR packets");
     let mut observed = Vec::new();
     let mut files = Vec::new();
     for &(name, source, _literal) in CASES {
-        for kind in ["dom", "vapor", "ssr"] {
+        for kind in ["ssr"] {
             let (current, lanes) = record_lanes(|| compile(name, source, kind, "selected"));
             observed.push(serde_json::json!({
                 "name": name, "source": source, "kind": kind,
@@ -127,7 +135,7 @@ fn public_dom_vapor_ssr_keep_literal_and_outlet_slot_ownership() {
     }
     assert_eq!(
         serde_json::json!(observed),
-        expected,
+        serde_json::json!(expected),
         "every complete module/map field"
     );
     super::v_pre_boundaries::observe_runtime(
@@ -136,5 +144,30 @@ fn public_dom_vapor_ssr_keep_literal_and_outlet_slot_ownership() {
         "ssr-literal-slot-boundaries",
         "SSR_LITERAL_SLOT_RUNTIME_PACKET",
         8,
+    );
+}
+
+#[test]
+fn public_dom_and_vapor_preserve_actual_ca_default_modules() {
+    // This baseline is copied from the authentic old provider observation,
+    // never from corrective current output. The historical sixteen-row file
+    // stays immutable; its six post-regression literal non-SSR rows are history.
+    let expected: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/public-default-ca.expected.json"
+    ))).expect("eight authentic-ca default public packets");
+    assert_eq!(expected.as_array().unwrap().len(), 8);
+    let mut observed = Vec::new();
+    for &(name, source, _) in CASES {
+        for kind in ["dom", "vapor"] {
+            let result = compile(name, source, kind, "original-default");
+            observed
+                .push(serde_json::json!({"name":name,"source":source,"kind":kind,"result":result}));
+        }
+    }
+    assert_eq!(
+        serde_json::json!(observed),
+        expected,
+        "whole old/default modules, maps, errors and warnings"
     );
 }

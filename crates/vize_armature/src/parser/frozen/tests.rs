@@ -2,12 +2,32 @@ use super::Parser;
 use vize_l0::Allocator;
 
 #[test]
-fn opted_in_spans_bind_the_original_source_and_preserve_the_public_result() {
+fn opted_in_spans_bind_source_and_literal_classification_is_compiler_only() {
     let source = "<div v-pre><span><Child is=\"vue:Child\"></Child></span></div><Child></Child>";
     let arena = Allocator::new();
     let (root, errors, frozen) = Parser::new(&arena, source).parse_with_frozen_elements();
     let (control, control_errors) = Parser::new(&arena, source).parse();
-    assert_eq!(vize_l0::cstr!("{root:?}"), vize_l0::cstr!("{control:?}"));
+    assert_ne!(vize_l0::cstr!("{root:?}"), vize_l0::cstr!("{control:?}"));
+    let vize_relief::TemplateChildNode::Element(owner) = &root.children[0] else {
+        panic!("owner")
+    };
+    let vize_relief::TemplateChildNode::Element(span) = &owner.children[0] else {
+        panic!("span")
+    };
+    let vize_relief::TemplateChildNode::Element(child) = &span.children[0] else {
+        panic!("Child")
+    };
+    assert_eq!(child.tag_type, vize_relief::ElementType::Element);
+    let vize_relief::TemplateChildNode::Element(owner) = &control.children[0] else {
+        panic!("owner")
+    };
+    let vize_relief::TemplateChildNode::Element(span) = &owner.children[0] else {
+        panic!("span")
+    };
+    let vize_relief::TemplateChildNode::Element(child) = &span.children[0] else {
+        panic!("Child")
+    };
+    assert_eq!(child.tag_type, vize_relief::ElementType::Component);
     assert_eq!(
         vize_l0::cstr!("{errors:?}"),
         vize_l0::cstr!("{control_errors:?}")

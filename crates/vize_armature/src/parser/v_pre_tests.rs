@@ -75,7 +75,7 @@ fn inherited_literal_names_keep_real_missing_bracket_recovery() {
         "<div><span :[unterminated=\"literal\"></span></div>",
     ] {
         let allocator = Allocator::new();
-        let (_, errors) = parse(&allocator, source);
+        let (_, errors, _) = Parser::new(&allocator, source).parse_with_frozen_elements();
         assert_eq!(
             errors.iter().map(|error| error.code).collect::<Vec<_>>(),
             [ErrorCode::MissingDynamicDirectiveArgumentEnd],
@@ -138,12 +138,13 @@ fn newly_literal_component_slashes_keep_their_flag_in_all_syntax_modes() {
             "<div v-pre><Child is=\"vue:Child\"/></div>",
         ] {
             let arena = Allocator::new();
-            let (root, errors) = parse_with_options_and_template_syntax(
+            let (root, errors, _) = Parser::with_options_and_template_syntax(
                 &arena,
                 source,
                 ParserOptions::default(),
                 mode,
-            );
+            )
+            .parse_with_frozen_elements();
             assert!(errors.is_empty(), "{source} {mode:?}: {errors:?}");
             let TemplateChildNode::Element(el) = &root.children[0] else {
                 panic!("literal owner")
@@ -256,7 +257,7 @@ fn normal_component_custom_renderer_and_declarative_custom_slash_policies_stay_d
 }
 
 #[test]
-fn missing_or_extra_completed_heads_are_fatal_before_freezing_an_opening() {
+fn missing_or_foreign_completed_heads_are_fatal_before_freezing_an_opening() {
     for (extra, message) in [
         (
             false,
@@ -264,26 +265,26 @@ fn missing_or_extra_completed_heads_are_fatal_before_freezing_an_opening() {
         ),
         (
             true,
-            "Completed directive head custody has extra entries while freezing v-pre.",
+            "Completed directive head custody is missing while freezing v-pre.",
         ),
     ] {
         let arena = Allocator::new();
         let mut parser = Parser::new(&arena, "<div v-pre>");
+        parser.frozen_elements = Some(vize_l0::Vec::new_in(&parser.allocator));
         // Feed the real private parser callbacks, then corrupt only custody.
         parser.on_open_tag_name_impl(1, 4);
         parser.on_dir_name_impl(5, 10);
         parser.on_attrib_name_end_impl(10);
         parser.on_attrib_end_impl(crate::tokenizer::QuoteType::NoValue, 10);
         let current = parser.current_element.as_mut().expect("actual opening");
-        if extra {
-            let entry = *current
-                .directive_name_ends
-                .first()
-                .expect("completed v-pre");
-            current.directive_name_ends.push(entry);
+        let Some(PropNode::Directive(dir)) = current.props.first_mut() else {
+            panic!("completed v-pre")
+        };
+        dir.raw_name = if extra {
+            Some(arena.alloc_str("v-pre"))
         } else {
-            current.directive_name_ends.clear();
-        }
+            None
+        };
         parser.on_open_tag_end_impl(10);
         let (root, errors) = parser.into_result();
         assert_eq!(errors.len(), 1, "{errors:?}");

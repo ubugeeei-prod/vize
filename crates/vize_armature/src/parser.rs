@@ -147,9 +147,6 @@ pub(super) struct CurrentElement<'a> {
     pub(super) ns: Namespace,
     pub(super) is_self_closing: bool,
     pub(super) props: Vec<'a, PropNode<'a>>,
-    /// Complete heads before an opening v-pre is known. Most tags stay inline;
-    /// the metadata leaves with this opening tag and never enters the AST.
-    pub(super) directive_name_ends: vize_l0::SmallVec<[usize; 8]>,
 }
 
 /// Current attribute being parsed

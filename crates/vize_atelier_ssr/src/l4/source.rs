@@ -45,7 +45,17 @@ fn lower_and_emit_plain(
             experimental_in_tag_comments: request.options.experimental_in_tag_comments,
         },
     );
-    let s2 = vize_l1_to_l2::lower(allocator, &tree, &surface_errors);
+    let lowered = match request.frozen {
+        Some((root, carrier)) => FrozenTemplate::new(root, source, carrier)
+            .and_then(|template| template.lower(allocator, &tree, &surface_errors)),
+        None => Ok(vize_l1_to_l2::lower(allocator, &tree, &surface_errors)),
+    };
+    let s2 = match lowered {
+        Ok(lowered) => lowered,
+        Err(message) => {
+            return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
+        }
+    };
     let frozen_slots = match request.frozen {
         Some((root, carrier)) => {
             let facts = FrozenTemplate::new(root, source, carrier)
@@ -154,7 +164,17 @@ fn lower_and_emit<C: CaptureSink>(
         vize_l1::render::render(&tree, &mut |part| text.push_str(part));
         text
     });
-    let s2 = vize_l1_to_l2::lower(allocator, &tree, &surface_errors);
+    let lowered = match request.frozen {
+        Some((root, carrier)) => FrozenTemplate::new(root, source, carrier)
+            .and_then(|template| template.lower(allocator, &tree, &surface_errors)),
+        None => Ok(vize_l1_to_l2::lower(allocator, &tree, &surface_errors)),
+    };
+    let s2 = match lowered {
+        Ok(lowered) => lowered,
+        Err(message) => {
+            return SsrL4Selection::Rejected(std::vec![vize_l0::cstr!("{message}")]);
+        }
+    };
     capture.page(Level::L2, "lower", || {
         vize_l2::dump::Page::of(&s2.root.ops).print_to_string(DumpMode::Full)
     });

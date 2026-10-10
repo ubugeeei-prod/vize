@@ -110,3 +110,13 @@ expectations, retaining every original production and historical predicate,
 exact-head/ancestry assertion and frozen replay control. The unchanged six
 historical laws and twelve collector laws pass locally after this expectation
 correction; this is source-law proof, not hosted benchmark qualification.
+
+The collector now composes exactly once with corrected SSR source
+`aa89d08dee18d8856892b13cf28974e3ef6b1c71`, retaining all prior collector
+commit messages and the six-path lint/law correction. Both full provider and
+authority sets remain unchanged, and the paired comparison baseline stays
+`2703daa2f03f5d943dd6b31089aee4a8c5bc7a9e`. Fresh source/full/native, the
+separate 104-row instruction gate and all 624 normal observations still require
+qualification on this actual successor. The original 100-row allocation-equality
+REDs remain visible; the independently qualified SSR parent may enter its native
+Stack prefix without waiting for this optional memory campaign.

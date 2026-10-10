@@ -41,7 +41,6 @@ impl<'a> Parser<'a> {
             ns,
             is_self_closing: false,
             props: vize_l0::Vec::new_in(&self.allocator),
-            directive_name_ends: vize_l0::SmallVec::new(),
         });
     }
 
@@ -68,6 +67,14 @@ impl<'a> Parser<'a> {
                 return;
             }
 
+            let v_pre_ordinal = element
+                .props
+                .iter()
+                .position(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre"));
+            if !self.finalize_directive_heads(&mut element, v_pre_ordinal) {
+                return;
+            }
+
             let is_html_tree_element = is_html_tree_element(&element);
             if is_html_tree_element {
                 self.handle_in_body_start_tag(element.tag, tag_start);
@@ -76,10 +83,6 @@ impl<'a> Parser<'a> {
 
             // Check for pre tags
             let is_pre = (self.options.is_pre_tag)(element.tag);
-            let v_pre_ordinal = element
-                .props
-                .iter()
-                .position(|p| matches!(p, PropNode::Directive(d) if d.name == "pre"));
             let has_v_pre = v_pre_ordinal.is_some();
 
             // When v-pre is on this element, convert all directives (except v-pre itself)
@@ -87,27 +90,20 @@ impl<'a> Parser<'a> {
             if let Some(v_pre_ordinal) = v_pre_ordinal {
                 let allocator = self.allocator;
                 let mut i = 0;
-                let mut head_ends = current.directive_name_ends.iter();
+                let mut authored_ordinal = 0;
                 while let Some(prop) = element.props.get(i) {
+                    let before_pre = authored_ordinal < v_pre_ordinal;
+                    authored_ordinal += 1;
                     if let PropNode::Directive(dir) = prop {
-                        let Some(&authored_end) = head_ends.next() else {
-                            self.report_head_custody_error(&dir.loc, false);
-                            return;
-                        };
-                        if i == v_pre_ordinal {
-                            // Remove v-pre directive itself
-                            i += 1;
+                        if dir.name == "pre" {
+                            // The original parser drops every successful semantic pre.
+                            element.props.remove(i);
                             continue;
                         }
-                        let authored =
-                            self.get_source_retained(dir.loc.span.start as usize, authored_end);
-                        let attr_name = if i < v_pre_ordinal {
-                            authored
-                        } else {
-                            vize_l1::markup::directive::frozen_attribute_name(
-                                self.allocator,
-                                authored,
-                            )
+                        let Some((attr_name, name_loc)) =
+                            self.frozen_directive_name(dir, before_pre)
+                        else {
+                            return;
                         };
                         let attr_value = dir.exp.as_ref().map(|e| {
                             let content = match e {
@@ -122,11 +118,7 @@ impl<'a> Parser<'a> {
                         let attr = PropNode::Attribute(Box::new_in(
                             AttributeNode {
                                 name: attr_name,
-                                name_loc: if self.frozen_elements.is_some() {
-                                    self.create_loc(dir.loc.span.start as usize, authored_end)
-                                } else {
-                                    dir.loc.clone()
-                                },
+                                name_loc,
                                 value: attr_value,
                                 loc: dir.loc.clone(),
                             },
@@ -138,11 +130,6 @@ impl<'a> Parser<'a> {
                     }
                     i += 1;
                 }
-                if head_ends.next().is_some() {
-                    self.report_head_custody_error(&element.loc, true);
-                    return;
-                }
-                element.props.remove(v_pre_ordinal);
             }
 
             let frozen = has_v_pre || inherited_v_pre;
