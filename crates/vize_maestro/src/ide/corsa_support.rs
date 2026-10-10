@@ -56,7 +56,7 @@ pub(crate) use html_tag::{html_tag_request_path, html_tag_virtual_document, nati
 pub(crate) use location_merge::merge_canonical_locations;
 pub(crate) use rename_merge::merge_authored_rename;
 pub(crate) use rename_missing::merge_missing_authored_rename;
-pub(crate) use rename_scope::RenameScope;
+pub(crate) use rename_scope::{RenameScope, normalize_physical_path};
 use virtual_document::{
     MatchedVirtualDocument, is_virtual_document_uri, match_virtual_document, virtual_document_path,
 };

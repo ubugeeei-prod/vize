@@ -36,11 +36,11 @@ impl ServerState {
     pub(super) fn apply_project_path_identity(
         &self,
         directory: &Path,
-        loaded: &vize_carton::config::LoadedProjectConfig,
+        project_root: Option<&Path>,
     ) {
         *self.project_contexts.boundary.write() = Some(directory.to_path_buf());
-        if let Some(root) = &loaded.project_root {
-            self.set_workspace_root(root.clone());
+        if let Some(root) = project_root {
+            self.set_workspace_root(root.to_path_buf());
         }
     }
 

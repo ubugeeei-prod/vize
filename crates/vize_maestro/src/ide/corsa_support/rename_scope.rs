@@ -318,7 +318,11 @@ fn physical_path(path: &Path) -> Option<PathBuf> {
             _ => return None,
         },
     };
-    Some(vize_carton::path::normalize_windows_verbatim_path(physical))
+    Some(normalize_physical_path(physical))
+}
+
+pub(crate) fn normalize_physical_path(path: PathBuf) -> PathBuf {
+    vize_carton::path::normalize_windows_verbatim_path(path)
 }
 
 fn is_dependency_path(path: &Path) -> bool {

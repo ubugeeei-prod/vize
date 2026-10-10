@@ -220,9 +220,14 @@ impl ServerState {
         if !loaded.valid {
             return;
         }
-        self.install_project_linter_context(dir, &loaded.project);
+        self.install_project_linter_context(
+            dir,
+            &loaded.project.document,
+            loaded.project.source_path.as_deref(),
+            loaded.project.project_root.as_deref(),
+        );
         #[cfg(feature = "native")]
-        self.apply_project_path_identity(dir, &loaded.project);
+        self.apply_project_path_identity(dir, loaded.project.project_root.as_deref());
         self.apply_project_formatting_default(loaded.source_path.as_deref());
         if loaded.source_path.is_none() {
             self.apply_config_features(loaded.features);

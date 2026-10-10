@@ -14,7 +14,8 @@ use std::path::{Path, PathBuf};
 use tower_lsp::lsp_types::{InitializeParams, Url, WorkspaceFolder, WorkspaceFoldersChangeEvent};
 use vize_carton::config::matcher::{LintPlanScope, ProjectIgnoreSet};
 use vize_l0::config::{
-    ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions, LinterFeatureFlags,
+    ConfigDocument, ConfigLintRuleOptions, LinterConfig, LinterConfigPlanWithConfigRuleOptions,
+    LinterFeatureFlags,
 };
 
 use super::ServerState;
@@ -31,6 +32,16 @@ pub(super) struct WorkspaceFolderConfig {
 }
 
 impl WorkspaceFolderConfig {
+    pub(super) fn load(root: PathBuf) -> Self {
+        let loaded = vize_carton::config::load_project_config_with_source(Some(&root));
+        Self::from_project(
+            root,
+            &loaded.document,
+            loaded.source_path.as_deref(),
+            loaded.project_root.as_deref(),
+        )
+    }
+
     fn linter_for_path(
         &self,
         path: &Path,

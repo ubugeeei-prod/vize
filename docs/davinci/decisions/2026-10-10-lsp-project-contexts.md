@@ -196,3 +196,14 @@ only the authenticated harness directly. Retain both harness hashes, raw
 stdout/stderr, exact locked preparation/build and direct execution arguments,
 and the unchanged post-execution CLI join. Reset only the Actions-owned scratch
 evidence directory before each attempt so cached captures cannot count as new.
+
+Actual source Actions found project consumers importing host snapshots outside
+their existing physical owners. Keep the checked snapshot in the existing
+config host and pass its L0 document, source path and project root by reference.
+The workspace-folder host still evaluates once; its exact snapshot successor
+retains the historical loader positive and rejects surplus or wrong-host APIs.
+Share only the final normalizer from the existing rename path owner, retaining
+its strict broken-link branch and the project walk's missing-ancestor behavior.
+The complete 59-write path replay and sole normalization tuple stay unchanged.
+The whole Vue-version getter moves into existing config reads without changing
+its body, cfg attributes or visibility. Original native vectors still apply.

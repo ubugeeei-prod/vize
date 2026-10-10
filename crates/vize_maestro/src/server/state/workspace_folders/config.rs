@@ -1,9 +1,8 @@
 //! Reuse one host evaluation for editor flags and per-file linter plans.
 use super::{
-    LintPlanScope, LinterConfigPlanWithConfigRuleOptions, LinterFeatureFlags, Path, PathBuf,
-    ProjectIgnoreSet, ServerState, WorkspaceFolderConfig,
+    ConfigDocument, LintPlanScope, LinterConfigPlanWithConfigRuleOptions, LinterFeatureFlags, Path,
+    PathBuf, ProjectIgnoreSet, ServerState, WorkspaceFolderConfig,
 };
-use vize_carton::config::LoadedProjectConfig;
 
 impl WorkspaceFolderConfig {
     #[cfg(feature = "native")]
@@ -18,13 +17,12 @@ impl WorkspaceFolderConfig {
         }
     }
 
-    pub(super) fn load(root: PathBuf) -> Self {
-        let loaded = vize_carton::config::load_project_config_with_source(Some(&root));
-        Self::from_project(root, &loaded)
-    }
-
-    fn from_project(root: PathBuf, loaded: &LoadedProjectConfig) -> Self {
-        let document = &loaded.document;
+    pub(super) fn from_project(
+        root: PathBuf,
+        document: &ConfigDocument,
+        source_path: Option<&Path>,
+        project_root: Option<&Path>,
+    ) -> Self {
         let compatibility = document
             .compiler_compatibility_vue_version()
             .or(document.legacy_compatibility_vue_version());
@@ -32,16 +30,12 @@ impl WorkspaceFolderConfig {
         let (_, flags) = document.clone().into_config_and_features();
         let features =
             LinterFeatureFlags::from_config_features(flags, compatibility, compiler_vapor);
-        let plan = if loaded.source_path.is_some() {
+        let plan = if source_path.is_some() {
             document.linter_plan_with_config_rule_options()
         } else {
             LinterConfigPlanWithConfigRuleOptions::default()
         };
-        let config_dir = loaded
-            .source_path
-            .as_deref()
-            .and_then(Path::parent)
-            .unwrap_or(&root);
+        let config_dir = source_path.and_then(Path::parent).unwrap_or(&root);
         let scopes = plan
             .plan
             .entries
@@ -56,15 +50,13 @@ impl WorkspaceFolderConfig {
                 )
             })
             .collect();
-        let project_ignores = loaded
-            .project_root
-            .as_ref()
-            .and_then(|_| ProjectIgnoreSet::new(&plan.plan.global_ignores, config_dir));
+        let project_ignores =
+            project_root.and_then(|_| ProjectIgnoreSet::new(&plan.plan.global_ignores, config_dir));
         let global_ignores = plan
             .plan
             .global_ignores
             .iter()
-            .filter(|_| loaded.project_root.is_none())
+            .filter(|_| project_root.is_none())
             .map(|entry| {
                 LintPlanScope::new(
                     entry.base_path.as_deref(),
@@ -90,9 +82,16 @@ impl ServerState {
     pub(in crate::server::state) fn install_project_linter_context(
         &self,
         root: &Path,
-        loaded: &LoadedProjectConfig,
+        document: &ConfigDocument,
+        source_path: Option<&Path>,
+        project_root: Option<&Path>,
     ) {
-        let context = WorkspaceFolderConfig::from_project(root.to_path_buf(), loaded);
+        let context = WorkspaceFolderConfig::from_project(
+            root.to_path_buf(),
+            document,
+            source_path,
+            project_root,
+        );
         let mut contexts = self.workspace_folder_configs.write();
         contexts.retain(|context| context.root != root);
         contexts.push(context);

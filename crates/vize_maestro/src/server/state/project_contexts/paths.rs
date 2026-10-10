@@ -36,7 +36,7 @@ pub(super) fn physical_path(path: &Path) -> PathBuf {
             && let Ok(relative) = path.strip_prefix(ancestor)
         {
             // Unsaved or newly renamed documents can have no file yet.
-            return vize_carton::path::normalize_windows_verbatim_path(physical.join(relative));
+            return crate::ide::corsa_support::normalize_physical_path(physical.join(relative));
         }
     }
     path.to_path_buf()
