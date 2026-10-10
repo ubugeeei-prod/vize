@@ -1,0 +1,13 @@
+{
+  "values": {
+    "label": "He said \"hello\" & <ready> &quot; 日本語 👋",
+    "config": {
+      "size": 4,
+      "caption": "single ' and double \" quotes & </template>\r\n\t",
+      "__proto__": { "preserved": true }
+    },
+    "items": [1, "two & <three>", { "enabled": false }],
+    "nullable": null,
+    "empty": ""
+  }
+}
