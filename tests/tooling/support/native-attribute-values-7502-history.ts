@@ -132,7 +132,7 @@ export function hostedHistory7502(directory: string) {
     );
     const env = {
       ...process.env,
-      CARGO_TARGET_DIR: path.join(root7502, "target"),
+      CARGO_TARGET_DIR: path.join(worktree, ".target-history"),
       VIZE_NATIVE_ATTRIBUTE_VALUES_7502_CAPTURE: path.join(history, "first.capture.json"),
       VIZE_NATIVE_ATTRIBUTE_VALUES_7502_BUILD_RECEIPT: path.join(history, "build-receipt.json"),
       VIZE_NATIVE_ATTRIBUTE_VALUES_7502_EVIDENCE_DIR: history,

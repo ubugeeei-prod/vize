@@ -241,3 +241,12 @@ test("the pinned whole scriptless archive rejects dropping its original class re
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test("the pinned historical workspace cannot overwrite current transitive Cargo products", () => {
+  const history = readFileSync(
+    new URL("./support/native-attribute-values-7502-history.ts", import.meta.url),
+    "utf8",
+  );
+  assert(history.includes('CARGO_TARGET_DIR: path.join(worktree, ".target-history")'));
+  assert(!history.includes('CARGO_TARGET_DIR: path.join(root7502, "target")'));
+});

@@ -21,7 +21,9 @@ The historical source is pinned to actual main
 The existing dedicated Action executes the unchanged v1 Cargo integration binary
 and its own unchanged TypeScript build/runtime judge from a clean checkout of
 that exact historical source. Its locked dependencies and actual runtime image
-are prepared in that checkout. Cargo may reuse the job's dependency cache; its
+are prepared in that checkout. Cargo may reuse registry downloads but its workspace target directory is
+separate from the current checkout, so historical transitive build products
+cannot overwrite current-source libraries; its
 successful integration artifact must identify the historical workspace package
 and source path. The actual copied binary, logs, toolchain, source/fixture trees,
 two Rust processes, 84 whole outputs, 336 whole carrier refusals, and four fresh
@@ -60,7 +62,9 @@ Regression-11 is one of those wrong rc.9 clients; its stock client code supplies
 negative evidence. Correct pinned Vue 3.5.35 DOM/SSR controls and the unchanged
 original HTML interpreted by real DOM/template clones supply semantic authority.
 Whole raw maps, complete source contents, original links and every segment anchor
-remain mandatory. Removing a class anchor must fail the map judge.
+remain mandatory. Removing a class anchor must fail the map judge. Vapor class retains complete
+lower original storage and typed L3 `AttributeSemantics` refusal, never fabricated
+accepted L3 side facts.
 
 The current qualification joins the historical receipt to the exact current
 source receipt and checks both processes without status suppression. It retains

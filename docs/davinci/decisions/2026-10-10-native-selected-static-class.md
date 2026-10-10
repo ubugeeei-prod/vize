@@ -54,7 +54,9 @@ produce equal whole runtime outcomes and original authored class anchors.
 The source-built 78-row canonical packet is captured before its final frozen
 comparison. An unfrozen packet fails that comparison in Rust and both runtime
 processes; statuses and all actual receipts are retained for independent review.
-This preparation cannot grant acceptance.
+This preparation cannot grant acceptance. Import-free static SSR fragments are
+loaded as complete actual modules only by this supplemental caller; the original
+#7502 loader keeps its mandatory import law by default.
 The [strict #7502 successor](./2026-10-10-original-attribute-values-class-successor.md)
 keeps the original input/v1 output bytes and separately requires their original
 whole qualification from the exact immutable `815d9342` baseline. Current V2

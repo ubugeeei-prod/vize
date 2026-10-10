@@ -87,7 +87,12 @@ test(
     );
     const environment = await environment7502(mode);
     const execute = async (code: string, target: string) => {
-      const loaded = await environment.load(code, target === "dom" ? "dom" : "ssr");
+      const loaded = await environment.load(
+        code,
+        target === "dom" ? "dom" : "ssr",
+        null,
+        target !== "dom",
+      );
       const executions = [];
       for (const props of contexts) {
         const warnings: string[] = [];
