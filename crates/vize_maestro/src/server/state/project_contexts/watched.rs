@@ -1,5 +1,5 @@
 //! Retire changed owners and retain open documents needing fresh diagnostics.
-use super::{Arc, Ordering, ServerState, Url, is_config_marker, registry};
+use super::{Arc, Ordering, ServerState, Url, is_config_marker, paths::physical_path, registry};
 use tower_lsp::lsp_types::FileEvent;
 
 impl ServerState {
@@ -14,6 +14,7 @@ impl ServerState {
             .iter()
             .filter_map(|event| event.uri.to_file_path().ok())
             .filter(|path| is_config_marker(path))
+            .map(|path| physical_path(&path))
             .collect::<Vec<_>>();
         if config_paths.is_empty() {
             return Vec::new();
@@ -23,7 +24,11 @@ impl ServerState {
         let mut retired = Vec::new();
         let mut affected = contexts
             .keys()
-            .filter(|root| config_paths.iter().any(|path| path.starts_with(root)))
+            .filter(|root| {
+                config_paths
+                    .iter()
+                    .any(|path| path.starts_with(physical_path(root)))
+            })
             .cloned()
             .collect::<Vec<_>>();
         let mut primary_retired = false;
@@ -35,7 +40,7 @@ impl ServerState {
             .or_else(|| self.get_workspace_root())
             && config_paths
                 .iter()
-                .any(|path| path.parent() == Some(root.as_path()))
+                .any(|path| path.parent() == Some(physical_path(&root).as_path()))
         {
             self.project_contexts.retired.store(true, Ordering::Release);
             primary_retired = true;
@@ -51,8 +56,11 @@ impl ServerState {
                     .key()
                     .to_file_path()
                     .ok()
+                    .map(|path| physical_path(&path))
                     .filter(|path| {
-                        affected.iter().any(|root| path.starts_with(root))
+                        affected
+                            .iter()
+                            .any(|root| path.starts_with(physical_path(root)))
                             || config_paths.iter().any(|config| {
                                 config
                                     .parent()

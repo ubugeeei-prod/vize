@@ -97,6 +97,14 @@ Synchronous lazy config evaluation still needs a genuine transport control for
 a slow cold package alongside a warm unrelated request. Package-local locking
 proves registry isolation; it alone does not prove executor freedom.
 
+Boundary and config-watch matching resolve physical file identities, including
+the nearest existing ancestor of new buffers. Registered workspace spelling
+selects one cache key; notifications retain the editor's authored URI. An actual
+rename control exposed incorrect root-policy fallback between `/private/var`
+and `/var` spellings before this correction. Symlink/new-buffer and config-watch
+controls preserve the same package owner and retire it on an aliased watch.
+The separate async dispatch follow-up carries the held-import transport control.
+
 Current-source Actions, the protected queue, actual merge, and installed release
 replay remain required. Source preparation alone does not close #8371.
 

@@ -130,11 +130,7 @@ impl ServerState {
 
     fn document_context_root(&self, path: &Path) -> Option<PathBuf> {
         let roots = self.workspace_root_paths();
-        roots
-            .iter()
-            .filter(|root| path.starts_with(root))
-            .max_by_key(|root| root.components().count())
-            .map(|folder| document_root(path, folder))
+        paths::document_context_root(path, &roots)
             .or_else(|| self.project_contexts.boundary.read().clone())
     }
 
@@ -302,6 +298,7 @@ fn is_config_marker(path: &Path) -> bool {
 
 mod capabilities;
 mod current;
+mod paths;
 mod registry;
 #[cfg(test)]
 mod tests;
