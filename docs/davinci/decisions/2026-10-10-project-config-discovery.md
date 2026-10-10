@@ -83,3 +83,9 @@ the entire formatted buffer after applying every protocol edit. An additive
 explicit `formatting: false` control retains absent-provider and null-result
 behavior. No other historical expectation or public JSX contract is relaxed.
 The Nix source filter must retain the canonical embedded `.mjs` runtime asset.
+
+Invalid editor configuration is not a config-free fresh project. The shared LSP
+snapshot records validity after the same single checked evaluation; malformed
+dedicated/Vite files retain the historical editor fallback without applying new
+fresh defaults. Original invalid-JSON whole feature expectations remain unchanged.
+Explicit CLI missing files retain the historical `config file not found` message.

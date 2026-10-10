@@ -81,3 +81,14 @@ fn automatic_discovery_has_package_boundaries_but_explicit_roots_stay_shallow() 
         vec![source]
     );
 }
+
+#[test]
+fn invalid_dedicated_editor_config_is_not_a_fresh_project_default() {
+    let project = tempfile::tempdir().unwrap();
+    std::fs::write(project.path().join("vize.config.json"), "not valid json").unwrap();
+    let loaded = load_lsp_config_snapshot(Some(project.path()));
+    assert!(!loaded.valid);
+    assert_eq!(loaded.source_path, None);
+    assert!(!loaded.features.type_checker_jsx_typecheck);
+    assert_eq!(loaded.config.language_server.formatting, None);
+}
