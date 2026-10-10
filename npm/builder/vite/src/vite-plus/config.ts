@@ -44,7 +44,7 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
   const { vize: nativeLint, ...oxlint } = lint ?? {};
   const { vize: nativeFmt, ...oxfmt } = fmt ?? {};
   const formatter = {
-    ...oxfmt,
+    ...(oxfmt.sortImports === undefined ? {} : { sortImports: oxfmt.sortImports }),
     ...(typeof nativeFmt === "object" ? nativeFmt : {}),
   };
   const alias =
@@ -88,10 +88,12 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
       },
       env,
     );
+    // Fresh native checks support JSX without changing formatter task payloads
+    // or the historical defaults inherited from a dedicated config file.
     const defaults =
-      base === undefined && inherited !== null
-        ? null
-        : await resolveConfigExport({ typeChecker: { jsxTypecheck: true } }, env);
+      env.command === "check" && (base !== undefined || inherited === null)
+        ? await resolveConfigExport({ typeChecker: { jsxTypecheck: true } }, env)
+        : null;
     return mergeSharedConfig(mergeSharedConfig(defaults, inherited), overrides) ?? {};
   };
   const metadata: VizeTaskConfig = {
