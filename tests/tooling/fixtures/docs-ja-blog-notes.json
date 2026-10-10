@@ -1,0 +1,106 @@
+{
+  "base": "a5661941e8760ca85960d0a2ef80f7c1b423d69e",
+  "pages": [
+    {
+      "file": "docs/content/ja/blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface.md",
+      "headings": [
+        "ベーパーモード",
+        "蒸気が重要な理由",
+        "異なる種類のコンパイラーの責任",
+        "ファーストクラスのバックエンドとしての-vapor",
+        "デバッグ画面の変更",
+        "セマンティクスを失わないパフォーマンス",
+        "これが-vize-に適合する理由"
+      ],
+      "code": [],
+      "destinations": ["https://github.com/ubugeeei", "https://github.com/ubugeeei.png"],
+      "publication": "<div class=\"blog-post-meta\">\n  <span class=\"blog-meta-chip\">\n    <span>\n      <span class=\"blog-meta-label\">公開</span>\n      <span class=\"blog-meta-value\">2026-05-16</span>\n    </span>\n  </span>\n  <a class=\"blog-author-card\" href=\"https://github.com/ubugeeei\">\n    <img src=\"https://github.com/ubugeeei.png\" alt=\"ubugeeei\" />\n    <span class=\"blog-author-text\">\n      <span class=\"blog-meta-label\">著者</span>\n      <span class=\"blog-meta-value\">ubugeeei</span>\n    </span>\n  </a>\n</div>",
+      "listItems": 36,
+      "cards": 0,
+      "inlineCode": []
+    },
+    {
+      "file": "docs/content/ja/blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era.md",
+      "headings": [
+        "美術館とai",
+        "生成には制約が必要です",
+        "設計システムは実行可能になる必要がある",
+        "museaが提供しようとしているもの",
+        "ai-にはプロダクト-メモリが必要です",
+        "ビジュアルレビューがより重要になる",
+        "デザインシステムは-ai-インフラストラクチャです"
+      ],
+      "code": [],
+      "destinations": [
+        "https://github.com/ubugeeei",
+        "https://github.com/ubugeeei.png",
+        "/musea-home.png",
+        "/musea-tokens.png"
+      ],
+      "publication": "<div class=\"blog-post-meta\">\n  <span class=\"blog-meta-chip\">\n    <span>\n      <span class=\"blog-meta-label\">公開</span>\n      <span class=\"blog-meta-value\">2026-05-16</span>\n    </span>\n  </span>\n  <a class=\"blog-author-card\" href=\"https://github.com/ubugeeei\">\n    <img src=\"https://github.com/ubugeeei.png\" alt=\"ubugeeei\" />\n    <span class=\"blog-author-text\">\n      <span class=\"blog-meta-label\">著者</span>\n      <span class=\"blog-meta-value\">ubugeeei</span>\n    </span>\n  </a>\n</div>",
+      "listItems": 51,
+      "cards": 0,
+      "inlineCode": []
+    },
+    {
+      "file": "docs/content/ja/blog/index.md",
+      "headings": ["ブログ", "公開方法", "開始点", "最新の投稿"],
+      "code": [],
+      "destinations": [
+        "./releases/",
+        "./notes/",
+        "./releases/",
+        "./notes/",
+        "./notes/2026-06-07-real-world-testing/",
+        "./notes/2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint/",
+        "./notes/2026-05-16-performance-tuning-notes-for-a-vue-toolchain/",
+        "./notes/2026-05-16-testing-agentic-coding-and-trust/",
+        "./notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface/",
+        "./notes/2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment/",
+        "./notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era/",
+        "./notes/2026-05-16-real-world-feedback-and-the-road-to-production-ready/",
+        "./notes/2026-05-16-personal-tooling-and-development-speed/",
+        "./notes/2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration/",
+        "./notes/2026-03-26-why-ai-needs-deterministic-fast-static-analysis/",
+        "./notes/2026-03-26-where-vize-fits-in-the-vue-tooling-landscape/",
+        "./releases/2026-03-26-oxlint-plugin-vize-alpha/",
+        "./releases/2026-03-26-docs-blog-support/",
+        "./notes/2026-03-26-why-vize-needs-notes/"
+      ],
+      "publication": null,
+      "listItems": 7,
+      "cards": 15,
+      "inlineCode": [
+        "docs/content/blog/releases/",
+        "docs/content/blog/notes/",
+        "YYYY-MM-DD-slug.md",
+        "docs/templates/blog-release.md",
+        "docs/templates/blog-note.md"
+      ]
+    },
+    {
+      "file": "docs/content/ja/blog/notes/index.md",
+      "headings": ["注記", "チェックリストの作成", "投稿"],
+      "code": [],
+      "destinations": [
+        "./2026-06-07-real-world-testing/",
+        "./2026-05-16-comparing-vize-with-official-vue-oxc-golar-verter-flint-and-tsslint/",
+        "./2026-05-16-performance-tuning-notes-for-a-vue-toolchain/",
+        "./2026-05-16-testing-agentic-coding-and-trust/",
+        "./2026-05-16-vapor-mode-and-the-next-vue-compiler-surface/",
+        "./2026-05-16-vue-as-a-language-and-the-strongest-frontend-environment/",
+        "./2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era/",
+        "./2026-05-16-real-world-feedback-and-the-road-to-production-ready/",
+        "./2026-05-16-personal-tooling-and-development-speed/",
+        "./2026-03-26-the-advantages-and-beauty-of-toolchains-and-vertical-integration/",
+        "./2026-03-26-why-ai-needs-deterministic-fast-static-analysis/",
+        "./2026-03-26-where-vize-fits-in-the-vue-tooling-landscape/",
+        "./2026-03-26-why-vize-needs-notes/"
+      ],
+      "publication": null,
+      "listItems": 4,
+      "cards": 13,
+      "inlineCode": ["docs/content/blog/notes/"]
+    }
+  ]
+}

@@ -91,6 +91,9 @@ jobs:
       - name: Verify philosophy reading paths
         run: vp node docs/scripts/verify-navigation-render.ts --routes /philosophy,/ja/philosophy --output docs-render-evidence/philosophy
 
+      - name: Verify reviewed Vapor and Musea blog reading paths
+        run: vp node docs/scripts/verify-navigation-render.ts --routes /blog,/ja/blog,/blog/notes,/ja/blog/notes,/blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface,/ja/blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface,/blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era,/ja/blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era --output docs-render-evidence/ja-blog-notes
+
       - name: Verify rendered navigation and adoption guides
         run: vp node docs/scripts/verify-navigation-render.ts
 

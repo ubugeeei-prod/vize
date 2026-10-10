@@ -10,6 +10,7 @@ import { ruleRenderRoutes, verifyRenderedRulePackets } from "./rule-render-asser
 import { capturePageRender } from "./capture-page-render.ts";
 import type { PageCapture } from "./capture-page-render.ts";
 import { verifyCaptureRenderControls } from "./capture-render-controls.ts";
+import { usesInstalledCjkFont } from "./japanese-font-usage.ts";
 
 type FontUsage = { familyName: string; glyphCount: number };
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -186,10 +187,8 @@ try {
         );
         if (process.platform === "linux") {
           assert(
-            japaneseFonts.some(
-              (font) => /Noto Sans CJK/.test(font.familyName) && font.glyphCount > 0,
-            ),
-            `${route}: Japanese text did not use installed CJK fonts`,
+            usesInstalledCjkFont(japaneseFonts),
+            `${route}: Japanese text did not use installed CJK fonts: ${JSON.stringify(fontPacket)}`,
           );
         }
         await session.detach();
