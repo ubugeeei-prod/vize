@@ -1,0 +1,602 @@
+{
+  "schema": "vize.lint.default-migrations",
+  "version": 1,
+  "promotedRules": [
+    "vue/no-deprecated-v-on-number-modifiers",
+    "vue/no-deprecated-functional-template"
+  ],
+  "configuredVueVersions": ["2", "2.7", "3"],
+  "cases": [
+    {
+      "id": "numeric-shorthand",
+      "filename": "numeric-shorthand.vue",
+      "kind": "vue",
+      "source": "<template><button type=\"button\" @keyup.13=\"submit\">Submit</button></template>\n",
+      "diagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 39,
+          "end": 41,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 39,
+          "end": 41,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 39
+            },
+            "end": {
+              "line": 0,
+              "character": 41
+            }
+          },
+          "severity": 1,
+          "code": "vue/no-deprecated-v-on-number-modifiers",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/no-deprecated-v-on-number-modifiers.html"
+          },
+          "source": "vize/lint",
+          "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead\n\nHelp: Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13)."
+        }
+      ],
+      "baselineLspDiagnostics": []
+    },
+    {
+      "id": "numeric-longhand",
+      "filename": "numeric-longhand.vue",
+      "kind": "vue",
+      "source": "<template><button type=\"button\" v-on:keyup.27=\"cancel\">Cancel</button></template>\n",
+      "diagnostics": [
+        {
+          "rule_name": "vue/v-on-style",
+          "severity": "warning",
+          "message": "Prefer shorthand `@` over `v-on:`",
+          "start": 32,
+          "end": 54,
+          "help": "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
+          "labels": [],
+          "fix": {
+            "message": "Use shorthand syntax",
+            "edits": [
+              {
+                "start": 32,
+                "end": 54,
+                "new_text": "@keyup.27=\"cancel\""
+              }
+            ]
+          }
+        },
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 43,
+          "end": 45,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "baselineDiagnostics": [
+        {
+          "rule_name": "vue/v-on-style",
+          "severity": "warning",
+          "message": "Prefer shorthand `@` over `v-on:`",
+          "start": 32,
+          "end": 54,
+          "help": "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
+          "labels": [],
+          "fix": {
+            "message": "Use shorthand syntax",
+            "edits": [
+              {
+                "start": 32,
+                "end": 54,
+                "new_text": "@keyup.27=\"cancel\""
+              }
+            ]
+          }
+        }
+      ],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 43,
+          "end": 45,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 32
+            },
+            "end": {
+              "line": 0,
+              "character": 54
+            }
+          },
+          "severity": 2,
+          "code": "vue/v-on-style",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/v-on-style.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer shorthand `@` over `v-on:`\n\nHelp: Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`"
+        },
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 43
+            },
+            "end": {
+              "line": 0,
+              "character": 45
+            }
+          },
+          "severity": 1,
+          "code": "vue/no-deprecated-v-on-number-modifiers",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/no-deprecated-v-on-number-modifiers.html"
+          },
+          "source": "vize/lint",
+          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead\n\nHelp: Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13)."
+        }
+      ],
+      "baselineLspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 32
+            },
+            "end": {
+              "line": 0,
+              "character": 54
+            }
+          },
+          "severity": 2,
+          "code": "vue/v-on-style",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/v-on-style.html"
+          },
+          "source": "vize/lint",
+          "message": "Prefer shorthand `@` over `v-on:`\n\nHelp: Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`"
+        }
+      ]
+    },
+    {
+      "id": "numeric-combined",
+      "filename": "numeric-combined.vue",
+      "kind": "vue",
+      "source": "<template><button type=\"button\" @keyup.13.27.stop=\"submit\">Submit</button></template>\n",
+      "diagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 39,
+          "end": 41,
+          "help": null,
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 42,
+          "end": 44,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 39,
+          "end": 41,
+          "help": null,
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 42,
+          "end": 44,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 39
+            },
+            "end": {
+              "line": 0,
+              "character": 41
+            }
+          },
+          "severity": 1,
+          "code": "vue/no-deprecated-v-on-number-modifiers",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/no-deprecated-v-on-number-modifiers.html"
+          },
+          "source": "vize/lint",
+          "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead\n\nHelp: Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13)."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 42
+            },
+            "end": {
+              "line": 0,
+              "character": 44
+            }
+          },
+          "severity": 1,
+          "code": "vue/no-deprecated-v-on-number-modifiers",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/no-deprecated-v-on-number-modifiers.html"
+          },
+          "source": "vize/lint",
+          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead\n\nHelp: Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13)."
+        }
+      ],
+      "baselineLspDiagnostics": []
+    },
+    {
+      "id": "functional",
+      "filename": "functional.vue",
+      "kind": "vue",
+      "source": "<template functional><div>Hello</div></template>\n",
+      "diagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-functional-template",
+          "severity": "error",
+          "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+          "start": 0,
+          "end": 21,
+          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-functional-template",
+          "severity": "error",
+          "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+          "start": 0,
+          "end": 21,
+          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 0
+            },
+            "end": {
+              "line": 0,
+              "character": 21
+            }
+          },
+          "severity": 1,
+          "code": "vue/no-deprecated-functional-template",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/no-deprecated-functional-template.html"
+          },
+          "source": "vize/lint",
+          "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3\n\nHelp: Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX)."
+        }
+      ],
+      "baselineLspDiagnostics": []
+    },
+    {
+      "id": "combined",
+      "filename": "combined.vue",
+      "kind": "vue",
+      "source": "<template functional><button type=\"button\" @keyup.13.stop=\"submit\">Submit</button></template>\n",
+      "diagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-functional-template",
+          "severity": "error",
+          "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+          "start": 0,
+          "end": 21,
+          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 50,
+          "end": 52,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-functional-template",
+          "severity": "error",
+          "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+          "start": 0,
+          "end": 21,
+          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 50,
+          "end": 52,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 0
+            },
+            "end": {
+              "line": 0,
+              "character": 21
+            }
+          },
+          "severity": 1,
+          "code": "vue/no-deprecated-functional-template",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/no-deprecated-functional-template.html"
+          },
+          "source": "vize/lint",
+          "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3\n\nHelp: Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX)."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 0,
+              "character": 50
+            },
+            "end": {
+              "line": 0,
+              "character": 52
+            }
+          },
+          "severity": 1,
+          "code": "vue/no-deprecated-v-on-number-modifiers",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/no-deprecated-v-on-number-modifiers.html"
+          },
+          "source": "vize/lint",
+          "message": "The numeric keyCode modifier '.13' on 'v-on' was removed in Vue 3; use a named key instead\n\nHelp: Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13)."
+        }
+      ],
+      "baselineLspDiagnostics": []
+    },
+    {
+      "id": "named-key",
+      "filename": "named-key.vue",
+      "kind": "vue",
+      "source": "<template><button type=\"button\" @keyup.enter=\"submit\">Submit</button></template>\n",
+      "diagnostics": [],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [],
+      "baselineLspDiagnostics": []
+    },
+    {
+      "id": "alphanumeric-key",
+      "filename": "alphanumeric-key.vue",
+      "kind": "vue",
+      "source": "<template><button type=\"button\" @keyup.f2=\"submit\">Submit</button></template>\n",
+      "diagnostics": [],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [],
+      "baselineLspDiagnostics": []
+    },
+    {
+      "id": "ordinary-template",
+      "filename": "ordinary-template.vue",
+      "kind": "vue",
+      "source": "<template><div>Hello</div></template>\n",
+      "diagnostics": [],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [],
+      "baselineLspDiagnostics": []
+    },
+    {
+      "id": "native-functional-attribute",
+      "filename": "native-functional-attribute.vue",
+      "kind": "vue",
+      "source": "<template><div functional>Hello</div></template>\n",
+      "diagnostics": [],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [],
+      "baselineLspDiagnostics": []
+    },
+    {
+      "id": "comment-control",
+      "filename": "comment-control.vue",
+      "kind": "vue",
+      "source": "<!-- <template functional> @keyup.13 -->\n<template><div>Hello</div></template>\n",
+      "diagnostics": [],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [],
+      "baselineLspDiagnostics": []
+    },
+    {
+      "id": "unicode-crlf",
+      "filename": "unicode-crlf.vue",
+      "kind": "vue",
+      "source": "<!-- 日本語 -->\r\n<template functional><button type=\"button\" @keyup.27=\"cancel\">Cancel</button></template>\r\n",
+      "diagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-functional-template",
+          "severity": "error",
+          "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+          "start": 20,
+          "end": 41,
+          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 70,
+          "end": 72,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [
+        {
+          "rule_name": "vue/no-deprecated-functional-template",
+          "severity": "error",
+          "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3",
+          "start": 20,
+          "end": 41,
+          "help": "Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX).",
+          "labels": [],
+          "fix": null
+        },
+        {
+          "rule_name": "vue/no-deprecated-v-on-number-modifiers",
+          "severity": "error",
+          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead",
+          "start": 70,
+          "end": 72,
+          "help": null,
+          "labels": [],
+          "fix": null
+        }
+      ],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [
+        {
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 0
+            },
+            "end": {
+              "line": 1,
+              "character": 21
+            }
+          },
+          "severity": 1,
+          "code": "vue/no-deprecated-functional-template",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/no-deprecated-functional-template.html"
+          },
+          "source": "vize/lint",
+          "message": "the `functional` attribute on `<template>` (functional SFC templates) was removed in Vue 3\n\nHelp: Remove `functional` and use a stateful component, or write the functional component as a plain function (e.g. a render function or JSX)."
+        },
+        {
+          "range": {
+            "start": {
+              "line": 1,
+              "character": 50
+            },
+            "end": {
+              "line": 1,
+              "character": 52
+            }
+          },
+          "severity": 1,
+          "code": "vue/no-deprecated-v-on-number-modifiers",
+          "codeDescription": {
+            "href": "https://eslint.vuejs.org/rules/no-deprecated-v-on-number-modifiers.html"
+          },
+          "source": "vize/lint",
+          "message": "The numeric keyCode modifier '.27' on 'v-on' was removed in Vue 3; use a named key instead\n\nHelp: Replace the numeric keyCode modifier with a named key (e.g. @keyup.enter instead of @keyup.13)."
+        }
+      ],
+      "baselineLspDiagnostics": []
+    },
+    {
+      "id": "v-pre-control",
+      "filename": "v-pre-control.vue",
+      "kind": "vue",
+      "source": "<template><button type=\"button\" v-pre @keyup.13=\"submit\">Submit</button></template>\n",
+      "diagnostics": [],
+      "baselineDiagnostics": [],
+      "essentialDiagnostics": [],
+      "essentialBaselineDiagnostics": [],
+      "lspDiagnostics": [],
+      "baselineLspDiagnostics": []
+    }
+  ]
+}
