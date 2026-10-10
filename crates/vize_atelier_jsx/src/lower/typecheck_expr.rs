@@ -4,11 +4,18 @@
 //! lowering must also retain the JSX nodes nested in those expressions: their
 //! source spans alone cannot be emitted as syntax in a plain `.ts` document.
 
+use super::ScopedStyleExpr;
 use oxc_ast::ast::{Expression, JSXElement, JSXFragment};
 use oxc_ast_visit::Visit;
+use vize_l0::String;
 use vize_relief::RootNode;
 
 use super::Lowerer;
+
+pub(crate) struct TypecheckRoot<'a> {
+    pub(crate) root: RootNode<'a>,
+    pub(crate) scoped_style: Option<(String, std::vec::Vec<ScopedStyleExpr>)>,
+}
 
 impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
     pub(crate) fn retain_nested_typecheck_roots(&mut self, expression: &Expression<'_>) {
@@ -17,7 +24,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
         }
     }
 
-    pub(crate) fn take_typecheck_roots(&mut self) -> std::vec::Vec<RootNode<'a>> {
+    pub(crate) fn take_typecheck_roots(&mut self) -> std::vec::Vec<TypecheckRoot<'a>> {
         std::mem::take(&mut self.pending_typecheck_roots)
     }
 }
@@ -30,12 +37,22 @@ impl<'ast> Visit<'ast> for NestedRootLowerer<'_, '_, '_, '_> {
     fn visit_jsx_element(&mut self, element: &JSXElement<'ast>) {
         // Structural children are lowered once by the existing native lowerer.
         // Its plain-expression branches retain any deeper expression roots.
+        let outer_styles = std::mem::take(&mut self.lowerer.pending_styles);
         let root = self.lowerer.lower_element_root(element);
-        self.lowerer.pending_typecheck_roots.push(root);
+        let scoped_style = self.lowerer.take_scoped_styles();
+        self.lowerer.pending_styles = outer_styles;
+        self.lowerer
+            .pending_typecheck_roots
+            .push(TypecheckRoot { root, scoped_style });
     }
 
     fn visit_jsx_fragment(&mut self, fragment: &JSXFragment<'ast>) {
+        let outer_styles = std::mem::take(&mut self.lowerer.pending_styles);
         let root = self.lowerer.lower_fragment_root(fragment);
-        self.lowerer.pending_typecheck_roots.push(root);
+        let scoped_style = self.lowerer.take_scoped_styles();
+        self.lowerer.pending_styles = outer_styles;
+        self.lowerer
+            .pending_typecheck_roots
+            .push(TypecheckRoot { root, scoped_style });
     }
 }

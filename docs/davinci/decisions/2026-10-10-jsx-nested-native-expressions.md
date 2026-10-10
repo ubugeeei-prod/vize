@@ -16,8 +16,10 @@ The existing OXC visitor now retains previously unlowered JSX nodes from plain
 child expressions, plain slot-body expressions and raw conditional arms. Their
 actual AST ranges and lowered units reach the existing Canon renderer. Only
 those exact ranges are replaced inside the unchanged surrounding call and
-callback bytes, preserving lexical scope and fine source mappings. No parse
-stage, serialized representation or synthetic provider is added. Sorted range
+callback bytes, preserving lexical scope and fine source mappings. Scoped style
+expressions are retained on that same native root, rather than drained into an
+outer callback scope. No parse stage, serialized representation or synthetic
+provider is added. Sorted range
 windows exclude unrelated sibling roots before examining expression bytes.
 
 An earlier separate commit mechanically extracts the unchanged rendering
@@ -38,6 +40,14 @@ does not collect these additional analysis roots.
   column 34, independently confirmed by both original engines. Multiple nested
   roots, adjacent roots, Unicode/CRLF coordinates, reverse mappings and a
   JSX-looking string literal have native source controls.
+- A nested scoped-style interpolation retains its callback owner. The valid
+  input has a clean complete packet; replacing only the numeric interpolation
+  with `i.toUpperCase()` produces only TS2339 at line 2, column 121, matching
+  both original engines. The additional pre-repair TS2304 scope regression and
+  its whole process evidence are frozen in `native-style-scope-red.tar.gz`
+  (SHA-256 `4d96f84cf71a343c0127171aef0718f4707e30d8ee2fcc3c84402f59741d9b59`).
+  This local red receipt explicitly records an unsealed build recipe; exact
+  committed-source qualification is supplied separately by Actions.
 - Complete normal VDOM and Vapor module text, component text, preambles,
   metadata, styles, diagnostics and maps are frozen from the parent production
   implementation and compared without normalization. Existing snapshots stay

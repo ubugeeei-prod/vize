@@ -26,6 +26,7 @@ mod v_models;
 mod v_slots;
 
 pub(crate) use style::{RawScopedStyle, ScopedStyleExpr};
+use typecheck_expr::TypecheckRoot;
 
 use oxc_ast::ast::{JSXElement, JSXElementName, JSXFragment};
 use oxc_semantic::Scoping;
@@ -73,7 +74,7 @@ pub struct Lowerer<'a, 'm, 's: 'a> {
     mapper: &'m SpanMapper<'s>,
     compat: JsxCompatMode,
     preserve_slot_parameter_types: bool,
-    pending_typecheck_roots: std::vec::Vec<RootNode<'a>>,
+    pending_typecheck_roots: std::vec::Vec<TypecheckRoot<'a>>,
     is_custom_element: Option<&'m BabelIsCustomElement>,
     scoping: Option<Scoping>,
     boolean_bindings: boolean::BooleanBindings,

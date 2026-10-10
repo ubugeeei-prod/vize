@@ -71,3 +71,26 @@ fn conditional_raw_callback_arm_retains_native_jsx_roots() {
     );
     assert!(!generated.code.contains("<p>"));
 }
+
+#[test]
+fn nested_scoped_style_interpolations_stay_in_their_native_callback_scope() {
+    let source = "// 日本語 😀\r\nconst view = <Host>{{ content: () => <div><style scoped>{`div { color: ${theme}; }`}</style>{Array.from({ length: 3 }, (_, i) => <p><style scoped>{`p { color: ${i.toFixed()}; }`}</style>{i}</p>)}</div> }}</Host>;";
+    let generated = generate_jsx_virtual_ts(Path::new("Style.tsx"), source, JsxLang::Tsx).unwrap();
+    assert!(generated.diagnostics.is_empty());
+    assert!(
+        generated
+            .code
+            .contains("Array.from({ length: 3 }, (_, i) => __vize_jsx_expr__(i, i.toFixed()))"),
+        "{}",
+        generated.code
+    );
+    assert_eq!(generated.code.matches("i.toFixed()").count(), 1);
+    assert_eq!(generated.code.matches("theme").count(), 1);
+    let original = source.find("i.toFixed()").unwrap();
+    let mapping = generated
+        .mappings
+        .iter()
+        .find(|mapping| mapping.src_range == (original..original + "i.toFixed()".len()))
+        .unwrap();
+    assert_eq!(&generated.code[mapping.gen_range.clone()], "i.toFixed()");
+}

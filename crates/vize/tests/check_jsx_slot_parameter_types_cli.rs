@@ -195,8 +195,19 @@ fn unchanged_nested_slot_body_preserves_complete_native_cli_packets() {
     let original =
         std::fs::read_to_string(workspace.join("crates/vize/tests/check_tsx_sfc_attrs_cli.rs"))
             .unwrap();
-    assert!(
-        original.contains(std::str::from_utf8(&source).unwrap()),
+    let authored = original
+        .split_once("fn check_tsx_story_allows_slot_object_with_kebab_update_handler()")
+        .unwrap()
+        .1
+        .split_once("project_root.join(\"src/AfsStepperDialog.stories.tsx\"),\n        r#\"")
+        .unwrap()
+        .1
+        .split_once("\"#,")
+        .unwrap()
+        .0;
+    assert_eq!(
+        authored.as_bytes(),
+        source,
         "unchanged authored slot fixture"
     );
     let root = std::env::var_os("VIZE_JSX_SLOT_CAPTURE")
@@ -311,7 +322,11 @@ fn nested_raw_and_structural_native_callbacks_keep_whole_packets() {
         let expected: Value =
             serde_json::from_slice(&std::fs::read(source.join("expected-report.json")).unwrap())
                 .unwrap();
-        assert_eq!(result.status.code(), Some(0), "{name}");
+        assert_eq!(
+            result.status.code(),
+            Some(i32::from(expected["errorCount"].as_u64().unwrap() > 0)),
+            "{name}"
+        );
         assert!(result.stderr.is_empty(), "{name}");
         assert_eq!(
             serde_json::from_slice::<Value>(&result.stdout).unwrap(),

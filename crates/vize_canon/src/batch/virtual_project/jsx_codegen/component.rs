@@ -74,9 +74,8 @@ pub(super) fn collect(element: &ElementNode<'_>) -> Option<JsxComponent> {
     Some(JsxComponent { tag, props })
 }
 
-/// Whether `component_prop` already preserves this prop. Props that do not
-/// participate in the component contract continue through the general JSX
-/// expression collector so directive/model expressions are never lost.
+/// Whether `component_prop` already preserves this prop. Other props retain
+/// their directive/model expressions through the general JSX collector.
 pub(super) fn captures_prop(element: &ElementNode<'_>, prop: &PropNode<'_>) -> bool {
     match prop {
         PropNode::Attribute(attribute) => !is_reserved_prop(attribute.name),
