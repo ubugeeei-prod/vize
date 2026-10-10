@@ -583,7 +583,7 @@ test("workspace TypeScript package builds use vp pack", () => {
   assert.equal(oxlintPackage.engines?.node, "^22 || >= 24");
   assert.equal(
     oxlintPackage.scripts?.test,
-    "vp pack && vp test run src/file-state.test.ts src/batched-rules.test.ts src/script-safe-source.test.ts src/active-rule-collection.test.ts && node src/test.ts && node src/script-location.test.ts && node src/casing-options.test.ts && node src/template-style-fixes.test.mjs",
+    "vp pack && vp test run src/file-state.test.ts src/batched-rules.test.ts src/script-safe-source.test.ts src/active-rule-collection.test.ts && node src/test.ts && node src/script-location.test.ts && node src/casing-options.test.ts && node src/template-style-fixes.test.mjs && node src/html-binding.test.mjs",
   );
   const rootTasks = readRepoFile("tools/config/vite-plus/tasks/build.ts");
   assert.match(rootTasks, /vscodeExtensionPackageBin\("vite-plus", "vp"\)[\s\S]*pack/);

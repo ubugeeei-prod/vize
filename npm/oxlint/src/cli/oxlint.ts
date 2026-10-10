@@ -45,7 +45,7 @@ const VERSION_HANDSHAKE_PATTERN = /\b\d+\.\d+\.\d+/u;
  * silent false green. A `--version` handshake separates the real CLI from
  * wrappers before any lint output is trusted.
  */
-export function verifyOxlintCliEntrypoint(executable: string, entrypoint: string): void {
+export function verifyOxlintCliEntrypoint(executable: string, entrypoint: string): string {
   const handshake = spawnSync(executable, [entrypoint, "--version"], {
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
@@ -53,7 +53,7 @@ export function verifyOxlintCliEntrypoint(executable: string, entrypoint: string
   const output = `${handshake.stdout ?? ""}${handshake.stderr ?? ""}`.trim();
 
   if (handshake.error == null && handshake.status === 0 && VERSION_HANDSHAKE_PATTERN.test(output)) {
-    return;
+    return output.match(VERSION_HANDSHAKE_PATTERN)?.[0] ?? "";
   }
 
   const detail =

@@ -1,0 +1,95 @@
+{
+  "scope": "Read-only follow-up scout; no source edits",
+  "manifest": {
+    "fileCount": 0,
+    "totalBytes": 594,
+    "sha256": "78ba836d862da385a13c9ce4d803776b599aa5d4049f137b1b9075c9e08742cd",
+    "files": [
+      {
+        "file": "App.tsx",
+        "bytes": 75,
+        "sha256": "255d4f7058e70cae7f42e3d915f8e58de1af23898bfb07a1183054f3b984d55f"
+      },
+      {
+        "file": "exact.tsx",
+        "bytes": 30,
+        "sha256": "9f511ef8ef036ccf79997da03857502d7ae47dbabf491266b9da9a9cca88fb6f"
+      },
+      {
+        "file": "genericx.tsx",
+        "bytes": 26,
+        "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+      },
+      {
+        "file": "tsconfig.json",
+        "bytes": 326,
+        "sha256": "076dfc393604239da12a8dd412b1b2469b7a400a2d47e54e6a4db09ee64faf26"
+      },
+      {
+        "file": "vize.config.json",
+        "bytes": 38,
+        "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+      },
+      {
+        "file": "wildcard.tsx",
+        "bytes": 73,
+        "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+      },
+      {
+        "file": "wildcardx.tsx",
+        "bytes": 26,
+        "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+      }
+    ]
+  },
+  "binaries": {
+    "node": "20a18709f0154d668f1bd6f6ea8c2a7ae001447b4b2c339732f22e57a8767a55",
+    "runtime": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+    "source": "eaa36dc7f9dd2ffad57e7e41580ada0ede062b30b458ced282908994cc451ba1",
+    "tsc": "8d5fa5bd883fec0979fc2004f1fe1d99aef40570155d550eadc0b03b55513bf0"
+  },
+  "source": {
+    "files": [
+      {
+        "file": "App.tsx",
+        "diagnostics": [
+          "error:1:23 [TS2307] Cannot find module '@x' or its corresponding type declarations."
+        ]
+      },
+      {
+        "file": "wildcard.tsx",
+        "diagnostics": [
+          "error:2:7 [TS2322] Type 'number' is not assignable to type 'string'."
+        ]
+      }
+    ],
+    "programs": [
+      {
+        "root": ".",
+        "tsconfig": "tsconfig.json",
+        "compilerOptions": {
+          "jsx": "preserve",
+          "module": "ESNext",
+          "moduleResolution": "bundler",
+          "noEmit": true,
+          "paths": {
+            "@x": [
+              "__TEMP_ROOT__/vize-canon3984-collector-gap-20261010/selected-exact-missing/tsx/missing.tsx"
+            ],
+            "@x*": [
+              "__TEMP_ROOT__/vize-canon3984-collector-gap-20261010/selected-exact-missing/tsx/wildcard*.tsx"
+            ]
+          },
+          "strict": true,
+          "target": "ES2022"
+        },
+        "files": [
+          "App.tsx"
+        ]
+      }
+    ],
+    "errorCount": 2,
+    "warningCount": 0,
+    "fileCount": 2
+  }
+}

@@ -5,8 +5,9 @@ import path from "node:path";
 import os from "node:os";
 import { pathToFileURL } from "node:url";
 import { test } from "node:test";
+import { Script } from "node:vm";
 
-import { SCRIPT_BASENAMES } from "../../docs/theme/background.ts";
+import { buildDocsBackgroundScript, SCRIPT_BASENAMES } from "../../docs/theme/background.ts";
 import { renderReferenceDocs } from "../../npm/ui/scripts/generate-reference-docs.ts";
 import { repoRoot } from "./_helpers/moonbit.ts";
 
@@ -38,6 +39,60 @@ const sitemap = (globalThis as { __vizeDocsSitemap?: Sitemap }).__vizeDocsSitema
 const locales = (globalThis as { __vizeDocsLocales?: Record<string, LocaleStrings> })
   .__vizeDocsLocales!;
 const localeCodes = sitemap.supportedLocales.map(({ code }) => code);
+
+void test("the shipped locale module parses before navigation and tolerates a headerless root", () => {
+  const source = fs.readFileSync(path.join(themeDir, "i18n/locale-switcher.js"), "utf8");
+  const navigation = fs.readFileSync(path.join(themeDir, "i18n/navigation.js"), "utf8");
+  const script = buildDocsBackgroundScript(themeDir);
+  assert(script.includes(source), "the whole authored locale module ships inline");
+  assert(script.indexOf(source) < script.indexOf(navigation), "locale module precedes its caller");
+  assert.doesNotThrow(() => new Script(script), "the whole shipped script parses");
+  const module = (
+    globalThis as { __vizeDocsLocaleSwitcher?: { install: (...args: unknown[]) => void } }
+  ).__vizeDocsLocaleSwitcher;
+  assert(module, "the actual ordered module import installed its public hook");
+  const selectors: string[] = [];
+  const root = {
+    querySelector: (selector: string) => {
+      selectors.push(selector);
+      return null;
+    },
+  };
+  const options = {
+    locale: "en",
+    language: "Language",
+    supportedLocales: [],
+    pagePath: () => {
+      throw new Error("headerless path must not execute");
+    },
+  };
+  module.install(root, options);
+  module.install(root, options);
+  assert.deepEqual(selectors, [".header-actions", ".header-actions"]);
+});
+
+void test("locale render controls import without starting browser or native transforms", async () => {
+  const isolated = fs.mkdtempSync(path.join(os.tmpdir(), "vize-docs-locale-import-"));
+  try {
+    for (const basename of [
+      "locale-control-render",
+      "locale-render-assertions",
+      "locale-responsive-assertions",
+      "theme-render-assertions",
+    ]) {
+      fs.copyFileSync(
+        path.join(repoRoot, `docs/scripts/${basename}.ts`),
+        path.join(isolated, `${basename}.ts`),
+      );
+    }
+    const module = await import(
+      pathToFileURL(path.join(isolated, "locale-control-render.ts")).href
+    );
+    assert.equal(typeof module.verifyLocaleRenderControls, "function");
+  } finally {
+    fs.rmSync(isolated, { recursive: true, force: true });
+  }
+});
 
 void test("importing theme assertions does not resolve or execute native annotation transforms", async () => {
   const isolated = fs.mkdtempSync(path.join(os.tmpdir(), "vize-docs-theme-import-"));
@@ -94,6 +149,7 @@ void test("theme scripts load the sitemap and every locale before navigation", (
     "i18n/locales/zh-CN",
     "i18n/locales/pt-BR",
     "i18n/locales/fr",
+    "i18n/locale-switcher",
     "i18n/navigation",
     "syntax-highlight-languages",
     "syntax-highlight-core",

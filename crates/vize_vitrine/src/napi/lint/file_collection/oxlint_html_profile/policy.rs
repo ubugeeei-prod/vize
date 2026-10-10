@@ -235,10 +235,10 @@ pub(super) fn walk_originals(
             &root_json,
             &custom,
         ) {
-            if let Ok(mut slot) = observed.lock() {
-                if slot.is_none() {
-                    *slot = Some(error);
-                }
+            if let Ok(mut slot) = observed.lock()
+                && slot.is_none()
+            {
+                *slot = Some(error);
             }
             return false;
         }

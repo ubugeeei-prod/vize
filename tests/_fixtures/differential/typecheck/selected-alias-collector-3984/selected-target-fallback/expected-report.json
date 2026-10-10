@@ -1,0 +1,41 @@
+{
+  "files": [
+    {
+      "file": "App.tsx",
+      "diagnostics": []
+    },
+    {
+      "file": "exact.tsx",
+      "diagnostics": []
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "jsx": "preserve",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "paths": {
+          "@x": [
+            "__VIZE_ALIAS_ROOT__/missing.tsx",
+            "__VIZE_ALIAS_ROOT__/exact.tsx"
+          ],
+          "@x*": [
+            "__VIZE_ALIAS_ROOT__/wildcard*.tsx"
+          ]
+        },
+        "strict": true,
+        "target": "ES2022"
+      },
+      "files": [
+        "App.tsx"
+      ]
+    }
+  ],
+  "errorCount": 0,
+  "warningCount": 0,
+  "fileCount": 2
+}
