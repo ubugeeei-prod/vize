@@ -60,8 +60,34 @@ zero-difference repeats remain mandatory. Pure embedding/lookup guards also
 prove ordinary script bytes, safe literal escaping and absent inherited URLs.
 The shared security serializer and generic report generators remain unchanged.
 
-Fresh native qualification, coordinated stack composition, protected merge and
-publication are unfinished. The hosted browser VRT service remains separate.
+## Preparation qualification
+
+Source-native run
+[38043265724](https://github.com/ubugeeei-prod/vize/actions/runs/38043265724)
+at `c8edd6df6b0383dad919c84608b7c4f51e93df8d` passes all 12 native tests with zero
+failures or skips, plus all 17 Chromium controls. Artifact `11667115018`, named
+`musea-native-inline-c8edd6df6b0383dad919c84608b7c4f51e93df8d`, retains complete
+static build output, actual source/HTTP/browser observations, four API captures,
+whole JSON/HTML reports and PNGs.
+
+All five physical native static previews render. The gallery keeps each own URL
+and exact authored name; `__proto__` selects its real button with
+`variant-proto` section and matching control. Dev captures retain two ordinary
+and three literal groups; both repeats pass with zero differences. All five PNGs
+in both phases are byte-exact to the corresponding genuine before capture.
+Distinct physical ownership, report result fields and source hashes agree.
+Static/dev page and console errors are empty. The pure ordinary-script and
+inherited-URL guards pass; original API, runner, shared serializer, report laws,
+native inline/global controls and their workflow commands remain unchanged.
+
+The repository source-length gate against original report head `3f60a490...`
+passes. New browser/helper/unit files are 290/138/55 lines; existing
+`ComponentView`/`VrtPanel` remain 784/424 lines. The 350-line canonical record
+keeps every incoming byte except this issue's exact additive clause.
+
+This is preparation proof. Fresh qualification on the eventual composed head,
+protected merge and publication remain unfinished. The hosted browser VRT
+service remains separate.
 The genuine before static `gallery.html` also retains authored `__proto__`
 section `id` and its actual navigation `aria-controls` as `[object Object]`.
 The other literal names have their correct IDs. The
