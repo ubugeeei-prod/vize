@@ -1,8 +1,0 @@
-{
-  "linter": {
-    "preset": "incremental",
-    "typeAware": true,
-    "rules": { "type/no-unsafe-template-binding": "warn" }
-  },
-  "typeChecker": { "tsconfig": "tsconfig.json" }
-}

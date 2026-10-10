@@ -1,8 +1,0 @@
-{
-  "linter": {
-    "preset": "incremental",
-    "rules": {
-      "croquis/cf/unmatched-inject": "off"
-    }
-  }
-}

@@ -1,7 +1,0 @@
-[l2-dump-v2]
-ops=1
-
-[l2-dump-v2.ops]
-ui.element div @0:20
-  attr id="a" @30:40
-

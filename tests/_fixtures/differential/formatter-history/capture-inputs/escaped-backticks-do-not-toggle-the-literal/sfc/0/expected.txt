@@ -1,4 +1,0 @@
-<script>
-  const a = "\`";
-  const b = 2;
-</script>

@@ -1,3 +1,0 @@
-<template>
-  <p>{{ veryLongFunctionName(firstArgument, secondArgument) }}</p>
-</template>

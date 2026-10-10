@@ -1,3 +1,0 @@
-<template lang="html">
-  <div :title="message">{{ message }}</div>
-</template>

@@ -1,7 +1,0 @@
-<script setup lang="ts">
-const { size = "md" } = defineProps<{ size?: "sm" | "md" }>();
-</script>
-
-<template>
-  <span :class="size">badge</span>
-</template>

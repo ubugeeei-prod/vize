@@ -1,9 +1,0 @@
-{
-  "name": "Error",
-  "constructor": "Error",
-  "ownProperties": {
-    "code": "InvalidArg",
-    "message": "Failed to format script: sortImports boundary must sit between two groups",
-    "stack": "Error: Failed to format script: sortImports boundary must sit between two groups"
-  }
-}

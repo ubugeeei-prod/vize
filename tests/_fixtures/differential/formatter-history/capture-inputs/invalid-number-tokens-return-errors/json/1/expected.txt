@@ -1,3 +1,0 @@
-JsonFormatError(
-    "leading zero in number",
-)

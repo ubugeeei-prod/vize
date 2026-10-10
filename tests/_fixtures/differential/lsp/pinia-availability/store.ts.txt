@@ -1,8 +1,0 @@
-import { ref } from "vue";
-
-// Plain composable, not Pinia (pinia is not installed).
-export function useCounterStore() {
-  const count = ref(0);
-  const increment = () => count.value++;
-  return { count, increment };
-}

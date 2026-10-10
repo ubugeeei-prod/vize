@@ -1,8 +1,0 @@
-{
-  "repository": "https://github.com/n8n-io/n8n",
-  "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
-  "path": "packages/frontend/@n8n/design-system/src/components/N8nUserSelect/UserSelect.vue",
-  "sha256": "c08825b6e6f153dbcc1b1a60b5db0a8260f264dff1fbc661e2023f4aeec6c655",
-  "licenseSha256": "d2f621f59aa4c10eab79b6333e59d9d3d5b53307dcfd16dbd75e40e679e84965",
-  "modified": false
-}

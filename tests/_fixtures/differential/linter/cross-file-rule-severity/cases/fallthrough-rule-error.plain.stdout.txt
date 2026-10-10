@@ -1,7 +1,0 @@
-Patina lint report: 1 error in 3 files
-
-src/App.vue
-  src/App.vue:4:18 error vue/cross-file-attrs-fallthrough class passed to <Child> cannot fall through because the component has a fragment root
-    Reference: docs/content/rules/vue.md
-    Help:
-      Pass the value as a declared prop, or bind $attrs explicitly to the intended element in the child.

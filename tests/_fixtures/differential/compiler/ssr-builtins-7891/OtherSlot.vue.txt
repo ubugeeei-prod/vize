@@ -1,1 +1,0 @@
-<template><Suspense><p>done</p><template #other>hidden</template><template #fallback>loading</template></Suspense></template>

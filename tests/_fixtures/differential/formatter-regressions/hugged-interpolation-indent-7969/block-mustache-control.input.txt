@@ -1,9 +1,0 @@
-<template>
-  <div>
-    <span>
-      {{
-        label
-      }}
-    </span>
-  </div>
-</template>

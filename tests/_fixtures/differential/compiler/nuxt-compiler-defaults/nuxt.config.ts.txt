@@ -1,6 +1,0 @@
-// FORWARD=1 sets Nuxt's own `vue.compilerOptions.whitespace`
-export default defineNuxtConfig({
-  ssr: false,
-  modules: [["@vizejs/nuxt", { lint: false, checker: false }]],
-  ...(process.env.FORWARD ? { vue: { compilerOptions: { whitespace: "preserve" } } } : {})
-});

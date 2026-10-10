@@ -1,1 +1,0 @@
-<Comp z="z" :="first" a="a" b="b" v-bind="second" c="c" d="d" @="listeners" @keyup="up" @click="click" />

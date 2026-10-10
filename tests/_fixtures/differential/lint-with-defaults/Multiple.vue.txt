@@ -1,4 +1,0 @@
-<script setup lang="ts">
-const unrelated = "withDefaults(", props = withDefaults(defineProps<{ size?: string }>(), { size: "m" });
-</script>
-<template><p>OK</p></template>

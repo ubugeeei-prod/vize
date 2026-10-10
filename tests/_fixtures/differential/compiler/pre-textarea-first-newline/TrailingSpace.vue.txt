@@ -1,8 +1,0 @@
-<script setup>
-const a = "A"
-</script>
-
-<template>
-  <pre>line</pre>
-  <textarea>{{ a }} </textarea>
-</template>

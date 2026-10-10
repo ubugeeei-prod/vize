@@ -1,6 +1,0 @@
-<template>
-  <p :title="message | format-date('日本|語', { suffix: '!' })">{{
-    message | format-date("日本|語", { suffix: "!" }) | append("終")
-  }}</p>
-  <p>{{ /a|b/.test(value) || fallback | choose(left | right, `字|句`) }}</p>
-</template>

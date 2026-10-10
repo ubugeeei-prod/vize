@@ -1,9 +1,0 @@
-{
-  "argv": [
-    "/private/tmp/vize-6880-ssr-next-build/ssr_next_fixture_observer"
-  ],
-  "status": 0,
-  "stdoutSha256": "27f53d1ece55ea1f63f496bef0700d432491e9679aba63ac4cfb9be72e4481ec",
-  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-  "binarySha256": "4da708fa5f7caf6390953555668437419fa422f9f085bbb832df706fd0c4e166"
-}

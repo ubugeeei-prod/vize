@@ -1,9 +1,0 @@
-{
-  "compilerOptions": { "strict": true, "module": "preserve", "moduleResolution": "bundler", "noEmit": true, "skipLibCheck": true },
-  "vueCompilerOptions": {
-    "checkUnknownComponents": true,
-    "checkUnknownProps": true,
-    "checkUnknownDirectives": true
-  },
-  "include": ["src/**/*.vue"]
-}

@@ -1,1 +1,0 @@
-<div :class="cls" class="base" :style="s" style="color:red"></div>

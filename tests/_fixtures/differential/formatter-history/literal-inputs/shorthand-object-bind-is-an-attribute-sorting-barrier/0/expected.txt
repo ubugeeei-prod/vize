@@ -1,1 +1,0 @@
-<a class="router-link" title="link" :="attrs" rel="noopener" target="_blank" :href="href"></a>

@@ -1,1 +1,0 @@
-<div is="v&#117;e:my-thing" title="a&amp;b">x</div>

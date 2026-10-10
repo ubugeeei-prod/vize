@@ -1,8 +1,0 @@
-<template>
-  <i
-    :class="`
-        w-full
-        px5
-    `"
-  />
-</template>

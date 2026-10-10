@@ -1,3 +1,0 @@
-thread 'snapshot_tests::test_patches_ts_snapshots' (14704) panicked at /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/insta-1.48.0/src/runtime.rs:719:13:
-snapshot assertion for 'patches__setuplet_assignment_in_click_handler' failed in line 210
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

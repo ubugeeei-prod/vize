@@ -1,9 +1,0 @@
----
-source: crates/vize_atelier_vapor/src/tests_source_map.rs
-expression: segments
----
-[
-    "1:23 \"span> </\" -> \"span>{{ \"",
-    "3:0 \"export f\" -> \"<Telepor\"",
-    "12:56 \"_ctx.lab\" -> \"label }}\" [label]",
-]

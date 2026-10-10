@@ -1,5 +1,0 @@
-<template>
-  <span>
-    {{ tsx.compressedToX({ x: bytes(item.compressedSize), yyyyyyyyyyyyyyyy: zzzzzzzzzzzzzz }) }} = {{ tsx.savedXPercent({ x: Math.round((1 - item.compressedSize / item.file.size) * 100) }) }}
-  </span>
-</template>

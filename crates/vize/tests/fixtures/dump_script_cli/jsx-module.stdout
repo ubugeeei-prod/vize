@@ -1,3 +1,0 @@
-script: jsx module; hole=None
-statement VariableDeclaration @Span { start: 0, end: 82 }
-dump: l1 roundtrip OK: capture/cases/jsx-module.input (82 bytes)

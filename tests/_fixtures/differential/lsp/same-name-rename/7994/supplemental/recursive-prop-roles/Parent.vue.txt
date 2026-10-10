@@ -1,8 +1,0 @@
-<script setup lang="ts">
-import Recursive from "./Recursive.vue";
-const id = "parent-local";
-</script>
-
-<template>
-  <Recursive :id />
-</template>

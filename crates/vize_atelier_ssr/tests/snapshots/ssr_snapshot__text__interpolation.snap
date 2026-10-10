@@ -1,7 +1,0 @@
----
-source: crates/vize_atelier_ssr/tests/ssr_snapshot.rs
-expression: "compile_full(\"foo {{ bar }} baz\")"
----
-function ssrRender(_ctx, _push, _parent, _attrs) {
-  _push(`<!--[-->foo ${_ssrInterpolate(_ctx.bar)} baz<!--]-->`)
-}

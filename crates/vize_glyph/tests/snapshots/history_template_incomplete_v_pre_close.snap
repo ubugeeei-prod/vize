@@ -1,6 +1,0 @@
----
-source: crates/vize_glyph/tests/fix_history_template_gaps.rs
-expression: output.as_bytes().to_vec()
-extension: txt
-snapshot_kind: binary
----

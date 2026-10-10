@@ -1,3 +1,0 @@
-<div>
-  label: <input /> <!-- eslint-disable-line -->
-</div>

@@ -1,4 +1,0 @@
-<script setup lang="ts">
-defineEmits<{ test: [value1: string, value2: number] }>();
-</script>
-<template><div /></template>

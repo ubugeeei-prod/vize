@@ -1,3 +1,0 @@
-<i18n<%= global ? ' global' : '' %>>
-{"hello":"Hello"}
-</i18n>

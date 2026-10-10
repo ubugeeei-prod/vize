@@ -1,1 +1,0 @@
-<div slot="header" class="box"></div>

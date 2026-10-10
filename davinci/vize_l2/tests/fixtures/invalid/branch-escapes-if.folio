@@ -1,7 +1,0 @@
-[l2-dump-v2]
-ops=1
-
-[l2-dump-v2.ops]
-ui.if @10:20
-  branch js("x" @6:7) @5:25
-

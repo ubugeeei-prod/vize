@@ -1,1 +1,0 @@
-<Comp #default="{ x }" :data="d"></Comp>

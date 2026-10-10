@@ -1,7 +1,0 @@
-<script setup>
-import { ref } from "vue";
-const evt = ref("mouseup");
-const attr = ref("title");
-const n = ref(0);
-</script>
-<template><button v-for="evt in ['click']" @[evt]="n++" :[attr]="'tip'">{{ n }}</button></template>

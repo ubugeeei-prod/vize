@@ -1,5 +1,0 @@
-{
-  "id": "html-empty-comment-scriptless",
-  "source": "<template><div v-html=\"content\"><!----></div></template>\n",
-  "expectedChildContent": true
-}

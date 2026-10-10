@@ -1,5 +1,0 @@
-/*😀*/ export const café = 1;
-export const result = café;
-export function shadow(café) { return café; }
-export const unchanged = 'café';
-/* café */

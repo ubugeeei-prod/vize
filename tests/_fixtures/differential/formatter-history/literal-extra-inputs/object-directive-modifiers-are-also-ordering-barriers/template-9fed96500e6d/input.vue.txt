@@ -1,1 +1,0 @@
-<div title="x" v-bind.prop="attrs" id="y"></div>

@@ -1,10 +1,0 @@
-<script setup lang="ts">
-import { t } from "./messages.ts";
-
-const title = t("form.\name");
-</script>
-
-<template>
-  <h1>{{ title }}</h1>
-  <p>{{ t("form.help") }}</p>
-</template>

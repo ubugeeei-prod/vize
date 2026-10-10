@@ -1,8 +1,0 @@
-<script setup lang="ts">
-const width = window.innerWidth;
-const lang = navigator.language;
-</script>
-
-<template>
-  <p>{{ width }} {{ lang }} {{ document.title }}</p>
-</template>

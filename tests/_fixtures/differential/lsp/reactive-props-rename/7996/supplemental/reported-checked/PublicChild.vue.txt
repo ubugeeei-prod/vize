@@ -1,9 +1,0 @@
-<script setup lang="ts">
-const { active: checked } = defineProps<{
-  active: boolean;
-}>();
-</script>
-
-<template>
-  <span>{{ checked ? "on" : "off" }}</span>
-</template>

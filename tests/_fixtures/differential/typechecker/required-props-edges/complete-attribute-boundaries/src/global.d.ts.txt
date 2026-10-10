@@ -1,7 +1,0 @@
-export {}
-
-declare module '@vue/runtime-core' {
-  interface ComponentCustomProps {
-    globalToken?: string
-  }
-}

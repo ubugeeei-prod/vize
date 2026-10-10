@@ -1,6 +1,0 @@
-<template><div /></template>
-<style>
-/* vize-disable-next-line css/no-id-selectors */
-#muted { color: red; }
-#active { color: blue; }
-</style>

@@ -1,7 +1,0 @@
-<a>{{ result.rows.length }} ({{
-    result.fields
-      ? (result.fields[0]
-          ?.tableAlias ??
-        result.fields[0]?.table)
-      : fallback
-  }})</a>

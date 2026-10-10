@@ -1,8 +1,0 @@
-<template>
-  <div>
-    <!-- <div v-if="result.action">
-      {{ result.action!.label }}
-    </div> -->
-    <span>hi</span>
-  </div>
-</template>

@@ -1,7 +1,0 @@
-<script setup lang="ts">
-import { watchEffect } from "vue";
-watchEffect(() => { document.title; });
-</script>
-<template>
-  <p>Ready</p>
-</template>

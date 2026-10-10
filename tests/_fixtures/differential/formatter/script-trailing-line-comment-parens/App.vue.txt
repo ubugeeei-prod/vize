@@ -1,7 +1,0 @@
-<script lang="ts">
-const ok =
-  !(
-    value.kind === Kind.First
-    // || value.kind === Kind.Second
-  ) || other;
-</script>

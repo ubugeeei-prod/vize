@@ -1,8 +1,0 @@
-<template>
-  <label
-    :style="props.reverseOrder
-      ? 'grid-template-areas: \'toggle . label-text\''
-      : 'grid-template-areas: \'label-text . toggle\''"
-  >
-  </label>
-</template>

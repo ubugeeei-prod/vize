@@ -1,2 +1,0 @@
-/** @type {string} */
-export const message = 42;

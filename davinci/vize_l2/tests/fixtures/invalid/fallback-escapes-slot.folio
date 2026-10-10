@@ -1,7 +1,0 @@
-[l2-dump-v2]
-ops=2
-
-[l2-dump-v2.ops]
-ui.slot name="header" @0:10
-  ui.text "x" @12:15
-

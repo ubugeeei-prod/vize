@@ -1,2 +1,0 @@
-# Retain complete original inputs and authored CRLF controls across checkouts.
-*.txt -text whitespace=cr-at-eol

@@ -1,5 +1,0 @@
-{
-  "id": "html-interpolation-scripted",
-  "source": "<script setup lang=\"ts\">\nconst content = \"\";\n</script>\n<template><div v-html=\"content\">{{ content }}</div></template>\n",
-  "expectedChildContent": true
-}

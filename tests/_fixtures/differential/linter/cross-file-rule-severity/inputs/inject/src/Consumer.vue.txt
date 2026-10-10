@@ -1,5 +1,0 @@
-<script setup lang="ts">
-import { inject } from "vue";
-const value = inject('missing');
-</script>
-<template><div>{{ value }}</div></template>

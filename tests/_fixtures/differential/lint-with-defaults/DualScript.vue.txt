@@ -1,8 +1,0 @@
-<!--界😀-->
-<template><p>界😀</p></template>
-<script lang="ts">
-const props = withDefaults(defineProps<{ size?: string }>(), { size: "m" });
-</script>
-<script setup lang="ts">
-const props = withDefaults(defineProps<{ size?: string }>(), { size: "m" });
-</script>

@@ -1,7 +1,0 @@
-<template><div /></template>
-<style scoped>
-#first { color: red; }
-</style>
-<style>
-#second { color: blue; }
-</style>

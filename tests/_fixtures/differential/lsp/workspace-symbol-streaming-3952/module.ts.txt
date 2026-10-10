@@ -1,3 +1,0 @@
-/* 🦀 */ export function café() { function hidden() {} }
-// export const counterfeit = 1
-export const value = 1;

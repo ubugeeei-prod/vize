@@ -1,5 +1,0 @@
-<script lang="ts">
-/* 😀 */ export const café: number = 'broken';
-export default {};
-</script>
-<template><div /></template>

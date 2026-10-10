@@ -1,9 +1,0 @@
-<script setup vapor>
-import { ref } from "vue";
-const k = ref(1);
-const label = ref("first");
-</script>
-
-<template>
-  <section><button @click="k++">reset</button><button @click="label = 'second'">label</button><input :key="k" :value="label" /><p>tail</p></section>
-</template>

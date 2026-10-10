@@ -1,5 +1,0 @@
-npx vite build                                   # @vitejs/plugin-vue, root = project
-USE_VIZE=1 npx vite build                        # vize,              root = project
-npx vite build -c vite.src-root.config.ts        # @vitejs/plugin-vue, root = src/
-USE_VIZE=1 npx vite build -c vite.src-root.config.ts   # vize,         root = src/
-grep -ho 'Object.assign({[^)]\{0,60\}' dist-vue/assets/*.js dist-vize/assets/*.js dist-src-vue/assets/*.js dist-src-vize/assets/*.js

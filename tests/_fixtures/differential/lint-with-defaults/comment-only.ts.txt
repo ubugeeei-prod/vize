@@ -1,2 +1,0 @@
-/** Replaces `withDefaults(defineProps<Props>(), {})` in older components. */
-export const answer = 42;

@@ -1,1 +1,0 @@
-<main><button v-for="(item, position) in items" :key="item.id" :data-id="item.id" :title="position" @click="record(item.label)">{{ item.label }}</button><p>{{ item }}</p></main>

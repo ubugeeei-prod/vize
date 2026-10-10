@@ -1,2 +1,0 @@
-<script setup>import MyButton from "./MyButton.vue";</script>
-<template><MyButton/><RegisteredPanel/><Transition/><router-link/><div/></template>

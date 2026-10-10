@@ -1,8 +1,0 @@
-<script setup lang="ts">
-type Props = { id: string };
-defineProps<Props>();
-</script>
-
-<template>
-  <input :id />
-</template>

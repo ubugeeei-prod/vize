@@ -1,6 +1,0 @@
-<template>
-  <listing />
-  <div>
-    y
-  </div>
-</template>

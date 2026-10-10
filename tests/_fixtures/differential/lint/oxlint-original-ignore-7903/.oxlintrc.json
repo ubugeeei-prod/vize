@@ -1,5 +1,0 @@
-{
-  "jsPlugins": ["oxlint-plugin-vize"],
-  "ignorePatterns": ["vendor/**"],
-  "rules": { "vize/vue/no-v-html": "warn" }
-}

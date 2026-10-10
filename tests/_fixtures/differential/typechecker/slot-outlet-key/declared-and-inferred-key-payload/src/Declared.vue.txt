@@ -1,9 +1,0 @@
-<script setup lang="ts">
-defineProps<{ messages: string[] }>()
-defineSlots<{ message(scope: { message: string; key: number }): unknown }>()
-</script>
-<template>
-  <div v-for="(message, key) in messages" :key="key">
-    <slot name="message" :message="message" :key="key" />
-  </div>
-</template>

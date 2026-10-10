@@ -1,4 +1,0 @@
-<div class="mt20">
-  <!--eslint-disable-next-line-->
-  custom space: <input v-on:keyup.custom="keys('custom keycode space')" />
-</div>

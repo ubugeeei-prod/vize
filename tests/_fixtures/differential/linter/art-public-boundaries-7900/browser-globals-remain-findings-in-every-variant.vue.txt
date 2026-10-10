@@ -1,1 +1,0 @@
-<script setup>const unrelated = 1;</script><art><variant name="One">{{ window }}</variant><variant name="Two">{{ document }}</variant></art>

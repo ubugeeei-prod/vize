@@ -1,4 +1,0 @@
-# Skeleton `todo!()` ratchet (#6826, 2026-09-28): the number of
-# `#![expect(clippy::todo, reason = "skeleton: #NNNN")]` modules per crate.
-# Checked by `tools/commands/ci/check-skeleton-todos.rs --check`. Counts only
-# go down; run the tool with `--write` after filling a skeleton module.

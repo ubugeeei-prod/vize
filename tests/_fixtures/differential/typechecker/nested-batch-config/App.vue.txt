@@ -1,6 +1,0 @@
-<script setup lang="ts">
-import { maybeNumber } from '@case/value'
-const required: number = maybeNumber
-void required
-</script>
-<template><span>{{ required }}</span></template>

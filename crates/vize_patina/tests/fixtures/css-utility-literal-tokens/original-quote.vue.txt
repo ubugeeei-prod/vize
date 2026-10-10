@@ -1,9 +1,0 @@
-<template>
-  <p class="my-quote">quote</p>
-</template>
-
-<style scoped>
-.my-quote::before {
-  content: " .flex ";
-}
-</style>

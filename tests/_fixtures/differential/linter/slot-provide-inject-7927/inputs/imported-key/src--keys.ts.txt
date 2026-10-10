@@ -1,2 +1,0 @@
-import type { InjectionKey, Ref } from 'vue'
-export const KEY: InjectionKey<Ref<number>> = Symbol('count')

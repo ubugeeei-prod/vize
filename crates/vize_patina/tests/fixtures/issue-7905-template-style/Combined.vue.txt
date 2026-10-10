@@ -1,7 +1,0 @@
-<script setup lang="ts">
-import MyCard from "./MyCard.vue";
-</script>
-
-<template>
-  <my-card title="日本語 > 😀"></my-card>
-</template>

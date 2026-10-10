@@ -1,6 +1,0 @@
-<template>
-  <div class="my-input">
-    <input aria-label="value" />
-    <div class="my-input__messages">message</div>
-  </div>
-</template>

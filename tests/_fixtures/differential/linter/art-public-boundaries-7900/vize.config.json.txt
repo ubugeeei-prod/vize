@@ -1,9 +1,0 @@
-{
-  "linter": {
-    "preset": "incremental",
-    "rules": {
-      "vue/no-unused-setup-bindings": "warn",
-      "vue/require-component-registration": "warn"
-    }
-  }
-}

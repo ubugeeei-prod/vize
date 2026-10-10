@@ -1,5 +1,0 @@
-Patina lint report: 1 warning in 3 files
-
-src/App.vue
-  src/App.vue:5:6 warning html/cross-component-nesting <div> (rendered by <Child> at src/Child.vue:2:3) closes the open <p>: the browser ends the paragraph before it, so the rendered DOM will not match this template
-    Reference: docs/content/rules/html.md

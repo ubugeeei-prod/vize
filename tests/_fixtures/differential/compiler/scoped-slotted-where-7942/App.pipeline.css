@@ -1,4 +1,0 @@
-
-:where(.box[data-v-1]){color: red;}
-
-:where(.box[data-v-1]) >:where(p[data-v-1-s]){line-height: 1.1;}

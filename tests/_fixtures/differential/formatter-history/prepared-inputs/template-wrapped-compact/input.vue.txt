@@ -1,1 +1,0 @@
-<p>A{{ veryLongFunctionName(firstArgument, secondArgument) }}B</p>

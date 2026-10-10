@@ -1,9 +1,0 @@
-<script setup lang="ts">
-const tuple: [string, { label: string }] = ["a", { label: "known" }];
-const named: { known: { label: string } } = { known: { label: "known" } };
-const head = tuple[0] ? tuple[0].toUpperCase() : "";
-const label = tuple[1] ? tuple[1].label : "";
-const objectLabel = named.known ? named.known.label : "";
-</script>
-
-<template><p>{{ head }} {{ label }} {{ objectLabel }}</p></template>

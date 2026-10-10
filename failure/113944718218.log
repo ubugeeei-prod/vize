@@ -1,0 +1,2029 @@
+﻿2026-10-09T17:35:07.1882061Z Current runner version: '2.337.0'
+2026-10-09T17:35:07.1885292Z Runner name: 'blacksmith-32vcpu-ubuntu-2404-qglvazgxdgbfev7h'
+2026-10-09T17:35:07.1885964Z Runner group name: 'blacksmith scale sets - blacksmith-32vcpu-ubuntu-2404'
+2026-10-09T17:35:07.1886737Z Machine name: 'ip-172-31-73-130'
+2026-10-09T17:35:07.1888183Z ##[group]GITHUB_TOKEN Permissions
+2026-10-09T17:35:07.1889460Z Contents: read
+2026-10-09T17:35:07.1889819Z Metadata: read
+2026-10-09T17:35:07.1890191Z ##[endgroup]
+2026-10-09T17:35:07.1891635Z Secret source: Actions
+2026-10-09T17:35:07.1892260Z Cache mode: write
+2026-10-09T17:35:07.1892705Z Prepare workflow directory
+2026-10-09T17:35:07.2175262Z Prepare all required actions
+2026-10-09T17:35:07.2202032Z Getting action download info
+2026-10-09T17:35:07.4031655Z Download action repository 'actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd' (SHA:de0fac2e4500dabe0009e67214ff5f5447ce83dd)
+2026-10-09T17:35:07.4345902Z Download action repository 'dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d' (SHA:89b12181fb390509a0842a86cc55eeb8eb928c1d)
+2026-10-09T17:35:07.4946183Z Download action repository 'wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203' (SHA:0bbbfa5df4380cab8e63cb8505a1ce65e1d10203)
+2026-10-09T17:35:07.5707710Z Download action repository 'voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa' (SHA:ca1c46663915d6c1042ae23bd39ab85718bfb0fa)
+2026-10-09T17:35:07.6437185Z Download action repository 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a' (SHA:043fb46d1a93c77aae656e7c1c64a875d1fc6a0a)
+2026-10-09T17:35:07.7514573Z Setting BLACKSMITH_ACTIONS_RESULTS_URL to https://results-receiver.actions.githubusercontent.com/
+2026-10-09T17:35:07.7541672Z Complete job name: Actual CLI shard native phase evidence
+2026-10-09T17:35:07.8005655Z A job started hook has been configured by the self-hosted runner administrator
+2026-10-09T17:35:07.8065598Z ##[group]Run '/setup.sh'
+2026-10-09T17:35:07.8074238Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:07.8074621Z env:
+2026-10-09T17:35:07.8074818Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:07.8075078Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:07.8075327Z   BLACKSMITH_CHECK_RUN_ID: 113944718218
+2026-10-09T17:35:07.8075645Z   BLACKSMITH_JOB_DISPLAY_NAME: Actual CLI shard native phase evidence
+2026-10-09T17:35:07.8075977Z   GITHUB_ACTIONS_CACHE_MODE: write
+2026-10-09T17:35:07.8076210Z ##[endgroup]
+2026-10-09T17:35:07.8306798Z Logging daemon started (blacksmithd for logs)
+2026-10-09T17:35:07.8388507Z Results daemon started (blacksmithd for results)
+2026-10-09T17:35:07.8523561Z Background adoption and SSH setup started (PID: 4886)
+2026-10-09T17:35:07.8525261Z 
+2026-10-09T17:35:07.8525439Z ----------------------------------------
+2026-10-09T17:35:07.8525852Z View this job: https://app.blacksmith.sh/ubugeeei-prod/runs/37967292545/jobs/113944718218
+2026-10-09T17:35:07.8526264Z SSH Access (using your GitHub SSH key):
+2026-10-09T17:35:07.8526761Z   ssh -p 64000 runner@blacksmith-32vcpu-ubuntu-2404-qglvazgxdgbfev7h.vm.blacksmith.sh
+2026-10-09T17:35:07.8527072Z 
+2026-10-09T17:35:07.8527169Z No GitHub SSH key? Add one at:
+2026-10-09T17:35:07.8527628Z https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account
+2026-10-09T17:35:07.8528010Z 
+2026-10-09T17:35:07.8528110Z ----------------------------------------
+2026-10-09T17:35:07.8528278Z 
+2026-10-09T17:35:07.8528409Z VM ID: blacksmith-32vcpu-ubuntu-2404-qglvazgxdgbfev7h
+2026-10-09T17:35:07.8528716Z Host: production-152.236.39.139-x8664
+2026-10-09T17:35:07.8529019Z Host Agent PID: 3627636
+2026-10-09T17:35:07.8529372Z Host Agent Git SHA: e74ecef43
+2026-10-09T17:35:07.8529781Z Host CPU Manufacturer: AuthenticAMD
+2026-10-09T17:35:07.8530198Z Blacksmith Host Generation: gen 2
+2026-10-09T17:35:07.8530622Z Petname: production-fine-prawn-34c253d1
+2026-10-09T17:35:07.8531042Z Region: us-east
+2026-10-09T17:35:07.8531390Z Rootfs Version: ubuntu24-full-x64-081926
+2026-10-09T17:35:07.8537195Z OS Version: Ubuntu 24.04.4 LTS
+2026-10-09T17:35:07.8537595Z 
+2026-10-09T17:35:07.8537706Z Enabling Blacksmith transparent cache
+2026-10-09T17:35:07.8734499Z ##[group]Run actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+2026-10-09T17:35:07.8734861Z with:
+2026-10-09T17:35:07.8735084Z   ref: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:07.8735363Z   fetch-depth: 0
+2026-10-09T17:35:07.8735586Z   persist-credentials: false
+2026-10-09T17:35:07.8735834Z   repository: ubugeeei-prod/vize
+2026-10-09T17:35:07.8737517Z   token: ***
+2026-10-09T17:35:07.8737713Z   ssh-strict: true
+2026-10-09T17:35:07.8737916Z   ssh-user: git
+2026-10-09T17:35:07.8738118Z   clean: true
+2026-10-09T17:35:07.8738328Z   sparse-checkout-cone-mode: true
+2026-10-09T17:35:07.8738569Z   fetch-tags: false
+2026-10-09T17:35:07.8738784Z   show-progress: true
+2026-10-09T17:35:07.8738992Z   lfs: false
+2026-10-09T17:35:07.8739185Z   submodules: false
+2026-10-09T17:35:07.8739399Z   set-safe-directory: true
+2026-10-09T17:35:07.8739628Z env:
+2026-10-09T17:35:07.8739821Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:07.8740044Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:07.8740291Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:07.8740585Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:07.8740902Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:07.8741229Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:07.8741576Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:07.8741841Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:07.8742110Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:07.8742359Z ##[endgroup]
+2026-10-09T17:35:07.9677964Z Syncing repository: ubugeeei-prod/vize
+2026-10-09T17:35:07.9678849Z ##[group]Getting Git version info
+2026-10-09T17:35:07.9679156Z Working directory is '/home/runner/_work/vize/vize'
+2026-10-09T17:35:07.9679610Z [command]/usr/local/bin/git version
+2026-10-09T17:35:07.9742018Z git version 2.55.0
+2026-10-09T17:35:07.9753351Z ##[endgroup]
+2026-10-09T17:35:07.9760232Z Temporarily overriding HOME='/home/runner/_work/_temp/db5b2324-236b-43c2-a308-3b35aa081a99' before making global git config changes
+2026-10-09T17:35:07.9760898Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T17:35:07.9763550Z [command]/usr/local/bin/git config --global --add safe.directory /home/runner/_work/vize/vize
+2026-10-09T17:35:07.9797504Z Deleting the contents of '/home/runner/_work/vize/vize'
+2026-10-09T17:35:07.9799534Z ##[group]Initializing the repository
+2026-10-09T17:35:07.9801734Z [command]/usr/local/bin/git init /home/runner/_work/vize/vize
+2026-10-09T17:35:07.9840455Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-09T17:35:07.9840938Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-09T17:35:07.9841392Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-09T17:35:07.9841806Z hint: call:
+2026-10-09T17:35:07.9842002Z hint:
+2026-10-09T17:35:07.9842257Z hint: 	git config --global init.defaultBranch <name>
+2026-10-09T17:35:07.9842556Z hint:
+2026-10-09T17:35:07.9842837Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-09T17:35:07.9843289Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-09T17:35:07.9843642Z hint:
+2026-10-09T17:35:07.9843843Z hint: 	git branch -m <name>
+2026-10-09T17:35:07.9844075Z hint:
+2026-10-09T17:35:07.9844380Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-09T17:35:07.9844844Z Initialized empty Git repository in /home/runner/_work/vize/vize/.git/
+2026-10-09T17:35:07.9845630Z [command]/usr/local/bin/git remote add origin https://github.com/ubugeeei-prod/vize
+2026-10-09T17:35:07.9872556Z ##[endgroup]
+2026-10-09T17:35:07.9872916Z ##[group]Disabling automatic garbage collection
+2026-10-09T17:35:07.9874758Z [command]/usr/local/bin/git config --local gc.auto 0
+2026-10-09T17:35:07.9897349Z ##[endgroup]
+2026-10-09T17:35:07.9897707Z ##[group]Setting up auth
+2026-10-09T17:35:07.9898160Z Removing SSH command configuration
+2026-10-09T17:35:07.9901375Z [command]/usr/local/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T17:35:07.9927700Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T17:35:08.0115707Z Removing HTTP extra header
+2026-10-09T17:35:08.0119089Z [command]/usr/local/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T17:35:08.0144012Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T17:35:08.0247211Z Removing includeIf entries pointing to credentials config files
+2026-10-09T17:35:08.0251056Z [command]/usr/local/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T17:35:08.0279224Z [command]/usr/local/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T17:35:08.0419359Z [command]/usr/local/bin/git config --file /home/runner/_work/_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-09T17:35:08.0448812Z [command]/usr/local/bin/git config --local includeIf.gitdir:/home/runner/_work/vize/vize/.git.path /home/runner/_work/_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:08.0468217Z [command]/usr/local/bin/git config --local includeIf.gitdir:/home/runner/_work/vize/vize/.git/worktrees/*.path /home/runner/_work/_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:08.0487876Z [command]/usr/local/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:08.0507084Z [command]/usr/local/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:08.0525142Z ##[endgroup]
+2026-10-09T17:35:08.0525556Z ##[group]Fetching the repository
+2026-10-09T17:35:08.0529205Z [command]/usr/local/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-10-09T17:35:16.4964604Z From http://192.168.127.1:1053/github.com/ubugeeei-prod/vize
+2026-10-09T17:35:16.4967044Z  * [new branch]          agent/feat-platform-contract -> origin/agent/feat-platform-contract
+2026-10-09T17:35:16.4968662Z  * [new branch]          agent/fix-hosted-sticky-cache-gate -> origin/agent/fix-hosted-sticky-cache-gate
+2026-10-09T17:35:16.4970017Z  * [new branch]          atelier/module-shape    -> origin/atelier/module-shape
+2026-10-09T17:35:16.4971242Z  * [new branch]          bench/regenerate-blacksmith-snapshot -> origin/bench/regenerate-blacksmith-snapshot
+2026-10-09T17:35:16.4972570Z  * [new branch]          blacksmith-migration-1197c78 -> origin/blacksmith-migration-1197c78
+2026-10-09T17:35:16.4973878Z  * [new branch]          canon/custom-directive-value-check -> origin/canon/custom-directive-value-check
+2026-10-09T17:35:16.4975222Z  * [new branch]          canon/directive-name-anchors-v2 -> origin/canon/directive-name-anchors-v2
+2026-10-09T17:35:16.4977047Z  * [new branch]          cc/davinci-completion-quality-ab92d7 -> origin/cc/davinci-completion-quality-ab92d7
+2026-10-09T17:35:16.4978753Z  * [new branch]          cc/davinci-sfc-walk-witness -> origin/cc/davinci-sfc-walk-witness
+2026-10-09T17:35:16.4980207Z  * [new branch]          cc/davinci-this-expression-shapes -> origin/cc/davinci-this-expression-shapes
+2026-10-09T17:35:16.4981772Z  * [new branch]          chore/devalue-security-20261002 -> origin/chore/devalue-security-20261002
+2026-10-09T17:35:16.4983710Z  * [new branch]          chore/node-forge-installed-census-20261002 -> origin/chore/node-forge-installed-census-20261002
+2026-10-09T17:35:16.4986011Z  * [new branch]          chore/node-forge-installed-proof-20261002 -> origin/chore/node-forge-installed-proof-20261002
+2026-10-09T17:35:16.4988489Z  * [new branch]          chore/node-forge-installed-proof-revised-20261002 -> origin/chore/node-forge-installed-proof-revised-20261002
+2026-10-09T17:35:16.4990859Z  * [new branch]          ci/allocation-nextest-junit-transport-20261002 -> origin/ci/allocation-nextest-junit-transport-20261002
+2026-10-09T17:35:16.4992702Z  * [new branch]          ci/apps-config-diagnostic-6830 -> origin/ci/apps-config-diagnostic-6830
+2026-10-09T17:35:16.4994333Z  * [new branch]          ci/braces-lock-capture-main4c-20261003 -> origin/ci/braces-lock-capture-main4c-20261003
+2026-10-09T17:35:16.4996204Z  * [new branch]          ci/canon-native-program-main7f-temp-20261003 -> origin/ci/canon-native-program-main7f-temp-20261003
+2026-10-09T17:35:16.4998249Z  * [new branch]          ci/formatter-3290-queue-artifact-transport-20261003 -> origin/ci/formatter-3290-queue-artifact-transport-20261003
+2026-10-09T17:35:16.5000505Z  * [new branch]          ci/formatter-5a56-control-artifact-transport-20261003 -> origin/ci/formatter-5a56-control-artifact-transport-20261003
+2026-10-09T17:35:16.5002611Z  * [new branch]          ci/formatter-78cf-artifact-transport-20261003 -> origin/ci/formatter-78cf-artifact-transport-20261003
+2026-10-09T17:35:16.5004531Z  * [new branch]          ci/formatter-934-artifact-transport-20261003 -> origin/ci/formatter-934-artifact-transport-20261003
+2026-10-09T17:35:16.5006435Z  * [new branch]          ci/formatter-artifact-transport-20261002 -> origin/ci/formatter-artifact-transport-20261002
+2026-10-09T17:35:16.5008393Z  * [new branch]          ci/formatter-bb1d-artifact-transport-20261002 -> origin/ci/formatter-bb1d-artifact-transport-20261002
+2026-10-09T17:35:16.5010379Z  * [new branch]          ci/formatter-control-artifact-transport-20261002 -> origin/ci/formatter-control-artifact-transport-20261002
+2026-10-09T17:35:16.5012372Z  * [new branch]          ci/formatter-history-bb1d-t1-capture-20261002 -> origin/ci/formatter-history-bb1d-t1-capture-20261002
+2026-10-09T17:35:16.5014279Z  * [new branch]          ci/formatter-original-controls-78cf-20261003 -> origin/ci/formatter-original-controls-78cf-20261003
+2026-10-09T17:35:16.5016608Z  * [new branch]          ci/formatter-original-controls-bb1d-20261002 -> origin/ci/formatter-original-controls-bb1d-20261002
+2026-10-09T17:35:16.5018859Z  * [new branch]          ci/formatter-original-controls-canonical-bb1d-20261002 -> origin/ci/formatter-original-controls-canonical-bb1d-20261002
+2026-10-09T17:35:16.5021019Z  * [new branch]          ci/js-browser-source-tier-diagnostic-6830 -> origin/ci/js-browser-source-tier-diagnostic-6830
+2026-10-09T17:35:16.5022677Z  * [new branch]          ci/js-pr-focused-diagnostic-6830 -> origin/ci/js-pr-focused-diagnostic-6830
+2026-10-09T17:35:16.5024238Z  * [new branch]          ci/l1-embedding-drop-junit-20261003 -> origin/ci/l1-embedding-drop-junit-20261003
+2026-10-09T17:35:16.5026048Z  * [new branch]          ci/l1-span-main211-junit-transport-20261003 -> origin/ci/l1-span-main211-junit-transport-20261003
+2026-10-09T17:35:16.5027999Z  * [new branch]          ci/l1-span-maind871-junit-transport-20261003 -> origin/ci/l1-span-maind871-junit-transport-20261003
+2026-10-09T17:35:16.5029970Z  * [new branch]          ci/l1-span-mounted-child-diagnostic-20261003 -> origin/ci/l1-span-mounted-child-diagnostic-20261003
+2026-10-09T17:35:16.5032120Z  * [new branch]          ci/l1-span-nextest-junit-transport-20261003 -> origin/ci/l1-span-nextest-junit-transport-20261003
+2026-10-09T17:35:16.5034336Z  * [new branch]          ci/linter-component-name-artifact-transport-20261002 -> origin/ci/linter-component-name-artifact-transport-20261002
+2026-10-09T17:35:16.5036317Z  * [new branch]          ci/lsp-artifact-transport-20261002 -> origin/ci/lsp-artifact-transport-20261002
+2026-10-09T17:35:16.5038112Z  * [new branch]          ci/patina-native-img-alt-2bc-capture-20261003 -> origin/ci/patina-native-img-alt-2bc-capture-20261003
+2026-10-09T17:35:16.5039890Z  * [new branch]          ci/pinned-vue-runtime-bundle-cache -> origin/ci/pinned-vue-runtime-bundle-cache
+2026-10-09T17:35:16.5041476Z  * [new branch]          ci/reuse-pinned-vue-runtime-bundles -> origin/ci/reuse-pinned-vue-runtime-bundles
+2026-10-09T17:35:16.5043023Z  * [new branch]          ci/rust-l1-source-diagnostic-6830 -> origin/ci/rust-l1-source-diagnostic-6830
+2026-10-09T17:35:16.5044555Z  * [new branch]          ci/rust-pr-focused-diagnostic-6830 -> origin/ci/rust-pr-focused-diagnostic-6830
+2026-10-09T17:35:16.5046179Z  * [new branch]          ci/rust-source-fast-diagnostic-6830 -> origin/ci/rust-source-fast-diagnostic-6830
+2026-10-09T17:35:16.5047854Z  * [new branch]          ci/selected-tooling-tier-core-20260927 -> origin/ci/selected-tooling-tier-core-20260927
+2026-10-09T17:35:16.5049457Z  * [new branch]          ci/source-parallel-diagnostic-6830 -> origin/ci/source-parallel-diagnostic-6830
+2026-10-09T17:35:16.5050989Z  * [new branch]          ci/source-reports-diagnostic-6830 -> origin/ci/source-reports-diagnostic-6830
+2026-10-09T17:35:16.5052455Z  * [new branch]          ci/source-stack-diagnostic-6830 -> origin/ci/source-stack-diagnostic-6830
+2026-10-09T17:35:16.5053849Z  * [new branch]          ci/stacked-pr-checks-20260927 -> origin/ci/stacked-pr-checks-20260927
+2026-10-09T17:35:16.5055407Z  * [new branch]          ci/tooling-merge-shards-6830-diagnostic -> origin/ci/tooling-merge-shards-6830-diagnostic
+2026-10-09T17:35:16.5057224Z  * [new branch]          ci/tooling-pr-capabilities-6830-diagnostic -> origin/ci/tooling-pr-capabilities-6830-diagnostic
+2026-10-09T17:35:16.5058907Z  * [new branch]          ci/tooling-pr-fast-diagnostic-6830 -> origin/ci/tooling-pr-fast-diagnostic-6830
+2026-10-09T17:35:16.5060361Z  * [new branch]          ci/vue2-oracle-capture-20261003 -> origin/ci/vue2-oracle-capture-20261003
+2026-10-09T17:35:16.5061919Z  * [new branch]          ci/wasmtime-lock-capture-main688-20261003 -> origin/ci/wasmtime-lock-capture-main688-20261003
+2026-10-09T17:35:16.5063463Z  * [new branch]          codex/align-fuzz-stage-aliases -> origin/codex/align-fuzz-stage-aliases
+2026-10-09T17:35:16.5064730Z  * [new branch]          codex/blacksmith-ci-cache -> origin/codex/blacksmith-ci-cache
+2026-10-09T17:35:16.5065938Z  * [new branch]          codex/cloudflare-workers -> origin/codex/cloudflare-workers
+2026-10-09T17:35:16.5067177Z  * [new branch]          codex/complexity-score-model -> origin/codex/complexity-score-model
+2026-10-09T17:35:16.5068373Z  * [new branch]          codex/curator-s1-alias  -> origin/codex/curator-s1-alias
+2026-10-09T17:35:16.5069650Z  * [new branch]          codex/davinci-hoist-cache-20260831 -> origin/codex/davinci-hoist-cache-20260831
+2026-10-09T17:35:16.5071084Z  * [new branch]          codex/davinci-next-slice-20260901 -> origin/codex/davinci-next-slice-20260901
+2026-10-09T17:35:16.5072463Z  * [new branch]          codex/davinci-style-normalize -> origin/codex/davinci-style-normalize
+2026-10-09T17:35:16.5073953Z  * [new branch]          codex/fix-canon-sfc-import-suppressions -> origin/codex/fix-canon-sfc-import-suppressions
+2026-10-09T17:35:16.5075691Z  * [new branch]          codex/fix-patina-vuetify-tags-nuxt-preset -> origin/codex/fix-patina-vuetify-tags-nuxt-preset
+2026-10-09T17:35:16.5077509Z  * [new branch]          codex/fix-sfc-define-emits-call-signature-1177 -> origin/codex/fix-sfc-define-emits-call-signature-1177
+2026-10-09T17:35:16.5079237Z  * [new branch]          codex/indexed-access-props-4487 -> origin/codex/indexed-access-props-4487
+2026-10-09T17:35:16.5080778Z  * [new branch]          codex/p2-8-totality-witnesses-20260901 -> origin/codex/p2-8-totality-witnesses-20260901
+2026-10-09T17:35:16.5082267Z  * [new branch]          codex/perf-toolchain-throughput -> origin/codex/perf-toolchain-throughput
+2026-10-09T17:35:16.5083778Z  * [new branch]          codex/persist-corsa-incremental-session -> origin/codex/persist-corsa-incremental-session
+2026-10-09T17:35:16.5085383Z  * [new branch]          codex/test-canon-full-corpus-parity -> origin/codex/test-canon-full-corpus-parity
+2026-10-09T17:35:16.5087154Z  * [new branch]          cursor/bc-5cbaf78e-fbd8-4ef2-aacc-2350e18a0dfa-e52e -> origin/cursor/bc-5cbaf78e-fbd8-4ef2-aacc-2350e18a0dfa-e52e
+2026-10-09T17:35:16.5089104Z  * [new branch]          cursor/bc-5de44fbd-ee4b-40a3-b69f-4907ef84a7b5-416c -> origin/cursor/bc-5de44fbd-ee4b-40a3-b69f-4907ef84a7b5-416c
+2026-10-09T17:35:16.5091002Z  * [new branch]          cursor/bc-75605413-ba0c-4a10-949d-92e64588ed8a-9a00 -> origin/cursor/bc-75605413-ba0c-4a10-949d-92e64588ed8a-9a00
+2026-10-09T17:35:16.5092893Z  * [new branch]          cursor/bc-b8c6d98a-c444-48a8-bb38-7b35a9379b05-57f7 -> origin/cursor/bc-b8c6d98a-c444-48a8-bb38-7b35a9379b05-57f7
+2026-10-09T17:35:16.5094598Z  * [new branch]          davinci-infra-rearchitecture-46c467 -> origin/davinci-infra-rearchitecture-46c467
+2026-10-09T17:35:16.5095888Z  * [new branch]          davinci-main-sync       -> origin/davinci-main-sync
+2026-10-09T17:35:16.5096945Z  * [new branch]          davinci-moonbit-x-bump  -> origin/davinci-moonbit-x-bump
+2026-10-09T17:35:16.5098017Z  * [new branch]          davinci-p2-9-legacy     -> origin/davinci-p2-9-legacy
+2026-10-09T17:35:16.5099050Z  * [new branch]          davinci-phase-2-recut   -> origin/davinci-phase-2-recut
+2026-10-09T17:35:16.5100237Z  * [new branch]          davinci/c-5-spolvero-provenance -> origin/davinci/c-5-spolvero-provenance
+2026-10-09T17:35:16.5101452Z  * [new branch]          davinci/p2-11-integration -> origin/davinci/p2-11-integration
+2026-10-09T17:35:16.5102524Z  * [new branch]          davinci/p3-11-ivm-matrix -> origin/davinci/p3-11-ivm-matrix
+2026-10-09T17:35:16.5103562Z  * [new branch]          davinci/p3-17-s2-speed  -> origin/davinci/p3-17-s2-speed
+2026-10-09T17:35:16.5104675Z  * [new branch]          davinci/p3-8-ssr-create-slots -> origin/davinci/p3-8-ssr-create-slots
+2026-10-09T17:35:16.5105878Z  * [new branch]          davinci/p3-8-ssr-directives -> origin/davinci/p3-8-ssr-directives
+2026-10-09T17:35:16.5106997Z  * [new branch]          davinci/p3-8-ssr-dynamic -> origin/davinci/p3-8-ssr-dynamic
+2026-10-09T17:35:16.5108047Z  * [new branch]          davinci/p3-8-ssr-slots  -> origin/davinci/p3-8-ssr-slots
+2026-10-09T17:35:16.5109215Z  * [new branch]          davinci/p3-9-delete-sfc-recovery -> origin/davinci/p3-9-delete-sfc-recovery
+2026-10-09T17:35:16.5110486Z  * [new branch]          davinci/p3-9-vapor-token-maps -> origin/davinci/p3-9-vapor-token-maps
+2026-10-09T17:35:16.5111709Z  * [new branch]          davinci/p4-14b-catalog-tables -> origin/davinci/p4-14b-catalog-tables
+2026-10-09T17:35:16.5112964Z  * [new branch]          davinci/p4-14b-cross-file-catalog -> origin/davinci/p4-14b-cross-file-catalog
+2026-10-09T17:35:16.5114124Z  * [new branch]          davinci/p4-14c-explain  -> origin/davinci/p4-14c-explain
+2026-10-09T17:35:16.5115169Z  * [new branch]          davinci/p4-14c-witness-why -> origin/davinci/p4-14c-witness-why
+2026-10-09T17:35:16.5116321Z  * [new branch]          davinci/p4-5b-s2-projection -> origin/davinci/p4-5b-s2-projection
+2026-10-09T17:35:16.5117464Z  * [new branch]          davinci/p4-7b-facade-switch -> origin/davinci/p4-7b-facade-switch
+2026-10-09T17:35:16.5118773Z  * [new branch]          davinci/p4-9a-template-cfg-complexity -> origin/davinci/p4-9a-template-cfg-complexity
+2026-10-09T17:35:16.5120131Z  * [new branch]          davinci/p5-8a-corsa-session-key -> origin/davinci/p5-8a-corsa-session-key
+2026-10-09T17:35:16.5121526Z  * [new branch]          debug/canon-misskey-perf-20260929 -> origin/debug/canon-misskey-perf-20260929
+2026-10-09T17:35:16.5122921Z  * [new branch]          diagnostic/issue6832-dom-no-capture -> origin/diagnostic/issue6832-dom-no-capture
+2026-10-09T17:35:16.5124405Z  * [new branch]          diagnostic/issue6832-ssr-vapor-no-capture -> origin/diagnostic/issue6832-ssr-vapor-no-capture
+2026-10-09T17:35:16.5125933Z  * [new branch]          diagnostic/l1-after-7152-6835-20260929 -> origin/diagnostic/l1-after-7152-6835-20260929
+2026-10-09T17:35:16.5127350Z  * [new branch]          docs/davinci-dynamic-bind-record -> origin/docs/davinci-dynamic-bind-record
+2026-10-09T17:35:16.5128626Z  * [new branch]          docs/davinci-level-restructure -> origin/docs/davinci-level-restructure
+2026-10-09T17:35:16.5129888Z  * [new branch]          docs/davinci-script-jsx-s1-task -> origin/docs/davinci-script-jsx-s1-task
+2026-10-09T17:35:16.5131036Z  * [new branch]          docs/fix-report-support -> origin/docs/fix-report-support
+2026-10-09T17:35:16.5132394Z  * [new branch]          docs/formatter-7876-original-closure-20261009 -> origin/docs/formatter-7876-original-closure-20261009
+2026-10-09T17:35:16.5133915Z  * [new branch]          docs/l1-tokenizer-gate-6835-20260929 -> origin/docs/l1-tokenizer-gate-6835-20260929
+2026-10-09T17:35:16.5135146Z  * [new branch]          feat/brand-open-v-identity -> origin/feat/brand-open-v-identity
+2026-10-09T17:35:16.5136431Z  * [new branch]          feat/cli-dump-roundtrip-ci07ac-prep -> origin/feat/cli-dump-roundtrip-ci07ac-prep
+2026-10-09T17:35:16.5137698Z  * [new branch]          feat/davinci-component-names -> origin/feat/davinci-component-names
+2026-10-09T17:35:16.5138875Z  * [new branch]          feat/davinci-dom-module-reach -> origin/feat/davinci-dom-module-reach
+2026-10-09T17:35:16.5140101Z  * [new branch]          feat/davinci-stateful-reference -> origin/feat/davinci-stateful-reference
+2026-10-09T17:35:16.5141538Z  * [new branch]          feat/davinci-vapor-reactivity-integration -> origin/feat/davinci-vapor-reactivity-integration
+2026-10-09T17:35:16.5142988Z  * [new branch]          feat/experimental-self-reference -> origin/feat/experimental-self-reference
+2026-10-09T17:35:16.5144203Z  * [new branch]          feat/l1-native-lint-tag-kind -> origin/feat/l1-native-lint-tag-kind
+2026-10-09T17:35:16.5145448Z  * [new branch]          feat/l1-v-pre-lexing-6836-20260928 -> origin/feat/l1-v-pre-lexing-6836-20260928
+2026-10-09T17:35:16.5146849Z  * [new branch]          feat/l2-native-jsx-static-names-20261003 -> origin/feat/l2-native-jsx-static-names-20261003
+2026-10-09T17:35:16.5148378Z  * [new branch]          feat/l2-ordinary-empty-component-20261003 -> origin/feat/l2-ordinary-empty-component-20261003
+2026-10-09T17:35:16.5149737Z  * [new branch]          feat/l4-original-click-handler -> origin/feat/l4-original-click-handler
+2026-10-09T17:35:16.5151019Z  * [new branch]          feat/maestro-lsp-capability-parity -> origin/feat/maestro-lsp-capability-parity
+2026-10-09T17:35:16.5152515Z  * [new branch]          feat/native-binding-compat-main-f634-20261002 -> origin/feat/native-binding-compat-main-f634-20261002
+2026-10-09T17:35:16.5154031Z  * [new branch]          feat/patina-configurable-rules-clean -> origin/feat/patina-configurable-rules-clean
+2026-10-09T17:35:16.5155318Z  * [new branch]          feat/ui-data-component-styles -> origin/feat/ui-data-component-styles
+2026-10-09T17:35:16.5156313Z  * [new branch]          feat/ui-qr              -> origin/feat/ui-qr
+2026-10-09T17:35:16.5157270Z  * [new branch]          fix-1533-jsx-preamble-tests -> origin/fix-1533-jsx-preamble-tests
+2026-10-09T17:35:16.5158584Z  * [new branch]          fix-ci-rust-shard-partial-reruns-20261004 -> origin/fix-ci-rust-shard-partial-reruns-20261004
+2026-10-09T17:35:16.5159839Z  * [new branch]          fix/a11y-switch-20260929 -> origin/fix/a11y-switch-20260929
+2026-10-09T17:35:16.5160932Z  * [new branch]          fix/aliased-prop-check-20260929 -> origin/fix/aliased-prop-check-20260929
+2026-10-09T17:35:16.5162296Z  * [new branch]          fix/armature-release-semver-20260929 -> origin/fix/armature-release-semver-20260929
+2026-10-09T17:35:16.5163656Z  * [new branch]          fix/atelier-pr7142-clean-20260929 -> origin/fix/atelier-pr7142-clean-20260929
+2026-10-09T17:35:16.5164889Z  * [new branch]          fix/canon-empty-component-props -> origin/fix/canon-empty-component-props
+2026-10-09T17:35:16.5166155Z  * [new branch]          fix/canon-graphql-module-identity -> origin/fix/canon-graphql-module-identity
+2026-10-09T17:35:16.5167576Z  * [new branch]          fix/canon-nuxt-template-false-positives -> origin/fix/canon-nuxt-template-false-positives
+2026-10-09T17:35:16.5168896Z  * [new branch]          fix/canon-nuxt-template-globals -> origin/fix/canon-nuxt-template-globals
+2026-10-09T17:35:16.5170196Z  * [new branch]          fix/canon-preserve-enum-export-member -> origin/fix/canon-preserve-enum-export-member
+2026-10-09T17:35:16.5171447Z  * [new branch]          fix/canon-whole-props-target -> origin/fix/canon-whole-props-target
+2026-10-09T17:35:16.5172650Z  * [new branch]          fix/check-register-default-imports -> origin/fix/check-register-default-imports
+2026-10-09T17:35:16.5173777Z  * [new branch]          fix/check-vue-jsx-types -> origin/fix/check-vue-jsx-types
+2026-10-09T17:35:16.5174881Z  * [new branch]          fix/comment-default-slot-20260929 -> origin/fix/comment-default-slot-20260929
+2026-10-09T17:35:16.5176150Z  * [new branch]          fix/compiler-macros-emit-snapshot -> origin/fix/compiler-macros-emit-snapshot
+2026-10-09T17:35:16.5177372Z  * [new branch]          fix/config-jsxtypecheck-typings -> origin/fix/config-jsxtypecheck-typings
+2026-10-09T17:35:16.5178626Z  * [new branch]          fix/content-mapper-ts63936-protocol -> origin/fix/content-mapper-ts63936-protocol
+2026-10-09T17:35:16.5179870Z  * [new branch]          fix/corsa-nuxt2-composition-api -> origin/fix/corsa-nuxt2-composition-api
+2026-10-09T17:35:16.5181183Z  * [new branch]          fix/davinci-corpus-residuals-2-20260901 -> origin/fix/davinci-corpus-residuals-2-20260901
+2026-10-09T17:35:16.5182722Z  * [new branch]          fix/davinci-final-dom-corpus-residuals-20260902 -> origin/fix/davinci-final-dom-corpus-residuals-20260902
+2026-10-09T17:35:16.5184187Z  * [new branch]          fix/devalue-security-final-20261002 -> origin/fix/devalue-security-final-20261002
+2026-10-09T17:35:16.5185378Z  * [new branch]          fix/dynamic-name-provenance -> origin/fix/dynamic-name-provenance
+2026-10-09T17:35:16.5186456Z  * [new branch]          fix/elk-dev-hydration-route -> origin/fix/elk-dev-hydration-route
+2026-10-09T17:35:16.5187509Z  * [new branch]          fix/entities-child-20260929 -> origin/fix/entities-child-20260929
+2026-10-09T17:35:16.5188666Z  * [new branch]          fix/glyph-root-relative-art-paths -> origin/fix/glyph-root-relative-art-paths
+2026-10-09T17:35:16.5190026Z  * [new branch]          fix/lint-cross-file-severity-7935-20261007 -> origin/fix/lint-cross-file-severity-7935-20261007
+2026-10-09T17:35:16.5191557Z  * [new branch]          fix/lsp-open-buffer-alias-definition-20261009 -> origin/fix/lsp-open-buffer-alias-definition-20261009
+2026-10-09T17:35:16.5193114Z  * [new branch]          fix/maestro-component-prop-reference-bounds -> origin/fix/maestro-component-prop-reference-bounds
+2026-10-09T17:35:16.5194646Z  * [new branch]          fix/maestro-component-prop-references-4480 -> origin/fix/maestro-component-prop-references-4480
+2026-10-09T17:35:16.5195939Z  * [new branch]          fix/main-post6406-gates -> origin/fix/main-post6406-gates
+2026-10-09T17:35:16.5196930Z  * [new branch]          fix/monorepo-tsconfig-7274 -> origin/fix/monorepo-tsconfig-7274
+2026-10-09T17:35:16.5198079Z  * [new branch]          fix/musea-unresolved-story-spreads -> origin/fix/musea-unresolved-story-spreads
+2026-10-09T17:35:16.5199239Z  * [new branch]          fix/native-vue-jsdoc-reads -> origin/fix/native-vue-jsdoc-reads
+2026-10-09T17:35:16.5200287Z  * [new branch]          fix/npmx-head-fixture-drift -> origin/fix/npmx-head-fixture-drift
+2026-10-09T17:35:16.5201527Z  * [new branch]          fix/nuxt-project-sfc-style-requests -> origin/fix/nuxt-project-sfc-style-requests
+2026-10-09T17:35:16.5203017Z  * [new branch]          fix/oxlint-original-html-native-operation-7903 -> origin/fix/oxlint-original-html-native-operation-7903
+2026-10-09T17:35:16.5204648Z  * [new branch]          fix/patina-allocation-nextest-protocol-20261002 -> origin/fix/patina-allocation-nextest-protocol-20261002
+2026-10-09T17:35:16.5206160Z  * [new branch]          fix/patina-default-traversal-6506-6507 -> origin/fix/patina-default-traversal-6506-6507
+2026-10-09T17:35:16.5207408Z  * [new branch]          fix/patina-lint-regressions -> origin/fix/patina-lint-regressions
+2026-10-09T17:35:16.5208521Z  * [new branch]          fix/patina-model-modifiers-4448 -> origin/fix/patina-model-modifiers-4448
+2026-10-09T17:35:16.5209658Z  * [new branch]          fix/patina-transition-appear -> origin/fix/patina-transition-appear
+2026-10-09T17:35:16.5210788Z  * [new branch]          fix/priority-readiness-issues -> origin/fix/priority-readiness-issues
+2026-10-09T17:35:16.5211942Z  * [new branch]          fix/real-project-lsp-corsa-pin -> origin/fix/real-project-lsp-corsa-pin
+2026-10-09T17:35:16.5213046Z  * [new branch]          fix/reka-ui-typecheck-gate -> origin/fix/reka-ui-typecheck-gate
+2026-10-09T17:35:16.5214273Z  * [new branch]          fix/release-nix-parser-adapter-20261003 -> origin/fix/release-nix-parser-adapter-20261003
+2026-10-09T17:35:16.5215564Z  * [new branch]          fix/root-whitespace-20260929 -> origin/fix/root-whitespace-20260929
+2026-10-09T17:35:16.5216711Z  * [new branch]          fix/scoped-css-parity-20260929 -> origin/fix/scoped-css-parity-20260929
+2026-10-09T17:35:16.5217921Z  * [new branch]          fix/setup-component-tag-unref-ci -> origin/fix/setup-component-tag-unref-ci
+2026-10-09T17:35:16.5219091Z  * [new branch]          fix/sfc-script-first-ordering -> origin/fix/sfc-script-first-ordering
+2026-10-09T17:35:16.5220315Z  * [new branch]          fix/solution-style-alias-anchor -> origin/fix/solution-style-alias-anchor
+2026-10-09T17:35:16.5221473Z  * [new branch]          fix/static-prop-value-checks -> origin/fix/static-prop-value-checks
+2026-10-09T17:35:16.5222603Z  * [new branch]          fix/typecheck-ambient-imports -> origin/fix/typecheck-ambient-imports
+2026-10-09T17:35:16.5223704Z  * [new branch]          fix/typecheck-corpus-scope -> origin/fix/typecheck-corpus-scope
+2026-10-09T17:35:16.5224780Z  * [new branch]          fix/use-route-query-weakmap -> origin/fix/use-route-query-weakmap
+2026-10-09T17:35:16.5226017Z  * [new branch]          fix/vite-slotted-nesting-combinator -> origin/fix/vite-slotted-nesting-combinator
+2026-10-09T17:35:16.5227228Z  * [new branch]          fix/vue-lsp-canonical-queries -> origin/fix/vue-lsp-canonical-queries
+2026-10-09T17:35:16.5228559Z  * [new branch]          fix/vue-lsp-imports-and-template-definition -> origin/fix/vue-lsp-imports-and-template-definition
+2026-10-09T17:35:16.5229808Z  * [new branch]          fix/zed-art-vue-grammar -> origin/fix/zed-art-vue-grammar
+2026-10-09T17:35:16.5230842Z  * [new branch]          fix/zed-editors-path-grammar -> origin/fix/zed-editors-path-grammar
+2026-10-09T17:35:16.5232516Z  * [new branch]          gh-readonly-queue/main/pr-7113-6890ea1b20d4bcccbe9ef1f4cc5e0a1973725135 -> origin/gh-readonly-queue/main/pr-7113-6890ea1b20d4bcccbe9ef1f4cc5e0a1973725135
+2026-10-09T17:35:16.5234703Z  * [new branch]          gh-readonly-queue/main/pr-8131-ef84821d30fa0d8538b2472fef34418e75380523 -> origin/gh-readonly-queue/main/pr-8131-ef84821d30fa0d8538b2472fef34418e75380523
+2026-10-09T17:35:16.5236909Z  * [new branch]          gh-readonly-queue/main/pr-8160-8c7727613de6213e0a52cde96eeb295d01c9bef5 -> origin/gh-readonly-queue/main/pr-8160-8c7727613de6213e0a52cde96eeb295d01c9bef5
+2026-10-09T17:35:16.5239072Z  * [new branch]          gh-readonly-queue/main/pr-8167-05e71578d9254c8356d594e7bc76038f2f2ee38b -> origin/gh-readonly-queue/main/pr-8167-05e71578d9254c8356d594e7bc76038f2f2ee38b
+2026-10-09T17:35:16.5240666Z  * [new branch]          l1-container-move       -> origin/l1-container-move
+2026-10-09T17:35:16.5241627Z  * [new branch]          main                    -> origin/main
+2026-10-09T17:35:16.5242746Z  * [new branch]          observe/lsp-composed-resource-3952-20261008 -> origin/observe/lsp-composed-resource-3952-20261008
+2026-10-09T17:35:16.5244218Z  * [new branch]          observe/lsp-source-baseline-3952-20261008 -> origin/observe/lsp-source-baseline-3952-20261008
+2026-10-09T17:35:16.5245641Z  * [new branch]          perf/bulk-native-diagnostics-20261005 -> origin/perf/bulk-native-diagnostics-20261005
+2026-10-09T17:35:16.5246995Z  * [new branch]          perf/check-import-occurrence-cache -> origin/perf/check-import-occurrence-cache
+2026-10-09T17:35:16.5248348Z  * [new branch]          perf/davinci-handler-admission-floor -> origin/perf/davinci-handler-admission-floor
+2026-10-09T17:35:16.5249679Z  * [new branch]          perf/davinci-recent-expression-reuse -> origin/perf/davinci-recent-expression-reuse
+2026-10-09T17:35:16.5251033Z  * [new branch]          perf/dynamic-props-7136-source-20260929 -> origin/perf/dynamic-props-7136-source-20260929
+2026-10-09T17:35:16.5252409Z  * [new branch]          perf/generated-name-sets-7136-20260929 -> origin/perf/generated-name-sets-7136-20260929
+2026-10-09T17:35:16.5253898Z  * [new branch]          perf/generated-name-sets-lazy-only-7136-20260929 -> origin/perf/generated-name-sets-lazy-only-7136-20260929
+2026-10-09T17:35:16.5255388Z  * [new branch]          perf/html-hot-noinline-7136-20260929 -> origin/perf/html-hot-noinline-7136-20260929
+2026-10-09T17:35:16.5256723Z  * [new branch]          perf/html-hot-tags-7136-source-20260929 -> origin/perf/html-hot-tags-7136-source-20260929
+2026-10-09T17:35:16.5257991Z  * [new branch]          perf/l1-best-fresh-7136-20260929 -> origin/perf/l1-best-fresh-7136-20260929
+2026-10-09T17:35:16.5259222Z  * [new branch]          perf/l1-compile-host-7136-ab-20260929 -> origin/perf/l1-compile-host-7136-ab-20260929
+2026-10-09T17:35:16.5260541Z  * [new branch]          perf/l1-cumulative-after-7150-20260929 -> origin/perf/l1-cumulative-after-7150-20260929
+2026-10-09T17:35:16.5261815Z  * [new branch]          perf/l1-host-math-7136-ab-20260929 -> origin/perf/l1-host-math-7136-ab-20260929
+2026-10-09T17:35:16.5263032Z  * [new branch]          perf/l1-lazy-ir-spans-7136-20260929 -> origin/perf/l1-lazy-ir-spans-7136-20260929
+2026-10-09T17:35:16.5264293Z  * [new branch]          perf/l1-package-host-7136-ab-20260929 -> origin/perf/l1-package-host-7136-ab-20260929
+2026-10-09T17:35:16.5265606Z  * [new branch]          perf/l1-template-cache-7136-20260929 -> origin/perf/l1-template-cache-7136-20260929
+2026-10-09T17:35:16.5266932Z  * [new branch]          perf/l1-template-has-bind-7136-20260929 -> origin/perf/l1-template-has-bind-7136-20260929
+2026-10-09T17:35:16.5268267Z  * [new branch]          perf/l1-template-inline-7136-20260929 -> origin/perf/l1-template-inline-7136-20260929
+2026-10-09T17:35:16.5269660Z  * [new branch]          perf/l1-template-single-scan-7136-20260929 -> origin/perf/l1-template-single-scan-7136-20260929
+2026-10-09T17:35:16.5270824Z  * [new branch]          perf/l2-hot-paths       -> origin/perf/l2-hot-paths
+2026-10-09T17:35:16.5271898Z  * [new branch]          perf/mathml-prefix-7136-ab-20260929 -> origin/perf/mathml-prefix-7136-ab-20260929
+2026-10-09T17:35:16.5273064Z  * [new branch]          perf/phf-7136-source-20260929 -> origin/perf/phf-7136-source-20260929
+2026-10-09T17:35:16.5274301Z  * [new branch]          perf/typecheck-retained-template-reads -> origin/perf/typecheck-retained-template-reads
+2026-10-09T17:35:16.5275670Z  * [new branch]          perf/vapor-inline-only-6835-20260929 -> origin/perf/vapor-inline-only-6835-20260929
+2026-10-09T17:35:16.5276933Z  * [new branch]          perf/vapor-precursor-6835-20260929 -> origin/perf/vapor-precursor-6835-20260929
+2026-10-09T17:35:16.5278166Z  * [new branch]          perf/vapor-spans-only-6835-20260929 -> origin/perf/vapor-spans-only-6835-20260929
+2026-10-09T17:35:16.5279598Z  * [new branch]          proof/compiler-api15-artifact-dd6-20261002 -> origin/proof/compiler-api15-artifact-dd6-20261002
+2026-10-09T17:35:16.5281202Z  * [new branch]          proof/compiler-api15-artifact-labels-dd6-20261002 -> origin/proof/compiler-api15-artifact-labels-dd6-20261002
+2026-10-09T17:35:16.5282649Z  * [new branch]          proof/compiler-history-dd6-20261002 -> origin/proof/compiler-history-dd6-20261002
+2026-10-09T17:35:16.5283897Z  * [new branch]          proof/l1-native-authority-20261002 -> origin/proof/l1-native-authority-20261002
+2026-10-09T17:35:16.5285099Z  * [new branch]          proof/tsx-jsx-fixture-candidates -> origin/proof/tsx-jsx-fixture-candidates
+2026-10-09T17:35:16.5286543Z  * [new branch]          provenance/compiler-ssr-original-c2451-20261002 -> origin/provenance/compiler-ssr-original-c2451-20261002
+2026-10-09T17:35:16.5288169Z  * [new branch]          provenance/compiler-vapor-original-b11eb-20261002 -> origin/provenance/compiler-vapor-original-b11eb-20261002
+2026-10-09T17:35:16.5289768Z  * [new branch]          provenance/formatter-history-capture-20261001 -> origin/provenance/formatter-history-capture-20261001
+2026-10-09T17:35:16.5291395Z  * [new branch]          provenance/formatter-history-full-evidence-20261001 -> origin/provenance/formatter-history-full-evidence-20261001
+2026-10-09T17:35:16.5293148Z  * [new branch]          provenance/formatter-history-observer-source-20261002 -> origin/provenance/formatter-history-observer-source-20261002
+2026-10-09T17:35:16.5294761Z  * [new branch]          provenance/oxc-fc702c1-source-copy-20261002 -> origin/provenance/oxc-fc702c1-source-copy-20261002
+2026-10-09T17:35:16.5296428Z  * [new branch]          provenance/sfc-map-diagnostic-history-capture-72293b11b -> origin/provenance/sfc-map-diagnostic-history-capture-72293b11b
+2026-10-09T17:35:16.5298041Z  * [new branch]          provenance/ssr-history-capture-22decfc11 -> origin/provenance/ssr-history-capture-22decfc11
+2026-10-09T17:35:16.5299467Z  * [new branch]          provenance/vapor-history-capture-941ff5b2d -> origin/provenance/vapor-history-capture-941ff5b2d
+2026-10-09T17:35:16.5301090Z  * [new branch]          recovery/native-jsx-owning-body-94-before-d36-20261003 -> origin/recovery/native-jsx-owning-body-94-before-d36-20261003
+2026-10-09T17:35:16.5302834Z  * [new branch]          recovery/native-jsx-owning-body-af-before-7f-20261003 -> origin/recovery/native-jsx-owning-body-af-before-7f-20261003
+2026-10-09T17:35:16.5304291Z  * [new branch]          recovery/sfc-feature-313-20261003 -> origin/recovery/sfc-feature-313-20261003
+2026-10-09T17:35:16.5305478Z  * [new branch]          recovery/sfc-feature-5392-20261003 -> origin/recovery/sfc-feature-5392-20261003
+2026-10-09T17:35:16.5306649Z  * [new branch]          recovery/sfc-feature-7dc-20261003 -> origin/recovery/sfc-feature-7dc-20261003
+2026-10-09T17:35:16.5307784Z  * [new branch]          refactor/dump-api-ci07ac-prep -> origin/refactor/dump-api-ci07ac-prep
+2026-10-09T17:35:16.5308937Z  * [new branch]          refactor/hash-domains-ci07ac-prep -> origin/refactor/hash-domains-ci07ac-prep
+2026-10-09T17:35:16.5310192Z  * [new branch]          refactor/l2-dump-protocol-ci07ac-prep -> origin/refactor/l2-dump-protocol-ci07ac-prep
+2026-10-09T17:35:16.5311504Z  * [new branch]          refactor/l3-dump-protocol-ci07ac-prep -> origin/refactor/l3-dump-protocol-ci07ac-prep
+2026-10-09T17:35:16.5312756Z  * [new branch]          refactor/l3-formal-namespace-6832 -> origin/refactor/l3-formal-namespace-6832
+2026-10-09T17:35:16.5313986Z  * [new branch]          refactor/physical-l3-foundation-lint -> origin/refactor/physical-l3-foundation-lint
+2026-10-09T17:35:16.5315215Z  * [new branch]          refactor/stage-path-types-main16e -> origin/refactor/stage-path-types-main16e
+2026-10-09T17:35:16.5316466Z  * [new branch]          refactor/tools-benchmark-dispatcher -> origin/refactor/tools-benchmark-dispatcher
+2026-10-09T17:35:16.5317899Z  * [new branch]          release-archive/v0.436.0/source-f2bc5442d1b6-20261008 -> origin/release-archive/v0.436.0/source-f2bc5442d1b6-20261008
+2026-10-09T17:35:16.5319337Z  * [new branch]          release-archive/v0.437.0-pr8312 -> origin/release-archive/v0.437.0-pr8312
+2026-10-09T17:35:16.5320470Z  * [new branch]          release-archive/v0.437.0-pr8314 -> origin/release-archive/v0.437.0-pr8314
+2026-10-09T17:35:16.5321506Z  * [new branch]          release-evidence/v0.348.0 -> origin/release-evidence/v0.348.0
+2026-10-09T17:35:16.5322508Z  * [new branch]          release-integration/v0.435.2 -> origin/release-integration/v0.435.2
+2026-10-09T17:35:16.5323513Z  * [new branch]          release-operator/v0.438.0 -> origin/release-operator/v0.438.0
+2026-10-09T17:35:16.5324440Z  * [new branch]          release-pin/v0.435.1    -> origin/release-pin/v0.435.1
+2026-10-09T17:35:16.5325322Z  * [new branch]          release-pin/v0.435.2    -> origin/release-pin/v0.435.2
+2026-10-09T17:35:16.5326210Z  * [new branch]          release-pin/v0.436.0    -> origin/release-pin/v0.436.0
+2026-10-09T17:35:16.5327133Z  * [new branch]          release-pin/v0.437.0    -> origin/release-pin/v0.437.0
+2026-10-09T17:35:16.5328216Z  * [new branch]          release/v0.429.2-compat-probe-2-20260929 -> origin/release/v0.429.2-compat-probe-2-20260929
+2026-10-09T17:35:16.5329497Z  * [new branch]          release/v0.429.2-compat-probe-20260929 -> origin/release/v0.429.2-compat-probe-20260929
+2026-10-09T17:35:16.5330533Z  * [new branch]          release/v0.430.2        -> origin/release/v0.430.2
+2026-10-09T17:35:16.5331348Z  * [new branch]          release/v0.435.1        -> origin/release/v0.435.1
+2026-10-09T17:35:16.5332162Z  * [new branch]          release/v0.435.2        -> origin/release/v0.435.2
+2026-10-09T17:35:16.5332973Z  * [new branch]          release/v0.436.0        -> origin/release/v0.436.0
+2026-10-09T17:35:16.5333787Z  * [new branch]          release/v0.437.0        -> origin/release/v0.437.0
+2026-10-09T17:35:16.5334601Z  * [new branch]          release/v0.438.0        -> origin/release/v0.438.0
+2026-10-09T17:35:16.5335791Z  * [new branch]          temp/native-js-setup-actual21-runtime-20261003 -> origin/temp/native-js-setup-actual21-runtime-20261003
+2026-10-09T17:35:16.5337186Z  * [new branch]          test/canon-required-props-ci-20260927 -> origin/test/canon-required-props-ci-20260927
+2026-10-09T17:35:16.5338359Z  * [new branch]          test/compiler-e2e-require-cli -> origin/test/compiler-e2e-require-cli
+2026-10-09T17:35:16.5339622Z  * [new branch]          test/compiler-history-inventory-dd6-20261002 -> origin/test/compiler-history-inventory-dd6-20261002
+2026-10-09T17:35:16.5340996Z  * [new branch]          test/corpus-ssr-syscall-trace-20261008 -> origin/test/corpus-ssr-syscall-trace-20261008
+2026-10-09T17:35:16.5342289Z  * [new branch]          test/davinci-canon-scaling-candidate -> origin/test/davinci-canon-scaling-candidate
+2026-10-09T17:35:16.5343571Z  * [new branch]          test/davinci-canon-scaling-comparison -> origin/test/davinci-canon-scaling-comparison
+2026-10-09T17:35:16.5344822Z  * [new branch]          test/davinci-corpus-preflight-4831 -> origin/test/davinci-corpus-preflight-4831
+2026-10-09T17:35:16.5346171Z  * [new branch]          test/differential-tooling-receipts-main16e -> origin/test/differential-tooling-receipts-main16e
+2026-10-09T17:35:16.5347576Z  * [new branch]          test/editor-member-hover-custody-20261006 -> origin/test/editor-member-hover-custody-20261006
+2026-10-09T17:35:16.5348935Z  * [new branch]          test/fixtures-rule-map-severity-preset -> origin/test/fixtures-rule-map-severity-preset
+2026-10-09T17:35:16.5350398Z  * [new branch]          test/lint-baseline-range-evidence-main7f-20261003 -> origin/test/lint-baseline-range-evidence-main7f-20261003
+2026-10-09T17:35:16.5351947Z  * [new branch]          test/linter-component-name-capture-4c-20261002 -> origin/test/linter-component-name-capture-4c-20261002
+2026-10-09T17:35:16.5353284Z  * [new branch]          test/lsp-full-source-e648-20261003 -> origin/test/lsp-full-source-e648-20261003
+2026-10-09T17:35:16.5354444Z  * [new branch]          test/lsp-full-source-f634-20261002 -> origin/test/lsp-full-source-f634-20261002
+2026-10-09T17:35:16.5355860Z  * [new branch]          test/lsp-installed-alias-replay-8011-20261008 -> origin/test/lsp-installed-alias-replay-8011-20261008
+2026-10-09T17:35:16.5357440Z  * [new branch]          test/lsp-installed-event-slot-replay-8010-20261008 -> origin/test/lsp-installed-event-slot-replay-8010-20261008
+2026-10-09T17:35:16.5358897Z  * [new branch]          test/lsp-native-jsx-tsx-source-20261003 -> origin/test/lsp-native-jsx-tsx-source-20261003
+2026-10-09T17:35:16.5360313Z  * [new branch]          test/lsp-native-program-source-1850119-20261003 -> origin/test/lsp-native-program-source-1850119-20261003
+2026-10-09T17:35:16.5361826Z  * [new branch]          test/lsp-native-project-source-860dfb-20261003 -> origin/test/lsp-native-project-source-860dfb-20261003
+2026-10-09T17:35:16.5363303Z  * [new branch]          test/lsp-nuxt-ambient-owning-source-20261003 -> origin/test/lsp-nuxt-ambient-owning-source-20261003
+2026-10-09T17:35:16.5364684Z  * [new branch]          test/lsp-original-event-rename-20261008 -> origin/test/lsp-original-event-rename-20261008
+2026-10-09T17:35:16.5366118Z  * [new branch]          test/lsp-session-source-links-current-20261002 -> origin/test/lsp-session-source-links-current-20261002
+2026-10-09T17:35:16.5367697Z  * [new branch]          test/original-typed-parameter-checker-20261004 -> origin/test/original-typed-parameter-checker-20261004
+2026-10-09T17:35:16.5369125Z  * [new branch]          test/original400-driver-7f1cb15d-20261005 -> origin/test/original400-driver-7f1cb15d-20261005
+2026-10-09T17:35:16.5370379Z  * [new branch]          test/patina-focus-current-output -> origin/test/patina-focus-current-output
+2026-10-09T17:35:16.5371547Z  * [new branch]          test/pnpm-workspace-7834-baseline -> origin/test/pnpm-workspace-7834-baseline
+2026-10-09T17:35:16.5372672Z  * [new branch]          tmp/issue-3569-linux-snapshots -> origin/tmp/issue-3569-linux-snapshots
+2026-10-09T17:35:16.5373646Z  * [new branch]          ui/chart-components     -> origin/ui/chart-components
+2026-10-09T17:35:16.5374474Z  * [new branch]          ui/data-grid            -> origin/ui/data-grid
+2026-10-09T17:35:16.5375320Z  * [new branch]          ui/date-time-pickers    -> origin/ui/date-time-pickers
+2026-10-09T17:35:16.5376207Z  * [new branch]          ui/date-time-scheduler  -> origin/ui/date-time-scheduler
+2026-10-09T17:35:16.5377025Z  * [new branch]          ui/form-3               -> origin/ui/form-3
+2026-10-09T17:35:16.5377827Z  * [new branch]          ui/form-inputs-text     -> origin/ui/form-inputs-text
+2026-10-09T17:35:16.5378670Z  * [new branch]          ui/layout-windows       -> origin/ui/layout-windows
+2026-10-09T17:35:16.5379469Z  * [new branch]          ui/media-2              -> origin/ui/media-2
+2026-10-09T17:35:16.5380248Z  * [new branch]          ui/menu-family          -> origin/ui/menu-family
+2026-10-09T17:35:16.5381083Z  * [new branch]          ui/overlay-feedback-2   -> origin/ui/overlay-feedback-2
+2026-10-09T17:35:16.5381918Z  * [new branch]          ui/rich-text            -> origin/ui/rich-text
+2026-10-09T17:35:16.5382764Z  * [new branch]          ui/structure-nav-menus  -> origin/ui/structure-nav-menus
+2026-10-09T17:35:16.5383611Z  * [new branch]          ui/tags-input           -> origin/ui/tags-input
+2026-10-09T17:35:16.5384607Z  * [new branch]          verify/canon-computed-6921-20260927 -> origin/verify/canon-computed-6921-20260927
+2026-10-09T17:35:16.5385863Z  * [new branch]          verify/canon-slot-outlet-6922-20260927 -> origin/verify/canon-slot-outlet-6922-20260927
+2026-10-09T17:35:16.5387204Z  * [new branch]          verify/native6962-physical-l3-gates-20260927 -> origin/verify/native6962-physical-l3-gates-20260927
+2026-10-09T17:35:16.5388261Z  * [new tag]             v0.0.1-alpha.10         -> v0.0.1-alpha.10
+2026-10-09T17:35:16.5388983Z  * [new tag]             v0.0.1-alpha.100        -> v0.0.1-alpha.100
+2026-10-09T17:35:16.5389711Z  * [new tag]             v0.0.1-alpha.101        -> v0.0.1-alpha.101
+2026-10-09T17:35:16.5390518Z  * [new tag]             v0.0.1-alpha.102        -> v0.0.1-alpha.102
+2026-10-09T17:35:16.5391297Z  * [new tag]             v0.0.1-alpha.103        -> v0.0.1-alpha.103
+2026-10-09T17:35:16.5392022Z  * [new tag]             v0.0.1-alpha.104        -> v0.0.1-alpha.104
+2026-10-09T17:35:16.5392751Z  * [new tag]             v0.0.1-alpha.105        -> v0.0.1-alpha.105
+2026-10-09T17:35:16.5393474Z  * [new tag]             v0.0.1-alpha.106        -> v0.0.1-alpha.106
+2026-10-09T17:35:16.5394193Z  * [new tag]             v0.0.1-alpha.107        -> v0.0.1-alpha.107
+2026-10-09T17:35:16.5394923Z  * [new tag]             v0.0.1-alpha.108        -> v0.0.1-alpha.108
+2026-10-09T17:35:16.5395679Z  * [new tag]             v0.0.1-alpha.109        -> v0.0.1-alpha.109
+2026-10-09T17:35:16.5396396Z  * [new tag]             v0.0.1-alpha.11         -> v0.0.1-alpha.11
+2026-10-09T17:35:16.5397099Z  * [new tag]             v0.0.1-alpha.110        -> v0.0.1-alpha.110
+2026-10-09T17:35:16.5397813Z  * [new tag]             v0.0.1-alpha.111        -> v0.0.1-alpha.111
+2026-10-09T17:35:16.5398532Z  * [new tag]             v0.0.1-alpha.112        -> v0.0.1-alpha.112
+2026-10-09T17:35:16.5399247Z  * [new tag]             v0.0.1-alpha.113        -> v0.0.1-alpha.113
+2026-10-09T17:35:16.5399963Z  * [new tag]             v0.0.1-alpha.114        -> v0.0.1-alpha.114
+2026-10-09T17:35:16.5400671Z  * [new tag]             v0.0.1-alpha.115        -> v0.0.1-alpha.115
+2026-10-09T17:35:16.5401380Z  * [new tag]             v0.0.1-alpha.116        -> v0.0.1-alpha.116
+2026-10-09T17:35:16.5402093Z  * [new tag]             v0.0.1-alpha.117        -> v0.0.1-alpha.117
+2026-10-09T17:35:16.5402805Z  * [new tag]             v0.0.1-alpha.118        -> v0.0.1-alpha.118
+2026-10-09T17:35:16.5403519Z  * [new tag]             v0.0.1-alpha.119        -> v0.0.1-alpha.119
+2026-10-09T17:35:16.5404230Z  * [new tag]             v0.0.1-alpha.12         -> v0.0.1-alpha.12
+2026-10-09T17:35:16.5404940Z  * [new tag]             v0.0.1-alpha.120        -> v0.0.1-alpha.120
+2026-10-09T17:35:16.5405683Z  * [new tag]             v0.0.1-alpha.121        -> v0.0.1-alpha.121
+2026-10-09T17:35:16.5406395Z  * [new tag]             v0.0.1-alpha.13         -> v0.0.1-alpha.13
+2026-10-09T17:35:16.5407305Z  * [new tag]             v0.0.1-alpha.14         -> v0.0.1-alpha.14
+2026-10-09T17:35:16.5408015Z  * [new tag]             v0.0.1-alpha.15         -> v0.0.1-alpha.15
+2026-10-09T17:35:16.5408720Z  * [new tag]             v0.0.1-alpha.16         -> v0.0.1-alpha.16
+2026-10-09T17:35:16.5409416Z  * [new tag]             v0.0.1-alpha.17         -> v0.0.1-alpha.17
+2026-10-09T17:35:16.5410119Z  * [new tag]             v0.0.1-alpha.18         -> v0.0.1-alpha.18
+2026-10-09T17:35:16.5410820Z  * [new tag]             v0.0.1-alpha.19         -> v0.0.1-alpha.19
+2026-10-09T17:35:16.5411515Z  * [new tag]             v0.0.1-alpha.2          -> v0.0.1-alpha.2
+2026-10-09T17:35:16.5412202Z  * [new tag]             v0.0.1-alpha.20         -> v0.0.1-alpha.20
+2026-10-09T17:35:16.5412894Z  * [new tag]             v0.0.1-alpha.21         -> v0.0.1-alpha.21
+2026-10-09T17:35:16.5413595Z  * [new tag]             v0.0.1-alpha.22         -> v0.0.1-alpha.22
+2026-10-09T17:35:16.5414293Z  * [new tag]             v0.0.1-alpha.23         -> v0.0.1-alpha.23
+2026-10-09T17:35:16.5414979Z  * [new tag]             v0.0.1-alpha.24         -> v0.0.1-alpha.24
+2026-10-09T17:35:16.5415702Z  * [new tag]             v0.0.1-alpha.25         -> v0.0.1-alpha.25
+2026-10-09T17:35:16.5416397Z  * [new tag]             v0.0.1-alpha.26         -> v0.0.1-alpha.26
+2026-10-09T17:35:16.5417090Z  * [new tag]             v0.0.1-alpha.27         -> v0.0.1-alpha.27
+2026-10-09T17:35:16.5417774Z  * [new tag]             v0.0.1-alpha.28         -> v0.0.1-alpha.28
+2026-10-09T17:35:16.5418466Z  * [new tag]             v0.0.1-alpha.29         -> v0.0.1-alpha.29
+2026-10-09T17:35:16.5419162Z  * [new tag]             v0.0.1-alpha.3          -> v0.0.1-alpha.3
+2026-10-09T17:35:16.5419847Z  * [new tag]             v0.0.1-alpha.30         -> v0.0.1-alpha.30
+2026-10-09T17:35:16.5420638Z  * [new tag]             v0.0.1-alpha.31         -> v0.0.1-alpha.31
+2026-10-09T17:35:16.5421433Z  * [new tag]             v0.0.1-alpha.32         -> v0.0.1-alpha.32
+2026-10-09T17:35:16.5422191Z  * [new tag]             v0.0.1-alpha.33         -> v0.0.1-alpha.33
+2026-10-09T17:35:16.5422880Z  * [new tag]             v0.0.1-alpha.34         -> v0.0.1-alpha.34
+2026-10-09T17:35:16.5423570Z  * [new tag]             v0.0.1-alpha.35         -> v0.0.1-alpha.35
+2026-10-09T17:35:16.5424261Z  * [new tag]             v0.0.1-alpha.36         -> v0.0.1-alpha.36
+2026-10-09T17:35:16.5424947Z  * [new tag]             v0.0.1-alpha.37         -> v0.0.1-alpha.37
+2026-10-09T17:35:16.5425679Z  * [new tag]             v0.0.1-alpha.38         -> v0.0.1-alpha.38
+2026-10-09T17:35:16.5426367Z  * [new tag]             v0.0.1-alpha.39         -> v0.0.1-alpha.39
+2026-10-09T17:35:16.5427061Z  * [new tag]             v0.0.1-alpha.4          -> v0.0.1-alpha.4
+2026-10-09T17:35:16.5427741Z  * [new tag]             v0.0.1-alpha.40         -> v0.0.1-alpha.40
+2026-10-09T17:35:16.5428431Z  * [new tag]             v0.0.1-alpha.41         -> v0.0.1-alpha.41
+2026-10-09T17:35:16.5429123Z  * [new tag]             v0.0.1-alpha.42         -> v0.0.1-alpha.42
+2026-10-09T17:35:16.5429807Z  * [new tag]             v0.0.1-alpha.43         -> v0.0.1-alpha.43
+2026-10-09T17:35:16.5430492Z  * [new tag]             v0.0.1-alpha.44         -> v0.0.1-alpha.44
+2026-10-09T17:35:16.5431182Z  * [new tag]             v0.0.1-alpha.45         -> v0.0.1-alpha.45
+2026-10-09T17:35:16.5431867Z  * [new tag]             v0.0.1-alpha.46         -> v0.0.1-alpha.46
+2026-10-09T17:35:16.5432558Z  * [new tag]             v0.0.1-alpha.47         -> v0.0.1-alpha.47
+2026-10-09T17:35:16.5433246Z  * [new tag]             v0.0.1-alpha.48         -> v0.0.1-alpha.48
+2026-10-09T17:35:16.5433933Z  * [new tag]             v0.0.1-alpha.49         -> v0.0.1-alpha.49
+2026-10-09T17:35:16.5434616Z  * [new tag]             v0.0.1-alpha.5          -> v0.0.1-alpha.5
+2026-10-09T17:35:16.5435326Z  * [new tag]             v0.0.1-alpha.50         -> v0.0.1-alpha.50
+2026-10-09T17:35:16.5436011Z  * [new tag]             v0.0.1-alpha.51         -> v0.0.1-alpha.51
+2026-10-09T17:35:16.5436700Z  * [new tag]             v0.0.1-alpha.52         -> v0.0.1-alpha.52
+2026-10-09T17:35:16.5437391Z  * [new tag]             v0.0.1-alpha.53         -> v0.0.1-alpha.53
+2026-10-09T17:35:16.5438084Z  * [new tag]             v0.0.1-alpha.54         -> v0.0.1-alpha.54
+2026-10-09T17:35:16.5438767Z  * [new tag]             v0.0.1-alpha.55         -> v0.0.1-alpha.55
+2026-10-09T17:35:16.5439456Z  * [new tag]             v0.0.1-alpha.56         -> v0.0.1-alpha.56
+2026-10-09T17:35:16.5440149Z  * [new tag]             v0.0.1-alpha.6          -> v0.0.1-alpha.6
+2026-10-09T17:35:16.5440836Z  * [new tag]             v0.0.1-alpha.66         -> v0.0.1-alpha.66
+2026-10-09T17:35:16.5441525Z  * [new tag]             v0.0.1-alpha.67         -> v0.0.1-alpha.67
+2026-10-09T17:35:16.5442209Z  * [new tag]             v0.0.1-alpha.68         -> v0.0.1-alpha.68
+2026-10-09T17:35:16.5442899Z  * [new tag]             v0.0.1-alpha.69         -> v0.0.1-alpha.69
+2026-10-09T17:35:16.5443585Z  * [new tag]             v0.0.1-alpha.7          -> v0.0.1-alpha.7
+2026-10-09T17:35:16.5444268Z  * [new tag]             v0.0.1-alpha.70         -> v0.0.1-alpha.70
+2026-10-09T17:35:16.5444953Z  * [new tag]             v0.0.1-alpha.71         -> v0.0.1-alpha.71
+2026-10-09T17:35:16.5445657Z  * [new tag]             v0.0.1-alpha.72         -> v0.0.1-alpha.72
+2026-10-09T17:35:16.5446346Z  * [new tag]             v0.0.1-alpha.73         -> v0.0.1-alpha.73
+2026-10-09T17:35:16.5447124Z  * [new tag]             v0.0.1-alpha.74         -> v0.0.1-alpha.74
+2026-10-09T17:35:16.5447809Z  * [new tag]             v0.0.1-alpha.75         -> v0.0.1-alpha.75
+2026-10-09T17:35:16.5448498Z  * [new tag]             v0.0.1-alpha.76         -> v0.0.1-alpha.76
+2026-10-09T17:35:16.5449179Z  * [new tag]             v0.0.1-alpha.77         -> v0.0.1-alpha.77
+2026-10-09T17:35:16.5449872Z  * [new tag]             v0.0.1-alpha.78         -> v0.0.1-alpha.78
+2026-10-09T17:35:16.5450642Z  * [new tag]             v0.0.1-alpha.79         -> v0.0.1-alpha.79
+2026-10-09T17:35:16.5451425Z  * [new tag]             v0.0.1-alpha.80         -> v0.0.1-alpha.80
+2026-10-09T17:35:16.5452157Z  * [new tag]             v0.0.1-alpha.81         -> v0.0.1-alpha.81
+2026-10-09T17:35:16.5452843Z  * [new tag]             v0.0.1-alpha.82         -> v0.0.1-alpha.82
+2026-10-09T17:35:16.5453526Z  * [new tag]             v0.0.1-alpha.83         -> v0.0.1-alpha.83
+2026-10-09T17:35:16.5454209Z  * [new tag]             v0.0.1-alpha.84         -> v0.0.1-alpha.84
+2026-10-09T17:35:16.5454894Z  * [new tag]             v0.0.1-alpha.85         -> v0.0.1-alpha.85
+2026-10-09T17:35:16.5455603Z  * [new tag]             v0.0.1-alpha.86         -> v0.0.1-alpha.86
+2026-10-09T17:35:16.5456291Z  * [new tag]             v0.0.1-alpha.87         -> v0.0.1-alpha.87
+2026-10-09T17:35:16.5456969Z  * [new tag]             v0.0.1-alpha.88         -> v0.0.1-alpha.88
+2026-10-09T17:35:16.5457663Z  * [new tag]             v0.0.1-alpha.89         -> v0.0.1-alpha.89
+2026-10-09T17:35:16.5458351Z  * [new tag]             v0.0.1-alpha.90         -> v0.0.1-alpha.90
+2026-10-09T17:35:16.5459027Z  * [new tag]             v0.0.1-alpha.91         -> v0.0.1-alpha.91
+2026-10-09T17:35:16.5459716Z  * [new tag]             v0.0.1-alpha.92         -> v0.0.1-alpha.92
+2026-10-09T17:35:16.5460398Z  * [new tag]             v0.0.1-alpha.93         -> v0.0.1-alpha.93
+2026-10-09T17:35:16.5461079Z  * [new tag]             v0.0.1-alpha.94         -> v0.0.1-alpha.94
+2026-10-09T17:35:16.5461760Z  * [new tag]             v0.0.1-alpha.95         -> v0.0.1-alpha.95
+2026-10-09T17:35:16.5462435Z  * [new tag]             v0.0.1-alpha.96         -> v0.0.1-alpha.96
+2026-10-09T17:35:16.5463110Z  * [new tag]             v0.0.1-alpha.97         -> v0.0.1-alpha.97
+2026-10-09T17:35:16.5463795Z  * [new tag]             v0.0.1-alpha.98         -> v0.0.1-alpha.98
+2026-10-09T17:35:16.5464468Z  * [new tag]             v0.0.1-alpha.99         -> v0.0.1-alpha.99
+2026-10-09T17:35:16.5465124Z  * [new tag]             v0.1.0                  -> v0.1.0
+2026-10-09T17:35:16.5465788Z  * [new tag]             v0.1.0-alpha            -> v0.1.0-alpha
+2026-10-09T17:35:16.5466436Z  * [new tag]             v0.10.0                 -> v0.10.0
+2026-10-09T17:35:16.5467083Z  * [new tag]             v0.10.0-alpha           -> v0.10.0-alpha
+2026-10-09T17:35:16.5467728Z  * [new tag]             v0.100.0                -> v0.100.0
+2026-10-09T17:35:16.5468359Z  * [new tag]             v0.101.0                -> v0.101.0
+2026-10-09T17:35:16.5468986Z  * [new tag]             v0.102.0                -> v0.102.0
+2026-10-09T17:35:16.5469614Z  * [new tag]             v0.103.0                -> v0.103.0
+2026-10-09T17:35:16.5470237Z  * [new tag]             v0.104.0                -> v0.104.0
+2026-10-09T17:35:16.5470860Z  * [new tag]             v0.105.0                -> v0.105.0
+2026-10-09T17:35:16.5471487Z  * [new tag]             v0.106.0                -> v0.106.0
+2026-10-09T17:35:16.5472120Z  * [new tag]             v0.107.0                -> v0.107.0
+2026-10-09T17:35:16.5472748Z  * [new tag]             v0.108.0                -> v0.108.0
+2026-10-09T17:35:16.5473375Z  * [new tag]             v0.109.0                -> v0.109.0
+2026-10-09T17:35:16.5473992Z  * [new tag]             v0.11.0                 -> v0.11.0
+2026-10-09T17:35:16.5474615Z  * [new tag]             v0.110.0                -> v0.110.0
+2026-10-09T17:35:16.5475269Z  * [new tag]             v0.111.0                -> v0.111.0
+2026-10-09T17:35:16.5475895Z  * [new tag]             v0.112.0                -> v0.112.0
+2026-10-09T17:35:16.5476520Z  * [new tag]             v0.113.0                -> v0.113.0
+2026-10-09T17:35:16.5477147Z  * [new tag]             v0.114.0                -> v0.114.0
+2026-10-09T17:35:16.5477773Z  * [new tag]             v0.115.0                -> v0.115.0
+2026-10-09T17:35:16.5478395Z  * [new tag]             v0.116.0                -> v0.116.0
+2026-10-09T17:35:16.5479090Z  * [new tag]             v0.117.0                -> v0.117.0
+2026-10-09T17:35:16.5479779Z  * [new tag]             v0.118.0                -> v0.118.0
+2026-10-09T17:35:16.5480469Z  * [new tag]             v0.119.0                -> v0.119.0
+2026-10-09T17:35:16.5481094Z  * [new tag]             v0.12.0                 -> v0.12.0
+2026-10-09T17:35:16.5481716Z  * [new tag]             v0.120.0                -> v0.120.0
+2026-10-09T17:35:16.5482343Z  * [new tag]             v0.122.0                -> v0.122.0
+2026-10-09T17:35:16.5482977Z  * [new tag]             v0.123.0                -> v0.123.0
+2026-10-09T17:35:16.5483606Z  * [new tag]             v0.124.0                -> v0.124.0
+2026-10-09T17:35:16.5484233Z  * [new tag]             v0.125.0                -> v0.125.0
+2026-10-09T17:35:16.5484860Z  * [new tag]             v0.126.0                -> v0.126.0
+2026-10-09T17:35:16.5485519Z  * [new tag]             v0.127.0                -> v0.127.0
+2026-10-09T17:35:16.5486144Z  * [new tag]             v0.128.0                -> v0.128.0
+2026-10-09T17:35:16.5486896Z  * [new tag]             v0.129.0                -> v0.129.0
+2026-10-09T17:35:16.5487525Z  * [new tag]             v0.13.0                 -> v0.13.0
+2026-10-09T17:35:16.5488146Z  * [new tag]             v0.130.0                -> v0.130.0
+2026-10-09T17:35:16.5488779Z  * [new tag]             v0.131.0                -> v0.131.0
+2026-10-09T17:35:16.5489410Z  * [new tag]             v0.132.0                -> v0.132.0
+2026-10-09T17:35:16.5490037Z  * [new tag]             v0.133.0                -> v0.133.0
+2026-10-09T17:35:16.5490672Z  * [new tag]             v0.134.0                -> v0.134.0
+2026-10-09T17:35:16.5491303Z  * [new tag]             v0.135.0                -> v0.135.0
+2026-10-09T17:35:16.5492003Z  * [new tag]             v0.136.0                -> v0.136.0
+2026-10-09T17:35:16.5492681Z  * [new tag]             v0.137.0                -> v0.137.0
+2026-10-09T17:35:16.5493478Z  * [new tag]             v0.138.0                -> v0.138.0
+2026-10-09T17:35:16.5494156Z  * [new tag]             v0.139.0                -> v0.139.0
+2026-10-09T17:35:16.5494836Z  * [new tag]             v0.14.0                 -> v0.14.0
+2026-10-09T17:35:16.5495559Z  * [new tag]             v0.140.0                -> v0.140.0
+2026-10-09T17:35:16.5496237Z  * [new tag]             v0.141.0                -> v0.141.0
+2026-10-09T17:35:16.5496911Z  * [new tag]             v0.142.0                -> v0.142.0
+2026-10-09T17:35:16.5497584Z  * [new tag]             v0.143.0                -> v0.143.0
+2026-10-09T17:35:16.5498262Z  * [new tag]             v0.144.0                -> v0.144.0
+2026-10-09T17:35:16.5498931Z  * [new tag]             v0.145.0                -> v0.145.0
+2026-10-09T17:35:16.5499631Z  * [new tag]             v0.146.0                -> v0.146.0
+2026-10-09T17:35:16.5500301Z  * [new tag]             v0.147.0                -> v0.147.0
+2026-10-09T17:35:16.5500956Z  * [new tag]             v0.148.0                -> v0.148.0
+2026-10-09T17:35:16.5501660Z  * [new tag]             v0.149.0                -> v0.149.0
+2026-10-09T17:35:16.5502322Z  * [new tag]             v0.15.0                 -> v0.15.0
+2026-10-09T17:35:16.5503008Z  * [new tag]             v0.150.0                -> v0.150.0
+2026-10-09T17:35:16.5503689Z  * [new tag]             v0.151.0                -> v0.151.0
+2026-10-09T17:35:16.5504363Z  * [new tag]             v0.152.0                -> v0.152.0
+2026-10-09T17:35:16.5505058Z  * [new tag]             v0.153.0                -> v0.153.0
+2026-10-09T17:35:16.5505741Z  * [new tag]             v0.154.0                -> v0.154.0
+2026-10-09T17:35:16.5506429Z  * [new tag]             v0.155.0                -> v0.155.0
+2026-10-09T17:35:16.5521251Z  * [new tag]             v0.156.0                -> v0.156.0
+2026-10-09T17:35:16.5521902Z  * [new tag]             v0.157.0                -> v0.157.0
+2026-10-09T17:35:16.5522542Z  * [new tag]             v0.158.0                -> v0.158.0
+2026-10-09T17:35:16.5523173Z  * [new tag]             v0.159.0                -> v0.159.0
+2026-10-09T17:35:16.5523989Z  * [new tag]             v0.16.0                 -> v0.16.0
+2026-10-09T17:35:16.5524730Z  * [new tag]             v0.160.0                -> v0.160.0
+2026-10-09T17:35:16.5525470Z  * [new tag]             v0.161.0                -> v0.161.0
+2026-10-09T17:35:16.5526103Z  * [new tag]             v0.162.0                -> v0.162.0
+2026-10-09T17:35:16.5526886Z  * [new tag]             v0.163.0                -> v0.163.0
+2026-10-09T17:35:16.5527518Z  * [new tag]             v0.164.0                -> v0.164.0
+2026-10-09T17:35:16.5528168Z  * [new tag]             v0.165.0                -> v0.165.0
+2026-10-09T17:35:16.5528858Z  * [new tag]             v0.166.0                -> v0.166.0
+2026-10-09T17:35:16.5529496Z  * [new tag]             v0.167.0                -> v0.167.0
+2026-10-09T17:35:16.5530118Z  * [new tag]             v0.168.0                -> v0.168.0
+2026-10-09T17:35:16.5530742Z  * [new tag]             v0.169.0                -> v0.169.0
+2026-10-09T17:35:16.5531375Z  * [new tag]             v0.17.0                 -> v0.17.0
+2026-10-09T17:35:16.5531994Z  * [new tag]             v0.170.0                -> v0.170.0
+2026-10-09T17:35:16.5532613Z  * [new tag]             v0.171.0                -> v0.171.0
+2026-10-09T17:35:16.5533242Z  * [new tag]             v0.172.0                -> v0.172.0
+2026-10-09T17:35:16.5533873Z  * [new tag]             v0.173.0                -> v0.173.0
+2026-10-09T17:35:16.5534497Z  * [new tag]             v0.174.0                -> v0.174.0
+2026-10-09T17:35:16.5535124Z  * [new tag]             v0.175.0                -> v0.175.0
+2026-10-09T17:35:16.5535776Z  * [new tag]             v0.177.0                -> v0.177.0
+2026-10-09T17:35:16.5536401Z  * [new tag]             v0.178.0                -> v0.178.0
+2026-10-09T17:35:16.5537034Z  * [new tag]             v0.179.0                -> v0.179.0
+2026-10-09T17:35:16.5537649Z  * [new tag]             v0.18.0                 -> v0.18.0
+2026-10-09T17:35:16.5538269Z  * [new tag]             v0.180.0                -> v0.180.0
+2026-10-09T17:35:16.5538903Z  * [new tag]             v0.181.0                -> v0.181.0
+2026-10-09T17:35:16.5539535Z  * [new tag]             v0.182.0                -> v0.182.0
+2026-10-09T17:35:16.5540160Z  * [new tag]             v0.183.0                -> v0.183.0
+2026-10-09T17:35:16.5540793Z  * [new tag]             v0.184.0                -> v0.184.0
+2026-10-09T17:35:16.5541414Z  * [new tag]             v0.185.0                -> v0.185.0
+2026-10-09T17:35:16.5542039Z  * [new tag]             v0.186.0                -> v0.186.0
+2026-10-09T17:35:16.5542670Z  * [new tag]             v0.187.0                -> v0.187.0
+2026-10-09T17:35:16.5543290Z  * [new tag]             v0.188.0                -> v0.188.0
+2026-10-09T17:35:16.5543912Z  * [new tag]             v0.189.0                -> v0.189.0
+2026-10-09T17:35:16.5544540Z  * [new tag]             v0.19.0                 -> v0.19.0
+2026-10-09T17:35:16.5545170Z  * [new tag]             v0.190.0                -> v0.190.0
+2026-10-09T17:35:16.5545828Z  * [new tag]             v0.191.0                -> v0.191.0
+2026-10-09T17:35:16.5546459Z  * [new tag]             v0.192.0                -> v0.192.0
+2026-10-09T17:35:16.5547090Z  * [new tag]             v0.193.0                -> v0.193.0
+2026-10-09T17:35:16.5547720Z  * [new tag]             v0.194.0                -> v0.194.0
+2026-10-09T17:35:16.5548358Z  * [new tag]             v0.195.0                -> v0.195.0
+2026-10-09T17:35:16.5548987Z  * [new tag]             v0.196.0                -> v0.196.0
+2026-10-09T17:35:16.5549613Z  * [new tag]             v0.197.0                -> v0.197.0
+2026-10-09T17:35:16.5550244Z  * [new tag]             v0.198.0                -> v0.198.0
+2026-10-09T17:35:16.5550876Z  * [new tag]             v0.199.0                -> v0.199.0
+2026-10-09T17:35:16.5551511Z  * [new tag]             v0.2.0                  -> v0.2.0
+2026-10-09T17:35:16.5552142Z  * [new tag]             v0.20.0                 -> v0.20.0
+2026-10-09T17:35:16.5552769Z  * [new tag]             v0.200.0                -> v0.200.0
+2026-10-09T17:35:16.5553491Z  * [new tag]             v0.201.0                -> v0.201.0
+2026-10-09T17:35:16.5554206Z  * [new tag]             v0.202.0                -> v0.202.0
+2026-10-09T17:35:16.5554901Z  * [new tag]             v0.203.0                -> v0.203.0
+2026-10-09T17:35:16.5555564Z  * [new tag]             v0.204.0                -> v0.204.0
+2026-10-09T17:35:16.5556197Z  * [new tag]             v0.206.0                -> v0.206.0
+2026-10-09T17:35:16.5556837Z  * [new tag]             v0.208.0                -> v0.208.0
+2026-10-09T17:35:16.5557468Z  * [new tag]             v0.209.0                -> v0.209.0
+2026-10-09T17:35:16.5558102Z  * [new tag]             v0.21.0                 -> v0.21.0
+2026-10-09T17:35:16.5558727Z  * [new tag]             v0.210.0                -> v0.210.0
+2026-10-09T17:35:16.5559367Z  * [new tag]             v0.210.1                -> v0.210.1
+2026-10-09T17:35:16.5560002Z  * [new tag]             v0.211.0                -> v0.211.0
+2026-10-09T17:35:16.5560640Z  * [new tag]             v0.212.0                -> v0.212.0
+2026-10-09T17:35:16.5561270Z  * [new tag]             v0.213.0                -> v0.213.0
+2026-10-09T17:35:16.5561898Z  * [new tag]             v0.214.0                -> v0.214.0
+2026-10-09T17:35:16.5562530Z  * [new tag]             v0.215.0                -> v0.215.0
+2026-10-09T17:35:16.5563163Z  * [new tag]             v0.216.0                -> v0.216.0
+2026-10-09T17:35:16.5563804Z  * [new tag]             v0.217.0                -> v0.217.0
+2026-10-09T17:35:16.5564438Z  * [new tag]             v0.218.0                -> v0.218.0
+2026-10-09T17:35:16.5565069Z  * [new tag]             v0.218.1                -> v0.218.1
+2026-10-09T17:35:16.5565737Z  * [new tag]             v0.219.0                -> v0.219.0
+2026-10-09T17:35:16.5566370Z  * [new tag]             v0.22.0                 -> v0.22.0
+2026-10-09T17:35:16.5567092Z  * [new tag]             v0.220.0                -> v0.220.0
+2026-10-09T17:35:16.5567729Z  * [new tag]             v0.221.0                -> v0.221.0
+2026-10-09T17:35:16.5568366Z  * [new tag]             v0.222.0                -> v0.222.0
+2026-10-09T17:35:16.5568992Z  * [new tag]             v0.223.0                -> v0.223.0
+2026-10-09T17:35:16.5569630Z  * [new tag]             v0.224.0                -> v0.224.0
+2026-10-09T17:35:16.5570260Z  * [new tag]             v0.225.0                -> v0.225.0
+2026-10-09T17:35:16.5570892Z  * [new tag]             v0.226.0                -> v0.226.0
+2026-10-09T17:35:16.5571528Z  * [new tag]             v0.228.0                -> v0.228.0
+2026-10-09T17:35:16.5572156Z  * [new tag]             v0.229.0                -> v0.229.0
+2026-10-09T17:35:16.5572777Z  * [new tag]             v0.23.0                 -> v0.23.0
+2026-10-09T17:35:16.5573411Z  * [new tag]             v0.230.0                -> v0.230.0
+2026-10-09T17:35:16.5574046Z  * [new tag]             v0.232.0                -> v0.232.0
+2026-10-09T17:35:16.5574675Z  * [new tag]             v0.233.0                -> v0.233.0
+2026-10-09T17:35:16.5575338Z  * [new tag]             v0.234.0                -> v0.234.0
+2026-10-09T17:35:16.5575969Z  * [new tag]             v0.235.0                -> v0.235.0
+2026-10-09T17:35:16.5576600Z  * [new tag]             v0.236.0                -> v0.236.0
+2026-10-09T17:35:16.5577234Z  * [new tag]             v0.237.0                -> v0.237.0
+2026-10-09T17:35:16.5577867Z  * [new tag]             v0.238.0                -> v0.238.0
+2026-10-09T17:35:16.5578498Z  * [new tag]             v0.239.0                -> v0.239.0
+2026-10-09T17:35:16.5579132Z  * [new tag]             v0.24.0                 -> v0.24.0
+2026-10-09T17:35:16.5579758Z  * [new tag]             v0.240.0                -> v0.240.0
+2026-10-09T17:35:16.5580386Z  * [new tag]             v0.241.0                -> v0.241.0
+2026-10-09T17:35:16.5581022Z  * [new tag]             v0.242.0                -> v0.242.0
+2026-10-09T17:35:16.5581651Z  * [new tag]             v0.243.0                -> v0.243.0
+2026-10-09T17:35:16.5582366Z  * [new tag]             v0.249.0                -> v0.249.0
+2026-10-09T17:35:16.5583215Z  * [new tag]             v0.25.0                 -> v0.25.0
+2026-10-09T17:35:16.5583868Z  * [new tag]             v0.250.0                -> v0.250.0
+2026-10-09T17:35:16.5584501Z  * [new tag]             v0.251.0                -> v0.251.0
+2026-10-09T17:35:16.5585138Z  * [new tag]             v0.252.0                -> v0.252.0
+2026-10-09T17:35:16.5585799Z  * [new tag]             v0.253.0                -> v0.253.0
+2026-10-09T17:35:16.5586427Z  * [new tag]             v0.254.0                -> v0.254.0
+2026-10-09T17:35:16.5587061Z  * [new tag]             v0.255.0                -> v0.255.0
+2026-10-09T17:35:16.5587689Z  * [new tag]             v0.256.0                -> v0.256.0
+2026-10-09T17:35:16.5588312Z  * [new tag]             v0.257.0                -> v0.257.0
+2026-10-09T17:35:16.5588942Z  * [new tag]             v0.258.0                -> v0.258.0
+2026-10-09T17:35:16.5589575Z  * [new tag]             v0.259.0                -> v0.259.0
+2026-10-09T17:35:16.5590199Z  * [new tag]             v0.26.0                 -> v0.26.0
+2026-10-09T17:35:16.5590825Z  * [new tag]             v0.260.0                -> v0.260.0
+2026-10-09T17:35:16.5591450Z  * [new tag]             v0.261.0                -> v0.261.0
+2026-10-09T17:35:16.5592087Z  * [new tag]             v0.262.0                -> v0.262.0
+2026-10-09T17:35:16.5592725Z  * [new tag]             v0.263.0                -> v0.263.0
+2026-10-09T17:35:16.5593362Z  * [new tag]             v0.264.0                -> v0.264.0
+2026-10-09T17:35:16.5593993Z  * [new tag]             v0.265.0                -> v0.265.0
+2026-10-09T17:35:16.5594629Z  * [new tag]             v0.266.0                -> v0.266.0
+2026-10-09T17:35:16.5595280Z  * [new tag]             v0.267.0                -> v0.267.0
+2026-10-09T17:35:16.5595913Z  * [new tag]             v0.268.0                -> v0.268.0
+2026-10-09T17:35:16.5596547Z  * [new tag]             v0.269.0                -> v0.269.0
+2026-10-09T17:35:16.5597183Z  * [new tag]             v0.270.0                -> v0.270.0
+2026-10-09T17:35:16.5597814Z  * [new tag]             v0.271.0                -> v0.271.0
+2026-10-09T17:35:16.5598451Z  * [new tag]             v0.272.0                -> v0.272.0
+2026-10-09T17:35:16.5599085Z  * [new tag]             v0.272.1                -> v0.272.1
+2026-10-09T17:35:16.5599706Z  * [new tag]             v0.273.0                -> v0.273.0
+2026-10-09T17:35:16.5600341Z  * [new tag]             v0.273.1                -> v0.273.1
+2026-10-09T17:35:16.5600967Z  * [new tag]             v0.274.0                -> v0.274.0
+2026-10-09T17:35:16.5601599Z  * [new tag]             v0.275.0                -> v0.275.0
+2026-10-09T17:35:16.5602226Z  * [new tag]             v0.276.0                -> v0.276.0
+2026-10-09T17:35:16.5602860Z  * [new tag]             v0.277.0                -> v0.277.0
+2026-10-09T17:35:16.5603500Z  * [new tag]             v0.278.0                -> v0.278.0
+2026-10-09T17:35:16.5604133Z  * [new tag]             v0.279.0                -> v0.279.0
+2026-10-09T17:35:16.5604759Z  * [new tag]             v0.28.0                 -> v0.28.0
+2026-10-09T17:35:16.5605420Z  * [new tag]             v0.280.0                -> v0.280.0
+2026-10-09T17:35:16.5606049Z  * [new tag]             v0.281.0                -> v0.281.0
+2026-10-09T17:35:16.5606771Z  * [new tag]             v0.282.0                -> v0.282.0
+2026-10-09T17:35:16.5607394Z  * [new tag]             v0.283.0                -> v0.283.0
+2026-10-09T17:35:16.5608029Z  * [new tag]             v0.284.0                -> v0.284.0
+2026-10-09T17:35:16.5608663Z  * [new tag]             v0.285.0                -> v0.285.0
+2026-10-09T17:35:16.5609295Z  * [new tag]             v0.286.0                -> v0.286.0
+2026-10-09T17:35:16.5609919Z  * [new tag]             v0.287.0                -> v0.287.0
+2026-10-09T17:35:16.5610554Z  * [new tag]             v0.288.0                -> v0.288.0
+2026-10-09T17:35:16.5611182Z  * [new tag]             v0.289.0                -> v0.289.0
+2026-10-09T17:35:16.5611883Z  * [new tag]             v0.29.0                 -> v0.29.0
+2026-10-09T17:35:16.5612589Z  * [new tag]             v0.290.0                -> v0.290.0
+2026-10-09T17:35:16.5613287Z  * [new tag]             v0.291.0                -> v0.291.0
+2026-10-09T17:35:16.5613920Z  * [new tag]             v0.292.0                -> v0.292.0
+2026-10-09T17:35:16.5614550Z  * [new tag]             v0.293.0                -> v0.293.0
+2026-10-09T17:35:16.5615176Z  * [new tag]             v0.294.0                -> v0.294.0
+2026-10-09T17:35:16.5615830Z  * [new tag]             v0.295.0                -> v0.295.0
+2026-10-09T17:35:16.5616463Z  * [new tag]             v0.296.0                -> v0.296.0
+2026-10-09T17:35:16.5617090Z  * [new tag]             v0.296.1                -> v0.296.1
+2026-10-09T17:35:16.5617717Z  * [new tag]             v0.297.0                -> v0.297.0
+2026-10-09T17:35:16.5618350Z  * [new tag]             v0.298.0                -> v0.298.0
+2026-10-09T17:35:16.5618988Z  * [new tag]             v0.299.0                -> v0.299.0
+2026-10-09T17:35:16.5619615Z  * [new tag]             v0.299.1                -> v0.299.1
+2026-10-09T17:35:16.5620241Z  * [new tag]             v0.3.0                  -> v0.3.0
+2026-10-09T17:35:16.5620861Z  * [new tag]             v0.30.0                 -> v0.30.0
+2026-10-09T17:35:16.5621485Z  * [new tag]             v0.300.0                -> v0.300.0
+2026-10-09T17:35:16.5622115Z  * [new tag]             v0.301.0                -> v0.301.0
+2026-10-09T17:35:16.5622737Z  * [new tag]             v0.302.0                -> v0.302.0
+2026-10-09T17:35:16.5623365Z  * [new tag]             v0.303.0                -> v0.303.0
+2026-10-09T17:35:16.5623992Z  * [new tag]             v0.304.0                -> v0.304.0
+2026-10-09T17:35:16.5624617Z  * [new tag]             v0.305.0                -> v0.305.0
+2026-10-09T17:35:16.5625290Z  * [new tag]             v0.306.0                -> v0.306.0
+2026-10-09T17:35:16.5625926Z  * [new tag]             v0.307.0                -> v0.307.0
+2026-10-09T17:35:16.5626552Z  * [new tag]             v0.308.0                -> v0.308.0
+2026-10-09T17:35:16.5627170Z  * [new tag]             v0.309.0                -> v0.309.0
+2026-10-09T17:35:16.5627794Z  * [new tag]             v0.31.0                 -> v0.31.0
+2026-10-09T17:35:16.5628415Z  * [new tag]             v0.310.0                -> v0.310.0
+2026-10-09T17:35:16.5629039Z  * [new tag]             v0.311.0                -> v0.311.0
+2026-10-09T17:35:16.5629668Z  * [new tag]             v0.312.0                -> v0.312.0
+2026-10-09T17:35:16.5630296Z  * [new tag]             v0.313.0                -> v0.313.0
+2026-10-09T17:35:16.5630919Z  * [new tag]             v0.313.1                -> v0.313.1
+2026-10-09T17:35:16.5631545Z  * [new tag]             v0.314.0                -> v0.314.0
+2026-10-09T17:35:16.5632176Z  * [new tag]             v0.315.0                -> v0.315.0
+2026-10-09T17:35:16.5632802Z  * [new tag]             v0.315.1                -> v0.315.1
+2026-10-09T17:35:16.5633439Z  * [new tag]             v0.316.0                -> v0.316.0
+2026-10-09T17:35:16.5634067Z  * [new tag]             v0.317.0                -> v0.317.0
+2026-10-09T17:35:16.5634693Z  * [new tag]             v0.318.0                -> v0.318.0
+2026-10-09T17:35:16.5635333Z  * [new tag]             v0.32.0                 -> v0.32.0
+2026-10-09T17:35:16.5635956Z  * [new tag]             v0.321.0                -> v0.321.0
+2026-10-09T17:35:16.5636577Z  * [new tag]             v0.322.0                -> v0.322.0
+2026-10-09T17:35:16.5637206Z  * [new tag]             v0.323.0                -> v0.323.0
+2026-10-09T17:35:16.5637828Z  * [new tag]             v0.325.0                -> v0.325.0
+2026-10-09T17:35:16.5638444Z  * [new tag]             v0.327.0                -> v0.327.0
+2026-10-09T17:35:16.5639064Z  * [new tag]             v0.33.0                 -> v0.33.0
+2026-10-09T17:35:16.5639681Z  * [new tag]             v0.331.0                -> v0.331.0
+2026-10-09T17:35:16.5640395Z  * [new tag]             v0.332.0                -> v0.332.0
+2026-10-09T17:35:16.5641072Z  * [new tag]             v0.333.0                -> v0.333.0
+2026-10-09T17:35:16.5641764Z  * [new tag]             v0.334.0                -> v0.334.0
+2026-10-09T17:35:16.5642381Z  * [new tag]             v0.335.0                -> v0.335.0
+2026-10-09T17:35:16.5643002Z  * [new tag]             v0.336.0                -> v0.336.0
+2026-10-09T17:35:16.5643625Z  * [new tag]             v0.337.0                -> v0.337.0
+2026-10-09T17:35:16.5644246Z  * [new tag]             v0.338.0                -> v0.338.0
+2026-10-09T17:35:16.5644873Z  * [new tag]             v0.339.0                -> v0.339.0
+2026-10-09T17:35:16.5645511Z  * [new tag]             v0.34.0                 -> v0.34.0
+2026-10-09T17:35:16.5646122Z  * [new tag]             v0.340.0                -> v0.340.0
+2026-10-09T17:35:16.5646810Z  * [new tag]             v0.341.0                -> v0.341.0
+2026-10-09T17:35:16.5647438Z  * [new tag]             v0.342.0                -> v0.342.0
+2026-10-09T17:35:16.5648062Z  * [new tag]             v0.343.0                -> v0.343.0
+2026-10-09T17:35:16.5648693Z  * [new tag]             v0.344.0                -> v0.344.0
+2026-10-09T17:35:16.5649314Z  * [new tag]             v0.345.0                -> v0.345.0
+2026-10-09T17:35:16.5649932Z  * [new tag]             v0.346.0                -> v0.346.0
+2026-10-09T17:35:16.5650553Z  * [new tag]             v0.347.0                -> v0.347.0
+2026-10-09T17:35:16.5651173Z  * [new tag]             v0.347.1                -> v0.347.1
+2026-10-09T17:35:16.5651791Z  * [new tag]             v0.347.2                -> v0.347.2
+2026-10-09T17:35:16.5652413Z  * [new tag]             v0.347.3                -> v0.347.3
+2026-10-09T17:35:16.5653037Z  * [new tag]             v0.347.4                -> v0.347.4
+2026-10-09T17:35:16.5653650Z  * [new tag]             v0.347.5                -> v0.347.5
+2026-10-09T17:35:16.5654265Z  * [new tag]             v0.347.6                -> v0.347.6
+2026-10-09T17:35:16.5654889Z  * [new tag]             v0.347.7                -> v0.347.7
+2026-10-09T17:35:16.5655543Z  * [new tag]             v0.35.0                 -> v0.35.0
+2026-10-09T17:35:16.5656163Z  * [new tag]             v0.350.2                -> v0.350.2
+2026-10-09T17:35:16.5656783Z  * [new tag]             v0.351.0                -> v0.351.0
+2026-10-09T17:35:16.5657399Z  * [new tag]             v0.352.0                -> v0.352.0
+2026-10-09T17:35:16.5658016Z  * [new tag]             v0.353.0                -> v0.353.0
+2026-10-09T17:35:16.5658635Z  * [new tag]             v0.354.0                -> v0.354.0
+2026-10-09T17:35:16.5659255Z  * [new tag]             v0.355.0                -> v0.355.0
+2026-10-09T17:35:16.5659884Z  * [new tag]             v0.356.0                -> v0.356.0
+2026-10-09T17:35:16.5660505Z  * [new tag]             v0.357.0                -> v0.357.0
+2026-10-09T17:35:16.5661123Z  * [new tag]             v0.358.0                -> v0.358.0
+2026-10-09T17:35:16.5661750Z  * [new tag]             v0.359.0                -> v0.359.0
+2026-10-09T17:35:16.5662369Z  * [new tag]             v0.36.0                 -> v0.36.0
+2026-10-09T17:35:16.5662985Z  * [new tag]             v0.360.0                -> v0.360.0
+2026-10-09T17:35:16.5663600Z  * [new tag]             v0.361.0                -> v0.361.0
+2026-10-09T17:35:16.5664215Z  * [new tag]             v0.362.0                -> v0.362.0
+2026-10-09T17:35:16.5664832Z  * [new tag]             v0.363.0                -> v0.363.0
+2026-10-09T17:35:16.5665487Z  * [new tag]             v0.365.0                -> v0.365.0
+2026-10-09T17:35:16.5666103Z  * [new tag]             v0.366.0                -> v0.366.0
+2026-10-09T17:35:16.5666720Z  * [new tag]             v0.367.0                -> v0.367.0
+2026-10-09T17:35:16.5667341Z  * [new tag]             v0.368.0                -> v0.368.0
+2026-10-09T17:35:16.5667952Z  * [new tag]             v0.369.0                -> v0.369.0
+2026-10-09T17:35:16.5668567Z  * [new tag]             v0.37.0                 -> v0.37.0
+2026-10-09T17:35:16.5669269Z  * [new tag]             v0.370.0                -> v0.370.0
+2026-10-09T17:35:16.5669962Z  * [new tag]             v0.371.0                -> v0.371.0
+2026-10-09T17:35:16.5670649Z  * [new tag]             v0.372.0                -> v0.372.0
+2026-10-09T17:35:16.5671267Z  * [new tag]             v0.373.0                -> v0.373.0
+2026-10-09T17:35:16.5671885Z  * [new tag]             v0.374.0                -> v0.374.0
+2026-10-09T17:35:16.5672508Z  * [new tag]             v0.375.0                -> v0.375.0
+2026-10-09T17:35:16.5673124Z  * [new tag]             v0.376.0                -> v0.376.0
+2026-10-09T17:35:16.5673746Z  * [new tag]             v0.377.0                -> v0.377.0
+2026-10-09T17:35:16.5674355Z  * [new tag]             v0.378.0                -> v0.378.0
+2026-10-09T17:35:16.5674977Z  * [new tag]             v0.379.0                -> v0.379.0
+2026-10-09T17:35:16.5675619Z  * [new tag]             v0.38.0                 -> v0.38.0
+2026-10-09T17:35:16.5676235Z  * [new tag]             v0.380.0                -> v0.380.0
+2026-10-09T17:35:16.5676855Z  * [new tag]             v0.381.0                -> v0.381.0
+2026-10-09T17:35:16.5677470Z  * [new tag]             v0.384.0                -> v0.384.0
+2026-10-09T17:35:16.5678086Z  * [new tag]             v0.385.0                -> v0.385.0
+2026-10-09T17:35:16.5678697Z  * [new tag]             v0.386.0                -> v0.386.0
+2026-10-09T17:35:16.5679310Z  * [new tag]             v0.387.0                -> v0.387.0
+2026-10-09T17:35:16.5679926Z  * [new tag]             v0.388.0                -> v0.388.0
+2026-10-09T17:35:16.5680539Z  * [new tag]             v0.389.0                -> v0.389.0
+2026-10-09T17:35:16.5681144Z  * [new tag]             v0.39.0                 -> v0.39.0
+2026-10-09T17:35:16.5681753Z  * [new tag]             v0.390.0                -> v0.390.0
+2026-10-09T17:35:16.5682361Z  * [new tag]             v0.391.0                -> v0.391.0
+2026-10-09T17:35:16.5682966Z  * [new tag]             v0.4.0                  -> v0.4.0
+2026-10-09T17:35:16.5683582Z  * [new tag]             v0.40.0                 -> v0.40.0
+2026-10-09T17:35:16.5684199Z  * [new tag]             v0.404.11               -> v0.404.11
+2026-10-09T17:35:16.5684821Z  * [new tag]             v0.404.12               -> v0.404.12
+2026-10-09T17:35:16.5685466Z  * [new tag]             v0.404.13               -> v0.404.13
+2026-10-09T17:35:16.5686082Z  * [new tag]             v0.404.14               -> v0.404.14
+2026-10-09T17:35:16.5686774Z  * [new tag]             v0.404.8                -> v0.404.8
+2026-10-09T17:35:16.5687395Z  * [new tag]             v0.404.9                -> v0.404.9
+2026-10-09T17:35:16.5688006Z  * [new tag]             v0.405.0                -> v0.405.0
+2026-10-09T17:35:16.5688623Z  * [new tag]             v0.406.0                -> v0.406.0
+2026-10-09T17:35:16.5689241Z  * [new tag]             v0.407.0                -> v0.407.0
+2026-10-09T17:35:16.5689855Z  * [new tag]             v0.408.0                -> v0.408.0
+2026-10-09T17:35:16.5690476Z  * [new tag]             v0.409.0                -> v0.409.0
+2026-10-09T17:35:16.5691091Z  * [new tag]             v0.41.0                 -> v0.41.0
+2026-10-09T17:35:16.5691698Z  * [new tag]             v0.412.0                -> v0.412.0
+2026-10-09T17:35:16.5692306Z  * [new tag]             v0.413.0                -> v0.413.0
+2026-10-09T17:35:16.5692922Z  * [new tag]             v0.414.0                -> v0.414.0
+2026-10-09T17:35:16.5693547Z  * [new tag]             v0.415.0                -> v0.415.0
+2026-10-09T17:35:16.5694152Z  * [new tag]             v0.416.0                -> v0.416.0
+2026-10-09T17:35:16.5694760Z  * [new tag]             v0.417.0                -> v0.417.0
+2026-10-09T17:35:16.5695399Z  * [new tag]             v0.418.0                -> v0.418.0
+2026-10-09T17:35:16.5696008Z  * [new tag]             v0.419.0                -> v0.419.0
+2026-10-09T17:35:16.5696616Z  * [new tag]             v0.42.0                 -> v0.42.0
+2026-10-09T17:35:16.5697301Z  * [new tag]             v0.420.0                -> v0.420.0
+2026-10-09T17:35:16.5697988Z  * [new tag]             v0.421.0                -> v0.421.0
+2026-10-09T17:35:16.5698671Z  * [new tag]             v0.422.0                -> v0.422.0
+2026-10-09T17:35:16.5699279Z  * [new tag]             v0.423.0                -> v0.423.0
+2026-10-09T17:35:16.5699883Z  * [new tag]             v0.423.1                -> v0.423.1
+2026-10-09T17:35:16.5700492Z  * [new tag]             v0.423.2                -> v0.423.2
+2026-10-09T17:35:16.5701103Z  * [new tag]             v0.424.0                -> v0.424.0
+2026-10-09T17:35:16.5701713Z  * [new tag]             v0.424.1                -> v0.424.1
+2026-10-09T17:35:16.5702329Z  * [new tag]             v0.424.10               -> v0.424.10
+2026-10-09T17:35:16.5702954Z  * [new tag]             v0.424.11               -> v0.424.11
+2026-10-09T17:35:16.5703570Z  * [new tag]             v0.424.2                -> v0.424.2
+2026-10-09T17:35:16.5704184Z  * [new tag]             v0.424.3                -> v0.424.3
+2026-10-09T17:35:16.5704811Z  * [new tag]             v0.424.4                -> v0.424.4
+2026-10-09T17:35:16.5705449Z  * [new tag]             v0.424.5                -> v0.424.5
+2026-10-09T17:35:16.5706057Z  * [new tag]             v0.424.6                -> v0.424.6
+2026-10-09T17:35:16.5706674Z  * [new tag]             v0.424.7                -> v0.424.7
+2026-10-09T17:35:16.5707292Z  * [new tag]             v0.424.8                -> v0.424.8
+2026-10-09T17:35:16.5707898Z  * [new tag]             v0.424.9                -> v0.424.9
+2026-10-09T17:35:16.5708516Z  * [new tag]             v0.425.1                -> v0.425.1
+2026-10-09T17:35:16.5709125Z  * [new tag]             v0.426.0                -> v0.426.0
+2026-10-09T17:35:16.5709740Z  * [new tag]             v0.426.1                -> v0.426.1
+2026-10-09T17:35:16.5710352Z  * [new tag]             v0.426.2                -> v0.426.2
+2026-10-09T17:35:16.5710963Z  * [new tag]             v0.426.3                -> v0.426.3
+2026-10-09T17:35:16.5711578Z  * [new tag]             v0.427.0                -> v0.427.0
+2026-10-09T17:35:16.5712196Z  * [new tag]             v0.428.0                -> v0.428.0
+2026-10-09T17:35:16.5712805Z  * [new tag]             v0.428.1                -> v0.428.1
+2026-10-09T17:35:16.5713421Z  * [new tag]             v0.429.0                -> v0.429.0
+2026-10-09T17:35:16.5714029Z  * [new tag]             v0.429.1                -> v0.429.1
+2026-10-09T17:35:16.5714635Z  * [new tag]             v0.429.2                -> v0.429.2
+2026-10-09T17:35:16.5715245Z  * [new tag]             v0.43.0                 -> v0.43.0
+2026-10-09T17:35:16.5715881Z  * [new tag]             v0.430.1                -> v0.430.1
+2026-10-09T17:35:16.5716496Z  * [new tag]             v0.431.0                -> v0.431.0
+2026-10-09T17:35:16.5717109Z  * [new tag]             v0.432.0                -> v0.432.0
+2026-10-09T17:35:16.5717723Z  * [new tag]             v0.433.0                -> v0.433.0
+2026-10-09T17:35:16.5718340Z  * [new tag]             v0.434.0                -> v0.434.0
+2026-10-09T17:35:16.5718951Z  * [new tag]             v0.435.0                -> v0.435.0
+2026-10-09T17:35:16.5719557Z  * [new tag]             v0.44.0                 -> v0.44.0
+2026-10-09T17:35:16.5720163Z  * [new tag]             v0.45.0                 -> v0.45.0
+2026-10-09T17:35:16.5720767Z  * [new tag]             v0.46.0                 -> v0.46.0
+2026-10-09T17:35:16.5721375Z  * [new tag]             v0.47.0                 -> v0.47.0
+2026-10-09T17:35:16.5721978Z  * [new tag]             v0.48.0                 -> v0.48.0
+2026-10-09T17:35:16.5722583Z  * [new tag]             v0.49.0                 -> v0.49.0
+2026-10-09T17:35:16.5723194Z  * [new tag]             v0.5.0                  -> v0.5.0
+2026-10-09T17:35:16.5723802Z  * [new tag]             v0.50.0                 -> v0.50.0
+2026-10-09T17:35:16.5724406Z  * [new tag]             v0.51.0                 -> v0.51.0
+2026-10-09T17:35:16.5725013Z  * [new tag]             v0.52.0                 -> v0.52.0
+2026-10-09T17:35:16.5725694Z  * [new tag]             v0.53.0                 -> v0.53.0
+2026-10-09T17:35:16.5726348Z  * [new tag]             v0.54.0                 -> v0.54.0
+2026-10-09T17:35:16.5727091Z  * [new tag]             v0.55.0                 -> v0.55.0
+2026-10-09T17:35:16.5727690Z  * [new tag]             v0.56.0                 -> v0.56.0
+2026-10-09T17:35:16.5728295Z  * [new tag]             v0.57.0                 -> v0.57.0
+2026-10-09T17:35:16.5728897Z  * [new tag]             v0.58.0                 -> v0.58.0
+2026-10-09T17:35:16.5729498Z  * [new tag]             v0.59.0                 -> v0.59.0
+2026-10-09T17:35:16.5730102Z  * [new tag]             v0.6.0                  -> v0.6.0
+2026-10-09T17:35:16.5730705Z  * [new tag]             v0.60.0                 -> v0.60.0
+2026-10-09T17:35:16.5731304Z  * [new tag]             v0.61.0                 -> v0.61.0
+2026-10-09T17:35:16.5731902Z  * [new tag]             v0.62.0                 -> v0.62.0
+2026-10-09T17:35:16.5732513Z  * [new tag]             v0.63.0                 -> v0.63.0
+2026-10-09T17:35:16.5733121Z  * [new tag]             v0.64.0                 -> v0.64.0
+2026-10-09T17:35:16.5733724Z  * [new tag]             v0.65.0                 -> v0.65.0
+2026-10-09T17:35:16.5734330Z  * [new tag]             v0.66.0                 -> v0.66.0
+2026-10-09T17:35:16.5734935Z  * [new tag]             v0.67.0                 -> v0.67.0
+2026-10-09T17:35:16.5735632Z  * [new tag]             v0.68.0                 -> v0.68.0
+2026-10-09T17:35:16.5736301Z  * [new tag]             v0.69.0                 -> v0.69.0
+2026-10-09T17:35:16.5736999Z  * [new tag]             v0.7.0                  -> v0.7.0
+2026-10-09T17:35:16.5737681Z  * [new tag]             v0.70.0                 -> v0.70.0
+2026-10-09T17:35:16.5738364Z  * [new tag]             v0.71.0                 -> v0.71.0
+2026-10-09T17:35:16.5738960Z  * [new tag]             v0.72.0                 -> v0.72.0
+2026-10-09T17:35:16.5739557Z  * [new tag]             v0.73.0                 -> v0.73.0
+2026-10-09T17:35:16.5740173Z  * [new tag]             v0.74.0                 -> v0.74.0
+2026-10-09T17:35:16.5740777Z  * [new tag]             v0.75.0                 -> v0.75.0
+2026-10-09T17:35:16.5741374Z  * [new tag]             v0.76.0                 -> v0.76.0
+2026-10-09T17:35:16.5741977Z  * [new tag]             v0.77.0                 -> v0.77.0
+2026-10-09T17:35:16.5742579Z  * [new tag]             v0.78.0                 -> v0.78.0
+2026-10-09T17:35:16.5743176Z  * [new tag]             v0.79.0                 -> v0.79.0
+2026-10-09T17:35:16.5743783Z  * [new tag]             v0.8.0                  -> v0.8.0
+2026-10-09T17:35:16.5744386Z  * [new tag]             v0.80.0                 -> v0.80.0
+2026-10-09T17:35:16.5744991Z  * [new tag]             v0.81.0                 -> v0.81.0
+2026-10-09T17:35:16.5745624Z  * [new tag]             v0.82.0                 -> v0.82.0
+2026-10-09T17:35:16.5746227Z  * [new tag]             v0.83.0                 -> v0.83.0
+2026-10-09T17:35:16.5746837Z  * [new tag]             v0.84.0                 -> v0.84.0
+2026-10-09T17:35:16.5747449Z  * [new tag]             v0.85.0                 -> v0.85.0
+2026-10-09T17:35:16.5748046Z  * [new tag]             v0.86.0                 -> v0.86.0
+2026-10-09T17:35:16.5748648Z  * [new tag]             v0.87.0                 -> v0.87.0
+2026-10-09T17:35:16.5749254Z  * [new tag]             v0.88.0                 -> v0.88.0
+2026-10-09T17:35:16.5749859Z  * [new tag]             v0.89.0                 -> v0.89.0
+2026-10-09T17:35:16.5750456Z  * [new tag]             v0.9.0                  -> v0.9.0
+2026-10-09T17:35:16.5751086Z  * [new tag]             v0.9.0-alpha            -> v0.9.0-alpha
+2026-10-09T17:35:16.5751714Z  * [new tag]             v0.90.0                 -> v0.90.0
+2026-10-09T17:35:16.5752312Z  * [new tag]             v0.91.0                 -> v0.91.0
+2026-10-09T17:35:16.5752915Z  * [new tag]             v0.92.0                 -> v0.92.0
+2026-10-09T17:35:16.5753517Z  * [new tag]             v0.93.0                 -> v0.93.0
+2026-10-09T17:35:16.5754217Z  * [new tag]             v0.94.0                 -> v0.94.0
+2026-10-09T17:35:16.5754930Z  * [new tag]             v0.95.0                 -> v0.95.0
+2026-10-09T17:35:16.5755678Z  * [new tag]             v0.96.0                 -> v0.96.0
+2026-10-09T17:35:16.5756280Z  * [new tag]             v0.97.0                 -> v0.97.0
+2026-10-09T17:35:16.5758293Z [command]/usr/local/bin/git rev-parse --verify --quiet f58ba3592f378a6a40eea75b3d8040c6ad26ea0f^{object}
+2026-10-09T17:35:16.5759257Z f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:16.5760575Z ##[endgroup]
+2026-10-09T17:35:16.5761246Z ##[group]Determining the checkout info
+2026-10-09T17:35:16.5761993Z ##[endgroup]
+2026-10-09T17:35:16.5762453Z [command]/usr/local/bin/git sparse-checkout disable
+2026-10-09T17:35:16.5763730Z [command]/usr/local/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-09T17:35:16.5765260Z ##[group]Checking out the ref
+2026-10-09T17:35:16.5766052Z [command]/usr/local/bin/git checkout --progress --force f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.2824520Z Note: switching to 'f58ba3592f378a6a40eea75b3d8040c6ad26ea0f'.
+2026-10-09T17:35:17.2824799Z 
+2026-10-09T17:35:17.2824926Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-09T17:35:17.2825181Z changes and commit them, and you can discard any commits you make in this
+2026-10-09T17:35:17.2825431Z state without impacting any branches by switching back to a branch.
+2026-10-09T17:35:17.2825575Z 
+2026-10-09T17:35:17.2825685Z If you want to create a new branch to retain commits you create, you may
+2026-10-09T17:35:17.2825963Z do so (now or later) by using -c with the switch command. Example:
+2026-10-09T17:35:17.2826107Z 
+2026-10-09T17:35:17.2826176Z   git switch -c <new-branch-name>
+2026-10-09T17:35:17.2826280Z 
+2026-10-09T17:35:17.2826346Z Or undo this operation with:
+2026-10-09T17:35:17.2826434Z 
+2026-10-09T17:35:17.2826491Z   git switch -
+2026-10-09T17:35:17.2826581Z 
+2026-10-09T17:35:17.2826765Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-09T17:35:17.2826932Z 
+2026-10-09T17:35:17.2827010Z HEAD is now at f58ba3592 chore: release v0.438.0
+2026-10-09T17:35:17.2852995Z ##[endgroup]
+2026-10-09T17:35:17.2888476Z [command]/usr/local/bin/git log -1 --format=%H
+2026-10-09T17:35:17.2913954Z f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.2920049Z ##[group]Removing auth
+2026-10-09T17:35:17.2920331Z Removing SSH command configuration
+2026-10-09T17:35:17.2922857Z [command]/usr/local/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T17:35:17.2946285Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T17:35:17.3135018Z Removing HTTP extra header
+2026-10-09T17:35:17.3138116Z [command]/usr/local/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T17:35:17.3170720Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T17:35:17.3298442Z Removing includeIf entries pointing to credentials config files
+2026-10-09T17:35:17.3300685Z [command]/usr/local/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T17:35:17.3319365Z includeif.gitdir:/home/runner/_work/vize/vize/.git.path
+2026-10-09T17:35:17.3319607Z includeif.gitdir:/home/runner/_work/vize/vize/.git/worktrees/*.path
+2026-10-09T17:35:17.3319803Z includeif.gitdir:/github/workspace/.git.path
+2026-10-09T17:35:17.3319991Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-09T17:35:17.3323814Z [command]/usr/local/bin/git config --local --get-all includeif.gitdir:/home/runner/_work/vize/vize/.git.path
+2026-10-09T17:35:17.3340355Z /home/runner/_work/_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:17.3345468Z [command]/usr/local/bin/git config --local --unset includeif.gitdir:/home/runner/_work/vize/vize/.git.path /home/runner/_work/_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:17.3368328Z [command]/usr/local/bin/git config --local --get-all includeif.gitdir:/home/runner/_work/vize/vize/.git/worktrees/*.path
+2026-10-09T17:35:17.3386589Z /home/runner/_work/_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:17.3390326Z [command]/usr/local/bin/git config --local --unset includeif.gitdir:/home/runner/_work/vize/vize/.git/worktrees/*.path /home/runner/_work/_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:17.3412471Z [command]/usr/local/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-09T17:35:17.3428816Z /github/runner_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:17.3431787Z [command]/usr/local/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:17.3453384Z [command]/usr/local/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-09T17:35:17.3469834Z /github/runner_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:17.3472800Z [command]/usr/local/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config
+2026-10-09T17:35:17.3494167Z [command]/usr/local/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T17:35:17.3644089Z Removing credentials config '/home/runner/_work/_temp/git-credentials-2f55ecdf-2dc2-46c6-8ac5-56e9135b7b84.config'
+2026-10-09T17:35:17.3648697Z ##[endgroup]
+2026-10-09T17:35:17.3716021Z ##[group]Run set -euo pipefail
+2026-10-09T17:35:17.3716239Z [36;1mset -euo pipefail[0m
+2026-10-09T17:35:17.3716444Z [36;1m[[ "$DRIVER_SHA" =~ ^[0-9a-f]{40}$ && "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]][0m
+2026-10-09T17:35:17.3716656Z [36;1m[[ "$(git rev-parse HEAD)" == "$DRIVER_SHA" ]][0m
+2026-10-09T17:35:17.3716873Z [36;1mgit fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main[0m
+2026-10-09T17:35:17.3717100Z [36;1mmain_head_sha="$(git rev-parse refs/remotes/origin/main)"[0m
+2026-10-09T17:35:17.3717333Z [36;1m[[ "$(git rev-parse --verify "$SOURCE_SHA^{commit}")" == "$SOURCE_SHA" ]][0m
+2026-10-09T17:35:17.3717556Z [36;1mif [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then[0m
+2026-10-09T17:35:17.3717800Z [36;1m  [[ "$GITHUB_REPOSITORY" == ubugeeei-prod/vize && "$GITHUB_REF" == refs/heads/main ]][0m
+2026-10-09T17:35:17.3718034Z [36;1m  [[ "$DRIVER_SHA" == "$GITHUB_WORKFLOW_SHA" ]][0m
+2026-10-09T17:35:17.3718254Z [36;1m  git merge-base --is-ancestor "$DRIVER_SHA" "$main_head_sha"[0m
+2026-10-09T17:35:17.3718466Z [36;1m  git merge-base --is-ancestor "$SOURCE_SHA" "$main_head_sha"[0m
+2026-10-09T17:35:17.3718647Z [36;1m  source_base_sha="$SOURCE_SHA"[0m
+2026-10-09T17:35:17.3718784Z [36;1melse[0m
+2026-10-09T17:35:17.3718946Z [36;1m  [[ "$GITHUB_EVENT_NAME" == pull_request && "$DRIVER_SHA" == "$SOURCE_SHA" ]][0m
+2026-10-09T17:35:17.3719145Z [36;1m  [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]][0m
+2026-10-09T17:35:17.3719339Z [36;1m  source_base_sha="$(git merge-base "$main_head_sha" "$SOURCE_SHA")"[0m
+2026-10-09T17:35:17.3719546Z [36;1m  echo "PR_BASE_SHA=$BASE_SHA" >> "$GITHUB_ENV"[0m
+2026-10-09T17:35:17.3719696Z [36;1mfi[0m
+2026-10-09T17:35:17.3719839Z [36;1mecho "MAIN_SOURCE_SHA=$source_base_sha" >> "$GITHUB_ENV"[0m
+2026-10-09T17:35:17.3720036Z [36;1mecho "MAIN_HEAD_SHA=$main_head_sha" >> "$GITHUB_ENV"[0m
+2026-10-09T17:35:17.3720250Z [36;1mecho "NATIVE_PHASE_SOURCE_ROOT=$GITHUB_WORKSPACE" >> "$GITHUB_ENV"[0m
+2026-10-09T17:35:17.3720527Z [36;1mecho "NATIVE_PHASE_OUTPUT=$RUNNER_TEMP/typechecker-native-phases.json" >> "$GITHUB_ENV"[0m
+2026-10-09T17:35:17.3731983Z shell: /usr/bin/bash -e {0}
+2026-10-09T17:35:17.3732112Z env:
+2026-10-09T17:35:17.3732223Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:17.3732344Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:17.3732470Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:17.3732636Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.3732808Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.3732985Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:17.3733157Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:17.3733300Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:17.3733442Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:17.3733606Z   BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.3733761Z ##[endgroup]
+2026-10-09T17:35:17.4963372Z ##[group]Run dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d
+2026-10-09T17:35:17.4963585Z with:
+2026-10-09T17:35:17.4963695Z   toolchain: stable
+2026-10-09T17:35:17.4963813Z env:
+2026-10-09T17:35:17.4963924Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:17.4964049Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:17.4964180Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:17.4964347Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.4964575Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.4964755Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:17.4964922Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:17.4965068Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:17.4965214Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:17.4965379Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.4965592Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.4965783Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.4965968Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:17.4966201Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:17.4966402Z ##[endgroup]
+2026-10-09T17:35:17.5135823Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-10-09T17:35:17.5151070Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-10-09T17:35:17.5151265Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-10-09T17:35:17.5151531Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-10-09T17:35:17.5151800Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-10-09T17:35:17.5151957Z [36;1m  exit 1[0m
+2026-10-09T17:35:17.5152135Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-10-09T17:35:17.5152352Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-10-09T17:35:17.5152617Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:35:17.5152872Z [36;1m  else[0m
+2026-10-09T17:35:17.5153076Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:35:17.5153302Z [36;1m  fi[0m
+2026-10-09T17:35:17.5153461Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-10-09T17:35:17.5153730Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:35:17.5153955Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-10-09T17:35:17.5154214Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:35:17.5154457Z [36;1melse[0m
+2026-10-09T17:35:17.5154632Z [36;1m  echo "toolchain=$toolchain" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:35:17.5154786Z [36;1mfi[0m
+2026-10-09T17:35:17.5165611Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:17.5165894Z env:
+2026-10-09T17:35:17.5166003Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:17.5166127Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:17.5166258Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:17.5166529Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.5166768Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.5166947Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:17.5167115Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:17.5167258Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:17.5167407Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:17.5167566Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5167850Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5168044Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5168225Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:17.5168449Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:17.5168643Z   toolchain: stable
+2026-10-09T17:35:17.5168754Z ##[endgroup]
+2026-10-09T17:35:17.5208589Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=7]
+2026-10-09T17:35:17.5211721Z ##[start-action display=Construct rustup command line;id=__dtolnay_rust-toolchain.flags]
+2026-10-09T17:35:17.5223070Z ##[group]Run echo "targets=$(for t in ${targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT
+2026-10-09T17:35:17.5223390Z [36;1mecho "targets=$(for t in ${targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:35:17.5223699Z [36;1mecho "components=$(for c in ${components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:35:17.5223932Z [36;1mecho "downgrade=" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:35:17.5233651Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:17.5233825Z env:
+2026-10-09T17:35:17.5233933Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:17.5234052Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:17.5234178Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:17.5234339Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.5234554Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.5234730Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:17.5234893Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:17.5235034Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:17.5235178Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:17.5235334Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5235519Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5235706Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5235887Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:17.5236108Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:17.5236306Z   targets: 
+2026-10-09T17:35:17.5236405Z   components: 
+2026-10-09T17:35:17.5236509Z ##[endgroup]
+2026-10-09T17:35:17.5265531Z ##[end-action id=__dtolnay_rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=5]
+2026-10-09T17:35:17.5267087Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-10-09T17:35:17.5278234Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-10-09T17:35:17.5278488Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-10-09T17:35:17.5286914Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:17.5287087Z env:
+2026-10-09T17:35:17.5287215Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:17.5287340Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:17.5287470Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:17.5287642Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.5287936Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.5288112Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:17.5288280Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:17.5288426Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:17.5288578Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:17.5288757Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5289050Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5289246Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5289436Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:17.5289965Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:17.5290172Z ##[endgroup]
+2026-10-09T17:35:17.5311184Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=4]
+2026-10-09T17:35:17.5312508Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-10-09T17:35:17.5340719Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-10-09T17:35:17.5340914Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-10-09T17:35:17.5341288Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-10-09T17:35:17.5341627Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-10-09T17:35:17.5341773Z [36;1mfi[0m
+2026-10-09T17:35:17.5349165Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:17.5349327Z env:
+2026-10-09T17:35:17.5349429Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:17.5349554Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:17.5349678Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:17.5349835Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.5350012Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.5350180Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:17.5350337Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:17.5350478Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:17.5350616Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:17.5350775Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5350954Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5351135Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5351310Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:17.5351525Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:17.5351725Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:17.5351852Z ##[endgroup]
+2026-10-09T17:35:17.5372341Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=5]
+2026-10-09T17:35:17.5373731Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-10-09T17:35:17.5377054Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:17.5384534Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+2026-10-09T17:35:17.5397049Z ##[group]Run log=$(mktemp)
+2026-10-09T17:35:17.5397203Z [36;1mlog=$(mktemp)[0m
+2026-10-09T17:35:17.5397332Z [36;1mtrap 'rm -f "$log"' EXIT[0m
+2026-10-09T17:35:17.5397476Z [36;1mfor attempt in 1 2 3 4 5; do[0m
+2026-10-09T17:35:17.5397746Z [36;1m  if rustup toolchain install stable --profile minimal --no-self-update --force-non-host 2>&1 | tee "$log"; then[0m
+2026-10-09T17:35:17.5398015Z [36;1m    break[0m
+2026-10-09T17:35:17.5398126Z [36;1m  else[0m
+2026-10-09T17:35:17.5398236Z [36;1m    status=$?[0m
+2026-10-09T17:35:17.5398349Z [36;1m  fi[0m
+2026-10-09T17:35:17.5398507Z [36;1m  if [[ $attempt == 5 ]] || ! grep -Fq 'checksum failed for ' "$log" \[0m
+2026-10-09T17:35:17.5398891Z [36;1m      || ! grep -Fq 'this is likely due to an ongoing update of the official release server' "$log"; then[0m
+2026-10-09T17:35:17.5399126Z [36;1m    exit "$status"[0m
+2026-10-09T17:35:17.5399249Z [36;1m  fi[0m
+2026-10-09T17:35:17.5399438Z [36;1m  echo "Retrying rustup toolchain install in 30 seconds (retry $attempt of 4)" >&2[0m
+2026-10-09T17:35:17.5399645Z [36;1m  sleep 30[0m
+2026-10-09T17:35:17.5399754Z [36;1mdone[0m
+2026-10-09T17:35:17.5408727Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:17.5408921Z env:
+2026-10-09T17:35:17.5409037Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:17.5409169Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:17.5409518Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:17.5409797Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.5409987Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:17.5410176Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:17.5410345Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:17.5410496Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:17.5410647Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:17.5410812Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5411004Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5411198Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:17.5411384Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:17.5411613Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:17.5411824Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:17.5411966Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-10-09T17:35:17.5412098Z ##[endgroup]
+2026-10-09T17:35:17.6639374Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+2026-10-09T17:35:17.7826445Z info: latest update on 2026-10-01 for version 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T17:35:17.7908795Z info: removing previous version of component clippy
+2026-10-09T17:35:17.7914361Z info: removing previous version of component rustfmt
+2026-10-09T17:35:17.7918188Z info: removing previous version of component cargo
+2026-10-09T17:35:17.7931580Z info: removing previous version of component rust-std
+2026-10-09T17:35:17.7946482Z info: removing previous version of component rustc
+2026-10-09T17:35:17.7962950Z info: downloading 5 components
+2026-10-09T17:35:23.3998723Z 
+2026-10-09T17:35:23.4037529Z   stable-x86_64-unknown-linux-gnu updated - rustc 1.99.0 (b940084d7 2026-09-28) (from rustc 1.97.1 (8bab26f4f 2026-07-14))
+2026-10-09T17:35:23.4037778Z 
+2026-10-09T17:35:23.4110144Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=5872]
+2026-10-09T17:35:23.4115225Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+2026-10-09T17:35:23.4130139Z ##[group]Run rustup default stable --force-non-host
+2026-10-09T17:35:23.4130344Z [36;1mrustup default stable --force-non-host[0m
+2026-10-09T17:35:23.4141613Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:23.4141787Z env:
+2026-10-09T17:35:23.4141898Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:23.4142024Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:23.4142157Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:23.4142319Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4142505Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4142689Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:23.4142880Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:23.4143028Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:23.4143178Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:23.4143337Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4143521Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4143709Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4143895Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:23.4144119Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:23.4144325Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:23.4144457Z ##[endgroup]
+2026-10-09T17:35:23.4191101Z info: using existing install for stable-x86_64-unknown-linux-gnu
+2026-10-09T17:35:23.4193492Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+2026-10-09T17:35:23.4193644Z 
+2026-10-09T17:35:23.4234139Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T17:35:23.4234299Z 
+2026-10-09T17:35:23.4234797Z info: note that the toolchain '1.99.0-x86_64-unknown-linux-gnu' is currently in use (overridden by '/home/runner/_work/vize/vize/rust-toolchain.toml')
+2026-10-09T17:35:23.4242785Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=12]
+2026-10-09T17:35:23.4244217Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-10-09T17:35:23.4256540Z ##[group]Run DATE=$(rustc +stable --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-10-09T17:35:23.4256943Z [36;1mDATE=$(rustc +stable --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-10-09T17:35:23.4257256Z [36;1mHASH=$(rustc +stable --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-10-09T17:35:23.4257505Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-10-09T17:35:23.4265680Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:23.4265850Z env:
+2026-10-09T17:35:23.4265957Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:23.4266082Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:23.4266209Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:23.4266370Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4266545Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4266717Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:23.4266882Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:23.4267024Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:23.4267165Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:23.4267323Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4267514Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4267703Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4267889Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:23.4268109Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:23.4268314Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:23.4268445Z ##[endgroup]
+2026-10-09T17:35:23.4425668Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=18]
+2026-10-09T17:35:23.4427412Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-10-09T17:35:23.4439191Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-10-09T17:35:23.4439387Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-10-09T17:35:23.4439549Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-10-09T17:35:23.4439690Z [36;1mfi[0m
+2026-10-09T17:35:23.4449715Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:23.4449944Z env:
+2026-10-09T17:35:23.4450048Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:23.4450161Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:23.4450278Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:23.4450435Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4450598Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4450760Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:23.4450916Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:23.4451050Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:23.4451184Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:23.4451337Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4451509Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4451684Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4451865Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:23.4452077Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:23.4452273Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:23.4452400Z ##[endgroup]
+2026-10-09T17:35:23.4472019Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=4]
+2026-10-09T17:35:23.4473430Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-10-09T17:35:23.4484384Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-10-09T17:35:23.4484581Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-10-09T17:35:23.4484751Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-10-09T17:35:23.4484902Z [36;1mfi[0m
+2026-10-09T17:35:23.4493728Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:23.4493894Z env:
+2026-10-09T17:35:23.4494004Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:23.4494132Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:23.4494263Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:23.4494430Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4494602Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4494773Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:23.4494940Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:23.4495082Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:23.4495225Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:23.4495384Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4495567Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4495760Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4495947Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:23.4496172Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:23.4496383Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:23.4496527Z ##[endgroup]
+2026-10-09T17:35:23.4517597Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=4]
+2026-10-09T17:35:23.4518849Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-10-09T17:35:23.4547828Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-10-09T17:35:23.4548084Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-10-09T17:35:23.4548410Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/_work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-10-09T17:35:23.4548749Z [36;1m  if rustc +stable --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-10-09T17:35:23.4549017Z [36;1m    touch "/home/runner/_work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T17:35:23.4549363Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-10-09T17:35:23.4549650Z [36;1m  elif rustc +stable --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-10-09T17:35:23.4549917Z [36;1m    touch "/home/runner/_work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-10-09T17:35:23.4550163Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-10-09T17:35:23.4550329Z [36;1m  fi[0m
+2026-10-09T17:35:23.4550427Z [36;1mfi[0m
+2026-10-09T17:35:23.4558586Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:23.4558743Z env:
+2026-10-09T17:35:23.4558843Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:23.4558959Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:23.4559077Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:23.4559232Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4559401Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4559573Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:23.4559734Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:23.4559872Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:23.4560009Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:23.4560162Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4560339Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4560517Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4560690Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:23.4560907Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:23.4561100Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:23.4561224Z ##[endgroup]
+2026-10-09T17:35:23.4702288Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=18]
+2026-10-09T17:35:23.4703699Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-10-09T17:35:23.4715609Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-10-09T17:35:23.4715973Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-10-09T17:35:23.4716273Z [36;1mif rustc +stable --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-10-09T17:35:23.4716505Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-10-09T17:35:23.4716665Z [36;1mfi[0m
+2026-10-09T17:35:23.4725191Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:23.4725358Z env:
+2026-10-09T17:35:23.4725465Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:23.4725585Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:23.4725710Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:23.4725876Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4726054Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4726235Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:23.4726523Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:23.4726861Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:23.4727080Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:23.4727260Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4727454Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4727647Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4727831Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:23.4728056Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:23.4728264Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:23.4728396Z ##[endgroup]
+2026-10-09T17:35:23.4810831Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=10]
+2026-10-09T17:35:23.4813336Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-10-09T17:35:23.4824689Z ##[group]Run rustc +stable --version --verbose
+2026-10-09T17:35:23.4824861Z [36;1mrustc +stable --version --verbose[0m
+2026-10-09T17:35:23.4833275Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:23.4833442Z env:
+2026-10-09T17:35:23.4833552Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:23.4833675Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:23.4833801Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:23.4833965Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4834143Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4834319Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:23.4834487Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:23.4834634Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:23.4834776Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:23.4834938Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4835125Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4835313Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4835495Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:23.4835719Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:23.4835920Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:23.4836050Z ##[endgroup]
+2026-10-09T17:35:23.4909374Z rustc 1.99.0 (b940084d7 2026-09-28)
+2026-10-09T17:35:23.4909524Z binary: rustc
+2026-10-09T17:35:23.4909661Z commit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4
+2026-10-09T17:35:23.4909825Z commit-date: 2026-09-28
+2026-10-09T17:35:23.4910033Z host: x86_64-unknown-linux-gnu
+2026-10-09T17:35:23.4910161Z release: 1.99.0
+2026-10-09T17:35:23.4910274Z LLVM version: 23.1.1
+2026-10-09T17:35:23.4918661Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=10]
+2026-10-09T17:35:23.4971536Z ##[group]Run wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
+2026-10-09T17:35:23.4971724Z with:
+2026-10-09T17:35:23.4971826Z   wild-version: 0.9.0
+2026-10-09T17:35:23.4971935Z   download-retries: 5
+2026-10-09T17:35:23.4972045Z env:
+2026-10-09T17:35:23.4972141Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:23.4972256Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:23.4972376Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:23.4972532Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4972696Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.4972916Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:23.4973071Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:23.4973207Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:23.4973342Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:23.4973492Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4973695Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4973873Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.4974044Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:23.4974258Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:23.4974450Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:23.4974574Z ##[endgroup]
+2026-10-09T17:35:23.4991807Z ##[start-action display=Run case "$RUNNER_ARCH" in;id=__wild-linker_action.__run]
+2026-10-09T17:35:23.5004471Z ##[group]Run case "$RUNNER_ARCH" in
+2026-10-09T17:35:23.5004640Z [36;1mcase "$RUNNER_ARCH" in[0m
+2026-10-09T17:35:23.5004771Z [36;1m  X64)   target_arch="x86_64" ;;[0m
+2026-10-09T17:35:23.5004914Z [36;1m  ARM64) target_arch="aarch64" ;;[0m
+2026-10-09T17:35:23.5005097Z [36;1m  *) echo "Unsupported architecture: $RUNNER_ARCH" >&2; exit 1 ;;[0m
+2026-10-09T17:35:23.5005265Z [36;1mesac[0m
+2026-10-09T17:35:23.5005516Z [36;1m[0m
+2026-10-09T17:35:23.5005635Z [36;1mmkdir "${RUNNER_TEMP}/wild-install"[0m
+2026-10-09T17:35:23.5005782Z [36;1m[0m
+2026-10-09T17:35:23.5006035Z [36;1murl="https://github.com/wild-linker/wild/releases/download/0.9.0/wild-linker-0.9.0-${target_arch}-unknown-linux-gnu.tar.gz"[0m
+2026-10-09T17:35:23.5006320Z [36;1marchive="${RUNNER_TEMP}/wild.tar.gz"[0m
+2026-10-09T17:35:23.5006611Z [36;1mcurl --fail-with-body --show-error --location \[0m
+2026-10-09T17:35:23.5006845Z [36;1m     --retry "5" --retry-all-errors \[0m
+2026-10-09T17:35:23.5006998Z [36;1m     --output "${archive}" \[0m
+2026-10-09T17:35:23.5007127Z [36;1m     "${url}"[0m
+2026-10-09T17:35:23.5007233Z [36;1m[0m
+2026-10-09T17:35:23.5007394Z [36;1mtar -xzf "${archive}" -C "${RUNNER_TEMP}/wild-install" --strip-components=1[0m
+2026-10-09T17:35:23.5007589Z [36;1mrm -f "${archive}"[0m
+2026-10-09T17:35:23.5007705Z [36;1m[0m
+2026-10-09T17:35:23.5007809Z [36;1mmkdir -p "$HOME/.cargo"[0m
+2026-10-09T17:35:23.5007952Z [36;1mfor libc in gnu musl; do[0m
+2026-10-09T17:35:23.5008114Z [36;1m  TARGET="target.${target_arch}-unknown-linux-${libc}"[0m
+2026-10-09T17:35:23.5008323Z [36;1m  if ! grep "${TARGET}" "$HOME/.cargo/config.toml" 2>/dev/null; then[0m
+2026-10-09T17:35:23.5008703Z [36;1m        echo -e "# Added by wild GitHub Action\n[${TARGET}]\nlinker = \"clang\"\nrustflags = [\"-Clink-arg=--ld-path=${RUNNER_TEMP}/wild-install/wild\"]\n" >>"$HOME/.cargo/config.toml"[0m
+2026-10-09T17:35:23.5009022Z [36;1m  fi[0m
+2026-10-09T17:35:23.5009123Z [36;1mdone[0m
+2026-10-09T17:35:23.5019907Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:23.5020070Z env:
+2026-10-09T17:35:23.5020173Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:23.5020292Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:23.5020411Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:23.5020568Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.5020742Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:23.5021039Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:23.5021200Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:23.5021348Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:23.5021488Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:23.5021658Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.5021835Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.5022016Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:23.5022192Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:23.5022404Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:23.5022599Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:23.5022722Z ##[endgroup]
+2026-10-09T17:35:23.5217630Z   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+2026-10-09T17:35:23.5217876Z                                  Dload  Upload   Total   Spent    Left  Speed
+2026-10-09T17:35:23.5218000Z 
+2026-10-09T17:35:23.6669652Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2026-10-09T17:35:23.6669873Z   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+2026-10-09T17:35:23.7335309Z 
+2026-10-09T17:35:23.7335452Z 100 2388k  100 2388k    0     0  11.0M      0 --:--:-- --:--:-- --:--:-- 11.0M
+2026-10-09T17:35:23.7649837Z ##[end-action id=__wild-linker_action.__run;outcome=success;conclusion=success;duration_ms=265]
+2026-10-09T17:35:23.7745775Z Prepare all required actions
+2026-10-09T17:35:23.7746118Z Getting action download info
+2026-10-09T17:35:23.8587998Z Download action repository 'useblacksmith/stickydisk@d58829ad6f9be8822ec5efe74256c82cd62915ab' (SHA:d58829ad6f9be8822ec5efe74256c82cd62915ab)
+2026-10-09T17:35:23.9501393Z Download action repository 'actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae' (SHA:27d5ce7f107fe9357f9df03efb73ab90386fccae)
+2026-10-09T17:35:24.0366761Z ##[group]Run ./.github/actions/setup-rust-sticky-cache
+2026-10-09T17:35:24.0367006Z with:
+2026-10-09T17:35:24.0367176Z   key: typechecker-native-phases
+2026-10-09T17:35:24.0367355Z   cache-key-suffix: Linux-X64
+2026-10-09T17:35:24.0367547Z   target-path: target
+2026-10-09T17:35:24.0367692Z env:
+2026-10-09T17:35:24.0367850Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:24.0368011Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:24.0368196Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:24.0368454Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.0368672Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.0368908Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:24.0369124Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:24.0369335Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:24.0369529Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:24.0369747Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.0369975Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.0370225Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.0370448Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:24.0370700Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:24.0370979Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:24.0371145Z ##[endgroup]
+2026-10-09T17:35:24.0601182Z ##[start-action display=Select the Rust cache backend;id=__self.cache-policy]
+2026-10-09T17:35:24.0609497Z ##[group]Run node "$GITHUB_ACTION_PATH/cache-policy.mjs"
+2026-10-09T17:35:24.0609705Z [36;1mnode "$GITHUB_ACTION_PATH/cache-policy.mjs"[0m
+2026-10-09T17:35:24.0619951Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:24.0620116Z env:
+2026-10-09T17:35:24.0620228Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:24.0620364Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:24.0620493Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:24.0620665Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.0620847Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.0621026Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:24.0621195Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:24.0621348Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:24.0621493Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:24.0621659Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.0621848Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.0622038Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.0622230Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:24.0622458Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:24.0622663Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:24.0622812Z   VIZE_CACHE_RUNNER_ENVIRONMENT: self-hosted
+2026-10-09T17:35:24.0623006Z   VIZE_CACHE_RUNNER_OS: Linux
+2026-10-09T17:35:24.0623138Z   VIZE_CACHE_RUNNER_ARCH: X64
+2026-10-09T17:35:24.0623281Z   VIZE_CACHE_ROLE: typechecker-native-phases
+2026-10-09T17:35:24.0623440Z   VIZE_CACHE_SUFFIX: Linux-X64
+2026-10-09T17:35:24.0623572Z   VIZE_CACHE_TARGET_PATH: target
+2026-10-09T17:35:24.0623707Z   VIZE_CACHE_SECONDARY_ROLE: 
+2026-10-09T17:35:24.0623847Z   VIZE_CACHE_SECONDARY_SUFFIX: 
+2026-10-09T17:35:24.0623979Z   VIZE_CACHE_SECONDARY_PATH: 
+2026-10-09T17:35:24.0624245Z ##[endgroup]
+2026-10-09T17:35:24.1110122Z Rust cache: Actions cache.
+2026-10-09T17:35:24.1134517Z ##[end-action id=__self.cache-policy;outcome=success;conclusion=success;duration_ms=53]
+2026-10-09T17:35:24.1136245Z ##[start-action display=Mount Cargo registry sticky disk;id=__self.__useblacksmith_stickydisk]
+2026-10-09T17:35:24.1139216Z ##[end-action id=__self.__useblacksmith_stickydisk;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:24.1140404Z ##[start-action display=Mount Cargo git sticky disk;id=__self.__useblacksmith_stickydisk_2]
+2026-10-09T17:35:24.1142459Z ##[end-action id=__self.__useblacksmith_stickydisk_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:24.1143456Z ##[start-action display=Mount Rust target sticky disk;id=__self.__useblacksmith_stickydisk_3]
+2026-10-09T17:35:24.1145452Z ##[end-action id=__self.__useblacksmith_stickydisk_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:24.1146391Z ##[start-action display=Mount secondary Rust target sticky disk;id=__self.__useblacksmith_stickydisk_4]
+2026-10-09T17:35:24.1148585Z ##[end-action id=__self.__useblacksmith_stickydisk_4;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:24.1151868Z ##[start-action display=Check which trusted sticky paths were actually mounted;id=__self.cache-mounts]
+2026-10-09T17:35:24.1154023Z ##[end-action id=__self.cache-mounts;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:24.1154995Z ##[start-action display=Cache Cargo registry or seed it from the trusted sticky clone;id=__self.__actions_cache]
+2026-10-09T17:35:24.1156948Z ##[end-action id=__self.__actions_cache;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:24.1157896Z ##[start-action display=Cache Cargo git or seed it from the trusted sticky clone;id=__self.__actions_cache_2]
+2026-10-09T17:35:24.1159809Z ##[end-action id=__self.__actions_cache_2;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:24.1160725Z ##[start-action display=Cache Rust target or seed it from the trusted sticky clone;id=__self.__actions_cache_3]
+2026-10-09T17:35:24.1163073Z ##[end-action id=__self.__actions_cache_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:24.1164016Z ##[start-action display=Cache the secondary Rust target or seed its trusted clone;id=__self.__actions_cache_4]
+2026-10-09T17:35:24.1174035Z ##[end-action id=__self.__actions_cache_4;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:24.1175295Z ##[start-action display=Restore trusted Cargo registry for an untrusted checkout;id=__self.__actions_cache_5]
+2026-10-09T17:35:24.1198333Z ##[group]Run actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+2026-10-09T17:35:24.1198534Z with:
+2026-10-09T17:35:24.1198646Z   path: ~/.cargo/registry
+2026-10-09T17:35:24.1198949Z   key: rust-cache-v1-ubugeeei-prod/vize-Linux-X64-Linux-X64-1ee6efff3c815897fa1bfc1696fa926a090d619d3b6a2515d3eec7e92d30fb4b-registry
+2026-10-09T17:35:24.1199273Z   enableCrossOsArchive: false
+2026-10-09T17:35:24.1199411Z   fail-on-cache-miss: false
+2026-10-09T17:35:24.1199540Z   lookup-only: false
+2026-10-09T17:35:24.1199651Z env:
+2026-10-09T17:35:24.1199770Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:24.1208156Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:24.1208291Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:24.1208457Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.1208635Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.1208816Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:24.1208981Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:24.1209127Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:24.1209269Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:24.1209427Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.1209610Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.1209941Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.1210125Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:24.1210348Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:24.1210551Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:24.1210679Z ##[endgroup]
+2026-10-09T17:35:24.3344104Z Cache not found for input keys: rust-cache-v1-ubugeeei-prod/vize-Linux-X64-Linux-X64-1ee6efff3c815897fa1bfc1696fa926a090d619d3b6a2515d3eec7e92d30fb4b-registry
+2026-10-09T17:35:24.3379594Z ##[end-action id=__self.__actions_cache_5;outcome=success;conclusion=success;duration_ms=220]
+2026-10-09T17:35:24.3381015Z ##[start-action display=Restore trusted Cargo git for an untrusted checkout;id=__self.__actions_cache_6]
+2026-10-09T17:35:24.3400532Z ##[group]Run actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+2026-10-09T17:35:24.3400715Z with:
+2026-10-09T17:35:24.3400812Z   path: ~/.cargo/git
+2026-10-09T17:35:24.3401099Z   key: rust-cache-v1-ubugeeei-prod/vize-Linux-X64-Linux-X64-1ee6efff3c815897fa1bfc1696fa926a090d619d3b6a2515d3eec7e92d30fb4b-git
+2026-10-09T17:35:24.3401393Z   enableCrossOsArchive: false
+2026-10-09T17:35:24.3401520Z   fail-on-cache-miss: false
+2026-10-09T17:35:24.3401642Z   lookup-only: false
+2026-10-09T17:35:24.3401744Z env:
+2026-10-09T17:35:24.3401843Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:24.3401961Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:24.3402080Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:24.3402238Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.3402407Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.3402576Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:24.3402733Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:24.3402919Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:24.3403056Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:24.3403211Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.3403409Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.3403589Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.3403767Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:24.3403977Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:24.3404170Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:24.3404297Z ##[endgroup]
+2026-10-09T17:35:24.5402717Z Cache not found for input keys: rust-cache-v1-ubugeeei-prod/vize-Linux-X64-Linux-X64-1ee6efff3c815897fa1bfc1696fa926a090d619d3b6a2515d3eec7e92d30fb4b-git
+2026-10-09T17:35:24.5432241Z ##[end-action id=__self.__actions_cache_6;outcome=success;conclusion=success;duration_ms=205]
+2026-10-09T17:35:24.5434339Z ##[start-action display=Restore a Rust target without registering a save;id=__self.__actions_cache_7]
+2026-10-09T17:35:24.5455302Z ##[group]Run actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae
+2026-10-09T17:35:24.5455498Z with:
+2026-10-09T17:35:24.5455597Z   path: target
+2026-10-09T17:35:24.5456007Z   key: rust-cache-v1-ubugeeei-prod/vize-Linux-X64-Linux-X64-1ee6efff3c815897fa1bfc1696fa926a090d619d3b6a2515d3eec7e92d30fb4b-typechecker-native-phases-target-f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.5456658Z   restore-keys: rust-cache-v1-ubugeeei-prod/vize-Linux-X64-Linux-X64-1ee6efff3c815897fa1bfc1696fa926a090d619d3b6a2515d3eec7e92d30fb4b-typechecker-native-phases-target-
+2026-10-09T17:35:24.5457018Z   lookup-only: false
+2026-10-09T17:35:24.5457137Z   enableCrossOsArchive: false
+2026-10-09T17:35:24.5457266Z   fail-on-cache-miss: false
+2026-10-09T17:35:24.5457383Z env:
+2026-10-09T17:35:24.5457487Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:24.5457605Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:24.5457724Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:24.5457886Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.5458165Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.5458335Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:24.5458495Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:24.5458633Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:24.5458768Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:24.5458922Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.5459099Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.5459368Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.5459546Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:24.5459756Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:24.5459952Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:24.5460082Z ##[endgroup]
+2026-10-09T17:35:24.7586382Z Cache not found for input keys: rust-cache-v1-ubugeeei-prod/vize-Linux-X64-Linux-X64-1ee6efff3c815897fa1bfc1696fa926a090d619d3b6a2515d3eec7e92d30fb4b-typechecker-native-phases-target-f58ba3592f378a6a40eea75b3d8040c6ad26ea0f, rust-cache-v1-ubugeeei-prod/vize-Linux-X64-Linux-X64-1ee6efff3c815897fa1bfc1696fa926a090d619d3b6a2515d3eec7e92d30fb4b-typechecker-native-phases-target-
+2026-10-09T17:35:24.7610829Z ##[end-action id=__self.__actions_cache_7;outcome=success;conclusion=success;duration_ms=217]
+2026-10-09T17:35:24.7613374Z ##[start-action display=Restore a secondary target without registering a save;id=__self.__actions_cache_8]
+2026-10-09T17:35:24.7616336Z ##[end-action id=__self.__actions_cache_8;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-10-09T17:35:24.7648391Z ##[group]Run voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa
+2026-10-09T17:35:24.7648579Z with:
+2026-10-09T17:35:24.7648697Z   node-version-file: package.json
+2026-10-09T17:35:24.7648831Z   run-install: false
+2026-10-09T17:35:24.7648937Z   version: latest
+2026-10-09T17:35:24.7649039Z   cache: false
+2026-10-09T17:35:24.7649140Z env:
+2026-10-09T17:35:24.7649240Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:24.7649358Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:24.7649498Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:24.7649660Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.7649832Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:24.7650001Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:24.7650163Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:24.7650308Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:24.7650448Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:24.7650630Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.7650807Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.7650991Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:24.7651164Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:24.7651376Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:24.7651575Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:24.7651699Z ##[endgroup]
+2026-10-09T17:35:24.8182901Z Resolved Node.js version '24.14.0' from package.json
+2026-10-09T17:35:24.8183263Z Installing Vite+@latest...
+2026-10-09T17:35:24.8198637Z [command]/usr/bin/bash -c set -o pipefail; curl -fsSL --connect-timeout 5 --max-time 15 https://viteplus.dev/install.sh | bash
+2026-10-09T17:35:25.1980063Z info: installing vite-plus@1.1.0...
+2026-10-09T17:35:25.1981509Z info: Preparing Node.js and pnpm...
+2026-10-09T17:35:25.9795815Z info: Installing dependencies...
+2026-10-09T17:35:27.1677732Z ✓ Dependencies installed.
+2026-10-09T17:35:27.1682232Z Setup:
+2026-10-09T17:35:27.1682372Z   Preparing vite-plus environment.
+2026-10-09T17:35:27.1682480Z 
+2026-10-09T17:35:27.1689733Z Created Shims:
+2026-10-09T17:35:27.1690181Z   /home/runner/.vite-plus/bin/node
+2026-10-09T17:35:27.1690443Z   /home/runner/.vite-plus/bin/npm
+2026-10-09T17:35:27.1690688Z   /home/runner/.vite-plus/bin/npx
+2026-10-09T17:35:27.1690908Z   /home/runner/.vite-plus/bin/pnpm
+2026-10-09T17:35:27.1691062Z   /home/runner/.vite-plus/bin/pnpx
+2026-10-09T17:35:27.1691229Z   /home/runner/.vite-plus/bin/pn
+2026-10-09T17:35:27.1691441Z   /home/runner/.vite-plus/bin/pnx
+2026-10-09T17:35:27.1691667Z   /home/runner/.vite-plus/bin/yarn
+2026-10-09T17:35:27.1691890Z   /home/runner/.vite-plus/bin/yarnpkg
+2026-10-09T17:35:27.1692119Z   /home/runner/.vite-plus/bin/bun
+2026-10-09T17:35:27.1692758Z   /home/runner/.vite-plus/bin/bunx
+2026-10-09T17:35:27.1693022Z   /home/runner/.vite-plus/bin/vpx
+2026-10-09T17:35:27.1693250Z   /home/runner/.vite-plus/bin/vpr
+2026-10-09T17:35:27.1693392Z 
+2026-10-09T17:35:27.1693464Z Next Steps:
+2026-10-09T17:35:27.1693628Z   For Bash, run:
+2026-10-09T17:35:27.1693807Z   . "/home/runner/.vite-plus/env"
+2026-10-09T17:35:27.1693946Z 
+2026-10-09T17:35:27.1694193Z   If your ~/.bashrc does not already load Vite+, add this command for interactive non-login Bash sessions.
+2026-10-09T17:35:27.1694651Z   Login Bash shells must also load the command through their login profile.
+2026-10-09T17:35:27.1694889Z 
+2026-10-09T17:35:27.1695072Z   Restart an already-running IDE to load its environment. Run `vp env doctor` to verify.
+2026-10-09T17:35:27.1695540Z ✓ Vite+ setup complete.
+2026-10-09T17:35:27.1732856Z Setting up Node.js 24.14.0 via vp env use...
+2026-10-09T17:35:27.1737362Z [command]/home/runner/.vite-plus/bin/vp env use 24.14.0
+2026-10-09T17:35:27.1766815Z Installing Node.js v24.14.0...
+2026-10-09T17:35:27.8830664Z Using Node.js v24.14.0 (resolved from 24.14.0)
+2026-10-09T17:35:27.8891438Z vp v1.1.0
+2026-10-09T17:35:27.8891528Z 
+2026-10-09T17:35:27.8891583Z Local vite-plus:
+2026-10-09T17:35:27.8891722Z   vite-plus  Not found
+2026-10-09T17:35:27.8891798Z 
+2026-10-09T17:35:27.8891836Z Tools:
+2026-10-09T17:35:27.8891946Z   vite             Not found
+2026-10-09T17:35:27.8892073Z   rolldown         Not found
+2026-10-09T17:35:27.8892189Z   vitest           Not found
+2026-10-09T17:35:27.8892308Z   oxfmt            Not found
+2026-10-09T17:35:27.8892427Z   oxlint           Not found
+2026-10-09T17:35:27.8892556Z   oxlint-tsgolint  Not found
+2026-10-09T17:35:27.8892672Z   tsdown           Not found
+2026-10-09T17:35:27.8892749Z 
+2026-10-09T17:35:27.8892833Z Environment:
+2026-10-09T17:35:27.8892943Z   Package manager  pnpm v12.1.0
+2026-10-09T17:35:27.8893089Z   Node.js          v24.14.0 (.session-node-version)
+2026-10-09T17:35:27.8953420Z ##[group]Run node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
+2026-10-09T17:35:27.8953910Z [36;1mnode tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"[0m
+2026-10-09T17:35:27.8967336Z shell: /usr/bin/bash -e {0}
+2026-10-09T17:35:27.8967469Z env:
+2026-10-09T17:35:27.8967584Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:27.8967707Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:27.8967835Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:27.8968008Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:27.8968185Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:27.8968360Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:27.8968525Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:27.8968668Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:27.8968847Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:27.8969160Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:27.8969346Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:27.8969540Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:27.8969723Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:27.8969947Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:27.8970154Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:27.8970288Z ##[endgroup]
+2026-10-09T17:35:28.1045006Z ##[group]Run set -euo pipefail
+2026-10-09T17:35:28.1045177Z [36;1mset -euo pipefail[0m
+2026-10-09T17:35:28.1045341Z [36;1mvp install --frozen-lockfile --prefer-offline[0m
+2026-10-09T17:35:28.1045546Z [36;1mif [[ "$GITHUB_EVENT_NAME" == workflow_dispatch ]]; then[0m
+2026-10-09T17:35:28.1045748Z [36;1m  [[ ! -e "$NATIVE_PHASE_SOURCE_ROOT/node_modules" ]][0m
+2026-10-09T17:35:28.1045996Z [36;1m  ln -s "$GITHUB_WORKSPACE/node_modules" "$NATIVE_PHASE_SOURCE_ROOT/node_modules"[0m
+2026-10-09T17:35:28.1046216Z [36;1mfi[0m
+2026-10-09T17:35:28.1056229Z shell: /usr/bin/bash -e {0}
+2026-10-09T17:35:28.1056358Z env:
+2026-10-09T17:35:28.1056468Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:28.1056591Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:28.1056719Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:28.1056888Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:28.1057064Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:28.1057317Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:28.1057486Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:28.1057632Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:28.1057780Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:28.1057940Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:28.1058125Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:28.1058322Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:28.1058504Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:28.1058728Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:28.1058933Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:28.1059068Z ##[endgroup]
+2026-10-09T17:35:28.5043441Z Scope: all 34 workspace projects
+2026-10-09T17:35:28.5774301Z ? Verifying lockfile against supply-chain policies (2305 entries)...
+2026-10-09T17:35:28.6626616Z Packages are hard linked from the content-addressable store to the virtual store.
+2026-10-09T17:35:28.6627178Z   Content-addressable store is at: /home/runner/.local/share/pnpm/store/v11
+2026-10-09T17:35:28.6627523Z   Virtual store is at:             node_modules/.pnpm
+2026-10-09T17:35:28.6711919Z Downloading @rolldown/binding-linux-x64-gnu@1.2.3: 0.00 B/7.96 MB
+2026-10-09T17:35:28.7797123Z Downloading @fortawesome/fontawesome-free@7.3.1: 0.00 B/6.61 MB
+2026-10-09T17:35:28.8730027Z Downloading @mermaid-js/mermaid-zenuml@0.2.3: 0.00 B/8.34 MB
+2026-10-09T17:35:28.8969527Z Downloading @typescript/typescript-linux-x64@7.0.2: 0.00 B/9.66 MB
+2026-10-09T17:35:28.9656510Z Downloading @rolldown/binding-linux-x64-gnu@1.0.3: 0.00 B/8.85 MB
+2026-10-09T17:35:28.9873307Z Downloading @oxlint-tsgolint/linux-x64@0.23.0: 0.00 B/13.33 MB
+2026-10-09T17:35:29.1471018Z Downloading @oxlint/binding-linux-x64-gnu@1.77.0: 0.00 B/6.75 MB
+2026-10-09T17:35:29.1791481Z Downloading @babel/standalone@7.29.8: 0.00 B/5.46 MB
+2026-10-09T17:35:29.3214005Z Downloading @voidzero-dev/vite-plus-linux-x64-gnu@0.1.24: 0.00 B/13.54 MB
+2026-10-09T17:35:29.3431098Z Downloading @zenuml/core@3.50.1: 0.00 B/5.48 MB
+2026-10-09T17:35:29.3579995Z Downloading element-plus@2.14.1: 0.00 B/7.15 MB
+2026-10-09T17:35:29.4189856Z Downloading @oxlint/binding-linux-x64-gnu@1.78.0: 0.00 B/6.73 MB
+2026-10-09T17:35:29.4477735Z Downloading @oxlint-tsgolint/linux-x64@7.0.2001: 0.00 B/7.71 MB
+2026-10-09T17:35:29.5026998Z Downloading @voidzero-dev/vite-plus-linux-x64-gnu@0.2.9: 0.00 B/13.22 MB
+2026-10-09T17:35:29.7105718Z Downloading @vizejs/native-linux-x64-gnu@0.428.1: 0.00 B/20.88 MB
+2026-10-09T17:35:29.8169549Z Downloading monaco-editor@0.56.0: 0.00 B/18.27 MB
+2026-10-09T17:35:30.0206353Z Downloading @verter/tsc-linux-x64-gnu@0.0.1-beta.3: 0.00 B/8.53 MB
+2026-10-09T17:35:30.0821720Z Downloading mermaid@11.16.1: 0.00 B/17.61 MB
+2026-10-09T17:35:30.0952803Z Downloading cytoscape-fcose@2.2.0: 0.00 B/7.60 MB
+2026-10-09T17:35:30.1031854Z Downloading @rolldown/binding-linux-x64-gnu@1.0.0-rc.17: 0.00 B/9.39 MB
+2026-10-09T17:35:30.1183798Z Downloading ant-design-vue@4.2.6: 0.00 B/14.65 MB
+2026-10-09T17:35:30.1308658Z Downloading @rspack/binding-linux-x64-gnu@2.1.8: 0.00 B/19.66 MB
+2026-10-09T17:35:30.1517785Z Downloading @pkl-community/pkl-linux-x64@0.30.2: 0.00 B/33.74 MB
+2026-10-09T17:35:30.3441795Z Downloading node@runtime:24.14.0: 0.00 B/56.18 MB
+2026-10-09T17:35:30.3694281Z Downloading three@0.185.1: 0.00 B/5.32 MB
+2026-10-09T17:35:30.3784782Z Downloading @napi-rs/canvas-linux-x64-gnu@0.1.100: 0.00 B/13.95 MB
+2026-10-09T17:35:30.4129563Z Downloading @golar/linux-x64@0.1.10: 0.00 B/13.68 MB
+2026-10-09T17:35:30.4173233Z Downloading @oxlint/binding-linux-x64-gnu@1.67.0: 0.00 B/6.06 MB
+2026-10-09T17:35:31.4996827Z ✓ Lockfile passes supply-chain policies (2305 entries in 2.9s)
+2026-10-09T17:35:31.4997110Z Lockfile is up to date, resolution step is skipped
+2026-10-09T17:35:31.5900777Z Packages: +1900
+2026-10-09T17:35:31.5900974Z ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+2026-10-09T17:35:31.6354915Z Progress: resolved 1900, reused 0, downloaded 1823, added 1900, done
+2026-10-09T17:35:31.6518288Z .../esbuild@0.28.1/node_modules/esbuild postinstall$ node install.js
+2026-10-09T17:35:31.6944412Z .../esbuild@0.28.1/node_modules/esbuild postinstall: Done
+2026-10-09T17:35:31.8640546Z 
+2026-10-09T17:35:31.8640702Z optionalDependencies:
+2026-10-09T17:35:31.8640871Z + @typescript/typescript-linux-x64 7.0.2
+2026-10-09T17:35:31.8640982Z 
+2026-10-09T17:35:31.8641033Z devDependencies:
+2026-10-09T17:35:31.8641145Z + @babel/core 7.29.0
+2026-10-09T17:35:31.8641275Z + @babel/plugin-syntax-typescript 7.28.6
+2026-10-09T17:35:31.8641421Z + @iarna/toml 2.2.5
+2026-10-09T17:35:31.8641533Z + @nuxt/eslint 1.16.0
+2026-10-09T17:35:31.8641654Z + @nuxt/eslint-config 1.16.0
+2026-10-09T17:35:31.8641784Z + @tsdown/css 0.22.14
+2026-10-09T17:35:31.8641897Z + @types/node 25.9.2
+2026-10-09T17:35:31.8642420Z + @types/vscode 1.75.0
+2026-10-09T17:35:31.8642544Z + @vue/babel-plugin-jsx 2.0.1
+2026-10-09T17:35:31.8642693Z + ajv 8.20.0
+2026-10-09T17:35:31.8642846Z + glob 13.0.6
+2026-10-09T17:35:31.8642964Z + json-schema-to-typescript 15.0.4
+2026-10-09T17:35:31.8643100Z + node 24.14.0
+2026-10-09T17:35:31.8643201Z + oxfmt 0.63.0
+2026-10-09T17:35:31.8643302Z + oxlint 1.78.0
+2026-10-09T17:35:31.8643414Z + pkg-pr-new 0.0.87
+2026-10-09T17:35:31.8643522Z + semver 7.8.5
+2026-10-09T17:35:31.8643623Z + shiki 4.0.2
+2026-10-09T17:35:31.8643723Z + tsdown 0.22.14
+2026-10-09T17:35:31.8643862Z + vite <- @voidzero-dev/vite-plus-core 0.1.24
+2026-10-09T17:35:31.8644011Z + vite-plus 0.1.24
+2026-10-09T17:35:31.8644126Z + vscode-languageclient 9.0.1
+2026-10-09T17:35:31.8644270Z + vue-computed-inlay-oracle <- vue 3.5.41
+2026-10-09T17:35:31.8644408Z + yaml 2.9.0
+2026-10-09T17:35:31.8644469Z 
+2026-10-09T17:35:31.9011652Z Done in 3.4s using pnpm v12.1.0
+2026-10-09T17:35:31.9284517Z ##[group]Run set -euo pipefail
+2026-10-09T17:35:31.9284705Z [36;1mset -euo pipefail[0m
+2026-10-09T17:35:31.9284914Z [36;1m[[ "$GITHUB_WORKFLOW_SHA" =~ ^[0-9a-f]{40}$ ]] && git fetch --no-tags origin "$GITHUB_WORKFLOW_SHA"[0m
+2026-10-09T17:35:31.9285373Z [36;1mfor helper in typechecker-native-source-recipe.mjs typechecker-native-release-metadata.mjs; do git show "$GITHUB_WORKFLOW_SHA:tools/benchmarks/scripts/$helper" > "$RUNNER_TEMP/$helper"; done[0m
+2026-10-09T17:35:31.9285814Z [36;1mrecipe="$(node "$RUNNER_TEMP/typechecker-native-source-recipe.mjs")"[0m
+2026-10-09T17:35:31.9286012Z [36;1mif [[ -n "$recipe" ]]; then[0m
+2026-10-09T17:35:31.9286671Z [36;1m  if [[ "$(node -p 'Boolean(JSON.parse(require("node:fs").readFileSync(process.env.RUNNER_TEMP+"/native-source-recipe.json")).originalEnvironment.VIZE_TSCONFIG_TYPES_CAPTURE)')" != true ]]; then unset VIZE_TSCONFIG_TYPES_CAPTURE; fi; unset GH_TOKEN; bash --noprofile --norc -e -o pipefail "$recipe"[0m
+2026-10-09T17:35:31.9287200Z [36;1melse[0m
+2026-10-09T17:35:31.9287318Z [36;1m  # VIZE_NATIVE_SOURCE_INLINE_BEGIN[0m
+2026-10-09T17:35:31.9287470Z [36;1m  unset VIZE_TEST_DISABLE_TSGO[0m
+2026-10-09T17:35:31.9287617Z [36;1m  cd "$NATIVE_PHASE_SOURCE_ROOT"[0m
+2026-10-09T17:35:31.9288695Z [36;1m  VIZE_UNCHECKED_INDEX_CAPTURE="$RUNNER_TEMP/unchecked-index-access" cargo test --locked --profile ci-opt -p vize --test check_template_emit_cli --test check_vue_helper_scope_cli --test lint_unchecked_indexed_access_cli --test check_canon_define_model_modifiers_cli --test lsp_generic_prop_hover_cli --test lsp_data_aria_attributes_cli --test tsconfig_diamond --test check_tsconfig_types_extends_cli --test lsp_bare_script_symbols_cli --test check_tsconfig_bom_cli --test check_tsconfig_ignore_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture[0m
+2026-10-09T17:35:31.9290243Z [36;1m  export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_TEMPLATE_EMIT_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')"[0m
+2026-10-09T17:35:31.9291148Z [36;1m  cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_emit_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture[0m
+2026-10-09T17:35:31.9291846Z [36;1m  cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_vue_helper_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture[0m
+2026-10-09T17:35:31.9292345Z [36;1m  export VIZE_TEMPLATE_EMIT_TS40_CAPTURE="$RUNNER_TEMP/template-emit-ts40-projection"[0m
+2026-10-09T17:35:31.9292931Z [36;1m  cargo test --locked --profile ci-opt -p vize_maestro --test davinci_ts40_projection current_projection_matrix_is_exact_and_non_empty --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture[0m
+2026-10-09T17:35:31.9293619Z [36;1m  node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs[0m
+2026-10-09T17:35:31.9293906Z [36;1m  node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs[0m
+2026-10-09T17:35:31.9294179Z [36;1m  node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs[0m
+2026-10-09T17:35:31.9294937Z [36;1m  bash tools/benchmarks/scripts/typechecker-native-unknown-options.sh && cargo test --locked --profile ci-opt -p vize_patina --test documented_rule_examples documented_type_aware_examples_match_with_the_required_corsa_runtime --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture[0m
+2026-10-09T17:35:31.9295563Z [36;1m  # VIZE_NATIVE_SOURCE_INLINE_END[0m
+2026-10-09T17:35:31.9295699Z [36;1mfi[0m
+2026-10-09T17:35:31.9305868Z shell: /usr/bin/bash -e {0}
+2026-10-09T17:35:31.9305998Z env:
+2026-10-09T17:35:31.9306106Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:31.9306225Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:31.9306351Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:31.9306515Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:31.9306685Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:31.9306861Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:31.9307020Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:31.9307158Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:31.9307300Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:31.9307456Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:31.9307638Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:31.9307826Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:31.9308002Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:31.9308214Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:31.9308419Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:31.9308574Z   VIZE_TEST_REQUIRE_TSGO: 1
+2026-10-09T17:35:31.9308746Z   VIZE_TEMPLATE_EMIT_CAPTURE: /home/runner/_work/_temp/template-dollar-emit
+2026-10-09T17:35:31.9308988Z   VIZE_VUE_HELPER_CAPTURE: /home/runner/_work/_temp/config-scoped-vue-helpers
+2026-10-09T17:35:31.9309228Z   VIZE_TSCONFIG_TYPES_CAPTURE: /home/runner/_work/_temp/tsconfig-types-extends
+2026-10-09T17:35:31.9310645Z   GH_TOKEN: ***
+2026-10-09T17:35:31.9310753Z ##[endgroup]
+2026-10-09T17:35:32.0683923Z From https://github.com/ubugeeei-prod/vize
+2026-10-09T17:35:32.0684141Z  * branch                f7512c1d82924d3a98cdf830047897fc4d947779 -> FETCH_HEAD
+2026-10-09T17:35:32.6137602Z node:internal/modules/run_main:107
+2026-10-09T17:35:32.6137898Z     triggerUncaughtException(
+2026-10-09T17:35:32.6138049Z     ^
+2026-10-09T17:35:32.6138106Z 
+2026-10-09T17:35:32.6138217Z AssertionError [ERR_ASSERTION]: Missing/ambiguous vize-release-integration
+2026-10-09T17:35:32.6138367Z 
+2026-10-09T17:35:32.6138406Z 0 !== 1
+2026-10-09T17:35:32.6138466Z 
+2026-10-09T17:35:32.6138597Z     at marker (file:///home/runner/_work/_temp/typechecker-native-source-recipe.mjs:79:10)
+2026-10-09T17:35:32.6138895Z     at selectSourceRecipe (file:///home/runner/_work/_temp/typechecker-native-source-recipe.mjs:159:30)
+2026-10-09T17:35:32.6139182Z     at main (file:///home/runner/_work/_temp/typechecker-native-source-recipe.mjs:261:20)
+2026-10-09T17:35:32.6139445Z     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-09T17:35:32.6139700Z     at async file:///home/runner/_work/_temp/typechecker-native-source-recipe.mjs:283:3 {
+2026-10-09T17:35:32.6139922Z   generatedMessage: false,
+2026-10-09T17:35:32.6140041Z   code: 'ERR_ASSERTION',
+2026-10-09T17:35:32.6140408Z   actual: 0,
+2026-10-09T17:35:32.6140510Z   expected: 1,
+2026-10-09T17:35:32.6140614Z   operator: 'strictEqual',
+2026-10-09T17:35:32.6140724Z   diff: 'simple'
+2026-10-09T17:35:32.6140826Z }
+2026-10-09T17:35:32.6140878Z 
+2026-10-09T17:35:32.6140923Z Node.js v24.14.0
+2026-10-09T17:35:32.6171747Z ##[error]Process completed with exit code 1.
+2026-10-09T17:35:32.6219599Z ##[group]Run actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+2026-10-09T17:35:32.6219799Z with:
+2026-10-09T17:35:32.6219924Z   name: typechecker-native-phases
+2026-10-09T17:35:32.6221772Z   path: /home/runner/_work/_temp/outside-import-types/
+/home/runner/_work/_temp/typechecker-native-source-custody.json
+/home/runner/_work/_temp/native-source-recipe*
+/home/runner/_work/_temp/reference-path-module/
+/home/runner/_work/_temp/typechecker-native-phases.json
+/home/runner/_work/_temp/typechecker-native-phases.json.samples/provenance.json
+/home/runner/_work/_temp/template-dollar-emit/
+/home/runner/_work/_temp/config-scoped-vue-helpers/
+/home/runner/_work/_temp/tsconfig-types-extends/
+/home/runner/_work/_temp/unchecked-index-access/
+/home/runner/_work/_temp/unknown-template-options/
+/home/runner/_work/_temp/template-emit-ts40-projection/
+/home/runner/_work/_temp/typechecker-native-phases.json.samples/failure.json
+/home/runner/_work/_temp/typechecker-native-phases.json.samples/inputs/
+/home/runner/_work/_temp/typechecker-native-phases.json.samples/raw/
+/home/runner/_work/_temp/typechecker-native-phases.json.samples/native/
+/home/runner/_work/_temp/typechecker-native-phases.json.samples/projections/
+/home/runner/_work/_temp/typechecker-native-phases.json.samples/virtual-ts/
+/home/runner/_work/_temp/undefined-default-props/
+
+2026-10-09T17:35:32.6223704Z   if-no-files-found: error
+2026-10-09T17:35:32.6223822Z   retention-days: 30
+2026-10-09T17:35:32.6223939Z   include-hidden-files: true
+2026-10-09T17:35:32.6224064Z   compression-level: 6
+2026-10-09T17:35:32.6224175Z   overwrite: false
+2026-10-09T17:35:32.6224281Z   archive: true
+2026-10-09T17:35:32.6224384Z env:
+2026-10-09T17:35:32.6224485Z   CARGO_TERM_COLOR: always
+2026-10-09T17:35:32.6224601Z   CARGO_INCREMENTAL: 0
+2026-10-09T17:35:32.6224721Z   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+2026-10-09T17:35:32.6224882Z   SOURCE_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:32.6225056Z   DRIVER_SHA: f58ba3592f378a6a40eea75b3d8040c6ad26ea0f
+2026-10-09T17:35:32.6225226Z   CARGO_TARGET_DIR: /home/runner/_work/vize/vize/target
+2026-10-09T17:35:32.6225388Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:32.6225527Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:32.6225667Z   GITHUB_REPO_NAME: ubugeeei-prod/vize
+2026-10-09T17:35:32.6225823Z   PR_BASE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:32.6226003Z   MAIN_SOURCE_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:32.6226184Z   MAIN_HEAD_SHA: fbb31120ae0c6213f4d3ed2dbead67321e5a39a3
+2026-10-09T17:35:32.6226362Z   NATIVE_PHASE_SOURCE_ROOT: /home/runner/_work/vize/vize
+2026-10-09T17:35:32.6226576Z   NATIVE_PHASE_OUTPUT: /home/runner/_work/_temp/typechecker-native-phases.json
+2026-10-09T17:35:32.6226773Z   CARGO_HOME: /home/runner/.cargo
+2026-10-09T17:35:32.6226898Z ##[endgroup]
+2026-10-09T17:35:32.6951308Z With the provided path, there will be 1 file uploaded
+2026-10-09T17:35:32.6953873Z Artifact name is valid!
+2026-10-09T17:35:32.6954137Z Root directory input is valid!
+2026-10-09T17:35:32.9007109Z Uploading artifact: typechecker-native-phases.zip
+2026-10-09T17:35:32.9058513Z Beginning upload of artifact content to blob storage
+2026-10-09T17:35:32.9640425Z Uploaded bytes 4135
+2026-10-09T17:35:32.9798594Z Finished uploading artifact content to blob storage!
+2026-10-09T17:35:32.9799057Z SHA256 digest of uploaded artifact is 1aadcdcd5892838ff32bd0ddf865e3834556b77d2083058821328448cb06783c
+2026-10-09T17:35:32.9799314Z Finalizing artifact upload
+2026-10-09T17:35:33.2059318Z Artifact typechecker-native-phases successfully finalized. Artifact ID 11634142341
+2026-10-09T17:35:33.2060116Z Artifact typechecker-native-phases has been successfully uploaded! Final size is 4135 bytes. Artifact ID is 11634142341
+2026-10-09T17:35:33.2060855Z Artifact download URL: https://github.com/ubugeeei-prod/vize/actions/runs/37967292545/artifacts/11634142341
+2026-10-09T17:35:33.2194285Z Post job cleanup.
+2026-10-09T17:35:33.2225812Z Post job cleanup.
+2026-10-09T17:35:33.2635773Z [command]/usr/local/bin/git version
+2026-10-09T17:35:33.2666181Z git version 2.55.0
+2026-10-09T17:35:33.2684138Z Temporarily overriding HOME='/home/runner/_work/_temp/0434d940-31cb-43e0-8142-7ff74e1e0cea' before making global git config changes
+2026-10-09T17:35:33.2684493Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-09T17:35:33.2687283Z [command]/usr/local/bin/git config --global --add safe.directory /home/runner/_work/vize/vize
+2026-10-09T17:35:33.2710932Z Removing SSH command configuration
+2026-10-09T17:35:33.2714111Z [command]/usr/local/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-09T17:35:33.2739886Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-09T17:35:33.2904387Z Removing HTTP extra header
+2026-10-09T17:35:33.2907810Z [command]/usr/local/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-09T17:35:33.2936762Z [command]/usr/local/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-09T17:35:33.3062027Z Removing includeIf entries pointing to credentials config files
+2026-10-09T17:35:33.3066116Z [command]/usr/local/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-09T17:35:33.3090155Z [command]/usr/local/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-09T17:35:33.3291005Z A job completed hook has been configured by the self-hosted runner administrator
+2026-10-09T17:35:33.3306318Z ##[group]Run '/job_completed.sh'
+2026-10-09T17:35:33.3313143Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-09T17:35:33.3313319Z env:
+2026-10-09T17:35:33.3313440Z   BLACKSMITH_RUNNER_MESSAGE_WAIT_MS: 93
+2026-10-09T17:35:33.3313596Z   BLACKSMITH_RUNNER_ACQUIRE_JOB_MS: 332
+2026-10-09T17:35:33.3313738Z   BLACKSMITH_CHECK_RUN_ID: 113944718218
+2026-10-09T17:35:33.3313925Z   BLACKSMITH_JOB_DISPLAY_NAME: Actual CLI shard native phase evidence
+2026-10-09T17:35:33.3314119Z   GITHUB_ACTIONS_CACHE_MODE: write
+2026-10-09T17:35:33.3314258Z ##[endgroup]
+2026-10-09T17:35:33.3384430Z Docker container cache not activated, skipping hash computation.
+2026-10-09T17:35:33.3615164Z No active SSH sessions detected. Proceeding with shutdown immediately.
+2026-10-09T17:35:33.3655652Z Cleaning up orphan processes

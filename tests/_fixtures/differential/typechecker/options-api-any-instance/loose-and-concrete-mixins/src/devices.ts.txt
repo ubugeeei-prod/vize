@@ -1,3 +1,0 @@
-import type { ComponentOptionsMixin } from 'vue'
-
-export declare const devices: ComponentOptionsMixin

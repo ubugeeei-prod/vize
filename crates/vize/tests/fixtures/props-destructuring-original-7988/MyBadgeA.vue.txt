@@ -1,7 +1,0 @@
-<script setup lang="ts">
-const props = withDefaults(defineProps<{ size?: "sm" | "md" }>(), { size: "md" });
-</script>
-
-<template>
-  <span :class="props.size">badge</span>
-</template>

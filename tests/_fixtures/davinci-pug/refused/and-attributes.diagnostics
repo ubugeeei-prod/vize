@@ -1,1 +1,0 @@
-3..27 Semantic "&attributes({ id: 'x' })" — pug `&attributes` is not supported in Vue templates: use `v-bind`

@@ -1,5 +1,0 @@
----
-source: crates/vize_atelier_jsx/src/compile/tests.rs
-expression: map
----
-{"file":"module.jsx","mappings":";;AAAA,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC,CAAC;;SAAC,oCAAC,6BAAK;;IAAQ","names":[],"sources":["module.jsx"],"sourcesContent":["const A = () => <div>{x}</div>;"],"version":3}

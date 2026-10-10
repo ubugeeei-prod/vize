@@ -1,5 +1,0 @@
-{
-  "id": "text-interpolation-scriptless",
-  "source": "<template><div v-text=\"content\">{{ content }}</div></template>\n",
-  "expectedChildContent": true
-}

@@ -1,3 +1,0 @@
-export default {
-  languageServer: { lint: true, typecheck: true, editor: true, formatting: true, hover: false }
-};

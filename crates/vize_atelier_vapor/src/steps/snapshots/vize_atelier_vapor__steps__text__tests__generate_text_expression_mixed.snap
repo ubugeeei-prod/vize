@@ -1,5 +1,0 @@
----
-source: crates/vize_atelier_vapor/src/steps/text.rs
-expression: result.as_str()
----
-"Hello, " + _toDisplayString(name) + "!"

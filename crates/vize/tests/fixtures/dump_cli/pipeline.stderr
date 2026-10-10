@@ -1,4 +1,0 @@
-error: invalid value 'l2()' for '--pipeline <PIPELINE>'
-  [possible values: dom, ssr, vapor]
-
-For more information, try '--help'.

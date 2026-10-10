@@ -1,7 +1,0 @@
-Patina lint report: 1 warning in 1 file
-
-BareProps.vue
-  BareProps.vue:2:1 warning script/define-props-destructuring Prefer destructuring the return value of defineProps().
-    Reference: docs/content/rules/type-and-script.md
-    Help:
-      Use const { prop = defaultValue } = defineProps<Props>(); Vue 3.5+ preserves reactivity.

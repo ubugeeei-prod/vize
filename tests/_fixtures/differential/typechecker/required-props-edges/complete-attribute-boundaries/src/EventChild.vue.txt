@@ -1,5 +1,0 @@
-<script setup lang="ts">
-defineProps<{ count: number }>()
-defineEmits<{ save: [value: string] }>()
-</script>
-<template><span /></template>

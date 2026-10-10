@@ -1,5 +1,0 @@
-<div
-  id="main"
-  class="container"
-  title="tooltip"
-></div>

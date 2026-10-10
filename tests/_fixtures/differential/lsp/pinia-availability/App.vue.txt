@@ -1,9 +1,0 @@
-<script setup lang="ts">
-import { useCounterStore } from "./store";
-
-const { count, increment } = useCounterStore();
-</script>
-
-<template>
-  <button type="button" @click="increment">{{ count }}</button>
-</template>

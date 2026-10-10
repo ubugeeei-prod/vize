@@ -1,5 +1,0 @@
-<style<%= scoped ? ' scoped' : '' %>>
-.box {
-  color: red;
-}
-</style>

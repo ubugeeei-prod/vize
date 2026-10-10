@@ -1,7 +1,0 @@
----
-source: crates/vize_vitrine/src/plugin_transform/tests.rs
-expression: output.result.code
----
-export function render(_ctx, _cache) {
-  return (_openBlock(), _createElementBlock("button", { title: "new & \"é\" <text>" }, "OK"))
-}

@@ -1,6 +1,0 @@
-<template>
-<div>
-  {{ `x` }}
-  <span>y</span>
-</div>
-</template>

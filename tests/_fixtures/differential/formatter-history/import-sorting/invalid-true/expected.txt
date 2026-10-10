@@ -1,3 +1,0 @@
-ScriptFormatError(
-    "sortImports must be false or a configuration object",
-)

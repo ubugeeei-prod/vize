@@ -1,5 +1,0 @@
-<script setup>
-import A from "project/a";
-import V from "vue";
-import B from "project/b";
-</script>

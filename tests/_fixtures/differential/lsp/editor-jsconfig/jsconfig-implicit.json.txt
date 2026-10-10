@@ -1,4 +1,0 @@
-{
-  "compilerOptions": { "module": "ESNext", "moduleResolution": "Bundler", "strict": true, "checkJs": true, "noEmit": true, "types": [] },
-  "include": ["src/**/*.js", "src/**/*.vue"]
-}

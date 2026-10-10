@@ -1,1 +1,0 @@
-Import from '@vue/runtime-core' should be replaced with 'vue'

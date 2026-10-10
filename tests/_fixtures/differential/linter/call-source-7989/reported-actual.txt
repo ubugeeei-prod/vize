@@ -1,9 +1,0 @@
-Patina lint report: 6 warnings in 1 file
-
-MyNotes.vue
-  MyNotes.vue:4:23 warning script/prefer-ref-over-reactive Consider using ref() instead of reactive() for simpler state management
-  MyNotes.vue:4:50 warning script/prefer-use-id Consider using useId() for generating IDs (Vue 3.5+)
-  MyNotes.vue:5:19 warning script/prefer-ref-over-reactive Consider using ref() instead of reactive() for simpler state management
-  MyNotes.vue:13:22 warning css/no-v-bind-performance v-bind() installs runtime CSS variable updates
-  MyNotes.vue:15:13 warning css/no-v-bind-performance v-bind() installs runtime CSS variable updates
-  MyNotes.vue:15:26 warning css/no-important Avoid using !important as it makes styles harder to override

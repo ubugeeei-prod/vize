@@ -1,1 +1,0 @@
-Importing from internal Vue module is forbidden

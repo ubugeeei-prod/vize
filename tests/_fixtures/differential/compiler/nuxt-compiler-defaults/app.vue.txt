@@ -1,8 +1,0 @@
-<script setup lang="ts">
-import LooseRow from "./components/loose/LooseRow.vue";
-import TightRow from "./components/tight/TightRow.vue";
-</script>
-
-<template>
-  <main><TightRow /><LooseRow /></main>
-</template>

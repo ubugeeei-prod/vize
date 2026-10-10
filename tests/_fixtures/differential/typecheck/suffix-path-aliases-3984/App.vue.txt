@@ -1,4 +1,0 @@
-<script setup lang="ts">
-import DirectiveTable from "@/components/api/DirectiveTable.vue";
-void DirectiveTable;
-</script>

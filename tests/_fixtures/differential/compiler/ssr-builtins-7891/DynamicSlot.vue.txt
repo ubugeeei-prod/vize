@@ -1,4 +1,0 @@
-<script setup>
-const name = "fallback";
-</script>
-<template><Suspense><p>done</p><template #[name]>loading</template></Suspense></template>

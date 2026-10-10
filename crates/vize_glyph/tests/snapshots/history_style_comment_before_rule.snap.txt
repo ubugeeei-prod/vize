@@ -1,4 +1,0 @@
-/* stylelint-disable-next-line selector-id-pattern */
-#legacy-id {
-  display: grid;
-}

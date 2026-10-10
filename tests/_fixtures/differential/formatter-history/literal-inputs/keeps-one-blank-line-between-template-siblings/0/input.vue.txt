@@ -1,8 +1,0 @@
-<div>
-  <header>title</header>
-
-
-  <main>body</main>
-
-  <footer>foot</footer>
-</div>

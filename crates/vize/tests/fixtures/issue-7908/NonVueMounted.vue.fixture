@@ -1,8 +1,0 @@
-<script setup lang="ts">
-import { onMounted } from "other-framework";
-function readTitle() { document.title; }
-onMounted(() => readTitle());
-</script>
-<template>
-  <p>Ready</p>
-</template>

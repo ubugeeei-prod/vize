@@ -1,2 +1,0 @@
-<!-- 😀 --><template><p :title="'😀' + count /* note */">{{ count }}</p>
-  <p>{{ count }}</p></template>

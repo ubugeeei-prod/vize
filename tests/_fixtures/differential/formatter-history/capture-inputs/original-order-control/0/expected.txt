@@ -1,1 +1,0 @@
-<div class="_button" v-tooltip:dialog="tip" v-once v-show="open" id="help"></div>

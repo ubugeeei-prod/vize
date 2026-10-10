@@ -1,5 +1,0 @@
----
-source: crates/vize_atelier_sfc/src/style/tests.rs
-expression: result.as_str()
----
-@keyframes spin-123{from{ transform: rotate(0deg); }to{ transform: rotate(360deg); }}

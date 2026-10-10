@@ -1,6 +1,0 @@
-<template>
-<Foo v-pre />
-<span>
-  y
-</span>
-</template>

@@ -1,4 +1,0 @@
-<script setup lang="ts">
-const title = "Stable";
-</script>
-<template><p :title="document.title">{{title}}</p></template>

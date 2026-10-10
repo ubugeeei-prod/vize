@@ -1,8 +1,0 @@
-<div>
-  <!-- eslint-disable-next-line -->
-  label: <span
-    :style="{
-      color: 'red',
-    }"
-  >x</span>
-</div>

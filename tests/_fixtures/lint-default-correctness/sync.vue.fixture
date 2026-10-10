@@ -1,1 +1,0 @@
-<template><Widget :title.sync="title" /></template>

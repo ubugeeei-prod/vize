@@ -1,6 +1,0 @@
-{
-  "jsPlugins": ["PLUGIN_PATH"],
-  "categories": { "correctness": "off" },
-  "settings": { "vize": { "preset": "incremental", "helpLevel": "none" } },
-  "rules": { "no-debugger": "warn", "vize/vue/no-v-html": "warn" }
-}

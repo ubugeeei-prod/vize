@@ -1,1 +1,0 @@
-const props = withDefaults(defineProps<{ size?: string }>(), { size: "m" });

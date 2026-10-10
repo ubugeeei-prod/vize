@@ -1,4 +1,0 @@
----
-source: crates/vize_atelier_jsx/tests/adversarial_snapshots.rs
-expression: output.module_code().as_str()
----

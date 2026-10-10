@@ -1,2 +1,0 @@
-/* α */ import { ref } from 'vue';
-export const value = ref(0);

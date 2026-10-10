@@ -1,9 +1,0 @@
-<template><div /></template>
-<style>
-@media (width > 1px) {
-  @supports (display: grid) {
-    .outer { #inner { color: red; } }
-  }
-}
-@layer theme { #layer { color: blue; } }
-</style>

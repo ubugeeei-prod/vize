@@ -1,1 +1,0 @@
-{"sortImports":{"groups":["external",{"newlinesBetween":false},"project",{"newlinesBetween":true},["sibling","parent","index"]],"newlinesBetween":false,"customGroups":[{"groupName":"project","elementNamePattern":["project/**"]}]}}

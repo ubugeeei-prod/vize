@@ -1,1 +1,0 @@
-<slot name="body"><button @click="save">save</button></slot>

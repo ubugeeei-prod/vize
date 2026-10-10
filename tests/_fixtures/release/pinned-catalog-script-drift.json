@@ -1,7 +1,0 @@
-{
-  "H": "3390cb6044d53d655a9d64e112d2618375cff5ca",
-  "V": "f9cfdaa0e84152ab9f11382e1b49e501d1ea44b6",
-  "path": "/npm/vize/manifest/scripts/test",
-  "before": "vp pack && vp test run tests/config.test.ts tests/corsa-runtime.test.ts tests/setup.test.ts tests/setup-oxlint-config.test.ts tests/init.test.ts tests/init-frameworks.test.ts tests/init-tsconfig.test.ts tests/init-prompt.test.ts",
-  "after": "vp pack && vp test run tests/config.test.ts tests/define-config.test.ts tests/corsa-runtime.test.ts tests/setup.test.ts tests/setup-oxlint-config.test.ts tests/init.test.ts tests/init-frameworks.test.ts tests/init-tsconfig.test.ts tests/init-prompt.test.ts"
-}

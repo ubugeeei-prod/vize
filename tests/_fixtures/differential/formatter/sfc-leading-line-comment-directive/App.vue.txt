@@ -1,6 +1,0 @@
-<template>
-  <input
-    :placeholder="// note
-    x"
-  />
-</template>

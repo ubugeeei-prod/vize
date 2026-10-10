@@ -1,5 +1,0 @@
-<script setup lang="ts">
-import { definePageMeta as pageMeta } from "#imports";
-pageMeta({ layout: "plain" });
-</script>
-<template><div>page</div></template>

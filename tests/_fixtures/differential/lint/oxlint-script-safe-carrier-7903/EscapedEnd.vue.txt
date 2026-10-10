@@ -1,6 +1,0 @@
-<script setup lang="ts">
-const text = "<\/script>";
-</script>
-<template>
-<div v-html="html"/>
-</template>

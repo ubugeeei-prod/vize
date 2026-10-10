@@ -1,9 +1,0 @@
-<script lang="ts">
-type Row = { id: number; name: string; label: string; enabled: boolean };
-const rows = [1, 2, 3].map((value, index): Row => ({
-  id: value,
-  name: `row-${index}`,
-  label: "x",
-  enabled: true,
-}));
-</script>

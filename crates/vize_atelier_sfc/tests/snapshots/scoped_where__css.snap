@@ -1,7 +1,0 @@
----
-source: crates/vize_atelier_sfc/tests/scoped_where.rs
-expression: compiled.code
----
-:where(.card[data-v-abc123]), .container > :where(.item[data-v-abc123]):hover {
-  display: flex;
-}

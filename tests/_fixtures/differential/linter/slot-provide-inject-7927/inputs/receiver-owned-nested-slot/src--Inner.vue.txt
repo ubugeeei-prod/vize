@@ -1,8 +1,0 @@
-<script setup lang="ts">
-import { provide, ref } from 'vue'
-provide('count', ref(1))
-</script>
-
-<template>
-  <slot />
-</template>

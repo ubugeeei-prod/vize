@@ -1,8 +1,0 @@
-<script setup lang="ts">
-import KnownChild from './KnownChild.vue'
-function handleSelect(key: string, path: string[]) {
-  void key
-  void path
-}
-</script>
-<template><KnownChild @select="handleSelect" /></template>

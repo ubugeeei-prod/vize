@@ -1,5 +1,0 @@
-Patina lint report: 1 error in 1 file
-
-src/MyTouch.vue
-  src/MyTouch.vue:16:14 error type/strict-boolean-expressions Unexpected nullable string value in conditional. Please handle the nullish and empty string cases explicitly.
-    Reference: docs/content/rules/type-and-script.md

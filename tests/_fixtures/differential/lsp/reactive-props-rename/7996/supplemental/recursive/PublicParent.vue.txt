@@ -1,9 +1,0 @@
-<script setup lang="ts">
-import Child from "./Child.vue";
-
-const label = "Name";
-</script>
-
-<template>
-  <Child :heading="label" />
-</template>

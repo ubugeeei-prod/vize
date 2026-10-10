@@ -1,4 +1,0 @@
-import { greet } from "./util.js";
-
-/** @type {string} */
-export const message = greet("y");

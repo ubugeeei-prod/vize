@@ -1,3 +1,0 @@
-<template>
-  <p>Total {{ n }} items<template v-if="visible"> details</template></p>
-</template>

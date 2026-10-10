@@ -1,3 +1,0 @@
-	if options.CheckJs.IsTrue() && !options.GetAllowJS() {
-		createDiagnosticForOptionName(diagnostics.Option_0_cannot_be_specified_without_specifying_option_1, "checkJs", "allowJs")
-	}

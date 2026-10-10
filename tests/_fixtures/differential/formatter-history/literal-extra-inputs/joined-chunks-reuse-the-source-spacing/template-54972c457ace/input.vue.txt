@@ -1,4 +1,0 @@
-<div>
-  <!-- eslint-disable-next-line -->
-  <b>a</b><i>b</i>
-</div>

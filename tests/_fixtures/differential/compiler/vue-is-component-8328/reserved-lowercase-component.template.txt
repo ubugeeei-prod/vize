@@ -1,1 +1,0 @@
-<div is="vue:component" title="cast">x</div>

@@ -1,4 +1,0 @@
-<template lang="haml">
-  %main
-    %span= message
-</template>

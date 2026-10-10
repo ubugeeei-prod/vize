@@ -1,1 +1,0 @@
-<div><button title="before" is="vue:my-thing" :id="id">x<span>{{ label }}</span></button></div>

@@ -1,1 +1,0 @@
-{"name":"issue-8013-project-navigation","private":true,"type":"module","dependencies":{"vue":"3.5.43"}}

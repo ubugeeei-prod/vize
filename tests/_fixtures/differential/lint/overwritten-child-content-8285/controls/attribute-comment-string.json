@@ -1,5 +1,0 @@
-{
-  "id": "attribute-comment-string",
-  "source": "<template><div v-text=\"content\" title=\"<!--comment-->\"></div></template>\n",
-  "expectedChildContent": false
-}

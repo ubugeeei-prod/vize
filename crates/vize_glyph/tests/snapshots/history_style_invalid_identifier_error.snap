@@ -1,7 +1,0 @@
----
-source: crates/vize_glyph/tests/fix_history_style.rs
-expression: error
----
-StyleFormatError(
-    "Unexpected token Number { has_sign: false, value: 0.5, int_value: None } at :0:32",
-)

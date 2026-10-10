@@ -1,5 +1,0 @@
-@import url(https://example.test/a/*/reset.css);
-/* import note */
-.asset {
-  color: red;
-}

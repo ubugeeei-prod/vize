@@ -1,3 +1,0 @@
-<template>
-  <code class="a" v-pre>{{ v }}</code>
-</template>

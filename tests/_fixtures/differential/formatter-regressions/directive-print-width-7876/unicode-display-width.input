@@ -1,3 +1,0 @@
-<template>
-  <Widget :long-property-name="状態.currentValue" other="x" />
-</template>

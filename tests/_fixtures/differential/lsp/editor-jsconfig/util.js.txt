@@ -1,2 +1,0 @@
-/** @param {string} name @returns {string} */
-export const greet = (name) => `Hello, ${name}`;

@@ -1,6 +1,0 @@
-{
-  "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<select${_ssrRenderAttrs(_attrs)}><option value=\"a\"${((_ssrIncludeBooleanAttr(Array.isArray(_ctx.x) ? _ssrLooseContain(_ctx.x, \"a\") : _ssrLooseEqual(_ctx.x, \"a\"))) ? \" selected\" : \"\")}>A</option><option value=\"b\"${((_ssrIncludeBooleanAttr(Array.isArray(_ctx.x) ? _ssrLooseContain(_ctx.x, \"b\") : _ssrLooseEqual(_ctx.x, \"b\"))) ? \" selected\" : \"\")}>B</option></select>`)\n}\n",
-  "diagnostics": [],
-  "map": null,
-  "preamble": "import { ssrRenderAttrs as _ssrRenderAttrs, ssrIncludeBooleanAttr as _ssrIncludeBooleanAttr, ssrLooseEqual as _ssrLooseEqual, ssrLooseContain as _ssrLooseContain } from \"@vue/server-renderer\"\n"
-}

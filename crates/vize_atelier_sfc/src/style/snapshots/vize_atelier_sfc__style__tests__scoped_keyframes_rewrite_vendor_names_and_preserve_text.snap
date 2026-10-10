@@ -1,5 +1,0 @@
----
-source: crates/vize_atelier_sfc/src/style/tests.rs
-expression: result.as_str()
----
-/* @keyframes fake */ .box[data-v-abc123]{ content: 'spin'; -webkit-animation: spin-abc123 1s; animation-name: spin-abc123, other; }@-webkit-keyframes spin-abc123{to{ opacity: 0; }}

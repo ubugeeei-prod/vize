@@ -1,1 +1,0 @@
-<p><span>A</span> <!-- keep --> <span>B</span></p>

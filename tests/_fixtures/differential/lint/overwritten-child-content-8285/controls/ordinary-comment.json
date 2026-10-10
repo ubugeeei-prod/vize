@@ -1,5 +1,0 @@
-{
-  "id": "ordinary-comment",
-  "source": "<template><div><!--comment--></div></template>\n",
-  "expectedChildContent": false
-}

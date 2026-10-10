@@ -1,1 +1,0 @@
-<ul><li v-for="{ id: itemId, user: { name }, meta: { count: total = 0 } } in rows" :key="itemId" :title="name">{{ total }}</li></ul>

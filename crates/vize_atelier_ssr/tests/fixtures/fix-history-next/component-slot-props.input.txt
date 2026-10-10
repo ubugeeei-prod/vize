@@ -1,3 +1,0 @@
-<Comp v-slot="{ item }">
-  <span>{{ item.label }}</span>
-</Comp>

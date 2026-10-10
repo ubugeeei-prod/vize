@@ -1,4 +1,0 @@
-<template><div /></template>
-<style>
-#same #same, #same, .card #other { color: red; }
-</style>

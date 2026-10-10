@@ -1,8 +1,0 @@
-{
-  "linter": {
-    "preset": "incremental",
-    "categories": {
-      "suspicious": "warn"
-    }
-  }
-}

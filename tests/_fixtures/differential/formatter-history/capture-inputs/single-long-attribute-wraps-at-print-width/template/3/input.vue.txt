@@ -1,4 +1,0 @@
-<div>
-  <span class="a-long-inline-element-class-name-that-is-close-to-the-print-width">{{ lap }}</span>
-  <div class="ok">text</div>
-</div>

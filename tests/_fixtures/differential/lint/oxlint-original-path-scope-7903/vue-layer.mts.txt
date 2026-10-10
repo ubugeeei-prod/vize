@@ -1,6 +1,0 @@
-export default {
-  jsPlugins: ["PLUGIN_PATH"],
-  categories: { correctness: "off" },
-  rules: { "no-debugger": "warn", "vize/vue/no-v-html": "warn" },
-  overrides: [{ files: ["src/pages/**/*.vue"], rules: { "vize/vue/no-v-html": "off" } }],
-};

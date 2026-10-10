@@ -1,3 +1,0 @@
-<template>
-  <div class="calendar"><div class="calendar__week-numbers" /><div class="calendar__footer" /></div>
-</template>

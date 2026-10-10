@@ -1,4 +1,0 @@
-<script setup>
-const extra = { readOnly: true, tabIndex: 1 };
-</script>
-<template><transition-group tag="ul" v-bind="extra"><li key="1">1</li></transition-group></template>

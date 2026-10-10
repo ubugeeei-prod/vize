@@ -1,1 +1,0 @@
-{ "compilerOptions": { "strict": true, "module": "ESNext", "moduleResolution": "Bundler", "target": "ESNext", "noEmit": true, "types": [] }, "include": ["env.d.ts", "src/**/*"] }

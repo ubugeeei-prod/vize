@@ -1,9 +1,0 @@
-{
-  "name": "@workspace/pricing",
-  "private": true,
-  "type": "module",
-  "exports": {
-    ".": "./src/index.js",
-    "./label": "./src/label.mjs"
-  }
-}

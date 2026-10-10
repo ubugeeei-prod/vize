@@ -1,4 +1,0 @@
-<script setup lang="ts">
-defineProps<{ readonly my_prop: string }>()
-</script>
-<template><span /></template>

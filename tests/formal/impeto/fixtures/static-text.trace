@@ -1,4 +1,0 @@
-vdom op#0 create-element
-vdom op#1 set-text
-vapor op#0 create-node
-vapor op#1 text-effect

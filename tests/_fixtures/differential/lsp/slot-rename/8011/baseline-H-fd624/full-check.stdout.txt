@@ -1,3 +1,0 @@
-
-✓ Type checked 2 files in 793.54ms (collect: 11.31ms, imports: 0.00ns, gen: 2.11ms, corsa: 778.42ms)
-  No type errors found!

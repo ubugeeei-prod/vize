@@ -1,9 +1,0 @@
-<style>
-.shared { color: red; }
-</style>
-
-<template><p class="shared">cascade</p></template>
-
-<style scoped>
-.shared { color: blue; }
-</style>

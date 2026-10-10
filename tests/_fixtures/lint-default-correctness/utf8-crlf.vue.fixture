@@ -1,2 +1,0 @@
-<template><!-- 日本語🌱 --><Widget :title.sync="title" />
-</template>

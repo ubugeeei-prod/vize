@@ -1,2 +1,0 @@
-export const nativeRuntimeValue = 1;
-export const doubleValue = nativeRuntimeValue * 2;

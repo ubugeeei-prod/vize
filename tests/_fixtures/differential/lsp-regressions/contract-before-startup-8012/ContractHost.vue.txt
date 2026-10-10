@@ -1,9 +1,0 @@
-<script setup lang="ts">
-import ContractChild from './ContractChild.vue'
-
-ContractChild
-</script>
-
-<template>
-  <ContractChild label="ready" />
-</template>

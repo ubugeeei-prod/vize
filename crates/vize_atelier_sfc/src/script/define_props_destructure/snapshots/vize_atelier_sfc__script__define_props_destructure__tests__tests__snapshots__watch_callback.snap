@@ -1,8 +1,0 @@
----
-source: crates/vize_atelier_sfc/src/script/define_props_destructure/tests.rs
-assertion_line: 492
-expression: result
----
-watch(() => __props.count, (newVal, oldVal) => {
-    console.log('changed from', oldVal, 'to', newVal)
-})

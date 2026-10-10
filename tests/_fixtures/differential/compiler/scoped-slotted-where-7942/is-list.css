@@ -1,1 +1,0 @@
-:is(.box, .host:hover) > :slotted(:is(p, a:hover)) { margin: 0; }

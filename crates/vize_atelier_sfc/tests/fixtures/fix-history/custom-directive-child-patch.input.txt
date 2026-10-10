@@ -1,8 +1,0 @@
-<script setup>
-import { ref } from 'vue'
-const value = ref('first')
-</script>
-
-<template>
-  <div v-track="value">content</div>
-</template>

@@ -1,1 +1,0 @@
-vize lint -c vize.config.json src/kind-picker.vue

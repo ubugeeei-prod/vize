@@ -1,5 +1,0 @@
-<script setup lang="ts">
-import { declaredValue } from '../runtime-distribution/lib.custom';
-function flip() { return declaredValue; }
-</script>
-<template>{{ declaredValue }} <button @click="flip">toggle</button></template>

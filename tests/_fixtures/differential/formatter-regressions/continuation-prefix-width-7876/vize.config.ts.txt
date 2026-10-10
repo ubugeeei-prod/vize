@@ -1,3 +1,0 @@
-export default {
-  formatter: { printWidth: 80, semi: true, singleQuote: false, trailingComma: "none", arrowParens: "avoid", sortAttributes: false }
-};

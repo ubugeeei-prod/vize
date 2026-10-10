@@ -1,5 +1,0 @@
-<template>
-  <p :title="message | (format - date('en'))">{{
-    message | (format - date("en")) | suffix("!")
-  }}</p>
-</template>

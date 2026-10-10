@@ -1,4 +1,0 @@
-Found 1 file(s)
-
-Formatted 1 file(s)
-  1 file(s) unchanged

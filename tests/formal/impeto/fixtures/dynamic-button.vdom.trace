@@ -1,4 +1,0 @@
-vdom op#0 create-element
-vdom op#1 patch-prop effect#0
-vdom op#2 patch-event effect#1
-vdom op#3 set-text effect#2

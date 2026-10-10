@@ -1,5 +1,0 @@
----
-source: crates/vize_atelier_sfc/tests/scoped_keyframes.rs
-expression: result.css.unwrap()
----
-.spin[data-v-26fc8254]{ animation: spin-26fc8254 1s linear infinite; }@keyframes spin-26fc8254{to{ transform: rotate(360deg); }}

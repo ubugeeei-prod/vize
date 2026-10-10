@@ -1,5 +1,0 @@
----
-source: crates/vize_canon/src/batch/virtual_project/jsx_codegen_tests.rs
-expression: generated.diagnostics
----
-[]

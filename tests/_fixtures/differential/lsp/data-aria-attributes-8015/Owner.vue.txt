@@ -1,7 +1,0 @@
-<script setup lang="ts">
-import Declared from "./Declared.vue";
-</script>
-
-<template>
-  <Declared  />
-</template>

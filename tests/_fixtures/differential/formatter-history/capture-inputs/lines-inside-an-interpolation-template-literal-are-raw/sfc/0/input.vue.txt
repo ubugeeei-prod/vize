@@ -1,9 +1,0 @@
-<template>
-<div>
-  {{ items.map((p) => `
-${p} {
-  --a: b;
-}
-`).join("") }}
-</div>
-</template>

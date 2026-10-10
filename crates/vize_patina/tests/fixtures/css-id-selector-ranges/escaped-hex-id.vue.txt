@@ -1,4 +1,0 @@
-<template><div /></template>
-<style>
-#\62 anner-text { color: red; }
-</style>

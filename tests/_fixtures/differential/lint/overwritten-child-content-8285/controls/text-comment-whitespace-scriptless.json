@@ -1,5 +1,0 @@
-{
-  "id": "text-comment-whitespace-scriptless",
-  "source": "<template><div v-text=\"content\"> \n<!--comment-->\n </div></template>\n",
-  "expectedChildContent": true
-}

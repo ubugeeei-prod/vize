@@ -1,1 +1,0 @@
-dump: @INPUT_PATH@: folio parse error at line 1: content before the [l2-dump-v2] header

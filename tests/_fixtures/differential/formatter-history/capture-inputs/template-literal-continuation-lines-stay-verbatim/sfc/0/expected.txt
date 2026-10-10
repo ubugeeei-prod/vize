@@ -1,7 +1,0 @@
-<script>
-  const css = `
-body {
-  color: red;
-}
-`;
-</script>

@@ -1,5 +1,0 @@
-<template>
-  <div data-v-pre>
-    a
-  </div>
-</template>

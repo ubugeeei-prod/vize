@@ -1,5 +1,0 @@
-<script setup>
-const evt = "click";
-const attr = "title";
-</script>
-<template><slot :evt="evt" :attr="attr"/></template>

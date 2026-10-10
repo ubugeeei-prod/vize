@@ -1,5 +1,0 @@
-<div>
-  <!-- eslint-disable-next-line -->
-
-  space: <input />
-</div>

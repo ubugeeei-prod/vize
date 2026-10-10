@@ -1,7 +1,0 @@
-<template>
-  <div>
-    <span>
-      {{ $t("compose.drafts", nonEmptyDrafts.length, { named: { v: formatNumber(nonEmptyDrafts.length) } }) }}&#160;
-    </span>
-  </div>
-</template>

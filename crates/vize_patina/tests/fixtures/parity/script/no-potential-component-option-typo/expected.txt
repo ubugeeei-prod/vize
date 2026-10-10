@@ -1,1 +1,0 @@
-'method' is not a known component option; did you mean 'methods'?

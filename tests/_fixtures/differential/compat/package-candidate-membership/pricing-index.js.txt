@@ -1,7 +1,0 @@
-/** @type {number} */
-export const unitPrice = 6;
-
-/** @param {number} quantity @returns {string} */
-export function formatTotal(quantity) {
-  return `$${(quantity * unitPrice).toFixed(2)}`;
-}

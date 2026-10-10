@@ -1,5 +1,0 @@
-<template>
-  <pre>
-    {{ variable }}
-  </pre>
-</template>

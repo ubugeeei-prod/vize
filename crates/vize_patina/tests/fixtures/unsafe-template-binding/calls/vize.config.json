@@ -1,1 +1,0 @@
-{ "linter": { "rules": { "type/no-unsafe-template-binding": "warn" } } }

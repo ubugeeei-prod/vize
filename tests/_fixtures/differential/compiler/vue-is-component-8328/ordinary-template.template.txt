@@ -1,1 +1,0 @@
-<template is="vue:my-thing">x</template>

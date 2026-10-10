@@ -1,9 +1,0 @@
-<script setup lang="ts">
-import { useRouter } from "vue-router";
-const router = useRouter();
-router.push({ name: "absent" });
-router.push({ name: "user", params: {} });
-router.push({ name: "user", params: { id: "1", extra: "x" } });
-router.push({ name: "user", params: { id: ["1", "2"] } });
-</script>
-<template><div /></template>

@@ -1,8 +1,0 @@
-<script setup lang="ts">
-defineProps<{ checked: boolean }>();
-defineEmits<{ change: [checked: boolean]; click: [] }>();
-</script>
-
-<template>
-  <input type="checkbox" :checked />
-</template>

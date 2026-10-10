@@ -1,7 +1,0 @@
-[l2-dump-v2]
-ops=2
-
-[l2-dump-v2.ops]
-ui.component Chrome @0:15
-  ui.text "x" @18:22
-

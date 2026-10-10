@@ -1,9 +1,0 @@
-<script setup lang="ts">
-const { tone = "neutral" } = defineProps<{ tone?: "neutral" | "accent" }>();
-</script>
-
-<template>
-  <span :class="['status-badge', `status-badge--${tone}`]" :title="`tone: ${tone}`">
-    {{ `current: ${tone}` }}
-  </span>
-</template>

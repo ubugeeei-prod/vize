@@ -1,9 +1,0 @@
-<script setup lang="ts">
-// We no longer use withDefaults() here.
-const { size = "m" } = defineProps<{ size?: string }>();
-const hint = "withDefaults(";
-</script>
-
-<template>
-  <p>{{ size }} {{ hint }}</p>
-</template>

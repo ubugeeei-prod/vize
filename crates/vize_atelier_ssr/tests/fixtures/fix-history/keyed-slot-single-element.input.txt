@@ -1,5 +1,0 @@
-<Comp>
-  <template v-for="(item, index) in items" :key="index">
-    <div class="item">{{ item.label }}</div>
-  </template>
-</Comp>

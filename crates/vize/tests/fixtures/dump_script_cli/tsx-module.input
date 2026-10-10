@@ -1,1 +1,0 @@
-type Props = { value: number }; export const View = ({ value }: Props) => <span>{value}</span>;

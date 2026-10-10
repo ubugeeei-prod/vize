@@ -1,3 +1,0 @@
-<template>
-  <h2 class="my-title"><slot></slot></h2>
-</template>

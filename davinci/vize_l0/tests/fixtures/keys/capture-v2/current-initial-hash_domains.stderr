@@ -1,6 +1,0 @@
-
-thread 'observe_pending_hash_domain_vectors' (16389265) panicked at crates/vize_davinci/tests/hash_domains.rs:148:13:
-assertion `left == right` failed: preimage mismatch "artifact/source-block"
-  left: "c919fe79a8776a2639cfeb0fcebaf3ac"
- right: "5ffdf63aeec8a7c54edca6a7e632bd23"
-note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

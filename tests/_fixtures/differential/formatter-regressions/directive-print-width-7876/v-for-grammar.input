@@ -1,3 +1,0 @@
-<template>
-  <Widget v-for="item in extraordinarilyLongCollectionName" :key="item.id" />
-</template>

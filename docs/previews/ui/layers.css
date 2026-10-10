@@ -1,2 +1,0 @@
-/* Same layer order prepended to the UI package's published CSS assets. */
-@layer vize.tokens, vize.ui, vize.preset, vize.policy;

@@ -1,3 +1,0 @@
-ScriptFormatError(
-    "sortImports.order must be asc or desc",
-)

@@ -1,5 +1,0 @@
-Found 1 file(s)
-Reformatted: UserCard.vue
-
-Formatted 1 file(s)
-  1 file(s) reformatted

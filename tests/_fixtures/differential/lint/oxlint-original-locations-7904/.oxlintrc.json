@@ -1,8 +1,0 @@
-{
-  "jsPlugins": ["oxlint-plugin-vize"],
-  "settings": { "vize": { "preset": "essential" } },
-  "rules": {
-    "vize/vue/no-v-html": "warn",
-    "vize/vue/multi-word-component-names": "error"
-  }
-}

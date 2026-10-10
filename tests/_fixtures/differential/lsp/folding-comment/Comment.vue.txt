@@ -1,8 +1,0 @@
-<template>
-  <!--
-    note
-  -->
-  <div>
-    x
-  </div>
-</template>

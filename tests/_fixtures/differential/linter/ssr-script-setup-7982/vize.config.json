@@ -1,1 +1,0 @@
-{ "linter": { "preset": "incremental", "rules": { "ssr/no-browser-globals-in-ssr": "warn" } } }

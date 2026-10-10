@@ -1,8 +1,0 @@
-[l2-dump-v2]
-ops=2
-
-[l2-dump-v2.ops]
-ui.element input @0:40
-  ui.model read=js("x" @6:7) write=js("x" @6:7) @5:20
-    attr element-kind="input" @25:30
-

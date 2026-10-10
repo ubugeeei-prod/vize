@@ -1,9 +1,0 @@
-<script setup>
-import { badgeLabel } from "@workspace/pricing/label";
-
-const label = badgeLabel("Shared");
-</script>
-
-<template>
-  <aside data-test="shared">{{ label }}</aside>
-</template>

@@ -1,5 +1,0 @@
-<template>
-  <textarea>
-    {{ variable }}
-  </textarea>
-</template>

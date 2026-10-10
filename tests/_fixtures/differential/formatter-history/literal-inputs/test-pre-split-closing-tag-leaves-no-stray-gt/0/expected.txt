@@ -1,2 +1,0 @@
-<pre>
-page: {{ x }}</pre>

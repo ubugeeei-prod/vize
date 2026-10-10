@@ -1,7 +1,0 @@
-{
-  "linter": {
-    "preset": "incremental",
-    "rules": { "vue/require-component-registration": "error" },
-    "ruleOptions": { "vue/require-component-registration": { "globals": ["MyButton"] } }
-  }
-}

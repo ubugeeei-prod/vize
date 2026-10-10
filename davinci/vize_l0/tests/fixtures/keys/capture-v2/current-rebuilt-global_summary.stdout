@@ -1,7 +1,0 @@
-
-running 2 tests
-test a_duplicate_global_component_is_refused ... ok
-test adding_a_global_component_invalidates_exactly_its_resolvers ... ok
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
-

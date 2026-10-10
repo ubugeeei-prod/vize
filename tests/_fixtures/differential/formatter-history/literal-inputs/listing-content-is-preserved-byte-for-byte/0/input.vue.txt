@@ -1,3 +1,0 @@
-<listing>
-	 a
- b</listing>

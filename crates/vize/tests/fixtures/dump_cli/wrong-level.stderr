@@ -1,1 +1,0 @@
-dump: @INPUT_PATH@: folio parse error at line 1: first section must be [s3-folio]

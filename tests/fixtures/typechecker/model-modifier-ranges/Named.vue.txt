@@ -1,8 +1,0 @@
-<script setup lang="ts">
-const [model, modifiers] = defineModel<string, "trim" | "upper">("title", { default: "" });
-void modifiers;
-</script>
-
-<template>
-  <input v-model="model" />
-</template>

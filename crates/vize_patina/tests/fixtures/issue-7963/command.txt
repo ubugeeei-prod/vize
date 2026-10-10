@@ -1,1 +1,0 @@
-vize lint --no-config --preset nuxt --fix nuxt.config.ts

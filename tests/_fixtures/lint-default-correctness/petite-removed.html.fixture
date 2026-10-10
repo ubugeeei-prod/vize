@@ -1,1 +1,0 @@
-<!DOCTYPE html><html><body><div v-scope="{ title: 'ok' }"><Widget :title.sync="title" @activate.native="run"><template slot-scope="props">ok</template><template scope="props">ok</template></Widget></div><script src="https://unpkg.com/petite-vue" init></script></body></html>

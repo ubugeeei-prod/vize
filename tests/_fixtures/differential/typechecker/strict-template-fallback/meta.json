@@ -1,9 +1,0 @@
-{
-  "id": "unknown-prop-strict",
-  "description": "strictTemplates: undeclared prop on child component",
-  "expectErrors": true,
-  "minErrors": 1,
-  "mustMatch": ["TS2353", "extra", "does not exist"],
-  "requires": ["strict-component-attrs"],
-  "expectMention": ["extra"]
-}

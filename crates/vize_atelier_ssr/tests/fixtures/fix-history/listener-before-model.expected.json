@@ -1,6 +1,0 @@
-{
-  "code": "function ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Foo\"), _mergeProps({ \"onUpdate:modelValue\": [_ctx.onUpdate, $event => ((_ctx.value) = $event)], modelValue: _ctx.value }, _attrs), null, _parent))\n}\n",
-  "diagnostics": [],
-  "map": null,
-  "preamble": "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { resolveComponent as _resolveComponent, mergeProps as _mergeProps } from \"vue\"\n"
-}

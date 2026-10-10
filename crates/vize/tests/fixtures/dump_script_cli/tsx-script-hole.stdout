@@ -1,6 +1,0 @@
-script: tsx script; hole=Some(Syntax)
-comment SingleLineBlock @Span { start: 0, end: 8 } "/* α */"
-diagnostic Error: Unexpected token
-  code=OxcCode { scope: None, number: None } help=None note=None url=None
-  label @Span { start: 31, end: 32 } primary=false None
-dump: l1 roundtrip OK: capture/cases/tsx-script-hole.input (39 bytes)

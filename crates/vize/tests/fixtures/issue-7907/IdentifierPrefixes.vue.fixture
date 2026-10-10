@@ -1,4 +1,0 @@
-<script setup lang="ts">
-const windowWidth = 1; const confirmationMessage = "ready";
-</script>
-<template><p>{{windowWidth}} {{confirmationMessage}}</p></template>

@@ -1,4 +1,0 @@
-{
-  "linter": { "preset": "opinionated" },
-  "languageServer": { "lint": true, "typecheck": true, "editor": true }
-}

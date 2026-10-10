@@ -1,4 +1,0 @@
-<script setup lang="ts">
-defineEmits<{ select: [key: string, path: string[]] }>()
-</script>
-<template><div /></template>

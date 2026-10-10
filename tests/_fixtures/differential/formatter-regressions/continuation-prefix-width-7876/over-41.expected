@@ -1,7 +1,0 @@
-<template>
-  <p>
-    AAAA {{ n }}<template
-      v-if="visible"
-    > x</template>
-  </p>
-</template>

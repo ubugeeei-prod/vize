@@ -1,9 +1,0 @@
-<script setup lang="ts" generic="T extends Kind.A | Kind.B">
-import { Kind } from "./kind";
-
-const { value } = defineProps<{ value: T }>();
-</script>
-
-<template>
-  <span>{{ value }}</span>
-</template>

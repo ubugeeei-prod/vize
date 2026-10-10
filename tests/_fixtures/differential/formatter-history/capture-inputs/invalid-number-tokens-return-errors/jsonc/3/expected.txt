@@ -1,3 +1,0 @@
-JsonFormatError(
-    "expected digit in exponent",
-)

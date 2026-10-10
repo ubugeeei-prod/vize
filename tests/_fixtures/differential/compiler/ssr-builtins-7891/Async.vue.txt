@@ -1,7 +1,0 @@
-<script setup>
-const v = await Promise.resolve("done");
-</script>
-
-<template>
-  <p>{{ v }}</p>
-</template>

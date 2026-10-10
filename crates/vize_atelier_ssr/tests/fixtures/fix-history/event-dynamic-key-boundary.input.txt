@@ -1,1 +1,0 @@
-<Foo @click="before" @[name]="middle" @click.stop="after" />

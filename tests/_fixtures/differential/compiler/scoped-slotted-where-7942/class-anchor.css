@@ -1,1 +1,0 @@
-.host:where(.box) > :slotted(:where(p)) { margin: 0; }

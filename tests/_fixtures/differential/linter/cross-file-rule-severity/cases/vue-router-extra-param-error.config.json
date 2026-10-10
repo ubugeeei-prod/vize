@@ -1,8 +1,0 @@
-{
-  "linter": {
-    "preset": "incremental",
-    "rules": {
-      "ecosystem/vue-router-extra-param": "error"
-    }
-  }
-}

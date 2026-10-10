@@ -1,2 +1,0 @@
-// Fails when a component still uses the old form.
-export const usesOldDefaults = (source: string): boolean => source.includes("withDefaults(");

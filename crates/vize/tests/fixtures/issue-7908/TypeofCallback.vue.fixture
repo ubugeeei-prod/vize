@@ -1,9 +1,0 @@
-<script setup lang="ts">
-import { watchEffect } from "vue";
-watchEffect(() => {
-  if (typeof window !== "undefined") { document.title; }
-});
-</script>
-<template>
-  <p>Ready</p>
-</template>

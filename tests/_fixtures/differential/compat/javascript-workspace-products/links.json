@@ -1,9 +1,0 @@
-{
-  "node_modules/@workspace/pricing": "../../packages/pricing",
-  "node_modules/@workspace/ui": "../../packages/ui",
-  "apps/vite/node_modules/@workspace/pricing": "../../../../packages/pricing",
-  "apps/vite/node_modules/@workspace/ui": "../../../../packages/ui",
-  "apps/nuxt/node_modules/@workspace/pricing": "../../../../packages/pricing",
-  "apps/nuxt/node_modules/@workspace/ui": "../../../../packages/ui",
-  "packages/ui/node_modules/@workspace/pricing": "../../../pricing"
-}

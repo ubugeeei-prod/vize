@@ -1,5 +1,0 @@
-<template>
-  <code v-pre>
-    {{ variable }}
-  </code>
-</template>

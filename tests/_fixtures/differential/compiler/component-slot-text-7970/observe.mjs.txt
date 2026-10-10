@@ -1,1 +1,0 @@
-[...document.querySelectorAll(".my-title")].map(el => [...el.childNodes].map(n => n.nodeType === 3 ? n.data : `<${n.nodeName.toLowerCase()}>`))

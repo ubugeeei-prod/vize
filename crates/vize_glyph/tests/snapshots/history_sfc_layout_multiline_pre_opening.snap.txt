@@ -1,6 +1,0 @@
-<template>
-  <div>
-    <pre v-else-if="parsedJSON" class="overflow-auto max-h-96">{{ formattedJSONString }}
-      </pre>
-  </div>
-</template>

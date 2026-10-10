@@ -1,7 +1,0 @@
-<script setup lang="ts">
-const staleName = 1
-</script>
-
-<template>
-  <span>{{ staleName }}</span>
-</template>

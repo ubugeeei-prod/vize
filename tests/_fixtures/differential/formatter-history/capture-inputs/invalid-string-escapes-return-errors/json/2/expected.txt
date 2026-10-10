@@ -1,3 +1,0 @@
-JsonFormatError(
-    "invalid hex digit 'g' in \\u escape",
-)

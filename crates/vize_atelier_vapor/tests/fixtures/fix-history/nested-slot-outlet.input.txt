@@ -1,1 +1,0 @@
-<div><slot :row="item" :index="i"></slot></div>

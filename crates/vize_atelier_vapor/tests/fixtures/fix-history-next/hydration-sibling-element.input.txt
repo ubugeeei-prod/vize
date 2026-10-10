@@ -1,1 +1,0 @@
-<div><h1>{{ a }}</h1><input v-model="q"><p>{{ b }}</p></div>

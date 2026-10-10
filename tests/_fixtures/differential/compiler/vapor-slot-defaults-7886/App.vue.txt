@@ -1,7 +1,0 @@
-<script setup vapor>
-import Child from "./Child.vue";
-</script>
-
-<template>
-  <Child v-slot="{ label = 'fallback', count }">{{ label }}:{{ count }}</Child>
-</template>

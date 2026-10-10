@@ -1,3 +1,0 @@
---format compare requires @vue/compiler-sfc in the current project or Vize workspace dev dependencies.
-authoritative compiler failure
-

@@ -1,5 +1,0 @@
-<script setup lang="ts">
-import { onMounted } from "vue";
-onMounted(() => { const width = window.innerWidth; });
-</script>
-<template>                                                             <p>{{window.innerWidth}}</p></template>

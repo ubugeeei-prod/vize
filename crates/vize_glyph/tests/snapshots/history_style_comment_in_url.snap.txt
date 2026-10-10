@@ -1,3 +1,0 @@
-.asset {
-  background:url(https://example.test/a/*/icon.svg);color:red}
-/* after */

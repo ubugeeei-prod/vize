@@ -1,1 +1,0 @@
-<template><Suspense><template #fallback>loading</template></Suspense></template>

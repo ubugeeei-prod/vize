@@ -1,6 +1,0 @@
-<template><p>😀 note</p></template>
-<style scoped>/* 😀 .flex */ .flex { display: flex; }</style>
-<style scoped>
-.my-note::before { content: " .pl-3 "; }
-.pl-3 { padding-left: 12px; }
-</style>

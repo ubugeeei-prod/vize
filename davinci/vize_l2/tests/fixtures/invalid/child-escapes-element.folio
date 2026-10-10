@@ -1,7 +1,0 @@
-[l2-dump-v2]
-ops=2
-
-[l2-dump-v2.ops]
-ui.element div @0:10
-  ui.text "x" @50:60
-

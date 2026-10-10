@@ -1,6 +1,0 @@
-<template>
-<pre />
-<div>
-  y
-</div>
-</template>

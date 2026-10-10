@@ -1,4 +1,0 @@
-{
-  "template": "<MuseaButton\n\tdata-label=\"A deliberately long original attribute value that must remain readable and copyable without clipping or wrapping inside the authored words: abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789\"\n>\n\t<pre>  keep leading spaces\n\t\tkeep authored tabs and 日本語 👋\n  keep trailing spaces  </pre>\n\t<span>First line</span>\n\t<span>Second line</span>\n\t<span>Third line</span>\n\t<span>Fourth line</span>\n\t<span>Fifth line</span>\n\t<span>Sixth line</span>\n\t<span>Seventh line</span>\n\t<span>Eighth line</span>\n\t<span>Ninth line</span>\n\t<span>Tenth line</span>\n\t<span>Eleventh line</span>\n\t<span>Twelfth line</span>\n\t<span>Last visible line</span>\n</MuseaButton>",
-  "label": "A deliberately long original property value that must remain readable and copyable without clipping or wrapping inside the authored words: abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789"
-}

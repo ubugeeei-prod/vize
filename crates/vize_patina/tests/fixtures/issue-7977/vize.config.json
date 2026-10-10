@@ -1,1 +1,0 @@
-{ "linter": { "preset": "incremental", "rules": { "a11y/no-aria-hidden-on-focusable": "error" } } }

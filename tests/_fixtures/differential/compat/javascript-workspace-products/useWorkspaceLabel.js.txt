@@ -1,6 +1,0 @@
-import { badgeLabel } from "@workspace/pricing/label";
-
-/** @returns {string} */
-export function useWorkspaceLabel() {
-  return badgeLabel("Nuxt");
-}

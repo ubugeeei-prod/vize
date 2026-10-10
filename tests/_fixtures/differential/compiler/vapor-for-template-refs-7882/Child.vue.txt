@@ -1,7 +1,0 @@
-<script setup vapor>
-defineExpose({ hello: "world" });
-</script>
-
-<template>
-  <i>child</i>
-</template>

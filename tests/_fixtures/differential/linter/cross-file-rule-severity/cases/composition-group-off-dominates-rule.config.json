@@ -1,9 +1,0 @@
-{
-  "linter": {
-    "preset": "incremental",
-    "rules": {
-      "cross-file": "off",
-      "html/cross-component-nesting": "error"
-    }
-  }
-}

@@ -1,1 +1,0 @@
-<template><Suspense><template #default><p>done</p></template></Suspense></template>

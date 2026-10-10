@@ -1,1 +1,0 @@
-{ "linter": { "rules": { "vue/v-bind-style": "warn", "vue/prefer-props-shorthand": "warn" } } }

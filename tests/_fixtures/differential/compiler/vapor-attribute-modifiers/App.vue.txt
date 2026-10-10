@@ -1,9 +1,0 @@
-<script setup vapor>
-const v = "x";
-const attrs = { id: "from-object" };
-</script>
-
-<template>
-  <input :value.attr="v" />
-  <div :title.attr="v" v-bind="attrs" id="static"></div>
-</template>

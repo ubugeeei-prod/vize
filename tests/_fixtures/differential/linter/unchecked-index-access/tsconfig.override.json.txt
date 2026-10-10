@@ -1,9 +1,0 @@
-{
-  "extends": "./base.json",
-  "compilerOptions": {
-    "noUncheckedIndexedAccess": false
-  },
-  "include": [
-    "src/**/*.vue"
-  ]
-}

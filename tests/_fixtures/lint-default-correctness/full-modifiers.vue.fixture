@@ -1,1 +1,0 @@
-<template><Widget v-bind:title.sync.camel="title" v-on:activate.native.stop="onActivate" /></template>

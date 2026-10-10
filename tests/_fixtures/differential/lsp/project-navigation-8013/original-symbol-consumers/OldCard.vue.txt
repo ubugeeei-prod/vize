@@ -1,7 +1,0 @@
-<script setup lang="ts">
-const movedLabel = "ready"
-</script>
-
-<template>
-  <span>{{ movedLabel }}</span>
-</template>

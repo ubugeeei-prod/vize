@@ -1,4 +1,0 @@
-Found 1 file(s)
-
-Checked 1 file(s)
-  1 file(s) already formatted

@@ -1,1 +1,0 @@
-vize fmt --write --no-config Generic.vue plain.ts

@@ -1,4 +1,0 @@
-.box {
-  color: grey;
-  border: 1px solid lightgrey;
-}

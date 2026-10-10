@@ -1,2 +1,0 @@
-/*😀*/ export const café = 1;
-export const view = <i>{café}</i>;

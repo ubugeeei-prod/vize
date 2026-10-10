@@ -1,3 +1,0 @@
-import { greet } from "#lib/util.ts";
-
-export const message: string = greet("y");

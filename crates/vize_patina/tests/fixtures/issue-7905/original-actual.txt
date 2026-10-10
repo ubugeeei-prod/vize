@@ -1,5 +1,0 @@
-CardList.vue:6:3 warning vue/html-self-closing Empty component should be self-closing
-CardList.vue:7:3 warning vue/component-name-in-template-casing Component should use PascalCase
-CardList.vue:9:15 warning vue/v-slot-style Expected '#header' instead of 'v-slot:header'
-CardList.vue:11:10 warning vue/no-boolean-attr-value Boolean attribute "disabled" should not have value "disabled"
-CardList.vue unchanged

@@ -1,6 +1,0 @@
-<script setup lang="ts">
-const broken = ;
-</script>
-<template>
-<p>😀日本語</p><div v-html="html"/>
-</template>

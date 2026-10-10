@@ -1,4 +1,0 @@
-<script setup lang="ts">
-const props = withDefaults /* macro gap */ (defineProps<{ size?: string }>(), { size: "m" });
-</script>
-<template><p>OK</p></template>

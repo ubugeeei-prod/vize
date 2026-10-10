@@ -1,8 +1,0 @@
-<Outer>
-  <slot>
-  <template v-for="displayed in [value]" :key="displayed">
-    <span v-if="displayed">{{ displayed }}</span>
-    <span v-else>empty</span>
-  </template>
-  </slot>
-</Outer>
