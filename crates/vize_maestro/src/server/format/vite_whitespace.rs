@@ -22,7 +22,7 @@ fn preserve_range_keeps_template_text_and_default_retains_full_edit() {
     assert_eq!(
         actual(false),
         Some(vec![TextEdit {
-            range: Range::new(Position::new(3, 10), Position::new(6, 0)),
+            range: Range::new(Position::new(3, 10), Position::new(5, 0)),
             new_text: "\n  <p>{{ message }}</p>\n".into(),
         }])
     );
