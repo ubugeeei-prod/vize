@@ -17,7 +17,7 @@ test("Vite settings retain shared values, overrides and explicit feature disable
     compiler: { vueVersion: 2.7, whitespace: "preserve" },
     typecheck: { strict: true },
     lint: { vize: { rules: { "a11y/img-alt": "error" }, helpLevel: "short" } },
-    fmt: { printWidth: 90, singleQuote: true, vize: { tabWidth: 4 } },
+    fmt: { printWidth: 90, vize: { singleQuote: true, tabWidth: 4 } },
   };
   const original = JSON.stringify(source);
   assert.deepEqual(await resolveViteConfigExport(source), {
@@ -25,7 +25,7 @@ test("Vite settings retain shared values, overrides and explicit feature disable
     languageServer: { formatting: false },
     compiler: { whitespace: "preserve", compatibility: { vueVersion: "2.7" } },
     linter: { preset: "essential", rules: { "a11y/img-alt": "error" } },
-    formatter: { printWidth: 90, singleQuote: true, tabWidth: 4 },
+    formatter: { singleQuote: true, tabWidth: 4 },
   });
   assert.equal(JSON.stringify(source), original);
 });
@@ -37,7 +37,7 @@ test("Vite+ source resolution never starts plugins or generated tasks", async ()
     },
     {
       [Symbol.for("@vizejs/vite-plugin/vite-plus/source")]: async () => ({
-        extends: Promise.resolve({ fmt: { printWidth: 100, vize: { singleQuote: true } } }),
+        extends: Promise.resolve({ fmt: { vize: { printWidth: 100, singleQuote: true } } }),
         fmt: { vize: { tabWidth: 4 } },
         typecheck: false,
       }),

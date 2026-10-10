@@ -92,7 +92,8 @@ export async function resolveViteConfigExport(exported, env) {
     overrides.linter = native;
   }
   if (object(source.fmt)) {
-    const { vize, ignorePatterns: _ignorePatterns, ...common } = source.fmt;
+    const { vize, sortImports } = source.fmt;
+    const common = sortImports === undefined ? {} : { sortImports };
     overrides.formatter = merge(common, object(vize) ? vize : {});
   }
   // Keep scoped entries in their authored order; the unscoped defaults precede

@@ -11,7 +11,10 @@ create a dedicated configuration.
 
 An ordinary `vite.config.*` carries native settings in a top-level `vize`
 section. Vite+ configurations additionally project `compiler`, `typecheck`,
-`lint.vize`, and `fmt.vize`; common formatter settings also apply to Vize.
+`lint.vize`, and `fmt.vize`. Common `fmt.sortImports` also applies to Vize;
+other native formatter options belong under `fmt.vize`, preserving the existing
+Vite+ task payload and formatting history. Fresh native check tasks enable JSX
+without adding unrelated checker defaults to formatter or lint payloads.
 Native settings include scoped entries, globals, editor features, Musea and the
 source library. TypeScript options and references remain in `tsconfig.json`.
 
