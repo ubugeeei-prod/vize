@@ -1527,3 +1527,132 @@ export declare function wrapSfcScopedPreprocessorStyle(
   scoped?: string | undefined | null,
   lang?: string | undefined | null,
 ): string;
+
+/** Original-path HTML execution and final native presentation. */
+export declare function lintOxlintHtml(options: OxlintHtmlOptions): OxlintHtmlOutcome;
+
+export interface OxlintHtmlPresentation {
+  /** The actual piped child's graphical theme: plain, unicode, or color. */
+  graphicalTheme: string;
+  links: boolean;
+  width: number;
+  stylishNoColor: boolean;
+  /** Original cwd for relative human-readable names; process cwd is untouched. */
+  cwd: string;
+}
+
+export interface OxlintHtmlOptions {
+  cwd: string;
+  literalTarget: string;
+  rootJson: string;
+  /** Exact original caller snapshot, including every whitespace byte. */
+  rootBytes: Array<number>;
+  /** Exact supported host version: 1.78.0 or 1.86.0. */
+  hostProfile: string;
+  noIgnore: boolean;
+  cliIgnorePatterns: Array<string>;
+  customIgnoreFilename: string;
+  /** Explicit default, json, unix, or stylish. */
+  format: string;
+  presentation: OxlintHtmlPresentation;
+}
+
+export interface OxlintHtmlOriginal {
+  path: string;
+  cwdRelative: string;
+  origin: string;
+  bytes: Array<number>;
+}
+
+export interface OxlintHtmlSource {
+  path: string;
+  role: string;
+  /** None records absent authority, rather than omitting the authority entry. */
+  bytes?: Array<number>;
+}
+
+export interface OxlintHtmlRule {
+  name: string;
+  severity?: string;
+  active: boolean;
+  authoredOptions: Array<unknown>;
+}
+
+export interface OxlintHtmlSettings {
+  locale: string;
+  helpLevel: string;
+  preset: string;
+}
+
+export interface OxlintHtmlProjection {
+  rules: Array<OxlintHtmlRule>;
+  settings: OxlintHtmlSettings;
+  denyWarnings: boolean;
+}
+
+export interface OxlintHtmlLabel {
+  message: string;
+  start: number;
+  end: number;
+}
+
+export interface OxlintHtmlDiagnostic {
+  ruleName: string;
+  severity: string;
+  message: string;
+  start: number;
+  end: number;
+  help?: string;
+  labels: Array<OxlintHtmlLabel>;
+  /** The complete actual fix object, never applied by this operation. */
+  fix?: unknown;
+}
+
+export interface OxlintHtmlFile {
+  path: string;
+  filename: string;
+  errorCount: number;
+  warningCount: number;
+  diagnostics: Array<OxlintHtmlDiagnostic>;
+}
+
+export interface OxlintHtmlCompleted {
+  hostProfile: string;
+  cwd: string;
+  literalTarget: string;
+  target: string;
+  repository: string;
+  rootJson: string;
+  noIgnore: boolean;
+  cliIgnorePatterns: Array<string>;
+  customIgnoreFilename: string;
+  rootDecision: string;
+  originals: Array<OxlintHtmlOriginal>;
+  sources: Array<OxlintHtmlSource>;
+  projection: OxlintHtmlProjection;
+  files: Array<OxlintHtmlFile>;
+  executedFileCount: number;
+  elapsedSeconds: number;
+  errors: number;
+  warnings: number;
+  output: string;
+  /** Actual native diagnostic fragments, without fabricated host report metadata. */
+  jsonDiagnostics: string;
+  format: string;
+  presentation: OxlintHtmlPresentation;
+  /** Always not-performed; the CLI must establish genuine host setup authority. */
+  engineConfigValidation: string;
+}
+
+export interface OxlintHtmlRefusal {
+  kind: string;
+  path: string;
+  details: string;
+  originalBytes?: Array<number>;
+}
+
+export interface OxlintHtmlOutcome {
+  /** Exactly one of completed/refused is present. */
+  completed?: OxlintHtmlCompleted;
+  refused?: OxlintHtmlRefusal;
+}
