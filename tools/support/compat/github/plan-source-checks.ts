@@ -45,6 +45,10 @@ export function planSourceChecks(
   // Compiler changes can affect the native JS binding and its package tests.
   const result = { rust: false, js: false, tooling: false, playground: false };
   for (const path of paths) {
+    if (path === "crates/vize_carton/src/config/loader/vite-runtime.mjs") {
+      result.rust = result.js = result.playground = true;
+      continue;
+    }
     if (isCensusToolingInput(path)) {
       result.tooling = true;
       continue;

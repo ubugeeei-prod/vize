@@ -38,31 +38,6 @@ export default defineConfig({
 });
 `;
 
-const EXPECTED_VIZE_CONFIG = `import { defineConfig } from "vize";
-
-export default defineConfig({
-  compiler: {
-    templateSyntax: "standard",
-  },
-  linter: {
-    enabled: true,
-    preset: "happy-path",
-  },
-  formatter: {
-    singleAttributePerLine: false,
-    sortBlocks: true,
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-    jsxTypecheck: true,
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
-`;
-
 const EXPECTED_OXLINT_CONFIG = `import { defineConfig } from "oxlint";
 import { configs } from "oxlint-plugin-vize";
 
@@ -126,15 +101,9 @@ test("a Vite+ project is configured through the vite.config lint block", async (
       cwd: root,
     },
   ]);
-  assert.deepEqual(result.written, [
-    "vite.config.ts",
-    "vize.config.ts",
-    ".vscode/extensions.json",
-    "package.json",
-  ]);
-  assert.deepEqual(readAll(root, ["vite.config.ts", "vize.config.ts", ".vscode/extensions.json"]), {
+  assert.deepEqual(result.written, ["vite.config.ts", ".vscode/extensions.json", "package.json"]);
+  assert.deepEqual(readAll(root, ["vite.config.ts", ".vscode/extensions.json"]), {
     "vite.config.ts": EXPECTED_VITE_PLUS_CONFIG,
-    "vize.config.ts": EXPECTED_VIZE_CONFIG,
     ".vscode/extensions.json": EXPECTED_EXTENSIONS,
   });
   assert.equal(
@@ -168,17 +137,13 @@ test("a Vite+ project is configured through the vite.config lint block", async (
   assert.equal(exists(root, "oxlint.config.ts"), false);
   assert.equal(exists(root, ".oxlintrc.json"), false);
   assert.equal(result.plan?.lintTarget.kind, "vite-plus");
+  assert.equal(exists(root, "vize.config.ts"), false);
 });
 
 test("a second run of an already-configured project writes and runs nothing", async () => {
   const root = vitePlusProject("idempotent");
   const first = await runInit(root, ALL_FEATURES);
-  const before = readAll(root, [
-    "package.json",
-    "vite.config.ts",
-    "vize.config.ts",
-    ".vscode/extensions.json",
-  ]);
+  const before = readAll(root, ["package.json", "vite.config.ts", ".vscode/extensions.json"]);
 
   const second = await runInit(root, ALL_FEATURES);
 
@@ -188,7 +153,7 @@ test("a second run of an already-configured project writes and runs nothing", as
   assert.deepEqual(second.plan?.updatedFiles, []);
   assert.deepEqual(second.plan?.addedScripts, []);
   assert.deepEqual(
-    readAll(root, ["package.json", "vite.config.ts", "vize.config.ts", ".vscode/extensions.json"]),
+    readAll(root, ["package.json", "vite.config.ts", ".vscode/extensions.json"]),
     before,
   );
   assert.deepEqual(
@@ -238,7 +203,6 @@ export default defineConfig({
   assert.deepEqual(result.written, [
     "oxlint.config.ts",
     "vite.config.ts",
-    "vize.config.ts",
     ".vscode/extensions.json",
     "package.json",
   ]);
@@ -253,6 +217,7 @@ export default defineConfig({
 `,
   });
   assert.equal(result.plan?.lintTarget.kind, "oxlint");
+  assert.equal(exists(root, "vize.config.ts"), false);
 });
 
 test("a Vite+ project that also runs oxlint gets both configs from one preset", async () => {
@@ -284,7 +249,7 @@ test("--dry-run reports the plan and writes nothing", async () => {
   assert.deepEqual(result.commands, []);
   assert.deepEqual(readAll(root, ["package.json", "vite.config.ts"]), before);
   assert.equal(exists(root, "vize.config.ts"), false);
-  assert.deepEqual(result.plan?.createdFiles, ["vize.config.ts", ".vscode/extensions.json"]);
+  assert.deepEqual(result.plan?.createdFiles, [".vscode/extensions.json"]);
   assert.deepEqual(result.plan?.updatedFiles, ["vite.config.ts", "package.json"]);
   assert.match(
     result.output,

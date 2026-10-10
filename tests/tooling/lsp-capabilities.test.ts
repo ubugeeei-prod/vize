@@ -3,15 +3,25 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { testOutputRoot } from "./support/lsp/paths.ts";
-import type { LspInitializationOptions, ServerCapabilities } from "./support/lsp/protocol.ts";
+import type {
+  JsonRpcMessage,
+  LspInitializationOptions,
+  ServerCapabilities,
+} from "./support/lsp/protocol.ts";
 import { LspSession } from "./support/lsp/session.ts";
+import { EDITOR_BUNDLE_CAPABILITIES } from "./support/lsp/capability-oracles.ts";
+import {
+  assertInitializePacket,
+  FRESH_EDITOR_CAPABILITIES,
+  observeInitializePacket,
+} from "./support/lsp/fresh-capability-policy.ts";
 
 // Capability-advertisement suite for `vize lsp`.
 //
 // These tests inspect ONLY the `initialize` result: no document features and no
-// corsa are exercised, so every assertion is a pure, deterministic function of
-// the initialization options. The smoke suite asserts a handful of default
-// providers (`hoverProvider`, `definitionProvider`, `referencesProvider`,
+// corsa are exercised. Fresh project policy, dedicated configuration and the
+// initialization options determine the complete result. The smoke suite asserts
+// a handful of default providers (`hoverProvider`, `definitionProvider`, `referencesProvider`,
 // `semanticTokensProvider.range`, `completionProvider.triggerCharacters` has
 // "."); here we pin the full provider set and the per-feature gating shapes for
 // distinct option bundles, which the smoke suite does not cover.
@@ -19,19 +29,22 @@ import { LspSession } from "./support/lsp/session.ts";
 async function withCapabilities(
   label: string,
   initializationOptions: LspInitializationOptions,
-  run: (capabilities: ServerCapabilities) => void,
+  run: (capabilities: ServerCapabilities, packet: JsonRpcMessage) => void,
+  prepare?: (workspaceDir: string) => void,
 ): Promise<void> {
   const testRootDir = path.join(testOutputRoot, `lsp-capabilities-${label}`);
   fs.mkdirSync(testRootDir, { recursive: true });
   const workspaceDir = fs.mkdtempSync(path.join(testRootDir, "workspace-"));
   const session = new LspSession();
+  const initializePacket = observeInitializePacket(session, label);
 
   try {
+    prepare?.(workspaceDir);
     const init = (await session.initialize(workspaceDir, initializationOptions)) as {
       capabilities?: ServerCapabilities;
     };
     assert.ok(init.capabilities, "initialize result should advertise capabilities");
-    run(init.capabilities);
+    run(init.capabilities, initializePacket());
   } finally {
     await session.shutdown();
     fs.rmSync(workspaceDir, { recursive: true, force: true });
@@ -39,180 +52,73 @@ async function withCapabilities(
   }
 }
 
-/** Closed Vue files feed workspace symbols; declarations feed type checking. */
-const FILE_EVENT_FILTERS = [
-  { scheme: "file", pattern: { glob: "**/*.d.{ts,mts,cts}", matches: "file" } },
-  { scheme: "file", pattern: { glob: "**/*.vue", matches: "file" } },
-  { scheme: "file", pattern: { glob: "**/*", matches: "folder" } },
-];
-/** Everything a rename can move, plus folders. */
-const RENAME_FILTERS = [
-  {
-    scheme: "file",
-    pattern: { glob: "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}", matches: "file" },
-  },
-  { scheme: "file", pattern: { glob: "**/*", matches: "folder" } },
-];
-
-/**
- * The COMPLETE capability set for the default editor bundle, pinned as one
- * value rather than field by field: adding, dropping or reshaping any provider
- * then shows up in this diff instead of slipping past a spot check (#3456).
- */
-const EDITOR_BUNDLE_CAPABILITIES = {
-  // Incremental (2) sync, open/close on, save without the text.
-  textDocumentSync: {
-    openClose: true,
-    change: 2,
-    willSave: false,
-    willSaveWaitUntil: false,
-    save: { includeText: false },
-  },
-  // Selection ranges ship with the document-structure group.
-  selectionRangeProvider: true,
-  hoverProvider: true,
-  completionProvider: {
-    resolveProvider: true,
-    // `@vue/language-server` 3.3.8's list in its order, plus `'` (a
-    // single-quoted attribute value is legal Vue and Maestro answers inside
-    // one). Space is deliberately absent — it opened the list on every space
-    // typed in a template (#3458).
-    triggerCharacters: [
-      '"',
-      "'",
-      ":",
-      "@",
-      ".",
-      "<",
-      "=",
-      "/",
-      ">",
-      "+",
-      "^",
-      "*",
-      "(",
-      ")",
-      "#",
-      "[",
-      "]",
-      "$",
-      "-",
-      "{",
-      "}",
-    ],
-  },
-  // TypeScript/tsgo signature help: opens on a call or generic argument list
-  // and re-opens once the caller closes it.
-  signatureHelpProvider: {
-    triggerCharacters: ["(", ",", "<"],
-    retriggerCharacters: [")"],
-  },
-  definitionProvider: true,
-  declarationProvider: true,
-  typeDefinitionProvider: true,
-  implementationProvider: true,
-  callHierarchyProvider: true,
-  referencesProvider: true,
-  documentHighlightProvider: true,
-  documentSymbolProvider: true,
-  workspaceSymbolProvider: true,
-  codeActionProvider: {
-    codeActionKinds: ["quickfix"],
-    resolveProvider: false,
-  },
-  codeLensProvider: { resolveProvider: false },
-  documentLinkProvider: { resolveProvider: false },
-  // Colour swatches ship with document links: both decorate a literal in the
-  // authored text and make it interactive (#3456).
-  colorProvider: true,
-  foldingRangeProvider: true,
-  // Rename advertises prepareRename, and carries linked editing
-  // (rename-as-you-type over tag names) with it.
-  renameProvider: { prepareProvider: true },
-  linkedEditingRangeProvider: true,
-  semanticTokensProvider: {
-    legend: {
-      tokenTypes: [
-        "namespace",
-        "type",
-        "class",
-        "enum",
-        "interface",
-        "struct",
-        "typeParameter",
-        "parameter",
-        "variable",
-        "property",
-        "enumMember",
-        "event",
-        "function",
-        "method",
-        "macro",
-        "keyword",
-        "modifier",
-        "comment",
-        "string",
-        "number",
-        "regexp",
-        "operator",
-        "decorator",
-      ],
-      tokenModifiers: [
-        "declaration",
-        "definition",
-        "readonly",
-        "static",
-        "deprecated",
-        "abstract",
-        "async",
-        "modification",
-        "documentation",
-        "defaultLibrary",
-      ],
-    },
-    range: true,
-    full: true,
-  },
-  inlayHintProvider: true,
-  experimental: { vize: { jsxTypecheck: false } },
-  workspace: {
-    workspaceFolders: { supported: true, changeNotifications: true },
-    fileOperations: {
-      didCreate: { filters: FILE_EVENT_FILTERS },
-      didRename: { filters: RENAME_FILTERS },
-      willRename: { filters: RENAME_FILTERS },
-      didDelete: { filters: FILE_EVENT_FILTERS },
-    },
-  },
-  // Opt-in formatting providers, `executeCommandProvider` and
-  // `monikerProvider` are absent from this default capability set.
-};
-
 test("vize lsp advertises exactly this capability set for the default editor bundle", async () => {
-  await withCapabilities("editor-full", { editor: true, lint: true }, (capabilities) => {
-    assert.deepEqual(capabilities, EDITOR_BUNDLE_CAPABILITIES);
+  await withCapabilities("editor-full", { editor: true, lint: true }, (_capabilities, packet) => {
+    assertInitializePacket(packet, FRESH_EDITOR_CAPABILITIES);
   });
 });
 
 test("vize lsp advertises the exact measured auto-insertion extension only when opted in", async () => {
-  await withCapabilities("auto-insert", { editor: true, autoInsert: true }, (capabilities) => {
-    assert.deepEqual(capabilities.experimental, {
-      vize: { jsxTypecheck: false },
-      autoInsertionProvider: {
-        triggerCharacters: ["}", "=", ">", "/", "\\w"],
-        configurationSections: [
-          ["vize.autoInsert.bracketSpacing"],
-          ["vize.autoInsert.autoCreateQuotes"],
-          ["vize.autoInsert.autoClosingTags"],
-          ["vize.autoInsert.dotValue"],
-        ],
-      },
-    });
-  });
+  await withCapabilities(
+    "auto-insert",
+    { editor: true, autoInsert: true },
+    (_capabilities, packet) => {
+      assertInitializePacket(packet, {
+        ...FRESH_EDITOR_CAPABILITIES,
+        experimental: {
+          vize: { jsxTypecheck: true },
+          autoInsertionProvider: {
+            triggerCharacters: ["}", "=", ">", "/", "\\w"],
+            configurationSections: [
+              ["vize.autoInsert.bracketSpacing"],
+              ["vize.autoInsert.autoCreateQuotes"],
+              ["vize.autoInsert.autoClosingTags"],
+              ["vize.autoInsert.dotValue"],
+            ],
+          },
+        },
+      });
+    },
+  );
 
-  await withCapabilities("auto-insert-off", { editor: true, autoInsert: false }, (capabilities) => {
-    assert.deepEqual(capabilities.experimental, { vize: { jsxTypecheck: false } });
-  });
+  await withCapabilities(
+    "auto-insert-off",
+    { editor: true, autoInsert: false },
+    (_capabilities, packet) => {
+      assertInitializePacket(packet, FRESH_EDITOR_CAPABILITIES);
+    },
+  );
+});
+
+test("vize lsp preserves the complete historical default for dedicated empty configuration", async () => {
+  await withCapabilities(
+    "dedicated-empty",
+    { editor: true, lint: true },
+    (_capabilities, packet) => assertInitializePacket(packet, EDITOR_BUNDLE_CAPABILITIES),
+    (workspaceDir) => fs.writeFileSync(path.join(workspaceDir, "vize.config.json"), "{}\n"),
+  );
+});
+
+test("vize lsp honors complete explicit-false Vite and initialization controls", async () => {
+  await withCapabilities(
+    "vite-explicit-false",
+    { editor: true, lint: true },
+    (_capabilities, packet) => assertInitializePacket(packet, EDITOR_BUNDLE_CAPABILITIES),
+    (workspaceDir) =>
+      fs.writeFileSync(
+        path.join(workspaceDir, "vite.config.mjs"),
+        "export default { vize: { languageServer: { formatting: false }, typeChecker: { jsxTypecheck: false } } };\n",
+      ),
+  );
+  await withCapabilities(
+    "init-formatting-false",
+    { editor: true, lint: true, formatting: false },
+    (_capabilities, packet) =>
+      assertInitializePacket(packet, {
+        ...EDITOR_BUNDLE_CAPABILITIES,
+        experimental: { vize: { jsxTypecheck: true } },
+      }),
+  );
 });
 
 test("vize lsp editor:false strips editor providers but keeps lint-driven codeAction", async () => {

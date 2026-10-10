@@ -26,13 +26,15 @@ mod lsp_snapshot;
 mod parse;
 mod pkl;
 #[cfg(test)]
+mod project_settings_tests;
+#[cfg(test)]
 mod tests;
 mod vapor;
 
 use std::path::{Path, PathBuf};
 
 use checked::load_raw_config_checked;
-use discovery::{CONFIG_FILE_NAMES, resolve_dir_path, resolve_file_path};
+use discovery::{CONFIG_FILE_NAMES, resolve_dir_path, resolve_file_path, search_directories};
 use parse::{parse_raw_config_file, try_parse_raw_candidate};
 
 use super::{
@@ -245,22 +247,28 @@ fn load_raw_config_with_source(path: Option<&Path>) -> LoadedRawConfig {
         };
     };
 
-    for file_name in CONFIG_FILE_NAMES {
-        let candidate = dir_path.join(file_name);
-        if !candidate.exists() {
-            continue;
-        }
+    for directory in search_directories(&dir_path, path.is_none()) {
+        for file_name in CONFIG_FILE_NAMES {
+            let candidate = directory.join(file_name);
+            if !candidate.exists() {
+                continue;
+            }
 
-        if let Some(config) = try_parse_raw_candidate(&candidate) {
-            return LoadedRawConfig {
-                config,
-                source_path: Some(candidate),
-            };
+            if let Some(config) = try_parse_raw_candidate(&candidate) {
+                return LoadedRawConfig {
+                    config,
+                    source_path: Some(candidate),
+                };
+            }
         }
     }
 
     LoadedRawConfig {
-        config: ConfigDocument::default(),
+        config: project_defaults(),
         source_path: None,
     }
+}
+
+fn project_defaults() -> ConfigDocument {
+    ConfigDocument::project_defaults()
 }

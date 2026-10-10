@@ -12,6 +12,13 @@ import type {
   GlobalTypeDeclaration,
 } from "./types/index.js";
 import { loadPklConfigJson } from "./config/pkl.js";
+import {
+  VITE_CONFIG_FILE_NAMES,
+  isViteConfigFile,
+  resolveViteConfigExport as projectViteConfigExport,
+} from "./config/vite-runtime.mjs";
+
+export { VITE_CONFIG_FILE_NAMES } from "./config/vite-runtime.mjs";
 
 type NativeConfigHelpers = {
   normalizeVizeConfig(value: unknown): unknown;
@@ -50,14 +57,22 @@ export function defineConfig(config: UserConfigExport): UserConfigExport {
   return config;
 }
 
+/** Resolve native settings from an already loaded Vite/Vite+ export, without starting its plugins. */
+export async function resolveViteConfigExport(
+  exported: unknown,
+  env?: ConfigEnv,
+): Promise<ResolvedVizeConfig> {
+  return normalizeLoadedConfig(await projectViteConfigExport(exported, env));
+}
+
 /**
- * Load `vize.config.*` from the specified directory.
+ * Load project settings from a compatible dedicated config or `vite.config.*`.
  */
 export async function loadConfig(
   root: string,
   options: LoadConfigOptions = {},
 ): Promise<ResolvedVizeConfig | null> {
-  const { mode = "root", configFile, env } = options;
+  const { mode = "root", configFile, env, viteConfig = true } = options;
 
   if (mode === "none") {
     return null;
@@ -72,14 +87,18 @@ export async function loadConfig(
   }
 
   if (mode === "auto") {
-    return loadConfigFromDirAuto(root, env);
+    return loadConfigFromDirAuto(root, env, viteConfig);
   }
 
-  return loadConfigFromDir(root, env);
+  return loadConfigFromDir(root, env, viteConfig);
 }
 
-async function loadConfigFromDir(dir: string, env?: ConfigEnv): Promise<ResolvedVizeConfig | null> {
-  for (const name of CONFIG_FILE_NAMES) {
+async function loadConfigFromDir(
+  dir: string,
+  env?: ConfigEnv,
+  viteConfig = true,
+): Promise<ResolvedVizeConfig | null> {
+  for (const name of [...CONFIG_FILE_NAMES, ...(viteConfig ? VITE_CONFIG_FILE_NAMES : [])]) {
     const filePath = path.join(dir, name);
     if (!fs.existsSync(filePath)) {
       continue;
@@ -96,15 +115,23 @@ async function loadConfigFromDir(dir: string, env?: ConfigEnv): Promise<Resolved
 async function loadConfigFromDirAuto(
   startDir: string,
   env?: ConfigEnv,
+  viteConfig = true,
 ): Promise<ResolvedVizeConfig | null> {
   let currentDir = path.resolve(startDir);
 
   while (true) {
-    const config = await loadConfigFromDir(currentDir, env);
+    const config = await loadConfigFromDir(currentDir, env, viteConfig);
     if (config !== null) {
       return config;
     }
 
+    if (
+      ["package.json", "tsconfig.json", "jsconfig.json"].some((name) =>
+        fs.existsSync(path.join(currentDir, name)),
+      )
+    ) {
+      return null;
+    }
     const parentDir = path.dirname(currentDir);
     if (parentDir === currentDir) {
       return null;
@@ -134,7 +161,7 @@ async function loadConfigFile(
     return parseJsonConfig(content, absolutePath);
   }
 
-  if (ext === ".ts") {
+  if (ext === ".ts" || ext === ".mts") {
     return loadTypeScriptConfig(absolutePath, env);
   }
 
@@ -179,7 +206,7 @@ async function loadTypeScriptConfig(
   try {
     const module = await importFresh(tempFile);
     const exported: UserConfigExport = module.default || module;
-    return resolveConfigExport(exported, env);
+    return resolveFileExport(exported, filePath, env);
   } finally {
     fs.rmSync(tempFile, { force: true });
   }
@@ -188,7 +215,17 @@ async function loadTypeScriptConfig(
 async function loadESMConfig(filePath: string, env?: ConfigEnv): Promise<ResolvedVizeConfig> {
   const module = await importFresh(filePath);
   const exported: UserConfigExport = module.default || module;
-  return resolveConfigExport(exported, env);
+  return resolveFileExport(exported, filePath, env);
+}
+
+async function resolveFileExport(
+  exported: UserConfigExport,
+  filePath: string,
+  env?: ConfigEnv,
+): Promise<ResolvedVizeConfig> {
+  return isViteConfigFile(filePath)
+    ? resolveViteConfigExport(exported, env)
+    : resolveConfigExport(exported, env);
 }
 
 async function importFresh(filePath: string): Promise<Record<string, unknown>> {

@@ -17,7 +17,7 @@ pub(super) fn parse_raw_config_file(
 ) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
     let config = match path.extension().and_then(|ext| ext.to_str()) {
         Some("pkl") => pkl::parse_pkl_config(path)?,
-        Some("ts" | "js" | "mjs") => parse_js_config(path)?,
+        Some("ts" | "js" | "mjs" | "cjs" | "mts" | "cts") => parse_js_config(path)?,
         Some("json") => {
             let content = std::fs::read_to_string(path)?;
             // Share the same config deserializer as JS and PKL evaluation.

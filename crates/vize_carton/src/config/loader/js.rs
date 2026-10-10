@@ -21,17 +21,24 @@ pub(super) fn parse_js_config(path: &Path) -> Result<ConfigDocument, Box<dyn std
         std::env::current_dir()?.join(path)
     };
     let config_path = config_path.canonicalize().unwrap_or(config_path);
-    let script = r#"
+    let script = [
+        include_str!("vite-runtime.mjs"),
+        r#"
 import { pathToFileURL } from "node:url";
 
 const configPath = process.argv[1];
+console.log = (...args) => console.error(...args);
 const module = await import(pathToFileURL(configPath).href);
 const exported = module.default ?? module;
-const config = typeof exported === "function"
+const config = isViteConfigFile(configPath)
+  ? await resolveViteConfigExport(exported)
+  : typeof exported === "function"
   ? await exported({ mode: "development", command: "serve" })
   : exported;
 process.stdout.write(JSON.stringify(config ?? {}));
-"#;
+"#,
+    ]
+    .concat();
     let output = Command::new("node")
         .arg("--input-type=module")
         .arg("-e")

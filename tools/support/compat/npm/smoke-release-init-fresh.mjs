@@ -22,7 +22,8 @@ import path from "node:path";
 import { renderOutput, run } from "./smoke-process.mjs";
 import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.mjs";
 import { withPoisonedVizePath } from "./smoke-release-path-poison.mjs";
-import { FRESH_INIT_MATRIX, PROJECT_SHAPES } from "./smoke-release-init-shapes.mjs";
+import { FRESH_INIT_MATRIX } from "./smoke-release-init-shapes.mjs";
+import { CONFIG_FREE_PROJECT_SHAPES as PROJECT_SHAPES } from "./smoke-release-init-config-free.mjs";
 import {
   assertFreshProject,
   assertMissingCorsaGuidance,
@@ -44,6 +45,14 @@ function runInit(context, projectRoot, args) {
     cwd: context.tempDir,
     env: projectEnv(),
   });
+}
+
+function assertNoDedicatedConfig(projectRoot) {
+  assert.equal(
+    fs.readdirSync(projectRoot).some((name) => name.startsWith("vize.config.")),
+    false,
+    "the current initializer generated a dedicated Vize config",
+  );
 }
 
 /**
@@ -131,6 +140,7 @@ function runFreshProjectCell(context, cell) {
     assert.equal(fs.readFileSync(path.join(projectRoot, name), "utf8"), source, `${name} mismatch`);
   }
   assert.deepEqual(readJson(path.join(projectRoot, "package.json")).scripts, shape.expectedScripts);
+  assertNoDedicatedConfig(projectRoot);
 
   installPlannedDependencies(context, projectRoot, manager, shape);
   assertProjectLocalToolchain(context, projectRoot, shape);
@@ -164,6 +174,7 @@ function runFreshProjectCell(context, cell) {
     afterInit,
     "a second init run changed the project",
   );
+  assertNoDedicatedConfig(projectRoot);
 
   writeFiles(projectRoot, shape.check.broken);
   const broken = checkReport(projectRoot);

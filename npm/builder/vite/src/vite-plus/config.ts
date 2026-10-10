@@ -77,7 +77,7 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
     }
     const inherited =
       base === undefined
-        ? await loadConfig(process.cwd(), { env })
+        ? await loadConfig(process.cwd(), { env, viteConfig: false })
         : await resolveConfigExport(base, env);
     const overrides = await resolveConfigExport(
       {
@@ -88,7 +88,13 @@ export function normalizeConfig(source: VueConfigObject, integration: VizePlusOp
       },
       env,
     );
-    return mergeSharedConfig(inherited, overrides) ?? {};
+    // Fresh native checks support JSX without changing formatter task payloads
+    // or the historical defaults inherited from a dedicated config file.
+    const defaults =
+      env.command === "check" && (base !== undefined || inherited === null)
+        ? await resolveConfigExport({ typeChecker: { jsxTypecheck: true } }, env)
+        : null;
+    return mergeSharedConfig(mergeSharedConfig(defaults, inherited), overrides) ?? {};
   };
   const metadata: VizeTaskConfig = {
     config,

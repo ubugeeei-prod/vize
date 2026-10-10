@@ -45,10 +45,12 @@ export type {
 // Config utilities
 export {
   CONFIG_FILE_NAMES,
+  VITE_CONFIG_FILE_NAMES,
   VIZE_CONFIG_JSON_SCHEMA_PATH,
   VIZE_CONFIG_PKL_SCHEMA_PATH,
   defineConfig,
   loadConfig,
   resolveConfigExport,
+  resolveViteConfigExport,
   normalizeGlobalTypes,
 } from "./config.js";

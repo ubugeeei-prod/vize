@@ -91,7 +91,7 @@ export default defineConfig({});
     "vize:fmt:fix",
     "vize:check",
   ]);
-  assert.deepEqual(readAll(root, ["vite.config.js", "vize.config.ts", "tsconfig.json"]), {
+  assert.deepEqual(readAll(root, ["vite.config.js", "tsconfig.json"]), {
     "vite.config.js": `import { defineConfig } from "vite";
 import vize from "@vizejs/vite-plugin";
 
@@ -99,32 +99,10 @@ export default defineConfig({
   plugins: [vize()],
 });
 `,
-    "vize.config.ts": `import { defineConfig } from "vize";
-
-export default defineConfig({
-  compiler: {
-    templateSyntax: "standard",
-  },
-  linter: {
-    enabled: true,
-    preset: "happy-path",
-  },
-  formatter: {
-    singleAttributePerLine: false,
-    sortBlocks: true,
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-    jsxTypecheck: true,
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
-`,
     "tsconfig.json": EXPECTED_JAVASCRIPT_TSCONFIG,
   });
+
+  assert.equal(exists(root, "vize.config.ts"), false);
 
   const second = await runInit(root, ALL_FEATURES);
   assert.deepEqual(second.written, []);
@@ -152,13 +130,13 @@ test("a TypeScript project without a config gets a strict minimum scaffold", asy
 
   const dryRun = await runInit(root, [...args, "--dry-run"]);
   assert.deepEqual(dryRun.written, []);
-  assert.deepEqual(dryRun.plan?.createdFiles, ["tsconfig.json", "vize.config.ts"]);
+  assert.deepEqual(dryRun.plan?.createdFiles, ["tsconfig.json"]);
   assert.deepEqual(dryRun.plan?.updatedFiles, ["package.json"]);
   assert.equal(exists(root, "tsconfig.json"), false);
 
   const result = await runInit(root, args);
 
-  assert.deepEqual(result.written, ["tsconfig.json", "vize.config.ts", "package.json"]);
+  assert.deepEqual(result.written, ["tsconfig.json", "package.json"]);
   assert.equal(read(root, "tsconfig.json"), EXPECTED_TYPESCRIPT_TSCONFIG);
   assert.equal(
     result.plan?.features.find((feature) => feature.id === "typecheck")?.outcome,

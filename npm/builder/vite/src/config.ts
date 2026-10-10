@@ -1,6 +1,7 @@
 import type { ResolvedVizeConfig } from "./types.ts";
 import type { ConfigEnv, LoadConfigOptions, UserConfigExport } from "./types.ts";
 import { createRequire } from "node:module";
+import { resolveViteConfigExport as projectViteConfigExport } from "../../../cli/src/config/vite-runtime.mjs";
 
 /**
  * Shared Vize configuration helpers for the Vite plugin package.
@@ -45,6 +46,23 @@ export async function resolveConfigExport(
   env?: ConfigEnv,
 ): Promise<ResolvedVizeConfig> {
   return (await loadVizeConfigModule()).resolveConfigExport(exported, env);
+}
+
+/** Project shared settings from an already evaluated Vite config. */
+export async function resolveViteConfigExport(
+  exported: unknown,
+  env?: ConfigEnv,
+): Promise<ResolvedVizeConfig> {
+  const configModule = await loadVizeConfigModule();
+  if (typeof configModule.resolveViteConfigExport === "function") {
+    return configModule.resolveViteConfigExport(exported, env);
+  }
+  // Older installed Vize packages still supply the native settings normalizer.
+  // Bundle the pure projection so upgrading only the adapter remains supported.
+  return configModule.resolveConfigExport(
+    (await projectViteConfigExport(exported, env)) as UserConfigExport,
+    env,
+  );
 }
 
 export const VIZE_CONFIG_JSON_SCHEMA_PATH = require.resolve("vize/schemas/vize.config.schema.json");

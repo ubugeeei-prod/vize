@@ -27,12 +27,15 @@ pub(super) async fn formatting(
     };
     #[cfg(feature = "glyph")]
     {
-        let options = server.state.get_format_options();
-        Ok(super::super::format::format_document(
-            &_content,
-            &options,
-            server.state.type_checker_vue_version(),
-        ))
+        let (options, preserve) = server.state.get_formatter_context();
+        Ok(
+            super::super::format::format_document_with_template_whitespace(
+                &_content,
+                &options,
+                server.state.type_checker_vue_version(),
+                preserve,
+            ),
+        )
     }
     #[cfg(not(feature = "glyph"))]
     Ok(None)
@@ -59,14 +62,15 @@ pub(super) async fn range_formatting(
     };
     #[cfg(feature = "glyph")]
     {
-        let options = server.state.get_format_options();
+        let (options, preserve) = server.state.get_formatter_context();
         let path = uri.path();
-        Ok(super::super::format::format_range(
+        Ok(super::super::format::format_range_with_template_whitespace(
             &_content,
             path,
             _range,
             &options,
             server.state.type_checker_vue_version(),
+            preserve,
         ))
     }
     #[cfg(not(feature = "glyph"))]
@@ -93,16 +97,19 @@ pub(super) async fn on_type_formatting(
     };
     #[cfg(feature = "glyph")]
     {
-        let options = server.state.get_format_options();
+        let (options, preserve) = server.state.get_formatter_context();
         let position = params.text_document_position.position;
         let path = uri.path();
-        Ok(super::super::format::format_on_type(
-            &_content,
-            path,
-            position,
-            &options,
-            server.state.type_checker_vue_version(),
-        ))
+        Ok(
+            super::super::format::format_on_type_with_template_whitespace(
+                &_content,
+                path,
+                position,
+                &options,
+                server.state.type_checker_vue_version(),
+                preserve,
+            ),
+        )
     }
     #[cfg(not(feature = "glyph"))]
     Ok(None)

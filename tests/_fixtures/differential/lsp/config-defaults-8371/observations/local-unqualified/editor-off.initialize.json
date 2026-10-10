@@ -1,0 +1,47 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "capabilities": {
+      "codeActionProvider": {
+        "codeActionKinds": [
+          "quickfix"
+        ],
+        "resolveProvider": false
+      },
+      "documentFormattingProvider": true,
+      "documentOnTypeFormattingProvider": {
+        "firstTriggerCharacter": ";",
+        "moreTriggerCharacter": [
+          "}",
+          "\n"
+        ]
+      },
+      "documentRangeFormattingProvider": true,
+      "experimental": {
+        "vize": {
+          "jsxTypecheck": false
+        }
+      },
+      "textDocumentSync": {
+        "change": 2,
+        "openClose": true,
+        "save": {
+          "includeText": false
+        },
+        "willSave": false,
+        "willSaveWaitUntil": false
+      },
+      "workspace": {
+        "workspaceFolders": {
+          "changeNotifications": true,
+          "supported": true
+        }
+      }
+    },
+    "serverInfo": {
+      "name": "vize-maestro",
+      "version": "0.439.0"
+    }
+  },
+  "id": 1
+}

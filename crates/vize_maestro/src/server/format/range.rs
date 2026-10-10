@@ -27,12 +27,24 @@ use tower_lsp::lsp_types::{Position, Range, TextEdit};
 use super::blocks::block_spans;
 use crate::ide::position_to_offset;
 
+#[cfg(test)]
 pub(crate) fn format_range(
     content: &str,
     filename: &str,
     range: Range,
     options: &vize_glyph::FormatOptions,
     vue_version: vize_glyph::VueVersion,
+) -> Option<Vec<TextEdit>> {
+    format_range_with_template_whitespace(content, filename, range, options, vue_version, false)
+}
+
+pub(crate) fn format_range_with_template_whitespace(
+    content: &str,
+    filename: &str,
+    range: Range,
+    options: &vize_glyph::FormatOptions,
+    vue_version: vize_glyph::VueVersion,
+    preserve_template_whitespace: bool,
 ) -> Option<Vec<TextEdit>> {
     let start = position_to_offset(content, range.start.line, range.start.character)?;
     let end = position_to_offset(content, range.end.line, range.end.character)?;
@@ -44,13 +56,11 @@ pub(crate) fn format_range(
     };
 
     let allocator = vize_glyph::Allocator::with_capacity(content.len());
-    let formatted = vize_glyph::format_sfc_with_allocator_and_vue_version(
-        content,
-        options,
-        &allocator,
-        vue_version,
-    )
-    .ok()?;
+    let formatted =
+        vize_glyph::GlyphFormatter::new_with_vue_version(options, &allocator, vue_version)
+            .with_template_whitespace_preserved(preserve_template_whitespace)
+            .format(content)
+            .ok()?;
     if !formatted.changed {
         return Some(Vec::new());
     }

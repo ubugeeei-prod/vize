@@ -26,3 +26,42 @@ test("Zed config regression retains the complete original config and authored SF
   assert.equal(manifest.cases.length, 6);
   assert.equal(new Set(manifest.cases.map((row: { id: string }) => row.id)).size, 6);
 });
+
+test("current Zed formatting defaults preserve the frozen baseline and narrow successor", () => {
+  const policy = JSON.parse(
+    fs.readFileSync(path.join(fixture, "current-default-policy.json"), "utf8"),
+  );
+  assert.equal(
+    createHash("sha256")
+      .update(fs.readFileSync(path.join(fixture, policy.historical.path)))
+      .digest("hex"),
+    policy.historical.sha256,
+  );
+  assert.deepEqual(policy.historical, {
+    path: "case.json",
+    sha256: "68e99ed53e60082b57b1eb2a65ae37be3157f45d465bb29c5ea4f494a44e3cf9",
+    caseId: "no-config-default",
+  });
+  const original = manifest.cases.find(
+    (row: { id: string }) => row.id === policy.historical.caseId,
+  );
+  const { formattedSource, ...current } = policy.currentDefault;
+  assert.deepEqual(current, {
+    ...original,
+    id: "no-config-current-default",
+    formattingProvider: true,
+    formattingProviderPresent: true,
+  });
+  assert.equal(
+    formattedSource,
+    '<script setup lang="ts">\nconst total = "3";\n</script>\n\n<template>\n  {{ total }}\n</template>\n',
+  );
+  const flags = { ...original.initializationOptions, formatting: false };
+  assert.deepEqual(policy.explicitFormattingFalse, {
+    ...original,
+    id: "no-config-explicit-formatting-false",
+    explicit: flags,
+    initializationOptions: flags,
+    formattingResult: null,
+  });
+});

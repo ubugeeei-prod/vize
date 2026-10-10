@@ -1,0 +1,14 @@
+---
+source: crates/vize/tests/project_config_cli.rs
+expression: defaults
+---
+import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from "vue"
+
+export function render(_ctx, _cache) {
+  const _component_my_widget = _resolveComponent("my-widget")
+  
+  return (_openBlock(), _createElementBlock("div", null, [
+    _createElementVNode("p", null, " two spaces "),
+    _createVNode(_component_my_widget)
+  ]))
+}

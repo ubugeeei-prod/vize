@@ -1,5 +1,7 @@
 //! Workspace/LSP config loading and feature application.
 
+#[cfg(feature = "glyph")]
+mod formatting;
 mod read;
 
 use std::path::Path;
@@ -8,7 +10,7 @@ use std::sync::atomic::Ordering;
 use vize_l0::config::{GlobalTypesConfig, LinterConfig, TypeCheckerConfig};
 
 #[cfg(feature = "glyph")]
-use vize_l0::config::FormatterConfig;
+use formatting::format_options_from_config;
 
 use super::ServerState;
 use super::features::LspConfigSection;
@@ -226,12 +228,26 @@ impl ServerState {
     /// Load all workspace-scoped options from `vize.config.pkl` (preferred) or JSON.
     pub fn load_workspace_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        if !loaded.valid {
+            return;
+        }
+        self.apply_project_formatting_default(loaded.source_path.as_deref());
+        if loaded.source_path.is_none() {
+            self.apply_config_features(loaded.features);
+        }
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             let config = loaded.config;
             #[cfg(feature = "glyph")]
             {
-                *self.format_options.write() = format_options_from_config(&config.formatter);
+                *self.format_options.write() = (
+                    format_options_from_config(&config.formatter),
+                    source_path
+                        .file_name()
+                        .and_then(|name| name.to_str())
+                        .is_some_and(|name| name.starts_with("vite.config."))
+                        && loaded.compiler_whitespace == Some("preserve"),
+                );
                 tracing::info!("Loaded format config from {}", source);
             }
             self.apply_linter_config(loaded.linter, &source);
@@ -257,6 +273,13 @@ impl ServerState {
     /// Load LSP options from `vize.config.pkl` (preferred) or `vize.config.json`.
     pub fn load_lsp_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_lsp_config_snapshot(Some(dir));
+        if !loaded.valid {
+            return;
+        }
+        self.apply_project_formatting_default(loaded.source_path.as_deref());
+        if loaded.source_path.is_none() {
+            self.apply_config_features(loaded.features);
+        }
         if let Some(source_path) = loaded.source_path {
             let source = source_path.display().to_string();
             let config = loaded.config;
@@ -280,10 +303,35 @@ impl ServerState {
         }
     }
 
+    // Keep dedicated-config users' opt-in formatting behavior. Fresh projects
+    // expose the formatter alongside the existing recommended editor profile;
+    // authored project and editor switches are applied afterwards.
+    fn apply_project_formatting_default(&self, source: Option<&Path>) {
+        let dedicated = source
+            .and_then(Path::file_name)
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.starts_with("vize.config."));
+        if !dedicated {
+            self.apply_lsp_config(
+                LspConfigSection::from(vize_l0::config::LanguageServerConfig {
+                    formatting: Some(true),
+                    ..Default::default()
+                }),
+                "project defaults",
+            );
+        }
+    }
+
     /// Get a clone of the current format options.
     #[cfg(feature = "glyph")]
     #[inline]
     pub fn get_format_options(&self) -> vize_glyph::FormatOptions {
+        self.format_options.read().0.clone()
+    }
+
+    /// Native options and Vite template-whitespace policy from one snapshot.
+    #[cfg(feature = "glyph")]
+    pub(crate) fn get_formatter_context(&self) -> (vize_glyph::FormatOptions, bool) {
         self.format_options.read().clone()
     }
 
@@ -292,59 +340,9 @@ impl ServerState {
     pub fn load_format_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_config_with_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
-            *self.format_options.write() = format_options_from_config(&loaded.config.formatter);
+            *self.format_options.write() =
+                (format_options_from_config(&loaded.config.formatter), false);
             tracing::info!("Loaded format config from {}", source_path.display());
         }
-    }
-}
-
-#[cfg(feature = "glyph")]
-fn format_options_from_config(config: &FormatterConfig) -> vize_glyph::FormatOptions {
-    vize_glyph::FormatOptions {
-        print_width: config.print_width,
-        tab_width: config.tab_width,
-        use_tabs: config.use_tabs,
-        semi: config.semi,
-        single_quote: config.single_quote,
-        jsx_single_quote: config.jsx_single_quote,
-        trailing_comma: match config.trailing_comma {
-            vize_l0::config::TrailingComma::None => vize_glyph::TrailingComma::None,
-            vize_l0::config::TrailingComma::Es5 => vize_glyph::TrailingComma::Es5,
-            vize_l0::config::TrailingComma::All => vize_glyph::TrailingComma::All,
-        },
-        bracket_spacing: config.bracket_spacing,
-        bracket_same_line: config.bracket_same_line,
-        arrow_parens: match config.arrow_parens {
-            vize_l0::config::ArrowParens::Always => vize_glyph::ArrowParens::Always,
-            vize_l0::config::ArrowParens::Avoid => vize_glyph::ArrowParens::Avoid,
-        },
-        end_of_line: match config.end_of_line {
-            vize_l0::config::EndOfLine::Lf => vize_glyph::EndOfLine::Lf,
-            vize_l0::config::EndOfLine::Crlf => vize_glyph::EndOfLine::Crlf,
-            vize_l0::config::EndOfLine::Cr => vize_glyph::EndOfLine::Cr,
-            vize_l0::config::EndOfLine::Auto => vize_glyph::EndOfLine::Auto,
-        },
-        quote_props: match config.quote_props {
-            vize_l0::config::QuoteProps::AsNeeded => vize_glyph::QuoteProps::AsNeeded,
-            vize_l0::config::QuoteProps::Consistent => vize_glyph::QuoteProps::Consistent,
-            vize_l0::config::QuoteProps::Preserve => vize_glyph::QuoteProps::Preserve,
-        },
-        single_attribute_per_line: config.single_attribute_per_line,
-        vue_indent_script_and_style: config.vue_indent_script_and_style,
-        sort_attributes: config.sort_attributes,
-        attribute_sort_order: match config.attribute_sort_order {
-            vize_l0::config::AttributeSortOrder::Alphabetical => {
-                vize_glyph::AttributeSortOrder::Alphabetical
-            }
-            vize_l0::config::AttributeSortOrder::AsWritten => {
-                vize_glyph::AttributeSortOrder::AsWritten
-            }
-        },
-        merge_bind_and_non_bind_attrs: config.merge_bind_and_non_bind_attrs,
-        max_attributes_per_line: config.max_attributes_per_line,
-        attribute_groups: config.attribute_groups.clone(),
-        normalize_directive_shorthands: config.normalize_directive_shorthands,
-        sort_blocks: config.sort_blocks,
-        skip_script_stabilization: false,
     }
 }
