@@ -1,0 +1,1247 @@
+{
+  "cases": [
+    {
+      "id": "default-component-no-value",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-no-value.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-no-value.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-component-empty-value",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-empty-value.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-empty-value.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-component-whitespace",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-whitespace.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-whitespace.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-argument-no-value",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 193,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 193,
+                    "new_text": "v-slot",
+                    "start": 185
+                  }
+                ],
+                "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+              },
+              "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+              "labels": [],
+              "message": "Expected 'v-slot' instead of '#default'",
+              "rule_name": "vue/v-slot-style",
+              "severity": "error",
+              "start": 185
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-argument-no-value.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 193,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 193,
+                    "new_text": "v-slot",
+                    "start": 185
+                  }
+                ],
+                "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+              },
+              "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+              "labels": [],
+              "message": "Expected 'v-slot' instead of '#default'",
+              "rule_name": "vue/v-slot-style",
+              "severity": "error",
+              "start": 185
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-argument-no-value.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-argument-empty-value",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 196,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 193,
+                    "new_text": "v-slot",
+                    "start": 185
+                  }
+                ],
+                "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+              },
+              "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+              "labels": [],
+              "message": "Expected 'v-slot' instead of '#default'",
+              "rule_name": "vue/v-slot-style",
+              "severity": "error",
+              "start": 185
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-argument-empty-value.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 196,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 193,
+                    "new_text": "v-slot",
+                    "start": 185
+                  }
+                ],
+                "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+              },
+              "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+              "labels": [],
+              "message": "Expected 'v-slot' instead of '#default'",
+              "rule_name": "vue/v-slot-style",
+              "severity": "error",
+              "start": 185
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-argument-empty-value.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-component-scope",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-scope.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-scope.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-argument-scope",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 200,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 193,
+                    "new_text": "v-slot",
+                    "start": 185
+                  }
+                ],
+                "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+              },
+              "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+              "labels": [],
+              "message": "Expected 'v-slot' instead of '#default'",
+              "rule_name": "vue/v-slot-style",
+              "severity": "error",
+              "start": 185
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-argument-scope.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 200,
+              "fix": {
+                "edits": [
+                  {
+                    "end": 193,
+                    "new_text": "v-slot",
+                    "start": 185
+                  }
+                ],
+                "message": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent."
+              },
+              "help": "**Shorthand:** `<template #header>` (default)\n**Longform:** `<template v-slot:header>`\n\nChoose one style and be consistent.",
+              "labels": [],
+              "message": "Expected 'v-slot' instead of '#default'",
+              "rule_name": "vue/v-slot-style",
+              "severity": "error",
+              "start": 185
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-argument-scope.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "component-empty-pattern",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "component-empty-pattern.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "component-empty-pattern.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-template-no-value",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-template-no-value.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-template-no-value.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "named-template-no-value",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "named-template-no-value.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "named-template-no-value.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "named-template-empty-value",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "named-template-empty-value.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "named-template-empty-value.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "plain-component",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "plain-component.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "plain-component.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "native-location",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 42,
+              "fix": null,
+              "help": "Remove the unused import or use the component in your template",
+              "labels": [],
+              "message": "Component 'FancyPanel' is registered but never used in template",
+              "rule_name": "vue/no-unused-components",
+              "severity": "error",
+              "start": 32
+            },
+            {
+              "end": 184,
+              "fix": null,
+              "help": "Use v-slot on a component or a template element inside a component",
+              "labels": [],
+              "message": "v-slot can only be used on components or template elements",
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "start": 178
+            }
+          ],
+          "error_count": 2,
+          "filename": "native-location.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 42,
+              "fix": null,
+              "help": "Remove the unused import or use the component in your template",
+              "labels": [],
+              "message": "Component 'FancyPanel' is registered but never used in template",
+              "rule_name": "vue/no-unused-components",
+              "severity": "error",
+              "start": 32
+            },
+            {
+              "end": 184,
+              "fix": null,
+              "help": "Use v-slot on a component or a template element inside a component",
+              "labels": [],
+              "message": "v-slot can only be used on components or template elements",
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "start": 178
+            }
+          ],
+          "error_count": 2,
+          "filename": "native-location.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "named-component-location",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 192,
+              "fix": null,
+              "help": "Use v-slot on a component or a template element inside a component",
+              "labels": [],
+              "message": "v-slot can only be used on components or template elements",
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "start": 185
+            }
+          ],
+          "error_count": 1,
+          "filename": "named-component-location.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 192,
+              "fix": null,
+              "help": "Use v-slot on a component or a template element inside a component",
+              "labels": [],
+              "message": "v-slot can only be used on components or template elements",
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "start": 185
+            }
+          ],
+          "error_count": 1,
+          "filename": "named-component-location.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "mixed-default-template",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 198,
+              "fix": null,
+              "help": "Use v-slot on a component or a template element inside a component",
+              "labels": [],
+              "message": "Default slot must use a template element when child slot templates are present",
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "start": 185
+            }
+          ],
+          "error_count": 1,
+          "filename": "mixed-default-template.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 198,
+              "fix": null,
+              "help": "Use v-slot on a component or a template element inside a component",
+              "labels": [],
+              "message": "Default slot must use a template element when child slot templates are present",
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "start": 185
+            }
+          ],
+          "error_count": 1,
+          "filename": "mixed-default-template.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "duplicate-template",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 234,
+              "fix": null,
+              "help": "Use v-slot on a component or a template element inside a component",
+              "labels": [],
+              "message": "v-slot can only be used on components or template elements",
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "start": 227
+            }
+          ],
+          "error_count": 1,
+          "filename": "duplicate-template.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 234,
+              "fix": null,
+              "help": "Use v-slot on a component or a template element inside a component",
+              "labels": [],
+              "message": "v-slot can only be used on components or template elements",
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "start": 227
+            }
+          ],
+          "error_count": 1,
+          "filename": "duplicate-template.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "if-else-templates",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "if-else-templates.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "if-else-templates.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "named-modifier",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "named-modifier.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "named-modifier.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-modifier",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-modifier.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-modifier.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dotted-vuetify",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dotted-vuetify.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dotted-vuetify.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-same-object",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-same-object.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-same-object.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-same-identifier",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-same-identifier.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-same-identifier.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-destructure",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-destructure.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-destructure.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-renamed",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-renamed.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-renamed.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-property-key-control",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-property-key-control.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-property-key-control.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-nested-binding",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-nested-binding.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-nested-binding.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-outer-control",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-outer-control.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-outer-control.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-property-control",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-property-control.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-property-control.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-string-control",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-string-control.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-string-control.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-arrow-shadow-control",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 205,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+              "rule_name": "parser/template",
+              "severity": "error",
+              "start": 204
+            },
+            {
+              "end": 206,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Attribute `#` is missing a value after `=`; continuing without the value.",
+              "rule_name": "parser/template",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 2,
+          "filename": "dynamic-arrow-shadow-control.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 205,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+              "rule_name": "parser/template",
+              "severity": "error",
+              "start": 204
+            },
+            {
+              "end": 206,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Attribute `#` is missing a value after `=`; continuing without the value.",
+              "rule_name": "parser/template",
+              "severity": "error",
+              "start": 205
+            }
+          ],
+          "error_count": 2,
+          "filename": "dynamic-arrow-shadow-control.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-arrow-capture",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 201,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+              "rule_name": "parser/template",
+              "severity": "error",
+              "start": 200
+            },
+            {
+              "end": 202,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Attribute `#` is missing a value after `=`; continuing without the value.",
+              "rule_name": "parser/template",
+              "severity": "error",
+              "start": 201
+            }
+          ],
+          "error_count": 2,
+          "filename": "dynamic-arrow-capture.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 201,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+              "rule_name": "parser/template",
+              "severity": "error",
+              "start": 200
+            },
+            {
+              "end": 202,
+              "fix": null,
+              "help": null,
+              "labels": [],
+              "message": "Attribute `#` is missing a value after `=`; continuing without the value.",
+              "rule_name": "parser/template",
+              "severity": "error",
+              "start": 201
+            }
+          ],
+          "error_count": 2,
+          "filename": "dynamic-arrow-capture.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-duplicate-control",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 234,
+              "fix": null,
+              "help": "Use v-slot on a component or a template element inside a component",
+              "labels": [],
+              "message": "v-slot can only be used on components or template elements",
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "start": 227
+            }
+          ],
+          "error_count": 1,
+          "filename": "dynamic-duplicate-control.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 234,
+              "fix": null,
+              "help": "Use v-slot on a component or a template element inside a component",
+              "labels": [],
+              "message": "v-slot can only be used on components or template elements",
+              "rule_name": "vue/valid-v-slot",
+              "severity": "error",
+              "start": 227
+            }
+          ],
+          "error_count": 1,
+          "filename": "dynamic-duplicate-control.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-component-no-value-scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-component-no-value-scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-component-no-value-scriptless.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-component-no-value-utf8-lf",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-no-value-utf8-lf.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-no-value-utf8-lf.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-component-no-value-utf8-crlf",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-no-value-utf8-crlf.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-no-value-utf8-crlf.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-component-scope-scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-component-scope-scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-component-scope-scriptless.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-component-scope-utf8-lf",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-scope-utf8-lf.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-scope-utf8-lf.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-component-scope-utf8-crlf",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-scope-utf8-crlf.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-component-scope-utf8-crlf.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-template-no-value-scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-template-no-value-scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "default-template-no-value-scriptless.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-template-no-value-utf8-lf",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-template-no-value-utf8-lf.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-template-no-value-utf8-lf.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "default-template-no-value-utf8-crlf",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-template-no-value-utf8-crlf.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "default-template-no-value-utf8-crlf.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-same-object-scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "dynamic-same-object-scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "dynamic-same-object-scriptless.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-same-object-utf8-lf",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-same-object-utf8-lf.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-same-object-utf8-lf.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-same-object-utf8-crlf",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-same-object-utf8-crlf.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-same-object-utf8-crlf.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-outer-control-scriptless",
+      "observations": [
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "dynamic-outer-control-scriptless.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [
+            {
+              "end": 24,
+              "fix": null,
+              "help": "Import the component in <script setup> or register it in components option",
+              "labels": [],
+              "message": "Component is used but not explicitly imported",
+              "rule_name": "vue/require-component-registration",
+              "severity": "error",
+              "start": 14
+            }
+          ],
+          "error_count": 1,
+          "filename": "dynamic-outer-control-scriptless.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-outer-control-utf8-lf",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-outer-control-utf8-lf.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-outer-control-utf8-lf.vue",
+          "warning_count": 0
+        }
+      ]
+    },
+    {
+      "id": "dynamic-outer-control-utf8-crlf",
+      "observations": [
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-outer-control-utf8-crlf.vue",
+          "warning_count": 0
+        },
+        {
+          "diagnostics": [],
+          "error_count": 0,
+          "filename": "dynamic-outer-control-utf8-crlf.vue",
+          "warning_count": 0
+        }
+      ]
+    }
+  ]
+}

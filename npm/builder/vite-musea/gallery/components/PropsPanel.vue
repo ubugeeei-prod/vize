@@ -4,7 +4,7 @@ import { usePalette } from "../composables/usePalette";
 import { useArts } from "../composables/useArts";
 import { getPreviewUrl, vMuseaGlobals } from "../api";
 import { sendMessage } from "../composables/usePostMessage";
-import { indentUsage, usageScript } from "../utils/usageCode";
+import { indentUsage, usagePropsAttributes, usageScript } from "../utils/usageCode";
 import { safeUrl } from "../utils/safeUrl";
 import TextControl from "./controls/TextControl.vue";
 import NumberControl from "./controls/NumberControl.vue";
@@ -234,20 +234,11 @@ const hasSlotContent = computed(() => {
 const usageCode = computed(() => {
   if (!palette.value) return "";
   const componentName = palette.value.title || "Component";
-  const propsEntries = Object.entries(mergedValues.value).filter(
-    ([, v]) => v !== undefined && v !== "",
-  );
+  const propsStr = usagePropsAttributes(mergedValues.value);
   const templateOnly = (() => {
-    if (propsEntries.length === 0 && !hasSlotContent.value) {
+    if (!propsStr && !hasSlotContent.value) {
       return `<${componentName} />`;
     }
-    const propsStr = propsEntries
-      .map(([k, v]) => {
-        if (typeof v === "boolean") return v ? ` ${k}` : ` :${k}="false"`;
-        if (typeof v === "number") return ` :${k}="${v}"`;
-        return ` ${k}="${String(v)}"`;
-      })
-      .join("");
     if (hasSlotContent.value) {
       const slotParts: string[] = [];
       for (const [name, content] of Object.entries(slotContent.value)) {

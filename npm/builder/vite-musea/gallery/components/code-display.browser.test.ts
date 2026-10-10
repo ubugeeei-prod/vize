@@ -6,6 +6,10 @@ import { fileURLToPath } from "node:url";
 import { chromium, type Locator, type Page } from "playwright";
 import { createServer } from "vite";
 import vue from "@vitejs/plugin-vue";
+import { checkCopiedProps } from "./props-usage.browser-fixtures.ts";
+import { registerUsageCodeContracts } from "../../src/usage-code-contracts.ts";
+
+registerUsageCodeContracts();
 
 const repository = fileURLToPath(new URL("../../../../../", import.meta.url));
 const gallery = fileURLToPath(new URL("../", import.meta.url));
@@ -303,6 +307,7 @@ await test(
       assert.equal(colors["system/light"], colors["light/light"]);
       assert.equal(colors["system/dark"], colors["dark/dark"]);
       observations.push({ panel: "theme", colors });
+      observations.push(await checkCopiedProps(page, repository, output));
       assert.deepEqual(errors, []);
     } finally {
       await mkdir(output, { recursive: true });

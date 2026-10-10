@@ -1,0 +1,4847 @@
+{
+  "schema": "vize.n8n.slot-validity.independent",
+  "version": 1,
+  "node": "v24.14.0",
+  "providers": {
+    "eslint": {
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2/node_modules/eslint/lib/api.js",
+      "version": "10.4.1",
+      "entrySha256": "d970a38ce77982fe2c68c6eef1f5f852925f63f9276c14d43033bc18c1f842a2"
+    },
+    "eslint-plugin-vue": {
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/eslint-plugin-vue@10.9.2_@stylistic+eslint-plugin@5.10.0_eslint@10.4.1_jiti@2.7.0_suppo_490b589eff1bdf6fd918ebcadce99cb1/node_modules/eslint-plugin-vue/dist/index.js",
+      "version": "10.9.2",
+      "entrySha256": "8e9470652c7aeb1cb2fbb31043fcd3df90fbf24b2da24451f83d8fefb8f90017"
+    },
+    "vue-eslint-parser": {
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/vue-eslint-parser@10.4.1_eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2__supports-color@10.2.2/node_modules/vue-eslint-parser/dist/index.cjs",
+      "version": "10.4.1",
+      "entrySha256": "e064c9f5c9bb859cf141cc1563a49a19005438f87fa9a45fd04373853661c087"
+    },
+    "@typescript-eslint/parser": {
+      "entry": "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.test-n8n-workspace-contracts-20261008/node_modules/.pnpm/@typescript-eslint+parser@8.65.0_eslint@10.4.1_jiti@2.7.0_supports-color@10.2.2__supports-color@10.2.2_typescript@6.0.3/node_modules/@typescript-eslint/parser/dist/index.js",
+      "version": "8.65.0",
+      "entrySha256": "30737c102670698fca01786fc4d8baf6d435d6f9a1adcef48700d272dced5966"
+    }
+  },
+  "mandatoryInfrastructure": {
+    "name": "vue/base/setup-for-vue",
+    "processor": "vue/vue",
+    "rules": {
+      "vue/comment-directive": "error",
+      "vue/jsx-uses-vars": "error"
+    }
+  },
+  "configSha256": "8b0c91b481d28f8477f4af222d98b5b4a73ef5c92baaa86bae34fe4cb4b0b5d1",
+  "inputsSha256": "b82628da0590acecbbde102d424f6dd870d2915ade88201dca38cb5839ca053b",
+  "filenameNormalization": "Only the provider recording path is set to the authored fixture filename; every other packet field is retained.",
+  "records": [
+    {
+      "allowModifiers": false,
+      "configuredRules": {
+        "vue/attribute-hyphenation": [
+          "error",
+          "always"
+        ],
+        "vue/component-name-in-template-casing": [
+          "error",
+          "PascalCase"
+        ],
+        "vue/no-child-content": [
+          "error"
+        ],
+        "vue/no-deprecated-functional-template": [
+          "error"
+        ],
+        "vue/no-deprecated-html-element-is": [
+          "error"
+        ],
+        "vue/no-deprecated-inline-template": [
+          "error"
+        ],
+        "vue/no-deprecated-router-link-tag-prop": [
+          "error"
+        ],
+        "vue/no-deprecated-scope-attribute": [
+          "error"
+        ],
+        "vue/no-deprecated-slot-attribute": [
+          "error"
+        ],
+        "vue/no-deprecated-slot-scope-attribute": [
+          "error"
+        ],
+        "vue/no-deprecated-v-bind-sync": [
+          "error"
+        ],
+        "vue/no-deprecated-v-on-native-modifier": [
+          "error"
+        ],
+        "vue/no-deprecated-v-on-number-modifiers": [
+          "error"
+        ],
+        "vue/no-dupe-v-else-if": [
+          "error"
+        ],
+        "vue/no-duplicate-attributes": [
+          "error"
+        ],
+        "vue/no-multiple-template-root": [
+          "error"
+        ],
+        "vue/no-template-key": [
+          "error"
+        ],
+        "vue/no-textarea-mustache": [
+          "error"
+        ],
+        "vue/no-unused-components": [
+          "error"
+        ],
+        "vue/no-unused-vars": [
+          "error"
+        ],
+        "vue/no-use-v-if-with-v-for": [
+          "error"
+        ],
+        "vue/no-useless-template-attributes": [
+          "error"
+        ],
+        "vue/no-v-for-template-key-on-child": [
+          "error"
+        ],
+        "vue/no-v-html": [
+          "error"
+        ],
+        "vue/require-component-is": [
+          "error"
+        ],
+        "vue/no-undef-components": [
+          "error"
+        ],
+        "vue/require-toggle-inside-transition": [
+          "error"
+        ],
+        "vue/require-v-for-key": [
+          "error"
+        ],
+        "vue/block-order": [
+          "error",
+          {
+            "order": [
+              "script",
+              "template",
+              "style"
+            ]
+          }
+        ],
+        "vue/use-v-on-exact": [
+          "error"
+        ],
+        "vue/v-slot-style": [
+          "error"
+        ],
+        "vue/valid-attribute-name": [
+          "error"
+        ],
+        "vue/valid-template-root": [
+          "error"
+        ],
+        "vue/valid-v-bind": [
+          "error"
+        ],
+        "vue/valid-v-cloak": [
+          "error"
+        ],
+        "vue/valid-v-else": [
+          "error"
+        ],
+        "vue/valid-v-for": [
+          "error"
+        ],
+        "vue/valid-v-html": [
+          "error"
+        ],
+        "vue/valid-v-if": [
+          "error"
+        ],
+        "vue/valid-v-memo": [
+          "error"
+        ],
+        "vue/valid-v-model": [
+          "error"
+        ],
+        "vue/valid-v-on": [
+          "error"
+        ],
+        "vue/valid-v-once": [
+          "error"
+        ],
+        "vue/valid-v-show": [
+          "error"
+        ],
+        "vue/valid-v-slot": [
+          "error"
+        ],
+        "vue/valid-v-text": [
+          "error"
+        ],
+        "vue/no-deprecated-dollar-listeners-api": [
+          "error"
+        ],
+        "vue/no-deprecated-dollar-scopedslots-api": [
+          "error"
+        ],
+        "vue/no-ref-as-operand": [
+          "error"
+        ],
+        "vue/no-use-computed-property-like-method": [
+          "error"
+        ],
+        "vue/require-valid-default-prop": [
+          "error"
+        ]
+      },
+      "cases": [
+        {
+          "id": "default-component-no-value",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-no-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-no-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-empty-value",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-empty-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 24
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"\">ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-empty-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 24
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"\">ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-whitespace",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-whitespace.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-whitespace.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-argument-no-value",
+          "observations": [
+            [
+              {
+                "filePath": "default-argument-no-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 23,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 23
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-argument-no-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 23,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 23
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-argument-empty-value",
+          "observations": [
+            [
+              {
+                "filePath": "default-argument-empty-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 26,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 26
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default=\"\">ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-argument-empty-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 26,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 26
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default=\"\">ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-scope",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-scope.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-scope.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-argument-scope",
+          "observations": [
+            [
+              {
+                "filePath": "default-argument-scope.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 30,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-argument-scope.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 30,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "component-empty-pattern",
+          "observations": [
+            [
+              {
+                "filePath": "component-empty-pattern.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "component-empty-pattern.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-template-no-value",
+          "observations": [
+            [
+              {
+                "filePath": "default-template-no-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-template-no-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "named-template-no-value",
+          "observations": [
+            [
+              {
+                "filePath": "named-template-no-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "named-template-no-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "named-template-empty-value",
+          "observations": [
+            [
+              {
+                "filePath": "named-template-empty-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "named-template-empty-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "plain-component",
+          "observations": [
+            [
+              {
+                "filePath": "plain-component.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "plain-component.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "native-location",
+          "observations": [
+            [
+              {
+                "filePath": "native-location.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive must be owned by a custom element, but 'div' is not.",
+                    "line": 8,
+                    "column": 8,
+                    "messageId": "ownerMustBeCustomElement",
+                    "endLine": 8,
+                    "endColumn": 14
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 8,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 14
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <div v-slot>ready</div>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "native-location.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive must be owned by a custom element, but 'div' is not.",
+                    "line": 8,
+                    "column": 8,
+                    "messageId": "ownerMustBeCustomElement",
+                    "endLine": 8,
+                    "endColumn": 14
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 8,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 14
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <div v-slot>ready</div>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "named-component-location",
+          "observations": [
+            [
+              {
+                "filePath": "named-component-location.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Named slots must use '<template>' on a custom element.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "namedSlotMustBeOnTemplate",
+                    "endLine": 8,
+                    "endColumn": 22
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #header>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "named-component-location.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Named slots must use '<template>' on a custom element.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "namedSlotMustBeOnTemplate",
+                    "endLine": 8,
+                    "endColumn": 22
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #header>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "mixed-default-template",
+          "observations": [
+            [
+              {
+                "filePath": "mixed-default-template.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Default slot must use '<template>' on a custom element when there are other named slots.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "defaultSlotMustBeOnTemplate",
+                    "endLine": 8,
+                    "endColumn": 28
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"slot\"><template #header>ready</template>{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "mixed-default-template.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Default slot must use '<template>' on a custom element when there are other named slots.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "defaultSlotMustBeOnTemplate",
+                    "endLine": 8,
+                    "endColumn": 28
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"slot\"><template #header>ready</template>{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "duplicate-template",
+          "observations": [
+            [
+              {
+                "filePath": "duplicate-template.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "An element cannot have multiple '<template>' elements which are distributed to the same slot.",
+                    "line": 8,
+                    "column": 57,
+                    "messageId": "disallowDuplicateSlotsOnChildren",
+                    "endLine": 8,
+                    "endColumn": 64
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #header>one</template><template #header>two</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "duplicate-template.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "An element cannot have multiple '<template>' elements which are distributed to the same slot.",
+                    "line": 8,
+                    "column": 57,
+                    "messageId": "disallowDuplicateSlotsOnChildren",
+                    "endLine": 8,
+                    "endColumn": 64
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #header>one</template><template #header>two</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "if-else-templates",
+          "observations": [
+            [
+              {
+                "filePath": "if-else-templates.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "if-else-templates.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "named-modifier",
+          "observations": [
+            [
+              {
+                "filePath": "named-modifier.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive doesn't support any modifier.",
+                    "line": 8,
+                    "column": 33,
+                    "messageId": "disallowAnyModifier",
+                    "endLine": 8,
+                    "endColumn": 36
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #header.foo>ready</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "named-modifier.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive doesn't support any modifier.",
+                    "line": 8,
+                    "column": 33,
+                    "messageId": "disallowAnyModifier",
+                    "endLine": 8,
+                    "endColumn": 36
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #header.foo>ready</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-modifier",
+          "observations": [
+            [
+              {
+                "filePath": "default-modifier.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive doesn't support any modifier.",
+                    "line": 8,
+                    "column": 22,
+                    "messageId": "disallowAnyModifier",
+                    "endLine": 8,
+                    "endColumn": 25
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot.foo=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-modifier.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive doesn't support any modifier.",
+                    "line": 8,
+                    "column": 22,
+                    "messageId": "disallowAnyModifier",
+                    "endLine": 8,
+                    "endColumn": 25
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot.foo=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dotted-vuetify",
+          "observations": [
+            [
+              {
+                "filePath": "dotted-vuetify.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive doesn't support any modifier.",
+                    "line": 8,
+                    "column": 31,
+                    "messageId": "disallowAnyModifier",
+                    "endLine": 8,
+                    "endColumn": 35
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive doesn't support any modifier.",
+                    "line": 8,
+                    "column": 80,
+                    "messageId": "disallowAnyModifier",
+                    "endLine": 8,
+                    "endColumn": 87
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #item.memo=\"slot\">{{ slot }}</template><template #item.tagName=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dotted-vuetify.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive doesn't support any modifier.",
+                    "line": 8,
+                    "column": 31,
+                    "messageId": "disallowAnyModifier",
+                    "endLine": 8,
+                    "endColumn": 35
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive doesn't support any modifier.",
+                    "line": 8,
+                    "column": 80,
+                    "messageId": "disallowAnyModifier",
+                    "endLine": 8,
+                    "endColumn": 87
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #item.memo=\"slot\">{{ slot }}</template><template #item.tagName=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-same-object",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-same-object.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-same-object.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-same-identifier",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-same-identifier.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 39
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-same-identifier.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 39
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-destructure",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-destructure.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 43
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[item]=\"{ item }\">{{ item }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-destructure.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 43
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[item]=\"{ item }\">{{ item }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-renamed",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-renamed.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 49
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[key]=\"{ source: key }\">{{ key }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-renamed.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 49
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[key]=\"{ source: key }\">{{ key }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-property-key-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-property-key-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-property-key-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-nested-binding",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-nested-binding.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 61
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slotKey]=\"{ source: { slotKey } }\">{{ slotKey }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-nested-binding.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 61
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slotKey]=\"{ source: { slotKey } }\">{{ slotKey }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-outer-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-outer-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-outer-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-property-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-property-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-property-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-string-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-string-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-string-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-arrow-shadow-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-arrow-shadow-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-arrow-shadow-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-arrow-capture",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-arrow-capture.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-arrow-capture.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-duplicate-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-duplicate-control.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "An element cannot have multiple '<template>' elements which are distributed to the same slot.",
+                    "line": 8,
+                    "column": 57,
+                    "messageId": "disallowDuplicateSlotsOnChildren",
+                    "endLine": 8,
+                    "endColumn": 64
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[name]>one</template><template #[name]>two</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-duplicate-control.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "An element cannot have multiple '<template>' elements which are distributed to the same slot.",
+                    "line": 8,
+                    "column": 57,
+                    "messageId": "disallowDuplicateSlotsOnChildren",
+                    "endLine": 8,
+                    "endColumn": 64
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[name]>one</template><template #[name]>two</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-no-value-scriptless",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-no-value-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 22
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 2,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 2,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-no-value-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 22
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 2,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 2,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-no-value-utf8-lf",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-no-value-utf8-lf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 9,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 9,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-no-value-utf8-lf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 9,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 9,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-no-value-utf8-crlf",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-no-value-utf8-crlf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 9,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 9,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel v-slot>ready</FancyPanel>\r\n</template>\r\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-no-value-utf8-crlf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 9,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 9,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel v-slot>ready</FancyPanel>\r\n</template>\r\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-scope-scriptless",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-scope-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 29
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel v-slot=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-scope-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 29
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel v-slot=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-scope-utf8-lf",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-scope-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-scope-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-scope-utf8-crlf",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-scope-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-scope-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-template-no-value-scriptless",
+          "observations": [
+            [
+              {
+                "filePath": "default-template-no-value-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #default>ready</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-template-no-value-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #default>ready</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-template-no-value-utf8-lf",
+          "observations": [
+            [
+              {
+                "filePath": "default-template-no-value-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-template-no-value-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-template-no-value-utf8-crlf",
+          "observations": [
+            [
+              {
+                "filePath": "default-template-no-value-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-template-no-value-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-same-object-scriptless",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-same-object-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 2,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 2,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-same-object-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 2,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 2,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-same-object-utf8-lf",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-same-object-utf8-lf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 9,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 9,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-same-object-utf8-lf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 9,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 9,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-same-object-utf8-crlf",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-same-object-utf8-crlf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 9,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 9,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\r\n</template>\r\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-same-object-utf8-crlf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 9,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 9,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\r\n</template>\r\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-outer-control-scriptless",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-outer-control-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #[name]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-outer-control-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #[name]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-outer-control-utf8-lf",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-outer-control-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-outer-control-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-outer-control-utf8-crlf",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-outer-control-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-outer-control-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "allowModifiers": true,
+      "configuredRules": {
+        "vue/attribute-hyphenation": [
+          "error",
+          "always"
+        ],
+        "vue/component-name-in-template-casing": [
+          "error",
+          "PascalCase"
+        ],
+        "vue/no-child-content": [
+          "error"
+        ],
+        "vue/no-deprecated-functional-template": [
+          "error"
+        ],
+        "vue/no-deprecated-html-element-is": [
+          "error"
+        ],
+        "vue/no-deprecated-inline-template": [
+          "error"
+        ],
+        "vue/no-deprecated-router-link-tag-prop": [
+          "error"
+        ],
+        "vue/no-deprecated-scope-attribute": [
+          "error"
+        ],
+        "vue/no-deprecated-slot-attribute": [
+          "error"
+        ],
+        "vue/no-deprecated-slot-scope-attribute": [
+          "error"
+        ],
+        "vue/no-deprecated-v-bind-sync": [
+          "error"
+        ],
+        "vue/no-deprecated-v-on-native-modifier": [
+          "error"
+        ],
+        "vue/no-deprecated-v-on-number-modifiers": [
+          "error"
+        ],
+        "vue/no-dupe-v-else-if": [
+          "error"
+        ],
+        "vue/no-duplicate-attributes": [
+          "error"
+        ],
+        "vue/no-multiple-template-root": [
+          "error"
+        ],
+        "vue/no-template-key": [
+          "error"
+        ],
+        "vue/no-textarea-mustache": [
+          "error"
+        ],
+        "vue/no-unused-components": [
+          "error"
+        ],
+        "vue/no-unused-vars": [
+          "error"
+        ],
+        "vue/no-use-v-if-with-v-for": [
+          "error"
+        ],
+        "vue/no-useless-template-attributes": [
+          "error"
+        ],
+        "vue/no-v-for-template-key-on-child": [
+          "error"
+        ],
+        "vue/no-v-html": [
+          "error"
+        ],
+        "vue/require-component-is": [
+          "error"
+        ],
+        "vue/no-undef-components": [
+          "error"
+        ],
+        "vue/require-toggle-inside-transition": [
+          "error"
+        ],
+        "vue/require-v-for-key": [
+          "error"
+        ],
+        "vue/block-order": [
+          "error",
+          {
+            "order": [
+              "script",
+              "template",
+              "style"
+            ]
+          }
+        ],
+        "vue/use-v-on-exact": [
+          "error"
+        ],
+        "vue/v-slot-style": [
+          "error"
+        ],
+        "vue/valid-attribute-name": [
+          "error"
+        ],
+        "vue/valid-template-root": [
+          "error"
+        ],
+        "vue/valid-v-bind": [
+          "error"
+        ],
+        "vue/valid-v-cloak": [
+          "error"
+        ],
+        "vue/valid-v-else": [
+          "error"
+        ],
+        "vue/valid-v-for": [
+          "error"
+        ],
+        "vue/valid-v-html": [
+          "error"
+        ],
+        "vue/valid-v-if": [
+          "error"
+        ],
+        "vue/valid-v-memo": [
+          "error"
+        ],
+        "vue/valid-v-model": [
+          "error"
+        ],
+        "vue/valid-v-on": [
+          "error"
+        ],
+        "vue/valid-v-once": [
+          "error"
+        ],
+        "vue/valid-v-show": [
+          "error"
+        ],
+        "vue/valid-v-slot": [
+          "error",
+          {
+            "allowModifiers": true
+          }
+        ],
+        "vue/valid-v-text": [
+          "error"
+        ],
+        "vue/no-deprecated-dollar-listeners-api": [
+          "error"
+        ],
+        "vue/no-deprecated-dollar-scopedslots-api": [
+          "error"
+        ],
+        "vue/no-ref-as-operand": [
+          "error"
+        ],
+        "vue/no-use-computed-property-like-method": [
+          "error"
+        ],
+        "vue/require-valid-default-prop": [
+          "error"
+        ]
+      },
+      "cases": [
+        {
+          "id": "default-component-no-value",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-no-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-no-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-empty-value",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-empty-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 24
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"\">ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-empty-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 24
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"\">ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-whitespace",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-whitespace.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-whitespace.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-argument-no-value",
+          "observations": [
+            [
+              {
+                "filePath": "default-argument-no-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 23,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 23
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-argument-no-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 23,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 23
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-argument-empty-value",
+          "observations": [
+            [
+              {
+                "filePath": "default-argument-empty-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 26,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 26
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default=\"\">ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-argument-empty-value.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 26,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 26
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default=\"\">ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-scope",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-scope.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-scope.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-argument-scope",
+          "observations": [
+            [
+              {
+                "filePath": "default-argument-scope.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 30,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-argument-scope.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/v-slot-style",
+                    "severity": 2,
+                    "message": "Expected 'v-slot' instead of '#default'.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "expectedVSlot",
+                    "endLine": 8,
+                    "endColumn": 30,
+                    "fix": {
+                      "range": [
+                        185,
+                        193
+                      ],
+                      "text": "v-slot"
+                    }
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 1,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #default=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "component-empty-pattern",
+          "observations": [
+            [
+              {
+                "filePath": "component-empty-pattern.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "component-empty-pattern.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-template-no-value",
+          "observations": [
+            [
+              {
+                "filePath": "default-template-no-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-template-no-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "named-template-no-value",
+          "observations": [
+            [
+              {
+                "filePath": "named-template-no-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "named-template-no-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "named-template-empty-value",
+          "observations": [
+            [
+              {
+                "filePath": "named-template-empty-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "named-template-empty-value.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "plain-component",
+          "observations": [
+            [
+              {
+                "filePath": "plain-component.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "plain-component.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "native-location",
+          "observations": [
+            [
+              {
+                "filePath": "native-location.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive must be owned by a custom element, but 'div' is not.",
+                    "line": 8,
+                    "column": 8,
+                    "messageId": "ownerMustBeCustomElement",
+                    "endLine": 8,
+                    "endColumn": 14
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 8,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 14
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <div v-slot>ready</div>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "native-location.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive must be owned by a custom element, but 'div' is not.",
+                    "line": 8,
+                    "column": 8,
+                    "messageId": "ownerMustBeCustomElement",
+                    "endLine": 8,
+                    "endColumn": 14
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 8,
+                    "column": 8,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 8,
+                    "endColumn": 14
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <div v-slot>ready</div>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "named-component-location",
+          "observations": [
+            [
+              {
+                "filePath": "named-component-location.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Named slots must use '<template>' on a custom element.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "namedSlotMustBeOnTemplate",
+                    "endLine": 8,
+                    "endColumn": 22
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #header>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "named-component-location.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Named slots must use '<template>' on a custom element.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "namedSlotMustBeOnTemplate",
+                    "endLine": 8,
+                    "endColumn": 22
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel #header>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "mixed-default-template",
+          "observations": [
+            [
+              {
+                "filePath": "mixed-default-template.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Default slot must use '<template>' on a custom element when there are other named slots.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "defaultSlotMustBeOnTemplate",
+                    "endLine": 8,
+                    "endColumn": 28
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"slot\"><template #header>ready</template>{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "mixed-default-template.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Default slot must use '<template>' on a custom element when there are other named slots.",
+                    "line": 8,
+                    "column": 15,
+                    "messageId": "defaultSlotMustBeOnTemplate",
+                    "endLine": 8,
+                    "endColumn": 28
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot=\"slot\"><template #header>ready</template>{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "duplicate-template",
+          "observations": [
+            [
+              {
+                "filePath": "duplicate-template.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "An element cannot have multiple '<template>' elements which are distributed to the same slot.",
+                    "line": 8,
+                    "column": 57,
+                    "messageId": "disallowDuplicateSlotsOnChildren",
+                    "endLine": 8,
+                    "endColumn": 64
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #header>one</template><template #header>two</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "duplicate-template.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "An element cannot have multiple '<template>' elements which are distributed to the same slot.",
+                    "line": 8,
+                    "column": 57,
+                    "messageId": "disallowDuplicateSlotsOnChildren",
+                    "endLine": 8,
+                    "endColumn": 64
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #header>one</template><template #header>two</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "if-else-templates",
+          "observations": [
+            [
+              {
+                "filePath": "if-else-templates.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "if-else-templates.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "named-modifier",
+          "observations": [
+            [
+              {
+                "filePath": "named-modifier.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "named-modifier.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-modifier",
+          "observations": [
+            [
+              {
+                "filePath": "default-modifier.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive doesn't support any modifier.",
+                    "line": 8,
+                    "column": 22,
+                    "messageId": "disallowAnyModifier",
+                    "endLine": 8,
+                    "endColumn": 25
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot.foo=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-modifier.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive doesn't support any modifier.",
+                    "line": 8,
+                    "column": 22,
+                    "messageId": "disallowAnyModifier",
+                    "endLine": 8,
+                    "endColumn": 25
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel v-slot.foo=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dotted-vuetify",
+          "observations": [
+            [
+              {
+                "filePath": "dotted-vuetify.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dotted-vuetify.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-same-object",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-same-object.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-same-object.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-same-identifier",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-same-identifier.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 39
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-same-identifier.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 39
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slot]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-destructure",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-destructure.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 43
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[item]=\"{ item }\">{{ item }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-destructure.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 43
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[item]=\"{ item }\">{{ item }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-renamed",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-renamed.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 49
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[key]=\"{ source: key }\">{{ key }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-renamed.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 49
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[key]=\"{ source: key }\">{{ key }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-property-key-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-property-key-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-property-key-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-nested-binding",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-nested-binding.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 61
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slotKey]=\"{ source: { slotKey } }\">{{ slotKey }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-nested-binding.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 8,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 8,
+                    "endColumn": 61
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[slotKey]=\"{ source: { slotKey } }\">{{ slotKey }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-outer-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-outer-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-outer-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-property-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-property-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-property-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-string-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-string-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-string-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-arrow-shadow-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-arrow-shadow-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-arrow-shadow-control.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-arrow-capture",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-arrow-capture.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-arrow-capture.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-duplicate-control",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-duplicate-control.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "An element cannot have multiple '<template>' elements which are distributed to the same slot.",
+                    "line": 8,
+                    "column": 57,
+                    "messageId": "disallowDuplicateSlotsOnChildren",
+                    "endLine": 8,
+                    "endColumn": 64
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[name]>one</template><template #[name]>two</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-duplicate-control.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "An element cannot have multiple '<template>' elements which are distributed to the same slot.",
+                    "line": 8,
+                    "column": 57,
+                    "messageId": "disallowDuplicateSlotsOnChildren",
+                    "endLine": 8,
+                    "endColumn": 64
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <FancyPanel><template #[name]>one</template><template #[name]>two</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-no-value-scriptless",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-no-value-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 22
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 2,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 2,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-no-value-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 22
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 2,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 2,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-no-value-utf8-lf",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-no-value-utf8-lf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 9,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 9,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-no-value-utf8-lf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 9,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 9,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel v-slot>ready</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-no-value-utf8-crlf",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-no-value-utf8-crlf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 9,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 9,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel v-slot>ready</FancyPanel>\r\n</template>\r\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-no-value-utf8-crlf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "'v-slot' directive on a custom element requires that attribute value.",
+                    "line": 9,
+                    "column": 15,
+                    "messageId": "requireAttributeValue",
+                    "endLine": 9,
+                    "endColumn": 21
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel v-slot>ready</FancyPanel>\r\n</template>\r\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-scope-scriptless",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-scope-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 29
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel v-slot=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-scope-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 29
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel v-slot=\"slot\">{{ slot }}</FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-scope-utf8-lf",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-scope-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-scope-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-component-scope-utf8-crlf",
+          "observations": [
+            [
+              {
+                "filePath": "default-component-scope-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-component-scope-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-template-no-value-scriptless",
+          "observations": [
+            [
+              {
+                "filePath": "default-template-no-value-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #default>ready</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-template-no-value-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #default>ready</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-template-no-value-utf8-lf",
+          "observations": [
+            [
+              {
+                "filePath": "default-template-no-value-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-template-no-value-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "default-template-no-value-utf8-crlf",
+          "observations": [
+            [
+              {
+                "filePath": "default-template-no-value-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "default-template-no-value-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-same-object-scriptless",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-same-object-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 2,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 2,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-same-object-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  },
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 2,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 2,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 2,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-same-object-utf8-lf",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-same-object-utf8-lf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 9,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 9,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-same-object-utf8-lf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 9,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 9,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\nimport FancyPanel from \"./FancyPanel.vue\";\nconst name = \"header\";\nconst slot = \"header\";\nconst outside = { slot: \"header\" };\n</script>\n<template>\n  <!-- 日本語😀 -->\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-same-object-utf8-crlf",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-same-object-utf8-crlf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 9,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 9,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\r\n</template>\r\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-same-object-utf8-crlf.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/valid-v-slot",
+                    "severity": 2,
+                    "message": "Dynamic argument of 'v-slot' directive cannot use that slot parameter.",
+                    "line": 9,
+                    "column": 25,
+                    "messageId": "disallowArgumentUseSlotParams",
+                    "endLine": 9,
+                    "endColumn": 44
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<script setup lang=\"ts\">\r\nimport FancyPanel from \"./FancyPanel.vue\";\r\nconst name = \"header\";\r\nconst slot = \"header\";\r\nconst outside = { slot: \"header\" };\r\n</script>\r\n<template>\r\n  <!-- 日本語😀 -->\r\n  <FancyPanel><template #[slot.name]=\"slot\">{{ slot.name }}</template></FancyPanel>\r\n</template>\r\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-outer-control-scriptless",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-outer-control-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #[name]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-outer-control-scriptless.vue",
+                "messages": [
+                  {
+                    "ruleId": "vue/no-undef-components",
+                    "severity": 2,
+                    "message": "The '<FancyPanel>' component has been used, but not defined.",
+                    "line": 2,
+                    "column": 3,
+                    "messageId": "undef",
+                    "endLine": 2,
+                    "endColumn": 15
+                  }
+                ],
+                "suppressedMessages": [],
+                "errorCount": 1,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "source": "<template>\n  <FancyPanel><template #[name]=\"slot\">{{ slot }}</template></FancyPanel>\n</template>\n",
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-outer-control-utf8-lf",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-outer-control-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-outer-control-utf8-lf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        },
+        {
+          "id": "dynamic-outer-control-utf8-crlf",
+          "observations": [
+            [
+              {
+                "filePath": "dynamic-outer-control-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ],
+            [
+              {
+                "filePath": "dynamic-outer-control-utf8-crlf.vue",
+                "messages": [],
+                "suppressedMessages": [],
+                "errorCount": 0,
+                "fatalErrorCount": 0,
+                "warningCount": 0,
+                "fixableErrorCount": 0,
+                "fixableWarningCount": 0,
+                "usedDeprecatedRules": []
+              }
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

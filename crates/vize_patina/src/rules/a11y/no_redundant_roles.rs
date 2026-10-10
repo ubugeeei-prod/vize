@@ -5,12 +5,12 @@ use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, TextEdit};
 use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule};
 use crate::rule::{Rule, RuleMeta};
+use crate::rules::css_engine::parse_stylesheet;
 use lightningcss::declaration::DeclarationBlock;
 use lightningcss::properties::list::ListStyleType;
 use lightningcss::properties::{Property, PropertyId};
 use lightningcss::rules::CssRule as LCssRule;
 use lightningcss::selector::{Component, Selector};
-use lightningcss::stylesheet::{ParserOptions, StyleSheet};
 use vize_l0::FxHashSet;
 use vize_relief::{ElementNode, ElementType, PropNode};
 
@@ -106,7 +106,7 @@ impl NoRedundantRoles {
 }
 
 fn style_has_markerless_list_class(source: &str, classes: &FxHashSet<&str>) -> bool {
-    let Ok(sheet) = StyleSheet::parse(source, ParserOptions::default()) else {
+    let Ok(sheet) = parse_stylesheet(source) else {
         return false;
     };
     sheet

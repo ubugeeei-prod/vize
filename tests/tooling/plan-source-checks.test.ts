@@ -160,6 +160,26 @@ void test("coverage goldens run the Rust fixture gate", () => {
   });
 });
 
+void test("corpus test-support manifests, sources and laws require Rust validation", () => {
+  for (const path of [
+    "tests/davinci_test_support/Cargo.toml",
+    "tests/davinci_test_support/src/corpus.rs",
+    "tests/davinci_test_support/src/corpus/io_tests.rs",
+  ]) {
+    assert.deepEqual(
+      planSourceChecks([path]),
+      { rust: true, js: false, tooling: false, playground: false },
+      path,
+    );
+    assert.deepEqual(planSourceChecks([path], "merge_group"), {
+      rust: true,
+      js: true,
+      tooling: true,
+      playground: true,
+    });
+  }
+});
+
 void test("compiler, Vite, and playground changes run browser snapshots", () => {
   for (const path of [
     "crates/vize_atelier_vapor/src/generate.rs",

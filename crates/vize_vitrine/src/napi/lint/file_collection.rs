@@ -12,7 +12,7 @@ use std::path::PathBuf;
         reason = "private producer awaits same-call HTML orchestration"
     )
 )]
-mod oxlint_html_profile;
+pub(super) mod oxlint_html_profile;
 
 /// Discover lintable paths, then sort and deduplicate overlapping inputs.
 pub(super) fn collect_lint_files(patterns: &[String]) -> Vec<PathBuf> {

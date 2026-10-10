@@ -1,0 +1,33 @@
+{
+  "base": "26031a4fbb30a1e86511919bafc7035b08440ef3",
+  "baseTree": "2cd2d56373218ffe8fe9d78976a48d4482b43ab3",
+  "beforeTarget": "/private/tmp/vize-n8n-slot-regression-target-20261010",
+  "targetStatus": "new owned target, offline locked compilation; no prior executable reused",
+  "driverSha256": "4be723a21015091e56229ab7d63a58de539d69aa37b2ceca40442c9ecddd7524",
+  "sourceInventorySha256": "e6b7a09676381d94ffdb3122f7f34c8b4e5f4dd94071fcb4e9b829ded2cf3736",
+  "beforeBinarySha256": "69f73da4c87663fc11e16a08d173219b19294305c240a09e41d2e2194d89b2ab",
+  "afterBinarySha256": "7f418a4c93acaca72e34dbc71cdd35dfe0fff86f240836822755997bb5488891",
+  "cases": 47,
+  "repeats": 2,
+  "additiveCases": 8,
+  "unchangedCases": 39,
+  "claims": "Library source observations only. Hosted, native, public-installed, full51 and performance qualification remain pending.",
+  "producerPaths": {
+    "crates/vize_patina/src/rules/vue/valid_v_slot.rs": {
+      "baselineBlob": "e0c32e0658537aeca4b8543716078c1d7e9676cc",
+      "afterSha256": "1d860ac75003797c69f26e7032829f2cc15fe5c933885f57a5165dddfa1d92e6"
+    },
+    "crates/vize_carton/src/i18n/en.json": {
+      "baselineBlob": "53c73afcfea270d67fd8c705317f820a5625f7fd",
+      "afterSha256": "56585bafbcc32ca9f9d415ba30fc911fbf6ade4baa43a20752f9e1b00cd94f25"
+    },
+    "crates/vize_carton/src/i18n/ja.json": {
+      "baselineBlob": "7b2af267b404d5c9fc167d00c8d5c168cf871b13",
+      "afterSha256": "c72b9517d532d5327d19a8fcac14e0344c351ce6249a19b5289eae54a67f9666"
+    },
+    "crates/vize_carton/src/i18n/zh.json": {
+      "baselineBlob": "9962ac5dc73376403e8fb65f3e27afe5e1e3e721",
+      "afterSha256": "79cdff5b20ad21887107e278c7a0d6ed56bebccf75f5f07e272e15d45b637cd7"
+    }
+  }
+}

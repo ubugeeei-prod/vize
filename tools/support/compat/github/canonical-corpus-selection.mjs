@@ -11,6 +11,7 @@ const inputs = [
   /^davinci\//,
   /^crates\/vize_(?:atelier_|armature\/|carton\/|croquis\/|relief\/)/,
   /^tests\/_fixtures\//,
+  /^tests\/davinci_test_support\//,
   /^tests\/tooling\/(?:davinci-dom-corpus|davinci-canonical-corpus|fixture-)/,
   /^tests\/tooling\/fixtures\/canonical-observer-logs\//,
   /^tests\/tooling\/support\/canonical-corpus-worker-inventory\.mjs$/,

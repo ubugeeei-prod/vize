@@ -1,0 +1,235 @@
+{
+  "schema": "vize.css-engine-cli-expected",
+  "version": 1,
+  "issue": 3295,
+  "cases": {
+    "a11y-opacity-original": [
+      {
+        "file": "Boundary.vue",
+        "messages": [
+          {
+            "ruleId": "a11y/no-redundant-roles",
+            "ruleDocsPath": "docs/content/rules/accessibility.md",
+            "severity": 1,
+            "message": "[vize:a11y/no-redundant-roles] <ul> has an implicit role of 'list'. The role attribute is redundant",
+            "line": 2,
+            "column": 3,
+            "endLine": 2,
+            "endColumn": 33,
+            "help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "a11y-color-original": [
+      {
+        "file": "Boundary.vue",
+        "messages": [
+          {
+            "ruleId": "a11y/no-redundant-roles",
+            "ruleDocsPath": "docs/content/rules/accessibility.md",
+            "severity": 1,
+            "message": "[vize:a11y/no-redundant-roles] <ul> has an implicit role of 'list'. The role attribute is redundant",
+            "line": 2,
+            "column": 3,
+            "endLine": 2,
+            "endColumn": 33,
+            "help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "a11y-number-original": [
+      {
+        "file": "Boundary.vue",
+        "messages": [
+          {
+            "ruleId": "a11y/no-redundant-roles",
+            "ruleDocsPath": "docs/content/rules/accessibility.md",
+            "severity": 1,
+            "message": "[vize:a11y/no-redundant-roles] <ul> has an implicit role of 'list'. The role attribute is redundant",
+            "line": 2,
+            "column": 3,
+            "endLine": 2,
+            "endColumn": 33,
+            "help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "a11y-markerless-healthy": [
+      {
+        "file": "Boundary.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "a11y-marker-visible-healthy": [
+      {
+        "file": "Boundary.vue",
+        "messages": [
+          {
+            "ruleId": "a11y/no-redundant-roles",
+            "ruleDocsPath": "docs/content/rules/accessibility.md",
+            "severity": 1,
+            "message": "[vize:a11y/no-redundant-roles] <ul> has an implicit role of 'list'. The role attribute is redundant",
+            "line": 2,
+            "column": 3,
+            "endLine": 2,
+            "endColumn": 33,
+            "help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "a11y-invalid-css-fallback": [
+      {
+        "file": "Boundary.vue",
+        "messages": [
+          {
+            "ruleId": "a11y/no-redundant-roles",
+            "ruleDocsPath": "docs/content/rules/accessibility.md",
+            "severity": 1,
+            "message": "[vize:a11y/no-redundant-roles] <ul> has an implicit role of 'list'. The role attribute is redundant",
+            "line": 2,
+            "column": 3,
+            "endLine": 2,
+            "endColumn": 33,
+            "help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "a11y-empty-css-fallback": [
+      {
+        "file": "Boundary.vue",
+        "messages": [
+          {
+            "ruleId": "a11y/no-redundant-roles",
+            "ruleDocsPath": "docs/content/rules/accessibility.md",
+            "severity": 1,
+            "message": "[vize:a11y/no-redundant-roles] <ul> has an implicit role of 'list'. The role attribute is redundant",
+            "line": 2,
+            "column": 3,
+            "endLine": 2,
+            "endColumn": 33,
+            "help": "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "css-important-healthy": [
+      {
+        "file": "Boundary.vue",
+        "messages": [
+          {
+            "ruleId": "css/no-important",
+            "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+            "severity": 1,
+            "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
+            "line": 1,
+            "column": 30,
+            "endLine": 1,
+            "endColumn": 40,
+            "help": "Use more specific selectors or reorganize CSS specificity instead"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "css-invalid-css-fallback": [
+      {
+        "file": "Boundary.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "css-invalid-style-next-healthy": [
+      {
+        "file": "Boundary.vue",
+        "messages": [
+          {
+            "ruleId": "css/no-important",
+            "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+            "severity": 1,
+            "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
+            "line": 1,
+            "column": 35,
+            "endLine": 1,
+            "endColumn": 45,
+            "help": "Use more specific selectors or reorganize CSS specificity instead"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "css-opacity-original": [
+      {
+        "file": "Boundary.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "css-color-original": [
+      {
+        "file": "Boundary.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "css-number-original": [
+      {
+        "file": "Boundary.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ],
+    "css-panic-style-next-healthy": [
+      {
+        "file": "Boundary.vue",
+        "messages": [
+          {
+            "ruleId": "css/no-important",
+            "ruleDocsPath": "docs/content/rules/musea-and-css.md",
+            "severity": 1,
+            "message": "[vize:css/no-important] Avoid using !important as it makes styles harder to override",
+            "line": 1,
+            "column": 54,
+            "endLine": 1,
+            "endColumn": 64,
+            "help": "Use more specific selectors or reorganize CSS specificity instead"
+          }
+        ],
+        "errorCount": 0,
+        "warningCount": 1
+      }
+    ],
+    "css-percentage-neighbor": [
+      {
+        "file": "Boundary.vue",
+        "messages": [],
+        "errorCount": 0,
+        "warningCount": 0
+      }
+    ]
+  }
+}

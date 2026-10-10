@@ -17,13 +17,13 @@ mod tests;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(test, derive(serde::Serialize))]
-pub(super) enum HostProfile {
+pub(crate) enum HostProfile {
     Oxlint178,
     Oxlint186,
 }
 
 #[derive(Debug)]
-pub(super) struct Request<'a> {
+pub(crate) struct Request<'a> {
     pub cwd: &'a Path,
     pub literal_target: &'a str,
     pub root_json: &'a Path,
@@ -37,14 +37,14 @@ pub(super) struct Request<'a> {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(test, derive(serde::Serialize))]
-pub(super) enum Origin {
+pub(crate) enum Origin {
     ExplicitFile,
     DirectoryDiscovery,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(test, derive(serde::Serialize))]
-pub(super) enum RootDecision {
+pub(crate) enum RootDecision {
     Eligible,
     CliOrCustomExcluded,
     VcsExcluded,
@@ -52,7 +52,7 @@ pub(super) enum RootDecision {
 
 #[derive(Debug, PartialEq, Eq)]
 #[cfg_attr(test, derive(serde::Serialize))]
-pub(super) struct Original {
+pub(crate) struct Original {
     pub path: PathBuf,
     pub cwd_relative: PathBuf,
     pub origin: Origin,
@@ -61,7 +61,7 @@ pub(super) struct Original {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 #[cfg_attr(test, derive(serde::Serialize))]
-pub(super) enum SourceRole {
+pub(crate) enum SourceRole {
     RootJson,
     GitIgnore,
     GitInfoExclude,
@@ -70,7 +70,7 @@ pub(super) enum SourceRole {
 
 #[derive(Debug, PartialEq, Eq)]
 #[cfg_attr(test, derive(serde::Serialize))]
-pub(super) struct SourceCustody {
+pub(crate) struct SourceCustody {
     pub path: PathBuf,
     pub role: SourceRole,
     /// None records an absent source, rather than silently dropping authority.
@@ -79,7 +79,7 @@ pub(super) struct SourceCustody {
 
 #[derive(Debug)]
 #[cfg_attr(test, derive(serde::Serialize))]
-pub(super) struct Selection {
+pub(crate) struct Selection {
     pub host: HostProfile,
     pub cwd: PathBuf,
     pub literal_target: String,
@@ -96,7 +96,7 @@ pub(super) struct Selection {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(test, derive(serde::Serialize))]
-pub(super) enum RefusalKind {
+pub(crate) enum RefusalKind {
     NonPosix,
     InvalidCwd,
     NonLiteralTarget,
@@ -112,6 +112,8 @@ pub(super) enum RefusalKind {
     ExternalCustomIgnore,
     RootJsonLocation,
     RootJsonSyntax,
+    ConfigIdentity,
+    ConfigProjection,
     ConfigInheritance,
     ConfigOverrides,
     NestedConfig,
@@ -119,11 +121,12 @@ pub(super) enum RefusalKind {
     IgnoreSyntax,
     Io,
     Internal,
+    SourceEncoding,
 }
 
 #[derive(Debug)]
 #[cfg_attr(test, derive(serde::Serialize))]
-pub(super) struct Refusal {
+pub(crate) struct Refusal {
     pub kind: RefusalKind,
     pub path: PathBuf,
     pub details: String,
@@ -150,7 +153,25 @@ impl Refusal {
 /// No config discovery, inherited/override configs, symlinks, linked/JJ/nested
 /// repositories, outside-cwd roots, non-POSIX/non-UTF8 paths, or wildcard targets.
 /// This returns HTML custody only; it does not produce any lint diagnostic packet.
-pub(super) fn select(request: Request<'_>) -> Result<Selection, Refusal> {
+pub(crate) fn select(request: Request<'_>) -> Result<Selection, Refusal> {
+    select_with_root_decoder(request, |path, bytes| {
+        serde_json::from_slice(bytes)
+            .map(|value| (value, ()))
+            .map_err(|error| Refusal {
+                kind: RefusalKind::RootJsonSyntax,
+                path: path.to_path_buf(),
+                details: error.to_compact_string(),
+                original_bytes: Some(bytes.to_vec()),
+            })
+    })
+    .map(|(selection, ())| selection)
+}
+
+/// Decode already retained root bytes once for matching and private execution.
+pub(crate) fn select_with_root_decoder<T>(
+    request: Request<'_>,
+    decode: impl FnOnce(&Path, &[u8]) -> Result<(serde_json::Value, T), Refusal>,
+) -> Result<(Selection, T), Refusal> {
     let admitted = envelope::admit(&request)?;
     let mut selection = Selection {
         host: request.host,
@@ -166,7 +187,7 @@ pub(super) fn select(request: Request<'_>) -> Result<Selection, Refusal> {
         originals: Vec::new(),
         sources: Vec::new(),
     };
-    let config = policy::root_config(&request, &mut selection)?;
+    let (config, plan) = policy::root_config(&request, &mut selection, decode)?;
     envelope::record_ancestors(&request, &admitted.target, &mut selection)?;
     let overrides = policy::cli_overrides(&request)?;
     if !admitted.is_dir
@@ -192,5 +213,5 @@ pub(super) fn select(request: Request<'_>) -> Result<Selection, Refusal> {
     selection
         .sources
         .sort_unstable_by(|left, right| (&left.path, left.role).cmp(&(&right.path, right.role)));
-    Ok(selection)
+    Ok((selection, plan))
 }

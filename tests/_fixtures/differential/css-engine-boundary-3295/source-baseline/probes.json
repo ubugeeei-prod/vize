@@ -1,0 +1,339 @@
+{
+  "native": "/tmp/vize-n8n-p0-20261007/native-H339-darwin-arm64-source-baseline/vize-vitrine.darwin-arm64.node",
+  "nativeSHA256": "b884696038e3e6c09054b73d9532a3ab490d2cd296a5770d836561b0be245d1d",
+  "nodeVersion": "v24.14.0",
+  "scope": "Finite source-baseline probes only. No installed or changed-source runtime qualification.",
+  "processes": [
+    {
+      "id": "a11y-opacity-original",
+      "operation": "lintPatinaSfc",
+      "source": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{opacity:abs(-50%)}\n.plain{list-style:none}\n</style>\n",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "exit": -6,
+      "stdout": "",
+      "stderr": "\nthread '<unnamed>' (106553267) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfatal runtime error: failed to initiate panic, error 5, aborting\n",
+      "stdoutHex": "",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036353533323637292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a666174616c2072756e74696d65206572726f723a206661696c656420746f20696e6974696174652070616e69632c206572726f7220352c2061626f7274696e670a"
+    },
+    {
+      "id": "a11y-color-original",
+      "operation": "lintPatinaSfc",
+      "source": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{color:hsl(0 abs(-50%) 0%)}\n.plain{list-style:none}\n</style>\n",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "exit": -6,
+      "stdout": "",
+      "stderr": "\nthread '<unnamed>' (106553277) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfatal runtime error: failed to initiate panic, error 5, aborting\n",
+      "stdoutHex": "",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036353533323737292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a666174616c2072756e74696d65206572726f723a206661696c656420746f20696e6974696174652070616e69632c206572726f7220352c2061626f7274696e670a"
+    },
+    {
+      "id": "a11y-number-original",
+      "operation": "lintPatinaSfc",
+      "source": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\na{text-size-adjust:calc(5)}\n.plain{list-style:none}\n</style>\n",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "exit": -6,
+      "stdout": "",
+      "stderr": "\nthread '<unnamed>' (106553287) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfatal runtime error: failed to initiate panic, error 5, aborting\n",
+      "stdoutHex": "",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036353533323837292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a666174616c2072756e74696d65206572726f723a206661696c656420746f20696e6974696174652070616e69632c206572726f7220352c2061626f7274696e670a"
+    },
+    {
+      "id": "a11y-markerless-healthy",
+      "operation": "lintPatinaSfc",
+      "source": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\n.plain{list-style:none}\n</style>\n",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "exit": 0,
+      "stdout": "{\"diagnostics\":[],\"errorCount\":0,\"filename\":\"Boundary.vue\",\"warningCount\":0}\n",
+      "stderr": "",
+      "stdoutHex": "7b22646961676e6f7374696373223a5b5d2c226572726f72436f756e74223a302c2266696c656e616d65223a22426f756e646172792e767565222c227761726e696e67436f756e74223a307d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "a11y-marker-visible-healthy",
+      "operation": "lintPatinaSfc",
+      "source": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\n.plain{list-style:disc}\n</style>\n",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "exit": 0,
+      "stdout": "{\"diagnostics\":[{\"help\":\"Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics\",\"location\":{\"end\":{\"column\":33,\"line\":2,\"offset\":43},\"start\":{\"column\":3,\"line\":2,\"offset\":13}},\"message\":\"<ul> has an implicit role of 'list'. The role attribute is redundant\",\"rule\":\"a11y/no-redundant-roles\",\"severity\":\"warning\"}],\"errorCount\":0,\"filename\":\"Boundary.vue\",\"warningCount\":1}\n",
+      "stderr": "",
+      "stdoutHex": "7b22646961676e6f7374696373223a5b7b2268656c70223a2252656d6f76652074686520726564756e64616e7420726f6c65206174747269627574652e2054686520656c656d656e7420616c726561647920686173207468697320726f6c6520696d706c696369746c79207468726f756768206974732048544d4c2073656d616e74696373222c226c6f636174696f6e223a7b22656e64223a7b22636f6c756d6e223a33332c226c696e65223a322c226f6666736574223a34337d2c227374617274223a7b22636f6c756d6e223a332c226c696e65223a322c226f6666736574223a31337d7d2c226d657373616765223a223c756c3e2068617320616e20696d706c6963697420726f6c65206f6620276c697374272e2054686520726f6c652061747472696275746520697320726564756e64616e74222c2272756c65223a22613131792f6e6f2d726564756e64616e742d726f6c6573222c227365766572697479223a227761726e696e67227d5d2c226572726f72436f756e74223a302c2266696c656e616d65223a22426f756e646172792e767565222c227761726e696e67436f756e74223a317d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "a11y-invalid-css-fallback",
+      "operation": "lintPatinaSfc",
+      "source": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\n}\n</style>\n",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "exit": 0,
+      "stdout": "{\"diagnostics\":[{\"help\":\"Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics\",\"location\":{\"end\":{\"column\":33,\"line\":2,\"offset\":43},\"start\":{\"column\":3,\"line\":2,\"offset\":13}},\"message\":\"<ul> has an implicit role of 'list'. The role attribute is redundant\",\"rule\":\"a11y/no-redundant-roles\",\"severity\":\"warning\"}],\"errorCount\":0,\"filename\":\"Boundary.vue\",\"warningCount\":1}\n",
+      "stderr": "",
+      "stdoutHex": "7b22646961676e6f7374696373223a5b7b2268656c70223a2252656d6f76652074686520726564756e64616e7420726f6c65206174747269627574652e2054686520656c656d656e7420616c726561647920686173207468697320726f6c6520696d706c696369746c79207468726f756768206974732048544d4c2073656d616e74696373222c226c6f636174696f6e223a7b22656e64223a7b22636f6c756d6e223a33332c226c696e65223a322c226f6666736574223a34337d2c227374617274223a7b22636f6c756d6e223a332c226c696e65223a322c226f6666736574223a31337d7d2c226d657373616765223a223c756c3e2068617320616e20696d706c6963697420726f6c65206f6620276c697374272e2054686520726f6c652061747472696275746520697320726564756e64616e74222c2272756c65223a22613131792f6e6f2d726564756e64616e742d726f6c6573222c227365766572697479223a227761726e696e67227d5d2c226572726f72436f756e74223a302c2266696c656e616d65223a22426f756e646172792e767565222c227761726e696e67436f756e74223a317d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "a11y-empty-css-fallback",
+      "operation": "lintPatinaSfc",
+      "source": "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\n\n</style>\n",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "a11y/no-redundant-roles"
+        ]
+      },
+      "exit": 0,
+      "stdout": "{\"diagnostics\":[{\"help\":\"Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics\",\"location\":{\"end\":{\"column\":33,\"line\":2,\"offset\":43},\"start\":{\"column\":3,\"line\":2,\"offset\":13}},\"message\":\"<ul> has an implicit role of 'list'. The role attribute is redundant\",\"rule\":\"a11y/no-redundant-roles\",\"severity\":\"warning\"}],\"errorCount\":0,\"filename\":\"Boundary.vue\",\"warningCount\":1}\n",
+      "stderr": "",
+      "stdoutHex": "7b22646961676e6f7374696373223a5b7b2268656c70223a2252656d6f76652074686520726564756e64616e7420726f6c65206174747269627574652e2054686520656c656d656e7420616c726561647920686173207468697320726f6c6520696d706c696369746c79207468726f756768206974732048544d4c2073656d616e74696373222c226c6f636174696f6e223a7b22656e64223a7b22636f6c756d6e223a33332c226c696e65223a322c226f6666736574223a34337d2c227374617274223a7b22636f6c756d6e223a332c226c696e65223a322c226f6666736574223a31337d7d2c226d657373616765223a223c756c3e2068617320616e20696d706c6963697420726f6c65206f6620276c697374272e2054686520726f6c652061747472696275746520697320726564756e64616e74222c2272756c65223a22613131792f6e6f2d726564756e64616e742d726f6c6573222c227365766572697479223a227761726e696e67227d5d2c226572726f72436f756e74223a302c2266696c656e616d65223a22426f756e646172792e767565222c227761726e696e67436f756e74223a317d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "css-important-healthy",
+      "operation": "lintPatinaSfc",
+      "source": "<style>a{opacity:min(10%,90%)!important}</style>",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "css/no-important"
+        ]
+      },
+      "exit": 0,
+      "stdout": "{\"diagnostics\":[{\"help\":\"Use more specific selectors or reorganize CSS specificity instead\",\"location\":{\"end\":{\"column\":40,\"line\":1,\"offset\":39},\"start\":{\"column\":30,\"line\":1,\"offset\":29}},\"message\":\"Avoid using !important as it makes styles harder to override\",\"rule\":\"css/no-important\",\"severity\":\"warning\"}],\"errorCount\":0,\"filename\":\"Boundary.vue\",\"warningCount\":1}\n",
+      "stderr": "",
+      "stdoutHex": "7b22646961676e6f7374696373223a5b7b2268656c70223a22557365206d6f72652073706563696669632073656c6563746f7273206f722072656f7267616e697a652043535320737065636966696369747920696e7374656164222c226c6f636174696f6e223a7b22656e64223a7b22636f6c756d6e223a34302c226c696e65223a312c226f6666736574223a33397d2c227374617274223a7b22636f6c756d6e223a33302c226c696e65223a312c226f6666736574223a32397d7d2c226d657373616765223a2241766f6964207573696e672021696d706f7274616e74206173206974206d616b6573207374796c65732068617264657220746f206f76657272696465222c2272756c65223a226373732f6e6f2d696d706f7274616e74222c227365766572697479223a227761726e696e67227d5d2c226572726f72436f756e74223a302c2266696c656e616d65223a22426f756e646172792e767565222c227761726e696e67436f756e74223a317d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "css-invalid-css-fallback",
+      "operation": "lintPatinaSfc",
+      "source": "<style>}</style>",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "css/no-important"
+        ]
+      },
+      "exit": 0,
+      "stdout": "{\"diagnostics\":[],\"errorCount\":0,\"filename\":\"Boundary.vue\",\"warningCount\":0}\n",
+      "stderr": "",
+      "stdoutHex": "7b22646961676e6f7374696373223a5b5d2c226572726f72436f756e74223a302c2266696c656e616d65223a22426f756e646172792e767565222c227761726e696e67436f756e74223a307d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "css-invalid-style-next-healthy",
+      "operation": "lintPatinaSfc",
+      "source": "<style>}</style><style>a{color:red!important}</style>",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "css/no-important"
+        ]
+      },
+      "exit": 0,
+      "stdout": "{\"diagnostics\":[{\"help\":\"Use more specific selectors or reorganize CSS specificity instead\",\"location\":{\"end\":{\"column\":45,\"line\":1,\"offset\":44},\"start\":{\"column\":35,\"line\":1,\"offset\":34}},\"message\":\"Avoid using !important as it makes styles harder to override\",\"rule\":\"css/no-important\",\"severity\":\"warning\"}],\"errorCount\":0,\"filename\":\"Boundary.vue\",\"warningCount\":1}\n",
+      "stderr": "",
+      "stdoutHex": "7b22646961676e6f7374696373223a5b7b2268656c70223a22557365206d6f72652073706563696669632073656c6563746f7273206f722072656f7267616e697a652043535320737065636966696369747920696e7374656164222c226c6f636174696f6e223a7b22656e64223a7b22636f6c756d6e223a34352c226c696e65223a312c226f6666736574223a34347d2c227374617274223a7b22636f6c756d6e223a33352c226c696e65223a312c226f6666736574223a33347d7d2c226d657373616765223a2241766f6964207573696e672021696d706f7274616e74206173206974206d616b6573207374796c65732068617264657220746f206f76657272696465222c2272756c65223a226373732f6e6f2d696d706f7274616e74222c227365766572697479223a227761726e696e67227d5d2c226572726f72436f756e74223a302c2266696c656e616d65223a22426f756e646172792e767565222c227761726e696e67436f756e74223a317d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "css-opacity-original",
+      "operation": "lintPatinaSfc",
+      "source": "<style>a{opacity:abs(-50%)}</style>",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "css/no-important"
+        ]
+      },
+      "exit": -6,
+      "stdout": "",
+      "stderr": "\nthread '<unnamed>' (106553355) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfatal runtime error: failed to initiate panic, error 5, aborting\n",
+      "stdoutHex": "",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036353533333535292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a666174616c2072756e74696d65206572726f723a206661696c656420746f20696e6974696174652070616e69632c206572726f7220352c2061626f7274696e670a"
+    },
+    {
+      "id": "css-color-original",
+      "operation": "lintPatinaSfc",
+      "source": "<style>a{color:hsl(0 abs(-50%) 0%)}</style>",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "css/no-important"
+        ]
+      },
+      "exit": -6,
+      "stdout": "",
+      "stderr": "\nthread '<unnamed>' (106553364) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfatal runtime error: failed to initiate panic, error 5, aborting\n",
+      "stdoutHex": "",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036353533333634292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a666174616c2072756e74696d65206572726f723a206661696c656420746f20696e6974696174652070616e69632c206572726f7220352c2061626f7274696e670a"
+    },
+    {
+      "id": "css-number-original",
+      "operation": "lintPatinaSfc",
+      "source": "<style>a{text-size-adjust:calc(5)}</style>",
+      "options": {
+        "filename": "Boundary.vue",
+        "preset": "incremental",
+        "locale": "en",
+        "helpLevel": "full",
+        "enabledRules": [
+          "css/no-important"
+        ]
+      },
+      "exit": -6,
+      "stdout": "",
+      "stderr": "\nthread '<unnamed>' (106553373) panicked at /Users/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/lightningcss-1.0.0-alpha.72/src/values/percentage.rs:30:16:\ninternal error: entered unreachable code\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nfatal runtime error: failed to initiate panic, error 5, aborting\n",
+      "stdoutHex": "",
+      "stderrHex": "0a74687265616420273c756e6e616d65643e272028313036353533333733292070616e69636b6564206174202f55736572732f72756e6e65722f2e636172676f2f72656769737472792f7372632f696e6465782e6372617465732e696f2d313934396366386336623562353537662f6c696768746e696e676373732d312e302e302d616c7068612e37322f7372632f76616c7565732f70657263656e746167652e72733a33303a31363a0a696e7465726e616c206572726f723a20656e746572656420756e726561636861626c6520636f64650a6e6f74653a2072756e20776974682060525553545f4241434b54524143453d316020656e7669726f6e6d656e74207661726961626c6520746f20646973706c61792061206261636b74726163650a666174616c2072756e74696d65206572726f723a206661696c656420746f20696e6974696174652070616e69632c206572726f7220352c2061626f7274696e670a"
+    },
+    {
+      "id": "format-color-healthy",
+      "operation": "formatSfc",
+      "source": "<style>a{color:hsl(0 50% 0%)}</style>",
+      "options": {},
+      "exit": 0,
+      "stdout": "{\"code\":\"<style>\\na {\\n  color: hsl(0 50% 0%);\\n}\\n</style>\\n\",\"changed\":true}\n",
+      "stderr": "",
+      "stdoutHex": "7b22636f6465223a223c7374796c653e5c6e61207b5c6e2020636f6c6f723a2068736c283020353025203025293b5c6e7d5c6e3c2f7374796c653e5c6e222c226368616e676564223a747275657d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "format-important-healthy",
+      "operation": "formatSfc",
+      "source": "<style>a{opacity:min(10%,90%)!important}</style>",
+      "options": {},
+      "exit": 0,
+      "stdout": "{\"code\":\"<style>\\na {\\n  opacity: min(10%,90%)!important;\\n}\\n</style>\\n\",\"changed\":true}\n",
+      "stderr": "",
+      "stdoutHex": "7b22636f6465223a223c7374796c653e5c6e61207b5c6e20206f7061636974793a206d696e283130252c3930252921696d706f7274616e743b5c6e7d5c6e3c2f7374796c653e5c6e222c226368616e676564223a747275657d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "format-invalid-css-fallback",
+      "operation": "formatSfc",
+      "source": "<style>}</style>",
+      "options": {},
+      "exit": 0,
+      "stdout": "{\"code\":\"<style>\\n}\\n</style>\\n\",\"changed\":true}\n",
+      "stderr": "",
+      "stdoutHex": "7b22636f6465223a223c7374796c653e5c6e7d5c6e3c2f7374796c653e5c6e222c226368616e676564223a747275657d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "format-combined-invalid-fallback",
+      "operation": "formatSfc",
+      "source": "<style>}</style>\n<style>}</style>\n<style>}</style>",
+      "options": {},
+      "exit": 0,
+      "stdout": "{\"code\":\"<style>\\n}\\n</style>\\n\\n<style>\\n}\\n</style>\\n\\n<style>\\n}\\n</style>\\n\",\"changed\":true}\n",
+      "stderr": "",
+      "stdoutHex": "7b22636f6465223a223c7374796c653e5c6e7d5c6e3c2f7374796c653e5c6e5c6e3c7374796c653e5c6e7d5c6e3c2f7374796c653e5c6e5c6e3c7374796c653e5c6e7d5c6e3c2f7374796c653e5c6e222c226368616e676564223a747275657d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "format-healthy-config-17",
+      "operation": "formatSfc",
+      "source": "<style>a{opacity:min(10%,90%)}</style>",
+      "options": {
+        "tabWidth": 4
+      },
+      "exit": 0,
+      "stdout": "{\"code\":\"<style>\\na {\\n    opacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":true}\n",
+      "stderr": "",
+      "stdoutHex": "7b22636f6465223a223c7374796c653e5c6e61207b5c6e202020206f7061636974793a206d696e283130252c393025293b5c6e7d5c6e3c2f7374796c653e5c6e222c226368616e676564223a747275657d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "format-healthy-config-18",
+      "operation": "formatSfc",
+      "source": "<style>a{opacity:min(10%,90%)}</style>",
+      "options": {
+        "useTabs": true,
+        "tabWidth": 4
+      },
+      "exit": 0,
+      "stdout": "{\"code\":\"<style>\\na {\\n\\topacity: min(10%,90%);\\n}\\n</style>\\n\",\"changed\":true}\n",
+      "stderr": "",
+      "stdoutHex": "7b22636f6465223a223c7374796c653e5c6e61207b5c6e5c746f7061636974793a206d696e283130252c393025293b5c6e7d5c6e3c2f7374796c653e5c6e222c226368616e676564223a747275657d0a",
+      "stderrHex": ""
+    },
+    {
+      "id": "format-healthy-config-19",
+      "operation": "formatSfc",
+      "source": "<style>a{opacity:min(10%,90%)}</style>",
+      "options": {
+        "endOfLine": "crlf"
+      },
+      "exit": 0,
+      "stdout": "{\"code\":\"<style>\\r\\na {\\r\\n  opacity: min(10%,90%);\\r\\n}\\r\\n</style>\\r\\n\",\"changed\":true}\n",
+      "stderr": "",
+      "stdoutHex": "7b22636f6465223a223c7374796c653e5c725c6e61207b5c725c6e20206f7061636974793a206d696e283130252c393025293b5c725c6e7d5c725c6e3c2f7374796c653e5c725c6e222c226368616e676564223a747275657d0a",
+      "stderrHex": ""
+    }
+  ]
+}
