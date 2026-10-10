@@ -107,3 +107,49 @@ void test("corrupt ownership prevents clean and baseline updates before PNG muta
     await rm(root, { recursive: true, force: true });
   }
 });
+
+void test("hosted Windows Art paths approve by portable identity and refuse ambiguous basenames", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "musea-windows-approval-"));
+  const sources = [art(root, "left"), art(root, "right")];
+  sources[0].path = "C:\\build\\project\\left\\Button.art.vue";
+  sources[1].path = "C:\\build\\project\\right\\Button.art.vue";
+  const runner = new MuseaVrtRunner({
+    snapshotDir: root,
+    snapshotIdentities: {
+      [sources[0].path]: "left/Button.art.vue",
+      [sources[1].path]: "right/Button.art.vue",
+    },
+  });
+  const viewport = { width: 200, height: 100, name: "small" };
+  try {
+    const results: VrtResult[] = [];
+    for (const [index, source] of sources.entries()) {
+      const name = await runner.getSnapshotName(source, "Default", viewport);
+      const snapshotPath = path.join(root, name);
+      const currentPath = path.join(root, "current", name);
+      await mkdir(path.dirname(currentPath), { recursive: true });
+      await writeFile(snapshotPath, `${index}-old`);
+      await writeFile(currentPath, `${index}-new`);
+      results.push({
+        artPath: source.path,
+        variantName: "Default",
+        viewport,
+        passed: index === 0,
+        snapshotPath,
+        currentPath,
+      });
+    }
+    await assert.rejects(runner.approveResults(results, "Button/*"), /Ambiguous approval pattern/);
+    assert.equal(await readFile(results[0].snapshotPath, "utf8"), "0-old");
+    assert.equal(await readFile(results[1].snapshotPath, "utf8"), "1-old");
+    assert.equal(await runner.approveResults(results, "right/Button/*"), 1);
+    assert.equal(await readFile(results[0].snapshotPath, "utf8"), "0-old");
+    assert.equal(await readFile(results[1].snapshotPath, "utf8"), "1-new");
+    await writeFile(results[1].currentPath!, "right-reviewed");
+    assert.equal(await runner.approveResults([results[1]], "Button/*"), 1);
+    assert.equal(await readFile(results[1].snapshotPath, "utf8"), "right-reviewed");
+  } finally {
+    await runner.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});

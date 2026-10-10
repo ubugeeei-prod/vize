@@ -51,6 +51,11 @@ Art/variant names and distinguishes component-local `*` from path-crossing
 `variant.args.viewport`. CI failures set the exit code and allow runner
 cleanup; an immediate `process.exit()` would leave the ownership lock behind.
 
+Approval basenames also derive from the portable POSIX identity, so a Windows
+build's hosted Art path retains the same ambiguity refusal and targeted approval
+when the CLI runs on macOS or Linux. The persisted ownership/PNG test preserves
+the original Windows-path failure and requires both refusals and actual copies.
+
 If a process crashes, verify that no VRT process uses the directory before
 removing the stale `identities.lock`. No automatic stale-lock takeover is
 performed. Index writes use atomic rename; this does not promise filesystem

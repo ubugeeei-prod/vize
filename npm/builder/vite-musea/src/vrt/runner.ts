@@ -283,7 +283,7 @@ export class MuseaVrtRunner {
             this.identityOptions.snapshotIdentities,
           );
           const relativeName = `${identity.replace(/\.art\.vue$/, "")}/${result.variantName}`;
-          const legacyName = `${path.basename(result.artPath, ".art.vue")}/${result.variantName}`;
+          const legacyName = `${path.posix.basename(identity, ".art.vue")}/${result.variantName}`;
           return (
             matchesSnapshotPattern(relativeName, pattern) ||
             matchesSnapshotPattern(legacyName, pattern)
@@ -292,7 +292,12 @@ export class MuseaVrtRunner {
       : candidates;
     if (pattern) {
       const legacyMatches = results.filter((result) => {
-        const name = `${path.basename(result.artPath, ".art.vue")}/${result.variantName}`;
+        const identity = resolveSnapshotIdentity(
+          result.artPath,
+          this.identityOptions.projectRoot,
+          this.identityOptions.snapshotIdentities,
+        );
+        const name = `${path.posix.basename(identity, ".art.vue")}/${result.variantName}`;
         return matchesSnapshotPattern(name, pattern);
       });
       if (new Set(legacyMatches.map((result) => result.artPath)).size > 1)
