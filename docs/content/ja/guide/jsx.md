@@ -2,31 +2,25 @@
 title: JSX と TSX
 ---
 
-<!-- Generated translation; source: guide/jsx.md -->
+<!-- Reviewed translation; source: guide/jsx.md -->
 
 # JSX と TSX
 
-> **ステータス:** JSX/TSX は、コンパイラ、リンター、型チェッカー、LSP、およびフォーマッタにわたってカバーされています。
-> 型認識チェックはオプトインのままなので、React `.tsx` ファイルが誤って Vue JSX として扱われることはありません。
-> スタンドアロン `.jsx`/`.tsx` モジュールの HMR が、依然として統合の主なギャップとして残っています。
+> **対応状況:** JSX/TSX はコンパイラ、リンター、型チェッカー、LSP、フォーマッタで扱えます。
+> 型情報を使う検査は明示的に有効にします。React の `.tsx` ファイルを誤って Vue JSX として検査しないためです。
+> スタンドアロンの `.jsx`/`.tsx` モジュールでは、HMR 対応が主な未完了項目です。
 
-Vize は、`.vue` と**同じコンパイラ クレート**を介して `.jsx` および `.tsx` Vue コンポーネントをコンパイルします
-単一ファイル コンポーネント — VDOM および Vapor バックエンド、Croquis セマンティック分析、Canon タイプ
-チェック、Patina lint、Maestro 言語サーバー。個別の Babel パイプラインはありません。
-ランタイム JSX ファクトリ シム: JSX コンポーネントは Vue レンダー関数 (または Vapor に直接渡されます)
-テンプレート) ネイティブ コンパイラによる。
-
-これは、`.tsx` Vue コンポーネントが同じ Rust ネイティブ コンパイル、同じ型チェックを受け、
-SFC と同じエディター エクスペリエンス — `<template>` の代わりに型指定された関数として作成されるだけです。
+Vize は `.jsx`/`.tsx` の Vue コンポーネントを、`.vue` ファイルと同じコンパイラクレートでコンパイルします。
+VDOM/Vapor のコード生成、Croquis の解析、Canon の型チェック、Patina の lint、Maestro の言語サーバーを利用できます。
+VDOM のモジュールでは、元の import、宣言、export、パラメータ、コンポーネント内のレキシカルな束縛を保持します。
 
 ## JSX/TSX の有効化
 
-`.jsx` および `.tsx` ファイルは、Vize バンドラー プラグインを通じて自動的にルーティングされます。
-オプトインフラグを設定してコンパイルします。すでに Vize バンドラー統合を使用しているプロジェクトは JSX/TSX を選択します
-サポート:
+Vize のバンドラープラグインは `.jsx` と `.tsx` を自動的に処理します。コンパイル用の有効化フラグは不要です。
+次のいずれかを導入済みなら、JSX/TSX のコンパイルも利用できます。
 
 - `@vizejs/vite-plugin`
-- `@vizejs/unplugin` (ロールアップ / Webpack / esbuild)
+- `@vizejs/unplugin`（Rollup / webpack / esbuild）
 - `@vizejs/rspack-plugin`
 - `@vizejs/nuxt`
 
@@ -40,21 +34,18 @@ export default defineConfig({
 });
 ```
 
-内部では、プラグインはネイティブ/WASM `compileJsx` エントリ ポイント (から公開されている) を呼び出します。
-`@vizejs/native` および `@vizejs/wasm`)、ソースを下げてレンダリング コードと任意のコードを返します。
-抽出されたスコープ付き CSS。
+プラグインは `@vizejs/native` または `@vizejs/wasm` の `compileJsx` を呼び出します。
+この処理でソースを中間表現へ変換し、レンダー関数のコードと、抽出した scoped CSS を返します。
 
 ## オーサリング API
 
-Vize JSX/TSX コンポーネントは**型指定されたパラメーターを持つ単純な関数**です。マクロはありませんし、
-一般的な場合の `defineComponent` ラッパー — 型は関数から直接読み取られます
-署名が削除され、ランタイム出力から消去されます (コストゼロ)。
+Vize の JSX/TSX コンポーネントは、**型付きパラメータを持つ通常の関数**です。
+一般的なケースではマクロや `defineComponent` によるラップは不要です。
+関数シグネチャから型を読み取り、実行時の出力から型注釈を消去するため、型のための実行時コストは発生しません。
 
-- **Props**は**入力された最初のパラメータ**です。
-- **エミットとスロット**は**型指定された2番目のパラメータ**であり、Vizeが提供する`Ctx<Emits, Slots>`です。
-  コンテキスト (`emit`、`slots`、および `attrs` を使用し、Vue のセットアップ コンテキストをミラーリングします)。
-- **デフォルトのプロパティ値**は、パラメータ パターンの**デフォルトの構造化**から取得されます。
-  コンパイラはそれらを構造化から抽出します。
+- **props** は、型を付けた第 1 引数です。
+- **emits と slots** は、第 2 引数の `Ctx<Emits, Slots>` で表します。Vize が提供するこのコンテキストには、Vue の setup コンテキストと同様に `emit`、`slots`、`attrs` があります。
+- **props のデフォルト値**は、引数の分割代入に指定します。コンパイラがその値を取り出します。
 
 ```tsx
 import { computed, ref } from "vue";
@@ -91,43 +82,44 @@ const Counter = ({ label, start = 0 }: CounterProps, { emit }: Ctx<CounterEmits>
 };
 ```
 
-小道具のみのコンポーネントでは、2 番目のパラメータを完全に省略できます。
+props だけを受け取るコンポーネントでは、第 2 引数を省略できます。
 
 ```tsx
 const Hello = ({ name }: { name: string }) => <h1>Hello, {name}!</h1>;
 ```
 
-デフォルト値は、分割デフォルトとして書き込まれます。個別の `props` オプションは必要ありません。
+デフォルト値も分割代入で指定できるため、別途 `props` オプションを書く必要はありません。
 
 ```tsx
 const Badge = ({ count = 0 }: { count?: number }) => <span class="badge">{count}</span>;
 ```
 
-コンポーネント名はバインディング (`const Counter = …`) または関数宣言から取得されます。
-(`function Card() { … }`)、ご想像どおりです。それ以外はすべて React のような JSX — 要素
-ネスト、フラグメント (`<>…</>`)、式の子、および `onClick` などのイベント プロパティ。唯一の
-Vue 固有の追加は、[下記](#scoped-styles) で説明されている `<style scoped>` 要素です。
+コンポーネント名は、変数の束縛（`const Counter = …`）または関数宣言（`function Card() { … }`）から取得します。
+要素の入れ子、フラグメント（`<>…</>`）、子要素内の式、`onClick` などのイベント用 props は、React と同様の JSX 構文です。
+Vue 固有の追加として、[後述の `<style scoped>`](#scoped-styles) があります。
 
-> 上記のタイプのみのオーサリング フォームは、サポートされている一般的なケースです。ランタイムを合成中 `props`
-> メタデータ、および `defineComponent(() => () => vnode)` セットアップ フォームは、フォローアップが予定されています。
+> VDOM のブロック本体を持つコンポーネントでは、分割代入またはインラインのオブジェクト型から実行時の props 名を宣言します。
+> 実行時バリデータ、名前付きの型からの推論、明示的な `defineComponent` の setup 形式は未対応です。
+> ブロック内の setup 処理でレキシカルな `this`、`arguments`、`new.target` を使うと診断します。
 
-## サポートされている JSX サーフェス
+<span id="サポートされている-jsx-サーフェス"></span>
 
-コンパイラは、JSX を SFC テンプレートで使用されるのと同じ Relief IR に下げ、その IR を VDOM に送信します。
-またはVaporバックエンド。これらのフォームは、JSX/TSX テスト マトリックスでカバーされています。
+## 対応する JSX 構文
 
-- フラグメントとネストされた要素
-- コンポーネント タグ、メンバー式タグ、および組み込み HTML/SVG タグ
-- 静的属性、動的 `prop={expr}` バインディング、ブール短縮プロパティ、およびスプレッド プロップ
-- プロップ名にエンコードされた Vue スタイルのオプション修飾子を含むイベント ハンドラー
-- `v-if`、`v-else-if`、`v-else`、`v-show`、カスタム `v-*` ディレクティブ、および `v-model`
-- 式の子、論理 JSX ブランチ、三項 JSX ブランチ、および `.map(...)` リストのレンダリング
-- オブジェクトの子またはレンダープロップの子として書き込まれたスロット
-- TSX 構文: 型付きパラメータ、戻りアノテーション、汎用 JSX 呼び出し、キャスト、および非 null アサート
-- `<style scoped>` 抽出; template-literal `${expr}` 補間は高度な拡張機能でサポートされています
-  場合もありますが、通常は静的クラスと CSS 変数の方が明確です。
+JSX は SFC テンプレートと同じ Relief IR に変換され、VDOM または Vapor のバックエンドへ渡されます。
+JSX/TSX のテストで確認している構文は次のとおりです。
 
-正規のリスト形式は慣用的な JSX です。
+- フラグメントと要素の入れ子
+- コンポーネントタグ、メンバー式によるタグ、組み込みの HTML/SVG タグ
+- 静的属性、動的な `prop={expr}`、値を省略した真偽値 props、スプレッド props
+- イベントハンドラ。Vue のイベントオプション修飾子は props 名で指定できます。
+- `v-if`、`v-else-if`、`v-else`、`v-show`、独自の `v-*` ディレクティブ、`v-model`
+- 子要素内の式、論理演算子や三項演算子による分岐、`.map(...)` によるリスト描画
+- 子要素のオブジェクトや render prop で記述したスロット
+- 型付き引数、戻り値の型注釈、ジェネリックな JSX 呼び出し、キャスト、非 null アサーション
+- `<style scoped>` の抽出。テンプレートリテラルの `${expr}` も扱えますが、通常は静的クラスと CSS 変数の方が読みやすくなります。
+
+リストは、通常の JSX と同様に `.map(...)` で記述します。
 
 ```tsx
 import { computed, ref } from "vue";
@@ -172,20 +164,20 @@ const TodoList = ({ todos, initialActiveId }: TodoListProps) => {
 };
 ```
 
-`.map(...)` コールバック エイリアス (`todo`、`index`) は、生成された型チェッカーのスコープ内に保持され、
-LSP 仮想 TypeScript なので、ホバー、完了、診断、名前変更が同じバインディングで動作します。
-あなたが著者です。
+`.map(...)` のコールバック引数（`todo`、`index`）は、型チェッカーと LSP 用の仮想 TypeScript でもスコープ内に保持します。
+ホバー、補完、診断、名前変更は、元のソースにある同じ束縛を対象にします。
 
-## 出力モード: VDOM 対 蒸気
+<span id="出力モード-vdom-対-蒸気"></span>
 
-各コンポーネントは**仮想 DOM**出力 (Vue のデフォルトのレンダラー) または
-[**蒸気**](https://blog.vuejs.org/posts/vue-vapor) 出力。デフォルトは構成によって選択されます。
-個々のコンポーネントはそれをオーバーライドできます。
+## 出力モード: VDOM と Vapor
+
+コンポーネントは、Vue の標準レンダラーである **Virtual DOM** または [**Vapor**](https://blog.vuejs.org/posts/vue-vapor) 向けにコンパイルされます。
+設定でデフォルトを選び、コンポーネントごとに上書きできます。
 
 ### デフォルト設定
 
-`compiler.jsxMode` は、`.jsx`/`.tsx` コンポーネントのグローバルなデフォルト バックエンドを設定します。 `"vdom"`を受け入れます
-または `"vapor"`、デフォルトは `"vdom"` です。
+`compiler.jsxMode` は `.jsx`/`.tsx` 全体のデフォルトを指定します。
+値は `"vdom"` または `"vapor"` で、デフォルトは `"vdom"` です。
 
 ```ts
 // vize.config.ts
@@ -199,14 +191,13 @@ export default defineConfig({
 });
 ```
 
-`jsxMode` は `compiler.vapor` から独立しています: `vapor` は `.vue` SFC の Vapor を切り替えますが、`jsxMode`
-JSX/TSX のデフォルトのバックエンドを制御します。プロジェクトは、JSX をデフォルトで使用しながら、SFC を VDOM 上に維持できます。
-蒸気、またはその逆。 Vite プラグインは、`jsxMode` をプラグイン オプションとして直接受け入れます。
-共有設定をオーバーライドします。
+`jsxMode` と `compiler.vapor` は独立しています。`vapor` は `.vue` SFC を、`jsxMode` は JSX/TSX を対象にします。
+SFC を VDOM、JSX を Vapor にする構成も、その逆も可能です。
+Vite プラグインに直接指定した `jsxMode` は、共有設定より優先されます。
 
 ### コンポーネントごとのディレクティブ
 
-個々のコンポーネントは、`"use strict"` をミラーリングするディレクティブ プロローグでデフォルトをオーバーライドします。
+`"use strict"` と同様に、関数の先頭へディレクティブを書いてデフォルトを上書きします。
 
 ```tsx
 // Compiled to Vapor regardless of the configured default.
@@ -222,7 +213,7 @@ const Classic = () => {
 };
 ```
 
-各コンポーネントは独立してルーティングされるため、**単一のファイルで両方のバックエンドを混在させることができます**。
+各コンポーネントの出力先は独立しているため、**1 つのファイルで VDOM と Vapor を併用できます**。
 
 ```tsx
 // vize.config: { compiler: { jsxMode: "vapor" } }
@@ -239,33 +230,31 @@ export const LegacyWidget = () => {
 
 ### 優先順位
 
-コンポーネントの出力モードは次の順序で解決されます。
+出力モードは次の順で決まります。
 
-1. コンポーネントごとの `"use vue:vapor"` / `"use vue:vdom"` ディレクティブ。
-2. 設定からの `compiler.jsxMode` のデフォルト (またはプラグインの `jsxMode` オプション)。
-3. 組み込みフォールバック、`"vdom"`。
+1. コンポーネント先頭の `"use vue:vapor"` / `"use vue:vdom"`。
+2. 共有設定の `compiler.jsxMode`、またはプラグインオプションの `jsxMode`。
+3. 組み込みのデフォルト `"vdom"`。
 
 ### 診断
 
-不正な形式または矛盾するディレクティブは、黙って無視されるのではなく、報告されます。
+無効なディレクティブや指定の衝突は診断します。
 
-- `"use vue:"` で始まるが、既知のモードを指定していないディレクティブ (次のようなタイプミス)
-  `"use vue:vdomx"`) はコンパイル エラーです。
-- 1 つのコンポーネント内の 2 つの競合するモード ディレクティブ (`"use vue:vapor"` の後に `"use vue:vdom"`)
-  診断されている。解決済みモードでは最初のディレクティブが引き続き優先されます。
-- `"use strict"` などの関連のないプロローグはそのまま残されます。
+- `"use vue:"` で始まり、既知のモードを指定していないものはコンパイルエラーです。例: `"use vue:vdomx"`。
+- 1 つのコンポーネントで `"use vue:vapor"` と `"use vue:vdom"` を指定すると診断します。出力モードには先に書いた指定が使われます。
+- `"use strict"` など、モードに関係しないディレクティブは保持します。
+
+<a id="scoped-styles"></a>
 
 ## スコープ付きスタイル
 
-- **コンポーネント内の `<style scoped>` 要素**は、SFC の scoped style に相当します。
-  `<style scoped>` ブロック。コンパイル時に抽出され、ランタイムとしてレンダリングされることはありません。
-  vnode — その CSS は、生成された `data-v-<hash>` スコープ ID、そのスコープ属性でスコープ書き換えられます。
-  はコンポーネントの他の要素に挿入され、書き換えられた CSS は
-  Bundler プラグインの CSS パイプライン。これは VDOM と Vapor バックエンドの両方で機能し、両方とも
-  特定のコンポーネントの同じスコープ ID。
+コンポーネント内の `<style scoped>` は、SFC の同名のブロックに相当します。
+コンパイル時に抽出するため、実行時の `<style>` vnode としては描画しません。
+生成した `data-v-<hash>` スコープ ID で CSS を書き換え、他の要素にスコープ属性を付け、バンドラープラグインの CSS 処理へ渡します。
+VDOM と Vapor の両方で利用でき、同じコンポーネントには同じスコープ ID が付きます。
 
-慣用的に、`<style scoped>` 要素はマークアップの後に**最後**になります。これは SFC の要素と一致します。
-`<template>` → `<style>` の順序ですが、コンパイラーはそれが出現する場所から抽出します。
+通常は SFC の `<template>` → `<style>` と同じ順で、マークアップの**末尾**へ配置します。
+ただし、コンパイラは記述位置にかかわらず抽出します。
 
 ```tsx
 type CardProps = {
@@ -288,9 +277,8 @@ const Card = ({ title }: CardProps) => (
 
 ### 動的スタイル値
 
-動的なスタイル設定には、通常のクラス バインディング、インライン スタイル オブジェクト、または CSS カスタム プロパティを優先します。
-JSX/TSX。 `<style scoped>` 内のテンプレート リテラル補間 `${expr}` がサポートされており、
-型チェックされていますが、これらはメインのオーサリング スタイルではなく、エスケープ ハッチです。
+動的な値には、クラスの束縛、インラインのスタイルオブジェクト、CSS カスタムプロパティを使うと読みやすくなります。
+`<style scoped>` 内の `${expr}` によるテンプレートリテラル補間も型チェックできますが、必要な場合に使う補助手段です。
 
 ```tsx
 type BoxProps = {
@@ -318,20 +306,16 @@ const Box = ({ color, gap }: BoxProps) => (
 );
 ```
 
-`<style>` 要素 **`scoped` なし**は、通常の要素として扱われ、そのままレンダリングされます。
-抽出されていない。
-
-`<style scoped>{`.box { カラー: ${color}; }`}</style>` も機能し、型チェッカーでカバーされます。
-ただし、スコープ付きスタイルシートが実際にコンポーネント式を参照する必要がある場合に備えて保持してください。
-SFC `<style>` ブロック内で使用されるリテラル CSS `v-bind(...)` 関数構文はサポートされていません。
-JSX スタイル ブロック内のフォームを作成します。
+`scoped` を付けていない `<style>` は通常の要素として描画され、抽出されません。
+``<style scoped>{`.box { color: ${color}; }`}</style>`` も型チェックの対象です。
+scoped スタイルシートからコンポーネント内の式を参照する必要がある場合に使ってください。
+SFC の `<style>` で使う CSS の `v-bind(...)` 構文は、JSX のスタイルブロックでは未対応です。
 
 ## フォーマット
 
-Glyph は、OXC パーサーとフォーマッタを使用して JSX/TSX スクリプト コンテンツをフォーマットします。 `.vue` ファイルでは、
-`<script lang="jsx">`、`<script lang="tsx">`、および `<script setup lang="tsx">` は JSX/TSX として解析されます
-プレーンな TypeScript にフォールバックする代わりに、JSX の子と TSX アノテーションは次のようにフォーマットされます。
-実際の構文:
+Glyph は OXC のパーサーとフォーマッタで JSX/TSX を整形します。
+`.vue` 内の `<script lang="jsx">`、`<script lang="tsx">`、`<script setup lang="tsx">` も JSX/TSX として解析するため、
+JSX の子要素や TSX の型注釈を、通常の TypeScript と区別して整形します。
 
 ```vue
 <script setup lang="tsx">
@@ -351,8 +335,7 @@ const Card = ({ title, items }: CardProps) => (
 </script>
 ```
 
-スタンドアロン `.jsx`/`.tsx` モジュールは、`.vue` ファイルとともに `vize fmt` によって検出され、フォーマットされます。
-同じ JSX/TSX ソースタイプの処理を使用します。
+`vize fmt` は `.vue` に加えてスタンドアロンの `.jsx`/`.tsx` も検出し、同じ JSX/TSX の処理で整形します。
 
 ```bash
 # Formats .vue, .jsx, and .tsx files by default
@@ -361,9 +344,8 @@ vize fmt src --write
 
 ## 型チェック
 
-JSX/TSX の型チェックは、`typeChecker.jsxTypecheck` による**オプトイン**であり、デフォルトは **`false`** です。
-意図的にデフォルトではオフになっています。リポジトリには、使用してはいけない React `.tsx` ファイルが含まれている可能性があります。
-Vue JSX として型チェックされます。
+JSX/TSX の型チェックは、`typeChecker.jsxTypecheck` を明示的に有効にして使います。デフォルトは **`false`** です。
+Vue と React が混在するリポジトリで、React の `.tsx` を Vue JSX として検査しないためです。
 
 ```ts
 // vize.config.ts
@@ -377,20 +359,16 @@ export default defineConfig({
 });
 ```
 
-有効にすると、`vize check` は Canon を通じて `.jsx`/`.tsx` Vue コンポーネントの型チェックを行います。生成された
-仮想ファイルは TSX ではなくプレーンな TypeScript であり、作成されたコンポーネント コントラクトを保持します。
+有効にすると、`vize check` は Canon で `.jsx`/`.tsx` の Vue コンポーネントを型チェックします。
+生成する仮想ファイルは TSX ではなく通常の TypeScript で、次のように元のコンポーネントの型情報を保持します。
 
-- 型指定された最初のパラメータは props 型のままです。
-- `Ctx<Emits, Slots>` はセットアップ本体と JSX 式に表示されたままになります。
-- イベント ハンドラー、バインドされたプロパティ、`v-if`/`v-show`、カスタム ディレクティブ、スコープ スタイルの補間
-  式が使用されると、通常の TypeScript 読み取りとして再発行されます。
-- `v-model` ターゲットは書き込み可能な自己割り当てとして再発行されるため、読み取り専用または非左辺値バインディング
-  結合時に診断されます。
-- `.map(...)` リストの本体は生成されたコールバック内で再発行されるため、値/インデックスのエイリアスは保持されます。
-  推論された要素タイプ。
+- 第 1 引数の型を props の型として保持します。
+- `Ctx<Emits, Slots>` を setup 本体と JSX の式から参照できます。
+- イベントハンドラ、props の束縛、`v-if`/`v-show`、独自ディレクティブ、scoped スタイル内の補間式は、TypeScript の読み取り式として出力します。
+- `v-model` の代入先は書き込みの検査用に自己代入として出力し、readonly な値や左辺に置けない式を元の束縛位置で診断します。
+- `.map(...)` の本体は生成したコールバック内へ出力し、値とインデックスの引数には推論した要素型を保持します。
 
-診断は**元のソースの場所**(CLI の JSON として、および
-LSP)、すべての意味のある仮想 TS 範囲が、作成したソース範囲にマッピングされるためです。
+仮想 TypeScript の意味のある範囲を元のソース範囲へ対応付けるため、CLI の JSON と LSP の診断はいずれも**元のソース位置**を指します。
 
 ```tsx
 type FieldProps = {
@@ -402,8 +380,7 @@ type FieldProps = {
 const Field = ({ model }: FieldProps) => <input v-model={model.value} />;
 ```
 
-上記の例では、割り当て対象として `model.value` がチェックされています。読み取り専用の場合、
-診断は、生成されたコードではなく、TSX ソースの `model.value` に到達します。
+この例では `model.value` を代入先として検査します。readonly な場合は、生成コードではなく TSX ソース内の `model.value` を診断します。
 
 ```bash
 # Type-check a project including its .jsx/.tsx Vue components.
@@ -411,43 +388,41 @@ const Field = ({ model }: FieldProps) => <input v-model={model.value} />;
 vize check src
 ```
 
-スタンドアロンの JSX/TSX コンポーネントは、チェック用のプレーンな仮想 TypeScript に下位にあります。を含むSFC
-`<script lang="jsx">`、`<script lang="tsx">`、または一致する `script setup` ブロックは次のように具体化されます。
-`.vue.tsx` 仮想ファイルなので、TypeScript はスクリプト ブロック内の JSX 構文を解析します。 LSP と CLI の共有
-同じ低下であるため、Corsa 診断はエディターと
-コマンドライン。
+スタンドアロンの JSX/TSX は、型チェック用の通常の TypeScript へ変換します。
+一方、SFC の `<script lang="jsx">`、`<script lang="tsx">`、対応する `script setup` は `.vue.tsx` の仮想ファイルにします。
+これにより、TypeScript はスクリプトブロック内の JSX を解析できます。
+LSP と CLI は同じ変換を使うため、Corsa の診断はエディターでもコマンドラインでも同じソース範囲を指します。
 
 ## エディター / LSP
 
-`.jsx`/`.tsx` Vue コンポーネントを `vize lsp` をサポートするエディターで開くと、同じ言語が表示されます
-SFC としての機能 —**SFC ラッパーは必要ありません**:
+`vize lsp` に対応したエディターでは、`.jsx`/`.tsx` の Vue コンポーネントに SFC と同じ機能を使えます。
+**SFC でラップする必要はありません**。
 
 - 診断
 - ホバー
-- 完成
-- 定義へ移動
-- 参考文献
-- 名前の変更
-- 文書記号
+- 補完
+- 定義への移動
+- 参照の検索
+- 名前変更
+- ドキュメントシンボル
 - セマンティックトークン
 - コードアクション
-- `<style scoped>` ブロックの埋め込み CSS 診断
+- `<style scoped>` 内の CSS 診断
 
-構造的機能 (ドキュメント シンボル、セマンティック トークン、スコープ スタイルの診断、コード アクション) が機能する
-解析されたドキュメントから取得され、いつでも利用できます。タイプ認識機能 (診断、ホバー、
-完了、定義へ移動、参照、名前変更) は、`typeChecker.jsxTypecheck` の場合にのみ到達します。
-有効になっているため、React `.tsx` ファイルはエディターでも Vue JSX として扱われません。
+ドキュメントシンボル、セマンティックトークン、scoped スタイルの診断、コードアクションは、解析した文書から利用できます。
+型情報を使う診断、ホバー、補完、定義への移動、参照、名前変更には `typeChecker.jsxTypecheck` の有効化が必要です。
+エディターでも React の `.tsx` を誤って Vue JSX として扱わないようにしています。
 
-## 糸くず
+<span id="糸くず"></span>
 
-Vize の Patina lint ルールは、**OXC から直接投影されたゼロコスト ルール IR を通じて JSX/TSX 上で実行されます。
-AST**。マークアップ指向のルールは合成 SFC テンプレートを再構築しません。 JSX 要素を読み取り、
-属性を直接指定します。 `.map(...)` リスト キー チェックなど、Vue テンプレート シェイプを必要とするルールが実行されます。
-低くなったレリーフツリーの上に。セマンティック ルールは、Croquis によってサポートされています。これは、
-SFC。
+## lint
 
-これは、JSX/TSX lint が文字列の一部に依存せずに同じクラスの問題を捕捉することを意味します。
-一致:
+Patina の JSX/TSX 用 lint は、OXC AST から直接投影したルール用 IR を使います。
+マークアップ用ルールは疑似的な SFC テンプレートを作らず、JSX の要素と属性を直接読み取ります。
+`.map(...)` の key 検査など、Vue テンプレートの形が必要なルールは変換後の Relief ツリーを使います。
+セマンティックなルールは、SFC と同じ Croquis の解析を利用します。
+
+そのため、文字列の部分一致に頼らず、JSX/TSX の構文から次の問題を検出できます。
 
 ```tsx
 const BrokenMedia = () => (
@@ -460,13 +435,13 @@ const BrokenMedia = () => (
 );
 ```
 
-上の例は JSX ソースとして lint されています。
+上の例では、次のルールが JSX のソースを診断します。
 
-- `a11y/img-alt` は、欠落している `alt` を報告します。
-- `a11y/no-access-key` は `accessKey` を報告します。
-- `a11y/no-autofocus` は `autoFocus` をレポートします。
+- `a11y/img-alt`: `alt` の指定漏れ。
+- `a11y/no-access-key`: `accessKey` の使用。
+- `a11y/no-autofocus`: `autoFocus` の使用。
 
-リストの主要なルールは、慣用的な JSX `.map(...)` 形状を理解します。
+リストの key を調べるルールも、通常の `.map(...)` による記述を扱えます。
 
 ```tsx
 const KeyedList = ({ rows }: { rows: Array<{ id: string; label: string }> }) => (
@@ -478,35 +453,30 @@ const KeyedList = ({ rows }: { rows: Array<{ id: string; label: string }> }) => 
 );
 ```
 
-診断と修正は JSX ソース範囲にマップされるため、CLI 出力とエディターの装飾は JSX ソース範囲を指します。
-変更する必要がある要素または小道具。
+診断と修正は JSX のソース範囲へ対応付けられます。CLI の出力とエディターの表示は、修正する要素や props を指します。
 
 ```bash
 # Lint .vue, .html, .jsx, and .tsx files
 vize lint src
 ```
 
-lint および型チェック モデルについては、[静的解析](./static-analysis.md) を参照してください。
-[ルール](../rules/index.md) 具体的なルールの出力。
+lint と型チェックの仕組みは[静的解析](./static-analysis.md)を、具体的なルール出力は[ルール一覧](../rules/index.md)を参照してください。
 
 ## 制限事項
 
-現在のエッジに注意してください。
+現在の制限は次のとおりです。
 
-- **型チェックはオプトインです。** `typeChecker.jsxTypecheck` はデフォルトでは `false` であるため、Vue/React が混在しています
-  リポジトリが誤って React TSX を Vue JSX チェッカー経由でルーティングすることはありません。
-- **HMR はまだ `.jsx`/`.tsx` モジュールに接続されていません。** JSX コンパイラーは現在、
-  完全なコンポーネント オブジェクト モジュールではなくレンダリング関数モジュールなので、Vue HMR 境界はありません
-  に取り付ける。完全なコンポーネント モジュール出力と状態保持 HMR は計画されたフォローアップです。まで
-  その後、`.jsx`/`.tsx` コンポーネントへの編集は通常のリロードに戻ります。
-- **JSX `<style scoped>` ブロック内のリテラル CSS `v-bind(...)` はサポートされていません。** `${expr}` を使用してください
-  テンプレート リテラル補間。サポートされている型チェックされた形式です。
+- **型チェックは明示的に有効にします。** `typeChecker.jsxTypecheck` のデフォルトは `false` で、Vue/React が混在するリポジトリで誤って React TSX を検査しないためです。
+- **`.jsx`/`.tsx` モジュールの HMR は未対応です。** VDOM は元の import、export、ブロック内の setup 状態、JSX の引数のデフォルト値とスコープを保持します。ただし、バンドラーが Vue の HMR 境界を登録しないため、編集時は通常の再読み込みになります。
+- **Vapor と SSR で元のモジュールを保持する処理は未完了です。** スタンドアロンのレンダラーが保持できない import、export、setup 文、捕捉したローカルの束縛は診断します。静的なスタンドアロンのレンダラーとコンポーネント単位の出力は利用できます。
+- **実行時ヘルパーの別名は隠せません。** `_openBlock` などの生成するヘルパーと元の束縛が衝突すると、不正なモジュールを出力せず診断します。
+- **JSX の `<style scoped>` 内では CSS の `v-bind(...)` は未対応です。** 型チェックできる `${expr}` によるテンプレートリテラル補間を使ってください。
 
-## も参照
+<span id="も参照"></span>
 
-- [構成](./configuration.md) — `compiler.jsxMode` キーと `typeChecker.jsxTypecheck` キー、
-  さらに、完全な共有構成シェイプも含まれます。
-- [Vite Plugin](./vite-plugin.md) — 推奨されるバンドラー統合。
-- [静的分析](./static-analysis.md) — lint と型チェックがコンパイラ パイプラインを共有する方法。
-- [`examples/jsx-tsx`](https://github.com/ubugeeei-prod/vize/tree/main/examples/jsx-tsx) —
-  コンパイラ、リンター、型チェッカー、LSP、およびフォーマッタの範囲に焦点を当てた JSX/TSX ソースの例。
+## 関連項目
+
+- [設定](./configuration.md): `compiler.jsxMode`、`typeChecker.jsxTypecheck`、共有設定全体。
+- [Vite プラグイン](./vite-plugin.md): 推奨するバンドラー連携。
+- [静的解析](./static-analysis.md): lint と型チェックで共有するコンパイラの処理。
+- [`examples/jsx-tsx`](https://github.com/ubugeeei-prod/vize/tree/main/examples/jsx-tsx): コンパイラ、リンター、型チェッカー、LSP、フォーマッタの確認用 JSX/TSX 例。

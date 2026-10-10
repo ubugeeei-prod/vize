@@ -1,0 +1,75 @@
+{
+  "source": "29cf6512674b0516caba21df9b530b299710f1ea",
+  "pages": {
+    "jsx": {
+      "fences": [
+        "```ts\n// vite.config.ts — nothing JSX-specific is required\nimport { defineConfig } from \"vite\";\nimport vize from \"@vizejs/vite-plugin\";\n\nexport default defineConfig({\n  plugins: [vize()],\n});\n```",
+        "```tsx\nimport { computed, ref } from \"vue\";\n\ntype CounterProps = {\n  label: string;\n  start?: number;\n};\n\ntype CounterEmits = {\n  change: [value: number];\n};\n\nconst Counter = ({ label, start = 0 }: CounterProps, { emit }: Ctx<CounterEmits>) => {\n  const count = ref(start);\n  const doubled = computed(() => count.value * 2);\n\n  const increment = () => {\n    count.value += 1;\n    emit(\"change\", count.value);\n  };\n\n  return (\n    <section class=\"counter\">\n      <p>\n        {label}: {count.value}\n      </p>\n      <p>Double: {doubled.value}</p>\n      <button type=\"button\" onClick={increment}>\n        Increment\n      </button>\n    </section>\n  );\n};\n```",
+        "```tsx\nconst Hello = ({ name }: { name: string }) => <h1>Hello, {name}!</h1>;\n```",
+        "```tsx\nconst Badge = ({ count = 0 }: { count?: number }) => <span class=\"badge\">{count}</span>;\n```",
+        "```tsx\nimport { computed, ref } from \"vue\";\n\ntype Todo = {\n  id: string;\n  title: string;\n  done: boolean;\n};\n\ntype TodoListProps = {\n  todos: Todo[];\n  initialActiveId?: string;\n};\n\nconst TodoList = ({ todos, initialActiveId }: TodoListProps) => {\n  const activeId = ref(initialActiveId ?? todos[0]?.id);\n  const activeTodo = computed(() => todos.find((todo) => todo.id === activeId.value));\n\n  return (\n    <section class=\"todo-panel\">\n      <header>\n        <h2>{activeTodo.value?.title ?? \"Select a todo\"}</h2>\n      </header>\n\n      <ul class=\"todo-list\">\n        {todos.map((todo, index) => (\n          <li\n            key={todo.id}\n            class={{ done: todo.done, active: todo.id === activeId.value }}\n            data-index={index}\n          >\n            <button type=\"button\" onClick={() => (activeId.value = todo.id)}>\n              <span>{todo.title}</span>\n              {todo.id === activeId.value ? <strong>Active</strong> : <em>{index + 1}</em>}\n            </button>\n          </li>\n        ))}\n      </ul>\n    </section>\n  );\n};\n```",
+        "```ts\n// vize.config.ts\nimport { defineConfig } from \"vize\";\n\nexport default defineConfig({\n  compiler: {\n    // Default every .jsx/.tsx component to Vapor output.\n    jsxMode: \"vapor\",\n  },\n});\n```",
+        "```tsx\n// Compiled to Vapor regardless of the configured default.\nconst Fast = () => {\n  \"use vue:vapor\";\n  return <div class=\"fast\" />;\n};\n\n// Compiled to Virtual DOM regardless of the configured default.\nconst Classic = () => {\n  \"use vue:vdom\";\n  return <div class=\"classic\" />;\n};\n```",
+        "```tsx\n// vize.config: { compiler: { jsxMode: \"vapor\" } }\n\n// No directive -> takes the configured default (Vapor here).\nexport const Dashboard = () => <main>{/* ... */}</main>;\n\n// Opts back into Virtual DOM just for this component.\nexport const LegacyWidget = () => {\n  \"use vue:vdom\";\n  return <aside>{/* ... */}</aside>;\n};\n```",
+        "```tsx\ntype CardProps = {\n  title: string;\n};\n\nconst Card = ({ title }: CardProps) => (\n  <article class=\"card\">\n    <h2>{title}</h2>\n\n    <style scoped>{`\n      .card {\n        border: 1px solid currentColor;\n        padding: 12px;\n      }\n    `}</style>\n  </article>\n);\n```",
+        "```tsx\ntype BoxProps = {\n  color: string;\n  gap: number;\n};\n\nconst Box = ({ color, gap }: BoxProps) => (\n  <section\n    class=\"box\"\n    style={{\n      \"--box-color\": color,\n      \"--box-gap\": `${gap}px`,\n    }}\n  >\n    <p>content</p>\n\n    <style scoped>{`\n      .box {\n        color: var(--box-color);\n        gap: var(--box-gap);\n      }\n    `}</style>\n  </section>\n);\n```",
+        "```vue\n<script setup lang=\"tsx\">\ntype CardProps = {\n  title: string;\n  items: string[];\n};\n\nconst Card = ({ title, items }: CardProps) => (\n  <section class=\"card\">\n    <h2>{title}</h2>\n    {items.map((item) => (\n      <span key={item}>{item}</span>\n    ))}\n  </section>\n);\n</script>\n```",
+        "```bash\n# Formats .vue, .jsx, and .tsx files by default\nvize fmt src --write\n```",
+        "```ts\n// vize.config.ts\nimport { defineConfig } from \"vize\";\n\nexport default defineConfig({\n  typeChecker: {\n    enabled: true,\n    jsxTypecheck: true,\n  },\n});\n```",
+        "```tsx\ntype FieldProps = {\n  model: {\n    readonly value: string;\n  };\n};\n\nconst Field = ({ model }: FieldProps) => <input v-model={model.value} />;\n```",
+        "```bash\n# Type-check a project including its .jsx/.tsx Vue components.\n# .jsx/.tsx files are collected only when typeChecker.jsxTypecheck is enabled.\nvize check src\n```",
+        "```tsx\nconst BrokenMedia = () => (\n  <article>\n    <img src=\"/avatar.png\" />\n    <button accessKey=\"s\" autoFocus>\n      Save\n    </button>\n  </article>\n);\n```",
+        "```tsx\nconst KeyedList = ({ rows }: { rows: Array<{ id: string; label: string }> }) => (\n  <ul>\n    {rows.map((row) => (\n      <li key={row.id}>{row.label}</li>\n    ))}\n  </ul>\n);\n```",
+        "```bash\n# Lint .vue, .html, .jsx, and .tsx files\nvize lint src\n```"
+      ],
+      "headings": [
+        "jsx-と-tsx",
+        "jsx-tsx-の有効化",
+        "オーサリング-api",
+        "サポートされている-jsx-サーフェス",
+        "出力モード-vdom-対-蒸気",
+        "デフォルト設定",
+        "コンポーネントごとのディレクティブ",
+        "優先順位",
+        "診断",
+        "スコープ付きスタイル",
+        "動的スタイル値",
+        "フォーマット",
+        "型チェック",
+        "エディター-lsp",
+        "糸くず",
+        "制限事項",
+        "も参照"
+      ]
+    },
+    "jsx-babel-compat": {
+      "fences": [
+        "```json\n{\n  \"compiler\": {\n    \"jsxCompat\": \"babel\"\n  }\n}\n```",
+        "```js\nimport { compileJsx } from \"@vizejs/native\";\n\nconst result = compileJsx(source, {\n  filename: \"App.tsx\",\n  lang: \"tsx\",\n  jsxCompat: \"babel\",\n});\n```",
+        "```text\ncompiler.jsxCompat: \"babel\" is not supported with Vapor output: @vue/babel-plugin-jsx has no\nVapor equivalent. Use jsxMode \"vdom\" for babel compatibility, or drop jsxCompat to use Vize's own\nVapor semantics.\n```",
+        "```bash\nnode crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs --check\ncargo test -p vize_atelier_jsx --test babel_compat_oracle\nnode --test tests/tooling/babel-jsx-oracle.test.ts\n```"
+      ],
+      "headings": [
+        "babel-jsx-互換",
+        "有効にする",
+        "なぜオプトインでプロジェクト単位なのか",
+        "プラグインオプションの対応",
+        "このモードが適用されない場所",
+        "保留中のもの",
+        "互換性の測り方",
+        "関連項目"
+      ]
+    },
+    "compiler-inspector": {
+      "fences": [
+        "```bash\nhttps://vizejs.dev/play/?tab=inspector\n```",
+        "```bash\nvize inspector src/App.vue\n```",
+        "```bash\nvize inspector src/components\nvize inspector \"src/**/*.vue\" --target ssr\n```",
+        "```bash\nvize inspector \"src/**/*.vue\" --format json --output inspector-payload.json\n```",
+        "```bash\nvize inspector \"src/**/*.vue\" --format agent --output inspector-agent.json\n```",
+        "```bash\nvize inspector \"src/**/*.vue\" --format compare --output inspector-compare.json\n```"
+      ],
+      "headings": ["コンパイラインスペクタ", "cli-ペイロード", "pr-ワークフロー"]
+    }
+  }
+}
