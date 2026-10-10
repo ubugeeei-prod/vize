@@ -40,6 +40,16 @@ return those exact bytes. A genuine self-link must retain its complete failure
 diagnostic. Existing missing-directory/entry/source, invalid UTF-8, sorted
 vector and byte-retention controls remain intact.
 
+The first repair PR [#8379](https://github.com/ubugeeei-prod/vize/pull/8379)
+source run `38025646383` skipped both canonical and Rust jobs: the shared
+`tests/davinci_test_support/` workspace crate was absent from the corpus
+selector and classified as JavaScript by the source planner. The
+[paired selector decision](https://github.com/ubugeeei-prod/vize/issues/6830#issuecomment-6093965676)
+adds that actual crate to both selectors. Its manifest, reader and test changes
+now require genuine Rust validation and complete canonical observers in PR and
+queue contexts. The affected-crate planner already follows the crate's actual
+Cargo metadata and dev consumers; no synthetic package ownership is added.
+
 TODO: qualify the exact source on Actions, merge through the protected queue,
 and refresh #8361 against actual main before its own full qualification and
 delivery. This bounded reader repair does not close the CI roadmap, explain
