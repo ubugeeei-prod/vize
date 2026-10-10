@@ -1,0 +1,32 @@
+{
+  "repository": "https://github.com/n8n-io/n8n",
+  "revision": "e882e8a483f433facb47bab9b407d0ec00a81172",
+  "license": "LicenseRef-Sustainable-Use",
+  "sourceAuthority": "Original Git blob identity and pre-execution source bytes; this is not a runtime-output golden.",
+  "registryBeforeSha256": "95e1f92ae1432a80047b67e2f2854ce7a4cb0c659a1fbbcfcaf4b0ec22ca37a7",
+  "originalProjectCount": 145,
+  "originalAuthoredProjectCount": 51,
+  "files": [
+    {
+      "fixture": "../n8n-authored-editor/NullEmptyCellRenderer.vue.txt",
+      "upstreamPath": "packages/frontend/editor-ui/src/features/core/dataTable/components/dataGrid/NullEmptyCellRenderer.vue",
+      "sha256": "91446b8d45dab10ef21fac1c4351cc7381c9e658f9a60f7144c6bbc0b84f28d3",
+      "bytes": 288,
+      "gitBlobOid": "fb570bb9ed78e0917a53ffe17868ac29518f23f3"
+    },
+    {
+      "fixture": "RunData.vue.txt",
+      "upstreamPath": "packages/frontend/editor-ui/src/features/ndv/runData/components/RunData.vue",
+      "gitBlobOid": "96aa480caffc39b65db12f96e4c1c6ad56bb75f8",
+      "sha256": "d82d0d38e758918c071a46216e8fa8158cc12282f6b1f1ec32c0b416055612bc",
+      "bytes": 74690
+    },
+    {
+      "fixture": "RunDataItemCount.vue.txt",
+      "upstreamPath": "packages/frontend/editor-ui/src/features/ndv/runData/components/RunDataItemCount.vue",
+      "gitBlobOid": "432eafffcb061b56f2dde20b660eaf229aad7170",
+      "sha256": "830a02f43d340f3fbe15a620653fa0d10dc915567298ae7c606322de9059300e",
+      "bytes": 1284
+    }
+  ]
+}
