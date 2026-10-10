@@ -92,3 +92,12 @@ The next genuine parent incorporates the actual merged Japanese browser
 producer; no foreign implementation is duplicated in this documentation child.
 Fresh exact-head source and full Docs Actions, protected Stack merge, release
 availability, and deployed reader acceptance remain pending after this correction.
+
+The final genuine parent includes actual merged-main Japanese gate producers,
+emphasis delimiter spacing, and the complete new `valid-v-slot` options-table
+guard. Preserve those incoming changes. Move only the reader record's existing
+clause to the end of its existing canonical row, retaining all 350 foreign rows
+and every parent workflow byte beside the added configuration gate. The sealed
+reader recipes, original complete dedicated workflow archive, and all six
+regressions remain unchanged. Earlier parent/head receipts grant no acceptance
+to this necessary final source composition.
