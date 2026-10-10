@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { loadConfigFromFile, type PluginOption } from "vite";
+import { loadConfigFromFile, type PluginOption, type UserConfig } from "vite";
+import { loadConfig, resolveViteConfigExport } from "@vizejs/vite-plugin";
 
 import type { MuseaOptions, MuseaVrtOptions } from "../types/index.js";
 import { readMuseaOptions } from "../plugin/options.js";
@@ -9,13 +10,14 @@ import { publicBasePathFromViteBase } from "../static-base.js";
 
 const DEFAULT_INCLUDE = ["**/*.art.vue"];
 const DEFAULT_EXCLUDE = ["node_modules/**", "dist/**"];
-const VIZE_CONFIG_NAMES = [
-  "vize.config.ts",
-  "vize.config.mts",
-  "vize.config.js",
-  "vize.config.mjs",
-  "vize.config.cjs",
-];
+const CONFIG_ENV = { command: "serve", mode: "development", isSsrBuild: false } as const;
+
+interface LoadedViteConfig {
+  root: string;
+  configDir: string;
+  config: UserConfig;
+  plugins: unknown[];
+}
 
 export interface MuseaFileSet {
   root: string;
@@ -25,58 +27,73 @@ export interface MuseaFileSet {
 }
 
 export async function loadMuseaVrtOptions(
-  configPath: string,
+  configPath?: string,
   cwd = process.cwd(),
 ): Promise<MuseaVrtOptions | undefined> {
-  const loaded = await loadViteConfig(configPath, cwd);
-  if (!loaded) return undefined;
-  return readPluginMuseaOptions(loaded.plugins)?.vrt;
+  return (await loadMuseaConfiguration(configPath, cwd)).vrt;
 }
 
 export async function loadMuseaFileSet(
-  configPath: string,
+  configPath?: string,
   cwd = process.cwd(),
 ): Promise<MuseaFileSet> {
-  const loaded = await loadViteConfig(configPath, cwd);
-  const pluginOptions = loaded ? readPluginMuseaOptions(loaded.plugins) : undefined;
-  const vizeOptions = pluginOptions?.include
-    ? undefined
-    : await readVizeMuseaOptions(loaded?.configDir ?? cwd);
-  const include = pluginOptions?.include ?? vizeOptions?.include ?? DEFAULT_INCLUDE;
-  const exclude = pluginOptions?.exclude ?? vizeOptions?.exclude ?? DEFAULT_EXCLUDE;
-  const root = loaded?.root ?? cwd;
-  return {
-    root,
-    projectRoot: path.resolve(root, pluginOptions?.projectRoot ?? "."),
-    include,
-    exclude,
-  };
+  return (await loadMuseaConfiguration(configPath, cwd)).fileSet;
 }
 
 export async function loadMuseaPreviewBasePath(
-  configPath: string,
+  configPath?: string,
   cwd = process.cwd(),
 ): Promise<string> {
+  return (await loadMuseaConfiguration(configPath, cwd)).previewBasePath;
+}
+
+/** Resolve all CLI gallery metadata from one evaluation of the Vite config. */
+export async function loadMuseaConfiguration(
+  configPath?: string,
+  cwd = process.cwd(),
+): Promise<{
+  fileSet: MuseaFileSet;
+  vrt: MuseaVrtOptions | undefined;
+  configDir: string;
+  previewBasePath: string;
+}> {
   const loaded = await loadViteConfig(configPath, cwd);
   const pluginOptions = loaded ? readPluginMuseaOptions(loaded.plugins) : undefined;
-  const shared =
-    pluginOptions?.basePath === undefined
-      ? await readVizeMuseaOptions(loaded?.configDir ?? cwd)
-      : undefined;
-  return publicBasePathFromViteBase(
-    loaded?.base,
-    pluginOptions?.basePath ?? shared?.basePath ?? "/__musea__",
-  );
+  const vizeOptions = await readSharedMuseaOptions(loaded, cwd);
+  const include = pluginOptions?.include ?? vizeOptions?.include ?? DEFAULT_INCLUDE;
+  const exclude = pluginOptions?.exclude ?? vizeOptions?.exclude ?? DEFAULT_EXCLUDE;
+  const sharedVrt = vizeOptions?.vrt;
+  const { outDir, ...sharedVrtOptions } = sharedVrt ?? {};
+  const vrt = sharedVrt
+    ? {
+        ...sharedVrtOptions,
+        ...(outDir === undefined ? {} : { snapshotDir: outDir }),
+        ...pluginOptions?.vrt,
+      }
+    : pluginOptions?.vrt;
+  const root = loaded?.root ?? cwd;
+  return {
+    fileSet: {
+      root,
+      projectRoot: path.resolve(root, pluginOptions?.projectRoot ?? "."),
+      include,
+      exclude,
+    },
+    vrt,
+    configDir: loaded?.configDir ?? cwd,
+    previewBasePath: publicBasePathFromViteBase(
+      loaded?.config.base,
+      pluginOptions?.basePath ?? vizeOptions?.basePath ?? "/__musea__",
+    ),
+  };
 }
 
 async function loadViteConfig(
-  configPath: string,
+  configPath: string | undefined,
   cwd: string,
-): Promise<{ root: string; configDir: string; plugins: unknown[]; base?: string } | undefined> {
-  const resolvedConfigPath = path.isAbsolute(configPath)
-    ? configPath
-    : path.resolve(cwd, configPath);
-  if (!(await fileExists(resolvedConfigPath))) return undefined;
+): Promise<LoadedViteConfig | undefined> {
+  const resolvedConfigPath = configPath ? path.resolve(cwd, configPath) : undefined;
+  if (resolvedConfigPath && !(await fileExists(resolvedConfigPath))) return undefined;
 
   const loaded = await loadConfigFromFile(
     {
@@ -86,18 +103,19 @@ async function loadViteConfig(
       isSsrBuild: false,
     },
     resolvedConfigPath,
+    cwd,
   );
   if (!loaded) return undefined;
 
   const plugins: unknown[] = [];
   await collectPlugins(loaded.config.plugins, plugins);
-  const configDir = path.dirname(resolvedConfigPath);
+  const configDir = path.dirname(loaded.path);
   const configuredRoot = loaded.config.root;
   return {
     root: configuredRoot ? path.resolve(configDir, configuredRoot) : configDir,
     configDir,
+    config: loaded.config,
     plugins,
-    base: loaded.config.base,
   };
 }
 
@@ -109,32 +127,14 @@ function readPluginMuseaOptions(plugins: unknown[]): MuseaOptions | undefined {
   return undefined;
 }
 
-async function readVizeMuseaOptions(
-  dir: string,
-): Promise<Pick<MuseaOptions, "include" | "exclude" | "basePath"> | undefined> {
-  for (const name of VIZE_CONFIG_NAMES) {
-    const file = path.join(dir, name);
-    if (!(await fileExists(file))) continue;
-    try {
-      const loaded = await loadConfigFromFile(
-        {
-          command: "serve",
-          mode: "development",
-          isPreview: false,
-          isSsrBuild: false,
-        },
-        file,
-      );
-      const config = loaded?.config as
-        | { musea?: Pick<MuseaOptions, "include" | "exclude" | "basePath"> }
-        | undefined;
-      const musea = config?.musea;
-      if (musea?.include || musea?.exclude || musea?.basePath !== undefined) return musea;
-    } catch {
-      continue;
-    }
-  }
-  return undefined;
+async function readSharedMuseaOptions(loaded: LoadedViteConfig | undefined, cwd: string) {
+  // Project the config Vite already evaluated, including custom --config paths.
+  // Re-importing it could repeat plugin factories and other user side effects.
+  const config = loaded
+    ? ((await loadConfig(loaded.configDir, { viteConfig: false, env: CONFIG_ENV })) ??
+      (await resolveViteConfigExport(loaded.config, CONFIG_ENV)))
+    : await loadConfig(cwd, { mode: "auto", env: CONFIG_ENV });
+  return config?.musea;
 }
 
 async function collectPlugins(
