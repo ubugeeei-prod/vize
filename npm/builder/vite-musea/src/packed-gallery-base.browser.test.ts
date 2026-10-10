@@ -10,6 +10,10 @@ import { chromium } from "playwright";
 import { PNG } from "pngjs";
 import { createServer } from "vite";
 import type { MuseaVrtOptions } from "./types/plugin.ts";
+import {
+  createPackedGalleryHttpObserver,
+  type PackedGalleryHttpRecord,
+} from "./packed-gallery-http.ts";
 import type { VrtResult, VrtSummary } from "./vrt/types.ts";
 
 const repository = fileURLToPath(new URL("../../../../", import.meta.url));
@@ -142,31 +146,23 @@ void test(
           consoleErrors: string[] = [],
           httpErrors: string[] = [],
           pending: Promise<void>[] = [];
-        const responses: Array<{ url: string; status: number; bytes: number; sha256: string }> = [];
+        const responses: PackedGalleryHttpRecord[] = [];
         const observations: unknown[] = [];
         page.on("pageerror", (error) => errors.push(String(error)));
         page.on("console", (message) => {
           if (message.type() === "error") consoleErrors.push(message.text());
         });
-        page.on("response", (response) => {
-          if (!response.url().startsWith(origin + "/")) return;
-          pending.push(
-            (async () => {
-              const body = await response.body();
-              const digest = sha256(body);
-              await mkdir(path.join(caseOutput, "http-bodies"), { recursive: true });
-              await writeFile(path.join(caseOutput, "http-bodies", `${digest}.bin`), body);
-              responses.push({
-                url: response.url(),
-                status: response.status(),
-                bytes: body.length,
-                sha256: digest,
-              });
-            })().catch((error) => {
-              httpErrors.push(String(error));
-            }),
-          );
-        });
+        page.on(
+          "response",
+          createPackedGalleryHttpObserver({
+            origin,
+            caseOutput,
+            responses,
+            pending,
+            httpErrors,
+            sha256,
+          }),
+        );
         let failure: unknown;
         const evidenceErrors: unknown[] = [];
         try {
