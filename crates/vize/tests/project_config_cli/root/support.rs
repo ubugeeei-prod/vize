@@ -117,7 +117,7 @@ pub(super) fn inventory(root: &Path) -> Value {
 }
 
 // Retain every field, diagnostic, option and message. Only the temporary
-// project identity differs between runs; path separator spelling is portable.
+// project identity differs between runs.
 pub(super) fn normalize_report(root: &Path, value: &mut Value) {
     match value {
         Value::String(value) => {
@@ -126,8 +126,7 @@ pub(super) fn normalize_report(root: &Path, value: &mut Value) {
                     fs::canonicalize(root).unwrap().to_str().unwrap(),
                     "<project>",
                 )
-                .replace(root.to_str().unwrap(), "<project>")
-                .replace('\\', "/");
+                .replace(root.to_str().unwrap(), "<project>");
         }
         Value::Array(values) => {
             for value in values {

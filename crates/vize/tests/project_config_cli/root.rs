@@ -8,8 +8,10 @@ use super::support::{assert_success, run, write};
 use serde_json::{Value, json};
 use std::fs;
 
+#[path = "root/support.rs"]
 mod support;
 use support::*;
+#[path = "root/ignore_syntax.rs"]
 mod ignore_syntax;
 
 #[test]
