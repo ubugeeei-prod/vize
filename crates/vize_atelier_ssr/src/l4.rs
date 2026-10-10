@@ -9,6 +9,7 @@
 mod bindings;
 mod croquis;
 mod emit;
+mod frozen_slots;
 mod l2_input;
 mod select;
 mod string_plan;
@@ -33,6 +34,11 @@ pub(crate) struct SsrL4Request<'o> {
     pub(crate) slotted: bool,
     pub(crate) template_syntax: TemplateSyntaxMode,
     pub(crate) has_custom_elements: bool,
+    /// Original parser bundle; direct L2 entry never receives this authority.
+    pub(crate) frozen: Option<(
+        &'o vize_relief::RootNode<'o>,
+        &'o vize_armature::parser::FrozenElements<'o>,
+    )>,
 }
 
 /// A selected legacy route is distinct from a failed compiler invariant.

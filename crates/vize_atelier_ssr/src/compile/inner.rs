@@ -2,10 +2,9 @@
 
 use super::{
     Allocator, CaptureOutcome, CaptureSink, CompilerError, CustomElementMatcher, ErrorCode, Level,
-    RootNode, SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions,
+    Parser, RootNode, SsrCodegenContext, SsrCodegenResult, SsrCompilerExperimentalOptions,
     SsrCompilerOptions, SsrL4Request, SsrL4Selection, SsrLane, String, TemplateSyntaxMode, cstr,
-    l4, parse_with_options_custom_elements_and_template_syntax, profile,
-    transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id,
+    l4, profile, transform_with_frozen_elements,
 };
 
 #[expect(
@@ -75,15 +74,16 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
     let codegen_options = options.clone();
     let parser_opts = crate::stage_options::parser_options(&options);
 
-    let (mut root, errors) = profile!(
+    let (mut root, errors, frozen_elements) = profile!(
         "atelier.ssr.template.parse",
-        parse_with_options_custom_elements_and_template_syntax(
+        Parser::with_options_custom_elements_and_template_syntax(
             allocator,
             source,
             parser_opts,
             custom_elements.clone(),
             template_syntax,
         )
+        .parse_with_frozen_elements()
     );
     if errors.iter().any(|e| !e.is_recoverable()) {
         capture.finish(|| CaptureOutcome::Rejected(String::from("SSR parser rejected template")));
@@ -108,6 +108,7 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
                 slotted,
                 template_syntax,
                 has_custom_elements: !custom_elements.is_empty(),
+                frozen: Some((&root, &frozen_elements)),
             },
             capture,
         ),
@@ -122,14 +123,16 @@ fn compile_ssr_on_lane_captured<'a, C: CaptureSink>(
     let transform_opts = crate::stage_options::transform_options(&codegen_options);
     let transform_errors = profile!(
         "atelier.ssr.template.transform",
-        transform_with_custom_elements_and_template_syntax_quirks_and_hoisted_scope_id(
+        transform_with_frozen_elements(
             allocator,
+            source,
             &mut root,
             transform_opts,
             options.croquis.map(|c| allocator.alloc_owned(*c)),
             custom_elements,
             template_syntax.is_quirks(),
             None,
+            frozen_elements,
         )
     );
 

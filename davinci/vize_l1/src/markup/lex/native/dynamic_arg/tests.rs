@@ -1,5 +1,5 @@
 use super::super::{
-    LexOptions,
+    LexOptions, dynamic_argument_boundary,
     tests::{TokenEvent, lex_with},
 };
 use super::scan_argument;
@@ -77,4 +77,25 @@ fn scanning_is_iterative_and_returns_the_outer_boundary() {
     assert_eq!(scan_argument(source.as_bytes(), 0), (argument.len(), true));
     let source = cstr!("{argument}=\"value\"");
     assert_eq!(scan_argument(source.as_bytes(), 0), (argument.len(), false));
+}
+
+#[test]
+fn public_boundary_preserves_the_same_borrowed_input_and_recovery() {
+    for (text, end, closed) in [
+        ("keys['names]'][indices[index]]].camel", 30, true),
+        ("keys[`name]${indices[index]}`]].stop", 30, true),
+        ("keys['日本]']].camel", 15, true),
+        ("]", 0, true),
+        ("", 0, false),
+        ("keys['broken", 12, false),
+        ("keys['=>']].camel", 6, false),
+        ("keys[index]=value", 11, false),
+    ] {
+        assert_eq!(dynamic_argument_boundary(text), (end, closed), "{text}");
+        assert_eq!(
+            dynamic_argument_boundary(text),
+            scan_argument(text.as_bytes(), 0),
+            "public wrapper must retain the existing scanner contract"
+        );
+    }
 }

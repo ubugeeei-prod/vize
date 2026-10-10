@@ -53,6 +53,7 @@ pub(super) fn select_l2_lane<'a>(
             for_wrappers: &for_wrappers,
             wrappers: &wrappers,
             if_facts: &if_facts,
+            frozen_slots: None,
         },
         diagnostics: 0,
     };

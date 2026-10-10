@@ -5,11 +5,19 @@ use vize_relief::{ElementNode, ElementType, Namespace, PropNode};
 use super::super::Parser;
 
 impl<'a> Parser<'a> {
-    pub(super) fn is_invalid_html_self_closing(&self, element: &ElementNode<'a>) -> bool {
+    pub(super) fn is_invalid_html_self_closing(
+        &self,
+        element: &ElementNode<'a>,
+        frozen: bool,
+    ) -> bool {
         element.ns == Namespace::Html
             && element.tag_type == ElementType::Element
             && (!self.options.custom_renderer || vize_l0::is_html_tag(element.tag))
             && !(self.options.is_void_tag)(element.tag)
+            && !(self.frozen_elements.is_some()
+                && frozen
+                && !vize_l0::is_native_tag(element.tag)
+                && self.is_component(element))
     }
 
     /// Determine element type (element, component, slot, template)
@@ -18,6 +26,15 @@ impl<'a> Parser<'a> {
         element: &ElementNode<'a>,
     ) -> ElementType {
         let tag = element.tag;
+        if self.frozen_elements.is_some()
+            && (self.in_v_pre
+                || element
+                    .props
+                    .iter()
+                    .any(|prop| matches!(prop, PropNode::Directive(dir) if dir.name == "pre")))
+        {
+            return ElementType::Element;
+        }
 
         // Check for slot
         if tag == "slot" {

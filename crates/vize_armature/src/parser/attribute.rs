@@ -14,6 +14,8 @@ use crate::tokenizer::QuoteType;
 
 use super::{CurrentAttribute, CurrentDirective, Parser};
 
+mod head;
+
 impl<'a> Parser<'a> {
     /// Process attribute name
     pub(super) fn on_attrib_name_impl(&mut self, start: usize, end: usize) {
@@ -29,19 +31,12 @@ impl<'a> Parser<'a> {
         });
     }
 
-    /// Process the end of a full attribute or directive head.
-    pub(super) fn on_attrib_name_end_impl(&mut self, end: usize) {
-        if let Some(ref mut attr) = self.current_attr {
-            attr.name_end = end;
-        }
-
-        if let Some(ref mut dir) = self.current_dir {
-            dir.name_end = end;
-        }
-    }
-
     /// Process directive name
     pub(super) fn on_dir_name_impl(&mut self, start: usize, end: usize) {
+        if self.in_v_pre {
+            self.on_attrib_name_impl(start, end);
+            return;
+        }
         let raw_name = self.get_source_retained(start, end);
         let name = super::callbacks::parse_directive_name(raw_name);
 
@@ -71,6 +66,9 @@ impl<'a> Parser<'a> {
 
     /// Process directive modifier
     pub(super) fn on_dir_modifier_impl(&mut self, start: usize, end: usize) {
+        if self.in_v_pre {
+            return;
+        }
         if start >= end {
             let loc = self.create_loc(start, end);
             self.errors.push(CompilerError::new(
@@ -272,8 +270,11 @@ impl<'a> Parser<'a> {
                 .iter()
                 .any(|(content, _, _)| *content == "prop");
 
+        let Some(authored) = self.completed_raw_name(&dir, &loc) else {
+            return;
+        };
         let mut dir_node = DirectiveNode::new(self.allocator, dir.name, loc);
-        dir_node.raw_name = Some(dir.raw_name);
+        dir_node.raw_name = Some(authored);
 
         // Vue 3.4+ same-name shorthand: `:foo` without a value is `:foo="foo"`
         // Pre-compute the shorthand expression before moving dir.arg
@@ -338,7 +339,6 @@ impl<'a> Parser<'a> {
             dir_node.exp = Some(ExpressionNode::Simple(exp_boxed));
             dir_node.shorthand = true;
         }
-
         if let Some(ref mut current) = self.current_element {
             let boxed = Box::new_in(dir_node, &self.allocator);
             current.props.push(PropNode::Directive(boxed));
