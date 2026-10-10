@@ -14,6 +14,7 @@ export function nativeSetupCaptureRequired(paths) {
   return paths.some(
     (path) =>
       selectedSfcInput.test(path) ||
+      path === "tests/tooling/support/native-static-class-primary.ts" ||
       staticClassInput.test(path) ||
       selectedSetupInput.test(path) ||
       nativeDomInput.test(path) ||

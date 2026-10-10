@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import { test } from "node:test";
 import { environment7502 } from "./support/native-attribute-values-7502-loader.ts";
+import { primaryStaticClass } from "./support/native-static-class-primary.ts";
 import { checkMap, contexts, hash } from "./support/native-sfc-ssr-reference.ts";
 
 const pack = JSON.parse(
@@ -37,15 +38,23 @@ test("every supplemental class fixture retains whole official DOM code and raw m
   assert.equal(pack.schema, "vize.native-dom-static-class-reference");
   assert.equal(vue("@vue/compiler-dom/package.json").version, "3.5.35");
   assert.equal(pack.fixtures.length, 16);
-  for (const row of pack.fixtures) {
+  const primary = primaryStaticClass(
+    pack.fixtures.map((row: any) => ({ ...row, target: "dom" })),
+    pack.options,
+  );
+  assert.deepEqual(
+    primaryStaticClass(
+      pack.fixtures.map((row: any) => ({ ...row, target: "dom" })),
+      pack.options,
+    ),
+    primary,
+  );
+  for (const [index, row] of pack.fixtures.entries()) {
     assert.equal(hash(row.source), row.sourceSha256);
     assert.equal(hash(row.code), row.codeSha256);
     assert.equal(hash(JSON.stringify(row.referenceMap)), row.referenceMapSha256);
-    for (let repeat = 0; repeat < 2; repeat++) {
-      const actual = compiler.compile(row.source, pack.options);
-      assert.equal(actual.code, row.code);
-      assert.deepEqual(actual.map, row.referenceMap);
-    }
+    assert.equal(primary[index].code, row.code);
+    assert.deepEqual(primary[index].map, row.referenceMap);
   }
 });
 
@@ -107,16 +116,21 @@ test(
       checkMap(component);
       assert.throws(() => checkMap({ ...component, links: [] }), /complete start anchor/);
       const native = await execute(capture.sfcCode);
-      const official = await execute(prepared(fixture.code));
+      const officialReference = compiler.compile(fixture.source, pack.options);
+      assert.equal(compiler.compile(fixture.source, pack.options).code, officialReference.code);
+      assert.deepEqual(compiler.compile(fixture.source, pack.options).map, officialReference.map);
+      const official = await execute(prepared(officialReference.code));
       assert.deepEqual(native, official, fixture.id);
       assert.deepEqual(await execute(capture.sfcCode), native);
-      assert.deepEqual(await execute(prepared(fixture.code)), official);
+      assert.deepEqual(await execute(prepared(officialReference.code)), official);
       runtime.push({
         id: fixture.id,
         sourceSha256: hash(capture.source),
         codeSha256: hash(capture.sfcCode),
         mapSha256: hash(JSON.stringify(capture.sfcMap)),
         linksSha256: hash(JSON.stringify(capture.sfcLinks)),
+        officialCode: officialReference.code,
+        officialMap: officialReference.map,
         native,
         official,
       });
