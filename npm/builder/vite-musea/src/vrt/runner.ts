@@ -4,7 +4,6 @@
  * Manages browser lifecycle, screenshot capture, and baseline comparison
  * for visual regression testing of Musea art file variants.
  */
-
 import type { Browser, BrowserContext, Page } from "playwright";
 import type {
   ArtFileInfo,
@@ -16,20 +15,17 @@ import type {
 } from "../types/index.js";
 import fs from "node:fs";
 import path from "node:path";
-
 import { fileExists } from "./comparison.js";
 import { captureAndCompare } from "./runner-comparison.js";
 import { buildVariantUrl, computeSummary } from "./utils.js";
-
 export type { VrtResult, VrtSummary, ExtendedVrtOptions, PixelCompareOptions } from "./types.js";
-
 import type { VrtResult, VrtSummary, ExtendedVrtOptions } from "./types.js";
 import { createVrtJobs, normalizeVrtWorkerCount, runJobsWithWorkers } from "./jobs.js";
 import { SnapshotIndex } from "./snapshot-index.js";
 import { resolveSnapshotIdentity } from "./snapshot-identity.js";
 import { matchesSnapshotPattern } from "./snapshot-pattern.js";
+import { hostedCertificateArguments } from "./hosted-navigation.js";
 export { normalizeVrtWorkerCount } from "./jobs.js";
-
 /**
  * VRT runner using Playwright.
  */
@@ -116,12 +112,19 @@ export class MuseaVrtRunner {
     return this.comparison;
   }
 
+  getHostedNavigation(): string | undefined {
+    return this.identityOptions.hostedNavigation;
+  }
   /**
    * Initialize Playwright browser.
    */
-  async init(): Promise<void> {
+  async init(trust?: { hostedCertificateSpki?: string }): Promise<void> {
     const { chromium } = await import("playwright");
-    this.browser = await chromium.launch({ headless: true });
+    const args = hostedCertificateArguments(trust?.hostedCertificateSpki);
+    this.browser = await chromium.launch({
+      headless: true,
+      ...(args.length ? { args } : {}),
+    });
     this.startTime = Date.now();
   }
 
@@ -338,9 +341,7 @@ export class MuseaVrtRunner {
     return cleaned;
   }
 
-  /**
-   * Get VRT summary statistics.
-   */
+  /** Get VRT summary statistics. */
   getSummary(results: VrtResult[]): VrtSummary {
     return computeSummary(results, this.startTime);
   }

@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "input": "tests/tooling/fixtures/musea/snapshot-collision/left/Button.art.vue",
+  "changedColor": "#00ff00",
+  "viewport": { "name": "compact", "width": 320, "height": 180 },
+  "phases": ["new", "match", "physical-rebuild-diff", "update", "match"],
+  "permission": "loopback-network",
+  "refusals": ["missing-token", "wrong-token", "foreign-origin", "null-origin", "unknown-art", "malformed-input", "manifest-redirect", "preview-redirect", "outside-gallery-navigation"]
+}

@@ -31,9 +31,10 @@ import { scanArtFiles } from "../utils.js";
 import { runVrt, runApprove, runClean, runGenerate } from "./commands.js";
 import { loadMuseaFileSet, loadMuseaVrtOptions, loadMuseaPreviewBasePath } from "./config.js";
 import { loadHostedGallery } from "./hosted.js";
+import { runServe } from "./serve.js";
 import type { MuseaVrtOptions } from "../types/index.js";
 
-type Command = "run" | "approve" | "clean" | "generate";
+type Command = "run" | "approve" | "clean" | "generate" | "serve";
 
 export interface CliOptions {
   command: Command;
@@ -82,7 +83,10 @@ export function parseArgs(args: string[]): CliOptions {
   // Check for subcommand as first arg
   if (args.length > 0 && !args[0].startsWith("-")) {
     const sub = args[0];
-    if (sub === "approve") {
+    if (sub === "serve") {
+      options.command = "serve";
+      i = 1;
+    } else if (sub === "approve") {
       options.command = "approve";
       i = 1;
       // Optional pattern argument after approve
@@ -182,6 +186,7 @@ Commands:
   approve [pattern]     Approve failed snapshots and update baselines
                         Optional pattern filters which snapshots to approve
   clean                 Remove orphaned snapshots (no matching art/variant)
+  serve --gallery-url   Connect a secure hosted gallery to a local VRT session
   generate <component>  Auto-generate .art.vue from a Vue component
 
 Options:
@@ -260,6 +265,10 @@ async function main(): Promise<void> {
   }
 
   options.vrt = await loadMuseaVrtOptions(options.config, cwd);
+  if (options.command === "serve") {
+    await runServe(options);
+    return;
+  }
   options.previewBasePath =
     options.vrt?.previewBasePath ?? (await loadMuseaPreviewBasePath(options.config, cwd));
   if (options.galleryUrl) {

@@ -5,6 +5,8 @@ import { runVrt } from "../api";
 import { isStaticGallery } from "../staticApi";
 import MdiIcon from "./MdiIcon.vue";
 import StaticVrtNotice from "./StaticVrtNotice.vue";
+import HostedVrtConnection from "./HostedVrtConnection.vue";
+import { useHostedVrt } from "../composables/useHostedVrt";
 import type { VrtResult, VrtSummary, VrtArtifacts } from "./vrtResults";
 
 const props = defineProps<{
@@ -19,6 +21,7 @@ const summary = ref<VrtSummary | null>(null);
 const error = ref<string | null>(null);
 const updateSnapshots = ref(false);
 const artifacts = ref<VrtArtifacts | null>(null);
+const hosted = useHostedVrt();
 
 const groupedResults = computed(() => {
   const groups: Record<string, VrtResult[]> = {};
@@ -35,7 +38,9 @@ async function runTest() {
   error.value = null;
 
   try {
-    const data = await runVrt(props.artPath, updateSnapshots.value);
+    const data = isStaticGallery
+      ? await hosted.run(props.artPath, updateSnapshots.value)
+      : await runVrt(props.artPath, updateSnapshots.value);
     results.value = data.results;
     summary.value = data.summary;
     artifacts.value = data.artifacts ?? null;
@@ -59,7 +64,7 @@ function getStatusIcon(result: VrtResult): string {
   <div class="vrt-panel">
     <div class="vrt-header">
       <h3 class="vrt-title">Visual Regression Testing</h3>
-      <div v-if="!isStaticGallery" class="vrt-actions">
+      <div v-if="!isStaticGallery || hosted.connected.value" class="vrt-actions">
         <label class="vrt-update-label">
           <input v-model="updateSnapshots" type="checkbox" class="vrt-checkbox" />
           Update snapshots
@@ -72,7 +77,13 @@ function getStatusIcon(result: VrtResult): string {
       </div>
     </div>
 
-    <StaticVrtNotice v-if="isStaticGallery" />
+    <HostedVrtConnection
+      v-if="isStaticGallery"
+      :connected="hosted.connected.value"
+      :error="hosted.connectionError.value"
+      @connect="hosted.connect"
+    />
+    <StaticVrtNotice v-if="isStaticGallery && !hosted.connected.value" />
     <div v-else-if="error" class="vrt-error">
       <p>{{ error }}</p>
       <p class="vrt-hint">Make sure Playwright is installed: <code>npm install playwright</code></p>
@@ -84,6 +95,10 @@ function getStatusIcon(result: VrtResult): string {
     </div>
 
     <template v-else>
+      <div v-if="hosted.reports.value" class="vrt-actions">
+        <button type="button" @click="hosted.download('html')">Download HTML report</button>
+        <button type="button" @click="hosted.download('json')">Download JSON report</button>
+      </div>
       <div v-if="summary" class="vrt-summary">
         <div class="vrt-stat total">
           <span class="vrt-stat-value">{{ summary.total }}</span>
@@ -139,6 +154,14 @@ function getStatusIcon(result: VrtResult): string {
             >
               <span class="vrt-viewport-name">{{ result.viewport }}</span>
               <div class="vrt-viewport-body">
+                <figure v-for="(url, kind) in result.images" :key="kind">
+                  <figcaption>{{ kind }}</figcaption>
+                  <img
+                    :src="url"
+                    :alt="`${result.variantName} ${kind}`"
+                    style="max-width: 240px; height: auto"
+                  />
+                </figure>
                 <span class="vrt-status" :class="getStatusIcon(result)">
                   <template v-if="result.error">Error</template>
                   <template v-else-if="result.isNew">New baseline</template>
