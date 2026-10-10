@@ -2,7 +2,6 @@ import {
   defineTasks,
   installVscodeExtensionDependencies,
   moonScript,
-  moonScriptWithFreshRegistry,
   noCacheTask,
   runInPackages,
   rustTool,
@@ -19,9 +18,14 @@ import {
  * catalog readable even as the repository gains more package families.
  */
 export const releaseTasks = defineTasks({
-  release: noCacheTask(moonScriptWithFreshRegistry("release", '"$@"'), {
-    forwardArguments: true,
-  }),
+  // The native release parser owns confirmation and refreshes before mutation.
+  // The request is confined to this task shell and consumed by that invocation.
+  release: noCacheTask(
+    `export VIZE_RELEASE_REGISTRY_REFRESH=1 && ${moonScript("release", '"$@"')}`,
+    {
+      forwardArguments: true,
+    },
+  ),
   "publish:wasm": noCacheTask(
     `${moonScript("build_vize_wasm_package")} && ${moonScript("publish_npm_package", "npm/wasm")}`,
   ),

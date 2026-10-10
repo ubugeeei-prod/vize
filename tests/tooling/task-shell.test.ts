@@ -118,13 +118,11 @@ test("release registry refreshes use an explicit MoonBit shim", () => {
   );
 });
 
-test("release task refreshes the MoonBit registry and forwards vp run arguments", () => {
+test("release task requests native freshness and forwards vp run arguments", () => {
   const command = (releaseTasks.release as { command: string }).command;
 
-  assert.match(
-    command,
-    /moon update && .*moon run -q --target native tools\/moon\/cmd\/release -- "\$@"/,
-  );
+  assert.match(command, /export VIZE_RELEASE_REGISTRY_REFRESH=1 && /);
+  assert.doesNotMatch(command, /moon-registry-update\.mjs/);
   assert.match(command, /moon run -q --target native tools\/moon\/cmd\/release -- "\$@"/);
   assert.doesNotMatch(command, /env -u MOON_HOME/);
   assert.match(command, / --$/);
