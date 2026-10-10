@@ -1,7 +1,12 @@
 # Installed event, slot and library transactions
 
-The source provider's finite event and slot contracts must also hold on the
-public npm provider. Prepare a dependent runner for the complete original six
+The original #8010 and #8011 source bugs were closed on October 8 after their
+actual source delivery. This Draft supplemental installed-provider campaign
+remains incomplete and adds no source-issue closure or release gate. Resume it
+only against genuinely published immutable C/H containing the actual reviewed
+signed #8262 delivery; no installed replay or publication success is claimed.
+
+Prepare a dependent public npm runner for the complete original six
 event sessions, twelve slot sessions, twenty-two event/library sessions and
 twenty bound-event casing sessions. These sixty sessions retain the original
 source bytes, independently authored whole expectations, query order, native
@@ -76,9 +81,9 @@ importer, copied-runtime, outside-root relay and authored package controls. Type
 source ownership laws are not native packets. The authored opened package SFC
 must stay permitted; unowned library files remain refused. Copied runtime tests
 need separately authenticated configured-copy authority and preserve the original
-40 MiB cap. These sixty sessions alone cannot close every #8010 ownership
-requirement. #8010 and #8011 remain open until their complete actual source and
-public acceptance scopes pass.
+40 MiB cap. These sixty sessions alone cannot complete this supplemental
+installed campaign. The closed source issues stay closed; its remaining public
+acceptance work is not a release condition.
 
 Register the eventual follow-up above the installed32 helper in the existing
 GitHub native Stack. Queue only a fresh exact-head-green contiguous prefix after
@@ -108,6 +113,10 @@ single-publication call remains the count-one wrapper. Add optional original
 versioned didOpen, lint configuration, stdin-open exit and a separate exit
 deadline. Defaults keep every original32 behavior. Seven pure dispatch laws
 reject foreign IDs/versions, malformed responses and incomplete sequences.
+The test-only pending and publication timers retain their sixty-second failure
+callbacks while using unref so unsettled waits cannot delay test exit. The
+unmatched-ID and wrong-version laws check this while retaining their complete
+packet expectations and failure cleanup.
 
 A separate source comparison keeps c2bc as the installed fixture receipt head.
 The full 9fe and c2bc lock bytes differ. Their literal whole Playground importer
