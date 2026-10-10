@@ -62,7 +62,10 @@ try {
   evidence.input = input;
   evidence.inputBytes = inputBytes.length;
   evidence.inputSha256 = hash(inputBytes);
-  assert.deepEqual(input.files.map(({ name, source }) => [name, source]), cases.map((row) => row.slice(0, 2)));
+  assert.deepEqual(
+    input.files.map(({ name, source }) => [name, source]),
+    cases.map((row) => row.slice(0, 2)),
+  );
   evidence.stage = "compile";
   for (const file of input.files) {
     assert.deepEqual(file.current, file.legacy, `${file.name}: all public fields`);
@@ -127,11 +130,17 @@ try {
         ],
       });
       evidence.evaluation.push({
-        name, route, originalCode: code, originalCodeSha256: hash(code),
-        evaluatedCode: result.code, evaluatedCodeSha256: hash(result.code),
+        name,
+        route,
+        originalCode: code,
+        originalCodeSha256: hash(code),
+        evaluatedCode: result.code,
+        evaluatedCodeSha256: hash(result.code),
         bridge: "Babel ImportDeclaration-only; original modules and raw maps retained separately",
       });
-      return await import(`data:text/javascript;base64,${Buffer.from(result.code).toString("base64")}`);
+      return await import(
+        `data:text/javascript;base64,${Buffer.from(result.code).toString("base64")}`
+      );
     } finally {
       delete globalThis[slot];
     }
@@ -141,10 +150,19 @@ try {
     for (const route of ["current", "official"]) {
       evidence.currentCase = { name: file.name, route };
       const result = route === "current" ? file.current : evidence.stock[index].result;
-      const warnings = [], errors = [], context = {};
+      const warnings = [],
+        errors = [],
+        context = {};
       const observation = {
-        name: file.name, route, source: file.source, sourceSha256: hash(file.source),
-        html: null, warnings, errors, context, outcomeError: null,
+        name: file.name,
+        route,
+        source: file.source,
+        sourceSha256: hash(file.source),
+        html: null,
+        warnings,
+        errors,
+        context,
+        outcomeError: null,
       };
       evidence.observations.push(observation);
       try {
@@ -164,7 +182,8 @@ try {
         }
         const app = vue.createSSRApp(component);
         app.config.warnHandler = (message, _instance, trace) => warnings.push({ message, trace });
-        app.config.errorHandler = (error, _instance, info) => errors.push({ error: errorValue(error), info });
+        app.config.errorHandler = (error, _instance, info) =>
+          errors.push({ error: errorValue(error), info });
         observation.html = await server.renderToString(app, context);
       } catch (error) {
         observation.outcomeError = errorValue(error);
@@ -172,15 +191,29 @@ try {
     }
   }
   evidence.stage = "complete";
-  const wholeOutcome = ({ name, source, sourceSha256, html, context, warnings, errors, outcomeError }) =>
-    ({ name, source, sourceSha256, html, context, warnings, errors, outcomeError });
+  const wholeOutcome = ({
+    name,
+    source,
+    sourceSha256,
+    html,
+    context,
+    warnings,
+    errors,
+    outcomeError,
+  }) => ({ name, source, sourceSha256, html, context, warnings, errors, outcomeError });
   evidence.judges = evidence.observations.map((row, index) => ({
-    name: row.name, route: row.route, expectedHtml: cases[Math.floor(index / 2)][2],
+    name: row.name,
+    route: row.route,
+    expectedHtml: cases[Math.floor(index / 2)][2],
     expectedContext: { __instanceScopes: [] },
-    pass: row.html === cases[Math.floor(index / 2)][2]
-      && JSON.stringify(row.context) === JSON.stringify({ __instanceScopes: [] })
-      && JSON.stringify(wholeOutcome(row)) === JSON.stringify(wholeOutcome(evidence.observations[index ^ 1]))
-      && row.warnings.length === 0 && row.errors.length === 0 && row.outcomeError === null,
+    pass:
+      row.html === cases[Math.floor(index / 2)][2] &&
+      JSON.stringify(row.context) === JSON.stringify({ __instanceScopes: [] }) &&
+      JSON.stringify(wholeOutcome(row)) ===
+        JSON.stringify(wholeOutcome(evidence.observations[index ^ 1])) &&
+      row.warnings.length === 0 &&
+      row.errors.length === 0 &&
+      row.outcomeError === null,
   }));
   assert.equal(evidence.observations.length, 8);
   if (!evidence.judges.every((row) => row.pass)) process.exitCode = 1;

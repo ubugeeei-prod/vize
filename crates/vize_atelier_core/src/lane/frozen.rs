@@ -53,7 +53,7 @@ impl TransformContext<'_> {
     pub(super) fn element_is_frozen(&self, span: Span) -> bool {
         self.frozen_elements
             .binary_search_by_key(&span.start, |candidate| candidate.start)
-            .is_ok_and(|index| self.frozen_elements[index] == span)
+            .is_ok_and(|index| self.frozen_elements.get(index) == Some(&span))
     }
 }
 
