@@ -206,6 +206,44 @@ const vizeDocsI18nNavigation = (() => {
     applyNavigationOrder(root);
     applyLocalizedChrome(root);
     installLocaleSwitcher(root);
+    installMobileNavigation(root);
+  }
+
+  function installMobileNavigation(root) {
+    const sidebar = root.querySelector?.(".sidebar");
+    if (!sidebar || sidebar.dataset.vizeMobileNavigation || !window.matchMedia) return;
+    sidebar.dataset.vizeMobileNavigation = "ready";
+    sidebar.id ||= "docs-navigation";
+    const controls = [...root.querySelectorAll(".menu-toggle, [data-mobile-menu]")];
+    const mobile = window.matchMedia("(max-width: 768px)");
+    let trigger = controls.at(-1);
+    const sync = () => {
+      const open = !mobile.matches || sidebar.classList.contains("open");
+      if (!open && sidebar.contains(document.activeElement)) trigger?.focus();
+      sidebar.inert = !open;
+      for (const control of controls) {
+        control.setAttribute("aria-controls", sidebar.id);
+        control.setAttribute("aria-expanded", String(open));
+      }
+    };
+    for (const control of controls) {
+      control.addEventListener("click", () => {
+        trigger = control;
+        // The site runtime owns the open class. Read its state after its handler.
+        queueMicrotask(sync);
+      });
+    }
+    root.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && mobile.matches && sidebar.classList.contains("open")) {
+        sidebar.classList.remove("open");
+        root.querySelector(".overlay")?.classList.remove("open");
+        sync();
+        trigger?.focus();
+      }
+    });
+    new MutationObserver(sync).observe(sidebar, { attributes: true, attributeFilter: ["class"] });
+    mobile.addEventListener("change", sync);
+    sync();
   }
 
   return {
@@ -213,6 +251,7 @@ const vizeDocsI18nNavigation = (() => {
     canonicalPath,
     currentLocale,
     initialize,
+    installMobileNavigation,
   };
 })();
 

@@ -9,3 +9,10 @@
     }
   }
 }
+
+/* Dim annotations remain readable on both palettes, without blurring glyphs. */
+.content pre.ox-code-block .ox-code-line--dimmed {
+  opacity: 1;
+  filter: none;
+  color: var(--vize-code-muted);
+}

@@ -6,6 +6,10 @@ title: TypeScript Content Mapper
 
 # TypeScript Content Mapper
 
+如果要将 Vue 文件集成到支持 Content Mapper 的 native TypeScript 主机，请使用本指南。
+日常项目检查请从[静态分析](./static-analysis.md)开始；编辑器设置请参阅
+[VS Code 集成](../integrations/vscode.md)。
+
 Content Mapper 是 TypeScript 用于检查编译器自身无法解析的文件类型的插件机制 ——
 [TypeScript 7.1 API 路线图](https://github.com/microsoft/typescript-go/issues/4830)
 将其定位为 Vue 所需的 TS Server 插件替代方案。该 API 已在
