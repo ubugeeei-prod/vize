@@ -4,6 +4,61 @@ use crate::String;
 use globset::{GlobBuilder, GlobMatcher};
 use std::path::{Component, Path, PathBuf};
 
+/// Ordered, escaped ignore sequences for host-projected project settings.
+///
+/// Consecutive patterns with a common base retain their declaration order;
+/// groups with different bases form independent ignore scopes.
+pub struct ProjectIgnoreSet {
+    scopes: Vec<LintPlanScope>,
+    cwd: PathBuf,
+}
+
+impl ProjectIgnoreSet {
+    pub fn new(ignores: &[crate::config::ConfigEntryIgnore], config_dir: &Path) -> Option<Self> {
+        if ignores.is_empty() {
+            return None;
+        }
+        let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+        let mut groups: Vec<(Option<String>, Vec<String>)> = Vec::new();
+        for ignore in ignores {
+            if groups
+                .last()
+                .is_none_or(|(base, _)| *base != ignore.base_path)
+            {
+                groups.push((ignore.base_path.clone(), Vec::new()));
+            }
+            let patterns = &mut groups.last_mut().unwrap().1;
+            patterns.push(ignore.pattern.clone());
+            // Preserve the existing nested dependency ignore expansion without
+            // changing authored negation or escaped metacharacters.
+            let (sign, pattern) = ignore
+                .pattern
+                .strip_prefix('!')
+                .map_or(("", ignore.pattern.as_str()), |pattern| ("!", pattern));
+            let suffix = "node_modules/**";
+            if let Some(prefix) = pattern.strip_suffix(suffix)
+                && !pattern.ends_with("**/node_modules/**")
+            {
+                patterns.push(crate::cstr!("{sign}{prefix}**/{suffix}"));
+            }
+        }
+        Some(Self {
+            scopes: groups
+                .into_iter()
+                .map(|(base, patterns)| {
+                    LintPlanScope::new(base.as_deref(), None, &patterns, config_dir, &cwd)
+                })
+                .collect(),
+            cwd,
+        })
+    }
+
+    pub fn is_ignored(&self, path: &Path) -> bool {
+        let absolute = absolute_path(path, &self.cwd);
+        self.scopes.iter().any(|scope| scope.ignores(&absolute))
+    }
+}
+
 pub struct LintPlanScope {
     base_dir: PathBuf,
     files: Option<GlobSequence>,
@@ -221,7 +276,7 @@ pub fn normalize_path(path: &Path) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::LintPlanScope;
+    use super::{LintPlanScope, ProjectIgnoreSet};
     use std::path::Path;
 
     fn scope(files: Option<&[&str]>, ignores: &[&str]) -> LintPlanScope {
@@ -289,5 +344,49 @@ mod tests {
         let negated = scope(Some(&[r"src/**/*.vue", r"!.\src\generated\**"]), &[]);
         assert!(negated.matches(Path::new("/src/App.vue")));
         assert!(!negated.matches(Path::new("/src/generated/drop.vue")));
+    }
+
+    #[test]
+    fn project_ignore_sequences_preserve_root_negation_and_literal_metacharacters() {
+        let project = tempfile::tempdir().unwrap();
+        let root = project.path().join("app");
+        let ignores = [
+            "generated/**",
+            "!generated/KeepItem.vue",
+            r"src/\[id\].vue",
+            "node_modules/**",
+            "!node_modules/keep.vue",
+        ]
+        .into_iter()
+        .map(|pattern| crate::config::ConfigEntryIgnore {
+            base_path: Some(root.to_string_lossy().as_ref().into()),
+            pattern: pattern.into(),
+        })
+        .collect::<Vec<_>>();
+        let set = ProjectIgnoreSet::new(&ignores, project.path()).unwrap();
+        let actual = [
+            "app/generated/DropItem.vue",
+            "app/generated/KeepItem.vue",
+            "app/src/[id].vue",
+            "app/src/id.vue",
+            "generated/DropItem.vue",
+            "app/src/node_modules/drop.vue",
+            "app/node_modules/keep.vue",
+        ]
+        .into_iter()
+        .map(|name| (name, set.is_ignored(&project.path().join(name))))
+        .collect::<Vec<_>>();
+        assert_eq!(
+            actual,
+            vec![
+                ("app/generated/DropItem.vue", true),
+                ("app/generated/KeepItem.vue", false),
+                ("app/src/[id].vue", true),
+                ("app/src/id.vue", false),
+                ("generated/DropItem.vue", false),
+                ("app/src/node_modules/drop.vue", true),
+                ("app/node_modules/keep.vue", false),
+            ]
+        );
     }
 }

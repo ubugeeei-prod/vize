@@ -63,7 +63,11 @@ pub fn run(mut args: LintArgs) {
         .type_checker
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
-    let ignore_set = LintIgnoreSet::new(&linter_plan.plan.global_ignores, config_dir);
+    let ignore_set = if project_root.is_some() {
+        LintIgnoreSet::for_project(&linter_plan.plan.global_ignores, config_dir)
+    } else {
+        LintIgnoreSet::new(&linter_plan.plan.global_ignores, config_dir)
+    };
     let collect_start = Instant::now();
     let default_patterns = args.patterns.is_empty().then(|| {
         patterns::LINT_DEFAULT_PATTERNS

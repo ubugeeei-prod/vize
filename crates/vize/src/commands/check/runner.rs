@@ -55,7 +55,6 @@ use global_components::{
     collect_workspace_global_component_declarations_for_files, dialect_from_features,
     template_syntax_mode,
 };
-use ignores::load_check_ignore_set;
 use input_scope::{exit_if_default_run_leaves_cwd, report_no_inputs};
 use invocation::{resolve_invocation_program, resolve_nuxt_project_root};
 use nuxt_tsconfig::resolve_checker_tsconfig_path;

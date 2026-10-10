@@ -24,6 +24,15 @@ execution. A Vite export with an entry array uses the existing pure Rust public
 normalizer before native deserialization, retaining global values and ordered
 scoped entries without a native addon dependency in config evaluation.
 
+Ignore strings remain authored strings, including ordered `!` negation and
+escaped glob metacharacters. Global ignore projections carry the trusted Vite
+root as their separate `base_path`; they are never made absolute with
+`path.resolve`. CLI project collectors and editor scopes evaluate ordered
+sequences within each base path. Dedicated native files discard the reserved
+host identity before projection, so previously ignored extension values cannot
+change their invocation/config-directory behavior. Existing dedicated collectors
+retain their established matching rules.
+
 The differential fixture `config/vite-root-8371` is exercised through the actual
 CLI in `project_config_cli/root.rs`: source discovery, compiler output, scoped
 lint diagnostics, ignored files, formatter writes, TypeScript program selection,

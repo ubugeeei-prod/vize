@@ -124,9 +124,6 @@ function projectPaths(config, root, entry) {
   ) {
     result.basePath = resolve(root, config.basePath ?? ".");
   }
-  if (!entry && Array.isArray(config.ignores)) {
-    result.ignores = config.ignores.map((pattern) => resolve(root, pattern));
-  }
   if (Array.isArray(config.entries)) {
     result.entries = config.entries.map((value) => projectPaths(value, root, true));
   }
