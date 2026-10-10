@@ -16,9 +16,6 @@ Measured: 2026-09-16T08:19:25.262Z
 Commit: `f9cc50ee2e2f` ([run](https://github.com/ubugeeei-prod/vize/actions/runs/35072615669))
 Runner: `blacksmith-32vcpu-ubuntu-2404` (32 logical CPU, AMD EPYC, 32 vCPU / 128 GB RAM / 1.5 TB storage)
 Input: 3,000 generated SFC files (11.7 MB). Median of 3 measured run(s) after 1 warmup run(s).
-Versions: vize `vize 0.424.11` · tsgo `Version 7.0.2` · vue-tsc `Version 6.0.3` (typescript n/a) · verter-tsc `verter-tsc 0.0.1-beta.3` · Golar `Golar version 0.1.10` · vue `3.6.0-beta.10` · eslint `v10.4.1` · prettier `3.8.3` · node `v24.14.0`
-Binaries (sha256): vize `dc5e840133beec86106ca27c496ca01fbff4299a8aef6c3a0f2fca3131f88fe3` tsgo `4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4` vueTsc `811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d` verterTsc `81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224` golar `a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da` eslint `41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc` prettier `a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428`
-Backend: native TypeScript engine ready at `/home/runner/_work/vize/vize/node_modules/@typescript/typescript-linux-x64/lib/tsc`. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
 Large SFC: 300 repeated template blocks (225.6 KB). Nuxt import set: 250 SFC files.
 
 | Surface                                | Files | Existing tool          | Existing median | Vize 1T | Vize max | Speedup |
@@ -109,6 +106,26 @@ Fairness notes:
 - Musea rows are the one surface that does not run on the shared SFC corpus: `@vizejs/vite-plugin-musea` only does work for `.art.vue` files, so the lane generates its own pinned art corpus from `tools/benchmarks/scripts/musea-corpus.mjs`. They publish no speedup because no incumbent tool performs this work, and they measure the plugin's own `buildStart`/`load`/`transform` hooks rather than an end-to-end build — by the same reasoning as the Nuxt row above, a whole-build number would sit under the noise floor and could not move when the plugin regresses. `tools/benchmarks/scripts/musea.mjs` runs the lane on its own.
 - Single-thread lanes are shown where useful, and the primary speedup compares the incumbent default/single-thread lane with Vize's max runner lane.
 - Type-check rows publish their speedup against vue-tsc, the type checker Vue projects actually run. That ratio spans two TypeScript engines — vue-tsc runs the JavaScript compiler while Vize check runs native tsgo (Corsa) — so it measures the whole toolchain a reader would replace, not the Vue layer alone, and part of it is TypeScript's Go rewrite rather than anything Vize does. The per-engine-class ranking published beside it isolates the Vue layer by rating each row against the fastest row of its own engine, which is where the same-engine native checkers (verter-tsc, Golar) appear; they are reference rows and never the headline comparison, because almost nobody runs them. tools/benchmarks/scripts/check-gate.mjs publishes the same per-engine-class split with planted-diagnostic gating.
+
+<details class="benchmark-provenance">
+<summary>Tool versions and binary checksums</summary>
+
+| Tool                 | Version                              | Binary SHA-256                                                                |
+| -------------------- | ------------------------------------ | ----------------------------------------------------------------------------- |
+| Vize                 | <code>vize 0.424.11</code>           | <code>dc5e840133beec86106ca27c496ca01fbff4299a8aef6c3a0f2fca3131f88fe3</code> |
+| tsgo                 | <code>Version 7.0.2</code>           | <code>4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4</code> |
+| vue-tsc              | <code>Version 6.0.3</code>           | <code>811cc8124f36b6c770964d486da62af1b9db6949f62bc47205982d17e8e7dc8d</code> |
+| verter-tsc           | <code>verter-tsc 0.0.1-beta.3</code> | <code>81bec5c957487bd2caf15312bf4f180afadd074f11c1d34cb4bb2c66bd7ac224</code> |
+| Golar                | <code>Golar version 0.1.10</code>    | <code>a100c0e559b6cf85fc3e67a65f0b8eedcee0ccf624022fc4882bea2a3d6316da</code> |
+| TypeScript (vue-tsc) | n/a                                  | n/a                                                                           |
+| Vue                  | <code>3.6.0-beta.10</code>           | n/a                                                                           |
+| ESLint               | <code>v10.4.1</code>                 | <code>41dd060d45aca4a2144b94862e21e285bbb726b19e61db7a03c5b2e0b67973cc</code> |
+| Prettier             | <code>3.8.3</code>                   | <code>a7a78ad15344be4f14f24832a8c5fa5918bec4339b8d1d0903a5167c34ecb428</code> |
+| Node.js              | <code>v24.14.0</code>                | n/a                                                                           |
+
+Backend: native TypeScript engine ready at <code>/home/runner/&#95;work/vize/vize/node&#95;modules/@typescript/typescript-linux-x64/lib/tsc</code>. Planted-diagnostic gating for the type-check rows lives in tools/benchmarks/scripts/check-gate.mjs (.github/workflows/check-bench.yml).
+
+</details>
 
 Commands:
 

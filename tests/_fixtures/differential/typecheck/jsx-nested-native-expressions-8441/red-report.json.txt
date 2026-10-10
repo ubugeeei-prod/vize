@@ -1,0 +1,66 @@
+{
+  "sourceHead": "51eca9e732e8e8af9334de73cc79a646f7bd9856",
+  "sourceCliSha256": "65cbc50ebb5b2c15ae6a5e9b36afa7428560c7f659162c9c9cfc8da2f54191d4",
+  "corsaSha256": "a82f731365ad69d5c4c15f5e18fba4584bf3b7b839960172a76c3462b5114bf2",
+  "argv": [
+    "/Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-jsx-slot-parameter-annotations-20261010/target/debug/vize",
+    "check",
+    "--tsconfig",
+    "tsconfig.json",
+    "src/AfsStepperDialog.stories.tsx",
+    "--quiet",
+    "--format",
+    "json",
+    "--corsa-path",
+    "/private/tmp/vize-lsp439-20261010-fb402f3b/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc"
+  ],
+  "exitCode": 1,
+  "fixtureSha256": "8b46599f16d4ac31ed91677a729c9058087ebf2978fd5e62490d512db9e04b8f",
+  "unchangedOriginalAuthoredInputs": true,
+  "actualReport": {
+    "files": [
+      {
+        "file": "src/AfsStepperDialog.stories.tsx",
+        "diagnostics": [
+          "error:28:16 [TS1005] '>' expected.",
+          "error:28:19 [TS1005] ')' expected.",
+          "error:28:31 [TS1005] ',' expected.",
+          "error:28:34 [TS1005] ',' expected.",
+          "error:28:37 [TS1005] ',' expected.",
+          "error:28:39 [TS1110] Type expected.",
+          "error:29:11 [TS1128] Declaration or statement expected.",
+          "error:29:12 [TS1128] Declaration or statement expected.",
+          "error:35:1 [TS1128] Declaration or statement expected.",
+          "error:43:18 [TS1005] '>' expected.",
+          "error:43:23 [TS1005] '{' expected.",
+          "error:43:55 [TS1109] Expression expected."
+        ]
+      }
+    ],
+    "programs": [
+      {
+        "root": ".",
+        "tsconfig": "tsconfig.json",
+        "compilerOptions": {
+          "jsx": "preserve",
+          "jsxImportSource": "vue",
+          "module": "ESNext",
+          "moduleResolution": "bundler",
+          "noEmit": true,
+          "strict": true,
+          "target": "ES2022",
+          "types": [
+            "vue/jsx"
+          ]
+        },
+        "files": [
+          "node_modules/vue/jsx.d.ts",
+          "src/AfsStepperDialog.stories.tsx"
+        ]
+      }
+    ],
+    "errorCount": 12,
+    "warningCount": 0,
+    "fileCount": 1
+  }
+}

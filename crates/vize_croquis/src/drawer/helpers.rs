@@ -14,8 +14,9 @@ mod v_for;
 mod v_scope;
 
 pub use identifiers::{
-    IdentifierRef, extract_identifier_refs_oxc, extract_identifiers_checked,
-    extract_identifiers_oxc, extract_identifiers_retained, strip_js_comments,
+    IdentifierRef, extract_identifier_refs_oxc, extract_identifier_refs_retained_only,
+    extract_identifiers_checked, extract_identifiers_oxc, extract_identifiers_retained,
+    strip_js_comments,
 };
 pub use keywords::{is_builtin_directive, is_component_tag, is_keyword};
 pub use slots::{

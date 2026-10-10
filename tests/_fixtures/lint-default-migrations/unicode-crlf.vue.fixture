@@ -1,0 +1,2 @@
+<!-- 日本語 -->
+<template functional><button type="button" @keyup.27="cancel">Cancel</button></template>
