@@ -18,6 +18,7 @@ import {
   switchDocsTheme,
 } from "./theme-render-assertions.ts";
 import { verifyCommandTabs } from "./command-tab-render-assertions.ts";
+import { verifyLocaleRenderControls } from "./locale-control-render.ts";
 
 type FontUsage = { familyName: string; glyphCount: number };
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -121,6 +122,7 @@ try {
     headless: true,
   });
   await verifyCaptureRenderControls(browser, origin, output);
+  await verifyLocaleRenderControls(browser, origin, output);
   for (const { name: device, viewport } of [
     { name: "desktop", viewport: { width: 1440, height: 960 } },
     { name: "mobile", viewport: { width: 390, height: 844 } },
