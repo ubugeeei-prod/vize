@@ -42,7 +42,8 @@ if (directory) {
       alias = alias.slice(0, alias.lastIndexOf("."));
       if (fs.existsSync(alias) && fs.realpathSync(alias) === physical) aliases.add(alias);
     }
-    for (const candidate of [...aliases]) {
+    const originalAliases = [...aliases];
+    for (const candidate of originalAliases) {
       if (candidate.startsWith("/usr/lib/")) {
         const legacy = candidate.slice(4);
         if (fs.existsSync(legacy) && fs.realpathSync(legacy) === physical) aliases.add(legacy);
