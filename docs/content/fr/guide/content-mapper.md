@@ -6,6 +6,10 @@ title: TypeScript Content Mapper
 
 # TypeScript Content Mapper
 
+Utilisez ce guide pour intégrer les fichiers Vue à un hôte TypeScript natif compatible avec Content Mapper.
+Pour les vérifications quotidiennes du projet, commencez par [Analyse statique](./static-analysis.md) ;
+pour configurer l’éditeur, consultez [l’intégration VS Code](../integrations/vscode.md).
+
 Les Content Mappers sont la surface de plugins de TypeScript pour vérifier les types de fichiers
 que le compilateur ne peut pas analyser lui-même — la
 [feuille de route de l'API TypeScript 7.1](https://github.com/microsoft/typescript-go/issues/4830)

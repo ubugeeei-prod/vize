@@ -16,6 +16,7 @@ import { getPreviewUrl, vMuseaGlobals } from "../api";
 import MdiIcon from "../components/MdiIcon.vue";
 import { getVariantSectionId } from "../utils/variantSections";
 import { safeUrl } from "../utils/safeUrl";
+import { waitForPreviewReady } from "../composables/previewReady";
 
 const POOL_SIZE = 4;
 
@@ -49,7 +50,7 @@ const buildTestQueue = () => {
         artTitle: art.metadata.title || art.path,
         variantName: variant.name,
         status: existingResult
-          ? existingResult.violations.length > 0
+          ? existingResult.error || existingResult.violations.length > 0
             ? "failed"
             : "passed"
           : "pending",
@@ -115,27 +116,6 @@ const setPoolIframeRef = (index: number, el: HTMLIFrameElement | null) => {
   }
 };
 
-// Wait for an iframe slot to load after setting its src
-function waitForIframeLoad(slotIndex: number): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const iframe = poolIframes.value[slotIndex];
-    if (!iframe) {
-      reject(new Error("Iframe slot not found"));
-      return;
-    }
-    const timeout = setTimeout(() => {
-      iframe.removeEventListener("load", onLoad);
-      reject(new Error("Iframe load timeout"));
-    }, 10000);
-
-    function onLoad() {
-      clearTimeout(timeout);
-      resolve();
-    }
-    iframe.addEventListener("load", onLoad, { once: true });
-  });
-}
-
 // Worker coroutine: pulls tests from shared queue index
 async function runWorker(slotIndex: number, queueRef: { index: number }) {
   while (queueRef.index < testQueue.value.length) {
@@ -146,20 +126,19 @@ async function runWorker(slotIndex: number, queueRef: { index: number }) {
     test.status = "running";
 
     try {
-      // Set iframe src and wait for load
+      // Register the readiness listener before Vue navigates the iframe.
       const previewUrl = safeUrl(getPreviewUrl(test.artPath, test.variantName));
       if (!previewUrl) throw new Error("Invalid preview URL");
-      poolSrcs.value[slotIndex] = previewUrl;
-      await nextTick();
-      await waitForIframeLoad(slotIndex);
-
-      // Run a11y test via promise-based API
       const iframe = poolIframes.value[slotIndex];
       if (!iframe) throw new Error("Iframe slot lost");
+      await waitForPreviewReady(iframe, async () => {
+        poolSrcs.value[slotIndex] = previewUrl;
+        await nextTick();
+      });
 
       const result = await runA11yAsync(iframe, key);
       test.result = result;
-      test.status = result.violations.length > 0 ? "failed" : "passed";
+      test.status = result.error || result.violations.length > 0 ? "failed" : "passed";
     } catch (e) {
       test.status = "failed";
       test.result = {
@@ -284,7 +263,7 @@ watch(
       const result = getResult(key);
       if (result && test.status !== "running") {
         test.result = result;
-        test.status = result.violations.length > 0 ? "failed" : "passed";
+        test.status = result.error || result.violations.length > 0 ? "failed" : "passed";
       }
     }
   },
@@ -368,6 +347,7 @@ watch(
         />
         <div class="test-info">
           <div class="test-name">{{ test.artTitle }} / {{ test.variantName }}</div>
+          <div v-if="test.result?.error" class="test-error">{{ test.result.error }}</div>
           <div v-if="test.result && test.result.violations.length > 0" class="test-violations">
             <span
               v-for="v in test.result.violations.slice(0, 3)"
@@ -605,6 +585,12 @@ watch(
 .test-name {
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+.test-error {
+  color: var(--musea-a11y-critical);
+  font-size: 0.75rem;
+  margin-top: 0.375rem;
 }
 
 .test-violations {

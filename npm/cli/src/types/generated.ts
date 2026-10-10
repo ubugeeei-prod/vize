@@ -293,6 +293,9 @@ export interface LintRuleOptions {
   };
   "vue/v-on-event-hyphenation"?: "always" | "never";
   "vue/attribute-hyphenation"?: "always" | "never";
+  "vue/valid-v-slot"?: {
+    allowModifiers?: boolean;
+  };
   "musea/prefer-design-tokens"?: MuseaPreferDesignTokensOptions;
 }
 export interface NoRestrictedGlobalsOptions {

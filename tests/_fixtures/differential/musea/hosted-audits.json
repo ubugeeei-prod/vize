@@ -1,0 +1,6 @@
+{
+  "setupDelayMs": 300,
+  "variants": ["Clean one", "Broken one", "Clean two", "Broken two", "Clean three", "Broken three"],
+  "successfulCounts": ["6", "3", "3", "0"],
+  "missingVendorCounts": ["6", "0", "6", "0"]
+}

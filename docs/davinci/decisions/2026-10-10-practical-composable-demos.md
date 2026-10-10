@@ -117,3 +117,60 @@ selection example. Move them to source-owned scoped classes and retain the
 unchanged opinionated gate. Keep the review corrections in the top layer and
 queue the corrected complete Stack; earlier prefixes must not ship the known
 misleading states.
+
+## Scoped DOM interaction extension
+
+Prepare four further public-import SFCs for individual/group focus, inline
+outside dismissal, element-scoped review shortcuts, and native input
+observation. This brings the group to twenty complete source packets, eighty
+initial/interacted captures plus the two disabled-storage captures, and thirty
+rendered routes. Keep all earlier interaction laws and source identities.
+
+Use real template-ref targets and browser events. Distinguish live flags from
+frozen observations after focus tracking stops. Outside dismissal includes the
+trigger ignore list, pointer drag origin, native keyboard click, recreated
+conditional target, and explicit example-owned Escape/focus-return behavior.
+Shortcuts follow only the chosen native button, suppress repeated keydown, and
+stop without removing the independent native navigation controls. Input
+listeners detach on retarget and pause, then resume on the current target while
+both v-model drafts remain editable. No example saves or sends data.
+
+Preserve strict initial SSR markup and element identity checks. Defer textarea
+autosize until its genuine mounted style mutation can be represented without
+bypassing hydration assertions. The qualified sixteen-example Stack remains
+immutable while its merge and production proof run. Publish this prepared
+independent slice only after rebasing onto the coherent delivered main; do not
+add it to the current queue during parent delivery. The remaining catalogue and
+broader #6101 acceptance stay open.
+
+The package build invokes rendered acceptance from `docs/`; a relative default
+evidence path incorrectly writes under `docs/docs-render-evidence`, outside the
+existing repository-level upload. Resolve that default from the known docs
+root so the same artifact retains source/image hashes and interaction receipts
+from the post-SSG pass. Explicit output paths remain caller-selected. Require
+the actual Actions artifact's composable receipts before delivery credit.
+The existing Build docs step requires both post-SSG receipt files before the
+render-evidence upload; this fails with the previous package-relative default.
+
+The before-fix [exact-head Docs run](https://github.com/ubugeeei-prod/vize/actions/runs/38028442319)
+produced render-evidence artifact 11661933163 with 656 ZIP entries and no
+component-preview files or composable receipt JSONs. Its first-pass captures
+remain in the built public assets; the missing second-pass receipt is a
+separate artifact-retention defect. The new existing-step assertions must
+reject that artifact layout and a fresh Actions artifact must contain both
+receipts after the path correction.
+
+The first DOM-extension source Check rejected Escape on a static section via
+the unchanged accessibility preset. Put the example-owned Escape handler on
+its actual native input and button controls. Exercise both controls' Escape
+delivery and real trigger-focus return; preserve the non-modal region, source
+alignment, and all earlier interaction laws. Retain failed Check 38033519431
+and require a fresh exact-head native gate, Docs build, and browser receipts.
+
+The new native Escape handlers intentionally extend the natural modified-v-on
+corpus. Regenerate its per-area inventory with the existing generator and
+review the three `@keydown.esc` spellings in `npm--compose.tsv`; retain the
+two-entry options/event/key capacity limits. Exact-source Check 38033941359
+identified the omitted inventory, and the unchanged live-scan/storage test
+passes after regeneration. A separate canonical-fixture checkout assertion
+failure remains in the CI repair lane and must not be hidden by this update.
