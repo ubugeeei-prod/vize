@@ -16,6 +16,19 @@ runs:
         test -s "$VIZE_L4_DOM_STATIC_CLASS_CAPTURE"
         test -s "${VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE}.development.json"
         test -s "${VIZE_L4_DOM_STATIC_CLASS_RUNTIME_CAPTURE}.production.json"
+    - name: Qualify whole public selected static class components in both runtime modes
+      shell: bash
+      env:
+        VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE: ${{ runner.temp }}/native-selected-static-class.json
+        VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE: ${{ runner.temp }}/native-selected-static-class-runtime
+        VIZE_NATIVE_SELECTED_STATIC_CLASS_REQUIRE_CAPTURE: "1"
+      run: |
+        cargo test --locked --profile ci -p vize_atelier_sfc --test native_selected_static_class -- --nocapture
+        NODE_ENV=development vp node --test tests/tooling/native-selected-static-class-reference.test.ts
+        NODE_ENV=production vp node --test tests/tooling/native-selected-static-class-reference.test.ts
+        test -s "$VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE"
+        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.development.json"
+        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.production.json"
     - name: Capture and execute source-built selected SFC components
       shell: bash
       env:
@@ -93,6 +106,9 @@ runs:
           ${{ runner.temp }}/native-dom-static-class.json
           ${{ runner.temp }}/native-dom-static-class-runtime.development.json
           ${{ runner.temp }}/native-dom-static-class-runtime.production.json
+          ${{ runner.temp }}/native-selected-static-class.json
+          ${{ runner.temp }}/native-selected-static-class-runtime.development.json
+          ${{ runner.temp }}/native-selected-static-class-runtime.production.json
           ${{ runner.temp }}/native-selected-sfc-dom-capture.json
           ${{ runner.temp }}/native-selected-sfc-dom-runtime.json
           ${{ runner.temp }}/native-selected-setup-sfc-dom-capture.json
