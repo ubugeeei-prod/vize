@@ -24,6 +24,10 @@ test("only actual selected SFC product and acceptance inputs add the source capt
     "davinci/vize_l4/tests/native_dom_static_class.rs",
     "davinci/vize_l4/tests/fixtures/native-dom-static-class-vue-3.5.35.json",
     "tests/tooling/native-dom-static-class-reference.test.ts",
+    "crates/vize_atelier_sfc/tests/native_selected_static_class.rs",
+    "crates/vize_atelier_sfc/tests/fixtures/native-selected-static-class-vue-3.5.35.json",
+    "tests/tooling/native-selected-static-class-reference.test.ts",
+    "tests/tooling/support/native-static-class-primary.ts",
   ])
     assert(nativeSetupCaptureRequired([path]), path);
   for (const path of [
