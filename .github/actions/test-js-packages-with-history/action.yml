@@ -12,6 +12,8 @@ runs:
       id: original-project-qualification
       if: ${{ success() && job.status == 'success' }}
       shell: bash
+      env:
+        VIZE_N8N_BASELINE_MODE: partitioned
       run: node npm/oxlint/scripts/check-project-transport.mjs
     - name: Preserve public native formatter evidence
       if: ${{ always() }}
