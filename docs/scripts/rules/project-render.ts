@@ -14,7 +14,6 @@ import { extra, composed } from "./cross-extra.ts";
 import { crossMetadata, explanation } from "./project-metadata.ts";
 import { routerExamples } from "./router-project.ts";
 import { projectExplanations } from "./project-explanations.ts";
-import { exampleLinks } from "./example-links.ts";
 import { contractExamples } from "./project-contracts.ts";
 import { reactiveCycleExample } from "./reactive-cycle-project.ts";
 const examples: Record<string, ProjectExample> = {
@@ -39,75 +38,17 @@ export function generateProjectPages(root: string, checking: boolean) {
     pages.set(locale, details);
     const directory = resolve(root, `docs/content/${locale}rules`);
     if (!checking) mkdirSync(resolve(directory, "project"), { recursive: true });
-    const label = (en: string, jp: string) => (ja ? jp : en);
-    const lines = [
-      "---",
-      `title: ${label("Cross-file rules", "ファイル間ルール")}`,
-      "---",
-      "",
-      `# ${label("Cross-file rules", "ファイル間ルール")}`,
-      "",
-      label(
-        "Project checks need the complete analyzed component graph. Each linked page gives shared files and the exact Bad/Good changes; apply shared files to both examples.",
-        "プロジェクトの検査には解析対象のコンポーネント構成が必要です。各ページに共通ファイルと悪い例・良い例を示します。共通ファイルは両方の例で使ってください。",
-      ),
-      "",
-      label(
-        "Start with the Vite+ configuration below. `vp run lint` invokes Vize and Oxlint; built-in `vp lint` runs its own upstream checker.",
-        "次の Vite+ 設定から始めてください。vp run lint は Vize と Oxlint を実行します。組み込みの vp lint は Vite+ 自身の検査を実行します。",
-      ),
-      "",
-      ...config("cross-file", ja),
-      "",
-      label(
-        "The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `lint.vize.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.",
-        "CLI では vize lint --cross-file で同じ検査を実行できます。表示コード vize:croquis/cf/* は、lint.vize.rules には vize: を除いた croquis/cf/* として指定します。information / hint は CLI では warning として表示されます。関連位置から提供元と使用側の関係を確認できます。",
-      ),
-      "",
-      label(
-        "The 60 published cross-file codes have different support boundaries: 19 belong to the CLI pass (18 qualified source pairs and one illustrative Vue project with its reactive-flow graph); 16 have experimental Rust analyzer producers but are not individually emitted by that pass; 25 are published contracts without a current diagnostic producer. Enabling a rule ID does not activate an unavailable producer.",
-        "公開されている 60 のコードは対応範囲が異なります。19 は CLI の検査対象（18 の検証済みソースの例と、参照構成を併記した 1 つの具体的な Vue プロジェクト例）で、16 は実験的な Rust analyzer に実装があるものの CLI では個別コードとして生成されません。25 は現在の生成元がない公開契約です。ルール名を設定しても未対応の生成元は有効になりません。",
-      ),
-      "",
-      `## ${label("Project-specific lint IDs", "プロジェクト固有の lint ID")}`,
-      "",
-      `| ${label("Rule", "ルール")} | ${label("Examples", "例")} | ${label("Severity", "重大度")} |`,
-      "| --- | --- | --- |",
-    ];
     for (const [id, example] of [...Object.entries(routerExamples), ...Object.entries(composed)]) {
       const severity = example.severity ?? "warning";
-      lines.push(
-        `| [\`${id}\`](./project/${slug(id)}.md) | ${exampleLinks(`./project/${slug(id)}.md`, ja)} | ${severity} |`,
-      );
       const text = projectDetail(id, example, ja, severity);
       output(resolve(directory, `project/${slug(id)}.md`), text, checking);
       details.push({ id, text });
     }
-    lines.push(
-      "",
-      `## ${label("Published analyzer codes", "公開 analyzer コード")}`,
-      "",
-      `| ${label("Code", "コード")} | ${label("Examples", "例")} | ${label("Status", "対応状況")} |`,
-      "| --- | --- | --- |",
-    );
     for (const rule of metadata) {
-      const status =
-        rule.status === "cli"
-          ? label("CLI", "CLI")
-          : rule.status === "library"
-            ? label(
-                "Rust analyzer; CLI uses a different surface or disables this pass",
-                "Rust analyzer。CLI は別の表示または未有効",
-              )
-            : label("Contract only; no current producer", "契約のみ。現在の生成元なし");
-      lines.push(
-        `| [\`${rule.code}\`](./project/${slug(rule.code)}.md) | ${exampleLinks(`./project/${slug(rule.code)}.md`, ja)} | ${status} |`,
-      );
       const text = crossDetail(root, rule, ja);
       output(resolve(directory, `project/${slug(rule.code)}.md`), text, checking);
       details.push({ id: rule.code, text });
     }
-    output(resolve(directory, "cross-file.md"), `${lines.join("\n")}\n`, checking);
   }
   return pages;
 }

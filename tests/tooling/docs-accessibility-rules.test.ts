@@ -39,34 +39,66 @@ const accessibilityRules = [
   "vue/use-unique-element-ids",
 ];
 
-for (const locale of ["", "ja/"]) {
-  test(`${locale || "English"} accessibility navigation targets the complete same-page catalogue`, () => {
+const vueSources = (text: string) =>
+  [...text.matchAll(/```vue[^\n]*\n([\s\S]*?)\n```/g)].map((match) => match[1]);
+
+for (const locale of ["en", "ja", "fr", "pt-BR", "zh-CN"]) {
+  await test(`${locale} accessibility navigation targets complete same-page examples`, () => {
     const overview = fs.readFileSync(
-      path.join(repoRoot, `docs/content/${locale}rules/accessibility.md`),
+      path.join(repoRoot, `docs/content/generated/rules/${locale}/accessibility.md`),
       "utf8",
     );
-    const links = [...overview.matchAll(/^\| \[`([^`]+)`\]\(\.\/all\.md#([^)]*)\)/gm)];
+    const links = [...overview.matchAll(/^\| \[`([^`]+)`\]\(#([^)]*)\)/gm)];
+    const headings = [...overview.matchAll(/^### `([^`]+)`$/gm)];
+    const expected = [...accessibilityRules].sort((a, b) => a.localeCompare(b));
     assert.deepEqual(
       links.map((row) => row[1]).sort((a, b) => a.localeCompare(b)),
-      [...accessibilityRules].sort((a, b) => a.localeCompare(b)),
+      expected,
     );
+    assert.deepEqual(
+      headings.map((row) => row[1]).sort((a, b) => a.localeCompare(b)),
+      expected,
+    );
+    assert.doesNotMatch(overview, /\]\(\.\/all\.md#/);
     for (const [_, ruleId, slug] of links) {
-      const file = `${slug}.md`;
-      const section = fs.readFileSync(
-        path.join(repoRoot, `docs/content/${locale}rules/reference/${file}`),
+      const index = headings.findIndex((heading) => heading[1] === ruleId);
+      assert.notEqual(index, -1, `${locale} ${ruleId}: local packet`);
+      const packet = overview.slice(headings[index].index, headings[index + 1]?.index);
+      const reference = fs.readFileSync(
+        path.join(
+          repoRoot,
+          `docs/content/${locale === "ja" ? "ja/" : ""}rules/reference/${slug}.md`,
+        ),
         "utf8",
       );
-      assert.ok(section.includes(`# \`${ruleId}\``));
-      assert.ok(overview.includes(`./all.md#${slug}-bad`), `${ruleId}: same-page Bad`);
-      assert.ok(overview.includes(`./all.md#${slug}-good`), `${ruleId}: same-page Good`);
-      for (const label of locale
-        ? ["既定の重大度:", "プリセット:", "オプション:", "## 悪い", "## 良い"]
-        : ["Default severity:", "Presets:", "Options:", "## Bad", "## Good"])
-        assert.ok(section.includes(label), `${ruleId}: ${label}`);
-      assert.ok(
-        [...section.matchAll(/```vue\n[\s\S]*?\n```/gu)].length >= 2,
-        `${ruleId}: two complete Vue witnesses`,
+      assert.ok(reference.includes(`# \`${ruleId}\``));
+      for (const kind of ["bad", "good"]) {
+        assert.ok(
+          overview.includes(`](#${slug}-${kind})`),
+          `${locale} ${ruleId}: local ${kind} link`,
+        );
+        assert.equal(
+          packet.split(`<span id="${slug}-${kind}"></span>`).length,
+          2,
+          `${locale} ${ruleId}: unique ${kind} target`,
+        );
+      }
+      const sources = vueSources(packet);
+      assert.ok(sources.length >= 2, `${locale} ${ruleId}: complete Bad/Good Vue witnesses`);
+      assert.deepEqual(
+        sources,
+        vueSources(reference),
+        `${locale} ${ruleId}: exact whole copied source`,
       );
+      assert.ok(packet.includes(`"${ruleId}":`), `${locale} ${ruleId}: inline rule configuration`);
+      const labels =
+        locale === "ja"
+          ? ["既定の重大度:", "プリセット:", "オプション:", "**悪い**", "**良い**"]
+          : locale === "en"
+            ? ["Default severity:", "Presets:", "Options:", "**Bad**", "**Good**"]
+            : [];
+      for (const label of labels)
+        assert.ok(packet.includes(label), `${locale} ${ruleId}: ${label}`);
     }
   });
 }

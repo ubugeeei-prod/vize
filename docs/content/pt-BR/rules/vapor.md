@@ -1,116 +1,20 @@
 ---
-title: Regras de Vapor
+title: "Regras de Vapor"
 ---
-
-<!-- Generated translation; source: rules/vapor.md -->
 
 # Regras de Vapor
 
-Essas regras cobrem restrições de templates para componentes e aplicativos orientados ao Vapor. API de composição e
-orientação Vapor em nível de script vivem em [Type and script rules](./type-and-script.md).
+Cada regra desta categoria reúne nesta página sua finalidade, configuração e exemplos incorreto e correto completos. Os exemplos de projeto também incluem os arquivos compartilhados, que devem ser usados nos dois casos. As linhas destacadas mostram a alteração; o código copiado preserva o conteúdo completo. As notas de suporte distinguem os diagnósticos disponíveis das convenções ilustrativas e dos contratos sem produtor atual; ativar um ID não implementa uma verificação ausente.
 
-## `vapor/no-vue-lifecycle-events`
 
-Relata eventos do ciclo de vida por elemento, como `@vue:mounted`.
+| Regra | Exemplos | Finalidade |
+| --- | --- | --- |
+| [`script/no-get-current-instance`](https://vizejs.dev/pt-BR/rules/vapor.html#script-no-get-current-instance) | [Incorreto](https://vizejs.dev/pt-BR/rules/vapor.html#script-no-get-current-instance-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vapor.html#script-no-get-current-instance-good) | Proibir getCurrentInstance() no modo Vapor (retorna null) |
+| [`script/no-next-tick`](https://vizejs.dev/pt-BR/rules/vapor.html#script-no-next-tick) | [Incorreto](https://vizejs.dev/pt-BR/rules/vapor.html#script-no-next-tick-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vapor.html#script-no-next-tick-good) | Proibir o uso de nextTick() em componentes orientados a Vapor |
+| [`script/no-options-api`](https://vizejs.dev/pt-BR/rules/vapor.html#script-no-options-api) | [Incorreto](https://vizejs.dev/pt-BR/rules/vapor.html#script-no-options-api-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vapor.html#script-no-options-api-good) | Proibir padrões da Options API no modo Vapor |
+| [`vapor/no-inline-template`](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-no-inline-template) | [Incorreto](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-no-inline-template-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-no-inline-template-good) | Proibir o atributo obsoleto inline-template |
+| [`vapor/no-vue-lifecycle-events`](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-no-vue-lifecycle-events) | [Incorreto](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-no-vue-lifecycle-events-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-no-vue-lifecycle-events-good) | Proibir eventos de ciclo de vida @vue:xxx por elemento (não suportados em Vapor) |
+| [`vapor/prefer-static-class`](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-prefer-static-class) | [Incorreto](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-prefer-static-class-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-prefer-static-class-good) | Preferir class estática a uma vinculação dinâmica de class para literais de string |
+| [`vapor/require-vapor-attribute`](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-require-vapor-attribute) | [Incorreto](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-require-vapor-attribute-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vapor.html#vapor-require-vapor-attribute-good) | Sugerir a adição do atributo vapor a script setup |
 
-Gravidade padrão: `error`
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <input @vue:mounted="focusInput" />
-</template>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts" vapor>
-const input = useTemplateRef<HTMLInputElement>("input");
-
-onMounted(() => {
-  input.value?.focus();
-});
-</script>
-
-<template>
-  <input ref="input" />
-</template>
-```
-
-## `vapor/require-vapor-attribute`
-
-Sugere adicionar `vapor` ao `<script setup>` quando o preset espera componentes compatíveis com Vapor.
-
-Gravidade padrão: `warning`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-const count = ref(0);
-</script>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts" vapor>
-const count = ref(0);
-</script>
-```
-
-## `vapor/no-inline-template`
-
-Relata o atributo `inline-template` obsoleto.
-
-Gravidade padrão: `error`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <LegacyCard inline-template>
-    <p>Profile</p>
-  </LegacyCard>
-</template>
-```
-
-Bom:
-
-```vue
-<template>
-  <LegacyCard>
-    <template #default>
-      <p>Profile</p>
-    </template>
-  </LegacyCard>
-</template>
-```
-
-## `vapor/prefer-static-class`
-
-Relata ligações dinâmicas `:class` cujo valor é um literal estático de string.
-
-Gravidade padrão: `warning`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <section :class="'panel panel-primary'">Profile</section>
-</template>
-```
-
-Bom:
-
-```vue
-<template>
-  <section class="panel panel-primary">Profile</section>
-</template>
-```
+[Todas as regras](./all.md) · [Opções das regras](/rules/options.md) · [Mapa de migração do ESLint](/rules/migration.md) · [Verificações do projeto](./cross-file.md) · [Atributos entre componentes](/rules/project/vue-cross-file-attrs-fallthrough.md)

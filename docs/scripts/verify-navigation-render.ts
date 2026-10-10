@@ -7,6 +7,8 @@ import { chromium } from "playwright";
 import type { Browser } from "playwright";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
 import { navigationRenderRoutes } from "./navigation-render-routes.ts";
+import { categoryFiles } from "./rules/catalogue-routes.ts";
+import { catalogueSubgroups } from "./rules/catalogue-subgroups.ts";
 import { verifyCaptureRenderControls } from "./capture-render-controls.ts";
 import { verifyLocaleRenderControls } from "./locale-control-render.ts";
 import { verifyNavigationRenderJob } from "./navigation-render-page.ts";
@@ -34,7 +36,10 @@ const dist = path.resolve(values.dir);
 const output = path.resolve(values.output);
 const routes = values.routes?.split(",") ?? [
   ...navigationRenderRoutes,
-  ...["zh-CN", "pt-BR", "fr"].map((locale) => `/${locale}/rules/vue`),
+  ...["zh-CN", "pt-BR", "fr"].flatMap((locale) =>
+    ["all", "vue", ...categoryFiles, "cross-file"].map((file) => `/${locale}/rules/${file}`),
+  ),
+  ...Object.keys(catalogueSubgroups).map((file) => `/rules/${file}`),
 ];
 const workers = parseRenderWorkers(values.workers);
 const jobs = createRenderJobs(routes);
@@ -90,16 +95,23 @@ try {
     verifyCaptureRenderControls(activeBrowser, origin, output),
   );
   await verifyLocaleRenderControls(activeBrowser, origin, output);
-  results = await runRenderJobs(jobs, workers, async (job, phase) =>
-    withRenderContext(
+  let completedCaptures = 0;
+  results = await runRenderJobs(jobs, workers, async (job, phase) => {
+    console.log(`Capturing ${job.device} ${job.route} with complete source and page pixels`);
+    const report = await withRenderContext(
       () =>
         phase("context", () =>
           activeBrowser.newContext({ viewport: job.viewport, reducedMotion: "reduce" }),
         ),
       (context) => verifyNavigationRenderJob(context, job, phase, { origin, output, linkedPages }),
       (close) => phase("context-close", close),
-    ),
-  );
+    );
+    completedCaptures += 1;
+    console.log(
+      `Verified ${job.device} ${job.route}; ${completedCaptures} route captures complete`,
+    );
+    return report;
+  });
   reports = collectRenderReceipts(jobs, results);
   const failures = results.filter(({ timing }) => timing.status === "failed");
   assert.equal(

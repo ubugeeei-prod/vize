@@ -1,296 +1,84 @@
 ---
-title: Regras de Tipo e Script
+title: "Regras de Tipo e Script"
 ---
-
-<!-- Generated translation; source: rules/type-and-script.md -->
 
 # Regras de Tipo e Script
 
-Regras de tipo usam o verificador TypeScript quando informações semânticas são necessárias. O Vize lê a mesma forma
-projeto que o TypeScript lê de `tsconfig.json`, então nomes de ambientes compartilhados devem vir de
-`compilerOptions.types`, referências de projeto ou arquivos de declaração.
-
-Regras de script são regras Patina para API de composição e código orientado a Vapor. Eles focam em padrões
-que são difíceis de compilar de forma eficiente ou difíceis de raciocinar no modo Vapor.
-
-O linting consciente do tipo é opt-in. Ative-o com `linter.typeAware: true`, `vize lint --type-aware`ou
-ativando explicitamente uma regra `type/*`. `type/no-reactivity-loss` pode ser ativado diretamente com
-`vize lint --strict-reactivity`. Se a Corsa não puder ser iniciada, Patina reporta `type/corsa-runtime` e
-pula a passagem de regras com checker, em vez de silenciosamente descartar as regras configuradas.
-
-`--type-aware` usa a mesma resolução executável Corsa que `vize check`; Configure
-`typeChecker.corsaPath` quando o projeto precisar de um binário `tsgo` explícito ou Corsa. Os padrões permanecem
-custo zero: Patina não analisa SFCs para linting com xadrez nem inicia Corsa a menos que a bandeira,
-`linter.typeAware`, ou uma regra de `type/*` explicitamente ativada opte.
-
-```ts
-export default defineConfig({
-  linter: { typeAware: true },
-});
-```
-
-## `type/require-typed-props`
-
-Requer que `defineProps` seja tipado em vez de usar uma declaração de array em tempo de execução.
-
-Gravidade padrão: `warning`
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-const props = defineProps(["label", "count"]);
-</script>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{
-  label: string;
-  count: number;
-}>();
-</script>
-```
-
-## `type/require-typed-emits`
-
-Requer `defineEmits` descreva as cargas úteis de eventos emitidas.
-
-Gravidade padrão: `warning`
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits(["save"]);
-
-emit("save", form.value);
-</script>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{
-  save: [payload: FormValue];
-}>();
-
-emit("save", form.value);
-</script>
-```
-
-## `type/no-unsafe-template-binding`
-
-Relatórios de templates bindings que resolvem valores inseguros, como `any`. A regra é backed por checker,
-então ela segue os tipos importados e a configuração do projeto.
-
-Gravidade padrão: `warning`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-const payload: any = await loadPayload();
-</script>
-
-<template>
-  <p>{{ payload.title }}</p>
-</template>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-type Payload = { title: string };
-
-const payload = await loadPayload<Payload>();
-</script>
-
-<template>
-  <p>{{ payload.title }}</p>
-</template>
-```
-
-## `type/no-floating-promises`
-
-Relata promessas que são criadas, mas não aguardadas, devolvidas ou intencionalmente tratadas.
-A verificação cobre tanto expressões `<script>` quanto modelos.
-
-Gravidade padrão: `warning`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-function submit() {
-  saveForm(form.value);
-}
-</script>
-
-<template>
-  <button @click="saveForm(form)">Save</button>
-  <p>{{ loadPreview() }}</p>
-</template>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-type Preview = { title: string };
-
-async function submit() {
-  await saveForm(form.value);
-}
-
-const preview = ref<Preview | null>(null);
-
-async function loadPreviewIntoState() {
-  preview.value = await loadPreview();
-}
-</script>
-
-<template>
-  <button @click="void submit()">Save</button>
-  <button @click="void loadPreviewIntoState()">Preview</button>
-  <PreviewPanel v-if="preview" :preview="preview" />
-</template>
-```
-
-## `type/no-reactivity-loss`
-
-Reporta instantâneos simples dos valores reativos usados entre fluxos. A regra também é executada quando
-`vize lint --strict-reactivity` está ativada.
-
-Gravidade padrão: `warning`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ item: { name: string } }>();
-const item = props.item;
-</script>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ item: { name: string } }>();
-const item = toRef(props, "item");
-</script>
-```
-
-## Configuração do Checker
-
-As regras conscientes de tipos não precisam de um campo separado de `globals` Vize para nomes TypeScript. Prefira
-configuração nativa do TypeScript:
-
-Ruim:
-
-```ts
-export default {
-  globals: ["definePageMeta", "process"],
-};
-```
-
-Bom:
-
-```json
-{
-  "compilerOptions": {
-    "types": ["node", "nuxt/app"]
-  }
-}
-```
-
-## `script/no-options-api`
-
-Relatórios Opções Definições de componentes da API em presets orientados ao Vapor.
-
-Gravidade padrão: `error`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script lang="ts">
-export default {
-  data() {
-    return { count: 0 };
-  },
-};
-</script>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts" vapor>
-const count = ref(0);
-</script>
-```
-
-## `script/no-next-tick`
-
-Relatórios `nextTick()` em componentes orientados a vapor. Prefira referências diretas, ganchos de ciclo de vida ou fluxo de estado
-que não dependa do próximo flush do DOM.
-
-Gravidade padrão: `error`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts" vapor>
-await nextTick();
-input.value?.focus();
-</script>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts" vapor>
-const input = useTemplateRef<HTMLInputElement>("input");
-
-onMounted(() => {
-  input.value?.focus();
-});
-</script>
-```
-
-## `script/no-get-current-instance`
-
-Relatórios `getCurrentInstance()` em componentes orientados a vapor. Ele alcança internos de runtime que
-Vapor não consegue otimizar com segurança.
-
-Gravidade padrão: `error`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts" vapor>
-const instance = getCurrentInstance();
-const app = instance?.appContext.app;
-</script>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts" vapor>
-const appConfig = useAppConfig();
-</script>
-```
+Cada regra desta categoria reúne nesta página sua finalidade, configuração e exemplos incorreto e correto completos. Os exemplos de projeto também incluem os arquivos compartilhados, que devem ser usados nos dois casos. As linhas destacadas mostram a alteração; o código copiado preserva o conteúdo completo. As notas de suporte distinguem os diagnósticos disponíveis das convenções ilustrativas e dos contratos sem produtor atual; ativar um ID não implementa uma verificação ausente.
+
+<span id="configuração-do-checker"></span>
+
+| Regra | Exemplos | Finalidade |
+| --- | --- | --- |
+| [`script/component-options-name-casing`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-component-options-name-casing) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-component-options-name-casing-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-component-options-name-casing-good) | Exigir PascalCase na opção `name` do componente |
+| [`script/custom-event-name-casing`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-custom-event-name-casing) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-custom-event-name-casing-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-custom-event-name-casing-good) | Exigir camelCase nos nomes de eventos personalizados emitidos |
+| [`script/define-emits-declaration`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-emits-declaration) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-emits-declaration-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-emits-declaration-good) | Exigir a forma de defineEmits&lt;{}&gt;() baseada em tipos em vez da forma em tempo de execução ou de array |
+| [`script/define-macros-order`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-macros-order) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-macros-order-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-macros-order-good) | Exigir uma ordem consistente para as macros do compilador Vue em &lt;script setup&gt; |
+| [`script/define-props-declaration`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-props-declaration) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-props-declaration-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-props-declaration-good) | Exigir defineProps&lt;{ ... }&gt;() baseado em tipos em vez da forma com objeto em tempo de execução |
+| [`script/define-props-destructuring`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-props-destructuring) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-props-destructuring-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-define-props-destructuring-good) | Exigir um estilo consistente de desestruturação de defineProps em &lt;script setup&gt; |
+| [`script/no-arrow-functions-in-watch`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-arrow-functions-in-watch) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-arrow-functions-in-watch-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-arrow-functions-in-watch-good) | Proibir funções de seta como manipuladores de watch na Options API |
+| [`script/no-async-in-computed`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-async-in-computed) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-async-in-computed-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-async-in-computed-good) | Proibir funções assíncronas em propriedades computadas |
+| [`script/no-boolean-default`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-boolean-default) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-boolean-default-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-boolean-default-good) | Proibir um valor padrão em uma prop Boolean |
+| [`script/no-deep-destructure-in-props`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deep-destructure-in-props) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deep-destructure-in-props-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deep-destructure-in-props-good) | Proibir desestruturação profundamente aninhada em defineProps |
+| [`script/no-deprecated-data-object-declaration`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-data-object-declaration) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-data-object-declaration-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-data-object-declaration-good) | Proibir um literal de objeto como opção data do componente (o Vue 3 exige uma função) |
+| [`script/no-deprecated-destroyed-lifecycle`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-destroyed-lifecycle) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-destroyed-lifecycle-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-destroyed-lifecycle-good) | Proibir os hooks de ciclo de vida obsoletos destroyed e beforeDestroy |
+| [`script/no-deprecated-dollar-listeners-api`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-dollar-listeners-api) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-dollar-listeners-api-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-dollar-listeners-api-good) | Proibir a propriedade de instância $listeners removida no Vue 3 (incorporada a $attrs) |
+| [`script/no-deprecated-dollar-scopedslots-api`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-dollar-scopedslots-api) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-dollar-scopedslots-api-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-dollar-scopedslots-api-good) | Proibir a propriedade de instância $scopedSlots removida no Vue 3 (usar $slots) |
+| [`script/no-deprecated-events-api`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-events-api) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-events-api-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-events-api-good) | Proibir a API de eventos do Vue 2 removida ($on / $off / $once) |
+| [`script/no-deprecated-props-default-this`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-props-default-this) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-props-default-this-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-deprecated-props-default-this-good) | Proibir `this` dentro de uma função de valor padrão ou validação de prop (removido no Vue 3) |
+| [`script/no-dupe-keys`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-dupe-keys) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-dupe-keys-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-dupe-keys-good) | Proibir chaves duplicadas entre props/data/computed/methods/setup/inject da Options API |
+| [`script/no-duplicate-attr-inheritance`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-duplicate-attr-inheritance) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-duplicate-attr-inheritance-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-duplicate-attr-inheritance-good) | Sinalizar um componente que aplica duas vezes seus atributos repassados |
+| [`script/no-export-in-script-setup`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-export-in-script-setup) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-export-in-script-setup-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-export-in-script-setup-good) | Proibir instruções export dentro de &lt;script setup&gt; |
+| [`script/no-get-current-instance`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-get-current-instance) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-get-current-instance-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-get-current-instance-good) | Proibir getCurrentInstance() no modo Vapor (retorna null) |
+| [`script/no-import-compiler-macros`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-import-compiler-macros) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-import-compiler-macros-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-import-compiler-macros-good) | Proibir a importação de macros do compilador Vue que são importadas automaticamente |
+| [`script/no-internal-imports`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-internal-imports) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-internal-imports-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-internal-imports-good) | Proibir importações de módulos internos do Vue |
+| [`script/no-multiple-slot-args`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-multiple-slot-args) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-multiple-slot-args-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-multiple-slot-args-good) | Proibir passar mais de um argumento a uma chamada de função de slot com escopo |
+| [`script/no-next-tick`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-next-tick) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-next-tick-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-next-tick-good) | Proibir o uso de nextTick() em componentes orientados a Vapor |
+| [`script/no-options-api`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-options-api) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-options-api-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-options-api-good) | Proibir padrões da Options API no modo Vapor |
+| [`script/no-potential-component-option-typo`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-potential-component-option-typo) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-potential-component-option-typo-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-potential-component-option-typo-good) | Sinalizar prováveis erros de digitação nos nomes de opções de componentes da Options API |
+| [`script/no-reactive-destructure`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reactive-destructure) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reactive-destructure-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reactive-destructure-good) | Proibir a desestruturação de objetos reativos que causa perda de reatividade |
+| [`script/no-ref-as-operand`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-ref-as-operand) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-ref-as-operand-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-ref-as-operand-good) | Exigir que variáveis vinculadas a refs sejam acessadas por `.value` quando usadas como operandos |
+| [`script/no-required-prop-with-default`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-required-prop-with-default) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-required-prop-with-default-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-required-prop-with-default-good) | Proibir uma prop que tenha required: true e também um valor padrão |
+| [`script/no-reserved-identifiers`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reserved-identifiers) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reserved-identifiers-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reserved-identifiers-good) | Proibir o uso de identificadores reservados pelo compilador Vue |
+| [`script/no-reserved-keys`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reserved-keys) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reserved-keys-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reserved-keys-good) | Proibir nomes reservados pelo Vue como chaves de props/data/computed/methods/setup/inject na Options API |
+| [`script/no-reserved-props`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reserved-props) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reserved-props-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-reserved-props-good) | Proibir nomes reservados na declaração de props de um componente |
+| [`script/no-restricted-globals`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-restricted-globals) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-restricted-globals-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-restricted-globals-good) | Proibir referências a variáveis globais do ambiente de execução que devem passar por um encapsulamento tipado |
+| [`script/no-restricted-members`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-restricted-members) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-restricted-members-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-restricted-members-good) | Proibir acessos a membros object.property configurados pelo projeto |
+| [`script/no-side-effects-in-computed-properties`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-side-effects-in-computed-properties) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-side-effects-in-computed-properties-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-side-effects-in-computed-properties-good) | Proibir efeitos colaterais em getters computados da Options API |
+| [`script/no-top-level-ref-in-script`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-top-level-ref-in-script) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-top-level-ref-in-script-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-top-level-ref-in-script-good) | Proibir ref/reactive no nível superior para evitar contaminação de estado entre requisições |
+| [`script/no-unstable-nested-components`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-unstable-nested-components) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-unstable-nested-components-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-unstable-nested-components-good) | Proibir definições de componentes dentro de funções de setup ou renderização |
+| [`script/no-unused-emit-declarations`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-unused-emit-declarations) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-unused-emit-declarations-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-unused-emit-declarations-good) | Sinalizar eventos declarados que nunca são emitidos |
+| [`script/no-use-computed-property-like-method`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-use-computed-property-like-method) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-use-computed-property-like-method-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-use-computed-property-like-method-good) | Proibir chamar uma propriedade computada da Options API como um método |
+| [`script/no-with-defaults`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-with-defaults) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-with-defaults-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-no-with-defaults-good) | Desencorajar withDefaults em favor de valores padrão na desestruturação (Vue 3.5+) |
+| [`script/prefer-computed`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-computed) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-computed-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-computed-good) | Preferir computed() para estado reativo derivado |
+| [`script/prefer-define-options`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-define-options) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-define-options-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-define-options-good) | Preferir defineOptions() a um &lt;script&gt; comum que só define name/inheritAttrs |
+| [`script/prefer-import-from-vue`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-import-from-vue) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-import-from-vue-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-import-from-vue-good) | Preferir importar de 'vue' em vez de pacotes internos |
+| [`script/prefer-ref-over-reactive`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-ref-over-reactive) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-ref-over-reactive-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-ref-over-reactive-good) | Recomendar o uso de ref() em vez de reactive() para gerenciar estado |
+| [`script/prefer-use-attrs`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-attrs) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-attrs-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-attrs-good) | Recomendar o uso de useAttrs() em vez de context.attrs |
+| [`script/prefer-use-id`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-id) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-id-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-id-good) | Recomendar o uso de useId() para gerar IDs únicos (Vue 3.5+) |
+| [`script/prefer-use-slots`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-slots) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-slots-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-slots-good) | Recomendar o uso de useSlots() em vez de context.slots |
+| [`script/prefer-use-template-ref`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-template-ref) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-template-ref-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-prefer-use-template-ref-good) | Recomendar useTemplateRef em vez de ref para referências de template (Vue 3.5+) |
+| [`script/require-default-prop`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-default-prop) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-default-prop-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-default-prop-good) | Exigir um valor padrão para toda prop opcional que não seja Boolean |
+| [`script/require-explicit-emits`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-explicit-emits) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-explicit-emits-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-explicit-emits-good) | Exigir que os eventos emitidos sejam declarados em defineEmits ou na opção emits |
+| [`script/require-explicit-slots`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-explicit-slots) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-explicit-slots-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-explicit-slots-good) | Exigir que os slots consumidos por useSlots() sejam tipados explicitamente com defineSlots&lt;...&gt;() |
+| [`script/require-function-return-type`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-function-return-type) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-function-return-type-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-function-return-type-good) | Exigir anotações de tipo de retorno nas funções |
+| [`script/require-prop-type-constructor`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-prop-type-constructor) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-prop-type-constructor-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-prop-type-constructor-good) | Exigir que os valores de `type` de props sejam construtores em vez de literais de string |
+| [`script/require-prop-types`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-prop-types) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-prop-types-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-prop-types-good) | Exigir que toda prop declare um tipo |
+| [`script/require-symbol-provide`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-symbol-provide) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-symbol-provide-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-symbol-provide-good) | Recomendar o uso de Symbol como chave de injeção para provide/inject |
+| [`script/require-typed-object-prop`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-typed-object-prop) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-typed-object-prop-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-typed-object-prop-good) | Exigir um tipo explícito em uma prop cujo tipo de tempo de execução seja `Object` ou `Array` |
+| [`script/require-typed-ref`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-typed-ref) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-typed-ref-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-typed-ref-good) | Exigir um argumento de tipo explícito em um ref() inicializado sem valor, com null ou com undefined |
+| [`script/require-valid-default-prop`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-valid-default-prop) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-valid-default-prop-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-require-valid-default-prop-good) | Exigir que o valor padrão de uma prop seja válido para seu tipo declarado |
+| [`script/return-in-computed-property`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-return-in-computed-property) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-return-in-computed-property-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-return-in-computed-property-good) | Exigir um valor de retorno em todo getter computado |
+| [`script/return-in-emits-validator`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-return-in-emits-validator) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-return-in-emits-validator-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-return-in-emits-validator-good) | Exigir um valor de retorno em todo validador de emits da Options API |
+| [`script/valid-define-emits`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-define-emits) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-define-emits-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-define-emits-good) | Exigir uso válido de defineEmits() (sem argumentos de tipo e de tempo de execução juntos, sem referências locais, uma única chamada) |
+| [`script/valid-define-options`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-define-options) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-define-options-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-define-options-good) | Exigir uso válido de defineOptions() (um único argumento de objeto, sem props/emits/expose/slots) |
+| [`script/valid-define-props`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-define-props) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-define-props-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-define-props-good) | Exigir uso válido de defineProps() (uma única chamada, sem argumentos de tipo e de tempo de execução juntos, sem referências locais) |
+| [`script/valid-next-tick`](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-next-tick) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-next-tick-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#script-valid-next-tick-good) | Exigir que o resultado de uma chamada de nextTick() seja aguardado, encadeado ou receba uma função de retorno |
+| [`type/no-floating-promises`](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-no-floating-promises) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-no-floating-promises-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-no-floating-promises-good) | Proibir Promises soltas (não tratadas) |
+| [`type/no-reactivity-loss`](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-no-reactivity-loss) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-no-reactivity-loss-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-no-reactivity-loss-good) | Proibir cópias estáticas simples de valores reativos em atribuições e chamadas |
+| [`type/no-unsafe-template-binding`](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-no-unsafe-template-binding) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-no-unsafe-template-binding-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-no-unsafe-template-binding-good) | Proibir vinculações de template que resultam em tipos inseguros |
+| [`type/require-typed-emits`](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-require-typed-emits) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-require-typed-emits-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-require-typed-emits-good) | Exigir uma definição de tipo para defineEmits |
+| [`type/require-typed-props`](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-require-typed-props) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-require-typed-props-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-require-typed-props-good) | Exigir uma definição de tipo para defineProps |
+| [`type/strict-boolean-expressions`](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-strict-boolean-expressions) | [Incorreto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-strict-boolean-expressions-bad) · [Correto](https://vizejs.dev/pt-BR/rules/type-and-script.html#type-strict-boolean-expressions-good) | Exigir expressões booleanas seguras nas condições de script e template |
+
+[Todas as regras](./all.md) · [Opções das regras](/rules/options.md) · [Mapa de migração do ESLint](/rules/migration.md) · [Verificações do projeto](./cross-file.md) · [Atributos entre componentes](/rules/project/vue-cross-file-attrs-fallthrough.md)

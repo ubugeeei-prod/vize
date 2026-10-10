@@ -1,200 +1,23 @@
 ---
-title: HTML规则
+title: "HTML 规则"
 ---
 
-<!-- Generated translation; source: rules/html.md -->
+# HTML 规则
 
-# HTML规则
+本页集中列出所有相关规则的用途、配置、错误示例和正确示例，无需跳转页面查看对照。高亮行标示修改；复制代码时保留完整源代码。每条规则注明适用范围和当前支持限制；规范示例并不保证当前实现会产生诊断。
 
-这些规则涵盖了 Vue 模板中的 HTML 有效性和语义标记。它们是独立于
-Vue专用指令规则和无障碍规则，以便启用HTML符合性检查
-或者单独解释。
+<span id="html规则"></span>
 
-## `html/id-duplication`
+| 规则 | 示例 | 用途 |
+| --- | --- | --- |
+| [`html/deprecated-attr`](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-attr) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-attr-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-attr-good) | 禁止已弃用的 HTML 属性 |
+| [`html/deprecated-element`](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-element) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-element-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-deprecated-element-good) | 禁止已弃用的 HTML 元素 |
+| [`html/id-duplication`](https://vizejs.dev/zh-CN/rules/html.html#html-id-duplication) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-id-duplication-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-id-duplication-good) | 禁止重复的元素 ID |
+| [`html/no-consecutive-br`](https://vizejs.dev/zh-CN/rules/html.html#html-no-consecutive-br) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-consecutive-br-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-consecutive-br-good) | 禁止连续的 &lt;br&gt; 元素 |
+| [`html/no-dupe-style-properties`](https://vizejs.dev/zh-CN/rules/html.html#html-no-dupe-style-properties) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-dupe-style-properties-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-dupe-style-properties-good) | 禁止内联 style 属性中重复的属性声明 |
+| [`html/no-duplicate-class`](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-class) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-class-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-class-good) | 禁止静态 class 属性中重复的类名 |
+| [`html/no-duplicate-dt`](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-dt) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-dt-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-duplicate-dt-good) | 禁止 &lt;dl&gt; 中重复的 &lt;dt&gt; 名称 |
+| [`html/no-empty-palpable-content`](https://vizejs.dev/zh-CN/rules/html.html#html-no-empty-palpable-content) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-empty-palpable-content-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-no-empty-palpable-content-good) | 禁止预期具有可见内容的空元素 |
+| [`html/require-datetime`](https://vizejs.dev/zh-CN/rules/html.html#html-require-datetime) | [错误示例](https://vizejs.dev/zh-CN/rules/html.html#html-require-datetime-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/html.html#html-require-datetime-good) | 要求 &lt;time&gt; 元素具有 datetime 属性 |
 
-报告会在同一模板内重复静态ID。
-
-默认严重程度：`error`
-预设：`essential`、`happy-path`、`nuxt`、`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-  <p id="email">Required</p>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <label for="email">Email</label>
-  <input id="email" aria-describedby="email-help" />
-  <p id="email-help">Required</p>
-</template>
-```
-
-## `html/deprecated-element`
-
-报告已弃用HTML元素。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <center>Profile</center>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <section class="profile">Profile</section>
-</template>
-```
-
-## `html/deprecated-attr`
-
-报告已弃用HTML属性。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <table border="1">
-    <tr>
-      <td>Total</td>
-    </tr>
-  </table>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <table class="summary">
-    <tr>
-      <td>Total</td>
-    </tr>
-  </table>
-</template>
-```
-
-## `html/no-consecutive-br`
-
-报告用于布局的连续`<br>`元素。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <p>First line<br /><br />Second block</p>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <p>First line</p>
-  <p>Second block</p>
-</template>
-```
-
-## `html/require-datetime`
-
-需要机器可读的 `datetime` 值在`<time>`上。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <time>May 13, 2026</time>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <time datetime="2026-05-13">May 13, 2026</time>
-</template>
-```
-
-## `html/no-duplicate-dt`
-
-报告在同一`<dl>`内重复`<dt>`术语。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <dl>
-    <dt>API</dt>
-    <dd>Public interface</dd>
-    <dt>API</dt>
-    <dd>Internal service</dd>
-  </dl>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <dl>
-    <dt>API</dt>
-    <dd>Public interface</dd>
-    <dd>Internal service</dd>
-  </dl>
-</template>
-```
-
-## `html/no-empty-palpable-content`
-
-报告空白的元素，这些元素本应暴露可见或可感知的内容。
-包含文本、子内容、`aria-label`、`aria-labelledby`、`v-html`或`v-text`的元素包括
-接受。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <p></p>
-  <li></li>
-  <td></td>
-</template>
-```
-
-好：
-
-```vue
-<template>
-  <p>Overview</p>
-  <li>{{ item.label }}</li>
-  <td aria-label="No value"></td>
-</template>
-```
+[全部规则](./all.md) · [规则选项](/rules/options.md) · [ESLint 迁移对应表](/rules/migration.md) · [项目检查](./cross-file.md) · [组件间属性传递](/rules/project/vue-cross-file-attrs-fallthrough.md)

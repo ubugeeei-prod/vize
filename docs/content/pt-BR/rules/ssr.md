@@ -1,71 +1,15 @@
 ---
-title: Regras da SSR
+title: "Regras da SSR"
 ---
-
-<!-- Generated translation; source: rules/ssr.md -->
 
 # Regras da SSR
 
-Essas regras cobrem padrões de código e modelos que podem quebrar a renderização do servidor ou a hidratação. Eles
-são documentados separadamente das regras HTML e Vapor porque o modo de falha é o limite
-servidor/cliente.
+Cada regra desta categoria reúne nesta página sua finalidade, configuração e exemplos incorreto e correto completos. Os exemplos de projeto também incluem os arquivos compartilhados, que devem ser usados nos dois casos. As linhas destacadas mostram a alteração; o código copiado preserva o conteúdo completo. As notas de suporte distinguem os diagnósticos disponíveis das convenções ilustrativas e dos contratos sem produtor atual; ativar um ID não implementa uma verificação ausente.
 
-## `ssr/no-browser-globals-in-ssr`
 
-Relatórios globais apenas do navegador em código que pode rodar durante SSR.
+| Regra | Exemplos | Finalidade |
+| --- | --- | --- |
+| [`ssr/no-browser-globals-in-ssr`](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-browser-globals-in-ssr) | [Incorreto](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-browser-globals-in-ssr-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-browser-globals-in-ssr-good) | Proibir variáveis globais exclusivas do navegador no contexto de SSR |
+| [`ssr/no-hydration-mismatch`](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-hydration-mismatch) | [Incorreto](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-hydration-mismatch-bad) · [Correto](https://vizejs.dev/pt-BR/rules/ssr.html#ssr-no-hydration-mismatch-good) | Proibir valores não determinísticos que causam divergências na hidratação |
 
-Gravidade padrão: `warning`
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-const width = window.innerWidth;
-</script>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-const width = ref(0);
-
-onMounted(() => {
-  width.value = window.innerWidth;
-});
-</script>
-```
-
-Verificações de guarda, como `typeof window === "undefined"`, são permitidas porque o formulário de identificador de `typeof`
-direto é seguro durante a renderização do servidor. Strings, comentários e literais regex também
-são ignorados quando contêm nomes como `window` ou `document`. Acessar um membro como
-`typeof window.innerWidth` ainda reporta, porque avalia o navegador globalmente.
-
-## `ssr/no-hydration-mismatch`
-
-Reporta valores de template não determinísticos que podem variar entre renderização do servidor e
-hidratação do cliente.
-
-Gravidade padrão: `warning`
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <p>{{ Math.random() }}</p>
-</template>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-const seed = useState("seed", () => "stable");
-</script>
-
-<template>
-  <p>{{ seed }}</p>
-</template>
-```
+[Todas as regras](./all.md) · [Opções das regras](/rules/options.md) · [Mapa de migração do ESLint](/rules/migration.md) · [Verificações do projeto](./cross-file.md) · [Atributos entre componentes](/rules/project/vue-cross-file-attrs-fallthrough.md)

@@ -1,25 +1,22 @@
 ---
-title: HTML rules
+title: "HTML rules"
 ---
 
 # HTML rules
 
-Follow each rule for purpose, severity, scope, configuration, and Bad/Good examples. The complete catalogue keeps all examples and current support boundaries on one page.
+Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show the changes; copied code keeps the complete source. Each packet states its current support limits.
 
-Configure `lint.vize.rules` and run `vp run lint` with the Vite+ helper. Check each page for type-aware, filename, or additional-configuration prerequisites.
 
 | Rule | Examples | Purpose |
 | --- | --- | --- |
-| [`html/deprecated-attr`](./all.md#html-deprecated-attr) | [Bad](./all.md#html-deprecated-attr-bad) · [Good](./all.md#html-deprecated-attr-good) | Disallow deprecated HTML attributes |
-| [`html/deprecated-element`](./all.md#html-deprecated-element) | [Bad](./all.md#html-deprecated-element-bad) · [Good](./all.md#html-deprecated-element-good) | Disallow deprecated HTML elements |
-| [`html/id-duplication`](./all.md#html-id-duplication) | [Bad](./all.md#html-id-duplication-bad) · [Good](./all.md#html-id-duplication-good) | Disallow duplicate element IDs |
-| [`html/no-consecutive-br`](./all.md#html-no-consecutive-br) | [Bad](./all.md#html-no-consecutive-br-bad) · [Good](./all.md#html-no-consecutive-br-good) | Disallow consecutive &lt;br&gt; elements |
-| [`html/no-dupe-style-properties`](./all.md#html-no-dupe-style-properties) | [Bad](./all.md#html-no-dupe-style-properties-bad) · [Good](./all.md#html-no-dupe-style-properties-good) | Disallow duplicate properties in inline style attributes |
-| [`html/no-duplicate-class`](./all.md#html-no-duplicate-class) | [Bad](./all.md#html-no-duplicate-class-bad) · [Good](./all.md#html-no-duplicate-class-good) | Disallow duplicate class names in a static class attribute |
-| [`html/no-duplicate-dt`](./all.md#html-no-duplicate-dt) | [Bad](./all.md#html-no-duplicate-dt-bad) · [Good](./all.md#html-no-duplicate-dt-good) | Disallow duplicate &lt;dt&gt; names in &lt;dl&gt; |
-| [`html/no-empty-palpable-content`](./all.md#html-no-empty-palpable-content) | [Bad](./all.md#html-no-empty-palpable-content-bad) · [Good](./all.md#html-no-empty-palpable-content-good) | Disallow empty elements that expect visible content |
-| [`html/require-datetime`](./all.md#html-require-datetime) | [Bad](./all.md#html-require-datetime-bad) · [Good](./all.md#html-require-datetime-good) | Require datetime attribute on &lt;time&gt; element |
+| [`html/deprecated-attr`](https://vizejs.dev/rules/html.html#html-deprecated-attr) | [Bad](https://vizejs.dev/rules/html.html#html-deprecated-attr-bad) · [Good](https://vizejs.dev/rules/html.html#html-deprecated-attr-good) | Disallow deprecated HTML attributes |
+| [`html/deprecated-element`](https://vizejs.dev/rules/html.html#html-deprecated-element) | [Bad](https://vizejs.dev/rules/html.html#html-deprecated-element-bad) · [Good](https://vizejs.dev/rules/html.html#html-deprecated-element-good) | Disallow deprecated HTML elements |
+| [`html/id-duplication`](https://vizejs.dev/rules/html.html#html-id-duplication) | [Bad](https://vizejs.dev/rules/html.html#html-id-duplication-bad) · [Good](https://vizejs.dev/rules/html.html#html-id-duplication-good) | Disallow duplicate element IDs |
+| [`html/no-consecutive-br`](https://vizejs.dev/rules/html.html#html-no-consecutive-br) | [Bad](https://vizejs.dev/rules/html.html#html-no-consecutive-br-bad) · [Good](https://vizejs.dev/rules/html.html#html-no-consecutive-br-good) | Disallow consecutive &lt;br&gt; elements |
+| [`html/no-dupe-style-properties`](https://vizejs.dev/rules/html.html#html-no-dupe-style-properties) | [Bad](https://vizejs.dev/rules/html.html#html-no-dupe-style-properties-bad) · [Good](https://vizejs.dev/rules/html.html#html-no-dupe-style-properties-good) | Disallow duplicate properties in inline style attributes |
+| [`html/no-duplicate-class`](https://vizejs.dev/rules/html.html#html-no-duplicate-class) | [Bad](https://vizejs.dev/rules/html.html#html-no-duplicate-class-bad) · [Good](https://vizejs.dev/rules/html.html#html-no-duplicate-class-good) | Disallow duplicate class names in a static class attribute |
+| [`html/no-duplicate-dt`](https://vizejs.dev/rules/html.html#html-no-duplicate-dt) | [Bad](https://vizejs.dev/rules/html.html#html-no-duplicate-dt-bad) · [Good](https://vizejs.dev/rules/html.html#html-no-duplicate-dt-good) | Disallow duplicate &lt;dt&gt; names in &lt;dl&gt; |
+| [`html/no-empty-palpable-content`](https://vizejs.dev/rules/html.html#html-no-empty-palpable-content) | [Bad](https://vizejs.dev/rules/html.html#html-no-empty-palpable-content-bad) · [Good](https://vizejs.dev/rules/html.html#html-no-empty-palpable-content-good) | Disallow empty elements that expect visible content |
+| [`html/require-datetime`](https://vizejs.dev/rules/html.html#html-require-datetime) | [Bad](https://vizejs.dev/rules/html.html#html-require-datetime-bad) · [Good](https://vizejs.dev/rules/html.html#html-require-datetime-good) | Require datetime attribute on &lt;time&gt; element |
 
-[All rules](./all.md) · [Rule Options](./options.md) · [ESLint migration map](./migration.md) · [Project checks](./cross-file.md)
-
-For nesting after components are composed, see [html/cross-component-nesting](./project/html-cross-component-nesting.md).
+[All rules](./all.md) · [Rule Options](./options.md) · [ESLint migration map](./migration.md) · [Project checks](./cross-file.md) · [Attributes across components](./project/vue-cross-file-attrs-fallthrough.md)

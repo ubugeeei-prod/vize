@@ -1,0 +1,191 @@
+# Complete same-page rule category examples
+
+Issue: [#8334](https://github.com/ubugeeei-prod/vize/issues/8334)
+
+## Decision
+
+The original remaining-catalogue slice was sealed as
+`18baa158a260b8767d6083716bc40b23246a9f86` on Vue parent
+`a40a7abdd3c37a8d292a4b687f81b4108ef87925`. The local refresh now genuinely
+descends from actual main `26031a4fbb30a1e86511919bafc7035b08440ef3`, through
+Vue parent `f10f75f80ed83fadd380a29eb2c6e176c4e8e570`, preserving both original
+sealed worktrees. Third-party issues #8328 and #8329 retain publication priority.
+This preparation does not publish or close an issue.
+
+Each existing category page now includes the rule's purpose, prerequisites,
+configuration, support limits, and complete Bad/Good examples. All five locales
+cover the current 251 source rules and 66 project packets. Existing English
+subgroup pages remain complete reader pages. The three previously absent foreign
+Petite Vue category routes are added; foreign individual reference routes are
+not invented. Prerequisites use existing translated routes where available and
+existing English routes otherwise.
+
+Use the existing build-time reference composition and content materialization.
+Read the authoritative references once and cache each localized packet within
+the generation pass. Retain original source blocks, shared project files,
+reactive graphs, and all existing rule routes and fragments. Match project
+Bad/Good blocks by their actual file paths before computing native Ox Content
+`annotate="remove:..."` / `annotate="add:..."` fence metadata. Shared files are
+unchanged and copyable source contains no decorative diff prefixes. Native
+headings own rule fragments; explicit aliases preserve older category fragments.
+
+No additional runtime requests, generation stages, dependency upgrade, custom
+renderer, or handwritten `.mjs` are introduced. There is no new UI component in
+this slice; the existing Vue SFC theme renders the native output.
+
+Project pages state their real support boundary: 60 analyzer codes comprise 19
+CLI codes (18 qualified source pairs and one illustrative project with its
+retained reactive graph), 16 experimental Rust analyzer codes not individually
+emitted by that CLI pass, and 25 contracts with no current producer. Six further
+packets are project-specific lint IDs. All five cross-file overview tables keep
+those statuses and the public CLI/configuration instructions. Configuring a
+diagnostic ID does not activate an unavailable producer.
+
+## Local evidence
+
+- Deterministic generation and the five existing focused docs suites pass:
+  30 tests, no failures. Strict type-aware lint passes for the 51 changed/new
+  JavaScript and TypeScript modules.
+- The installed `@ox-content/napi@2.81.0` renderer plus HappyDOM validates all
+  66 materialized reader pages: 3,281 complete packets and 14,974 code blocks,
+  including shared files and retained graph blocks. Actual native IDs are unique,
+  existing fragments resolve, links stay on the current page, and rendered copied
+  source matches the independent references byte for byte.
+- Local rendered HTML gzip size peaks at 119,440 bytes for the Japanese all-rules
+  page. Native line annotations increase the existing English/Japanese all-page
+  gzip sizes from 98,697/108,466 to 109,035/119,440 bytes. These are local payload
+  measurements, not browser latency or a performance benchmark.
+
+The genuine main26031 refresh passes the same 30 focused tests and deterministic
+generation, plus strict type-aware lint for all 66 changed/new modules across
+both slices. Every one of the 66 native page source/HTML hashes, copied code
+blocks, retained fragments and payload sizes equals the original sealed child.
+The initial refresh needed no additional executable docs change.
+
+## Hosted type-check correction
+
+The original #8355 source job
+[114104968371](https://github.com/ubugeeei-prod/vize/actions/runs/38015576041/job/114104968371)
+reports four TS7053 errors before repository checks: foreign dictionary
+aggregates infer a union of literal-key objects and indexed records. Give the
+shared locale aggregate an explicit catalogue translation contract, retaining
+checked dynamic rule/support lookups and fail-closed missing entries. This adds
+erasable types only; all translation text, examples and native page outputs stay
+unchanged. The original failed run remains evidence. Fresh successor exact-head
+Actions are required before any protected admission.
+
+The successor passes the actual local TypeScript 7.0.2 docs project check,
+strict type-aware lint, deterministic generation and all 30 focused tests.
+All 66 native page source/HTML hashes and payload sizes remain exact; hosted
+successor qualification is still pending.
+
+## Remaining acceptance
+
+- After successful third-party publication, check fresh `main` and retain the
+  genuine Vue parent relationship when publishing the native Stack. Regenerate
+  again if the authoritative rule registry has changed.
+- Pair this decision with a concise issue comment during root integration. The
+  local child appends its link to canonical row 350; all incoming clauses,
+  including current v12 release/retirement row 330, remain exact. The source
+  decisions are paired with comments on #8334; protected admission stays deferred.
+- Run exact-head Actions, the full docs SSG build, and the expanded real Chromium
+  navigation/render checks. Verify deployed category and cross-file pages,
+  fragment links, copyable source and page payloads in all five locales.
+- Keep #8334 open until its full original acceptance is met, including successful
+  merge and deployed verification. Local native rendering does not establish
+  Chromium, SSG, Actions, deployment, release or publication success.
+
+Proposed paired issue comment after the publication gate:
+
+> Keep complete Bad/Good packets on every existing category and cross-file page
+> in all five locales, using native Ox Content line annotations and unchanged
+> copyable source. Preserve existing routes, fragments and explicit producer
+> limits. The local decision and pending hosted acceptance are recorded in
+> `docs/davinci/decisions/2026-10-10-rule-category-examples.md`.
+
+## Source Actions inventory and base refresh
+
+Rebase the complete source Stack #8356 (#8354 then #8355) onto signed main
+`4c2bebb9a586e3eaab698b41e5b58ed5f8181852`, preserving all 37 v0.439.0
+metadata paths and incoming canonical decisions. The parent corrects the stale
+natural v-on docs corpus discovered in tooling job 114105009567. Complete
+category generation then grows that docs inventory from 123 to 185 occurrence rows (excluding the header): 65
+additional occurrences and three occurrences relocated to the generated English
+Vue directives page. Existing event, option and storage maxima remain two.
+
+The unchanged corpus producer's `--check` and all five v-on storage tests pass
+locally. Example bytes, routes, annotations and native HTML remain unchanged.
+Earlier source runs are historical; require fresh exact-head Check and Docs
+Actions before the protected admission that root coordinates after third-party
+publication. Both source PRs stay draft, with no individual auto-merge or queue.
+
+## Accessibility regression expectation refresh
+
+Source tooling shard 4/4 at `20b8cb5122`
+([job 114109423686](https://github.com/ubugeeei-prod/vize/actions/runs/38016876142/job/114109423686))
+still expects English and Japanese accessibility links to leave the category for
+`all.md`. Update this existing regression to require all 31 accessibility rule
+packets, both local example targets, inline configuration and byte-exact complete
+Vue source on the category itself. Extend its source custody checks to all five
+locales against the unchanged English/Japanese individual reference authorities.
+
+All 35 focused docs tests and strict type-aware lint pass locally. Renderer,
+prose, examples, routes,
+native annotation metadata and payload sizes are unchanged. Obtain fresh
+successor source Actions before protected admission; the failed earlier run
+remains evidence of the stale assertion rather than a passing source receipt.
+
+## Protected delivery rebase
+
+Rebase this genuine native Stack child onto its refreshed Vue-category
+parent after actual main exposed the parent's canonical-record conflict.
+Retain every original category, all five locale examples, native assertions
+and copy-byte contract. Move only this slice's complete unchanged canonical
+clause beside its parent in the existing tooling-input paragraph. All
+incoming source ratchets and decisions remain whole. Previous green
+receipts supply historical evidence only; exact fresh Check, full Docs,
+protected Stack merge and deployed reader verification are still required.
+Bounded route start/completion logs make long complete-page capture progress
+visible without changing source packets, screenshots or acceptance gates.
+
+## Current-main catalogue composition
+
+The prior top's complete Docs run passed 180 rendered desktop/mobile routes,
+1,419 Open Graph frames, and all 104 Vue packets in five locales. Its official
+source manifest and whole-page receipts are retained as historical evidence.
+Actual main subsequently delivered two deprecated-rule preset memberships and
+typed `valid-v-slot` options. The resulting three translated all-rule conflicts
+replace old metadata tables with the complete same-page indexes, whose full
+metadata remains in the generated packets. Keep the entire original indexes,
+regenerate packets from the actual source metadata, and preserve every complete
+code block. No preset, option, example, support boundary, assertion, or pixel
+capture is removed. Fresh exact-head source and full Docs, protected delivery,
+and the actual deployed reader flow remain required.
+
+The genuine post-navigation parent composes actual signed main
+`538c07ac7eca17db3151fe68cdf38586bc561bb0`. Retain its shared navigation routes,
+motion/contrast/command-tab checks and theme switching, then append every prior
+foreign category and English subgroup route. Complete copy, font, link, source,
+device, palette and pixel assertions and bounded progress logs remain. This
+resolves the actual verifier conflict without weakening either owner's oracle;
+fresh exact-head full qualification remains mandatory.
+
+## Generated command panels in category source checks
+
+Exact source `6b69bf4e8fd416021494dc419a23127cfa2635c5` passed Check and
+native validation, but full Docs run
+[38051448524](https://github.com/ubugeeei-prod/vize/actions/runs/38051448524)
+failed on `script/component-options-name-casing` in the type-and-script page.
+The category caller counted five generated package-manager variants as authored
+source. Apply the existing original-command marker distinction in this caller
+as well as the Vue and overview callers. Preserve every complete authored code
+block, packet, fragment, native annotation, copy, font, palette, device and pixel
+check. Earlier successes remain source-specific; obtain fresh exact-head full
+Docs and source qualification before protected delivery or deployed acceptance.
+
+## Delivered accessibility introductions
+
+The actual `123c0f363d` composition retains all four delivered English
+accessibility introductions. When the category emitter moves into the catalogue
+owner, that owner emits the same introductions on the four subgroup routes.
+Their complete existing examples, source arrays, and browser oracles are retained.

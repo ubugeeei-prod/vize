@@ -1,296 +1,85 @@
 ---
-title: 类型与脚本规则
+title: "类型与脚本规则"
 ---
 
-<!-- Generated translation; source: rules/type-and-script.md -->
-
-# 类型与文字规则
-
-类型规则在需要语义信息时使用 TypeScript 检查器。Vize的读数也是一样的
-TypeScript 从`tsconfig.json`读取的项目形状，因此共享的环境名称应来自
-`compilerOptions.types`、项目参考或声明文件。
-
-脚本规则是用于合成API和面向蒸汽代码的Patina规则。他们关注的是模式
-这些问题难以高效编译，或者在蒸汽模式下难以理清。
-
-类型感知的 linting 是自愿选择的。通过`linter.typeAware: true`、`vize lint --type-aware`或
-通过明确启用`type/*`规则。`type/no-reactivity-loss`可以直接通过以下方式启用
-`vize lint --strict-reactivity`。如果科尔萨无法启动，帕蒂纳报告`type/corsa-runtime`
-跳过了跳过有检查器的规则传递，而不是悄无声息地放弃配置的规则。
-
-`--type-aware` 使用与 `vize check` 相同的 Corsa 可执行解析;配置
-`typeChecker.corsaPath`项目需要明确的`tsgo`或Corsa二进制时。违约保持
-零成本：Patina 不会解析 SFC 以进行棋子背衬 linting，也不会启动 Corsa，除非旗帜，
-`linter.typeAware`，或者明确启用的`type/*`规则选择加入。
-
-```ts
-export default defineConfig({
-  linter: { typeAware: true },
-});
-```
-
-## `type/require-typed-props`
-
-需要用类型化`defineProps`而不是运行时数组声明。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<script setup lang="ts">
-const props = defineProps(["label", "count"]);
-</script>
-```
-
-好：
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{
-  label: string;
-  count: number;
-}>();
-</script>
-```
-
-## `type/require-typed-emits`
-
-需要`defineEmits`描述已发射的事件有效载荷。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits(["save"]);
-
-emit("save", form.value);
-</script>
-```
-
-好：
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{
-  save: [payload: FormValue];
-}>();
-
-emit("save", form.value);
-</script>
-```
-
-## `type/no-unsafe-template-binding`
-
-报告模板绑定，解析为不安全值，如`any`。该规则有棋子支持，
-所以它遵循导入的类型和项目配置。
-
-默认严重程度：`warning`
-预设：`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<script setup lang="ts">
-const payload: any = await loadPayload();
-</script>
-
-<template>
-  <p>{{ payload.title }}</p>
-</template>
-```
-
-好：
-
-```vue
-<script setup lang="ts">
-type Payload = { title: string };
-
-const payload = await loadPayload<Payload>();
-</script>
-
-<template>
-  <p>{{ payload.title }}</p>
-</template>
-```
-
-## `type/no-floating-promises`
-
-报告承诺是创造但未被等待、未退回或有意处理的。
-该检查涵盖`<script>`和模板表达式。
-
-默认严重程度：`warning`
-预设：`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<script setup lang="ts">
-function submit() {
-  saveForm(form.value);
-}
-</script>
-
-<template>
-  <button @click="saveForm(form)">Save</button>
-  <p>{{ loadPreview() }}</p>
-</template>
-```
-
-好：
-
-```vue
-<script setup lang="ts">
-type Preview = { title: string };
-
-async function submit() {
-  await saveForm(form.value);
-}
-
-const preview = ref<Preview | null>(null);
-
-async function loadPreviewIntoState() {
-  preview.value = await loadPreview();
-}
-</script>
-
-<template>
-  <button @click="void submit()">Save</button>
-  <button @click="void loadPreviewIntoState()">Preview</button>
-  <PreviewPanel v-if="preview" :preview="preview" />
-</template>
-```
-
-## `type/no-reactivity-loss`
-
-报告跨流使用的反应式值的纯快照。该规则还适用于
-`vize lint --strict-reactivity`已启用。
-
-默认严重程度：`warning`
-预设：`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ item: { name: string } }>();
-const item = props.item;
-</script>
-```
-
-好：
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ item: { name: string } }>();
-const item = toRef(props, "item");
-</script>
-```
-
-## 检查器配置
-
-类型感知规则不需要为TypeScript名称单独设置一个Vize `globals`字段。更喜欢
-TypeScript原生配置：
-
-缺点：
-
-```ts
-export default {
-  globals: ["definePageMeta", "process"],
-};
-```
-
-好：
-
-```json
-{
-  "compilerOptions": {
-    "types": ["node", "nuxt/app"]
-  }
-}
-```
-
-## `script/no-options-api`
-
-报告面向蒸汽预设的选项 API 组件定义。
-
-默认严重程度：`error`
-预设：`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<script lang="ts">
-export default {
-  data() {
-    return { count: 0 };
-  },
-};
-</script>
-```
-
-好：
-
-```vue
-<script setup lang="ts" vapor>
-const count = ref(0);
-</script>
-```
-
-## `script/no-next-tick`
-
-报告以蒸汽为导向的部件`nextTick()`。更倾向于直接引用、生命周期钩子或状态
-流量不依赖于下一次DOM冲洗。
-
-默认严重程度：`error`
-预设：`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<script setup lang="ts" vapor>
-await nextTick();
-input.value?.focus();
-</script>
-```
-
-好：
-
-```vue
-<script setup lang="ts" vapor>
-const input = useTemplateRef<HTMLInputElement>("input");
-
-onMounted(() => {
-  input.value?.focus();
-});
-</script>
-```
-
-## `script/no-get-current-instance`
-
-报告以蒸汽为导向的部件`getCurrentInstance()`。它深入运行时内部
-蒸汽无法安全地进行优化。
-
-默认严重程度：`error`
-预设：`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<script setup lang="ts" vapor>
-const instance = getCurrentInstance();
-const app = instance?.appContext.app;
-</script>
-```
-
-好：
-
-```vue
-<script setup lang="ts" vapor>
-const appConfig = useAppConfig();
-</script>
-```
+# 类型与脚本规则
+
+本页集中列出所有相关规则的用途、配置、错误示例和正确示例，无需跳转页面查看对照。高亮行标示修改；复制代码时保留完整源代码。每条规则注明适用范围和当前支持限制；规范示例并不保证当前实现会产生诊断。
+
+<span id="类型与文字规则"></span>
+<span id="检查器配置"></span>
+
+| 规则 | 示例 | 用途 |
+| --- | --- | --- |
+| [`script/component-options-name-casing`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-component-options-name-casing) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-component-options-name-casing-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-component-options-name-casing-good) | 要求组件 `name` 选项使用 PascalCase |
+| [`script/custom-event-name-casing`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-custom-event-name-casing) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-custom-event-name-casing-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-custom-event-name-casing-good) | 要求发出的自定义事件名称使用 camelCase |
+| [`script/define-emits-declaration`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-emits-declaration) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-emits-declaration-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-emits-declaration-good) | 要求使用类型形式 defineEmits&lt;{}&gt;()，而不是运行时或数组形式 |
+| [`script/define-macros-order`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-macros-order) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-macros-order-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-macros-order-good) | 要求 &lt;script setup&gt; 中的 Vue 编译器宏保持一致的顺序 |
+| [`script/define-props-declaration`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-props-declaration) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-props-declaration-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-props-declaration-good) | 要求使用类型形式 defineProps&lt;{ ... }&gt;()，而不是运行时或对象形式 |
+| [`script/define-props-destructuring`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-props-destructuring) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-props-destructuring-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-define-props-destructuring-good) | 要求 &lt;script setup&gt; 中的 defineProps 解构风格保持一致 |
+| [`script/no-arrow-functions-in-watch`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-arrow-functions-in-watch) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-arrow-functions-in-watch-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-arrow-functions-in-watch-good) | 禁止将箭头函数用作 Options API watch 处理器 |
+| [`script/no-async-in-computed`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-async-in-computed) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-async-in-computed-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-async-in-computed-good) | 禁止计算属性中的异步函数 |
+| [`script/no-boolean-default`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-boolean-default) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-boolean-default-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-boolean-default-good) | 禁止为 Boolean prop 设置默认值 |
+| [`script/no-deep-destructure-in-props`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deep-destructure-in-props) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deep-destructure-in-props-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deep-destructure-in-props-good) | 禁止在 defineProps 中进行深层嵌套解构 |
+| [`script/no-deprecated-data-object-declaration`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-data-object-declaration) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-data-object-declaration-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-data-object-declaration-good) | 禁止将对象字面量作为组件 data 选项（Vue 3 要求函数） |
+| [`script/no-deprecated-destroyed-lifecycle`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-destroyed-lifecycle) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-destroyed-lifecycle-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-destroyed-lifecycle-good) | 禁止已弃用的 destroyed 和 beforeDestroy 生命周期钩子 |
+| [`script/no-deprecated-dollar-listeners-api`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-dollar-listeners-api) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-dollar-listeners-api-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-dollar-listeners-api-good) | 禁止 Vue 3 已移除的 $listeners 实例属性（已合并到 $attrs） |
+| [`script/no-deprecated-dollar-scopedslots-api`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-dollar-scopedslots-api) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-dollar-scopedslots-api-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-dollar-scopedslots-api-good) | 禁止 Vue 3 已移除的 $scopedSlots 实例属性（使用 $slots） |
+| [`script/no-deprecated-events-api`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-events-api) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-events-api-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-events-api-good) | 禁止已移除的 Vue 2 事件 API（$on / $off / $once） |
+| [`script/no-deprecated-props-default-this`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-props-default-this) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-props-default-this-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-deprecated-props-default-this-good) | 禁止在 prop 默认值或校验函数中使用 `this`（Vue 3 已移除） |
+| [`script/no-dupe-keys`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-dupe-keys) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-dupe-keys-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-dupe-keys-good) | 禁止 Options API 的 props/data/computed/methods/setup/inject 之间重复的键 |
+| [`script/no-duplicate-attr-inheritance`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-duplicate-attr-inheritance) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-duplicate-attr-inheritance-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-duplicate-attr-inheritance-good) | 标记重复应用透传属性的组件 |
+| [`script/no-export-in-script-setup`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-export-in-script-setup) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-export-in-script-setup-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-export-in-script-setup-good) | 禁止 &lt;script setup&gt; 内的 export 语句 |
+| [`script/no-get-current-instance`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-get-current-instance) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-get-current-instance-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-get-current-instance-good) | 禁止在 Vapor 模式使用 getCurrentInstance()（返回 null） |
+| [`script/no-import-compiler-macros`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-import-compiler-macros) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-import-compiler-macros-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-import-compiler-macros-good) | 禁止导入自动可用的 Vue 编译器宏 |
+| [`script/no-internal-imports`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-internal-imports) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-internal-imports-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-internal-imports-good) | 禁止从 Vue 内部模块导入 |
+| [`script/no-multiple-slot-args`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-multiple-slot-args) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-multiple-slot-args-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-multiple-slot-args-good) | 禁止向作用域插槽函数调用传入多个参数 |
+| [`script/no-next-tick`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-next-tick) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-next-tick-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-next-tick-good) | 禁止面向 Vapor 的组件使用 nextTick() |
+| [`script/no-options-api`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-options-api) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-options-api-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-options-api-good) | 禁止 Vapor 模式中的 Options API 模式 |
+| [`script/no-potential-component-option-typo`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-potential-component-option-typo) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-potential-component-option-typo-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-potential-component-option-typo-good) | 标记 Options API 组件选项名称中的疑似拼写错误 |
+| [`script/no-reactive-destructure`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reactive-destructure) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reactive-destructure-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reactive-destructure-good) | 禁止导致响应性丢失的响应式对象解构 |
+| [`script/no-ref-as-operand`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-ref-as-operand) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-ref-as-operand-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-ref-as-operand-good) | 要求将 ref 绑定变量用作操作数时通过 `.value` 访问 |
+| [`script/no-required-prop-with-default`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-required-prop-with-default) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-required-prop-with-default-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-required-prop-with-default-good) | 禁止 prop 同时具有 required: true 和默认值 |
+| [`script/no-reserved-identifiers`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reserved-identifiers) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reserved-identifiers-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reserved-identifiers-good) | 禁止使用 Vue 编译器保留标识符 |
+| [`script/no-reserved-keys`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reserved-keys) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reserved-keys-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reserved-keys-good) | 禁止将 Vue 保留名称用作 Options API props/data/computed/methods/setup/inject 键 |
+| [`script/no-reserved-props`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reserved-props) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reserved-props-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-reserved-props-good) | 禁止在组件 props 声明中使用保留名称 |
+| [`script/no-restricted-globals`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-restricted-globals) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-restricted-globals-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-restricted-globals-good) | 禁止直接引用必须通过类型化包装器访问的运行时环境全局变量 |
+| [`script/no-restricted-members`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-restricted-members) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-restricted-members-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-restricted-members-good) | 禁止项目配置的 object.property 成员访问 |
+| [`script/no-side-effects-in-computed-properties`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-side-effects-in-computed-properties) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-side-effects-in-computed-properties-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-side-effects-in-computed-properties-good) | 禁止 Options API 计算 getter 中的副作用 |
+| [`script/no-top-level-ref-in-script`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-top-level-ref-in-script) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-top-level-ref-in-script-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-top-level-ref-in-script-good) | 禁止顶层 ref/reactive，以防止跨请求状态污染 |
+| [`script/no-unstable-nested-components`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-unstable-nested-components) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-unstable-nested-components-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-unstable-nested-components-good) | 禁止在 setup 或 render 函数内定义组件 |
+| [`script/no-unused-emit-declarations`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-unused-emit-declarations) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-unused-emit-declarations-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-unused-emit-declarations-good) | 标记已声明却从未发出的事件 |
+| [`script/no-use-computed-property-like-method`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-use-computed-property-like-method) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-use-computed-property-like-method-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-use-computed-property-like-method-good) | 禁止像方法一样调用 Options API 计算属性 |
+| [`script/no-with-defaults`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-with-defaults) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-with-defaults-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-no-with-defaults-good) | 不建议使用 withDefaults，优先使用解构默认值（Vue 3.5+） |
+| [`script/prefer-computed`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-computed) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-computed-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-computed-good) | 响应式派生状态优先使用 computed() |
+| [`script/prefer-define-options`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-define-options) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-define-options-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-define-options-good) | 优先使用 defineOptions()，而不是仅设置 name/inheritAttrs 的普通 &lt;script&gt; |
+| [`script/prefer-import-from-vue`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-import-from-vue) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-import-from-vue-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-import-from-vue-good) | 优先从 'vue' 导入，而不是内部包 |
+| [`script/prefer-ref-over-reactive`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-ref-over-reactive) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-ref-over-reactive-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-ref-over-reactive-good) | 建议使用 ref() 而不是 reactive() 管理状态 |
+| [`script/prefer-use-attrs`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-attrs) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-attrs-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-attrs-good) | 建议使用 useAttrs() 而不是 context.attrs |
+| [`script/prefer-use-id`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-id) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-id-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-id-good) | 建议使用 useId() 生成唯一 ID（Vue 3.5+） |
+| [`script/prefer-use-slots`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-slots) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-slots-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-slots-good) | 建议使用 useSlots() 而不是 context.slots |
+| [`script/prefer-use-template-ref`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-template-ref) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-template-ref-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-prefer-use-template-ref-good) | 模板引用建议使用 useTemplateRef 而不是 ref（Vue 3.5+） |
+| [`script/require-default-prop`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-default-prop) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-default-prop-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-default-prop-good) | 要求每个可选的非 Boolean prop 具有默认值 |
+| [`script/require-explicit-emits`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-explicit-emits) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-explicit-emits-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-explicit-emits-good) | 要求发出的事件在 defineEmits 或 emits 选项中声明 |
+| [`script/require-explicit-slots`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-explicit-slots) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-explicit-slots-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-explicit-slots-good) | 要求通过 useSlots() 使用的插槽由 defineSlots&lt;...&gt;() 显式定义类型 |
+| [`script/require-function-return-type`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-function-return-type) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-function-return-type-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-function-return-type-good) | 要求函数具有返回类型注解 |
+| [`script/require-prop-type-constructor`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-prop-type-constructor) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-prop-type-constructor-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-prop-type-constructor-good) | 要求 prop 的 `type` 值是构造器，而不是字符串字面量 |
+| [`script/require-prop-types`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-prop-types) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-prop-types-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-prop-types-good) | 要求每个 prop 声明类型 |
+| [`script/require-symbol-provide`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-symbol-provide) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-symbol-provide-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-symbol-provide-good) | 建议使用 Symbol 作为 provide/inject 的注入键 |
+| [`script/require-typed-object-prop`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-typed-object-prop) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-typed-object-prop-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-typed-object-prop-good) | 要求运行时类型为 `Object` 或 `Array` 的 prop 具有显式类型 |
+| [`script/require-typed-ref`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-typed-ref) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-typed-ref-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-typed-ref-good) | 要求无初始值、null 或 undefined 初始化的 ref() 具有显式类型参数 |
+| [`script/require-valid-default-prop`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-valid-default-prop) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-valid-default-prop-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-require-valid-default-prop-good) | 要求 prop 默认值符合声明类型 |
+| [`script/return-in-computed-property`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-return-in-computed-property) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-return-in-computed-property-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-return-in-computed-property-good) | 要求每个计算 getter 返回值 |
+| [`script/return-in-emits-validator`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-return-in-emits-validator) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-return-in-emits-validator-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-return-in-emits-validator-good) | 要求每个 Options API emits 校验函数返回值 |
+| [`script/valid-define-emits`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-define-emits) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-define-emits-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-define-emits-good) | 要求 defineEmits() 用法有效（不同时提供类型和运行时参数、不引用局部变量、只调用一次） |
+| [`script/valid-define-options`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-define-options) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-define-options-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-define-options-good) | 要求 defineOptions() 用法有效（单个对象参数、不包含 props/emits/expose/slots） |
+| [`script/valid-define-props`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-define-props) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-define-props-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-define-props-good) | 要求 defineProps() 用法有效（只调用一次、不同时提供类型和运行时参数、不引用局部变量） |
+| [`script/valid-next-tick`](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-next-tick) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-next-tick-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#script-valid-next-tick-good) | 要求 nextTick() 调用结果被等待、链式处理，或提供回调 |
+| [`type/no-floating-promises`](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-no-floating-promises) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-no-floating-promises-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-no-floating-promises-good) | 禁止悬空（未处理）的 Promise |
+| [`type/no-reactivity-loss`](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-no-reactivity-loss) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-no-reactivity-loss-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-no-reactivity-loss-good) | 禁止赋值和调用中对响应式值取普通快照 |
+| [`type/no-unsafe-template-binding`](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-no-unsafe-template-binding) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-no-unsafe-template-binding-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-no-unsafe-template-binding-good) | 禁止解析为不安全类型的模板绑定 |
+| [`type/require-typed-emits`](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-require-typed-emits) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-require-typed-emits-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-require-typed-emits-good) | 要求 defineEmits 具有类型定义 |
+| [`type/require-typed-props`](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-require-typed-props) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-require-typed-props-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-require-typed-props-good) | 要求 defineProps 具有类型定义 |
+| [`type/strict-boolean-expressions`](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-strict-boolean-expressions) | [错误示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-strict-boolean-expressions-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/type-and-script.html#type-strict-boolean-expressions-good) | 要求脚本和模板条件使用安全的布尔表达式 |
+
+[全部规则](./all.md) · [规则选项](/rules/options.md) · [ESLint 迁移对应表](/rules/migration.md) · [项目检查](./cross-file.md) · [组件间属性传递](/rules/project/vue-cross-file-attrs-fallthrough.md)
