@@ -32,10 +32,11 @@ do not establish authority or implementation completion.
 
 ## Preservation and validation
 
-The foundation's only change fills its existing blank second row with the
-collection link. Removing that added text restores all 983,785 original bytes,
-including the original 350 line endings. Historical records, clauses, naming
-script anchors, and source custody snapshots retain their original bytes.
+The foundation's only change appends the collection link to its existing
+introductory note paragraph; its heading separator stays blank. Removing that
+128-byte addition restores all 983,785 original bytes and 350 line endings.
+Historical records, clauses, naming script anchors, and source custody
+snapshots retain their original bytes.
 PRs already in flight retain their own existing paired records.
 
 The source-length gate continues to include Markdown with the existing
