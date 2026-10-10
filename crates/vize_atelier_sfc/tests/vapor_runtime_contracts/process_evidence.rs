@@ -35,6 +35,13 @@ fn digest(bytes: &[u8]) -> String {
         .collect()
 }
 
+fn authored_sources<'a>(sources: (&'a str, &'a str)) -> [(&'static str, &'a [u8]); 2] {
+    [
+        ("source.vue.bin", sources.0.as_bytes()),
+        ("child.vue.bin", sources.1.as_bytes()),
+    ]
+}
+
 fn source() -> Value {
     SOURCE
         .get_or_init(|| {
@@ -88,11 +95,21 @@ pub(crate) fn capture(
         ("input.bin", input),
         ("stdout.bin", output.stdout.as_slice()),
         ("stderr.bin", output.stderr.as_slice()),
-        ("source.vue", sources.0.as_bytes()),
-        ("child.vue", sources.1.as_bytes()),
-    ] {
+    ]
+    .into_iter()
+    .chain(authored_sources(sources))
+    {
         std::fs::write(destination.join(filename), bytes)?;
     }
+    let authored = authored_sources(sources)
+        .into_iter()
+        .map(|(name, bytes)| {
+            (
+                name.to_owned(),
+                json!({"bytes": bytes.len(), "sha256": digest(bytes)}),
+            )
+        })
+        .collect::<serde_json::Map<_, _>>();
     let receipt = json!({
         "schema": "vize-sfc-runtime-process/v1", "source": source(),
         "backend": backend, "rustPid": std::process::id(), "childPid": child_pid,
@@ -106,10 +123,7 @@ pub(crate) fn capture(
             "stdout": {"bytes": output.stdout.len(), "sha256": digest(&output.stdout)},
             "stderr": {"bytes": output.stderr.len(), "sha256": digest(&output.stderr)}
         },
-        "authoredSources": {
-            "source.vue": {"bytes": sources.0.len(), "sha256": digest(sources.0.as_bytes())},
-            "child.vue": {"bytes": sources.1.len(), "sha256": digest(sources.1.as_bytes())}
-        }
+        "authoredSources": authored
     });
     std::fs::write(
         destination.join("receipt.json"),
@@ -135,4 +149,25 @@ pub(crate) fn failure(
         String::from_utf8_lossy(&output.stderr),
         output.stderr,
     )
+}
+
+#[test]
+fn authored_source_copies_do_not_become_differential_corpus_inputs() {
+    let root = tempfile::tempdir().unwrap();
+    let authored = root.path().join("Authored.vue");
+    std::fs::write(&authored, "<template><p>project input</p></template>").unwrap();
+    let packet = root.path().join("vapor-sfc/packet");
+    std::fs::create_dir_all(&packet).unwrap();
+    let sources = (
+        "<template><Child :name=\"value\" /></template>\r\n",
+        "<template><p>日本語</p></template>\n",
+    );
+    for (filename, bytes) in authored_sources(sources) {
+        let path = packet.join(filename);
+        std::fs::write(&path, bytes).unwrap();
+        assert_eq!(std::fs::read(path).unwrap(), bytes);
+    }
+    let mut collected = Vec::new();
+    davinci_test_support::corpus::collect_vue_files(root.path(), &mut collected);
+    assert_eq!(collected, vec![authored]);
 }

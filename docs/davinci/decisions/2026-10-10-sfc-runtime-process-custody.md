@@ -21,7 +21,9 @@ nor identifies the failure.
 Before enforcing the unchanged successful-exit law, preserve the actual once
 serialized stdin, stdout and stderr as separate raw files. Retain the unchanged
 authored parent and child SFC bytes separately, including the default child
-which is not present in the Node protocol. The receipt identifies
+which is not present in the Node protocol. Store these diagnostic copies as
+`source.vue.bin` and `child.vue.bin`, so they retain all original bytes without
+becoming additional `.vue` corpus inputs. The receipt identifies
 the Rust and child PIDs, command arguments, status, exit code, Unix signal,
 stdin write outcome and every stream/authored-source length/SHA-256. Record the checked-out Git
 head and tree separately from `GITHUB_SHA`. These source labels do not identify
@@ -94,3 +96,27 @@ the existing one-key job environment and linker options to equivalent flow maps
 in the full Check job. Check retains its original 690 lines, and all original
 YAML job/step values and execution order remain unchanged. Do not raise the
 length cap or add an exception. The corrected head needs fresh qualification.
+
+At `7bebe6f30b0a34c14b154188548a7fc0b37b633b`, source Check
+[38035317353](https://github.com/ubugeeei-prod/vize/actions/runs/38035317353)
+passed, including all original 31 SFC laws and 151 matching raw packets. Full
+[38035331735](https://github.com/ubugeeei-prod/vize/actions/runs/38035331735)
+also passed the original 31 SFC workspace laws and retained 151 matching packets,
+but failed later: its unchanged SSR corpus discovered the new diagnostic
+`source.vue` copies and reported four production divergences. The complete Rust
+log SHA-256 is `d7cded45e2c4c1d05b411f8fdc88607f751115efddebafe1df94e45d5509d3ed`.
+The later production SFC stage was skipped and is not qualified. Correct only
+the diagnostic filenames to `.vue.bin`; a regression law writes the exact copied
+bytes beside an authored `.vue` control and uses the unchanged real corpus
+collector to require only the control. Do not filter the corpus or change its
+oracles, compiler or original fixtures. TODO: investigate the four retained SSR
+differences separately; namespace correction supplies no SSR behavior repair.
+
+That full attempt also retained 6,847 passing script tests, one failure and 63
+skips. The extension-host graph law failed before its assertion when Cargo
+could not acquire `cranelift-codegen/0.135.4` from `static.crates.io` (zero bytes
+in 30 seconds). Its complete log SHA-256 is
+`d8d9578b3066c27cdcfbca64582f27eca7e079ad0bbb6f8293b015a6fe137ec0`.
+No rerun of this superseded source changes either original failure. Fresh
+corrected-source full and protected outcomes remain required; actual Node
+identity and the older opaque SFC cause remain unknown.
