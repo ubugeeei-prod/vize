@@ -2,20 +2,18 @@
 title: Oxlint プラグイン
 ---
 
-<!-- Generated translation; source: guide/oxlint.md -->
+<!-- Reviewed translation; source: guide/oxlint.md -->
 
 # Oxlint プラグイン
 
-`oxlint-plugin-vize` を使用すると、Oxlint は Oxlint の JS プラグイン システムを通じて Vize Patina 診断を実行できます。
-Oxlint の Rust ネイティブ JS および TS ルールと Vize の Vue 対応ルールが必要な場合に使用します。
-診断を 1 回の実行で実行できます。
+`oxlint-plugin-vize` を使うと、Oxlint の JavaScript プラグインとして Vize の Vue ルールを実行できます。
+Oxlint の JavaScript / TypeScript ルールと Vue の診断を、同じコマンドで検査したい場合に使います。
 
-Oxlint 外部のネイティブ lint および型チェック パイプラインについては、を参照してください。
-[静的解析](./static-analysis.md)。
+Vize 単独で lint や型チェックを実行する方法は、[静的解析](./static-analysis.md)を参照してください。
 
-> [!重要]
-> パッケージは npm で入手できますが、統合はまだ初期段階です。人間が読める端末の場合
-> 出力では、オリジナルの SFC 範囲の忠実度が向上し続ける一方で、`oxlint-vize -f stylish` を優先します。
+> [!IMPORTANT]
+> npm からインストールできますが、統合はまだ初期段階です。元の SFC の位置を表示する処理は改善中です。
+> ターミナルで診断を読む場合は、`oxlint-vize -f stylish` を使ってください。
 
 ## インストール
 
@@ -105,8 +103,8 @@ export default defineConfig({
 vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 ```
 
-`oxlint-vize` は、スクリプトレスの `.vue` エッジ ケースをスムーズにする、`oxlint` の薄いラッパーです。
-一方、上流の JS プラグインのカバー範囲は引き続き改善されています。
+`oxlint-vize` は、スクリプトを持たない `.vue` ファイルにも対応するための `oxlint` ラッパーです。
+Oxlint 本体の JavaScript プラグインの対応範囲も引き続き改善されています。
 
 ## 設定
 
@@ -131,7 +129,7 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
 - `incremental` は、明示的に構成したルールのみを実行します。
 - `helpLevel` は、`"full"`、`"short"`、または `"none"` を受け入れます。
 - `typeAware: true` は、共有 Patina パス中に Corsa 支援の `vize/type/*` ルールを有効にします。
-- `corsaPath` は、型を認識したリンティング用に Corsa または `tsgo` 実行可能ファイルを選択します。
+- `corsaPath` は、型情報を使う lint用に Corsa または `tsgo` 実行可能ファイルを選択します。
 - `showHelp` および `settings.patina` は、下位互換性のために引き続き受け入れられます。
 
 ## 現在の制限事項
@@ -140,11 +138,10 @@ vp exec oxlint-vize -c .oxlintrc.json -f stylish src
   scriptless `.vue` の Vize callback が呼び出されません。テンプレートのみの SFC には、
   ネイティブの `vp run lint` タスクか `oxlint-vize` を使ってください。
 - Oxlint JS プラグインは抽出されたスクリプト プログラムに範囲を固定するため、テンプレートとスタイル
-  診断では、すべてのフォーマッタで元の SFC 範囲がまだ保持されていません。
-- `stylish` は、現在、Oxlint と Vize の混合出力に最適な人間が判読できるフォーマッタです。 JSONと
-  他の機械可読形式は、元のテンプレート/スタイルのベストエフォートとして扱われる必要があります。
-  ポジション。
-- タイプ認識ルールのエクスポートは実験的なものです。 `*WithTypeAware` 構成を使用して設定します
+  診断では、出力形式によって元の SFC の位置が失われる場合があります。
+- `stylish` は、Oxlint と Vize の診断をターミナルで読むための推奨形式です。JSON などの機械可読形式では、
+  元のテンプレートやスタイルの位置情報に制約があります。
+- 型情報を使うルールのエクスポートは実験的なものです。 `*WithTypeAware` 構成を使用して設定します
   `settings.vize.typeAware: true` 共有フルファイル パスでこれらのルールを積極的に実行する場合。
 
 source-built n8n fixture replay は、ライセンス対象の 1,369 SFC、51 Vize ルールと options、

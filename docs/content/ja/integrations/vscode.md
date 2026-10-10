@@ -1,15 +1,15 @@
 ---
-title: VSコード
+title: VS Code
 ---
 
-<!-- Generated translation; source: integrations/vscode.md -->
+<!-- Reviewed translation; source: integrations/vscode.md -->
 
-# VS コードの統合
+# VS Code 統合
 
-> **⚠️ 進行中の作業:** Vize のエディターのサポートはまだ実験段階です。
+> **⚠️ 開発中:** Vize のエディターサポートはまだ実験段階です。
 
-> **重要:** Vue エディターの日常的なサポートについては、引き続き公式の Vue 言語ツールを使用してください。
-> (`vuejs/language-tools`) とりあえず。 Vize は増分オプトイン評価用に設計されています。
+> **重要:** 通常の Vue 開発には、引き続き公式の Vue Language Tools（`vuejs/language-tools`）を使ってください。
+> Vize は、機能を少しずつ有効にして評価できるように設計されています。
 
 リポジトリには、2 つの実験的な VS Code 拡張機能が含まれています。
 
@@ -23,18 +23,18 @@ code --install-extension ubugeeei.vize
 code --install-extension vize.vize-art
 ```
 
-`*.art.vue` に Vize のホバー、完了、定義への移動、および
-構文の強調表示に加えて参照のサポート。
+`*.art.vue` でも Vize のホバー、補完、定義への移動、参照検索を使えます。
+Vize Art は art ファイルの構文ハイライトを提供します。
 
 ## Vize 拡張機能
 
-Vize 拡張機能は `vize lsp` で開始され、特定の機能バンドルをオプトインできます。
+Vize 拡張機能は `vize lsp` を起動します。lint、型チェック、エディター支援などを個別に有効にできます。
 拡張機能が無効になったまま、または機能が有効になっていない状態で Vue ファイルを開くと、拡張機能はワンクリックで推奨されるワークスペース設定を提供するようになりました。これにより、ホバー、ジャンプ、診断が黙ってオフのままになることがなくなります。
 この設定により、現在のワークスペースに `vize.enable`、`vize.lint.enable`、`vize.typecheck.enable`、および `vize.editor.enable` が書き込まれます。
 `vize.enable: true` のみを手動で設定した場合、Vize はその推奨診断も使用し、
 空の言語サーバーを起動する代わりに、エディター プロファイルを使用します。
-Vize ステータス バー項目により `Vize: Show Status` が開き、プロファイル スイッチャー、サーバーが表示されます。
-バイナリ ピッカー、再起動アクション、設定、ログを 1 か所から管理できます。
+ステータスバーの Vize をクリックすると `Vize: Show Status` が開きます。
+プロファイルの変更、サーバー実行ファイルの選択、再起動、設定、ログの確認をまとめて行えます。
 
 ### 推奨される開始点
 
@@ -48,8 +48,7 @@ Vize ステータス バー項目により `Vize: Show Status` が開き、プ�
 }
 ```
 
-これにより、最初に lint 診断が有効になり、ナビゲーション、補完、およびフォーマット設定はユーザーに委ねられます。
-既存の Vue ツール。
+この設定では lint 診断だけを有効にします。定義への移動、補完、フォーマットは既存の Vue ツールに任せます。
 
 ### 共通設定
 
@@ -58,10 +57,10 @@ Vize ステータス バー項目により `Vize: Show Status` が開き、プ�
 | `vize.enable`                | 拡張機能と言語サーバーを有効にする           |
 | `vize.serverPath`            | `vize` 実行可能パスをオーバーライドします。  |
 | `vize.lint.enable`           | lint 診断を有効にする                        |
-| `vize.typecheck.enable`      | タイプ認識診断とバックエンド機能を有効にする |
+| `vize.typecheck.enable`      | 型情報を使う診断とバックエンド機能を有効にする |
 | `vize.editor.enable`         | エディター支援バンドルを有効にする           |
 | `vize.completion.enable`     | 補完を有効にする                             |
-| `vize.formatting.enable`     | ドキュメントの書式設定を有効にする           |
+| `vize.formatting.enable`     | ファイルのフォーマットを有効にする           |
 | `vize.definition.enable`     | 定義への移動を有効にする                     |
 | `vize.references.enable`     | 参照を有効にする                             |
 | `vize.hover.enable`          | ホバーを有効にする                           |
@@ -73,11 +72,11 @@ Vize ステータス バー項目により `Vize: Show Status` が開き、プ�
 
 | コマンド                                  | 目的                                                  |
 | ----------------------------------------- | ----------------------------------------------------- |
-| `Vize: Show Status`                       | ステータスとセットアップのアクション ハブを開きます。 |
+| `Vize: Show Status`                       | 状態と初期設定の操作画面を開く |
 | `Vize: Enable Recommended Profile`        | lint、型チェック、およびエディター支援を有効にする    |
 | `Vize: Enable Lint-Only Profile`          | 他のツールを使用したまま診断を有効にする              |
 | `Vize: Select Language Server Executable` | ファイルピッカーから `vize.serverPath` を設定します。 |
-| `Vize: Disable Language Server`           | 現在の構成ターゲットの Vize を停止する                |
+| `Vize: Disable Language Server`           | 現在の設定対象の Vize を停止する                |
 | `Vize: Restart Language Server`           | 言語サーバーを再起動します。                          |
 | `Vize: Show Output Channel`               | 拡張機能と LSP ログを表示する                         |
 
