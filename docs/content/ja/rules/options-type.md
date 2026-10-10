@@ -2,37 +2,47 @@
 title: 型ルール オプション
 ---
 
+<!-- Reviewed translation; source: rules/options-type.md; scope: introduction and rule options prose -->
+
 # 型ルール オプション
+
+条件式で、数値の 0・空文字列・存在しないオブジェクトをどう扱うか明示したいときに使う設定です。
+`type/strict-boolean-expressions` は自分で有効にする必要があり、型情報を使う lint も必要です。
+オプションを設定するだけではルールは有効になりません。
+
+下の設定と改善前・改善後の例から始め、`vp run lint` を実行して指摘された条件式を確認してください。
+重要度やファイルごとの設定の置き換えは [ルールオプションのガイド](./options.md) を参照してください。
 
 ## `type/strict-boolean-expressions`
 
-Enable the native type-aware rule explicitly under `linter.rules`. It belongs
-to no preset. Use `linter.ruleOptions` to choose which non-boolean conditions
-to allow. The native checker projection already uses strict checking.
+Vite+ では、次のように `lint.vize.typeAware` と `lint.vize.rules` を設定してください。
+このルールは、どのプリセットにも含まれていません。
+スタンドアロン設定では `linter.rules` と `linter.ruleOptions` に同じ設定を置きます。
+ネイティブの型チェック用コードは、すでに厳密な型チェックを使っています。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
 
 export default defineConfig({
-  "lint": {
-    "vize": {
-      "typeAware": true,
-      "rules": {
-        "type/strict-boolean-expressions": "error"
+  lint: {
+    vize: {
+      typeAware: true,
+      rules: {
+        "type/strict-boolean-expressions": "error",
       },
-      "ruleOptions": {
+      ruleOptions: {
         "type/strict-boolean-expressions": {
-          "allowString": false,
-          "allowNumber": false,
-          "allowNullableObject": false
-        }
-      }
-    }
-  }
+          allowString: false,
+          allowNumber: false,
+          allowNullableObject: false,
+        },
+      },
+    },
+  },
 });
 ```
 
-With these options, the following script and template conditions は悪い例です:
+悪い例: この設定では、次の条件式が指摘されます。
 
 ```vue
 <script setup lang="ts">
@@ -45,8 +55,7 @@ defineProps<{ count: number; title: string; element?: HTMLElement }>();
 </template>
 ```
 
-良い例: use comparisons that state the intended treatment of zero, empty text
-and absent objects.
+良い例: 0・空文字列・存在しないオブジェクトの扱いを、比較演算で明示します。
 
 ```vue
 <template>
@@ -56,9 +65,9 @@ and absent objects.
 </template>
 ```
 
-Defaults: `allowString`, `allowNumber`, and `allowNullableObject` are `true`.
-`allowNullableBoolean`, `allowNullableString`, `allowNullableNumber`,
-`allowNullableEnum`, and `allowAny` are `false`. Each field takes a boolean.
-Options alone do not enable the rule; later matching entries replace the
-whole option object and explicit `off` still wins. Assertion functions,
-array predicates and external/Pug templates are outside this rule's scope.
+デフォルトでは `allowString`・`allowNumber`・`allowNullableObject` が `true` です。
+`allowNullableBoolean`・`allowNullableString`・`allowNullableNumber`・`allowNullableEnum`・`allowAny` は
+`false` です。どの項目も真偽値を取ります。
+
+オプションだけではルールは有効になりません。後から一致した設定は option object 全体を置き換えます。
+明示的な `off` が優先されます。アサーション関数、配列の述語関数、外部テンプレートと Pug はこのルールの対象外です。

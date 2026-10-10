@@ -48,6 +48,10 @@ pub(in crate::corsa_bridge) struct AliasContext {
     pub(in crate::corsa_bridge) package_routes:
         FxHashMap<(PathBuf, CompactString), crate::PackageRoute>,
     route_inputs: Vec<PathBuf>,
+    /// Explicit authored inputs registered before this context's graph walk.
+    seed_paths: Vec<PathBuf>,
+    #[cfg(test)]
+    graph_reused: bool,
     mirror: Option<VirtualProject>,
     virtual_ts_options: crate::virtual_ts::VirtualTsOptions,
     pub(in crate::corsa_bridge) query_surface:

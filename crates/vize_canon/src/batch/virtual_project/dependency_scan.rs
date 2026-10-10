@@ -1,26 +1,15 @@
 //! Reachability registration for out-of-root workspace `.vue` files (#3887).
 //!
-//! `register_paths` covers the scanned roots; an import that resolves to a
-//! `.vue` outside them previously fell back to the ambient `*.vue` stub, so
-//! its props and emits silently stopped being checked. This pass walks the
-//! import graph of everything registered and registers reachable first-party
-//! files — a `.vue`, or a TypeScript file that can re-export one (a barrel) —
-//! to a fixpoint. Published packages are left alone: a canonical path that
-//! stays inside `node_modules` keeps the stub (that half is #3282), while a
-//! pnpm workspace symlink canonicalizes *out* of `node_modules` and is
-//! first-party source. Batch projects leave declaration files alone so their
-//! ambient declarations remain governed by the tsconfig. Editor sessions do
-//! mirror reachable declarations, preserving their authored `.d.ts` spelling,
-//! but keep them inferred rather than adding them as ambient program roots
-//! (see [`is_declaration_file`]).
+//! Walk scanned roots to a fixpoint, registering reachable first-party Vue
+//! files and script barrels (#3887). Canonical `node_modules` targets retain
+//! the ambient stub (#3282); workspace symlinks outside it are first-party.
+//! Batch leaves declarations to tsconfig; editor sessions mirror reachable
+//! declarations with authored spelling and inferred ownership (see
+//! [`is_declaration_file`]).
 //!
-//! Specifiers are collected from the *generated* content (always valid TS,
-//! one collector for `.vue` and script files alike) and resolved against the
-//! *original* file's directory; a `.vue.ts` spelling the import rewriter
-//! produced is folded back to `.vue` first. Resolution covers relative
-//! specifiers and tsconfig `paths` aliases — the shapes the monorepo defect
-//! reproduces with; bare workspace-package specifiers resolve only through
-//! their `paths` alias today.
+//! Collect specifiers from valid generated TS and resolve them relative to
+//! the original file, folding `.vue.ts` back to `.vue`. Relative imports and
+//! tsconfig `paths` aliases are resolved; bare workspace packages require aliases.
 
 use std::path::{Path, PathBuf};
 
@@ -136,12 +125,22 @@ impl VirtualProject {
                 .map(|file| file.original_path.clone())
                 .collect(),
         };
-        let mut visited: FxHashSet<PathBuf> = queue
-            .iter()
-            .filter_map(|path| canonical_key(path))
-            .collect();
+        // Explicit patch importers retain current target graphs; full walks
+        // keep their original queue-derived lookup identities.
+        let mut visited: FxHashSet<PathBuf> = if initial_sources.is_some() {
+            self.registered_original_paths_sorted()
+                .iter()
+                .filter_map(|path| canonical_key(path))
+                .collect()
+        } else {
+            queue
+                .iter()
+                .filter_map(|path| canonical_key(path))
+                .collect()
+        };
         let (raw_roots_indexed, checked_roots) = self.raw_package_roots_are_indexed();
-        let mut package_root_lookups = [0usize; 2];
+        let mut indexed_package_root_lookups = 0usize;
+        let mut fallback_package_root_lookups = 0usize;
 
         while let Some(importer) = queue.pop() {
             let Some((virtual_content, virtual_path, generated_sfc)) =
@@ -206,7 +205,11 @@ impl VirtualProject {
             // Route bindings stay unchanged during this walk. Incomplete raw
             // roots and noncanonical originals retain their previous lookup.
             let use_root_index = raw_roots_indexed && visited.contains(&importer);
-            package_root_lookups[usize::from(use_root_index)] += 1;
+            if use_root_index {
+                indexed_package_root_lookups += 1;
+            } else {
+                fallback_package_root_lookups += 1;
+            }
             let importer_package_roots = self.package_roots_for_importer(&importer, use_root_index);
 
             for (specifier, mode, is_reference) in specifiers {
@@ -252,7 +255,13 @@ impl VirtualProject {
                 // In-root scripts excluded by the scan are dependencies just
                 // like out-of-root barrels; omitting them loses their types.
                 dependency_targets.insert(key.clone());
-                if !visited.insert(key.clone()) {
+                // A preceding changed owner can prune an already visited
+                // target and its descendants before another owner acquires it.
+                // The scoped walk skips only a registration that still exists;
+                // full cold walks keep their original failed-inference policy.
+                if !visited.insert(key.clone())
+                    && (initial_sources.is_none() || self.find_by_original(&key).is_some())
+                {
                     continue;
                 }
                 // Register the canonical path: a workspace symlink is
@@ -276,8 +285,8 @@ impl VirtualProject {
         }
         crate::corsa_bridge::preparation_trace::Phase::package_root_lookup(
             checked_roots,
-            package_root_lookups[1],
-            package_root_lookups[0],
+            indexed_package_root_lookups,
+            fallback_package_root_lookups,
         );
         Ok(())
     }

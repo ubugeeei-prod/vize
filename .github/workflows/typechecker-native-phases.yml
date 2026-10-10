@@ -143,6 +143,7 @@ jobs:
             unset VIZE_TEST_DISABLE_TSGO
             cd "$NATIVE_PHASE_SOURCE_ROOT"
             VIZE_UNCHECKED_INDEX_CAPTURE="$RUNNER_TEMP/unchecked-index-access" cargo test --locked --profile ci-opt -p vize --test check_template_emit_cli --test check_vue_helper_scope_cli --test lint_unchecked_indexed_access_cli --test check_canon_define_model_modifiers_cli --test lsp_generic_prop_hover_cli --test lsp_data_aria_attributes_cli --test tsconfig_diamond --test check_tsconfig_types_extends_cli --test lsp_bare_script_symbols_cli --test check_tsconfig_bom_cli --test check_tsconfig_ignore_cli --test check_jsx_slot_parameter_types_cli --test check_canon_selected_alias_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
+            env -u VIZE_INLAY_HINT_CAPTURE VIZE_LSP_PASSIVE_EVIDENCE="$RUNNER_TEMP/lsp-passive-3952" VIZE_TRACE_EDITOR_PREPARATION=1 cargo test --locked --profile ci-opt -p vize --test lsp_passive_evidence_cli --test lsp_reactive_diagnostics_cli --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="symbols"' -- --nocapture
             export VIZE_TEST_TSGO_PATH="$(node --input-type=module -e 'import {readFileSync,readdirSync} from "node:fs";import {join} from "node:path";const root=process.env.VIZE_TEMPLATE_EMIT_CAPTURE;const name=readdirSync(root,{withFileTypes:true}).find(e=>e.isDirectory()).name;process.stdout.write(JSON.parse(readFileSync(join(root,name,"oracle.json"),"utf8")).nativeBinary)')"
             cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_emit_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
             cargo test --locked --profile ci-opt -p vize_maestro --lib editor_typecheck_vue_helper_tests --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' --config 'profile.ci-opt.codegen-units=16' -- --nocapture
@@ -154,10 +155,8 @@ jobs:
           fi
       - name: Check exact neutral inputs, strict phase parser and projection probe
         run: |
-          node tools/benchmarks/scripts/typechecker-native-phases.mjs --self-test
-          node --test tools/benchmarks/scripts/typechecker-native-*.test.mjs
-          node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"
-          cd "$NATIVE_PHASE_SOURCE_ROOT"
+          node tools/benchmarks/scripts/typechecker-native-phases.mjs --self-test; node --test tools/benchmarks/scripts/typechecker-native-*.test.mjs
+          node tools/benchmarks/scripts/typechecker-native-source-custody.mjs "$RUNNER_TEMP/typechecker-native-source-custody.json"; cd "$NATIVE_PHASE_SOURCE_ROOT"
           cargo clippy --locked -p vize_canon --example native_phase_projection -- -D warnings
       - name: Qualify original outside-import types with the source CLI and official native oracle
         if: github.event_name == 'pull_request'
@@ -333,6 +332,7 @@ jobs:
             ${{ runner.temp }}/tsconfig-types-extends/
             ${{ runner.temp }}/jsx-slot-parameter-types/
             ${{ runner.temp }}/canon-selected-alias/
+            ${{ runner.temp }}/lsp-passive-3952/
             ${{ runner.temp }}/unchecked-index-access/
             ${{ runner.temp }}/unknown-template-options/
             ${{ runner.temp }}/template-emit-ts40-projection/

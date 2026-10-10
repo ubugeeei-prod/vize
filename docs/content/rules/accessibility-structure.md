@@ -4,6 +4,14 @@ title: Accessibility structure
 
 # Accessibility structure
 
+Use these rules to review how a page is organized and described: headings, landmarks, labels,
+frames, media, and focusable interactive elements. Start here when a component adds a new section,
+embedded frame, image, or media player.
+
+For example, [heading-levels](./reference/a11y-heading-levels.md) provides a concrete heading-order
+check. Compare its Bad/Good examples, enable the rule using its configuration, and run `vp run lint`.
+For the full set, follow the [accessibility guide](./accessibility.md).
+
 - [`a11y/heading-has-content`](./reference/a11y-heading-has-content.md)
 - [`a11y/heading-levels`](./reference/a11y-heading-levels.md)
 - [`a11y/iframe-has-title`](./reference/a11y-iframe-has-title.md)

@@ -9,9 +9,9 @@ import path from "node:path";
 
 import { allowedSourceRoots, resolveComponentSourcePath } from "./component-source.js";
 import type { ArtFileInfo } from "./types/index.js";
-import { toPascalCase } from "./utils.js";
+import { variantComponentNames } from "./variant-bindings.js";
 import { emitLegacyVariant } from "./art-module-vue2.js";
-import { expandSelfTag } from "./art-component.js";
+import { componentNameFromSource, expandSelfTag } from "./art-component.js";
 
 /**
  * Extract the content of the first <script setup> block from a Vue SFC source.
@@ -389,15 +389,6 @@ function extractDefineArtComponent(content: string): { name?: string; source?: s
   return { name: identifierMatch?.[1] };
 }
 
-function componentNameFromSource(source: string): string {
-  const withoutQuery = source.split(/[?#]/, 1)[0] || source;
-  const filename = path.basename(withoutQuery);
-  const extension = path.extname(filename);
-  const stem = extension ? filename.slice(0, -extension.length) : filename;
-  const name = toPascalCase(stem);
-  return name === "Variant" ? "MuseaComponent" : name;
-}
-
 function isDefineArtLine(trimmed: string): boolean {
   return /\bdefineArt\s*\(/.test(trimmed);
 }
@@ -512,8 +503,9 @@ ${scriptSetup.setupBody.join("\n")}
   }
 
   // Generate variant components
+  const bindings = variantComponentNames(art.variants);
   for (const variant of art.variants) {
-    const variantComponentName = toPascalCase(variant.name);
+    const variantComponentName = bindings.get(variant.name)!;
 
     // Replace <Self> with the actual component name (for inline art)
     const template = expandSelfTag(variant.template, componentTagName);
@@ -554,7 +546,7 @@ export { ${variantComponentName} };
   const defaultVariant = art.variants.find((v) => v.isDefault) || art.variants[0];
   if (defaultVariant) {
     code += `
-export default ${toPascalCase(defaultVariant.name)};
+export default ${bindings.get(defaultVariant.name)};
 `;
   }
 

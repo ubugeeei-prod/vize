@@ -4,6 +4,11 @@ title: Cross-file Complexity
 
 # Cross-file Complexity
 
+Use complexity reports to find templates that are hard to change or review. Start with the
+[worked templates](#worked-templates) to understand the warning, then
+[enable the lint rule](#enable-lint) and run `vp run lint`.
+Use the numeric reference below when investigating a particular score.
+
 Vize calculates complexity from retained expression ASTs, lowered template control regions, and
 resolved project facts. It does not count tokens in source text or estimate runtime execution time.
 The report separates three questions:
@@ -81,6 +86,8 @@ carriers are not traversed by this expression pass and do not add an unknown row
 expressions do count. A lowered loop with only an original head scores its loop structure without
 walking a collection AST. A low score therefore does not prove unsupported code is simple.
 The SFC lint rule skips external templates and non-HTML template languages altogether.
+
+<span id="worked-templates"></span>
 
 ## Worked Bad and Good templates
 
@@ -273,6 +280,8 @@ This example is **extreme**, dominated by `reactive-graph` with 30 points. Weigh
 the formula with per-component inputs and rank by total descending, then filename. Their totals
 need not sum to the project total: local provide/inject depth and fan-out are attributed separately,
 and the formula is nonlinear in those counters.
+
+<span id="enable-lint"></span>
 
 ## Thresholds, locations, and enabling lint
 

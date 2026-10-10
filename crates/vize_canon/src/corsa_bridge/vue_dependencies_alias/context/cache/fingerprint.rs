@@ -10,8 +10,13 @@ pub(crate) struct ContextFingerprint {
     host_content: u64,
     overlays: u64,
     generation_options: u64,
+    overlay_paths: Vec<PathBuf>,
+    requested_paths: Vec<PathBuf>,
     stamps: Vec<crate::package_route::stamp::InputStamp>,
 }
+
+mod reuse;
+pub(super) use reuse::SourceGuard;
 
 impl PartialEq for ContextFingerprint {
     fn eq(&self, other: &Self) -> bool {
@@ -38,6 +43,10 @@ impl ContextFingerprint {
         let mut overlay_entries: Vec<_> = overlays.iter().collect();
         overlay_entries.sort_by(|left, right| left.0.cmp(right.0));
         let mut overlay_hash = std::hash::DefaultHasher::new();
+        let overlay_paths = overlay_entries
+            .iter()
+            .map(|(path, _)| path.to_path_buf())
+            .collect();
         for (path, text) in overlay_entries {
             path.hash(&mut overlay_hash);
             text.hash(&mut overlay_hash);
@@ -48,6 +57,8 @@ impl ContextFingerprint {
             host_content: host.finish(),
             overlays: overlay_hash.finish(),
             generation_options,
+            overlay_paths,
+            requested_paths: Vec::new(),
             stamps: Vec::new(),
         }
     }
@@ -79,6 +90,7 @@ impl ContextFingerprint {
         self.host_content.hash(&mut hash);
         let mut sources = sources.iter().collect::<Vec<_>>();
         sources.sort_by(|left, right| left.0.cmp(&right.0));
+        self.requested_paths = sources.iter().map(|(path, _)| path.to_path_buf()).collect();
         for (path, source) in sources {
             path.hash(&mut hash);
             source.hash(&mut hash);

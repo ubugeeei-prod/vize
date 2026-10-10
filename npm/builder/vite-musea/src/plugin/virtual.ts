@@ -19,7 +19,7 @@ import { generateArtModule } from "../art-module.js";
 import { compileVariantSfc } from "../art-variant-sfc.js";
 import { generateSharedSetupModule, sharedBindingNames } from "../art-shared-setup.js";
 import { parseScriptSetupForArt } from "../art-module.js";
-import { toPascalCase } from "../utils.js";
+import { variantComponentNames } from "../variant-bindings.js";
 
 // Virtual module prefixes
 const VIRTUAL_MUSEA_PREFIX = "\0musea:";
@@ -127,10 +127,11 @@ export function createLoad(state: VirtualModuleState) {
       const lastColonIndex = rest.lastIndexOf(":");
       if (lastColonIndex !== -1) {
         const artPath = rest.slice(0, lastColonIndex);
-        const variantName = rest.slice(lastColonIndex + 1);
+        const variantName = decodeVariantName(rest.slice(lastColonIndex + 1));
         const art = state.artFiles.get(artPath);
         if (art) {
-          const variantComponentName = toPascalCase(variantName);
+          const variantComponentName = variantComponentNames(art.variants).get(variantName);
+          if (!variantComponentName) return null;
           return generatePreviewModule(
             art,
             variantComponentName,

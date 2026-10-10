@@ -1,0 +1,127 @@
+[
+  {
+    "name": "nested and delimited compact",
+    "expected": {
+      "title": "Compact Probe",
+      "componentTagName": "CompactProbe",
+      "controls": [
+        {
+          "name": "label",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "payload",
+          "control": "object",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "callback",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "hasOwnProperty",
+          "control": "text",
+          "required": false,
+          "options": []
+        }
+      ],
+      "groups": [],
+      "json": "{\n  \"title\": \"Compact Probe\",\n  \"controls\": [\n    {\n      \"name\": \"label\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"payload\",\n      \"control\": \"object\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"callback\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"hasOwnProperty\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    }\n  ]\n}",
+      "typescript": "export interface CompactProbeProps {\n  label?: string;\n  payload?: Record<string, unknown>;\n  callback?: string;\n  hasOwnProperty?: string;\n}\n"
+    }
+  },
+  {
+    "name": "computed literal and unicode keys",
+    "expected": {
+      "title": "Compact Probe",
+      "componentTagName": "CompactProbe",
+      "controls": [
+        {
+          "name": "scope.name",
+          "control": "text",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "café",
+          "control": "number",
+          "required": false,
+          "options": []
+        }
+      ],
+      "groups": [],
+      "json": "{\n  \"title\": \"Compact Probe\",\n  \"controls\": [\n    {\n      \"name\": \"scope.name\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"café\",\n      \"control\": \"number\",\n      \"required\": false,\n      \"options\": []\n    }\n  ]\n}",
+      "typescript": "export interface CompactProbeProps {\n  \"scope.name\"?: string;\n  café?: number;\n}\n"
+    }
+  },
+  {
+    "name": "defaults and emits remain owned by macros",
+    "expected": {
+      "title": "Compact Probe",
+      "componentTagName": "CompactProbe",
+      "controls": [
+        {
+          "name": "label",
+          "control": "text",
+          "default_value": "Seed",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "scope.name",
+          "control": "text",
+          "default_value": "Seed custom",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "__proto__",
+          "control": "text",
+          "default_value": "Seed proto",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "constructor",
+          "control": "text",
+          "default_value": "Seed constructor",
+          "required": false,
+          "options": []
+        },
+        {
+          "name": "hasOwnProperty",
+          "control": "text",
+          "default_value": "Seed method",
+          "required": false,
+          "options": []
+        }
+      ],
+      "groups": [],
+      "json": "{\n  \"title\": \"Compact Probe\",\n  \"controls\": [\n    {\n      \"name\": \"label\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"scope.name\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed custom\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"__proto__\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed proto\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"constructor\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed constructor\",\n      \"required\": false,\n      \"options\": []\n    },\n    {\n      \"name\": \"hasOwnProperty\",\n      \"control\": \"text\",\n      \"default_value\": \"Seed method\",\n      \"required\": false,\n      \"options\": []\n    }\n  ]\n}",
+      "typescript": "export interface CompactProbeProps {\n  label?: string;\n  \"scope.name\"?: string;\n  __proto__?: string;\n  constructor?: string;\n  hasOwnProperty?: string;\n}\n"
+    }
+  },
+  {
+    "name": "comments and string contents are not macro calls",
+    "expected": {
+      "title": "Compact Probe",
+      "componentTagName": "CompactProbe",
+      "controls": [
+        {
+          "name": "label",
+          "control": "text",
+          "required": false,
+          "options": []
+        }
+      ],
+      "groups": [],
+      "json": "{\n  \"title\": \"Compact Probe\",\n  \"controls\": [\n    {\n      \"name\": \"label\",\n      \"control\": \"text\",\n      \"required\": false,\n      \"options\": []\n    }\n  ]\n}",
+      "typescript": "export interface CompactProbeProps {\n  label?: string;\n}\n"
+    }
+  }
+]

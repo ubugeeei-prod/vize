@@ -4,7 +4,13 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Artifact, ManifestIdentity, PublisherJob } from "./docs-deployment-policy.ts";
+import {
+  validateRun,
+  type Artifact,
+  type ManifestIdentity,
+  type PublisherJob,
+  type WorkflowRun,
+} from "./docs-deployment-policy.ts";
 
 export const sha256 = (bytes: string | Uint8Array) =>
   createHash("sha256").update(bytes).digest("hex");
@@ -43,6 +49,56 @@ export async function terminalPagesMetadata<T extends { job: PublisherJob }>(
     value = await read();
   }
   return value;
+}
+
+export async function preparationMetadata<T extends { publisher: WorkflowRun; job: PublisherJob }>(
+  read: () => Promise<T>,
+  repositoryId: number,
+  pause = async () => await new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+) {
+  let identity: string | undefined;
+  for (let snapshot = 0; snapshot < 6; snapshot++) {
+    const value = await read();
+    const { publisher, job } = value;
+    validateRun(publisher, repositoryId, ".github/workflows/deploy-docs.yml");
+    assert.equal(publisher.event, "workflow_run");
+    const active = ["queued", "in_progress", "waiting", "pending", "requested"];
+    assert(active.includes(publisher.status), "Current publisher must remain active");
+    assert.equal(publisher.conclusion, null, "Current publisher has no terminal conclusion");
+    assert(active.includes(job.status), "Current preparation job must remain active");
+    assert(Number.isSafeInteger(job.id) && job.id > 0, "Primary current job identity");
+    assert.equal(job.run_id, publisher.id, "Current job belongs to the publisher run");
+    assert.equal(job.run_attempt, publisher.run_attempt, "Current job belongs to this attempt");
+    assert.equal(job.head_sha, publisher.head_sha, "Current job has the publisher source");
+    const observed = stableJson([
+      publisher.id,
+      publisher.run_attempt,
+      publisher.workflow_id,
+      publisher.head_sha,
+      job.id,
+      job.run_id,
+      job.run_attempt,
+      job.head_sha,
+    ]);
+    if (identity === undefined) identity = observed;
+    else assert.equal(observed, identity, "Refresh retains the same primary publisher and job");
+    const matches = job.steps.filter(
+      (step) => step.name === "Validate completed build and actual Pages publication floor",
+    );
+    assert.equal(matches.length, 1, "One exact current preparation step");
+    const step = matches[0];
+    assert.equal(step.conclusion, null, "Current preparation step has no terminal conclusion");
+    assert.equal(step.completed_at, null, "Current preparation step has not completed");
+    if (step.started_at !== null) {
+      assert(
+        typeof step.started_at === "string" && Number.isFinite(Date.parse(step.started_at)),
+        "Authentic primary preparation start timestamp",
+      );
+      return value;
+    }
+    if (snapshot < 5) await pause();
+  }
+  assert.fail("Current primary preparation start remained unavailable after six snapshots");
 }
 
 // Read a single member; neither archive can write paths, symlinks or executable code.

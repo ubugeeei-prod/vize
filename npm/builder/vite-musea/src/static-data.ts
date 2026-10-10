@@ -71,7 +71,7 @@ export async function createStaticGalleryPayload(
 ): Promise<StaticGalleryPayload> {
   const apiCtx = createApiContext(ctx);
   const arts = sortedArts(ctx.artFiles.values());
-  const previews: StaticGalleryPayload["previews"] = {};
+  const previews: StaticGalleryPayload["previews"] = Object.create(null);
   const details: StaticGalleryPayload["details"] = {};
   const snapshotIdentities: Record<string, string> = Object.create(null);
 
@@ -80,7 +80,7 @@ export async function createStaticGalleryPayload(
       art.path,
       ctx.projectRoot ?? ctx.config.root,
     );
-    previews[art.path] = {};
+    previews[art.path] = Object.create(null);
 
     for (const variant of art.variants) {
       const id = staticPreviewId(art.path, variant.name);

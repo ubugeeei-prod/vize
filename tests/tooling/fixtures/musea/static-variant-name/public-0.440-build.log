@@ -1,0 +1,280 @@
+vite v8.0.0 building client environment for production...
+[vize] Pre-compiling 2 Vue files... (2 changed, 0 cached, 0 removed)
+[vize] Pre-compilation complete: 2 recompiled, 0 restored from disk, 0 reused, 0 failed (13.87ms, native batch: 6.03ms)
+[musea] config.root: /private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary, include: ["src/**/*.art.vue"]
+[musea] Found 1 art files
+[2Ktransforming...✓ 17 modules transformed.
+rendering chunks...
+[musea] axe-core is not installed, so the exported gallery cannot run accessibility checks.
+        Install it to enable the A11y panel in the static build: vp install -D axe-core
+computing gzip size...
+ordinary/dist/index.html                                            0.17 kB │ gzip:  0.13 kB
+ordinary/dist/__musea__/assets/javascript-Ccrslpma.js               0.68 kB
+ordinary/dist/__musea__/assets/azcli-Bc_sGQ0U.js                    0.70 kB
+ordinary/dist/__musea__/api/arts                                    0.79 kB
+ordinary/dist/__musea__/assets/ini-sBoK_t0W.js                      0.96 kB
+ordinary/dist/__musea__/index.html                                  1.07 kB │ gzip:  0.61 kB
+ordinary/dist/__musea__/assets/workers-HbLkgrxn.js                  1.26 kB
+ordinary/dist/__musea__/assets/csp-bTuwJoIa.js                      1.27 kB
+ordinary/dist/__musea__/assets/pla-CopQ2nXW.js                      1.54 kB
+ordinary/dist/__musea__/assets/scheme-BeGwcela.js                   1.62 kB
+ordinary/dist/__musea__/assets/flow9-C5_-GSwl.js                    1.66 kB
+ordinary/dist/__musea__/assets/sb-CcwsVR0C.js                       1.68 kB
+ordinary/dist/__musea__/assets/bat-i0X4ZdIN.js                      1.69 kB
+ordinary/dist/__musea__/assets/dockerfile-DZFCIeNp.js               1.72 kB
+ordinary/dist/__musea__/preview/7e5fc375de4cee2de6e9.html           1.79 kB │ gzip:  0.98 kB
+ordinary/dist/__musea__/preview/c4c10a86cd56ca9f9e95.html           1.81 kB │ gzip:  0.99 kB
+ordinary/dist/__musea__/assets/pascaligo-D-ptJ9y-.js                1.85 kB
+ordinary/dist/__musea__/assets/xml-CxjWwj-4.js                      1.92 kB
+ordinary/dist/__musea__/assets/cameligo-DMUM7wLl.js                 1.97 kB
+ordinary/dist/__musea__/assets/lua-CsQS60Ue.js                      1.98 kB
+ordinary/dist/__musea__/assets/objective-c-FvmIjYaQ.js              2.10 kB
+ordinary/dist/__musea__/assets/graphql-fmXr3nnJ.js                  2.11 kB
+ordinary/dist/__musea__/assets/sparql-D_Lu-MrJ.js                   2.21 kB
+ordinary/dist/__musea__/assets/lexon-CfSJPG6W.js                    2.28 kB
+ordinary/dist/__musea__/assets/mips-CIPQ_RoX.js                     2.32 kB
+ordinary/dist/__musea__/assets/go-C-y9NEjX.js                       2.35 kB
+ordinary/dist/__musea__/assets/bicep-B5-_aFwp.js                    2.36 kB
+ordinary/dist/__musea__/assets/sophia-CRfGWb83.js                   2.48 kB
+ordinary/dist/__musea__/assets/m3-D-oSqn_W.js                       2.52 kB
+ordinary/dist/__musea__/assets/typespec-B8J7ngcE.js                 2.62 kB
+ordinary/dist/__musea__/assets/pascal-DrH0SRf2.js                   2.63 kB
+ordinary/dist/__musea__/assets/fsharp-C8Ef5oNN.js                   2.65 kB
+ordinary/dist/__musea__/api/static.json                             2.70 kB │ gzip:  0.85 kB
+ordinary/dist/__musea__/assets/qsharp-DkqhCAOL.js                   2.72 kB
+ordinary/dist/__musea__/assets/shell-CC2rA5mh.js                    2.81 kB
+ordinary/dist/__musea__/assets/r-BwWrilGY.js                        2.83 kB
+ordinary/dist/__musea__/assets/java-BEtHBSE6.js                     2.90 kB
+ordinary/dist/__musea__/assets/cssMode-Chlc2oby.js                  2.96 kB
+ordinary/dist/__musea__/assets/redis-ClamHrr6.js                    3.03 kB
+ordinary/dist/__musea__/assets/kotlin-BOotOW0E.js                   3.04 kB
+ordinary/dist/__musea__/assets/cypher-CVaqCwHa.js                   3.04 kB
+ordinary/dist/__musea__/assets/powershell-DmHpPYUd.js               3.05 kB
+ordinary/dist/__musea__/assets/tcl-DISqw1ZD.js                      3.27 kB
+ordinary/dist/__musea__/assets/liquid-Dd_z8h_B.js                   3.34 kB
+ordinary/dist/__musea__/assets/coffee-Ba7i2nA0.js                   3.36 kB
+ordinary/dist/__musea__/assets/htmlMode-xYeJY9wj.js                 3.42 kB
+ordinary/dist/__musea__/assets/hcl-CpzslTdj.js                      3.44 kB
+ordinary/dist/__musea__/assets/python-DpUI9NMf.js                   3.45 kB
+ordinary/dist/__musea__/assets/apex-BWPQTe0t.js                     3.46 kB
+ordinary/dist/__musea__/assets/yaml-q-dG9Lkk.js                     3.54 kB
+ordinary/dist/__musea__/assets/markdown-Cimd5fb3.js                 3.63 kB
+ordinary/dist/__musea__/assets/rust-DdL9SqIa.js                     3.66 kB
+ordinary/dist/__musea__/assets/restructuredtext-BYgofb2h.js         3.74 kB
+ordinary/dist/__musea__/assets/less-B9JPFI3C.js                     3.74 kB
+ordinary/dist/__musea__/assets/dart-onAF5SnQ.js                     3.93 kB
+ordinary/dist/__musea__/assets/csharp-BKxtCVv1.js                   4.11 kB
+ordinary/dist/__musea__/assets/msdax-DauUninz.js                    4.27 kB
+ordinary/dist/__musea__/assets/mdx-BV9KJmeU.js                      4.31 kB
+ordinary/dist/__musea__/assets/css-DIMkf-bt.js                      4.36 kB
+ordinary/dist/__musea__/assets/MonacoEditor-DMGQGixL.js             4.38 kB
+ordinary/dist/__musea__/assets/pug-Z5eAx3Zn.js                      4.46 kB
+ordinary/dist/__musea__/assets/swift-Bxkupp3x.js                    4.48 kB
+ordinary/dist/__musea__/assets/html-Ysiq-32p.js                     4.51 kB
+ordinary/dist/__musea__/assets/ecl-D05T4iGw.js                      4.62 kB
+ordinary/dist/__musea__/assets/typescript-B-VbgG33.js               4.67 kB
+ordinary/dist/__musea__/assets/cpp-C7h46wYY.js                      4.74 kB
+ordinary/dist/__musea__/assets/register-CFx1KSfO.js                 4.79 kB
+ordinary/dist/__musea__/assets/vb-DV3o63ZY.js                       5.30 kB
+ordinary/dist/__musea__/assets/twig-De2hgUGE.js                     5.78 kB
+ordinary/dist/__musea__/assets/scss-gp-XZpBa.js                     6.26 kB
+ordinary/dist/__musea__/assets/handlebars-JBK-IQdb.js               6.28 kB
+ordinary/dist/__musea__/assets/julia-Bri6UV-V.js                    6.50 kB
+ordinary/dist/__musea__/assets/systemverilog-Bz4Y3fRF.js            6.85 kB
+ordinary/dist/__musea__/assets/st-DbInun42.js                       6.94 kB
+ordinary/dist/__musea__/assets/scala-DHpiXF5c.js                    7.11 kB
+ordinary/dist/__musea__/assets/wgsl-DpFanUEy.js                     7.18 kB
+ordinary/dist/__musea__/assets/perl-oz_6vUea.js                     7.35 kB
+ordinary/dist/__musea__/assets/postiats-43DmfD33.js                 7.36 kB
+ordinary/dist/__musea__/assets/php-nr791fC2.js                      7.74 kB
+ordinary/dist/__musea__/assets/razor-RzAxmhn_.js                    8.11 kB
+ordinary/dist/__musea__/assets/clojure-Cm7r79vr.js                  8.21 kB
+ordinary/dist/__musea__/assets/ruby-DezsRK8O.js                     8.21 kB
+ordinary/dist/__musea__/assets/sql-NEE52Syq.js                      8.84 kB
+ordinary/dist/__musea__/assets/protobuf-C531GsRP.js                 8.89 kB
+ordinary/dist/__musea__/assets/mysql-SOo6toE5.js                    9.65 kB
+ordinary/dist/__musea__/assets/elixir-6RTg0lbw.js                  10.11 kB
+ordinary/dist/__musea__/assets/redshift-DT7zqm-g.js                10.33 kB
+ordinary/dist/__musea__/assets/abap-08VXUWAP.js                    11.69 kB
+ordinary/dist/__musea__/assets/pgsql-DTj74zXo.js                   11.91 kB
+ordinary/dist/__musea__/assets/jsonMode-v3sPHB9W.js                12.21 kB
+ordinary/dist/__musea__/assets/powerquery-D3hlyOfw.js              15.34 kB
+ordinary/dist/__musea__/assets/freemarker2-UuwRuSuB.js             15.54 kB
+ordinary/dist/__musea__/assets/solidity-BEEn4gHE.js                15.99 kB
+ordinary/dist/__musea__/assets/tsMode-DpHP6oFd.js                  21.87 kB
+ordinary/dist/__musea__/assets/lspLanguageFeatures-D9U1Gq1J.js     28.25 kB
+ordinary/dist/__musea__/assets/vs-CzdsC1b2.js                      95.94 kB
+ordinary/dist/__musea__/assets/codicon-Brq4_Ui5.ttf               140.95 kB
+ordinary/dist/__musea__/assets/editor.worker-s_hwqnK9.js          300.37 kB
+ordinary/dist/__musea__/assets/index-MXXeE4aD.js                  333.80 kB
+ordinary/dist/__musea__/assets/json.worker-CD0GJfW6.js            429.64 kB
+ordinary/dist/__musea__/assets/html.worker-BFmRaMni.js            740.00 kB
+ordinary/dist/__musea__/assets/css.worker-BjrR-8m8.js           1,075.06 kB
+ordinary/dist/__musea__/assets/toggleHighContrast-CSv0sacK.js   1,166.29 kB
+ordinary/dist/__musea__/assets/editor.api-B0CSOuX7.js           2,655.50 kB
+ordinary/dist/__musea__/assets/ts.worker-BFy34-VB.js            6,915.57 kB
+ordinary/dist/assets/Host-BBpUd5Oi.css                              0.04 kB │ gzip:  0.06 kB
+ordinary/dist/__musea__/assets/MonacoEditor-Db3Q217Z.css            0.12 kB │ gzip:  0.11 kB
+ordinary/dist/__musea__/assets/editor-8AbsNvUX.css                 79.50 kB │ gzip: 12.28 kB
+ordinary/dist/__musea__/assets/toggleHighContrast-CFGa3V3O.css     82.33 kB │ gzip: 12.98 kB
+ordinary/dist/__musea__/assets/index-BCvwNnuC.css                 108.84 kB │ gzip: 15.49 kB
+ordinary/dist/assets/musea-static-runtime-Dzwxkkub.js               1.70 kB │ gzip:  0.94 kB
+ordinary/dist/assets/Host.art-DCEUZCxE.js                           8.62 kB │ gzip:  2.98 kB
+ordinary/dist/assets/Host.art-lk1f8EBh.js                           8.63 kB │ gzip:  2.98 kB
+ordinary/dist/assets/Host.art-CSe3a5Yv.js                         172.29 kB │ gzip: 63.21 kB
+
+[33m[IMPORT_IS_UNDEFINED] Warning:[0m Import `__component__` will always be undefined because there is no matching export in '\0musea-art:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary/src/Host.art.vue?musea-virtual'
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m \0musea-preview:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary/src/Host.art.vue:Default:391:26 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m391 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249mc[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249mR[0m[38;5;249ma[0m[38;5;249mw[0m[38;5;249mC[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249me[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m [0martModule.__component__[38;5;249m;[0m
+ [38;5;240m    │[0m                          ───────────┬───────────  
+ [38;5;240m    │[0m                                     ╰───────────── 
+[38;5;246m─────╯[0m
+
+[33m[IMPORT_IS_UNDEFINED] Warning:[0m Import `__component__` will always be undefined because there is no matching export in '\0musea-art:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary/src/Host.art.vue?musea-virtual'
+     [38;5;246m╭[0m[38;5;246m─[0m[38;5;246m[[0m \0musea-preview:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary/src/Host.art.vue:State enabled:391:26 [38;5;246m][0m
+     [38;5;246m│[0m
+ [38;5;246m391 │[0m [38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249m [0m[38;5;249mc[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249ms[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249mR[0m[38;5;249ma[0m[38;5;249mw[0m[38;5;249mC[0m[38;5;249mo[0m[38;5;249mm[0m[38;5;249mp[0m[38;5;249mo[0m[38;5;249mn[0m[38;5;249me[0m[38;5;249mn[0m[38;5;249mt[0m[38;5;249m [0m[38;5;249m=[0m[38;5;249m [0martModule.__component__[38;5;249m;[0m
+ [38;5;240m    │[0m                          ───────────┬───────────  
+ [38;5;240m    │[0m                                     ╰───────────── 
+[38;5;246m─────╯[0m
+
+✓ built in 583ms
+vite v8.0.0 building client environment for production...
+[vize] Pre-compiling 2 Vue files... (2 changed, 0 cached, 0 removed)
+[vize] Pre-compilation complete: 2 recompiled, 0 restored from disk, 0 reused, 0 failed (3.46ms, native batch: 0.26ms)
+[musea] config.root: /private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/colon, include: ["src/**/*.art.vue"]
+[musea] Found 1 art files
+[2Ktransforming...✓ 16 modules transformed.
+✗ Build failed in 53ms
+{
+  "purpose": "Public npm 0.440.0 macOS product diagnostic only; not official Linux acceptance or source-current proof",
+  "platform": "darwin",
+  "arch": "arm64",
+  "publicConsumer": "/tmp/vize-public-0440-browser-_wmzf31m",
+  "publicConsumerUnchanged": true,
+  "fixtures": [
+    {
+      "case": "ordinary",
+      "variantName": "State enabled",
+      "files": [
+        {
+          "file": "src/Host.vue",
+          "sha256": "3087f1c9c435eccf08fedd48050fd124ab5574ac5c85f508b6b561ea5a0e599c"
+        },
+        {
+          "file": "src/Host.art.vue",
+          "sha256": "29b14c1956a20cf9dd22b74161d97b304bbb4cb9944ed6edc494c6b4a68d85fc"
+        }
+      ]
+    },
+    {
+      "case": "colon",
+      "variantName": "State: enabled",
+      "files": [
+        {
+          "file": "src/Host.vue",
+          "sha256": "3087f1c9c435eccf08fedd48050fd124ab5574ac5c85f508b6b561ea5a0e599c"
+        },
+        {
+          "file": "src/Host.art.vue",
+          "sha256": "b13eb1f8d2379b0f91a9f2435f6c4305ee53945560d2bcb607ec90a201845dc0"
+        }
+      ]
+    }
+  ],
+  "modules": [
+    {
+      "file": "custody.json",
+      "sha256": "ec007d2cbb7de10a3a6fe16fa175c1356f8d33b4480e885952620ee9a8f73285"
+    },
+    {
+      "file": "node_modules/@oxc-parser/binding-darwin-arm64/parser.darwin-arm64.node",
+      "sha256": "44f36100b4369d0c6e3c1498a81e4749f33df46a0e395114bf0229d301400251"
+    },
+    {
+      "file": "node_modules/@oxc-transform/binding-darwin-arm64/transform.darwin-arm64.node",
+      "sha256": "41d2f6c14386336afb54195c7bff3df563a7b16eb1c43c0b115fd840e5a6a886"
+    },
+    {
+      "file": "node_modules/@rolldown/binding-darwin-arm64/rolldown-binding.darwin-arm64.node",
+      "sha256": "df10a7e5dee35120b87ae2f0ea8b4e73e95d39a12601e50736a4f6bf1a407b1e"
+    },
+    {
+      "file": "node_modules/@vizejs/native-darwin-arm64/vize-vitrine.darwin-arm64.node",
+      "sha256": "e159f541bc865ac0295f6207b277be240bb4a551028e3f03729e352a42f9900b"
+    },
+    {
+      "file": "node_modules/@vizejs/native/index.js",
+      "sha256": "7e753facee0ac03a5e0cd913a4e502562c3ca74600df016346761d7beca51e87"
+    },
+    {
+      "file": "node_modules/@vizejs/native/native-binding.js",
+      "sha256": "13a15d0eaf0dd2e15f0aede8a17ae8c601fb9606d1b11903ce148428b8ef466e"
+    },
+    {
+      "file": "node_modules/@vizejs/vite-plugin-musea/dist/index.mjs",
+      "sha256": "405e92c9c1c149fc15248e5f01a8637cf01968a5e8858b48f8e32ecfcd7faa2c"
+    },
+    {
+      "file": "node_modules/@vizejs/vite-plugin/dist/index.mjs",
+      "sha256": "75ff71c5ed3fa1e99a824d4e12b2f447278cc7da5a125299f6c098214ecbd33c"
+    },
+    {
+      "file": "node_modules/fsevents/fsevents.node",
+      "sha256": "8e6e4ac89bec65903c90bc6ed7f17f45ecb2464d56fe4bf203620f75b6224292"
+    },
+    {
+      "file": "node_modules/lightningcss-darwin-arm64/lightningcss.darwin-arm64.node",
+      "sha256": "aee1601d7145d89f262d4c777f308ef06ed53046ee49b780d31a98f02db2e253"
+    },
+    {
+      "file": "node_modules/vite/dist/node/index.js",
+      "sha256": "66a3b711d9ec51d6feae35d7896831df78c7edf7dadaa3facab78324bb7f4a8a"
+    },
+    {
+      "file": "node_modules/vite/node_modules/fsevents/fsevents.node",
+      "sha256": "40f2f51199e4f5fc46fa6b985fb3461bb63e6cd86c62bfa9bcee45ed4438d5fb"
+    },
+    {
+      "file": "package-lock.json",
+      "sha256": "ae98d59cb066a5437574823658b917ef97525c6ad476e8d58814c6307f364cda"
+    },
+    {
+      "file": "package.json",
+      "sha256": "7f2e40d85fe11f0e305f0e1d91a07bc5e78e29a4bacf1e688ab907e3f7e1f60d"
+    }
+  ],
+  "results": [
+    {
+      "case": "ordinary",
+      "success": true,
+      "arts": [
+        {
+          "path": "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary/src/Host.art.vue",
+          "title": "Native static variants",
+          "variants": [
+            "Default",
+            "State enabled"
+          ]
+        }
+      ],
+      "previews": {
+        "/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/ordinary/src/Host.art.vue": {
+          "Default": "/__musea__/preview/7e5fc375de4cee2de6e9.html",
+          "State enabled": "/__musea__/preview/c4c10a86cd56ca9f9e95.html"
+        }
+      },
+      "emittedFiles": 114
+    },
+    {
+      "case": "colon",
+      "success": false,
+      "error": {
+        "name": "Error",
+        "message": "Build failed with 1 error:\n\n\u001b[31m[UNLOADABLE_DEPENDENCY] Error:\u001b[0m Could not load \\0musea-preview:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/colon/src/Host.art.vue:State: enabled\n   \u001b[38;5;246m╭\u001b[0m\u001b[38;5;246m─\u001b[0m\u001b[38;5;246m[\u001b[0m \\0musea-static-runtime:3:38 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m│\u001b[0m\n \u001b[38;5;246m3 │\u001b[0m \u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m6\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m8\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m1\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m3\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m2\u001b[0m\u001b[38;5;249m0\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m0\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m1\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m>\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m(\u001b[0m\"virtual:musea-preview:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/colon/src/Host.art.vue:State: enabled\"\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                      ──────────────────────────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────  \n \u001b[38;5;240m  │\u001b[0m                                                                                                                    ╰──────────────────────────────────────────────────────────────────────────────── file name contained an unexpected NUL byte\n\u001b[38;5;246m───╯\u001b[0m\n",
+        "stack": "Build failed with 1 error:\n\n\u001b[31m[UNLOADABLE_DEPENDENCY] Error:\u001b[0m Could not load \\0musea-preview:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/colon/src/Host.art.vue:State: enabled\n   \u001b[38;5;246m╭\u001b[0m\u001b[38;5;246m─\u001b[0m\u001b[38;5;246m[\u001b[0m \\0musea-static-runtime:3:38 \u001b[38;5;246m]\u001b[0m\n   \u001b[38;5;246m│\u001b[0m\n \u001b[38;5;246m3 │\u001b[0m \u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m6\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m8\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m1\u001b[0m\u001b[38;5;249me\u001b[0m\u001b[38;5;249m3\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m2\u001b[0m\u001b[38;5;249m0\u001b[0m\u001b[38;5;249md\u001b[0m\u001b[38;5;249m0\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m1\u001b[0m\u001b[38;5;249mf\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m4\u001b[0m\u001b[38;5;249m9\u001b[0m\u001b[38;5;249m\"\u001b[0m\u001b[38;5;249m:\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m(\u001b[0m\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m=\u001b[0m\u001b[38;5;249m>\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249mi\u001b[0m\u001b[38;5;249mm\u001b[0m\u001b[38;5;249mp\u001b[0m\u001b[38;5;249mo\u001b[0m\u001b[38;5;249mr\u001b[0m\u001b[38;5;249mt\u001b[0m\u001b[38;5;249m(\u001b[0m\"virtual:musea-preview:/private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/colon/src/Host.art.vue:State: enabled\"\u001b[38;5;249m)\u001b[0m\u001b[38;5;249m \u001b[0m\u001b[38;5;249m}\u001b[0m\u001b[38;5;249m;\u001b[0m\n \u001b[38;5;240m  │\u001b[0m                                      ──────────────────────────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────  \n \u001b[38;5;240m  │\u001b[0m                                                                                                                    ╰──────────────────────────────────────────────────────────────────────────────── file name contained an unexpected NUL byte\n\u001b[38;5;246m───╯\u001b[0m\n\n    at aggregateBindingErrorsIntoJsError (file:///private/tmp/vize-public-0440-browser-_wmzf31m/node_modules/rolldown/dist/shared/error-CP8smW_P.mjs:48:18)\n    at unwrapBindingResult (file:///private/tmp/vize-public-0440-browser-_wmzf31m/node_modules/rolldown/dist/shared/error-CP8smW_P.mjs:18:128)\n    at #build (file:///private/tmp/vize-public-0440-browser-_wmzf31m/node_modules/rolldown/dist/shared/rolldown-build-4YnQkA76.mjs:3311:34)\n    at async buildEnvironment (file:///private/tmp/vize-public-0440-browser-_wmzf31m/node_modules/vite/dist/node/chunks/node.js:32794:64)\n    at async Object.build (file:///private/tmp/vize-public-0440-browser-_wmzf31m/node_modules/vite/dist/node/chunks/node.js:33216:19)\n    at async file:///private/var/folders/8k/gm2q62k57yb9h1kmw2kf2tzm0000gn/T/vize-public-0440-static-colon-o5tv_4we/build.mjs:38:20"
+      }
+    }
+  ]
+}

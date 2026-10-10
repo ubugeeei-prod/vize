@@ -17,6 +17,6 @@
   {
     "name": "unconcretized-generic",
     "source": "<script setup lang=\"ts\" generic=\"T extends { id: string }\">\nconst props = defineProps<{ items: T[]; selected?: T }>();\n</script>\n<template>{{ props.items.map(item => item.id) }} {{ props.selected?.id }}</template>\n",
-    "signature": "const props: __DefineProps<Props<T>, never>"
+    "signature": "const props: __DefineProps<__VizeSetupProps, [Exclude<T, undefined>] extends [never] ? never : [Exclude<T, undefined>] extends [boolean] ? \"selected\" : never>"
   }
 ]

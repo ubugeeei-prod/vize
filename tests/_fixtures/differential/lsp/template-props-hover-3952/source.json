@@ -11,5 +11,13 @@
   "historicalWholeHover": "```typescript\nconst props: __DefineProps<Props, never>\n```",
   "historicalWireState": "awaiting-process-close with empty files; raw wire acceptance unavailable",
   "preservedRegistryProjects": 145,
-  "preservedAuthoredOracles": 51
+  "preservedAuthoredOracles": 51,
+  "genericControlCorrection": {
+    "historicalSource": "e1c57d7306a837f5ae898ab7b3a6684a86c7a5e0",
+    "historicalOracleSha256": "78eb8ac41343b3fbee1ebb994c1460ca96674a98c66682bc5021035ce92069b4",
+    "historicalSignature": "const props: __DefineProps<Props<T>, never>",
+    "historicalNativeRun": 38076973810,
+    "historicalNativeJob": 114285897655,
+    "sourceDerivation": "The original generic declaration retains its setup-local __VizeSetupProps alias. items:T[] has no BooleanKey; selected?:T keeps the original deferred Exclude<T, undefined> conditional. Only the new control signature is corrected; original input and generic producer bytes remain unchanged."
+  }
 }

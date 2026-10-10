@@ -6,9 +6,11 @@ use vize_carton::{FxHashMap, FxHashSet};
 
 use super::AliasContext;
 use super::routes::{RouteDiscovery, package_specifiers_from_frontier};
-use crate::batch::virtual_project::VirtualProject;
 use crate::batch::virtual_project::dependency_scan::resolve_dependency;
 use crate::corsa_bridge::types::CorsaBridgeError;
+
+mod settings;
+pub(super) use settings::configured_project;
 
 pub(super) struct SourceRevision<'a> {
     pub requested_sources: &'a [(PathBuf, &'a str)],
@@ -31,75 +33,15 @@ pub(super) fn build(
     // package-private `imports` manifest from its generated source companions.
     let source_path = vize_carton::path::canonicalize_non_verbatim(source_path);
     let source_path = source_path.as_path();
-    let discovered_config = source_path.ancestors().skip(1).find_map(|dir| {
-        ["tsconfig.json", "jsconfig.json"]
-            .into_iter()
-            .map(|name| dir.join(name))
-            .find(|path| path.is_file())
-    });
-    let root = environment
-        .project_root
-        .map(Path::to_path_buf)
-        .or_else(|| {
-            discovered_config
-                .as_deref()
-                .and_then(Path::parent)
-                .map(Path::to_path_buf)
-        })
-        .unwrap_or_else(|| source_path.parent().unwrap_or(source_path).to_path_buf());
-    let root = vize_carton::path::canonicalize_non_verbatim(&root);
-    let configured_tsconfig = environment.tsconfig_path.map(|path| {
-        if path.is_absolute() {
-            path.to_path_buf()
-        } else {
-            root.join(path)
-        }
-    });
-
-    let mut project = VirtualProject::new(&root).map_err(bridge_error)?;
-    project.set_virtual_ts_options(environment.virtual_ts_options.clone());
-    project.set_options_api(options.options_api);
-    project.set_legacy_vue2(options.legacy_vue2);
-    project.set_jsx_typecheck(options.jsx_typecheck);
-    project.set_experimental_patterned_template(options.experimental_patterned_template);
-    project.set_dialect(options.dialect);
-    // The workspace root selects the mirror's filesystem scope, not the
-    // compiler options for every package beneath it. Anchor the source to its
-    // nearest config before resolving a solution-style project's references.
-    if let Some(tsconfig) = configured_tsconfig.or(discovered_config) {
-        project.set_tsconfig_path(Some(tsconfig));
-    }
-    project.use_effective_tsconfig_for_source(source_path);
-    let namespace_identity = super::namespace::editor_namespace_identity(
-        options,
-        environment.virtual_ts_options,
-        Some(&root),
-        project.effective_tsconfig_path().as_deref(),
-    );
-    project.scope_editor_namespace(environment.editor_session.root()?, namespace_identity);
-    project.set_session_script_registration(true);
-    project.set_editor_document_options(
-        crate::batch::virtual_project::VueDocumentVirtualTsOptions {
-            options_api: options.options_api,
-            legacy_vue2: options.legacy_vue2,
-            experimental_patterned_template: options.experimental_patterned_template,
-            preserve_event_navigation: options.preserve_event_navigation,
-            dialect: options.dialect,
-            preserve_missing_vue_diagnostics: true,
-        },
-    );
-    // The native editor queries this one importer. Reachable declarations must
-    // be mirrored so user `paths` and relative declaration barrels resolve from
-    // the session-private root, but they must stay inferred modules rather than
-    // ambient program roots.
-    project.set_declaration_roots(&[source_path.to_path_buf()]);
-    project.set_package_route_resolver(resolver.clone());
+    let mut project = configured_project(source_path, options, environment)?;
+    let root = project.project_root().to_path_buf();
     let package_resolution = project.package_resolution_settings();
     let aliases = project.dependency_alias_map();
     let mut package_routes = FxHashMap::default();
     let mut package_reachability = FxHashMap::default();
     let mut package_bindings = Vec::new();
     let mut route_inputs = Vec::new();
+    let mut seed_paths = vec![source_path.to_path_buf()];
 
     let register_phase = crate::corsa_bridge::preparation_trace::Phase::start(
         "alias_register_inputs",
@@ -123,6 +65,7 @@ pub(super) fn build(
             project
                 .register_path_with_content(&path, source)
                 .map_err(bridge_error)?;
+            seed_paths.push(path);
         }
     }
     for (path, source) in revision.requested_sources {
@@ -134,7 +77,10 @@ pub(super) fn build(
         project
             .register_path_with_content(&path, source)
             .map_err(bridge_error)?;
+        seed_paths.push(path);
     }
+    seed_paths.sort();
+    seed_paths.dedup();
     register_phase.finish();
     let reachable_phase =
         crate::corsa_bridge::preparation_trace::Phase::start("alias_reachable_dependencies", 1);
@@ -248,6 +194,9 @@ pub(super) fn build(
         aliases,
         package_routes,
         route_inputs,
+        seed_paths,
+        #[cfg(test)]
+        graph_reused: false,
         mirror,
         virtual_ts_options: environment.virtual_ts_options.clone(),
         query_surface: Default::default(),

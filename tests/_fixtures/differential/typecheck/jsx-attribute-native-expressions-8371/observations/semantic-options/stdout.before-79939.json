@@ -1,0 +1,54 @@
+{
+  "files": [
+    {
+      "file": "Consumer.tsx",
+      "diagnostics": [
+        "error:5:19 [TS1005] ',' expected.",
+        "error:5:19 [TS1109] Expression expected.",
+        "error:6:63 [TS1109] Expression expected.",
+        "error:7:21 [TS1109] Expression expected."
+      ]
+    },
+    {
+      "file": "Host.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "Probe.vue",
+      "diagnostics": []
+    },
+    {
+      "file": "tsconfig.json",
+      "diagnostics": [
+        "error:1:1 [TS5023] Unknown compiler option 'importsNotUsedAsValues'."
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "importsNotUsedAsValues": "preserve",
+        "jsx": "preserve",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2022",
+        "types": [
+          "vue/jsx"
+        ]
+      },
+      "files": [
+        "Consumer.tsx",
+        "Host.vue",
+        "Probe.vue",
+        "node_modules/vue/jsx.d.ts"
+      ]
+    }
+  ],
+  "errorCount": 5,
+  "warningCount": 0,
+  "fileCount": 3
+}

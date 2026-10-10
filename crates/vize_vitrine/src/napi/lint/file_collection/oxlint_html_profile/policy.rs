@@ -142,7 +142,7 @@ pub(super) fn explicit_custom_excluded(
         || custom.matched(target, false).is_ignore())
 }
 
-fn configure(builder: &mut WalkBuilder) -> &mut WalkBuilder {
+fn configure(builder: &mut WalkBuilder, has_vcs_boundary: bool) -> &mut WalkBuilder {
     builder
         .hidden(false)
         .ignore(false)
@@ -150,12 +150,12 @@ fn configure(builder: &mut WalkBuilder) -> &mut WalkBuilder {
         .git_ignore(true)
         .parents(true)
         .git_exclude(true)
-        .require_git(true)
+        .require_git(has_vcs_boundary)
 }
 
 pub(super) fn vcs_root_excluded(selection: &Selection) -> Result<bool, Refusal> {
     let mut builder = WalkBuilder::new(&selection.repository);
-    configure(&mut builder);
+    configure(&mut builder, selection.has_vcs_boundary);
     let Some(mut matcher) = builder.build_matchers().pop() else {
         return Err(Refusal::new(
             RefusalKind::Internal,
@@ -214,7 +214,7 @@ pub(super) fn walk_originals(
             builder.overrides(overrides);
         }
     }
-    configure(&mut builder).follow_links(true);
+    configure(&mut builder, selection.has_vcs_boundary).follow_links(true);
     let refusal = Arc::new(Mutex::new(None));
     let observed = Arc::clone(&refusal);
     let repository = selection.repository.clone();

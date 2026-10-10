@@ -26,10 +26,11 @@ test("the actual caller stages standalone and emits its exact owned path only wh
     fileURLToPath(new URL("../../npm/oxlint/scripts/check-project-transport.mjs", import.meta.url)),
     "utf8",
   );
-  const start = caller.indexOf("const { artifacts, binary } = stageProjectNative(");
-  const end = caller.indexOf("const preload =", start);
+  const start = caller.indexOf("const staged = stageProjectNative(");
+  const end = caller.indexOf("const mixedDirectory8507 =", start);
   assert.ok(start >= 0 && end > start, "the complete live staging paragraph must be present");
   const context = {
+    artifacts: undefined,
     stageProjectNative,
     receipt: { frozen: { path: source, sha256: sha256(bytes) } },
     nativeHistoryReceipt: () => sourceReceipt,
@@ -56,7 +57,7 @@ test("the actual caller stages standalone and emits its exact owned path only wh
   assert.equal(staged.length, 1);
   assert.equal(
     fs.readFileSync(output, "utf8"),
-    `staging-directory=${path.join(artifacts, staged[0]!)}\n`,
+    `staging-directory=${path.join(artifacts, staged[0]!)}\nphase-walltime=${path.join(artifacts, staged[0]!, "phase-walltime.json")}\n`,
   );
   assert.deepEqual(fs.readFileSync(path.join(artifacts, staged[0]!, "source-native.node")), bytes);
 });

@@ -16,6 +16,7 @@ pub(crate) struct Phase {
     id: u64,
     started: Option<Instant>,
     completed: bool,
+    graph_revision: Option<(u8, u8, usize, usize)>,
 }
 
 impl Phase {
@@ -37,7 +38,19 @@ impl Phase {
             id,
             started,
             completed: false,
+            graph_revision: None,
         }
+    }
+
+    /// Attach actual graph work to the existing build phase, without a clock or stage.
+    pub(crate) fn graph_revision(
+        &mut self,
+        takeover: u8,
+        guard: u8,
+        rebuilt: usize,
+        reconciled: usize,
+    ) {
+        self.graph_revision = Some((takeover, guard, rebuilt, reconciled));
     }
 
     pub(crate) fn finish(mut self) {
@@ -61,9 +74,22 @@ impl Phase {
 impl Drop for Phase {
     fn drop(&mut self) {
         if let Some(started) = self.started {
-            tracing::info!(target: "vize_editor_preparation", phase = self.name, id = self.id,
-                elapsed_ms = started.elapsed().as_secs_f64() * 1000.0,
-                completed = self.completed, event = "end");
+            if let Some((
+                graph_takeover,
+                graph_guard,
+                source_nodes_rebuilt,
+                dependency_nodes_reconciled,
+            )) = self.graph_revision
+            {
+                tracing::info!(target: "vize_editor_preparation", phase = self.name, id = self.id,
+                    elapsed_ms = started.elapsed().as_secs_f64() * 1000.0,
+                    completed = self.completed, event = "end", graph_takeover, graph_guard,
+                    source_nodes_rebuilt, dependency_nodes_reconciled);
+            } else {
+                tracing::info!(target: "vize_editor_preparation", phase = self.name, id = self.id,
+                    elapsed_ms = started.elapsed().as_secs_f64() * 1000.0,
+                    completed = self.completed, event = "end");
+            }
         }
     }
 }

@@ -2,14 +2,23 @@
 title: トラブルシューティング
 ---
 
-<!-- Generated translation; source: guide/troubleshooting.md -->
+<!-- Reviewed translation; source: guide/troubleshooting.md; scope: introduction, headings and reading order -->
 
 # トラブルシューティング
 
+既存の Vue プロジェクトを Vize に移行して、テンプレートの警告や型パッケージの解決エラーが出たときに使うページです。
+まず、症状に合う節を選んでください。
+
+- [HTML 要素の自己終了タグ](#テンプレート構文モード): 3 つの構文モードを比較し、タグを直すか、必要なモードを選びます。
+- [Vue・Vite の型が見つからない](#ネイティブタイプのパッケージ解決): 解決先を確認し、特殊な配置ではパッケージのパスを指定します。
+
+解決しない場合は [コンパイラ インスペクター](./compiler-inspector.md) でコンパイルの再現例を絞り込み、
+[テストとフィードバック](./testing.md) の手順で小さな再現例を報告してください。
+
 ## テンプレート構文モード
 
-Vize のデフォルトは `compiler.templateSyntax` から `"standard"` です。標準モードでは回復可能なテンプレートを使用できます
-構文の問題を検出し、警告を報告し、それらを有効な出力に書き換えます。
+`compiler.templateSyntax` のデフォルト値は `"standard"` です。修復できる構文上の問題には
+警告を出し、有効なテンプレートに書き換えます。
 
 一般的な移行ケースは、非 void HTML 要素の自己終了構文です。
 
