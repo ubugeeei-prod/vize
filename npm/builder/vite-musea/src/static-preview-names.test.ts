@@ -118,7 +118,7 @@ void test("dev preview middleware uses the same escaping and resolves literal pe
 
 void test("the public macOS red and ordinary controls retain their exact authored fixture bytes", async () => {
   const root = new URL(
-    "../../../../tests/_fixtures/differential/musea/static-variant-name/",
+    "../../../../tests/tooling/fixtures/musea/static-variant-name/",
     import.meta.url,
   );
   const files = {

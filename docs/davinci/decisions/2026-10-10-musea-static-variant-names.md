@@ -29,7 +29,13 @@ Unit laws join the actual producer, resolver and loader for ordinary, colon,
 percent, malformed percent, Unicode, quotes and Windows path inputs. Development
 middleware uses that same producer. Exact fixture hashes retain the original red
 and ordinary control; compiler collectors and differential expected outputs are
-unchanged.
+unchanged. The byte-exact product regression corpus lives in
+`tests/tooling/fixtures/musea/static-variant-name`, outside the compiler corpus.
+Adding these inputs under `tests/_fixtures` changed its fixed file vector from
+498 to 502 despite zero remark changes; relocation restores the original 498
+paths without changing collector rules, first-500 selection, goldens or budgets.
+The retained `compiler-corpus-boundary.json` authenticates that exact pre-addition
+main path vector and unchanged remarks baseline by SHA-256.
 
 ## Genuine built HTTP contract
 
