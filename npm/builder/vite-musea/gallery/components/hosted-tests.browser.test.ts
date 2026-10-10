@@ -59,7 +59,8 @@ await test(
       await page.getByRole("button", { name: /^Run (Test|Again)$/ }).click();
       await page.locator(".a11y-panel .a11y-success").waitFor({ timeout: 10000 });
       await page.getByRole("button", { name: "VRT", exact: true }).click();
-      await page.getByText("Run screenshot comparisons from your project with").waitFor();
+      await page.getByText("Capture this hosted gallery with Node and Playwright:").waitFor();
+      assert.ok((await page.locator(".vrt-command").innerText()).includes(`${host.url}/`));
       assert.equal(await page.getByRole("button", { name: "Run VRT", exact: true }).count(), 0);
       await page.goto(`${host.url}/tests`);
       host.refuseAxe();

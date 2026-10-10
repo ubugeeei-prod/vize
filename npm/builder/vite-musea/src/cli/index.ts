@@ -29,7 +29,8 @@ import type { ArtFileInfo } from "../types/index.js";
 import { parseArtFile } from "./utils.js";
 import { scanArtFiles } from "../utils.js";
 import { runVrt, runApprove, runClean, runGenerate } from "./commands.js";
-import { loadMuseaFileSet, loadMuseaVrtOptions } from "./config.js";
+import { loadMuseaFileSet, loadMuseaVrtOptions, loadMuseaPreviewBasePath } from "./config.js";
+import { loadHostedGallery } from "./hosted.js";
 import type { MuseaVrtOptions } from "../types/index.js";
 
 type Command = "run" | "approve" | "clean" | "generate";
@@ -51,6 +52,9 @@ export interface CliOptions {
   pattern?: string;
   componentPath?: string;
   vrt?: MuseaVrtOptions;
+  galleryUrl?: string;
+  previewBasePath?: string;
+  previewUrls?: Record<string, Record<string, string>>;
 }
 
 export function parseArgs(args: string[]): CliOptions {
@@ -139,6 +143,11 @@ export function parseArgs(args: string[]): CliOptions {
       case "--help":
         options.help = true;
         break;
+      case "--gallery-url":
+        options.galleryUrl = args[++i];
+        if (!options.galleryUrl || options.galleryUrl.startsWith("-"))
+          throw new Error("--gallery-url requires a URL");
+        break;
     }
   }
 
@@ -175,6 +184,7 @@ Options:
   -o, --output <dir>   Output directory for reports (default: .vize)
   -t, --threshold <n>  Diff threshold percentage (default: 0.1)
   -b, --base-url <url> Base URL for dev server (default: http://localhost:5173)
+  --gallery-url <url>  Capture a built hosted gallery using its static manifest
   -w, --workers <n>    Number of concurrent captures (default: 1)
   --json               Output JSON report instead of HTML
   --ci                 CI mode - exit with non-zero code on failures
@@ -243,6 +253,16 @@ async function main(): Promise<void> {
   }
 
   options.vrt = await loadMuseaVrtOptions(options.config, cwd);
+  options.previewBasePath =
+    options.vrt?.previewBasePath ?? (await loadMuseaPreviewBasePath(options.config, cwd));
+  if (options.galleryUrl) {
+    const hosted = await loadHostedGallery(options.galleryUrl);
+    options.previewUrls = hosted.previewUrls;
+    if (options.command === "run") await runVrt(options, hosted.arts);
+    else if (options.command === "approve") await runApprove(options, hosted.arts);
+    else if (options.command === "clean") await runClean(options, hosted.arts);
+    return;
+  }
   const fileSet = await loadMuseaFileSet(options.config, cwd);
 
   // Scan for art files

@@ -17,7 +17,7 @@ import type { ArtFileInfo } from "../../src/types/index.ts";
 const packageRoot = fileURLToPath(new URL("../../", import.meta.url));
 export const hostedBase = "/site/__musea__";
 
-export async function buildHostedGallery(output: string) {
+export async function buildHostedGallery(output: string, setupDelayMs?: number) {
   const artPath = path.join(output, "Host.art.vue");
   const fixture: { setupDelayMs: number; variants: string[] } = JSON.parse(
     await readFile(
@@ -70,7 +70,7 @@ export async function buildHostedGallery(output: string) {
     load(id) {
       if (id === `\0${setupId}`) {
         return `export default async function() {
-          await new Promise(resolve => setTimeout(resolve, ${fixture.setupDelayMs}));
+          await new Promise(resolve => setTimeout(resolve, ${setupDelayMs ?? fixture.setupDelayMs}));
           window.__hostedSetupAfterLoad = document.readyState === 'complete';
         }`;
       }
@@ -169,6 +169,8 @@ export async function buildHostedGallery(output: string) {
   return {
     url: `http://127.0.0.1:${address.port}${hostedBase}`,
     requests,
+    art,
+    dist,
     refuseAxe() {
       refuseAxe = true;
     },
