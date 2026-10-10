@@ -4,15 +4,23 @@ title: Architecture
 
 # Architecture Overview
 
-> **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. Internal architecture may change as the project evolves.
+This page explains how Vize's packages reach the Rust compiler and developer tools.
+Use it to identify the part that owns a behavior before debugging an integration or contributing
+a fix. For installing Vize in an app, start with [Getting Started](../getting-started.md).
 
-Vize is built as a modular Rust workspace where each crate handles a specific concern. The architecture is organized into reusable lanes that carry Vue SFC source through parsing, analysis, and compilation stages.
+Follow the [relationship map](#project-relationship-map) from your entry point—for example,
+`@vizejs/vite-plugin`—to the crate responsible for the output. Then use the
+[Source Guide](./source-guide.md) to find files and the [Crate Reference](./crates.md) to identify APIs.
+
+The diagrams describe the existing product pipeline under `crates/`. The experimental level
+pipeline lives separately under `davinci/`; its roadmap and migration gates are recorded in the
+[level restructure decision](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-09-27-level-restructure%2Emd).
+Internal architecture continues to change.
 
 ## Project Relationship Map
 
-The repository is organized like a studio: user-facing surfaces enter through JavaScript packages,
-the shared Rust core shapes Vue source, and specialized tools reuse the same parser and semantic
-model rather than each keeping a private copy of the language.
+JavaScript integrations call the native bindings; compiler and developer-tool crates reuse
+shared parsing and analysis infrastructure. Follow the arrows from the package you are working with.
 
 ```mermaid
 graph TD
@@ -102,7 +110,8 @@ graph TD
     D --> J[Maestro<br/>LSP]
 ```
 
-Because all tools share the same parser and AST, they have a consistent understanding of your code. A lint rule in Patina operates on the same AST nodes as the compiler in Atelier — there's no risk of parser disagreement.
+Sharing parsing and AST infrastructure reduces duplicated language handling. Compatibility still
+needs fixture and integration tests for each compiler and tool surface.
 
 For type checking, `vize_canon` adds one more step: it generates virtual TypeScript from Vue SFCs and asks Corsa project sessions from [`corsa-bind`](https://github.com/ubugeeei/corsa-bind) for native diagnostics, then maps those results back onto the original files.
 

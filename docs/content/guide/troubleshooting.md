@@ -4,6 +4,17 @@ title: Troubleshooting
 
 # Troubleshooting
 
+Use this page when moving an existing Vue project to Vize produces a template warning
+or a type-package resolution problem. Start with the symptom that matches your case:
+
+- [Self-closing HTML tags](#template-syntax-modes): compare the three template syntax modes,
+  then fix the markup or choose the mode your project needs.
+- [Vue or Vite types cannot be found](#native-type-package-resolution): check which package roots
+  Vize resolves, then supply an explicit path for an unusual package layout.
+
+If the problem persists, use the [Compiler Inspector](./compiler-inspector.md) to reduce a
+compiler reproduction, or follow [Testing & Feedback](./testing.md) to report a small example.
+
 ## Template Syntax Modes
 
 Vize defaults `compiler.templateSyntax` to `"standard"`. Standard mode accepts recoverable template

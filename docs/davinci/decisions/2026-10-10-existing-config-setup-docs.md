@@ -114,3 +114,10 @@ assertions. Append the parent's complete shared recipe beside the unchanged
 and its complete CLI examples at the linked hosting route. Fresh source and
 full Docs qualification, protected merge, release, and public reading-path
 acceptance still belong to this actual composed source.
+
+## Composition with delivered reading improvements
+
+The reader layer genuinely merges actual `a936260f7c` without replaying the
+lower configuration layers. It keeps the revised CLI/lib introductions, old
+heading targets, complete configuration recipes, and both rendered guide gates.
+The delivered bounded renderer worker recipe remains unchanged.

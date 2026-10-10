@@ -2,15 +2,18 @@
 title: WASM バインディング
 ---
 
-<!-- Generated translation; source: guide/wasm.md -->
+<!-- Reviewed translation; source: guide/wasm.md; scope: introduction, headings and reading order -->
 
 # WASM バインディング
 
-> **⚠️ 進行中の作業:** Vize は積極的に開発中であり、まだ運用環境で使用する準備ができていません。 WASM API は予告なく変更される場合があります。
+`@vizejs/wasm` は、ブラウザ内で Vue ソースをコンパイル・lint・整形するためのパッケージです。
+プレイグラウンドや、コードを編集できるドキュメントを作るときに使います。
+Rust のコンパイラを WebAssembly で実行するため、コンパイル用のサーバーは不要です。
 
-`@vizejs/wasm` は、ブラウザーで Vue コンパイラーを直接実行するための WebAssembly バインディングを提供します。これにより、サーバーなしでリアルタイムの SFC コンパイル、リンティング、フォーマットが可能になり、遊び場、ドキュメント、教育ツールに最適です。
-
-WASM バインディングは、CLI および NAPI バインディング (`vize_vitrine`) と同じ Rust コードベースからコンパイルされ、すべてのプラットフォームで同一のコンパイル出力が保証されます。
+[パッケージをインストール](#インストール) し、一度初期化してから
+[SFC のコンパイル例](#sfc-をコンパイルする) を試してください。
+通常のアプリのビルドには [Vite Plugin ガイド](./vite-plugin.md) を参照してください。
+WASM API は実験段階です。採用時は [サポート区分](../stability.md) を確認してください。
 
 ## インストール
 
@@ -21,18 +24,6 @@ vp install @vizejs/wasm
 ```
 
 ## API
-
-### コンパイラオプションの互換性
-
-`CompilerOptions` タイプは、`compile`、`compileVapor`、
-`parseTemplate`、および `compileSfc`。不明なオブジェクト キーは JavaScript 境界で無視され、
-互換性を保証するものではありません。 `vueParserQuirks` は、非推奨のエイリアスとして残ります。
-`templateSyntax: "quirks"`;明示的な `templateSyntax` が常に優先されます。共有されたRust
-フィールド `experimentalServerScript` は予約されており、WASM コンパイラーの段階まで公開されません。
-それを実装します。各ファサードは、コンパイラ ステージに適用されないサポートされているフィールドを無視します。
-`bindingMetadata` は、テンプレートの直接コンパイルにのみ適用されます。ランタイム名は生成されたものに適用されます
-VDOM モジュールと SFC クライアント出力 (VDOM または Vapor)。ソース マップは、以下を含む VDOM 出力に適用されます。
-`compileSfc` によって返されたテンプレートの結果。 `outputMode` および `scriptExt` は SFC コンパイルにのみ適用されます。
 
 ### SFC をコンパイルする
 
@@ -209,3 +200,17 @@ await compiler.default(); // init()
 const result = compiler.compileSfc(source, opts);
 console.log(result.script.code, result.template?.code, result.css);
 ```
+
+## コンパイラオプションのリファレンス
+
+### コンパイラオプションの互換性
+
+`CompilerOptions` タイプは、`compile`、`compileVapor`、
+`parseTemplate`、および `compileSfc`。不明なオブジェクト キーは JavaScript 境界で無視され、
+互換性を保証するものではありません。 `vueParserQuirks` は、非推奨のエイリアスとして残ります。
+`templateSyntax: "quirks"`;明示的な `templateSyntax` が常に優先されます。共有されたRust
+フィールド `experimentalServerScript` は予約されており、WASM コンパイラーの段階まで公開されません。
+それを実装します。各ファサードは、コンパイラ ステージに適用されないサポートされているフィールドを無視します。
+`bindingMetadata` は、テンプレートの直接コンパイルにのみ適用されます。ランタイム名は生成されたものに適用されます
+VDOM モジュールと SFC クライアント出力 (VDOM または Vapor)。ソース マップは、以下を含む VDOM 出力に適用されます。
+`compileSfc` によって返されたテンプレートの結果。 `outputMode` および `scriptExt` は SFC コンパイルにのみ適用されます。

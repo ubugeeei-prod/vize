@@ -4,9 +4,14 @@ title: MCP Server
 
 # MCP Server
 
-> **⚠️ Work in Progress:** Vize is under active development and is not yet ready for production use. MCP server capabilities may change without notice.
+The Musea MCP server lets an MCP-compatible assistant read your project's component metadata:
+props, events, slots, variants, and design tokens. Use it when you have Musea art files and want
+help discovering components or writing examples from their actual APIs.
 
-Vize provides a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for AI-powered development workflows. The MCP server bridges the gap between your component gallery (Musea) and AI assistants, enabling them to understand, navigate, and work with your Vue components.
+[Install the package](#installation), [connect your MCP client](#setup), then try a concrete
+request such as “List the variants for our Button component.” If you do not have art files yet,
+start with the [Musea guide](../guide/musea.md). The server is experimental; check the
+[package support tiers](../stability.md#package-support-tiers) before relying on its API.
 
 ## Installation
 
@@ -15,41 +20,6 @@ Install `vp` once from the [Vite+ install guide](https://viteplus.dev/guide/inst
 ```bash
 vp install -D @vizejs/musea-mcp-server
 ```
-
-## What is MCP?
-
-The Model Context Protocol is an open standard for connecting AI assistants (like Claude, ChatGPT, and others) to development tools. Instead of AI assistants guessing about your codebase, MCP provides structured access to real component data — props, events, slots, variants, and documentation.
-
-Vize's MCP server exposes component information from the Musea gallery, so your AI assistant has the same understanding of your components that a developer browsing the gallery would have.
-
-## Capabilities
-
-The MCP server provides the following tools to AI assistants:
-
-### Component Discovery
-
-- **List all components** — Browse all registered components with their categories, tags, and status
-- **Search components** — Find components by name, tag, or description
-- **Get component metadata** — Retrieve detailed information about a specific component
-
-### Component API
-
-- **Props** — Complete prop definitions with types, defaults, and required status
-- **Events** — Emitted events with payload types
-- **Slots** — Named slots with slot prop types
-- **Expose** — Publicly exposed methods and properties
-
-### Story Information
-
-- **Variant listing** — All variants defined in art files
-- **Variant source** — Template code for each variant
-- **Default variant** — Which variant is shown by default
-
-### Design Tokens
-
-- **Token listing** — All design tokens from the tokens file
-- **Token categories** — Colors, typography, spacing, breakpoints
-- **Token resolution** — Semantic tokens resolved to their primitive values
 
 ## Setup
 
@@ -119,6 +89,41 @@ The AI returns the real prop definitions from your codebase, not generic guesses
 > "Write documentation for our SponsorGrid component based on its props and variants."
 
 The AI can generate accurate documentation by inspecting the actual component metadata through MCP.
+
+## Capabilities
+
+The MCP server provides the following tools to AI assistants:
+
+### Component Discovery
+
+- **List all components** — Browse all registered components with their categories, tags, and status
+- **Search components** — Find components by name, tag, or description
+- **Get component metadata** — Retrieve detailed information about a specific component
+
+### Component API
+
+- **Props** — Complete prop definitions with types, defaults, and required status
+- **Events** — Emitted events with payload types
+- **Slots** — Named slots with slot prop types
+- **Expose** — Publicly exposed methods and properties
+
+### Story Information
+
+- **Variant listing** — All variants defined in art files
+- **Variant source** — Template code for each variant
+- **Default variant** — Which variant is shown by default
+
+### Design Tokens
+
+- **Token listing** — All design tokens from the tokens file
+- **Token categories** — Colors, typography, spacing, breakpoints
+- **Token resolution** — Semantic tokens resolved to their primitive values
+
+## What is MCP?
+
+The Model Context Protocol is an open standard for connecting AI assistants (like Claude, ChatGPT, and others) to development tools. Instead of AI assistants guessing about your codebase, MCP provides structured access to real component data — props, events, slots, variants, and documentation.
+
+Vize's MCP server exposes component information from the Musea gallery, so your AI assistant has the same understanding of your components that a developer browsing the gallery would have.
 
 ## How It Works
 

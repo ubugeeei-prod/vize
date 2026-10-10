@@ -2,9 +2,14 @@
 title: ファイル間の複雑さ
 ---
 
-<!-- Generated translation; source: guide/cross-file-complexity.md -->
+<!-- Reviewed translation; source: guide/cross-file-complexity.md; scope: introduction, headings and reading order -->
 
 # ファイル間の複雑さ
+
+複雑度レポートは、変更やレビューが難しいテンプレートを見つけるために使います。
+まず [改善前・改善後の例](#worked-templates) で警告の意味を確認し、
+[lint の有効化手順](#enable-lint) に従って `vp run lint` を実行してください。
+個別のスコアを調べる場合は、下の計算方法を参照できます。
 
 Vize は、保持した式の AST、テンプレートの制御領域、解決済みのプロジェクト情報から複雑度を計算します。
 ソース中の記号の個数や実行時間を測るものではありません。レポートには、目的が異なる 3 つの値があります。
@@ -79,6 +84,8 @@ style 内の `v-bind()`、`v-once`、`v-cloak` も加点しません。ただし
 走査せず、unknown 行も増やしません。保持したハンドラー式は計算します。元のヘッドだけを保持したループは、
 コレクション AST を走査せず、ループの構造だけを数えます。低いスコアだけでは未対応のコードが単純とは判断できません。
 SFC の lint ルールは外部テンプレートと HTML 以外のテンプレート言語を対象にしません。
+
+<span id="worked-templates"></span>
 
 ## Bad / Good の全加点を追う
 
@@ -270,6 +277,8 @@ rendered の合計ではありません。`dimensions` はこの合計と次の�
 コンポーネントごとの入力に同じ式を適用し、合計の降順、次にファイル名で並べます。
 ホットスポットの合計はプロジェクトの合計と一致するとは限りません。provide/inject の深さや fan-out は
 個別に割り当てられ、それらの計算には非線形な部分があるためです。
+
+<span id="enable-lint"></span>
 
 ## しきい値、診断位置、lint の有効化
 

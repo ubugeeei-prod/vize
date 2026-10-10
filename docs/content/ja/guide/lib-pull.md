@@ -2,13 +2,17 @@
 title: ソース配布 (vize lib)
 ---
 
-<!-- Reviewed translation; source: guide/lib-pull.md; scope: shared native configuration and init -->
+<!-- Reviewed translation; source: guide/lib-pull.md; scope: introduction, headings and reading order; shared native configuration and init -->
 
 # ソース配布 (`vize lib`)
 
 `vize lib` は `@vizejs/ui` のコンポーネントと `@vizejs/composable` のコンポーザブルを、shadcn/ui と同じ
 スタイルで **ソースとして** プロジェクトにコピーします。コピーしたファイルはあなたのものです。自由に編集でき、
 Vize は各ファイルがどのパッケージバージョン由来かを記録するので、アップグレードも安全に行えます。
+
+コンポーネントをアプリ内で直接変更したいときに、ソース配布を使ってください。
+パッケージの import で十分な場合は [UI ライブラリ](./ui.md) や [コンポーザブル](./composables.md) から始められます。
+まず下の `rating` の例でコピーを試し、変更後はこのページの更新手順で差分を確認してください。
 
 ```bash
 vpx vize lib pull rating

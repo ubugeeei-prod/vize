@@ -4,10 +4,10 @@ title: CLI
 
 # CLI Reference
 
-Most application workflows should install the `vize` npm package and run it through `package.json`
-scripts. This page describes the lower-level Rust-native `vize` binary for LSP, IDE management, `check-server`, profiling, and other direct CLI workflows. The npm package exposes shared config helpers plus NAPI-backed `build`, `fmt`, `lint`, `check`, `clean`, `ready`, and `upgrade` commands.
+Use the CLI to compile, format, lint, and type-check Vue files from a terminal or CI job.
+For apps, install the `vize` npm package and start with the [package scripts below](#application-package-scripts). For LSP, IDE management, `check-server`, and profiling, use the [Rust binary installation](#rust-binary-installation).
 
-For a higher-level explanation of the analysis pipeline, see [Static Analysis](./static-analysis.md).
+The npm package also exports shared configuration helpers. See the [command comparison](#npm-package-scripts-vs-rust-cli) to choose an entry point, or follow [User Workflows](./workflows.md) for a task-oriented walkthrough.
 
 ## Application Package Scripts
 
