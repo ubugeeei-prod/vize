@@ -26,6 +26,8 @@ use vize_relief::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
 };
 
+mod dynamic_binding;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-slot",
     description: "Enforce valid `v-slot` directives",
@@ -143,6 +145,14 @@ impl Rule for ValidVSlot {
                 ctx.t("vue/valid-v-slot.invalid_modifier"),
                 &directive.loc,
                 ctx.t("vue/valid-v-slot.modifier_help"),
+            );
+        }
+
+        if dynamic_binding::references_own_binding(directive) {
+            ctx.error_with_help(
+                ctx.t("vue/valid-v-slot.dynamic_scope"),
+                &directive.loc,
+                ctx.t("vue/valid-v-slot.dynamic_scope_help"),
             );
         }
 
