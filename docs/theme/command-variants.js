@@ -39,6 +39,8 @@
         )
       )
         return null;
+      const hasPackage = tokens.some((token) => !token.startsWith("-"));
+      if (!hasPackage && (tokens.length > 0 || match[2] === "add")) return null;
       return { kind: tokens.length ? "add" : "install", args };
     }
     match =

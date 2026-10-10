@@ -18,6 +18,12 @@ command spellings. Preserve comments and arguments. Workspace-specific flags,
 shell programs, and unsupported operations display a notice and the original
 command instead of inventing equivalent lockfiles or invocation semantics.
 
+Bare installs retain the dependency-installation operation. Flag-only commands
+such as `vp install -D` and additions without a package retain the authored
+example instead of producing an argument-free `pnpm add`. This follows the
+[Vite+ install/add distinction](https://viteplus.dev/guide/install); whole command
+vectors cover the regression alongside the unchanged package-bearing installs.
+
 JSR is a registry, not a native CLI runner. Its tab explains unavailable
 operations while [#8367](https://github.com/ubugeeei-prod/vize/issues/8367) owns
 published package/import support. Do not advertise JSR CLI binaries or substitute

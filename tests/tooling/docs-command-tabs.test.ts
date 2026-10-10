@@ -23,6 +23,18 @@ void test("installation choices include every requested manager in order", () =>
   ]);
 });
 
+void test("bare installs preserve the dependency installation operation", () => {
+  assert.deepEqual(choices("vp install\n"), [
+    { manager: "vp", command: "vp install\n", gap: "workspace" },
+    { manager: "npm", command: "npm install\n", gap: "workspace" },
+    { manager: "pnpm", command: "pnpm install\n", gap: "workspace" },
+    { manager: "yarn", command: "yarn install\n", gap: "workspace" },
+    { manager: "bun", command: "bun install\n", gap: "workspace" },
+    { manager: "aube", command: "aube install\n", gap: "workspace" },
+    { manager: "jsr", command: null, gap: "registry" },
+  ]);
+});
+
 void test("Vite+ tasks keep their runner when using another package manager", () => {
   const result = choices("vp dev\nvp build\nvp run check -- --fix\n")!;
   assert.equal(
@@ -50,6 +62,11 @@ void test("installed binaries, one-off tools, and project scripts stay distinct"
 void test("support gaps retain original shell examples instead of guessing flags", () => {
   for (const source of [
     "vp install --frozen-lockfile",
+    "vp install -D",
+    "vp install -E --save-dev",
+    "npm install --save-exact",
+    "pnpm add -D",
+    "vp add",
     "vp run --filter './npm/native' build && echo done",
     "npm install -g vize",
   ]) {
