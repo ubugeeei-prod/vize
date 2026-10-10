@@ -152,6 +152,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
 
     configureServer(devServer) {
       server = devServer;
+      devServer.watcher.unwatch(path.resolve(config.root, ".vize/reports"));
 
       registerMiddleware(devServer, {
         basePath,
@@ -177,6 +178,7 @@ export function musea(options: MuseaOptions = {}): Plugin[] {
           resolvedPreviewCss,
           resolvedPreviewSetup,
           toolbar,
+          vrt: options.vrt,
           devSessionToken,
           processArtFile,
           getDevServerPort: () => devServer.config.server.port || 5173,

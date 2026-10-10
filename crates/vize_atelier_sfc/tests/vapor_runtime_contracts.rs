@@ -19,10 +19,13 @@ use vize_atelier_sfc::{
     parse_sfc,
 };
 
+use vapor_runtime_contracts::process_evidence;
+
 mod vapor_runtime_contracts {
     mod events;
     mod model_arguments;
     mod models;
+    pub(super) mod process_evidence;
     mod production;
     mod template_refs;
 }
@@ -111,18 +114,25 @@ fn trace(source: &str, backend: &str, extra: Value) -> Value {
     let runner = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/tooling/support/vapor-sfc-runtime.mjs");
     let mut child = Command::new("node")
-        .arg(runner)
+        .arg(&runner)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .unwrap();
-    let stdin_write = child
-        .stdin
-        .take()
-        .unwrap()
-        .write_all(input.to_string().as_bytes());
+    let child_pid = child.id();
+    let input_bytes = input.to_string().into_bytes();
+    let stdin_write = child.stdin.take().unwrap().write_all(&input_bytes);
     let output = child.wait_with_output().unwrap();
+    let evidence = process_evidence::capture(
+        backend,
+        &runner,
+        child_pid,
+        (source, child_source),
+        &input_bytes,
+        &output,
+        stdin_write.as_ref().err(),
+    );
     if let Some(name) = extra.get("proofName").and_then(Value::as_str) {
         let profile = if std::env::var("NEXTEST_PROFILE").as_deref() == Ok("full") {
             "full"
@@ -145,12 +155,17 @@ fn trace(source: &str, backend: &str, extra: Value) -> Value {
         )
         .unwrap();
     }
-    assert!(stdin_write.is_ok(), "{backend} stdin: {stdin_write:?}");
+    assert!(
+        stdin_write.is_ok(),
+        "{backend} stdin: {stdin_write:?}\n{}",
+        process_evidence::failure(backend, &input_bytes, &output, &evidence)
+    );
     assert!(
         output.status.success(),
-        "{backend}: {}\n{code}",
-        String::from_utf8_lossy(&output.stderr)
+        "{}",
+        process_evidence::failure(backend, &input_bytes, &output, &evidence)
     );
+    assert!(evidence.is_ok(), "{backend} evidence: {evidence:?}");
     serde_json::from_slice(&output.stdout).unwrap()
 }
 

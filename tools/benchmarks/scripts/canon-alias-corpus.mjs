@@ -90,12 +90,12 @@ export function expectedCliDiagnostics(code) {
   ];
 }
 
-export function expectedCliReport(item, root, code) {
+export function expectedCliReport(item, root, code, files = item.cliFiles) {
   const compilerOptions = JSON.parse(
     readFileSync(join(root, "tsconfig.json"), "utf8"),
   ).compilerOptions;
   return {
-    files: item.cliFiles.map((file) => ({
+    files: files.map((file) => ({
       file,
       diagnostics:
         file === "App.tsx" ? expectedCliDiagnostics(code).map(([, message]) => message) : [],
@@ -118,7 +118,7 @@ export function expectedCliReport(item, root, code) {
     ],
     errorCount: code == null ? 0 : 1,
     warningCount: 0,
-    fileCount: item.cliFiles.length,
+    fileCount: files.length,
   };
 }
 

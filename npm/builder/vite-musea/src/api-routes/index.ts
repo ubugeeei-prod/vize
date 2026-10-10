@@ -53,6 +53,7 @@ export interface ApiRoutesContext {
   resolvedPreviewCss: string[];
   resolvedPreviewSetup: string | null;
   toolbar?: ResolvedMuseaToolbarControl[];
+  vrt?: import("../types/plugin.js").MuseaVrtOptions;
   devSessionToken: string;
   apiBodyLimit?: number;
   processArtFile: (filePath: string) => Promise<void>;

@@ -1,0 +1,111 @@
+{
+  "schema": "vize-lsp-symbol-worker-after-churn-v1",
+  "source": "c3b847fa86e6f50c619e735cc4fe0c3dbb812662",
+  "run": 38040456635,
+  "job": 114179488929,
+  "jobConclusion": "success",
+  "workflowConclusion": "not-yet-terminal",
+  "archiveSha256": "a1ce1e905f5a11a3c4c808e7de32fce37ddbea48296bbe612ca6ce925b14a0aa",
+  "members": [
+    {
+      "path": "comparison.json",
+      "bytes": 1382,
+      "sha256": "37129e85d6a1714d3232f17a301206dc1203ce20e757f037d750728d806bca08"
+    },
+    {
+      "path": "metrics.json",
+      "bytes": 126616,
+      "sha256": "538d5083a09cf11efdfe29557176b0d3075a1e15f7c52e2688fa23f49a26c9d1"
+    },
+    {
+      "path": "source/crates/vize_maestro/src/server/state/workspace_project_files.rs",
+      "bytes": 9095,
+      "sha256": "c62395cc99d73043b03cc19c4f65ca224f0c875c556bd43652b7fd7bb9758ca9"
+    },
+    {
+      "path": "source/crates/vize_maestro/src/server/state/workspace_project_files/symbols.rs",
+      "bytes": 4569,
+      "sha256": "72461058158acec11255138dbe23e96a2b3d3c2866683d4582773c4f66252b92"
+    },
+    {
+      "path": "source/crates/vize_maestro/src/server/state/workspace_project_files/worker.rs",
+      "bytes": 1745,
+      "sha256": "5dfd6b2e478fadd4d2503b156b6c94fde6c2e533ac845c3b32ab9f0472e83b03"
+    },
+    {
+      "path": "source/crates/vize_maestro/src/server/state/workspace_project_files/worker/tests.rs",
+      "bytes": 3801,
+      "sha256": "054bf7aa646dc0f5db8e4883a1d50d51645f8ffa475b582e8241f1b00f9e0e15"
+    },
+    {
+      "path": "source/tests/_fixtures/vue-ecosystem-fixtures.json",
+      "bytes": 283643,
+      "sha256": "95e1f92ae1432a80047b67e2f2854ce7a4cb0c659a1fbbcfcaf4b0ec22ca37a7"
+    },
+    {
+      "path": "source/tests/performance/lsp-churn-stress.test.ts",
+      "bytes": 13665,
+      "sha256": "7d64733877f7f97cb53cc1c9553b5bc589574e5159da80f10eb25f460ee730de"
+    },
+    {
+      "path": "source/tests/performance/support/churn-metrics.ts",
+      "bytes": 12567,
+      "sha256": "e330801c8288af339b8dce339b93218bb2a98ba42af1d7456a8820745b0cecd3"
+    },
+    {
+      "path": "source/tests/performance/support/churn-oracle.ts",
+      "bytes": 5904,
+      "sha256": "d7ed478f0bf14584b23e8b873b070ef8c19959e12d818cd63f4059c529db7340"
+    },
+    {
+      "path": "source/tests/performance/support/file-lifecycle-churn.ts",
+      "bytes": 4553,
+      "sha256": "4f1cd1bd26419b118f2ccbdf232afa6a5f23eb1f3894b806c38901342145d0e4"
+    },
+    {
+      "path": "source/tests/tooling/support/lsp/launch.ts",
+      "bytes": 3311,
+      "sha256": "0dfdee15a11251733f28875a275a63f4fd5256afcc94228dd0954443f4dfbd65"
+    },
+    {
+      "path": "source/tests/tooling/support/lsp/session-process.ts",
+      "bytes": 3805,
+      "sha256": "5875ac84343d6f2a9faedbf302cc866f1e4f92ebd7ee453b9c4c24c0fb58fd48"
+    },
+    {
+      "path": "source/tests/tooling/support/lsp/session.ts",
+      "bytes": 11403,
+      "sha256": "e156e0649d6d22312cc55c2f9316f8fd8515f180bb422efe02294c3604df7ee4"
+    },
+    {
+      "path": "summary.md",
+      "bytes": 603,
+      "sha256": "568958492e7713700dcff78a65a9a3c924e04e1db543144fd34747817ba6fee5"
+    },
+    {
+      "path": "vize.differential-build.json",
+      "bytes": 340,
+      "sha256": "561ca363f99718ba9eda088a1a32087c675a7409c3896bc4c8efbc0260c177d8"
+    },
+    {
+      "path": "vue-parity.log",
+      "bytes": 235916,
+      "sha256": "95273979ca37afdfb87d7b1a47437c246fd50b30031f0ad816b5fdb56d803b64"
+    }
+  ],
+  "metricClaims": {
+    "sampledServerPeakKiB": 125388,
+    "sampledTreePeakKiB": 349648,
+    "serverBudgetMiB": 128,
+    "treeBudgetMiB": 384,
+    "comparisonNormalizesOnlyEphemeralOuterFixtureUriPrefix": true,
+    "truePeakMeasured": false,
+    "actualChurnPidToBinaryIndependentlyBound": false,
+    "processTreeImprovementClaim": false,
+    "allocatorCausalClaim": false,
+    "typechecker10xClaim": false,
+    "same287RetainedOrderedPublishRecords": true,
+    "fullRawChurnLspPacketsRetained": false
+  },
+  "scope": "Original pinned Misskey workload; unchanged authored normalized sorted code/message/range/severity/source diagnostic fingerprints, arrival order, versions, failure and budget controls. Retained records are not full raw LSP packets and do not preserve diagnostic array ordering/tags/data. Source-build-required flag absent for churn. Source build receipt is not an independent join to actual churn PID81040."
+}

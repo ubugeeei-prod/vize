@@ -8,7 +8,49 @@ export const fixtureUrl7502 = new URL(
   "../../../crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/original_inputs.json",
   import.meta.url,
 );
-export const outputUrl7502 = new URL("reviewed_output.json", fixtureUrl7502);
+export const archiveOutputUrl7502 = new URL("reviewed_output.json", fixtureUrl7502);
+export const outputUrl7502 = new URL("reviewed_output_v2.json", fixtureUrl7502);
+export const archiveOutputSha7502 =
+  "d32b8138113cbae60ea28b82c5653fa9b5fdb40a8b9f8a90ebd7e67a88b9a2cb";
+export const baseline7502 = {
+  revision: "815d9342ed252cad5802e58931b15166f25bf746",
+  tree: "4c79ab4eea0b1f9f6eea62916de8ce9f9383dc99",
+  fixtureTree: "76783543e5d1dddb5a127b0f032d6f217909d847",
+};
+export const transition7502 = {
+  baseline: baseline7502,
+  originalReviewedOutputSha256: archiveOutputSha7502,
+  input: "original-regression-11",
+  historicalDisposition: "lower-refusal",
+  current: { dom: "positive", ssr: "positive", vapor: "target-refusal" },
+};
+export function disposition7502(row: any) {
+  return row.id === transition7502.input
+    ? transition7502.current[row.target as keyof typeof transition7502.current]
+    : row.disposition;
+}
+export function archivedCapture7502() {
+  const bytes = readFileSync(archiveOutputUrl7502);
+  assert.equal(hash7502(bytes), archiveOutputSha7502, "whole original reviewed bytes drift");
+  const output = JSON.parse(bytes.toString("utf8"));
+  exactKeys7502(output, ["schema", "version", "state", "capture"]);
+  assert.equal(output.schema, "vize.native-attribute-values-7502.reviewed-output");
+  assert.equal(output.version, 1);
+  assert.equal(output.state, "reviewed");
+  return output.capture;
+}
+export function unchangedRows7502(packet: any) {
+  const archive = archivedCapture7502();
+  assert.equal(packet.rows.length, archive.rows.length);
+  for (const [index, row] of packet.rows.entries()) {
+    const previous = archive.rows[index];
+    assert.equal(row.id, previous.id);
+    assert.equal(row.target, previous.target);
+    assert.equal(row.linkMode, previous.linkMode);
+    if (row.id !== transition7502.input)
+      assert.deepEqual(row, previous, "every unaffected original whole row remains exact");
+  }
+}
 export const fixtureSha7502 = "130e3b247f1333f66ed1a529b7618e8de28cd926b33e6a57e2a12de640645b8f";
 export const ledgerSha7502 = "a7f0d7ea54e8d687057e36a778d8d7fab8bfc2f5a9fd5e31a3c226b3bc5928f8";
 export const targets7502 = [
@@ -77,7 +119,7 @@ export function loadInputs7502(bytes = readFileSync(fixtureUrl7502)) {
 export function requireReviewed7502(actual: any, frozen: any) {
   exactKeys7502(frozen, ["schema", "version", "state", "capture"]);
   assert.equal(frozen.schema, "vize.native-attribute-values-7502.reviewed-output");
-  assert.equal(frozen.version, 1);
+  assert.equal(frozen.version, 2);
   assert.equal(frozen.state, "reviewed", "whole native code/maps remain unfrozen");
   assert(
     frozen.capture && typeof frozen.capture === "object",

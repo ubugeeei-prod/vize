@@ -8,6 +8,40 @@ Vue rule option examples cover component name casing, prop mutation depth, SFC b
 self-closing tags, event names, and attribute casing. The main [Rule Options](./options.md) page lists the complete option table,
 unknown-field behavior, and scoped replacement semantics.
 
+## `vue/valid-v-slot`
+
+By default, static and dynamic slot arguments reject modifiers such as
+`#item.memo` and `#[name].memo`. Enable `allowModifiers` when a component API
+uses dotted slot names, as Vuetify data tables do:
+
+```ts
+import { defineConfig } from "vize/config";
+
+export default defineConfig({
+  linter: {
+    rules: { "vue/valid-v-slot": "error" },
+    ruleOptions: {
+      "vue/valid-v-slot": { allowModifiers: true },
+    },
+  },
+});
+```
+
+Allowed with this config:
+
+```vue
+<FancyPanel>
+  <template #item.memo="{ item }">{{ item.memo }}</template>
+  <template #[name].memo="slot">{{ slot }}</template>
+</FancyPanel>
+```
+
+An argless `v-slot.memo` remains invalid with either setting. A dynamic name
+such as `#[slot.name]="slot"` also remains invalid: the name is evaluated before
+that slot's parameters exist. The option only changes modifier policy and does
+not enable a disabled rule. An explicit `allowModifiers: false` in a matching
+entry restores the default policy even when the root config allows modifiers.
+
 ## `vue/component-name-in-template-casing`
 
 Use this option when a project wants component tags in templates to be consistently PascalCase or

@@ -1,0 +1,743 @@
+{
+  "schema": "vize.n8n.slot-modifier-source-consumers-v1",
+  "qualification": "Authored whole source CLI and LSP packets; public installed release remains separate",
+  "records": [
+    {
+      "id": "dynamic-name",
+      "sourceSha256": "9c86a25ac8dfef94f7ec8b16e3602ad793a931d81fae6f799974005f1a264252",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "dynamic-name.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 50
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 49
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot with a slot argument does not support modifiers by default\n\nHelp: Remove the modifiers or enable allowModifiers"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "dynamic-name.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "dynamic-chain",
+      "sourceSha256": "9a3ce55bfaa2ae73e89ac87347f72de356e0ee60f7dc6df94f12247c17e071ed",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "dynamic-chain.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 51
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 50
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot with a slot argument does not support modifiers by default\n\nHelp: Remove the modifiers or enable allowModifiers"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "dynamic-chain.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "dynamic-member",
+      "sourceSha256": "c18aa68bddaaa0f835a16d16f8ce0e76cf63665bac719e22ddef39dfe80bdcc2",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "dynamic-member.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 55
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 54
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot with a slot argument does not support modifiers by default\n\nHelp: Remove the modifiers or enable allowModifiers"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "dynamic-member.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "dynamic-own",
+      "sourceSha256": "a2127773cee6aa59bc1f61c2aec5f677211a7f7fda6b2d2d0991ff44da3a4e21",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "dynamic-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 51
+                },
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 51
+                }
+              ],
+              "errorCount": 2,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 50
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            },
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 50
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot with a slot argument does not support modifiers by default\n\nHelp: Remove the modifiers or enable allowModifiers"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "dynamic-own.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] Dynamic slot name cannot reference a binding declared by the same slot",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 51
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 50
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "Dynamic slot name cannot reference a binding declared by the same slot\n\nHelp: Use a binding from the enclosing scope to choose the slot name"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "dynamic-utf8",
+      "sourceSha256": "bc0558e93b32dc8e962720c704558c9969a3556ca0e34422e88e05b9d5c8d784",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "dynamic-utf8.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
+                  "line": 3,
+                  "column": 23,
+                  "endLine": 3,
+                  "endColumn": 50
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 22
+                },
+                "end": {
+                  "line": 2,
+                  "character": 49
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot with a slot argument does not support modifiers by default\n\nHelp: Remove the modifiers or enable allowModifiers"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "dynamic-utf8.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "dynamic-crlf",
+      "sourceSha256": "e218527b53b5c20ca7a8d647f7bc2a4793ba7ebf3565517af884aac5fa70f587",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "dynamic-crlf.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
+                  "line": 3,
+                  "column": 23,
+                  "endLine": 3,
+                  "endColumn": 50
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 2,
+                  "character": 22
+                },
+                "end": {
+                  "line": 2,
+                  "character": 49
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot with a slot argument does not support modifiers by default\n\nHelp: Remove the modifiers or enable allowModifiers"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "dynamic-crlf.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "static-dotted",
+      "sourceSha256": "0d76034ff86be7bd53bd7dcb40e0d37e91316e34fc4d9fed1d711f7ff6113af6",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "static-dotted.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 40
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 39
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot with a slot argument does not support modifiers by default\n\nHelp: Remove the modifiers or enable allowModifiers"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "static-dotted.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "static-longhand",
+      "sourceSha256": "eed257653014187a38f45049156f1553b4e5175a0d02bbf22781a8ce35874128",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "static-longhand.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 46
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 45
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot with a slot argument does not support modifiers by default\n\nHelp: Remove the modifiers or enable allowModifiers"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "static-longhand.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "static-default",
+      "sourceSha256": "234f69b66172c90de64b821cce1c328738f03f05a7753c8366c8ff1c70ba98f8",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "static-default.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot with a slot argument does not support modifiers by default",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 43
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 42
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot with a slot argument does not support modifiers by default\n\nHelp: Remove the modifiers or enable allowModifiers"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "static-default.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "argless-modifier",
+      "sourceSha256": "901102369c2ff59932cc03ad504e82f31a05df65cec9cf3c62807cf3fff405ea",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "argless-modifier.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot without a slot argument does not support modifiers",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 45
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 44
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot without a slot argument does not support modifiers\n\nHelp: Remove the modifier from the v-slot directive"
+            }
+          ]
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "argless-modifier.vue",
+              "messages": [
+                {
+                  "ruleId": "vue/valid-v-slot",
+                  "ruleDocsPath": "docs/content/rules/vue.md",
+                  "severity": 2,
+                  "message": "[vize:vue/valid-v-slot] v-slot without a slot argument does not support modifiers",
+                  "line": 2,
+                  "column": 23,
+                  "endLine": 2,
+                  "endColumn": 45
+                }
+              ],
+              "errorCount": 1,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": [
+            {
+              "range": {
+                "start": {
+                  "line": 1,
+                  "character": 22
+                },
+                "end": {
+                  "line": 1,
+                  "character": 44
+                }
+              },
+              "severity": 1,
+              "code": "vue/valid-v-slot",
+              "codeDescription": {
+                "href": "https://eslint.vuejs.org/rules/valid-v-slot.html"
+              },
+              "source": "vize/lint",
+              "message": "v-slot without a slot argument does not support modifiers\n\nHelp: Remove the modifier from the v-slot directive"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "dynamic-no-modifier",
+      "sourceSha256": "66585e5bc2e14c2865785ec6052fa6fe9e2bef421484c4a41dab626ee1501cd5",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "dynamic-no-modifier.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "dynamic-no-modifier.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    },
+    {
+      "id": "dynamic-expression-no-modifier",
+      "sourceSha256": "7154edeb1e2a2931aca2823506a6ae7a2660c69c873972898c690f7011b787d6",
+      "options": {
+        "false": {
+          "cli": [
+            {
+              "file": "dynamic-expression-no-modifier.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        },
+        "true": {
+          "cli": [
+            {
+              "file": "dynamic-expression-no-modifier.vue",
+              "messages": [],
+              "errorCount": 0,
+              "warningCount": 0
+            }
+          ],
+          "lspDiagnostics": []
+        }
+      }
+    }
+  ]
+}
