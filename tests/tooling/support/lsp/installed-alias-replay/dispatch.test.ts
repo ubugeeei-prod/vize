@@ -15,7 +15,7 @@ function pending(observed: boolean) {
   const item: Pending = {
     observed,
     outcome: { id: 3, method: "textDocument/definition", status: "pending" },
-    timer: setTimeout(() => assert.fail("unsettled request"), 60_000),
+    timer: setTimeout(() => assert.fail("unsettled request"), 60_000).unref(),
     resolve: (value) => replies.push(value),
     reject: (error) => errors.push(error),
   };
@@ -49,11 +49,13 @@ test("observational mode cannot accept a malformed response", () => {
   assert.equal(result.item.outcome.status, "malformed-response");
   assert.equal((result.errors[0] as InstalledAliasError).packet, packet);
 });
-test("null response stays complete and an unrelated ID never consumes a pending request", () => {
+test("null response stays complete and an unrelated ID never consumes a pending request", (t) => {
   const result = pending(false),
     packet = { jsonrpc: "2.0", id: 3, result: null };
+  t.after(() => clearTimeout(result.item.timer));
   settleReply({ ...packet, id: 4 }, result.map, result.failures);
   assert.equal(result.map.size, 1);
+  assert.equal(result.item.timer.hasRef(), false, "an unsettled request cannot delay test exit");
   settleReply(packet, result.map, result.failures);
   assert.deepEqual(result.replies, [packet]);
   assert.deepEqual(result.failures, []);
@@ -68,7 +70,7 @@ function publication(count: number, after = 0) {
     after,
     count,
     packets: [],
-    timer: setTimeout(() => assert.fail("unsettled publication"), 60_000),
+    timer: setTimeout(() => assert.fail("unsettled publication"), 60_000).unref(),
     resolve: (packets) => sequences.push(packets),
     reject: (error) => errors.push(error),
   };
@@ -108,8 +110,9 @@ test("original single-publication waits preserve a complete snapshot while remov
   assert.deepEqual(first.sequences, [[empty]]);
   assert.deepEqual(second.sequences, [[empty]]);
 });
-test("pre-transaction notifications and wrong versions cannot satisfy the ordered sequence", () => {
+test("pre-transaction notifications and wrong versions cannot satisfy the ordered sequence", (t) => {
   const result = publication(2, 4);
+  t.after(() => clearTimeout(result.wait.timer));
   settlePublication(empty, 4, result.waits, result.failures);
   settlePublication(
     { ...empty, params: { ...(empty.params as Packet), version: 3 } },
@@ -118,7 +121,11 @@ test("pre-transaction notifications and wrong versions cannot satisfy the ordere
     result.failures,
   );
   assert.deepEqual(result.wait.packets, []);
-  clearTimeout(result.wait.timer);
+  assert.equal(
+    result.wait.timer.hasRef(),
+    false,
+    "an unsettled publication cannot delay test exit",
+  );
 });
 test("malformed second publication retains the first and rejects the whole sequence", () => {
   const result = publication(2),
