@@ -26,8 +26,6 @@ use vize_relief::{
     DirectiveNode, ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode,
 };
 
-mod dynamic_binding;
-
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-v-slot",
     description: "Enforce valid `v-slot` directives",
@@ -35,6 +33,8 @@ static META: RuleMeta = RuleMeta {
     fixable: false,
     default_severity: Severity::Error,
 };
+
+mod dynamic_binding;
 
 /// Valid v-slot rule
 #[derive(Default)]

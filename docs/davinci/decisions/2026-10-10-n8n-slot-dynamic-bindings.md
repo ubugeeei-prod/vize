@@ -40,8 +40,11 @@ or runtime credit; all original fixtures and refusal laws stay unchanged.
 
 The successor source build passes. Its tooling check detects the newly added
 Patina helper consumer missing from the generated census. Regenerate through
-the existing producer; only the Patina non-product import row changes. The
-unchanged source-qualified census tests pass locally before fresh Actions.
+the existing producer; only the Patina non-product import row changes. Another
+shard detects four missing migration-surface rows and the displaced metadata
+anchor. Regenerate the former; place the helper module after metadata so the
+canonical implementation link and generated global rule indexes stay exact.
+The unchanged census and inventory producers pass locally before fresh Actions.
 
 The parser currently cannot retain shorthand-default patterns such as
 `{ slot = fallback }` as expression ASTs. Such patterns, malformed argument
