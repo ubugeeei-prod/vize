@@ -244,7 +244,14 @@ const vizeDocsI18nNavigation = (() => {
       });
     }
     root.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && mobile.matches && sidebar.classList.contains("open")) {
+      if (
+        event.key === "Escape" &&
+        !event.defaultPrevented &&
+        mobile.matches &&
+        sidebar.classList.contains("open") &&
+        (sidebar.contains(event.target) || event.target === trigger)
+      ) {
+        event.preventDefault();
         sidebar.classList.remove("open");
         root.querySelector(".overlay")?.classList.remove("open");
         sync();

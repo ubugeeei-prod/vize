@@ -2,19 +2,8 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import type { Page } from "playwright";
 
-const require = createRequire(import.meta.url);
-const native = createRequire(require.resolve("@ox-content/vite-plugin"))("@ox-content/napi") as {
-  transform(
-    source: string,
-    options: { codeAnnotations: boolean },
-  ): { html: string; errors: unknown[] };
-};
 const annotationSource =
   'const label: string = "Readable";\n// Comment outside the focused line\nconst ready = true;';
-const annotation = native.transform('```ts annotate="focus:1"\n' + annotationSource + "\n```", {
-  codeAnnotations: true,
-});
-assert.deepEqual(annotation.errors, []);
 
 export async function verifySidebarMotion(page: Page, device: string) {
   const sidebar = page.locator(".sidebar");
@@ -33,14 +22,53 @@ export async function verifySidebarMotion(page: Page, device: string) {
       await sidebar.evaluate((element) => getComputedStyle(element).transitionDuration),
       /0\.18s/,
     );
-    await page.locator(".sidebar summary").first().focus();
+    await page.locator("[data-mobile-search]").click();
+    await page.locator(".search-input").waitFor({ state: "visible" });
+    await page.locator(".search-input").focus();
     await page.keyboard.press("Escape");
+    await page.locator(".search-modal-overlay").waitFor({ state: "hidden" });
+    assert.equal(await control.getAttribute("aria-expanded"), "true");
+    assert.equal(await sidebar.evaluate((element) => (element as HTMLElement).inert), false);
+    assert.equal(await control.evaluate((element) => element === document.activeElement), false);
+    await page.locator(".sidebar summary").first().focus();
+    const consumed = await page
+      .locator(".sidebar summary")
+      .first()
+      .evaluate((element) => {
+        const event = new KeyboardEvent("keydown", {
+          key: "Escape",
+          bubbles: true,
+          cancelable: true,
+        });
+        event.preventDefault();
+        element.dispatchEvent(event);
+        return document.querySelector(".sidebar")!.classList.contains("open");
+      });
+    assert.equal(consumed, true, "Sidebar must preserve Escape consumed by its focused widget");
+    await page.evaluate(() => {
+      document.addEventListener(
+        "keydown",
+        (event) => {
+          document.documentElement.dataset.renderEscapeConsumed = String(event.defaultPrevented);
+        },
+        { once: true },
+      );
+    });
+    await page.keyboard.press("Escape");
+    assert.equal(await page.locator("html").getAttribute("data-render-escape-consumed"), "true");
+    await page.evaluate(() => delete document.documentElement.dataset.renderEscapeConsumed);
     await page.waitForFunction(
       () => document.querySelector("[data-mobile-menu]")?.getAttribute("aria-expanded") === "false",
     );
     assert.equal(await control.evaluate((element) => element === document.activeElement), true);
     assert.equal(await sidebar.evaluate((element) => (element as HTMLElement).inert), true);
     await sidebar.waitFor({ state: "hidden" });
+    await control.click();
+    await sidebar.waitFor({ state: "visible" });
+    await control.focus();
+    await page.keyboard.press("Escape");
+    await sidebar.waitFor({ state: "hidden" });
+    assert.equal(await control.getAttribute("aria-expanded"), "false");
     await control.click();
     await sidebar.waitFor({ state: "visible" });
   }
@@ -114,6 +142,17 @@ export async function verifySidebarMotion(page: Page, device: string) {
 }
 
 export async function verifyThemeReadability(page: Page) {
+  const require = createRequire(import.meta.url);
+  const native = createRequire(require.resolve("@ox-content/vite-plugin"))("@ox-content/napi") as {
+    transform(
+      source: string,
+      options: { codeAnnotations: boolean },
+    ): { html: string; errors: unknown[] };
+  };
+  const annotation = native.transform('```ts annotate="focus:1"\n' + annotationSource + "\n```", {
+    codeAnnotations: true,
+  });
+  assert.deepEqual(annotation.errors, []);
   // A native focus annotation exercises dimmed comments even when authored
   // guides on this route contain only plain or add/remove code examples.
   const fixture = await page.evaluate(
@@ -133,6 +172,23 @@ export async function verifyThemeReadability(page: Page) {
         throw new Error("Native annotation source changed during highlighting");
       if (!container.querySelector(".ox-code-line--dimmed"))
         throw new Error("Native annotation control did not emit dimmed lines");
+      const dimmed = [...container.querySelectorAll(".ox-code-line--dimmed .v-code__token")];
+      if (!dimmed.length) throw new Error("Native dimmed annotation emitted no syntax tokens");
+      if (
+        dimmed.some(
+          (token) =>
+            getComputedStyle(token).color !==
+            getComputedStyle(token.closest(".ox-code-line")!).color,
+        )
+      )
+        throw new Error("Dimmed native syntax tokens must use their readable muted line color");
+      const focused = [...container.querySelectorAll(".focused .v-code__token")];
+      if (
+        !focused.some(
+          (token) => getComputedStyle(token).color !== getComputedStyle(dimmed[0]).color,
+        )
+      )
+        throw new Error("Focused syntax tokens must retain their syntax palette");
       return true;
     },
     { html: annotation.html, source: annotationSource },

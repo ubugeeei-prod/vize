@@ -17,3 +17,8 @@
   filter: none;
   color: var(--vize-code-muted);
 }
+
+.content pre.ox-code-block .ox-code-line--dimmed .v-code__token,
+.content pre.ox-code-block.has-focused .line:not(.focused) .v-code__token {
+  color: var(--vize-code-muted) !important;
+}

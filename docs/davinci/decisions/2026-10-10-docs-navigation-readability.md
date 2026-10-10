@@ -23,13 +23,19 @@ Each closed group immediately makes its list inert, so links painted during
 the collapse transition cannot retain focus or re-enter the keyboard sequence.
 The mobile sheet animates its existing transform. A closed sheet is inert immediately, its controls expose
 the actual expanded state, and Escape closes it and returns focus to its trigger.
+Escape belongs to the sidebar only when its event originates there or at its
+active trigger and another widget has not consumed it. Closing search must keep
+the sidebar open and preserve search's own focus behavior.
 
 Deepen the warm light background and its alternate/border surfaces by a few RGB
 steps. Dark page and alternate surfaces likewise deepen slightly. Syntax colors
 remain distinct and reach at least 4.5:1 against the composited code background,
 including native annotation backgrounds. Dim annotations lose blur and opacity
-reduction; their source and annotation meaning remain intact. Dark comments also
-need sufficient contrast. Benchmark provenance tables wrap hashes only inside
+reduction; their source and annotation meaning remain intact.
+Native dimmed syntax tokens inherit the readable muted line color while focused
+tokens retain their syntax palette. The verifier builds its native annotation
+fixture only when it checks theme readability, keeping unrelated imports inert.
+Dark comments also need sufficient contrast. Benchmark provenance tables wrap hashes only inside
 their dedicated disclosure, preserving ordinary table/code layout.
 
 ## Validation and delivery
