@@ -35,13 +35,11 @@ export function usePalette() {
   });
 
   const mergedValues = computed<Record<string, unknown>>(() => {
-    const result: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(values.value)) {
-      if (!deletedPaletteProps.value.has(k) || customPropNames.value.has(k)) {
-        result[k] = v;
-      }
-    }
-    return result;
+    return Object.fromEntries(
+      Object.entries(values.value).filter(
+        ([name]) => !deletedPaletteProps.value.has(name) || customPropNames.value.has(name),
+      ),
+    );
   });
 
   const customPropNames = computed<Set<string>>(
