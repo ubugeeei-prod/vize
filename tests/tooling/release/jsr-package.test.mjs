@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { preparePackage } from "../../../tools/support/release/jsr/prepare.mjs";
 
 const root = fileURLToPath(new URL("../../../", import.meta.url));
-test("JSR publication pins every facade to the same exact release", (t) => {
+await test("JSR publication pins every facade to the same exact release", (t) => {
   const output = mkdtempSync(resolve(tmpdir(), "vize-jsr-package-"));
   t.after(() => rmSync(output, { recursive: true, force: true }));
   const version = preparePackage(output);
@@ -32,7 +32,7 @@ test("JSR publication pins every facade to the same exact release", (t) => {
   assert.throws(() => preparePackage(output, { version: "0.1.0" }), /match the checked-out/);
 });
 
-test("mismatched native or Vite release artifacts cannot publish", (t) => {
+await test("mismatched native or Vite release artifacts cannot publish", (t) => {
   const fixture = mkdtempSync(resolve(tmpdir(), "vize-jsr-mismatch-"));
   t.after(() => rmSync(fixture, { recursive: true, force: true }));
   for (const directory of ["npm/cli", "npm/native", "npm/builder/vite", "jsr/vize"]) {
@@ -43,12 +43,16 @@ test("mismatched native or Vite release artifacts cannot publish", (t) => {
       { recursive: true },
     );
   }
-  const nativePath = resolve(fixture, "npm/native/package.json");
-  const native = JSON.parse(readFileSync(nativePath, "utf8"));
-  native.version = "0.1.0";
-  writeFileSync(nativePath, JSON.stringify(native));
-  assert.throws(
-    () => preparePackage(resolve(fixture, "output"), { root: fixture }),
-    /npm\/native must match/,
-  );
+  for (const directory of ["npm/native", "npm/builder/vite"]) {
+    const manifestPath = resolve(fixture, directory, "package.json");
+    const original = readFileSync(manifestPath, "utf8");
+    const manifest = JSON.parse(original);
+    manifest.version = "0.1.0";
+    writeFileSync(manifestPath, JSON.stringify(manifest));
+    assert.throws(
+      () => preparePackage(resolve(fixture, "output"), { root: fixture }),
+      new RegExp(`${directory} must match`),
+    );
+    writeFileSync(manifestPath, original);
+  }
 });
