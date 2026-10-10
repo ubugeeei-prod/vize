@@ -110,3 +110,17 @@ expectations, retaining every original production and historical predicate,
 exact-head/ancestry assertion and frozen replay control. The unchanged six
 historical laws and twelve collector laws pass locally after this expectation
 correction; this is source-law proof, not hosted benchmark qualification.
+
+The collector now composes exactly once with corrected SSR source
+`aa89d08dee18d8856892b13cf28974e3ef6b1c71`, retaining all prior collector
+commit messages and the six-path lint/law correction. Both full provider and
+authority sets remain unchanged, and the paired comparison baseline stays
+`2703daa2f03f5d943dd6b31089aee4a8c5bc7a9e`. Fresh source/full/native, the
+separate 104-row instruction gate and all 624 normal observations still require
+qualification on this actual successor. The original 100-row allocation-equality
+REDs remain visible; the independently qualified SSR parent may enter its native
+Stack prefix without waiting for this optional memory campaign.
+
+The corrected normal-mode campaign at source `295289873e982e58845c8ec628d6f4f5e6e77d1b` ([Actions run 38078816799](https://github.com/ubugeeei-prod/vize/actions/runs/38078816799)) retained all 624 fresh reports, 131 completed process receipts and 262 whole raw streams. Every one of the original 104 paired allocation counts and peak allocation-byte measurements equals baseline `2703daa2f03f5d943dd6b31089aee4a8c5bc7a9e` in each of three repetitions. The seven candidate-only increments recorded for the earlier `3c92` campaign are absent; the unchanged baseline counters match that earlier baseline for all 104 cases. Both sides still fail exactly the same 57 original 100-row allocation equality laws (40 increases and 17 decreases against the normative constants), in every repetition. The four formatter rows remain report-only without allocation ceilings. RSS and quick wall samples differ and are retained without an improvement or causal claim. This campaign remains unqualified and transfers no source, instruction, runtime or memory qualification to parent `504` or a later composition; the parent's own qualification remains independent. Parser +24 B and Core context +16 B measured layout costs remain reported. The next required child refresh follows the parent's actual merge and reruns its own exact-source gates.
+
+After the actual signed SSR merge `ceb3677dfc29b9b6a9c5751771b8f01cb0969c52`, GitHub native Stack 8527 retargeted this child to `main` and replayed its source as `e39085cb9c66f5fe06d2436797a953abfa2a4db2`. The complete incoming foreign tree and seven tooling, law and workflow files are unchanged. The two factual record clauses from the old `295` merge resolution are restored before this new campaign record. This actual-main successor still needs fresh source/full/native, separate 104-row instruction and complete 624-report normal qualification; old results provide no acceptance transfer.
