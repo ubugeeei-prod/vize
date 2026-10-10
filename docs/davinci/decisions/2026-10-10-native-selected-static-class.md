@@ -143,3 +143,20 @@ remained red until its final unfrozen laws; it grants no frozen-output acceptanc
 Fresh exact-head Actions must now require both real Rust frozen tests to exit
 zero and every upstream, map, runtime, history and protected-queue gate to pass
 before actual Stack delivery. Original V1 archives and inputs remain byte-exact.
+
+## Capture helper correction
+
+Fresh source Check 38038586776 and full Check 38038619300 on `70c9a7d179`
+exposed invalid test-only Debug formatting of FileArtifact/NativeAttributeValue.
+The receipts now use the same complete public File/value observation schema as
+the existing authenticated #7502 capture, including the whole canonical artifact,
+semantic rows, original spans/decode map/source and current L3 tables. All
+original custody/refusal assertions and frozen packets remain unchanged.
+
+All twelve actual isolated pinned-815 history commands exited zero, but the new
+Vapor receipt incorrectly demanded positive nodes for the exact original empty
+source. Only `<template></template>` with id `empty` now requires exactly zero
+nodes and zero roots; every other original full row retains positive counts and
+requires roots not exceed nodes. Mutation laws reject zero nonempty rows and
+nonzero empty rows. The previous failed run remains failed, and fresh exact-head
+source/full history and whole new successor capture remain mandatory.

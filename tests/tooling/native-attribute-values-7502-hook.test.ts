@@ -269,8 +269,8 @@ test("the historical Vapor receipt rejects changed source, complete code, maps a
       source: row.source,
       code: row.code,
       map: row.map,
-      nodes: 1,
-      roots: 1,
+      nodes: row.id === "empty" ? 0 : 1,
+      roots: row.id === "empty" ? 0 : 1,
     }));
     const capture = Buffer.from(JSON.stringify(rows));
     writeFileSync(path.join(directory, "vapor.capture.json"), capture);
@@ -295,7 +295,11 @@ test("the historical Vapor receipt rejects changed source, complete code, maps a
       (rows: any[]) => (rows[0].code += "\n"),
       (rows: any[]) => (rows[0].source += "\n"),
       (rows: any[]) => (rows[0].map.mappings += "A"),
-      (rows: any[]) => (rows[0].nodes = 0),
+      (rows: any[]) => (rows[0].nodes = 1),
+      (rows: any[]) => (rows[0].roots = 1),
+      (rows: any[]) => (rows[1].nodes = 0),
+      (rows: any[]) => (rows[1].roots = 0),
+      (rows: any[]) => (rows[1].roots = 2),
     ]) {
       const changed = structuredClone(rows);
       mutate(changed);

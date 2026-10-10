@@ -61,7 +61,12 @@ export function validateVaporHistory7502(receipt: VaporHistory7502, history: str
       { id: expected.id, source: expected.source, code: expected.code, map: expected.map },
       "all twelve original historical Vapor modules and complete maps stay exact",
     );
-    assert(Number.isInteger(row.nodes) && row.nodes > 0);
-    assert(Number.isInteger(row.roots) && row.roots > 0);
+    if (row.id === "empty") {
+      assert.equal(row.source, "<template></template>");
+      assert.deepEqual([row.nodes, row.roots], [0, 0]);
+    } else {
+      assert(Number.isInteger(row.nodes) && row.nodes > 0);
+      assert(Number.isInteger(row.roots) && row.roots > 0 && row.roots <= row.nodes);
+    }
   }
 }
