@@ -33,7 +33,7 @@ fn lsp_initializes_project_formatting_without_options_and_respects_false() {
         assert!(response["result"].is_object(), "{response:#}");
         assert_eq!(
             response["result"]["capabilities"]["experimental"]["vize"],
-            json!({"jsxTypecheck":true})
+            json!({"jsxTypecheck":false})
         );
         assert_eq!(
             response["result"]["capabilities"]["documentFormattingProvider"]
@@ -79,4 +79,40 @@ fn lsp_initializes_project_formatting_without_options_and_respects_false() {
         assert!(lsp.wait_for_exit().success());
         assert_no_dedicated_config(root);
     }
+}
+
+#[test]
+fn active_native_typecheck_advertises_fresh_jsx_without_an_opt_in_flag() {
+    let project = project();
+    let root = project.path();
+    write(
+        root,
+        "vite.config.mjs",
+        &support::SETTINGS
+            .replace(", jsxTypecheck: true", "")
+            .replace("typecheck: false", "typecheck: true"),
+    );
+    let mut lsp = LspProcess::spawn(root);
+    lsp.send(
+        json!({"jsonrpc":"2.0","id":1,"method":"initialize","params":{
+            "processId":null,"rootUri":file_uri(root),"capabilities":{}
+        }}),
+    );
+    let response = lsp.recv_response(1);
+    assert!(response["error"].is_null(), "{response:#}");
+    assert_eq!(
+        response["result"]["capabilities"]["experimental"]["vize"],
+        json!({"jsxTypecheck":true}),
+        "{response:#}"
+    );
+    assert_eq!(
+        response["result"]["capabilities"]["documentFormattingProvider"],
+        json!(true),
+        "{response:#}"
+    );
+    lsp.send(json!({"jsonrpc":"2.0","id":2,"method":"shutdown"}));
+    assert!(lsp.recv_response(2)["result"].is_null());
+    lsp.send(json!({"jsonrpc":"2.0","method":"exit"}));
+    assert!(lsp.wait_for_exit().success());
+    assert_no_dedicated_config(root);
 }

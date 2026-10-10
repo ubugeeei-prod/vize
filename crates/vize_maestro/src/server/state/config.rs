@@ -240,7 +240,14 @@ impl ServerState {
             let config = loaded.config;
             #[cfg(feature = "glyph")]
             {
-                *self.format_options.write() = format_options_from_config(&config.formatter);
+                *self.format_options.write() = (
+                    format_options_from_config(&config.formatter),
+                    source_path
+                        .file_name()
+                        .and_then(|name| name.to_str())
+                        .is_some_and(|name| name.starts_with("vite.config."))
+                        && loaded.compiler_whitespace == Some("preserve"),
+                );
                 tracing::info!("Loaded format config from {}", source);
             }
             self.apply_linter_config(loaded.linter, &source);
@@ -319,6 +326,12 @@ impl ServerState {
     #[cfg(feature = "glyph")]
     #[inline]
     pub fn get_format_options(&self) -> vize_glyph::FormatOptions {
+        self.format_options.read().0.clone()
+    }
+
+    /// Native options and Vite template-whitespace policy from one snapshot.
+    #[cfg(feature = "glyph")]
+    pub(crate) fn get_formatter_context(&self) -> (vize_glyph::FormatOptions, bool) {
         self.format_options.read().clone()
     }
 
@@ -327,7 +340,8 @@ impl ServerState {
     pub fn load_format_config(&self, dir: &Path) {
         let loaded = vize_carton::config::load_config_with_source(Some(dir));
         if let Some(source_path) = loaded.source_path {
-            *self.format_options.write() = format_options_from_config(&loaded.config.formatter);
+            *self.format_options.write() =
+                (format_options_from_config(&loaded.config.formatter), false);
             tracing::info!("Loaded format config from {}", source_path.display());
         }
     }
