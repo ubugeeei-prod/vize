@@ -108,11 +108,11 @@ impl ServerState {
         let _change = self.corsa_environment_change();
         #[cfg(feature = "experimental-source-navigation")]
         self.update_module_link_context(Some(source.to_path_buf()), || {
-            *self.type_checker_config.write() = (config, timeout_ms);
+            self.install_type_checker_snapshot(config, timeout_ms, source);
         });
         #[cfg(not(feature = "experimental-source-navigation"))]
         {
-            *self.type_checker_config.write() = (config, timeout_ms);
+            self.install_type_checker_snapshot(config, timeout_ms, source);
         }
         self.invalidate_component_interfaces();
         // The tsconfig and runtime this selects decide which project the

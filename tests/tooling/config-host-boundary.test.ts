@@ -135,7 +135,9 @@ test("workspace ignore policy admits one exact successor at the same matcher hos
   const historical = "use vize_carton::config::matcher::LintPlanScope;";
   const current = "use vize_carton::config::matcher::{LintPlanScope, ProjectIgnoreSet};";
   assert.deepEqual(
-    source(file).split("\n").filter((line) => line.startsWith("use vize_carton::")),
+    source(file)
+      .split("\n")
+      .filter((line) => line.startsWith("use vize_carton::")),
     [current],
   );
   for (const path of [file, file.replaceAll("/", "\\")]) {

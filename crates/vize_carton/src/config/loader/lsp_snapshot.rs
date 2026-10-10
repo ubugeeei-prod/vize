@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use crate::config::{
     ConfigFeatureFlags, ConfigLintRuleOptions, LanguageServerUnstableFlags, LinterConfig,
-    ProjectModel, VizeConfig,
+    VizeConfig,
 };
 
 use super::{
@@ -46,24 +46,20 @@ pub fn load_lsp_config_snapshot(path: Option<&Path>) -> LoadedLspConfig {
             )
         }
     };
-    let mut snapshot = LoadedLspConfig::from_project(project_config_snapshot(loaded), path);
+    let mut snapshot = LoadedLspConfig::from_project(project_config_snapshot(loaded));
     snapshot.valid = valid;
     snapshot
 }
 
 impl LoadedLspConfig {
-    fn from_project(project: LoadedProjectConfig, path: Option<&Path>) -> Self {
+    fn from_project(project: LoadedProjectConfig) -> Self {
         let document = &project.document;
         let compiler_whitespace = document.compiler_whitespace();
         let linter = document.linter();
         let lint_rule_options = document.lint_rule_options().clone();
         let language_server_unstable_flags = document.language_server_unstable_flags();
         let request_timeout_ms = document.lsp_request_timeout_ms();
-        let (mut config, features) = document.clone().into_config_and_features();
-        let paths = ProjectModel::new(path, project.source_path.as_deref(), &config.type_checker);
-        config.type_checker.tsconfig = paths
-            .tsconfig()
-            .map(|path| path.to_string_lossy().into_owned().into());
+        let (config, features) = document.clone().into_config_and_features();
         let source_path = project.source_path.clone();
         Self {
             valid: true,

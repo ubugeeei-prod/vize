@@ -229,7 +229,7 @@ fn editor_snapshot_keeps_lint_scopes_and_paths_from_one_host_evaluation() {
 }
 
 #[test]
-fn editor_snapshot_owns_dedicated_relative_tsconfig_projection() {
+fn editor_snapshot_preserves_dedicated_relative_tsconfig_values() {
     let project = tempfile::tempdir().unwrap();
     std::fs::write(
         project.path().join("vize.config.json"),
@@ -245,13 +245,7 @@ fn editor_snapshot_owns_dedicated_relative_tsconfig_projection() {
             loaded.features.type_checker_jsx_typecheck,
             loaded.config.language_server.formatting,
         ),
-        (
-            true,
-            None,
-            project.path().join("tsconfig.app.json").to_str(),
-            false,
-            None,
-        )
+        (true, None, Some("tsconfig.app.json"), false, None,)
     );
 }
 

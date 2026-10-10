@@ -14,7 +14,7 @@ owner without ownership cycles. Per-document flags gate every routed provider.
 
 Host evaluation produces one ConfigDocument for both linter plans and editor
 settings. The existing Carton LSP snapshot owns the checked evaluation, selected
-project root, raw ordered lint scopes and checker path projection; Maestro keeps
+project root, raw ordered lint scopes and authored checker values; Maestro keeps
 its existing snapshot facade call and never creates a project model in this host.
 Malformed input returns an invalid snapshot before any editor policy changes.
 An existing editor workspace with no config is a valid fresh project; the shared
@@ -175,3 +175,13 @@ workspace owners use one checked project snapshot and return before applying
 fresh defaults on failure. Direct editor snapshots carry validity from the same
 checked evaluation; trusted document projections preserve that status. Both
 original direct-loader and additive workspace-owner whole feature controls apply.
+
+Actual source Actions at `2c70` exposed a compatibility regression in the
+unchanged complete module-link law: a dedicated config's authored relative
+`tsconfig` had been replaced with an absolute path. Keep the raw checker values
+and their separate selected load origin together when installing or reading a
+native settings snapshot. Only the two existing batch/Corsa project-model
+callers resolve that origin for execution; the module-link snapshot retains its
+existing raw values and workspace-root path policy. The original whole law,
+concurrent complete-snapshot control, and actual relative-config JSON-RPC
+vectors must all pass. No historical oracle or provider budget changes.

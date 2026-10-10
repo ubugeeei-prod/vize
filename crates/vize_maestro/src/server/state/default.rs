@@ -45,6 +45,8 @@ impl ServerState {
             lsp_typecheck_enabled: AtomicBool::new(default_features.typecheck),
             completion_documentation_resolve: AtomicBool::new(false),
             type_checker_config: RwLock::new((TypeCheckerConfig::default(), 60_000)),
+            #[cfg(feature = "native")]
+            type_checker_config_origin: RwLock::new(None),
             #[cfg(feature = "experimental-source-navigation")]
             module_links: RwLock::new(module_links::Session::default()),
             global_types: RwLock::new(GlobalTypesConfig::default()),
