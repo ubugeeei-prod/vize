@@ -4,11 +4,17 @@ title: Auto-imports for @vizejs/ui and @vizejs/composable
 
 # Auto-imports
 
-`@vizejs/ui` and `@vizejs/composable` can be used without writing import statements. Both packages
-ship **catalog-driven resolvers**: every component family and composable entry in the catalogs is
-picked up automatically, and every name resolves to its **direct subpath** (`@vizejs/ui/dialog`,
-`@vizejs/composable/use-toggle`). Auto-imported code therefore tree-shakes exactly like hand-written
-imports, and the resolvers run only at build time.
+Auto-imports let you use components from `@vizejs/ui` and helpers from `@vizejs/composable`
+without repeating import statements. Use them when those libraries appear throughout your app;
+ordinary explicit imports remain useful for a small number of call sites.
+
+Choose the [Nuxt setup](#nuxt) or the [Vite resolvers](#vite)
+below, then try a component such as `<VzDialogTrigger>` in a template. If you copied library
+sources into the app, use [local source resolution](#pulled-sources) instead.
+
+Each resolver chooses a direct package subpath, such as `@vizejs/ui/dialog` or
+`@vizejs/composable/use-toggle`, so bundlers can tree-shake it like a handwritten import.
+Resolvers run at build time.
 
 ## Nuxt
 
@@ -36,6 +42,8 @@ export default defineNuxtConfig({
 Nuxt generates the typed `components.d.ts` / `imports.d.ts` declarations, so templates and scripts are
 fully typed. The packages are resolved from your project, so the installed versions drive what is
 registered.
+
+<span id="vite"></span>
 
 ## Vite (`unplugin-vue-components` / `unplugin-auto-import`)
 

@@ -4,9 +4,14 @@ title: Source Guide
 
 # Source Guide
 
-This page is a map for contributors who need to change the source code rather than only use Vize.
-Start with the [Architecture Overview](./overview.md) when you need the high-level relationship
-diagram, then use this guide to find the implementation files that own a behavior.
+Use this guide to locate the implementation and tests for a Vize change.
+Start with the [Architecture Overview](./overview.md) if you need to understand the package and
+crate relationships, then choose a row in the [crate entry points](#crate-entry-points) or
+[JavaScript package entry points](#javascript-package-entry-points).
+
+For example, a wrong template diagnostic starts in `vize_croquis` or `vize_patina`; a missing
+editor response starts in `vize_maestro`. After finding the owner, follow the
+[change workflow](#change-workflow) to add a focused reproduction and choose validation.
 
 ## Repository Shape
 
@@ -16,6 +21,7 @@ distribution and integration layers.
 | Path      | What lives there                                                                                                  |
 | --------- | ----------------------------------------------------------------------------------------------------------------- |
 | `crates/` | Rust crates for parsing, analysis, compilation, linting, formatting, type checking, LSP, CLI, and native bindings |
+| `davinci/` | Experimental level crates and shared infrastructure for the new pipeline |
 | `npm/`    | JavaScript packages for Vite, Nuxt, editor extensions, Musea integrations, and published package wrappers         |
 | `docs/`   | User documentation, architecture notes, release notes, and the docs site theme                                    |
 | `tests/`  | Cross-package fixtures, real-world projects, tooling tests, and snapshot governance                               |

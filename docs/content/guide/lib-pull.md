@@ -8,6 +8,10 @@ title: Source Distribution (vize lib)
 project **as source**, in the style of shadcn/ui. You own the copied files: edit them freely, and
 Vize keeps track of which package version each file came from so upgrades stay safe.
 
+Use source distribution when you need to customize a component inside your app. If package imports
+meet your needs, start with the [UI library](./ui.md) or [composable library](./composables.md).
+For a first source copy, try the `rating` example below, then [check for updates](#checking-for-updates-outdated).
+
 ```bash
 vpx vize lib pull rating
 ```
