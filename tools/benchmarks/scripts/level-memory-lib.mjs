@@ -2,7 +2,17 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { GUEST_ENVIRONMENT, ID, reconcile } from "./instruction-counts-lib.mjs";
+import {
+  GUEST_ENVIRONMENT,
+  ID,
+  loadBudgets,
+  loadRegistry,
+  reconcile,
+} from "./instruction-counts-lib.mjs";
+import {
+  formatterInstructionSuites,
+  levelInstructionSuites,
+} from "./instruction-counts-suites.mjs";
 
 // Normal harness mode does not perform the instruction-only 64 MiB preinit.
 // The allocator options, libc dispatch, suite order and windows stay fixed.
@@ -12,6 +22,61 @@ export const MEMORY_ENVIRONMENT = Object.freeze(normalEnvironment);
 export const NORMAL_ARGUMENTS = Object.freeze(["--bench", "--quick"]);
 export const REPORT_DIRECTORY = "tools/benchmarks/results/davinci";
 export const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
+
+export function memorySuites(root) {
+  return [
+    ...levelInstructionSuites(root).map(([pkg, bench]) => ({ plane: "level", pkg, bench })),
+    ...formatterInstructionSuites().map(([pkg, bench]) => ({ plane: "formatter", pkg, bench })),
+  ];
+}
+
+export function loadMemoryAuthority(root) {
+  const files = {
+    level: ["budgets.toml", "instruction-budgets.toml"],
+    formatter: ["formatter-instruction-registry.toml", "formatter-instruction-budgets.toml"],
+  };
+  const registry = new Set();
+  const planes = {};
+  for (const [plane, names] of Object.entries(files)) {
+    const [registryFile, instructionFile] = names.map((name) =>
+      path.join(root, "docs/davinci/plan", name),
+    );
+    const original = loadRegistry(registryFile);
+    for (const id of original) {
+      assert.ok(!registry.has(id), `overlapping original source planes: ${id}`);
+      registry.add(id);
+    }
+    planes[plane] = {
+      registry: original,
+      budgets: loadBudgets(instructionFile, original),
+      registry_file: registryFile,
+      instruction_file: instructionFile,
+      allocation_budgets: plane === "level",
+    };
+  }
+  assert.equal(planes.level.registry.size, 100, "original100 level registry required");
+  assert.equal(planes.formatter.registry.size, 4, "original4 formatter registry required");
+  return { planes, registry };
+}
+
+export function validateReportPlane(rows, registry, label) {
+  reconcile(new Set(rows.keys()), registry, label);
+  for (const [id, row] of rows) {
+    assert.equal(row.report.bench_id, id, `${label}: wrong report bench id`);
+    assert.equal(row.identity.bench_id, id, `${label}: wrong identity bench id`);
+  }
+}
+
+export function partitionMemoryReports(rows, authority) {
+  validateReportPlane(rows, authority.registry, "whole original104 memory population");
+  return Object.fromEntries(
+    Object.entries(authority.planes).map(([plane, original]) => {
+      const selected = new Map([...rows].filter(([id]) => original.registry.has(id)));
+      validateReportPlane(selected, original.registry, `${plane} source plane`);
+      return [plane, selected];
+    }),
+  );
+}
 
 function fields(value, keys, label) {
   assert.ok(
@@ -99,4 +164,24 @@ export function validatePair(base, head) {
       assert.equal(current.report[field], original.report[field], `${id}: changed ${field}`);
     }
   }
+}
+
+export function compareMemoryMetrics(base, head) {
+  validatePair(base, head);
+  return Object.fromEntries(
+    [...base].map(([id, original]) => {
+      const current = head.get(id);
+      const metrics = {};
+      for (const key of ["allocs", "alloc_bytes_peak", "rss_peak_bytes", "wall_p50", "wall_p95"]) {
+        const metric = (row) =>
+          key.startsWith("wall_") ? row.report.wall_ns[key.slice(5)] : row.report[key];
+        const before = metric(original);
+        const after = metric(current);
+        integer(before, `${id}: baseline ${key}`);
+        integer(after, `${id}: candidate ${key}`);
+        metrics[key] = { base: before, head: after, delta: after - before };
+      }
+      return [id, metrics];
+    }),
+  );
 }

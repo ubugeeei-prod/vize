@@ -11,7 +11,8 @@ or a result for all 104 workloads. Acceptance requires the complete source-built
 matrix on Actions, alongside the unchanged instruction and correctness gates.
 
 The opt-in `level_memory_only` mode of Criterion Bench builds the existing twelve
-level-instruction suite providers from an exact baseline and candidate, using
+level-instruction suite providers and the existing formatter-instruction provider
+from an exact baseline and candidate, using
 isolated Cargo targets, repository Rust 1.99.0, `ci-opt` and
 `-C target-cpu=x86-64`. Candidate SHA must equal the actual dispatch SHA; baseline
 must be a distinct ancestor. Other Criterion modes cannot be combined with this
@@ -23,7 +24,7 @@ raw identity streams and allocator initialization are retained. This pass is
 identity evidence. The separate three-run instruction workflow remains the
 instruction qualification authority, with its original ceilings unchanged.
 
-Both sides then run the same ordered twelve providers with `--bench --quick` three times,
+Both sides then run the same ordered thirteen providers with `--bench --quick` three times,
 alternating baseline and candidate repetitions. The fixed guest environment removes
 `VIZE_INSTRUCTION_COUNTS`, retains the existing mimalloc reservation/purge and
 libc-dispatch options, and uses identical probe paths and argv0. Normal mode does
@@ -36,13 +37,22 @@ it selects test mode and cannot qualify this recipe.
 Each admitted report requires its exact write marker from the completed suite
 process. Preexisting tracked reports are retained separately and cannot qualify
 without that invocation's write. Missing, extra, duplicate, foreign, symlinked,
-null or forged reports fail. The whole original104 population, actual input and
-window identity, platform and harness version must agree between both sides.
+null or forged reports fail. The complete population is the disjoint union of
+the original 100 level rows in `budgets.toml` and the original four rows in
+`formatter-instruction-registry.toml`. Both original registry files and both
+instruction-budget files must remain byte exact. The four formatter instruction
+ceilings authenticate their existing input/window identities; they do not supply
+allocation ceilings. The whole original104 population, actual input and window
+identity, platform and harness version must agree between both sides. Every
+paired allocation, peak-byte, RSS and wall p50/p95 value and numeric difference
+is retained, including all four formatter rows.
 
 All 624 normal-mode reports are collected before budget judgment. The original
-`bench-compare.rs` judges all six complete runs against unchanged allocation,
-platform peak-byte and conditional wall controls. It treats RSS as a reported
-observation; this collector adds no RSS threshold. A failed baseline is retained
+`bench-compare.rs` judges each complete original100 level plane against its
+unchanged allocation, platform peak-byte and conditional wall controls. It never
+receives formatter rows. The four original formatter rows are separate paired
+observations with no allocation ceilings or allocation-admission claim. RSS is
+reported for every row; this collector adds no RSS threshold. A failed baseline is retained
 as a baseline failure, and does not prove candidate causality. A genuine candidate
 breach holds admission; no ceiling, input, population or comparator is relaxed.
 
@@ -56,3 +66,8 @@ final process receipts or upload; missing evidence stays unqualified. An incompl
 or failed run grants no qualification; local validator success is tooling proof
 only. The first requested baseline is actual main
 `2703daa2f03f5d943dd6b31089aee4a8c5bc7a9e`; hosted memory results remain pending.
+
+The earlier twelve-provider/hard104 collector is retained as rejected source-only
+preparation: the actual level registry has 100 rows, so that recipe cannot collect
+the complete population. Its new source-derived population laws failed before
+correction. No native build or hosted measurement ran on that rejected recipe.

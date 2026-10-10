@@ -3,7 +3,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { parseTomlLite } from "../../support/compat/davinci/toml-lite.mjs";
-import { levelInstructionSuites } from "./instruction-counts-suites.mjs";
 import {
   fixtureDigest,
   GUEST_ENVIRONMENT,
@@ -15,6 +14,7 @@ import {
 import {
   collectFreshReports,
   MEMORY_ENVIRONMENT,
+  memorySuites,
   NORMAL_ARGUMENTS,
   REPORT_DIRECTORY,
   sha256,
@@ -125,8 +125,8 @@ export function build(root, target, out) {
   );
   const rust = run(compiler, ["-Vv"], root, path.join(out, "rustc"));
   assert.match(rust.stdout, /^rustc 1\.99\.0 /);
-  const suites = levelInstructionSuites(root);
-  assert.equal(suites.length, 12, "original twelve suite providers required");
+  const suites = memorySuites(root);
+  assert.equal(suites.length, 13, "original twelve level and one formatter providers required");
   const args = [
     "bench",
     "--locked",
@@ -139,8 +139,8 @@ export function build(root, target, out) {
     "--target-dir",
     target,
   ];
-  for (const pkg of new Set(suites.map(([pkg]) => pkg))) args.push("-p", pkg);
-  for (const bench of new Set(suites.map(([, bench]) => bench))) args.push("--bench", bench);
+  for (const pkg of new Set(suites.map(({ pkg }) => pkg))) args.push("-p", pkg);
+  for (const bench of new Set(suites.map(({ bench }) => bench))) args.push("--bench", bench);
   const built = run(cargo, args, root, path.join(out, "cargo"), {
     ...process.env,
     RUSTC: compiler,
@@ -158,7 +158,7 @@ export function build(root, target, out) {
       (row) =>
         row.reason === "compiler-artifact" && row.executable && row.target.kind.includes("bench"),
     );
-  const binaries = suites.map(([pkg, bench]) => {
+  const binaries = suites.map(({ plane, pkg, bench }) => {
     const directory =
       pkg === "davinci_harness"
         ? "tools/benchmarks/crates"
@@ -176,6 +176,7 @@ export function build(root, target, out) {
     );
     assert.ok(fs.statSync(executable).isFile(), "benchmark executable is not regular");
     return {
+      plane,
       pkg,
       bench,
       source,

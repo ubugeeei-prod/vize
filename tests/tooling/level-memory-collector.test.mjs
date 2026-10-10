@@ -3,6 +3,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
+import { loadRegistry } from "../../tools/benchmarks/scripts/instruction-counts-lib.mjs";
+import {
+  levelInstructionSuites,
+  formatterInstructionSuites,
+} from "../../tools/benchmarks/scripts/instruction-counts-suites.mjs";
 import {
   collectFreshReports,
   validatePair,
@@ -168,4 +174,95 @@ test("launch failures retain unknown status and actual resolution absence", (t) 
 test("normal measurements select Criterion benchmark sampling explicitly", () => {
   assert.deepEqual(memory.NORMAL_ARGUMENTS, ["--bench", "--quick"]);
   assert.ok(!Object.hasOwn(MEMORY_ENVIRONMENT, "VIZE_INSTRUCTION_COUNTS"));
+});
+
+const repository = fileURLToPath(new URL("../..", import.meta.url));
+const originalLevelRegistry = loadRegistry(path.join(repository, "docs/davinci/plan/budgets.toml"));
+const originalFormatterRegistry = loadRegistry(
+  path.join(repository, "docs/davinci/plan/formatter-instruction-registry.toml"),
+);
+
+function originalPopulation() {
+  const authority = memory.loadMemoryAuthority(repository);
+  const rows = new Map(
+    [...authority.registry].map((id) => [
+      id,
+      {
+        report: report(id),
+        identity: {
+          bench_id: id,
+          fixture: `synthetic:${id}`,
+          fixture_sha256: "a".repeat(64),
+          window: "routine-return",
+        },
+      },
+    ]),
+  );
+  return { authority, rows };
+}
+
+test("both original source registries and thirteen providers supply the complete population", () => {
+  const { authority, rows } = originalPopulation();
+  assert.deepEqual(authority.planes.level.registry, originalLevelRegistry);
+  assert.deepEqual(authority.planes.formatter.registry, originalFormatterRegistry);
+  assert.equal(rows.size, originalLevelRegistry.size + originalFormatterRegistry.size);
+  assert.deepEqual(memory.memorySuites(repository), [
+    ...levelInstructionSuites(repository).map(([pkg, bench]) => ({ plane: "level", pkg, bench })),
+    ...formatterInstructionSuites().map(([pkg, bench]) => ({ plane: "formatter", pkg, bench })),
+  ]);
+  assert.equal(authority.planes.level.allocation_budgets, true);
+  assert.equal(authority.planes.formatter.allocation_budgets, false);
+  const planes = memory.partitionMemoryReports(rows, authority);
+  assert.deepEqual(new Set(planes.level.keys()), originalLevelRegistry);
+  assert.deepEqual(new Set(planes.formatter.keys()), originalFormatterRegistry);
+});
+
+test("missing or extra rows in either real source plane cannot qualify the whole observation", () => {
+  const { authority, rows } = originalPopulation();
+  for (const plane of [originalLevelRegistry, originalFormatterRegistry]) {
+    const missing = new Map(rows);
+    missing.delete(plane.values().next().value);
+    assert.throws(() => memory.partitionMemoryReports(missing, authority), /missing/);
+  }
+  const extra = new Map(rows);
+  extra.set("unregistered_extra", rows.values().next().value);
+  assert.throws(() => memory.partitionMemoryReports(extra, authority), /unregistered/);
+});
+
+test("formatter observations cannot enter the original level allocation budget plane", () => {
+  const { authority, rows } = originalPopulation();
+  const planes = memory.partitionMemoryReports(rows, authority);
+  const wrongPlane = new Map(planes.level);
+  const formatterId = originalFormatterRegistry.values().next().value;
+  wrongPlane.set(formatterId, planes.formatter.get(formatterId));
+  assert.throws(
+    () => memory.validateReportPlane(wrongPlane, authority.planes.level.registry, "level budgets"),
+    /unregistered/,
+  );
+  const forged = structuredClone(rows);
+  forged.get(formatterId).report.bench_id = originalLevelRegistry.values().next().value;
+  assert.throws(() => memory.partitionMemoryReports(forged, authority), /bench id/);
+});
+
+test("every original paired metric is recorded without inventing formatter allocation caps", () => {
+  const { authority, rows } = originalPopulation();
+  const candidate = structuredClone(rows);
+  for (const id of originalFormatterRegistry) candidate.get(id).report.allocs = 17;
+  const comparisons = memory.compareMemoryMetrics(rows, candidate);
+  assert.deepEqual(new Set(Object.keys(comparisons)), authority.registry);
+  for (const id of authority.registry) {
+    assert.deepEqual(Object.keys(comparisons[id]), [
+      "allocs",
+      "alloc_bytes_peak",
+      "rss_peak_bytes",
+      "wall_p50",
+      "wall_p95",
+    ]);
+    assert.deepEqual(comparisons[id].allocs, {
+      base: 0,
+      head: originalFormatterRegistry.has(id) ? 17 : 0,
+      delta: originalFormatterRegistry.has(id) ? 17 : 0,
+    });
+  }
+  assert.equal(authority.planes.formatter.allocation_budgets, false);
 });
