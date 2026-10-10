@@ -66,6 +66,9 @@ await test(
       assert.equal(right.passed, false);
       assert.equal(left.snapshotPath, right.snapshotPath);
       assert.ok((right.diffPercentage ?? 0) > 20);
+      await copyFile(left.snapshotPath, path.join(output, "left-baseline.png"));
+      await copyFile(right.currentPath!, path.join(output, "right-capture.png"));
+      await copyFile(right.diffPath!, path.join(output, "legacy-diff.png"));
       await writeFile(
         path.join(output, "legacy.json"),
         JSON.stringify({ arts, sources, left, right }, null, 2),
