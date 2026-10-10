@@ -113,6 +113,11 @@ measurement here. Source and protected full qualification, actual Stack merge,
 Vapor class support, complete native products and #6880 closure remain separate
 requirements. This record grants no acceptance from a local preparation alone.
 
+The previous full scripts run also rejected this change's path-attributed
+scriptless successor import. It now uses ordinary nested module discovery;
+the complete helper, authored inputs, historical gate and frozen output bytes
+remain unchanged, and the original module-layout law stays mandatory.
+
 ## Reviewed source-built packets
 
 [Source Check 38033780171](https://github.com/ubugeeei-prod/vize/actions/runs/38033780171)

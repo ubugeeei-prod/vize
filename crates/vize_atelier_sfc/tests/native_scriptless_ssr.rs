@@ -1,5 +1,8 @@
-#[path = "native_scriptless_ssr/class_successor.rs"]
-mod class_successor;
+mod native_scriptless_ssr {
+    pub(crate) mod class_successor;
+}
+
+use native_scriptless_ssr::class_successor;
 
 use vize_atelier_sfc::{
     NativeSsrSfcCompileError, NativeSsrSfcCompileOptions, compile_native_ssr_sfc,
