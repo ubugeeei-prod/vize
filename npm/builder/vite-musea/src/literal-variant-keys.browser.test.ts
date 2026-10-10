@@ -14,6 +14,10 @@ import {
   variants,
 } from "./literal-variant-browser.fixture.ts";
 
+const sectionIds = {
+  Controls: ["variant-default", "variant-custom-theme"],
+  Keys: ["variant-proto", "variant-constructor", "variant-hasownproperty"],
+};
 const native = { skip: process.env.VIZE_MUSEA_NATIVE_BROWSER_TESTS !== "1" };
 
 void test(
@@ -216,10 +220,23 @@ void test(
       for (const item of observations as Array<{
         groups: string[];
         title: keyof typeof variants;
+        rendered: Array<{ sectionName: string; sectionId: string; ariaControls: string }>;
       }>) {
         assert.deepEqual(
           item.groups,
           variants[item.title].map(([name]) => name),
+        );
+        assert.deepEqual(
+          item.rendered.map((frame) => frame.sectionName),
+          variants[item.title].map(([name]) => name),
+        );
+        assert.deepEqual(
+          item.rendered.map((frame) => frame.sectionId),
+          sectionIds[item.title],
+        );
+        assert.deepEqual(
+          item.rendered.map((frame) => frame.ariaControls),
+          sectionIds[item.title],
         );
       }
     } finally {

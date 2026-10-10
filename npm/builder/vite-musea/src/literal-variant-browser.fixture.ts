@@ -95,14 +95,23 @@ export async function previews(page: Page, title: keyof typeof variants) {
       .waitFor({ timeout: 15_000 });
   }
   return page.evaluate(() =>
-    [...document.querySelectorAll<HTMLIFrameElement>(".variant-card iframe")].map((frame) => ({
-      url: frame.src,
-      variant: frame.contentDocument?.querySelector("[data-variant]")?.getAttribute("data-variant"),
-      buttons: [...(frame.contentDocument?.querySelectorAll("button") ?? [])].map(
-        (button) => button.textContent,
-      ),
-      unresolved: frame.contentDocument?.querySelectorAll("museacomponent").length,
-    })),
+    [...document.querySelectorAll<HTMLIFrameElement>(".variant-card iframe")].map(
+      (frame, index) => ({
+        sectionName: frame.closest(".variant-section")?.getAttribute("data-variant-name"),
+        sectionId: frame.closest(".variant-section")?.id,
+        ariaControls: document
+          .querySelectorAll(".variant-toc-item")
+          [index]?.getAttribute("aria-controls"),
+        url: frame.src,
+        variant: frame.contentDocument
+          ?.querySelector("[data-variant]")
+          ?.getAttribute("data-variant"),
+        buttons: [...(frame.contentDocument?.querySelectorAll("button") ?? [])].map(
+          (button) => button.textContent,
+        ),
+        unresolved: frame.contentDocument?.querySelectorAll("museacomponent").length,
+      }),
+    ),
   );
 }
 
