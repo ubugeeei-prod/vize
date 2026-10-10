@@ -1,312 +1,45 @@
 ---
-title: Règles d’accessibilité
+title: "Règles d’accessibilité"
 ---
-
-<!-- Generated translation; source: rules/accessibility.md -->
 
 # Règles d’accessibilité
 
-Les règles d’accessibilité sont des règles modèles en file indienne Patina. Ils détectent des balises difficiles à utiliser
-avec la technologie d’assistance ou la navigation au clavier.
-
-## `a11y/img-alt`
-
-Nécessite un attribut `alt` sur `<img>`.
-
-Sévérité par défaut : `warning`
-Presets : aucun (activation explicite)
-
-Mauvais :
-
-```vue
-<template>
-  <img src="/avatar.png" />
-</template>
-```
-
-Bon :
-
-```vue
-<template>
-  <img src="/avatar.png" alt="User avatar" />
-</template>
-```
-
-## `a11y/alt-text`
-
-Nécessite un texte alternatif pour les éléments médias qui nécessitent une alternative textuelle.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<template>
-  <input type="image" src="/submit.png" />
-</template>
-```
-
-Bon :
-
-```vue
-<template>
-  <input type="image" src="/submit.png" alt="Submit" />
-</template>
-```
-
-## `a11y/click-events-have-key-events`
-
-Signale les gestionnaires de clics sur des éléments interactifs non natifs lorsqu’aucun gestionnaire de clavier n’est présent.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<template>
-  <div role="button" @click="save">Save</div>
-</template>
-```
-
-Bon :
-
-```vue
-<template>
-  <button type="button" @click="save">Save</button>
-</template>
-```
-
-## `a11y/interactive-supports-focus`
-
-Il faut que les éléments avec des rôles interactifs soient ciblables.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<template>
-  <span role="button" @click="open">Open</span>
-</template>
-```
-
-Bon :
-
-```vue
-<template>
-  <button type="button" @click="open">Open</button>
-</template>
-```
-
-## `a11y/label-has-for`
-
-Nécessite que les étiquettes soient associées à un contrôle de formulaire.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<template>
-  <label>Email</label>
-  <input id="email" />
-</template>
-```
-
-Bon :
-
-```vue
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-</template>
-```
-
-## `a11y/form-control-has-label`
-
-Nécessite que les contrôles aient une étiquette visible ou programmatique.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<template>
-  <input type="search" />
-</template>
-```
-
-Bon :
-
-```vue
-<template>
-  <label>
-    Search
-    <input type="search" />
-  </label>
-</template>
-```
-
-## `a11y/no-aria-hidden-on-focusable`
-
-Signale des éléments ciblés cachés à la technologie d’assistance.
-
-Sévérité par défaut : `error`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<template>
-  <button aria-hidden="true" @click="close">Close</button>
-</template>
-```
-
-Bon :
-
-```vue
-<template>
-  <button aria-label="Close" @click="close">Close</button>
-</template>
-```
-
-## `a11y/no-static-element-interactions`
-
-Signale les manipulateurs de souris ou de clavier sur des éléments statiques.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<template>
-  <section @click="select">Select</section>
-</template>
-```
-
-Bon :
-
-```vue
-<template>
-  <button type="button" @click="select">Select</button>
-</template>
-```
-
-## `a11y/tabindex-no-positive`
-
-Rapporte des valeurs de `tabindex` positives car elles créent un ordre de tabulation personnalisé difficile à prévoir.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<template>
-  <button tabindex="3">Save</button>
-</template>
-```
-
-Bon :
-
-```vue
-<template>
-  <button>Save</button>
-</template>
-```
-
-## `a11y/anchor-is-valid`
-
-Nécessite que les ancres aient des cibles de liaison valides.
-Les valeurs de `href` statiques sont vérifiées après normalisation du schéma, donc les `JaVaScRiPt:` et les caractères de contrôle de
-décodés en HTML à l’intérieur de `java&#x0A;script:` sont toujours rapportés tandis que des schémas similaires non correspondants
-rester autorisés.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<template>
-  <a href="#" @click="open">Open</a>
-  <a href="JaVaScRiPt:void(0)">Open</a>
-</template>
-```
-
-Bon :
-
-```vue
-<template>
-  <button type="button" @click="open">Open</button>
-  <a href="/docs/javascript:void">Docs</a>
-</template>
-```
-
-## Règles supplémentaires d’accessibilité
-
-`a11y/anchor-has-content` exige que les éléments d’ancrage aient un contenu accessible. Par défaut : `warning`.
-Presets : `happy-path`, `nuxt`, `opinionated`.
-
-`a11y/aria-props` interdit les attributs ARIA invalides. Par défaut : `error`. Presets : `happy-path`,
-`nuxt`, `opinionated`.
-
-`a11y/aria-role` nécessite des rôles ARIA valides et non abstraits. Par défaut : `error`. Presets : `happy-path`,
-`nuxt`, `opinionated`.
-
-`a11y/aria-unsupported-elements` interdit les attributs ARIA sur les éléments qui ne les supportent pas.
-Par défaut : `error`. Presets : `happy-path`, `nuxt`, `opinionated`.
-
-`a11y/heading-has-content` nécessite que les éléments de titre aient un contenu accessible. Par défaut : `warning`.
-Presets : `happy-path`, `nuxt`, `opinionated`.
-
-`a11y/heading-levels` interdit les niveaux de tête sautés. Par défaut : `warning`. Presets : `nuxt`,
-`opinionated`.
-
-`a11y/iframe-has-title` exige `<iframe>` avoir un `title`. Par défaut : `warning`. Préréglages :
-`happy-path`, `nuxt`, `opinionated`.
-
-`a11y/landmark-roles` valide la position et l’unicité des rôles emblématiques. Par défaut : `warning`.
-Presets : `nuxt`, `opinionated`.
-
-`a11y/media-has-caption` nécessite des légendes pour les éléments médias. Par défaut : `warning`. Préréglages :
-`happy-path`, `nuxt`, `opinionated`.
-
-`a11y/mouse-events-have-key-events` nécessite des manipulateurs de mise au point et de flou lorsque les manipulateurs de souris sont utilisés.
-Par défaut : `warning`. Presets : `happy-path`, `nuxt`, `opinionated`.
-
-`a11y/no-access-key` interdit l’attribut `accesskey`. Par défaut : `warning`. Presets :
-`happy-path`, `nuxt`, `opinionated`.
-
-`a11y/no-autofocus` interdit `autofocus`. Par défaut : `warning`. Presets : `happy-path`, `nuxt`,
-`opinionated`.
-
-`a11y/no-distracting-elements` interdit les éléments distrayants tels que `<marquee>` et `<blink>`.
-Par défaut : `warning`. Presets : `happy-path`, `nuxt`, `opinionated`.
-
-`a11y/no-i-for-icon` décourage d’utiliser `<i>` comme élément uniquement d’icônes. Par défaut : `warning`. Presets :
-`happy-path`, `nuxt`, `opinionated`.
-
-`a11y/no-redundant-roles` interdit les rôles ARIA qui dupliquent la sémantique native. Par défaut :
-`warning`. Presets : `happy-path`, `nuxt`, `opinionated`.
-
-`a11y/no-refer-to-non-existent-id` signale des références ARIA à des pièces d’identité manquantes. Par défaut : `warning`.
-Presets : `happy-path`, `nuxt`, `opinionated`.
-
-`a11y/no-role-presentation-on-focusable` interdit `role="presentation"` ou `role="none"` sur
-éléments de mise au point. Par défaut : `error`. Presets : `happy-path`, `nuxt`, `opinionated`.
-
-`a11y/placeholder-label-option` nécessite d’être désactivé ou caché sur les valeurs de `<option>` de placeholder.
-Par défaut : `warning`. Presets : `nuxt`, `opinionated`.
-
-`a11y/role-has-required-aria-props` exige que les rôles incluent leurs attributs ARIA requis.
-Par défaut : `warning`. Presets : `happy-path`, `nuxt`, `opinionated`.
-
-`a11y/use-list` suggère des éléments de liste pour un texte en forme de puces. Par défaut : `warning`. Presets : `nuxt`,
-`opinionated`.
+Chaque règle présente sur cette page son objectif, sa configuration et ses exemples complets Mauvais et Bon, accompagnés de leurs explications. Les lignes surlignées montrent les modifications ; le code copié conserve la source complète. Les limites de prise en charge actuelles sont précisées avant les exemples concernés.
+
+<span id="règles-supplémentaires-d-accessibilité"></span>
+
+| Règle | Exemples | Objectif |
+| --- | --- | --- |
+| [`a11y/alt-text`](https://vizejs.dev/fr/rules/accessibility.html#a11y-alt-text) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-alt-text-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-alt-text-good) | Exiger un texte alternatif pour les éléments multimédias |
+| [`a11y/anchor-has-content`](https://vizejs.dev/fr/rules/accessibility.html#a11y-anchor-has-content) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-anchor-has-content-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-anchor-has-content-good) | Exiger un contenu accessible pour les éléments de lien |
+| [`a11y/anchor-is-valid`](https://vizejs.dev/fr/rules/accessibility.html#a11y-anchor-is-valid) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-anchor-is-valid-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-anchor-is-valid-good) | Imposer un href valide sur les éléments de lien |
+| [`a11y/aria-props`](https://vizejs.dev/fr/rules/accessibility.html#a11y-aria-props) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-aria-props-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-aria-props-good) | Interdire les attributs ARIA invalides |
+| [`a11y/aria-role`](https://vizejs.dev/fr/rules/accessibility.html#a11y-aria-role) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-aria-role-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-aria-role-good) | Exiger un rôle ARIA valide et non abstrait pour les éléments possédant un rôle ARIA |
+| [`a11y/aria-unsupported-elements`](https://vizejs.dev/fr/rules/accessibility.html#a11y-aria-unsupported-elements) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-aria-unsupported-elements-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-aria-unsupported-elements-good) | Interdire les attributs ARIA sur les éléments qui ne les prennent pas en charge |
+| [`a11y/click-events-have-key-events`](https://vizejs.dev/fr/rules/accessibility.html#a11y-click-events-have-key-events) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-click-events-have-key-events-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-click-events-have-key-events-good) | Exiger des gestionnaires de clavier avec les événements de clic |
+| [`a11y/form-control-has-label`](https://vizejs.dev/fr/rules/accessibility.html#a11y-form-control-has-label) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-form-control-has-label-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-form-control-has-label-good) | Exiger des libellés associés aux contrôles de formulaire |
+| [`a11y/heading-has-content`](https://vizejs.dev/fr/rules/accessibility.html#a11y-heading-has-content) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-heading-has-content-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-heading-has-content-good) | Exiger un contenu accessible pour les éléments de titre |
+| [`a11y/heading-levels`](https://vizejs.dev/fr/rules/accessibility.html#a11y-heading-levels) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-heading-levels-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-heading-levels-good) | Interdire de sauter des niveaux de titre |
+| [`a11y/iframe-has-title`](https://vizejs.dev/fr/rules/accessibility.html#a11y-iframe-has-title) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-iframe-has-title-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-iframe-has-title-good) | Exiger un attribut title sur les éléments iframe |
+| [`a11y/img-alt`](https://vizejs.dev/fr/rules/accessibility.html#a11y-img-alt) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-img-alt-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-img-alt-good) | Exiger un attribut alt sur les images pour les rendre accessibles |
+| [`a11y/interactive-supports-focus`](https://vizejs.dev/fr/rules/accessibility.html#a11y-interactive-supports-focus) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-interactive-supports-focus-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-interactive-supports-focus-good) | Exiger que les éléments possédant un rôle interactif puissent recevoir le focus |
+| [`a11y/label-has-for`](https://vizejs.dev/fr/rules/accessibility.html#a11y-label-has-for) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-label-has-for-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-label-has-for-good) | Exiger des contrôles de formulaire associés aux libellés |
+| [`a11y/landmark-roles`](https://vizejs.dev/fr/rules/accessibility.html#a11y-landmark-roles) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-landmark-roles-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-landmark-roles-good) | Valider l’emplacement et l’unicité des rôles de zones de repère |
+| [`a11y/media-has-caption`](https://vizejs.dev/fr/rules/accessibility.html#a11y-media-has-caption) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-media-has-caption-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-media-has-caption-good) | Exiger des sous-titres pour les éléments multimédias |
+| [`a11y/mouse-events-have-key-events`](https://vizejs.dev/fr/rules/accessibility.html#a11y-mouse-events-have-key-events) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-mouse-events-have-key-events-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-mouse-events-have-key-events-good) | Exiger des événements de focus et de perte du focus avec les événements de souris |
+| [`a11y/no-access-key`](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-access-key) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-access-key-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-access-key-good) | Interdire l’utilisation de l’attribut accesskey |
+| [`a11y/no-aria-hidden-on-focusable`](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-aria-hidden-on-focusable) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-aria-hidden-on-focusable-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-aria-hidden-on-focusable-good) | Interdire aria-hidden="true" sur les éléments pouvant recevoir le focus |
+| [`a11y/no-autofocus`](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-autofocus) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-autofocus-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-autofocus-good) | Interdire l’utilisation de l’attribut autofocus |
+| [`a11y/no-distracting-elements`](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-distracting-elements) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-distracting-elements-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-distracting-elements-good) | Interdire les éléments distrayants tels que &lt;marquee&gt; et &lt;blink&gt; |
+| [`a11y/no-i-for-icon`](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-i-for-icon) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-i-for-icon-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-i-for-icon-good) | Interdire l’élément &lt;i&gt; pour les icônes |
+| [`a11y/no-redundant-roles`](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-redundant-roles) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-redundant-roles-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-redundant-roles-good) | Interdire les rôles ARIA redondants |
+| [`a11y/no-refer-to-non-existent-id`](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-refer-to-non-existent-id) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-refer-to-non-existent-id-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-refer-to-non-existent-id-good) | Interdire les références à des identifiants inexistants |
+| [`a11y/no-role-presentation-on-focusable`](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-role-presentation-on-focusable) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-role-presentation-on-focusable-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-role-presentation-on-focusable-good) | Interdire role="presentation" ou role="none" sur les éléments pouvant recevoir le focus |
+| [`a11y/no-static-element-interactions`](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-static-element-interactions) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-static-element-interactions-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-no-static-element-interactions-good) | Interdire les gestionnaires d’événements sur les éléments statiques |
+| [`a11y/placeholder-label-option`](https://vizejs.dev/fr/rules/accessibility.html#a11y-placeholder-label-option) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-placeholder-label-option-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-placeholder-label-option-good) | Exiger disabled ou hidden sur l’option d’invite d’un select |
+| [`a11y/role-has-required-aria-props`](https://vizejs.dev/fr/rules/accessibility.html#a11y-role-has-required-aria-props) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-role-has-required-aria-props-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-role-has-required-aria-props-good) | Exiger les propriétés obligatoires des rôles ARIA |
+| [`a11y/tabindex-no-positive`](https://vizejs.dev/fr/rules/accessibility.html#a11y-tabindex-no-positive) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-tabindex-no-positive-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-tabindex-no-positive-good) | Interdire les valeurs positives de tabindex |
+| [`a11y/use-list`](https://vizejs.dev/fr/rules/accessibility.html#a11y-use-list) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#a11y-use-list-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#a11y-use-list-good) | Suggérer des éléments de liste pour les textes ressemblant à des listes à puces |
+| [`vue/use-unique-element-ids`](https://vizejs.dev/fr/rules/accessibility.html#vue-use-unique-element-ids) | [Mauvais](https://vizejs.dev/fr/rules/accessibility.html#vue-use-unique-element-ids-bad) · [Bon](https://vizejs.dev/fr/rules/accessibility.html#vue-use-unique-element-ids-good) | Imposer des identifiants d’éléments uniques avec useId() plutôt que des littéraux statiques |
+
+[Toutes les règles](./all.md) · [Options des règles](/rules/options.md) · [Correspondance de migration ESLint](/rules/migration.md) · [Vérifications du projet](./cross-file.md) · [Attributs entre composants](/rules/project/vue-cross-file-attrs-fallthrough.md)

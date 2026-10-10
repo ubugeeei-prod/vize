@@ -1,296 +1,84 @@
 ---
-title: Règles de type et de script
+title: "Règles de type et de script"
 ---
-
-<!-- Generated translation; source: rules/type-and-script.md -->
 
 # Règles de type et de script
 
-Les règles de type utilisent le vérificateur TypeScript lorsque des informations sémantiques sont nécessaires. Vize lit la même forme de projet
-que TypeScript lit depuis `tsconfig.json`, donc les noms d’ambiance partagés doivent provenir de
-`compilerOptions.types`, de références de projet ou de fichiers de déclaration.
-
-Les règles de script sont des règles Patina pour l’API de composition et le code orienté Vapor. Ils se concentrent sur des motifs
-difficiles à compiler efficacement ou difficiles à raisonner en mode Vapor.
-
-Le linting conscient du type est volontaire. Activez-le avec `linter.typeAware: true`, `vize lint --type-aware`ou
-en activant explicitement une règle `type/*`. `type/no-reactivity-loss` peut être activé directement avec
-`vize lint --strict-reactivity`. Si Corsa ne peut pas être lancé, Patina signale `type/corsa-runtime` et
-saute la passe de règles à damier au lieu de supprimer silencieusement les règles configurées.
-
-`--type-aware` utilise la même résolution exécutable Corsa que `vize check`; Configurez
-`typeChecker.corsaPath` lorsque le projet a besoin d’un binaire explicite `tsgo` ou Corsa. Les valeurs par défaut restent
-coût zéro : Patina ne sélectionne pas les SFC pour le linting à damier ni ne commence Corsa à moins que le drapeau,
-`linter.typeAware`, ou une règle de `type/*` explicitement activée ne l’accepte.
-
-```ts
-export default defineConfig({
-  linter: { typeAware: true },
-});
-```
-
-## `type/require-typed-props`
-
-Il faut `defineProps` typer au lieu d’utiliser une déclaration de tableau à l’exécution.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<script setup lang="ts">
-const props = defineProps(["label", "count"]);
-</script>
-```
-
-Bon :
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{
-  label: string;
-  count: number;
-}>();
-</script>
-```
-
-## `type/require-typed-emits`
-
-Il nécessite `defineEmits` de décrire les charges utiles d’événements émises.
-
-Sévérité par défaut : `warning`
-Presets : `happy-path`, `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits(["save"]);
-
-emit("save", form.value);
-</script>
-```
-
-Bon :
-
-```vue
-<script setup lang="ts">
-const emit = defineEmits<{
-  save: [payload: FormValue];
-}>();
-
-emit("save", form.value);
-</script>
-```
-
-## `type/no-unsafe-template-binding`
-
-Des liaisons de modèles de rapports qui résolvent vers des valeurs non sûres telles que `any`. La règle est basée sur des damiers,
-elle suit donc les types importés et la configuration du projet.
-
-Sévérité par défaut : `warning`
-Préréglages : `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<script setup lang="ts">
-const payload: any = await loadPayload();
-</script>
-
-<template>
-  <p>{{ payload.title }}</p>
-</template>
-```
-
-Bon :
-
-```vue
-<script setup lang="ts">
-type Payload = { title: string };
-
-const payload = await loadPayload<Payload>();
-</script>
-
-<template>
-  <p>{{ payload.title }}</p>
-</template>
-```
-
-## `type/no-floating-promises`
-
-Signale des promesses créées mais non attendues, retournées ou gérées intentionnellement.
-La vérification couvre à la fois les expressions `<script>` et les expressions modèles.
-
-Sévérité par défaut : `warning`
-Préréglages : `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<script setup lang="ts">
-function submit() {
-  saveForm(form.value);
-}
-</script>
-
-<template>
-  <button @click="saveForm(form)">Save</button>
-  <p>{{ loadPreview() }}</p>
-</template>
-```
-
-Bon :
-
-```vue
-<script setup lang="ts">
-type Preview = { title: string };
-
-async function submit() {
-  await saveForm(form.value);
-}
-
-const preview = ref<Preview | null>(null);
-
-async function loadPreviewIntoState() {
-  preview.value = await loadPreview();
-}
-</script>
-
-<template>
-  <button @click="void submit()">Save</button>
-  <button @click="void loadPreviewIntoState()">Preview</button>
-  <PreviewPanel v-if="preview" :preview="preview" />
-</template>
-```
-
-## `type/no-reactivity-loss`
-
-Rapporte des instantanés simples des valeurs réactives utilisées entre les flux. La règle s’exécute aussi lorsque
-`vize lint --strict-reactivity` est activé.
-
-Sévérité par défaut : `warning`
-Préréglages : `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ item: { name: string } }>();
-const item = props.item;
-</script>
-```
-
-Bon :
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ item: { name: string } }>();
-const item = toRef(props, "item");
-</script>
-```
-
-## Checker Configuration
-
-Les règles sensibles au type n’ont pas besoin d’un champ Vize `globals` séparé pour les noms TypeScript. Privilégiez
-configuration native TypeScript :
-
-Mauvais :
-
-```ts
-export default {
-  globals: ["definePageMeta", "process"],
-};
-```
-
-Bon :
-
-```json
-{
-  "compilerOptions": {
-    "types": ["node", "nuxt/app"]
-  }
-}
-```
-
-## `script/no-options-api`
-
-Rapports Options Définitions de composants API dans des préréglages orientés Vapor.
-
-Sévérité par défaut : `error`
-Préréglages : `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<script lang="ts">
-export default {
-  data() {
-    return { count: 0 };
-  },
-};
-</script>
-```
-
-Bon :
-
-```vue
-<script setup lang="ts" vapor>
-const count = ref(0);
-</script>
-```
-
-## `script/no-next-tick`
-
-Les rapports `nextTick()` dans des composants orientés Vapor. Privilégiez les références directes, les hooks du cycle de vie ou les flux d’état
-qui ne dépendent pas du prochain flush DOM.
-
-Sévérité par défaut : `error`
-Préréglages : `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<script setup lang="ts" vapor>
-await nextTick();
-input.value?.focus();
-</script>
-```
-
-Bon :
-
-```vue
-<script setup lang="ts" vapor>
-const input = useTemplateRef<HTMLInputElement>("input");
-
-onMounted(() => {
-  input.value?.focus();
-});
-</script>
-```
-
-## `script/no-get-current-instance`
-
-Les rapports `getCurrentInstance()` dans des composants orientés Vapor. Elle atteint des composants internes d’exécution que
-Vapor ne peut pas optimiser en toute sécurité.
-
-Sévérité par défaut : `error`
-Préréglages : `nuxt`, `opinionated`
-
-Mauvais :
-
-```vue
-<script setup lang="ts" vapor>
-const instance = getCurrentInstance();
-const app = instance?.appContext.app;
-</script>
-```
-
-Bon :
-
-```vue
-<script setup lang="ts" vapor>
-const appConfig = useAppConfig();
-</script>
-```
+Chaque règle présente sur cette page son objectif, sa configuration et ses exemples complets Mauvais et Bon, accompagnés de leurs explications. Les lignes surlignées montrent les modifications ; le code copié conserve la source complète. Les limites de prise en charge actuelles sont précisées avant les exemples concernés.
+
+<span id="checker-configuration"></span>
+
+| Règle | Exemples | Objectif |
+| --- | --- | --- |
+| [`script/component-options-name-casing`](https://vizejs.dev/fr/rules/type-and-script.html#script-component-options-name-casing) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-component-options-name-casing-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-component-options-name-casing-good) | Imposer PascalCase à l’option `name` du composant |
+| [`script/custom-event-name-casing`](https://vizejs.dev/fr/rules/type-and-script.html#script-custom-event-name-casing) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-custom-event-name-casing-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-custom-event-name-casing-good) | Imposer camelCase aux noms des événements personnalisés émis |
+| [`script/define-emits-declaration`](https://vizejs.dev/fr/rules/type-and-script.html#script-define-emits-declaration) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-define-emits-declaration-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-define-emits-declaration-good) | Imposer la forme typée defineEmits&lt;{}&gt;() à la place de la forme à l’exécution sous forme de tableau |
+| [`script/define-macros-order`](https://vizejs.dev/fr/rules/type-and-script.html#script-define-macros-order) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-define-macros-order-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-define-macros-order-good) | Imposer un ordre cohérent aux macros du compilateur Vue dans &lt;script setup&gt; |
+| [`script/define-props-declaration`](https://vizejs.dev/fr/rules/type-and-script.html#script-define-props-declaration) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-define-props-declaration-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-define-props-declaration-good) | Imposer la forme typée defineProps&lt;{ ... }&gt;() à la place de la forme à l’exécution sous forme d’objet |
+| [`script/define-props-destructuring`](https://vizejs.dev/fr/rules/type-and-script.html#script-define-props-destructuring) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-define-props-destructuring-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-define-props-destructuring-good) | Imposer un style cohérent de déstructuration de defineProps dans &lt;script setup&gt; |
+| [`script/no-arrow-functions-in-watch`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-arrow-functions-in-watch) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-arrow-functions-in-watch-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-arrow-functions-in-watch-good) | Interdire les fonctions fléchées comme gestionnaires watch de l’Options API |
+| [`script/no-async-in-computed`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-async-in-computed) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-async-in-computed-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-async-in-computed-good) | Interdire les fonctions asynchrones dans les propriétés calculées |
+| [`script/no-boolean-default`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-boolean-default) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-boolean-default-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-boolean-default-good) | Interdire une valeur par défaut sur une prop Boolean |
+| [`script/no-deep-destructure-in-props`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deep-destructure-in-props) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deep-destructure-in-props-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deep-destructure-in-props-good) | Interdire la déstructuration profondément imbriquée dans defineProps |
+| [`script/no-deprecated-data-object-declaration`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-data-object-declaration) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-data-object-declaration-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-data-object-declaration-good) | Interdire un objet littéral comme option data du composant (Vue 3 exige une fonction) |
+| [`script/no-deprecated-destroyed-lifecycle`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-destroyed-lifecycle) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-destroyed-lifecycle-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-destroyed-lifecycle-good) | Interdire les hooks de cycle de vie dépréciés destroyed et beforeDestroy |
+| [`script/no-deprecated-dollar-listeners-api`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-dollar-listeners-api) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-dollar-listeners-api-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-dollar-listeners-api-good) | Interdire la propriété d’instance $listeners supprimée dans Vue 3 (fusionnée dans $attrs) |
+| [`script/no-deprecated-dollar-scopedslots-api`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-dollar-scopedslots-api) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-dollar-scopedslots-api-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-dollar-scopedslots-api-good) | Interdire la propriété d’instance $scopedSlots supprimée dans Vue 3 (utiliser $slots) |
+| [`script/no-deprecated-events-api`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-events-api) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-events-api-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-events-api-good) | Interdire l’API d’événements de Vue 2 supprimée ($on / $off / $once) |
+| [`script/no-deprecated-props-default-this`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-props-default-this) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-props-default-this-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-deprecated-props-default-this-good) | Interdire `this` dans une fonction de valeur par défaut ou de validation de prop (supprimé dans Vue 3) |
+| [`script/no-dupe-keys`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-dupe-keys) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-dupe-keys-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-dupe-keys-good) | Interdire les clés dupliquées entre props/data/computed/methods/setup/inject de l’Options API |
+| [`script/no-duplicate-attr-inheritance`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-duplicate-attr-inheritance) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-duplicate-attr-inheritance-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-duplicate-attr-inheritance-good) | Signaler un composant qui applique deux fois ses attributs transmis automatiquement |
+| [`script/no-export-in-script-setup`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-export-in-script-setup) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-export-in-script-setup-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-export-in-script-setup-good) | Interdire les instructions export dans &lt;script setup&gt; |
+| [`script/no-get-current-instance`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-get-current-instance) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-get-current-instance-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-get-current-instance-good) | Interdire getCurrentInstance() en mode Vapor (renvoie null) |
+| [`script/no-import-compiler-macros`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-import-compiler-macros) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-import-compiler-macros-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-import-compiler-macros-good) | Interdire l’import des macros du compilateur Vue importées automatiquement |
+| [`script/no-internal-imports`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-internal-imports) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-internal-imports-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-internal-imports-good) | Interdire les imports depuis les modules internes de Vue |
+| [`script/no-multiple-slot-args`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-multiple-slot-args) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-multiple-slot-args-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-multiple-slot-args-good) | Interdire de passer plusieurs arguments à un appel de fonction de slot à portée |
+| [`script/no-next-tick`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-next-tick) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-next-tick-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-next-tick-good) | Interdire l’utilisation de nextTick() dans les composants destinés à Vapor |
+| [`script/no-options-api`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-options-api) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-options-api-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-options-api-good) | Interdire les formes de l’Options API en mode Vapor |
+| [`script/no-potential-component-option-typo`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-potential-component-option-typo) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-potential-component-option-typo-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-potential-component-option-typo-good) | Signaler les fautes de frappe probables dans les noms d’options de composant de l’Options API |
+| [`script/no-reactive-destructure`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reactive-destructure) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reactive-destructure-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reactive-destructure-good) | Interdire la déstructuration d’objets réactifs qui fait perdre la réactivité |
+| [`script/no-ref-as-operand`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-ref-as-operand) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-ref-as-operand-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-ref-as-operand-good) | Exiger l’accès via `.value` aux variables liées à une ref lorsqu’elles servent d’opérande |
+| [`script/no-required-prop-with-default`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-required-prop-with-default) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-required-prop-with-default-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-required-prop-with-default-good) | Interdire une prop qui possède à la fois required: true et une valeur par défaut |
+| [`script/no-reserved-identifiers`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reserved-identifiers) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reserved-identifiers-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reserved-identifiers-good) | Interdire les identifiants réservés du compilateur Vue |
+| [`script/no-reserved-keys`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reserved-keys) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reserved-keys-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reserved-keys-good) | Interdire les noms réservés par Vue comme clés de props/data/computed/methods/setup/inject de l’Options API |
+| [`script/no-reserved-props`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reserved-props) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reserved-props-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-reserved-props-good) | Interdire les noms réservés dans la déclaration des props d’un composant |
+| [`script/no-restricted-globals`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-restricted-globals) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-restricted-globals-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-restricted-globals-good) | Interdire les références aux variables globales de l’environnement d’exécution qui doivent passer par une couche d’encapsulation typée |
+| [`script/no-restricted-members`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-restricted-members) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-restricted-members-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-restricted-members-good) | Interdire les accès aux membres object.property configurés par le projet |
+| [`script/no-side-effects-in-computed-properties`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-side-effects-in-computed-properties) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-side-effects-in-computed-properties-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-side-effects-in-computed-properties-good) | Interdire les effets de bord dans les getters calculés de l’Options API |
+| [`script/no-top-level-ref-in-script`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-top-level-ref-in-script) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-top-level-ref-in-script-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-top-level-ref-in-script-good) | Interdire ref/reactive au niveau supérieur pour éviter la contamination de l’état entre requêtes |
+| [`script/no-unstable-nested-components`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-unstable-nested-components) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-unstable-nested-components-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-unstable-nested-components-good) | Interdire les définitions de composants dans les fonctions setup ou de rendu |
+| [`script/no-unused-emit-declarations`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-unused-emit-declarations) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-unused-emit-declarations-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-unused-emit-declarations-good) | Signaler les événements déclarés qui ne sont jamais émis |
+| [`script/no-use-computed-property-like-method`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-use-computed-property-like-method) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-use-computed-property-like-method-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-use-computed-property-like-method-good) | Interdire d’appeler une propriété calculée de l’Options API comme une méthode |
+| [`script/no-with-defaults`](https://vizejs.dev/fr/rules/type-and-script.html#script-no-with-defaults) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-no-with-defaults-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-no-with-defaults-good) | Déconseiller withDefaults au profit des valeurs par défaut dans la déstructuration (Vue 3.5+) |
+| [`script/prefer-computed`](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-computed) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-computed-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-computed-good) | Préférer computed() pour l’état réactif dérivé |
+| [`script/prefer-define-options`](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-define-options) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-define-options-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-define-options-good) | Préférer defineOptions() à un &lt;script&gt; ordinaire qui ne définit que name/inheritAttrs |
+| [`script/prefer-import-from-vue`](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-import-from-vue) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-import-from-vue-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-import-from-vue-good) | Préférer les imports depuis 'vue' plutôt que depuis les packages internes |
+| [`script/prefer-ref-over-reactive`](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-ref-over-reactive) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-ref-over-reactive-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-ref-over-reactive-good) | Recommander ref() plutôt que reactive() pour gérer l’état |
+| [`script/prefer-use-attrs`](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-attrs) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-attrs-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-attrs-good) | Recommander useAttrs() plutôt que context.attrs |
+| [`script/prefer-use-id`](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-id) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-id-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-id-good) | Recommander useId() pour générer des identifiants uniques (Vue 3.5+) |
+| [`script/prefer-use-slots`](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-slots) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-slots-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-slots-good) | Recommander useSlots() plutôt que context.slots |
+| [`script/prefer-use-template-ref`](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-template-ref) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-template-ref-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-prefer-use-template-ref-good) | Recommander useTemplateRef plutôt que ref pour les références de template (Vue 3.5+) |
+| [`script/require-default-prop`](https://vizejs.dev/fr/rules/type-and-script.html#script-require-default-prop) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-require-default-prop-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-require-default-prop-good) | Exiger une valeur par défaut pour chaque prop facultative non booléenne |
+| [`script/require-explicit-emits`](https://vizejs.dev/fr/rules/type-and-script.html#script-require-explicit-emits) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-require-explicit-emits-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-require-explicit-emits-good) | Exiger la déclaration des événements émis dans defineEmits ou l’option emits |
+| [`script/require-explicit-slots`](https://vizejs.dev/fr/rules/type-and-script.html#script-require-explicit-slots) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-require-explicit-slots-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-require-explicit-slots-good) | Exiger que les slots utilisés via useSlots() soient explicitement typés avec defineSlots&lt;...&gt;() |
+| [`script/require-function-return-type`](https://vizejs.dev/fr/rules/type-and-script.html#script-require-function-return-type) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-require-function-return-type-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-require-function-return-type-good) | Exiger des annotations de type de retour sur les fonctions |
+| [`script/require-prop-type-constructor`](https://vizejs.dev/fr/rules/type-and-script.html#script-require-prop-type-constructor) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-require-prop-type-constructor-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-require-prop-type-constructor-good) | Exiger que les valeurs `type` des props soient des constructeurs plutôt que des chaînes littérales |
+| [`script/require-prop-types`](https://vizejs.dev/fr/rules/type-and-script.html#script-require-prop-types) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-require-prop-types-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-require-prop-types-good) | Exiger que chaque prop déclare un type |
+| [`script/require-symbol-provide`](https://vizejs.dev/fr/rules/type-and-script.html#script-require-symbol-provide) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-require-symbol-provide-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-require-symbol-provide-good) | Recommander Symbol comme clé d’injection pour provide/inject |
+| [`script/require-typed-object-prop`](https://vizejs.dev/fr/rules/type-and-script.html#script-require-typed-object-prop) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-require-typed-object-prop-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-require-typed-object-prop-good) | Exiger un type explicite sur une prop dont le type à l’exécution est `Object` ou `Array` |
+| [`script/require-typed-ref`](https://vizejs.dev/fr/rules/type-and-script.html#script-require-typed-ref) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-require-typed-ref-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-require-typed-ref-good) | Exiger un argument de type explicite sur un ref() initialisé sans valeur, avec null ou avec undefined |
+| [`script/require-valid-default-prop`](https://vizejs.dev/fr/rules/type-and-script.html#script-require-valid-default-prop) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-require-valid-default-prop-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-require-valid-default-prop-good) | Exiger que la valeur par défaut d’une prop soit valide pour son type déclaré |
+| [`script/return-in-computed-property`](https://vizejs.dev/fr/rules/type-and-script.html#script-return-in-computed-property) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-return-in-computed-property-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-return-in-computed-property-good) | Exiger une valeur de retour dans chaque getter calculé |
+| [`script/return-in-emits-validator`](https://vizejs.dev/fr/rules/type-and-script.html#script-return-in-emits-validator) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-return-in-emits-validator-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-return-in-emits-validator-good) | Exiger une valeur de retour dans chaque validateur emits de l’Options API |
+| [`script/valid-define-emits`](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-define-emits) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-define-emits-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-define-emits-good) | Imposer une utilisation valide de defineEmits() (pas d’arguments de type et d’exécution combinés, pas de références locales, un seul appel) |
+| [`script/valid-define-options`](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-define-options) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-define-options-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-define-options-good) | Imposer une utilisation valide de defineOptions() (un seul argument objet, sans props/emits/expose/slots) |
+| [`script/valid-define-props`](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-define-props) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-define-props-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-define-props-good) | Imposer une utilisation valide de defineProps() (un seul appel, pas d’arguments de type et d’exécution combinés, pas de références locales) |
+| [`script/valid-next-tick`](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-next-tick) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-next-tick-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#script-valid-next-tick-good) | Exiger que le résultat d’un appel nextTick() soit attendu, chaîné ou associé à un callback |
+| [`type/no-floating-promises`](https://vizejs.dev/fr/rules/type-and-script.html#type-no-floating-promises) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#type-no-floating-promises-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#type-no-floating-promises-good) | Interdire les Promises laissées sans traitement |
+| [`type/no-reactivity-loss`](https://vizejs.dev/fr/rules/type-and-script.html#type-no-reactivity-loss) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#type-no-reactivity-loss-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#type-no-reactivity-loss-good) | Interdire les instantanés ordinaires de valeurs réactives lors des affectations et des appels |
+| [`type/no-unsafe-template-binding`](https://vizejs.dev/fr/rules/type-and-script.html#type-no-unsafe-template-binding) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#type-no-unsafe-template-binding-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#type-no-unsafe-template-binding-good) | Interdire les liaisons de template dont le type résolu est non sûr |
+| [`type/require-typed-emits`](https://vizejs.dev/fr/rules/type-and-script.html#type-require-typed-emits) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#type-require-typed-emits-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#type-require-typed-emits-good) | Exiger une définition de type pour defineEmits |
+| [`type/require-typed-props`](https://vizejs.dev/fr/rules/type-and-script.html#type-require-typed-props) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#type-require-typed-props-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#type-require-typed-props-good) | Exiger une définition de type pour defineProps |
+| [`type/strict-boolean-expressions`](https://vizejs.dev/fr/rules/type-and-script.html#type-strict-boolean-expressions) | [Mauvais](https://vizejs.dev/fr/rules/type-and-script.html#type-strict-boolean-expressions-bad) · [Bon](https://vizejs.dev/fr/rules/type-and-script.html#type-strict-boolean-expressions-good) | Exiger des expressions booléennes sûres dans les conditions des scripts et des templates |
+
+[Toutes les règles](./all.md) · [Options des règles](/rules/options.md) · [Correspondance de migration ESLint](/rules/migration.md) · [Vérifications du projet](./cross-file.md) · [Attributs entre composants](/rules/project/vue-cross-file-attrs-fallthrough.md)

@@ -99,6 +99,9 @@
       pathsByLocale: {
         en: [...rulePaths, "/rules/petite-vue"],
         ja: [...rulePaths, "/rules/petite-vue"],
+        "zh-CN": [...rulePaths, "/rules/petite-vue"],
+        "pt-BR": [...rulePaths, "/rules/petite-vue"],
+        fr: [...rulePaths, "/rules/petite-vue"],
       },
     },
     {

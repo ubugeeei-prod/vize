@@ -1,13 +1,20 @@
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { categoryFiles } from "./rules/catalogue-routes.ts";
+import { catalogueSubgroups } from "./rules/catalogue-subgroups.ts";
+import { vueLocales } from "./rules/vue-category-labels.ts";
 
 /** Derivative inputs compose existing routes and are not separate site pages. */
 const catalogues: readonly (readonly [string, string])[] = [
-  ["generated/rules/en/all.md", "rules/all.md"],
-  ["generated/rules/ja/all.md", "ja/rules/all.md"],
-  ...["en", "ja", "zh-CN", "pt-BR", "fr"].map((locale): [string, string] => [
-    `generated/rules/${locale}/vue.md`,
-    `${locale === "en" ? "" : `${locale}/`}rules/vue.md`,
+  ...vueLocales.flatMap((locale) =>
+    ["all", "vue", ...categoryFiles, "cross-file"].map((file): [string, string] => [
+      `generated/rules/${locale}/${file}.md`,
+      `${locale === "en" ? "" : `${locale}/`}rules/${file}.md`,
+    ]),
+  ),
+  ...Object.keys(catalogueSubgroups).map((file): [string, string] => [
+    `generated/rules/en/${file}.md`,
+    `rules/${file}.md`,
   ]),
 ];
 export const CATALOGUE_SOURCES = catalogues.map(([source]) => source);

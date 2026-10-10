@@ -9,7 +9,7 @@ import { migrationPage } from "./migration.ts";
 import { purposeJa } from "./purpose-ja.ts";
 import { exampleLinks } from "./example-links.ts";
 import { projectIndex } from "./project-index.ts";
-import { inlineReference } from "./inline-reference.ts";
+import { nativeInlineReference } from "./annotate-reference.ts";
 
 export const configurableRules = new Set([
   "html/no-empty-palpable-content",
@@ -95,7 +95,7 @@ export function generateRulePages({
         );
         const reference = detail(rule, example, ja);
         output(resolve(directory, "reference", path), reference, checking);
-        examples.push(inlineReference(reference, rule.name));
+        examples.push(nativeInlineReference(reference, rule.name));
       }
     }
     lines.push(...projectIndex(workspaceRoot, ja, true));
@@ -111,7 +111,7 @@ export function generateRulePages({
       "",
       `## ${ja ? "プロジェクトの例" : "Project examples"}`,
       "",
-      ...projectPages.get(locale)!.map(({ id, text }) => inlineReference(text, id)),
+      ...projectPages.get(locale)!.map(({ id, text }) => nativeInlineReference(text, id, true)),
     ];
     const generated = resolve(workspaceRoot, `docs/content/generated/rules/${ja ? "ja" : "en"}`);
     if (!checking) mkdirSync(generated, { recursive: true });

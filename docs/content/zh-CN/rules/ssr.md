@@ -1,71 +1,16 @@
 ---
-title: SSR规则
+title: "SSR 规则"
 ---
 
-<!-- Generated translation; source: rules/ssr.md -->
+# SSR 规则
 
-# SSR规则
+本页集中列出所有相关规则的用途、配置、错误示例和正确示例，无需跳转页面查看对照。高亮行标示修改；复制代码时保留完整源代码。每条规则注明适用范围和当前支持限制；规范示例并不保证当前实现会产生诊断。
 
-这些规则涵盖了可能破坏服务器渲染或水合的代码和模板模式。它们是
-与HTML和Vapor规则分开文档，因为失败模式是服务器/客户端
-界限。
+<span id="ssr规则"></span>
 
-## `ssr/no-browser-globals-in-ssr`
+| 规则 | 示例 | 用途 |
+| --- | --- | --- |
+| [`ssr/no-browser-globals-in-ssr`](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-browser-globals-in-ssr) | [错误示例](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-browser-globals-in-ssr-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-browser-globals-in-ssr-good) | 禁止 SSR 上下文中的浏览器专用全局变量 |
+| [`ssr/no-hydration-mismatch`](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-hydration-mismatch) | [错误示例](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-hydration-mismatch-bad) · [正确示例](https://vizejs.dev/zh-CN/rules/ssr.html#ssr-no-hydration-mismatch-good) | 禁止导致水合不匹配的不确定值 |
 
-报告浏览器专用全局代码，可在SSR期间运行。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<script setup lang="ts">
-const width = window.innerWidth;
-</script>
-```
-
-好：
-
-```vue
-<script setup lang="ts">
-const width = ref(0);
-
-onMounted(() => {
-  width.value = window.innerWidth;
-});
-</script>
-```
-
-像`typeof window === "undefined"`这样的守卫检定被允许，因为直接的`typeof`
-标识符表单在服务器渲染时是安全的。字符串、注释和正则表达式文字也是
-当名字包含`window`或`document`时，则被忽视。访问成员，例如：
-`typeof window.innerWidth`仍然报告，因为它评估浏览器的全球性。
-
-## `ssr/no-hydration-mismatch`
-
-报告非确定性模板值，服务器渲染和客户端可能不同
-补充水分。
-
-默认严重程度：`warning`
-预设：`happy-path`，`nuxt`，`opinionated`
-
-缺点：
-
-```vue
-<template>
-  <p>{{ Math.random() }}</p>
-</template>
-```
-
-好：
-
-```vue
-<script setup lang="ts">
-const seed = useState("seed", () => "stable");
-</script>
-
-<template>
-  <p>{{ seed }}</p>
-</template>
-```
+[全部规则](./all.md) · [规则选项](/rules/options.md) · [ESLint 迁移对应表](/rules/migration.md) · [项目检查](./cross-file.md) · [组件间属性传递](/rules/project/vue-cross-file-attrs-fallthrough.md)
