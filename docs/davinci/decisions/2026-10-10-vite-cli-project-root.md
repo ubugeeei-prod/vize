@@ -49,3 +49,17 @@ policy. Files explicitly opened in the editor continue to receive parser, type,
 and navigation results, preserving the existing dedicated-config behavior and
 TypeScript editor exclude convention. CLI and editor file selection are therefore
 not identical; full public diagnostic vectors test the supported boundary.
+
+The root fixtures compare every generated directory and complete compiler byte
+output, full lint/check JSON, and the complete formatter project inventory.
+Temporary project identity and unordered lint file enumeration are the only
+report normalizations. Compiler snapshots retain the existing Vue output,
+including whitespace preservation and custom-element lowering. Lint snapshots
+retain essential-preset component-name diagnostics independently of alt-text
+overrides. Check snapshots retain all program roots, compiler options, selected
+files and TypeScript diagnostics, including the numeric assignment's TS2322.
+The ignore-syntax fixture independently proves relative, absolute, negated and
+escaped patterns: dropped/literal files remain untouched, explicit keep files
+remain selected, and their authored TypeScript errors remain visible. Snapshots
+were reviewed against these contracts before adoption; a formatter no-op caused
+by an interior `./` in a root glob was corrected instead of recorded as expected.
