@@ -83,3 +83,37 @@ This is a dependent slice of the first practical-demo PR and must be registered
 in a native GitHub Stack before queueing a contiguous passing prefix. Its exact
 source Actions, protected merge, and deployed receipts remain required.
 The remaining public catalogue and broader #6101 acceptance stay open.
+
+## Form and navigation state extension
+
+Add four practical SFCs for native form submission with local validation and
+reset, an editable multi-step attendee/session/review flow, capped session
+selection retaining stable keys across local data replacement, and cyclic
+reading tips. Keep the existing twelve laws unchanged. The group now contains
+sixteen complete source packets, sixty-four actual captures, and twenty-six
+rendered documentation routes.
+
+The examples use public composable imports and source-defined behavior; they
+do not change package APIs or fabricate submission/network effects. Each new
+law exercises meaningful native keyboard interactions, explicit boundaries,
+and retained/reset state. The same SSR markup, element identities, displayed
+source hash, diagnostics, and mobile overflow requirements apply.
+
+Register this dependent extension in the same native Stack and merge only a
+contiguous exact-head passing prefix. Remaining catalogue acceptance and #6101
+stay open; require actual protected merge and deployed browser proof.
+
+Read-only review found misleading state text and a nondiscriminating batching
+input. A field's empty recorded error does not validate subsequent edits; use
+neutral status and exercise valid-to-invalid re-edit before and after blur.
+Unavailable storage keeps writable in-tab state; describe it accurately and
+prove selection/reload in actual Chromium with localStorage disabled, with two
+additional mobile captures and a separate receipt. Batch assertions must use
+whitespace-bearing input so both grouped assignments change the value and Undo
+restores the exact original whitespace.
+
+The first form-extension source run rejected two static inline styles in the
+selection example. Move them to source-owned scoped classes and retain the
+unchanged opinionated gate. Keep the review corrections in the top layer and
+queue the corrected complete Stack; earlier prefixes must not ship the known
+misleading states.
