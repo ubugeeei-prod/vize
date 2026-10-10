@@ -10,7 +10,7 @@ import { registerMiddleware } from "./server-middleware.ts";
 import { staticPreviewId } from "./static-data.ts";
 import { loadStaticRuntimeModule } from "./static-export.ts";
 import type { ArtFileInfo } from "./types/art.ts";
-import { toPascalCase } from "./utils.ts";
+import { variantComponentNames } from "./variant-bindings.ts";
 
 function context(artPath: string, names: string[]) {
   const art: ArtFileInfo = {
@@ -65,7 +65,11 @@ for (const artPath of ["/repo/components/Host.art.vue", "C:/project:demo/Host.ar
       assert.ok(resolved);
       const code = createLoad(state)(resolved);
       assert.ok(code, `missing preview for ${name}`);
-      assert.ok(code.includes(`artModule[${JSON.stringify(toPascalCase(name))}]`));
+      assert.ok(
+        code.includes(
+          `artModule[${JSON.stringify(variantComponentNames(state.artFiles.get(artPath)!.variants).get(name))}]`,
+        ),
+      );
       assert.ok(code.includes(`Mounted variant:', ${JSON.stringify(name)}`));
     }
   });

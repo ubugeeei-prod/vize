@@ -11,7 +11,7 @@ import path from "node:path";
 import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { generatePreviewModuleWithProps } from "../preview/index.js";
 import { assertVueSourcePath, HttpError, parseJsonBody, resolveInside } from "../security.js";
-import { toPascalCase } from "../utils.js";
+import { variantComponentNames } from "../variant-bindings.js";
 import { publicBasePathFromViteBase } from "../static-base.js";
 import {
   assertArtReportOwnership,
@@ -49,7 +49,7 @@ export function handlePreviewWithProps(
       return;
     }
 
-    const variantComponentName = toPascalCase(variant.name);
+    const variantComponentName = variantComponentNames(art.variants).get(variant.name)!;
     const moduleCode = generatePreviewModuleWithProps(
       art,
       variantComponentName,
