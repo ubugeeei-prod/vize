@@ -198,6 +198,7 @@ jobs:
       - name: Verify both slot modifier options through whole source CLI and JSON-RPC packets
         run: vp node tests/tooling/support/n8n-slot-options-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/slot-options"
       - name: Observe the existing authored registry provider on original n8n components
+        env: { VIZE_TRACE_EDITOR_PREPARATION: "1" }
         run: vp node tests/tooling/support/n8n-authored-registry-acceptance.ts "target/n8n-cli-config/${{ github.run_id }}-${{ github.run_attempt }}/authored-registry"
       - name: Upload whole CLI and independent oracle packets
         if: ${{ !cancelled() }}

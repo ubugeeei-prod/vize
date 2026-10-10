@@ -68,6 +68,23 @@ fn native_template_props_preserve_modifiers_defaults_union_and_generic_contracts
             "{}",
             case["name"]
         );
+        if case["name"] == "optional-boolean-and-nested-write" {
+            let invalid = source.replace("{{ props.note }}", "{{ props.note.toUpperCase() }}");
+            let start = super::project::position(&invalid, "props.note.toUpperCase()");
+            let end =
+                json!({"line":start["line"],"character":start["character"].as_u64().unwrap()+10});
+            assert_eq!(
+                project.change(&invalid, 2),
+                json!([{
+                    "code":18048,
+                    "message":"'props.note' is possibly 'undefined'.",
+                    "range":{"start":start,"end":end},
+                    "severity":1,
+                    "source":"vize/types"
+                }])
+            );
+            assert_eq!(project.change(source, 3), json!([]));
+        }
         project.shutdown();
     }
 }

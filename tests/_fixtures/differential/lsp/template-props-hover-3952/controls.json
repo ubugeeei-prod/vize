@@ -2,7 +2,7 @@
   {
     "name": "optional-boolean-and-nested-write",
     "source": "<script setup lang=\"ts\">\nconst props = defineProps<{ params: { value: string }; note?: string; flag?: boolean }>();\n</script>\n<template>{{ props.params.value = 'changed' }} {{ props.flag }} {{ props.note }}</template>\n",
-    "signature": "const props: {\n    readonly params: {\n        value: string;\n    };\n    readonly note?: string | undefined;\n    readonly flag: boolean;\n}"
+    "signature": "const props: {\n    readonly params: {\n        value: string;\n    };\n    readonly note?: string;\n    readonly flag: boolean;\n}"
   },
   {
     "name": "defaulted-fields",
@@ -17,6 +17,6 @@
   {
     "name": "unconcretized-generic",
     "source": "<script setup lang=\"ts\" generic=\"T extends { id: string }\">\nconst props = defineProps<{ items: T[]; selected?: T }>();\n</script>\n<template>{{ props.items.map(item => item.id) }} {{ props.selected?.id }}</template>\n",
-    "signature": "const props: {\n    readonly items: T[];\n    readonly selected?: T | undefined;\n}"
+    "signature": "const props: __DefineProps<Props<T>, never>"
   }
 ]

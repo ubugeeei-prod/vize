@@ -138,6 +138,10 @@ type Authored = { params: { value: string }; note?: string; flag?: boolean };
 declare const props: __VizePrettify<__DefineProps<Authored>>;
 const optionalText: string | undefined = props.note;
 const optionalBoolean: boolean | undefined = props.flag;
+// @ts-expect-error An optional member read still includes undefined in strict mode.
+const requiredText: string = props.note;
+// @ts-expect-error Legacy optional Boolean reads keep their undefined branch.
+const requiredBoolean: boolean = props.flag;
 const loose: __VizePrettify<__DefineProps<Authored>> = {
   params: { value: 'original' }, note: undefined, flag: undefined,
 };
@@ -145,6 +149,8 @@ props.params.value = 'changed';
 props.flag = true;
 void optionalText;
 void optionalBoolean;
+void requiredText;
+void requiredBoolean;
 void loose;
 type Union = { kind: 'text'; value: string } | { kind: 'count'; value: number };
 declare const union: __VizePrettify<Union>;

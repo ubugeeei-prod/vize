@@ -160,7 +160,7 @@ function __setup<T extends string = 'a'>() {
 
   // Props are available in template as variables
   // Access via `propName` or `props.propName`
-  const props: __VizePrettify<__DefineProps<__VizeSetupProps>> = {} as __DefineProps<__VizeSetupProps>;
+  const props: __DefineProps<__VizeSetupProps> = {} as __DefineProps<__VizeSetupProps>;
   void props; // Mark as used to avoid TS6133
 
   const __vize_native_key_11: unknown extends __VizeNativeElement<"button"> ? unknown : "type" extends keyof __VizeNativeElement<"button"> ? unknown : __VizeComponentAttrCamel<"type"> extends keyof __VizeNativeElement<"button"> ? unknown : never = "type";
