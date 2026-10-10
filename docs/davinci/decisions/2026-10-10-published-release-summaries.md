@@ -38,3 +38,14 @@ Validation: compare each linked PR with its public release's generated
 change list, check the actual tagged commits, format the edited source
 files, and require exact-head Actions before protected delivery. No product
 behavior changes or publication claims follow from this documentation.
+
+## Protected continuation
+
+The first exact-head Check rejected the unchanged 25-second task-shell PTY law.
+The real Moon/Git producer repair in [#8439](https://github.com/ubugeeei-prod/vize/pull/8439)
+merged as `c6570cb8706dd9a4f16be984c7ecd04bdb57b26d`; its protected Check
+retained that original deadline and verified complete registry output and tree identity.
+This documentation was rebased onto that actual delivered source, preserving every
+incoming canonical decision byte and only its existing release-summary clause. Attribution of
+the earlier timeout to that deadlock remains unproved. Require fresh exact-head
+Actions for this rebased PR before queue admission; the old failure is not waived.
