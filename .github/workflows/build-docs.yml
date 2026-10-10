@@ -71,7 +71,10 @@ jobs:
       - name: Build docs
         # The page manifest records this exact source SHA; do not replay an
         # earlier script result when only other source files changed.
-        run: vp run --no-cache --filter './docs' build
+        run: |
+          vp run --no-cache --filter './docs' build
+          test -s docs-render-evidence/component-previews/browser-evidence.json
+          test -s docs-render-evidence/component-previews/unavailable-storage-evidence.json
 
       - name: Verify rendered navigation and adoption guides
         run: vp node docs/scripts/verify-navigation-render.ts

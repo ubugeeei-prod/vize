@@ -44,7 +44,7 @@ bounded quantities, debounced local search, blur validation, undo/redo, and
 pagination, plus async results, interval/timeout controls, browser storage,
 media queries, document focus, form submission, multistep navigation, bounded
 selection, cyclic tips, individual/group focus, outside dismissal, scoped keyboard
-shortcuts, and retargetable native input observation. Their displayed source and compiled preview are byte-identical,
+shortcuts, and retargetable native input observation. Their displayed source and compiled preview share the same complete SFC packet,
 with a SHA-256 identity exposed by each iframe. They use public composable
 imports and can be copied into a Vue 3.5+ project. The preview shell's CSS is
 optional presentation; the examples themselves use native controls.
@@ -84,6 +84,10 @@ law uses meaningful whitespace trimming and requires Undo to restore it exactly.
 After the real SSG build, `check-site.ts` verifies thirty routes at desktop
 and mobile widths, including the twenty exact displayed SFC packets and their
 iframe identities, then runs the unchanged composable interaction checks.
+Its default receipts and captures live in repository-level
+`docs-render-evidence/component-previews/`, regardless of whether the command
+starts from the workspace root or the docs package. The existing Actions
+render-evidence artifact retains this second SSG acceptance pass.
 The existing Docs Actions build executes both paths. To check deployed content:
 
 ```bash

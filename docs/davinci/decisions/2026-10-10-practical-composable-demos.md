@@ -142,3 +142,20 @@ immutable while its merge and production proof run. Publish this prepared
 independent slice only after rebasing onto the coherent delivered main; do not
 add it to the current queue during parent delivery. The remaining catalogue and
 broader #6101 acceptance stay open.
+
+The package build invokes rendered acceptance from `docs/`; a relative default
+evidence path incorrectly writes under `docs/docs-render-evidence`, outside the
+existing repository-level upload. Resolve that default from the known docs
+root so the same artifact retains source/image hashes and interaction receipts
+from the post-SSG pass. Explicit output paths remain caller-selected. Require
+the actual Actions artifact's composable receipts before delivery credit.
+The existing Build docs step requires both post-SSG receipt files before the
+render-evidence upload; this fails with the previous package-relative default.
+
+The before-fix [exact-head Docs run](https://github.com/ubugeeei-prod/vize/actions/runs/38028442319)
+produced render-evidence artifact 11661933163 with 656 ZIP entries and no
+component-preview files or composable receipt JSONs. Its first-pass captures
+remain in the built public assets; the missing second-pass receipt is a
+separate artifact-retention defect. The new existing-step assertions must
+reject that artifact layout and a fresh Actions artifact must contain both
+receipts after the path correction.
