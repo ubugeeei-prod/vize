@@ -5,8 +5,7 @@ title: JSX & TSX
 # JSX & TSX
 
 > **Status:** JSX/TSX is covered across the compiler, linter, type checker, LSP, and formatter.
-> Fresh project defaults enable Vue JSX checking; dedicated configurations retain their historical opt-in default.
-> Release qualification of the fresh default is pending native JSX fixes; mixed React projects need an explicit opt-out.
+> Fresh projects enable Vue JSX checking; dedicated configs retain opt-in. Release qualification remains pending, and mixed React projects need an explicit opt-out.
 > HMR for standalone `.jsx`/`.tsx` modules is still the main remaining integration gap.
 
 Vize compiles `.jsx` and `.tsx` Vue components through the compiler crates used by `.vue` files:
@@ -356,9 +355,8 @@ vize fmt src --write
 
 ## Type-checking
 
-Projects without dedicated `vize.config.*` use the proposed **enabled** Vue JSX project default.
-Dedicated configurations retain `typeChecker.jsxTypecheck: false` unless explicitly enabled.
-The fresh default remains unqualified for release while native JSX repairs are pending.
+Projects without dedicated `vize.config.*` use the proposed **enabled** Vue JSX default; dedicated configs retain `typeChecker.jsxTypecheck: false` unless enabled.
+Release qualification of the fresh default remains pending. For mixed React projects, [explicitly disable Vue JSX checking](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md#react-owned-projects); Vue SFC checking remains available.
 
 ```ts
 // vize.config.ts
@@ -371,20 +369,6 @@ export default defineConfig({
   },
 });
 ```
-
-For a React-owned project, explicitly disable Vize's Vue JSX checker in the existing Vite config:
-
-```ts
-// vite.config.ts
-export default {
-  vize: { typeChecker: { jsxTypecheck: false } },
-};
-```
-
-Vize does not infer framework ownership from JSX syntax. If one project mixes React and Vue JSX,
-disable Vize JSX checking and use each framework's checker for those files. Vue SFC checking remains
-available. See the [fresh default qualification record](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md)
-for the unchanged historical controls and remaining native gates.
 
 When enabled, `vize check` type-checks `.jsx`/`.tsx` Vue components through Canon. The generated
 virtual file is plain TypeScript, not TSX, and it preserves the authored component contract:

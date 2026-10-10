@@ -57,3 +57,20 @@ until [typed slot parameter retention](https://github.com/ubugeeei-prod/vize/pul
 original Ant Design Vue semantic-loss source repair are qualified without
 changing their authored inputs or expectations. Protected queue validation,
 actual merge and release remain required.
+
+## React-owned projects
+
+For a React-owned project, explicitly disable Vize's Vue JSX checker in the existing Vite config:
+
+```ts
+// vite.config.ts
+export default {
+  vize: { typeChecker: { jsxTypecheck: false } },
+};
+```
+
+Vize does not infer framework ownership from JSX syntax. If one project mixes React and Vue JSX,
+disable Vize JSX checking and use each framework's checker for those files. Vue SFC checking remains
+available. See the [fresh default qualification record](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md)
+for the unchanged historical controls and remaining native gates.
+
