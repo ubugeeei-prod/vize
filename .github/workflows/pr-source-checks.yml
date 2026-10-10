@@ -253,13 +253,10 @@ jobs:
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-        with:
-          toolchain: stable
-          targets: wasm32-unknown-unknown
+        with: { toolchain: stable, targets: wasm32-unknown-unknown }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: 0.9.0 }
       - uses: ./.github/actions/setup-moonbit
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
       - uses: ./.github/actions/setup-rust-sticky-cache

@@ -60,10 +60,7 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          ref: ${{ env.DRIVER_SHA }}
-          fetch-depth: 0
-          persist-credentials: false
+        with: { ref: "${{ env.DRIVER_SHA }}", fetch-depth: 0, persist-credentials: false }
       - name: Pin immutable driver, source and freshly fetched main baseline
         env: { BASE_SHA: "${{ github.event.pull_request.base.sha }}" }
         run: |
