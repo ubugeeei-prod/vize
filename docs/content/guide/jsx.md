@@ -5,7 +5,8 @@ title: JSX & TSX
 # JSX & TSX
 
 > **Status:** JSX/TSX is covered across the compiler, linter, type checker, LSP, and formatter.
-> Type-aware checks stay opt-in so React `.tsx` files are never treated as Vue JSX by accident.
+> Fresh project defaults enable Vue JSX checking; dedicated configurations retain their historical opt-in default.
+> Release qualification of the fresh default is pending native JSX fixes; mixed React projects need an explicit opt-out.
 > HMR for standalone `.jsx`/`.tsx` modules is still the main remaining integration gap.
 
 Vize compiles `.jsx` and `.tsx` Vue components through the compiler crates used by `.vue` files:
@@ -355,9 +356,9 @@ vize fmt src --write
 
 ## Type-checking
 
-JSX/TSX type-checking is **opt-in** through `typeChecker.jsxTypecheck`, which defaults to **`false`**.
-It is off by default on purpose: a repository may contain React `.tsx` files that must not be
-type-checked as Vue JSX.
+Projects without dedicated `vize.config.*` use the proposed **enabled** Vue JSX project default.
+Dedicated configurations retain `typeChecker.jsxTypecheck: false` unless explicitly enabled.
+The fresh default remains unqualified for release while native JSX repairs are pending.
 
 ```ts
 // vize.config.ts
@@ -370,6 +371,20 @@ export default defineConfig({
   },
 });
 ```
+
+For a React-owned project, explicitly disable Vize's Vue JSX checker in the existing Vite config:
+
+```ts
+// vite.config.ts
+export default {
+  vize: { typeChecker: { jsxTypecheck: false } },
+};
+```
+
+Vize does not infer framework ownership from JSX syntax. If one project mixes React and Vue JSX,
+disable Vize JSX checking and use each framework's checker for those files. Vue SFC checking remains
+available. See the [fresh default qualification record](https://github.com/ubugeeei-prod/vize/blob/main/docs/davinci/decisions/2026-10-10-fresh-lsp-capability-policy.md)
+for the unchanged historical controls and remaining native gates.
 
 When enabled, `vize check` type-checks `.jsx`/`.tsx` Vue components through Canon. The generated
 virtual file is plain TypeScript, not TSX, and it preserves the authored component contract:
@@ -430,7 +445,7 @@ features as an SFC — **no SFC wrapper needed**:
 Structural features (document symbols, semantic tokens, scoped-style diagnostics, code actions) work
 from the parsed document and are always available. Type-aware features (diagnostics, hover,
 completion, go-to-definition, references, rename) are reached only when `typeChecker.jsxTypecheck` is
-enabled, so React `.tsx` files are never treated as Vue JSX in the editor either.
+enabled. React-owned projects need the same explicit opt-out in the editor.
 
 ## Linting
 
@@ -487,8 +502,8 @@ See [Static Analysis](./static-analysis.md) for the lint and type-check model, a
 
 Be aware of the current edges:
 
-- **Type-checking is opt-in.** `typeChecker.jsxTypecheck` is `false` by default so mixed Vue/React
-  repositories do not accidentally route React TSX through the Vue JSX checker.
+- **Fresh default qualification remains pending.** Dedicated configs retain the opt-in default;
+  mixed Vue/React projects must explicitly disable Vize's Vue JSX checker.
 - **HMR is not yet wired for `.jsx`/`.tsx` modules.** VDOM compilation preserves authored
   imports and exports. Block-body setup state and JSX parameter defaults retain their scopes.
   Edits still trigger a normal reload because the bundler adapters do not register Vue HMR boundaries.
