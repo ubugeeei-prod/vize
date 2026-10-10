@@ -14,16 +14,37 @@ body:not(.entry-page) summary.nav-title::-webkit-details-marker {
 }
 
 body:not(.entry-page) summary.nav-title::after {
-  content: "+";
+  content: "›";
   font-size: 1rem;
+  transition: transform 0.18s ease;
 }
 
-body:not(.entry-page) .nav-section[open] > summary.nav-title {
-  margin-bottom: 0.45rem !important;
+body:not(.entry-page) .nav-section > .nav-list {
+  padding-top: 0.45rem;
 }
 
 body:not(.entry-page) .nav-section[open] > summary.nav-title::after {
-  content: "−";
+  transform: rotate(90deg);
+}
+
+/* Native disclosure keeps expanded state and keyboard focus semantics intact.
+   Older browsers retain the same usable disclosure without size interpolation. */
+@supports (interpolate-size: allow-keywords) {
+  body:not(.entry-page) .nav-section {
+    interpolate-size: allow-keywords;
+  }
+
+  body:not(.entry-page) .nav-section::details-content {
+    block-size: 0;
+    overflow: clip;
+    transition:
+      block-size 0.18s ease,
+      content-visibility 0.18s allow-discrete;
+  }
+
+  body:not(.entry-page) .nav-section[open]::details-content {
+    block-size: auto;
+  }
 }
 
 body:not(.entry-page) summary.nav-title:focus-visible {
@@ -60,7 +81,49 @@ body:not(.entry-page) summary.nav-title:focus-visible {
 }
 
 @media (max-width: 768px) {
+  body:not(.entry-page) .sidebar {
+    transition:
+      transform 0.18s ease,
+      visibility 0s linear 0.18s;
+  }
+
   body:not(.entry-page) .sidebar:not(.open) {
     visibility: hidden;
   }
+
+  body:not(.entry-page) .sidebar.open {
+    visibility: visible;
+    transition-delay: 0s;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:not(.entry-page) .sidebar,
+  body:not(.entry-page) summary.nav-title::after,
+  body:not(.entry-page) .nav-section::details-content {
+    transition: none;
+  }
+}
+
+.content .benchmark-provenance summary {
+  cursor: pointer;
+  color: var(--octc-color-text);
+  padding: 0.5rem 0;
+}
+
+.content .benchmark-provenance table {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.content .benchmark-provenance :is(th, td, code) {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.content .benchmark-provenance summary:focus-visible {
+  outline: 2px solid var(--octc-color-primary);
+  outline-offset: 2px;
 }

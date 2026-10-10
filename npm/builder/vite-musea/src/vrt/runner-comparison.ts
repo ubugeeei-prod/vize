@@ -15,7 +15,7 @@ import { PNG } from "pngjs";
 import { readPng, writePng, colorDelta, isAntiAliased, fileExists } from "./comparison.js";
 import type { VrtResult } from "./types.js";
 import type { MuseaVrtRunner } from "./runner.js";
-import { buildSnapshotName, buildVariantUrl } from "./utils.js";
+import { observePreviewReady, waitForMountedPreview } from "./preview-ready.js";
 
 /**
  * Capture screenshot and compare with baseline.
@@ -39,7 +39,7 @@ export async function captureAndCompare(
   const comparison = runner.getComparison();
 
   const snapshotDir = options.snapshotDir;
-  const snapshotName = buildSnapshotName(art.path, variantName, viewport);
+  const snapshotName = await runner.getSnapshotName(art, variantName, viewport);
   const snapshotPath = path.join(snapshotDir, snapshotName);
   const currentPath = path.join(snapshotDir, "current", snapshotName);
   const diffPath = path.join(snapshotDir, "diff", snapshotName);
@@ -64,9 +64,11 @@ export async function captureAndCompare(
     page = await context.newPage();
 
     // Navigate to variant preview URL
-    const variantUrl = buildVariantUrl(baseUrl, art.path, variantName);
+    const variantUrl = runner.getPreviewUrl(baseUrl, art.path, variantName);
     const waitUntil = capture.waitForNetwork ? ("networkidle" as const) : ("load" as const);
+    if (capture.waitForPreviewReady) await observePreviewReady(page);
     await page.goto(variantUrl, { waitUntil });
+    if (capture.waitForPreviewReady) await waitForMountedPreview(page);
 
     // Wait for content to render
     await page.waitForSelector(capture.waitSelector, { timeout: 10000 });

@@ -80,28 +80,32 @@ pub(in crate::markup) fn walk_items<'a>(
         }
         return;
     }
-    let (mut attribute_index, mut binding_index) = (0usize, 0usize);
-    loop {
-        let next_attribute = attributes.get(attribute_index);
-        let next_binding = bindings.get(binding_index);
-        match (next_attribute, next_binding) {
-            (Some(attribute), Some(binding)) if attribute.span.start <= op_span(binding).start => {
-                visitor(L2Item::Attribute { attribute, doc });
-                attribute_index += 1;
-            }
-            (_, Some(binding)) => {
-                visitor(L2Item::Binding(L2Bound {
-                    op: binding,
-                    surface: None,
-                }));
-                binding_index += 1;
-            }
-            (Some(attribute), None) => {
-                visitor(L2Item::Attribute { attribute, doc });
-                attribute_index += 1;
-            }
-            (None, None) => break,
+    let (mut attributes, mut bindings) = (attributes, bindings);
+    // Only merge while both streams have items. Draining the remaining stream
+    // avoids repeating the other stream's exhausted cursor check for every
+    // authored item and still gives static attributes priority for tied spans.
+    while let (Some((attribute, attribute_tail)), Some((binding, binding_tail))) =
+        (attributes.split_first(), bindings.split_first())
+    {
+        if attribute.span.start <= op_span(binding).start {
+            visitor(L2Item::Attribute { attribute, doc });
+            attributes = attribute_tail;
+        } else {
+            visitor(L2Item::Binding(L2Bound {
+                op: binding,
+                surface: None,
+            }));
+            bindings = binding_tail;
         }
+    }
+    for attribute in attributes {
+        visitor(L2Item::Attribute { attribute, doc });
+    }
+    for binding in bindings {
+        visitor(L2Item::Binding(L2Bound {
+            op: binding,
+            surface: None,
+        }));
     }
 }
 
@@ -162,3 +166,6 @@ pub(in crate::markup) fn surface_expression<'a>(
         None => None,
     }
 }
+
+#[cfg(test)]
+mod tests;

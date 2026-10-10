@@ -1,8 +1,7 @@
 use super::*;
 
 #[test]
-fn fourteen_original_history_sources_keep_twelve_actual_slots_and_two_unchanged_boundaries() -> Test
-{
+fn fourteen_original_history_sources_keep_thirteen_actual_slots_and_entity_text_boundary() -> Test {
     let cases = [
         (r#"<div title="a &amp;lt; b">x</div>"#, "a &lt; b", true),
         (r#"<div title="&amp;lt;">x</div>"#, "&lt;", true),
@@ -15,7 +14,7 @@ fn fourteen_original_history_sources_keep_twelve_actual_slots_and_two_unchanged_
         ("<div title=a&b>x</div>", "a&b", true),
         (r#"<div title="&lt;b&gt;">x</div>"#, "<b>", true),
         ("<div title=&amp;lt;>x</div>", "&lt;", true),
-        (r#"<div class="a&amp;amp;b">x</div>"#, "a&amp;b", false),
+        (r#"<div class="a&amp;amp;b">x</div>"#, "a&amp;b", true),
         (
             r#"<div title="a &amp;lt; b">&amp;lt;</div>"#,
             "a &lt; b",

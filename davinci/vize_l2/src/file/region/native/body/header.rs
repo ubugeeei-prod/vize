@@ -145,7 +145,7 @@ fn ordinary<'a>(original: NativeAttribute<'_, 'a>) -> Result<Attribute<'a>, Kind
     let name_span = block.span_of(name).ok_or(Kind::InvalidEvent)?;
     if surface.name.is_missing()
         || name.is_empty()
-        || matches!(name, "class" | "style" | "key" | "ref" | "is")
+        || matches!(name, "style" | "key" | "ref" | "is")
     {
         return Err(Kind::UnsupportedChild);
     }

@@ -22,6 +22,8 @@ export const SCRIPT_BASENAMES = [
   "syntax-highlight-languages",
   "syntax-highlight-core",
   "syntax-highlight",
+  "command-variants",
+  "command-tabs",
 ];
 const VERTEX_SHADER_PLACEHOLDER = "__VERT_SRC__";
 const FRAGMENT_SHADER_PLACEHOLDER = "__FRAG_SRC__";

@@ -172,22 +172,13 @@ fn constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_p
             DomUnsupported::Operation
         );
     }
-    // The exact original class header stays an earlier native header refusal.
+    // The exact original class header completes; the loop body still refuses.
     let class = compile_native_selected_setup_sfc_dom(
         &arena,
         "<script setup>let count=2</script><template><i class='fixed' v-for='item in count'>fixed</i></template>",
         NativeSelectedSfcDomOptions::default(),
     );
-    assert_eq!(
-        class.result().err(),
-        Some(NativeSelectedSetupSfcDomError::Observation)
-    );
-    let owner = class.observation().original().template().unwrap();
-    assert_eq!(
-        owner.view().err().unwrap().kind,
-        vize_l2::lang::js::NativeTemplateIssueKind::UnsupportedChild
-    );
-    assert!(owner.retained_setup().is_some());
+    super::class_successor::assert_current(&class);
     let literal = compile_native_selected_setup_sfc_dom(
         &arena,
         "<script setup>let count=2</script><template><i v-for='item in 2'>fixed</i></template>",

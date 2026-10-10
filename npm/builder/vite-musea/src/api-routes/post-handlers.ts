@@ -12,6 +12,12 @@ import type { ApiRoutesContext, SendJson, SendError } from "./index.js";
 import { generatePreviewModuleWithProps } from "../preview/index.js";
 import { assertVueSourcePath, HttpError, parseJsonBody, resolveInside } from "../security.js";
 import { variantComponentNames } from "../variant-bindings.js";
+import { publicBasePathFromViteBase } from "../static-base.js";
+import {
+  assertArtReportOwnership,
+  attachArtReportOwner,
+  resolveArtReportTarget,
+} from "../vrt/report-identity.js";
 
 /** POST /api/preview-with-props */
 export function handlePreviewWithProps(
@@ -116,12 +122,29 @@ export async function handleRunVrt(
       artPath?: string;
       updateSnapshots?: boolean;
     }>(body);
+    if (artPath !== undefined && typeof artPath !== "string")
+      throw new HttpError("artPath must be a string", 400);
+    if (artPath !== undefined && !ctx.artFiles.has(artPath))
+      throw new HttpError("Art not found", 404);
     const { MuseaVrtRunner, generateVrtJsonReport, generateVrtReport } = await import("../vrt.js");
 
-    const snapshotDir = path.resolve(ctx.config.root, ".vize/snapshots");
+    const { a11y: _a11y, ...configured } = ctx.vrt ?? {};
+    const snapshotDir = path.resolve(ctx.config.root, configured.snapshotDir ?? ".vize/snapshots");
     const reportDir = path.resolve(ctx.config.root, ".vize/reports");
+    const projectRoot = ctx.projectRoot ?? ctx.config.root;
+    const reportTarget =
+      artPath === undefined
+        ? undefined
+        : resolveArtReportTarget(artPath, ctx.artFiles.keys(), projectRoot, reportDir);
+    if (reportTarget) await assertArtReportOwnership(reportTarget, projectRoot);
 
-    const runner = new MuseaVrtRunner({ snapshotDir });
+    const runner = new MuseaVrtRunner({
+      ...configured,
+      capture: { ...configured.capture, waitForPreviewReady: true },
+      snapshotDir,
+      projectRoot,
+      previewBasePath: publicBasePathFromViteBase(ctx.config.base, ctx.basePath),
+    });
 
     const port = ctx.getDevServerPort();
     const baseUrl = `http://localhost:${port}`;
@@ -145,13 +168,16 @@ export async function handleRunVrt(
       }
     })();
 
-    const reportBaseName =
-      typeof artPath === "string" ? `vrt-${path.basename(artPath, ".art.vue")}` : "vrt";
-    const jsonReportPath = path.join(reportDir, `${reportBaseName}-report.json`);
-    const htmlReportPath = path.join(reportDir, `${reportBaseName}-report.html`);
+    const jsonReportPath = reportTarget?.jsonReportPath ?? path.join(reportDir, "vrt-report.json");
+    const htmlReportPath = reportTarget?.htmlReportPath ?? path.join(reportDir, "vrt-report.html");
+    const jsonReport = generateVrtJsonReport(results, summary);
 
     await fs.promises.mkdir(reportDir, { recursive: true });
-    await fs.promises.writeFile(jsonReportPath, generateVrtJsonReport(results, summary), "utf-8");
+    await fs.promises.writeFile(
+      jsonReportPath,
+      reportTarget ? attachArtReportOwner(jsonReport, reportTarget) : jsonReport,
+      "utf-8",
+    );
     await fs.promises.writeFile(htmlReportPath, generateVrtReport(results, summary), "utf-8");
 
     sendJson({
