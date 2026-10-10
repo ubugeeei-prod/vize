@@ -189,7 +189,7 @@ test("pinned history also requires its unchanged whole scriptless Rust and runti
 
 test("pinned history retains the original native Vapor lower-refusal gate", () => {
   const commands = historyCommands7502("/baseline", "/history");
-  assert.equal(commands.length, 9);
+  assert.equal(commands.length, 12);
   assert.deepEqual(commands[8], [
     "cargo",
     [
@@ -266,6 +266,7 @@ test("historical source and command substitutions fail before evidence can grant
     envelopesSha256: null,
     scriptless: null,
     vapor: null,
+    stages: null,
     failure: null,
   };
   for (const mutate of [
@@ -290,6 +291,9 @@ test("historical source and command substitutions fail before evidence can grant
     "scriptless-build",
     "scriptless-judge",
     "vapor-build",
+    "selected-owner-build",
+    "selected-template-build",
+    "selected-for-class-build",
   ].map((step, index) => ({
     step,
     executable: commands[index][0],

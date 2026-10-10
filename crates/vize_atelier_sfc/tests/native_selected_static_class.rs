@@ -1,4 +1,7 @@
 //! Genuine public selected SFC entries consume the original retained class value.
+mod native_selected_static_class {
+    mod history_successor;
+}
 
 use vize_atelier_sfc::{
     NativeScopedSsrSfcCompileOptions, NativeSelectedSfcDomOptions, NativeSsrSfcCompileOptions,

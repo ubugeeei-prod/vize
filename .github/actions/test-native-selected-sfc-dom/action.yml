@@ -28,16 +28,23 @@ runs:
         set +e
         cargo test --locked --profile ci -p vize_atelier_sfc --test native_selected_static_class -- --nocapture
         public_class_rust_status=$?
-        NODE_ENV=development vp node --test tests/tooling/native-selected-static-class-reference.test.ts
+        cargo test --locked --profile ci -p vize_atelier_sfc --lib native_selected_setup::tests::original_for::refusal::constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_policies -- --exact --nocapture
+        public_class_stage_status=$?
+        NODE_ENV=development vp node --test tests/tooling/native-selected-static-class-reference.test.ts tests/tooling/native-static-class-history-successor-reference.test.ts
         public_class_development_status=$?
-        NODE_ENV=production vp node --test tests/tooling/native-selected-static-class-reference.test.ts
+        NODE_ENV=production vp node --test tests/tooling/native-selected-static-class-reference.test.ts tests/tooling/native-static-class-history-successor-reference.test.ts
         public_class_production_status=$?
         set -e
-        printf '{"rust":%s,"development":%s,"production":%s}\n' "$public_class_rust_status" "$public_class_development_status" "$public_class_production_status" > "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.statuses.json"
+        printf '{"rust":%s,"stage":%s,"development":%s,"production":%s}\n' "$public_class_rust_status" "$public_class_stage_status" "$public_class_development_status" "$public_class_production_status" > "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.statuses.json"
         test -s "$VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE"
+        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE}.late-header.json"
+        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_CAPTURE}.for-refusal.json"
+        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.late-header.development.json"
+        test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.late-header.production.json"
         test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.development.json"
         test -s "${VIZE_NATIVE_SELECTED_STATIC_CLASS_RUNTIME_CAPTURE}.production.json"
         test "$public_class_rust_status" -eq 0
+        test "$public_class_stage_status" -eq 0
         test "$public_class_development_status" -eq 0
         test "$public_class_production_status" -eq 0
     - name: Capture and execute source-built selected SFC components
@@ -118,6 +125,10 @@ runs:
           ${{ runner.temp }}/native-dom-static-class-runtime.development.json
           ${{ runner.temp }}/native-dom-static-class-runtime.production.json
           ${{ runner.temp }}/native-selected-static-class.json
+          ${{ runner.temp }}/native-selected-static-class.json.late-header.json
+          ${{ runner.temp }}/native-selected-static-class.json.for-refusal.json
+          ${{ runner.temp }}/native-selected-static-class-runtime.late-header.development.json
+          ${{ runner.temp }}/native-selected-static-class-runtime.late-header.production.json
           ${{ runner.temp }}/native-selected-static-class-runtime.development.json
           ${{ runner.temp }}/native-selected-static-class-runtime.production.json
           ${{ runner.temp }}/native-selected-static-class-runtime.statuses.json

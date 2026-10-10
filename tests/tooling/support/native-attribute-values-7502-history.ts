@@ -19,6 +19,11 @@ import {
   type VaporHistory7502,
 } from "./native-attribute-values-7502-vapor-history.ts";
 import { root7502, source7502 } from "./native-attribute-values-7502-source.ts";
+import {
+  stageTests7502,
+  stageHistory7502,
+  type StageHistory7502,
+} from "./native-attribute-values-7502-stage-history.ts";
 
 import { validateHistory7502 } from "./native-attribute-values-7502-history-protocol.ts";
 export {
@@ -48,6 +53,7 @@ export function hostedHistory7502(directory: string) {
     envelopesSha256: null,
     scriptless: null,
     vapor: null as VaporHistory7502 | null,
+    stages: null as StageHistory7502 | null,
     failure: null,
   };
   const save = () =>
@@ -207,6 +213,9 @@ export function hostedHistory7502(directory: string) {
       worktree,
       { ...env, VIZE_NATIVE_VAPOR_CAPTURE: path.join(history, "vapor.capture.json") },
     );
+    const stages = stageTests7502.map((test) =>
+      run(test.step, "cargo", [...test.argv], worktree, env),
+    );
     for (const raw of [
       install,
       runtime,
@@ -215,10 +224,12 @@ export function hostedHistory7502(directory: string) {
       scriptlessBuild,
       scriptlessJudge,
       vaporBuild,
+      ...stages,
     ])
       requireSuccess(raw);
     frame.scriptless = scriptlessHistory7502(history, worktree);
     frame.vapor = vaporHistory7502(history, worktree);
+    frame.stages = stageHistory7502(worktree);
     save();
     const receipt = JSON.parse(readFileSync(path.join(history, "build-receipt.json"), "utf8"));
     frame.baselineSource = receipt.source;

@@ -54,6 +54,16 @@ cannot qualify this execution. On current source only that named class case
 moves to complete original L3 custody and exact L4 `AttributeSemantics` refusal
 at its original attribute span. Every other authored case and fixture stays exact.
 
+The three additional original coded class-stage assumptions are independently
+executed on the same exact baseline: whole `native_selected_owner`, whole
+`native_selected_template`, and the exact original constant/full/generic/literal
+setup For policy test. Their whole source hashes are authenticated in a typed
+`stages` receipt, and their separate actual Cargo statuses and entire raw streams
+are required. All twelve historical steps execute; failure of any blocks current
+qualification. Current source names only the original static-class header as
+positive, and the setup class+For case as complete custody followed by exact
+`ForBody` refusal, retaining every other original predicate and authored byte.
+
 The same Action separately builds the current source and executes all fourteen
 original inputs through the same public DOM, SSR and Vapor selected-SFC entries,
 unchanged descriptor/target defaults and both Recorded/NoLinks modes. V2 names

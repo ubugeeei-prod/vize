@@ -1,0 +1,87 @@
+{
+  "schema": "vize.native-static-class-history-successor",
+  "version": 1,
+  "compilerVersion": "3.5.35",
+  "source": "<template>prefix<div data-first='kept' class='a  b'>unvisited</div>tail</template>",
+  "sourceSha256": "8580d6cccb496f2feb82948cc31f434a0c5035a85f6bbe47dd7ee7ee9a0a6645",
+  "template": "prefix<div data-first='kept' class='a  b'>unvisited</div>tail",
+  "options": {
+    "mode": "module",
+    "hoistStatic": false,
+    "prefixIdentifiers": true,
+    "comments": true,
+    "filename": "NativeClassHistory.vue",
+    "sourceMap": true,
+    "bindingMetadata": {},
+    "cacheHandlers": false
+  },
+  "dom": {
+    "development": {
+      "code": "import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createTextVNode(\"prefix\"),\n    _createElementVNode(\"div\", {\n      \"data-first\": \"kept\",\n      class: \"a b\"\n    }, \"unvisited\"),\n    _createTextVNode(\"tail\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeClassHistory.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;qBAAA,QAAM;IAAA,oBAAmD;MAA9C,YAAU,EAAC,MAAM;MAAC,KAAK,EAAC,KAAM;OAAC,WAAS;qBAAM,MAAI",
+        "sourcesContent": [
+          "prefix<div data-first='kept' class='a  b'>unvisited</div>tail"
+        ]
+      },
+      "codeSha256": "30bf40ed75ffa3367620e15526fe91c8684d89d25b49c4c96f3351a1f446bb33",
+      "mapSha256": "2c40464cb147db12df5a594a1acb82423986c9539dc583773198e8fe35dcfe11"
+    },
+    "production": {
+      "code": "import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, Fragment as _Fragment, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createTextVNode(\"prefix\"),\n    _createElementVNode(\"div\", {\n      \"data-first\": \"kept\",\n      class: \"a b\"\n    }, \"unvisited\"),\n    _createTextVNode(\"tail\")\n  ], 64))\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeClassHistory.vue"
+        ],
+        "names": [],
+        "mappings": ";;;;qBAAA,QAAM;IAAA,oBAAmD;MAA9C,YAAU,EAAC,MAAM;MAAC,KAAK,EAAC,KAAM;OAAC,WAAS;qBAAM,MAAI",
+        "sourcesContent": [
+          "prefix<div data-first='kept' class='a  b'>unvisited</div>tail"
+        ]
+      },
+      "codeSha256": "214ea158129b32a7c971ca474c5bee502cd96735f647c117b502c66b49df1a9a",
+      "mapSha256": "2c40464cb147db12df5a594a1acb82423986c9539dc583773198e8fe35dcfe11"
+    }
+  },
+  "ssr": {
+    "development": {
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<!--[-->prefix<div data-first=\"kept\" class=\"a b\">unvisited</div>tail<!--]-->`)\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeClassHistory.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "prefix<div data-first='kept' class='a  b'>unvisited</div>tail"
+        ]
+      },
+      "codeSha256": "1feefb2bc8ec6880666cd90ae04fe66878129de0e23c3de9f0f4747e4ba8b427",
+      "mapSha256": "a7169c28f950824561c334ea3748ee3147d76c352a718a01eed7ea6dbda5231a"
+    },
+    "production": {
+      "code": "\nexport function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<!--[-->prefix<div data-first=\"kept\" class=\"a b\">unvisited</div>tail<!--]-->`)\n}",
+      "map": {
+        "version": 3,
+        "sources": [
+          "NativeClassHistory.vue"
+        ],
+        "names": [],
+        "mappings": "",
+        "sourcesContent": [
+          "prefix<div data-first='kept' class='a  b'>unvisited</div>tail"
+        ]
+      },
+      "codeSha256": "1feefb2bc8ec6880666cd90ae04fe66878129de0e23c3de9f0f4747e4ba8b427",
+      "mapSha256": "a7169c28f950824561c334ea3748ee3147d76c352a718a01eed7ea6dbda5231a"
+    }
+  },
+  "nativeCapture": null
+}

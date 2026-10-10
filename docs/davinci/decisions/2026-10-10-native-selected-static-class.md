@@ -91,6 +91,23 @@ pinned 815 in the isolated historical Cargo target: a ninth mandatory process
 retains its raw streams/status and a typed original source/fixture/capture receipt.
 This successor supplies no Vapor class module or broader refusal allowance.
 
+Three additional coded historical assumptions keep their exact original sources
+and every unaffected predicate. The original late `class='a  b'` header now
+requires full ordered sibling/body and File/value custody in L2, full original
+L3 joins and whole official DOM output in L4, and a separate four-row public
+DOM/SSR packet with complete raw official development/production modules/maps.
+The frozen 78-row supplemental and 84-row history packets remain unchanged.
+The new four-row packet stays unfrozen until actual source-built whole output,
+maps/links and both repeated runtime modes are independently reviewed.
+
+The exact setup class+For source retains its entire setup, original For head,
+class header and complete File/L3 observations, then requires its precise
+`ForBody` node/span/error in both output sinks. It does not emit a class loop.
+All three original unchanged pinned-815 targets execute separately in the same
+isolated historical target, with full raw streams/zero statuses and typed whole
+test-source provenance. The original eight steps plus Vapor and these three
+steps make twelve mandatory historical processes; none is replaced or skipped.
+
 Instruction budgets are unchanged. The 10x type-checker target has no new
 measurement here. Source and protected full qualification, actual Stack merge,
 Vapor class support, complete native products and #6880 closure remain separate
