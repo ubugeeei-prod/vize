@@ -51,26 +51,6 @@ export const DEFAULT_SCRIPTS = {
   "vize:ready": "vize ready src",
 } as const;
 
-export const DEFAULT_VIZE_CONFIG = `import { defineConfig } from "vize";
-
-export default defineConfig({
-  compiler: {
-    templateSyntax: "standard",
-  },
-  linter: {
-    preset: "happy-path",
-  },
-  typeChecker: {
-    enabled: true,
-    strict: true,
-    jsxTypecheck: true,
-  },
-  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },
-});
-`;
-
 export const DEFAULT_OXLINT_CONFIG = `import { defineConfig } from "oxlint";
 import { configs } from "oxlint-plugin-vize";
 

@@ -2,11 +2,12 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
+import { detectProject } from "./init/detect.js";
+import { renderTypecheckTsconfig } from "./init/templates.js";
 import {
   addDefaultScripts,
   atomicWriteFile,
   DEFAULT_OXLINT_CONFIG,
-  DEFAULT_VIZE_CONFIG,
   dependencyNames,
   detectJsonIndent,
   DISCOVERED_OXLINT_CONFIG_FILES,
@@ -58,11 +59,20 @@ export function setupProject(options: SetupOptions): SetupResult {
   const createdFiles: string[] = [];
   const preservedFiles: string[] = [];
   const plannedFiles: PlannedFile[] = [];
+  const detection = detectProject(root);
+  for (const filename of VIZE_CONFIG_FILES) {
+    if (fs.existsSync(path.join(root, filename))) {
+      preservedFiles.push(filename);
+    }
+  }
   planGeneratedConfig(
     root,
-    VIZE_CONFIG_FILES,
-    "vize.config.ts",
-    DEFAULT_VIZE_CONFIG,
+    ["tsconfig.json"],
+    "tsconfig.json",
+    renderTypecheckTsconfig(
+      detection.typescript,
+      detection.framework === "nuxt" ? detection.nuxtMajor : undefined,
+    ),
     plannedFiles,
     createdFiles,
     preservedFiles,
