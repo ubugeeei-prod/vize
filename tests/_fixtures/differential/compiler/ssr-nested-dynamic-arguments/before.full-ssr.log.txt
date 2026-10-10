@@ -1,0 +1,222 @@
+2026-10-10T08:18:25.1171232Z davinci SSR production sweep: scope=smoke templates=2611 compared=2603 s4=2598 error_skips=8 rejected=0 divergences=4
+2026-10-10T08:18:25.1171854Z davinci SSR production lanes: {"legacy.expression_or_encoding": 6, "none": 7, "s4": 2598}
+2026-10-10T08:18:25.1172034Z 
+2026-10-10T08:18:25.1172204Z thread '<unnamed>' (485077) panicked at crates/vize_atelier_ssr/tests/davinci_ssr_corpus/production.rs:156:5:
+2026-10-10T08:18:25.1172457Z production: 4 production SFC divergences:
+2026-10-10T08:18:25.1172690Z /home/runner/_work/vize/vize/target/nextest/pr/vapor-sfc/326274-100/source.vue ["s4"]
+2026-10-10T08:18:25.1172903Z --- selected
+2026-10-10T08:18:25.1173242Z import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+2026-10-10T08:18:25.1173663Z import { mergeProps as _mergeProps, normalizeProps as _normalizeProps, toHandlerKey as _toHandlerKey } from "vue"
+2026-10-10T08:18:25.1173865Z 
+2026-10-10T08:18:25.1173868Z 
+2026-10-10T08:18:25.1173986Z function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+2026-10-10T08:18:25.1174207Z   _push(`<section${_ssrRenderAttrs(_attrs)}>`)
+2026-10-10T08:18:25.1174661Z   _push(_ssrRenderComponent($setup.Child, _mergeProps(_normalizeProps({ [state.keys['names]' || ""]: $setup.state.value }), _normalizeProps({ [_toHandlerKey(state.keys['events]') || ""]: $event => ($setup.state.value=$event.trim()) })), null, _parent))
+2026-10-10T08:18:25.1175223Z   _push(`<output>${_ssrInterpolate($setup.state.value)}|${_ssrInterpolate($setup.state.other)}</output></section>`)
+2026-10-10T08:18:25.1175461Z }
+2026-10-10T08:18:25.1175569Z import Child from './Child.vue'
+2026-10-10T08:18:25.1175704Z import { state } from './fixture'
+2026-10-10T08:18:25.1175793Z 
+2026-10-10T08:18:25.1175795Z 
+2026-10-10T08:18:25.1175844Z export default {
+2026-10-10T08:18:25.1175955Z   __name: 'source',
+2026-10-10T08:18:25.1176066Z   ssrRender: ssrRender,
+2026-10-10T08:18:25.1176184Z   setup(__props) {
+2026-10-10T08:18:25.1176248Z 
+2026-10-10T08:18:25.1176250Z 
+2026-10-10T08:18:25.1176308Z const __returned__ = { Child, state }
+2026-10-10T08:18:25.1176526Z Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+2026-10-10T08:18:25.1176738Z return __returned__
+2026-10-10T08:18:25.1176841Z }
+2026-10-10T08:18:25.1176892Z 
+2026-10-10T08:18:25.1176933Z }
+2026-10-10T08:18:25.1177025Z --- legacy
+2026-10-10T08:18:25.1177300Z import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+2026-10-10T08:18:25.1177712Z import { mergeProps as _mergeProps, normalizeProps as _normalizeProps, toHandlerKey as _toHandlerKey } from "vue"
+2026-10-10T08:18:25.1177913Z 
+2026-10-10T08:18:25.1177915Z 
+2026-10-10T08:18:25.1178071Z function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+2026-10-10T08:18:25.1178285Z   _push(`<section${_ssrRenderAttrs(_attrs)}>`)
+2026-10-10T08:18:25.1178806Z   _push(_ssrRenderComponent($setup.Child, _mergeProps(_normalizeProps({ [state.keys['names]'][state.indices[state.index]] || ""]: $setup.state.value }), _normalizeProps({ [_toHandlerKey(state.keys['events]'][state.indices[state.index]]) || ""]: $event => ($setup.state.value=$event.trim()) })), null, _parent))
+2026-10-10T08:18:25.1179415Z   _push(`<output>${_ssrInterpolate($setup.state.value)}|${_ssrInterpolate($setup.state.other)}</output></section>`)
+2026-10-10T08:18:25.1179649Z }
+2026-10-10T08:18:25.1179748Z import Child from './Child.vue'
+2026-10-10T08:18:25.1179888Z import { state } from './fixture'
+2026-10-10T08:18:25.1179977Z 
+2026-10-10T08:18:25.1179978Z 
+2026-10-10T08:18:25.1180027Z export default {
+2026-10-10T08:18:25.1180134Z   __name: 'source',
+2026-10-10T08:18:25.1180247Z   ssrRender: ssrRender,
+2026-10-10T08:18:25.1180361Z   setup(__props) {
+2026-10-10T08:18:25.1180429Z 
+2026-10-10T08:18:25.1180431Z 
+2026-10-10T08:18:25.1180486Z const __returned__ = { Child, state }
+2026-10-10T08:18:25.1180702Z Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+2026-10-10T08:18:25.1180914Z return __returned__
+2026-10-10T08:18:25.1181026Z }
+2026-10-10T08:18:25.1181077Z 
+2026-10-10T08:18:25.1181115Z }
+2026-10-10T08:18:25.1181286Z /home/runner/_work/vize/vize/target/nextest/pr/vapor-sfc/326274-111/source.vue ["s4"]
+2026-10-10T08:18:25.1181490Z --- selected
+2026-10-10T08:18:25.1181764Z import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+2026-10-10T08:18:25.1182179Z import { mergeProps as _mergeProps, normalizeProps as _normalizeProps, toHandlerKey as _toHandlerKey } from "vue"
+2026-10-10T08:18:25.1182382Z 
+2026-10-10T08:18:25.1182384Z 
+2026-10-10T08:18:25.1182496Z function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+2026-10-10T08:18:25.1182706Z   _push(`<section${_ssrRenderAttrs(_attrs)}>`)
+2026-10-10T08:18:25.1183296Z   _push(_ssrRenderComponent($setup.Child, _mergeProps(_normalizeProps({ [state.keys['names]' || ""]: $setup.state.value }), _normalizeProps({ [_toHandlerKey(state.keys['events]') || ""]: $event => ($setup.state.value=$event.trim()) })), null, _parent))
+2026-10-10T08:18:25.1183869Z   _push(`<output>${_ssrInterpolate($setup.state.value)}|${_ssrInterpolate($setup.state.other)}</output></section>`)
+2026-10-10T08:18:25.1184100Z }
+2026-10-10T08:18:25.1184205Z import Child from './Child.vue'
+2026-10-10T08:18:25.1184336Z import { state } from './fixture'
+2026-10-10T08:18:25.1184423Z 
+2026-10-10T08:18:25.1184425Z 
+2026-10-10T08:18:25.1184471Z export default {
+2026-10-10T08:18:25.1184582Z   __name: 'source',
+2026-10-10T08:18:25.1184689Z   ssrRender: ssrRender,
+2026-10-10T08:18:25.1184809Z   setup(__props) {
+2026-10-10T08:18:25.1184877Z 
+2026-10-10T08:18:25.1184879Z 
+2026-10-10T08:18:25.1184932Z const __returned__ = { Child, state }
+2026-10-10T08:18:25.1185143Z Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+2026-10-10T08:18:25.1185353Z return __returned__
+2026-10-10T08:18:25.1185456Z }
+2026-10-10T08:18:25.1185507Z 
+2026-10-10T08:18:25.1185552Z }
+2026-10-10T08:18:25.1185644Z --- legacy
+2026-10-10T08:18:25.1185912Z import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+2026-10-10T08:18:25.1186323Z import { mergeProps as _mergeProps, normalizeProps as _normalizeProps, toHandlerKey as _toHandlerKey } from "vue"
+2026-10-10T08:18:25.1186523Z 
+2026-10-10T08:18:25.1186525Z 
+2026-10-10T08:18:25.1186637Z function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+2026-10-10T08:18:25.1186845Z   _push(`<section${_ssrRenderAttrs(_attrs)}>`)
+2026-10-10T08:18:25.1187370Z   _push(_ssrRenderComponent($setup.Child, _mergeProps(_normalizeProps({ [state.keys['names]'][state.indices[state.index]] || ""]: $setup.state.value }), _normalizeProps({ [_toHandlerKey(state.keys['events]'][state.indices[state.index]]) || ""]: $event => ($setup.state.value=$event.trim()) })), null, _parent))
+2026-10-10T08:18:25.1187977Z   _push(`<output>${_ssrInterpolate($setup.state.value)}|${_ssrInterpolate($setup.state.other)}</output></section>`)
+2026-10-10T08:18:25.1188212Z }
+2026-10-10T08:18:25.1188313Z import Child from './Child.vue'
+2026-10-10T08:18:25.1188445Z import { state } from './fixture'
+2026-10-10T08:18:25.1188533Z 
+2026-10-10T08:18:25.1188535Z 
+2026-10-10T08:18:25.1188579Z export default {
+2026-10-10T08:18:25.1188688Z   __name: 'source',
+2026-10-10T08:18:25.1188798Z   ssrRender: ssrRender,
+2026-10-10T08:18:25.1188915Z   setup(__props) {
+2026-10-10T08:18:25.1188980Z 
+2026-10-10T08:18:25.1188982Z 
+2026-10-10T08:18:25.1189032Z const __returned__ = { Child, state }
+2026-10-10T08:18:25.1189248Z Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+2026-10-10T08:18:25.1189478Z return __returned__
+2026-10-10T08:18:25.1189584Z }
+2026-10-10T08:18:25.1189635Z 
+2026-10-10T08:18:25.1189679Z }
+2026-10-10T08:18:25.1189841Z /home/runner/_work/vize/vize/target/nextest/pr/vapor-sfc/326274-24/source.vue ["s4"]
+2026-10-10T08:18:25.1190043Z --- selected
+2026-10-10T08:18:25.1190318Z import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+2026-10-10T08:18:25.1190729Z import { mergeProps as _mergeProps, normalizeProps as _normalizeProps, toHandlerKey as _toHandlerKey } from "vue"
+2026-10-10T08:18:25.1190927Z 
+2026-10-10T08:18:25.1190929Z 
+2026-10-10T08:18:25.1191043Z function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+2026-10-10T08:18:25.1191252Z   _push(`<section${_ssrRenderAttrs(_attrs)}>`)
+2026-10-10T08:18:25.1191687Z   _push(_ssrRenderComponent($setup.Child, _mergeProps(_normalizeProps({ [state.keys['names]' || ""]: $setup.state.value }), _normalizeProps({ [_toHandlerKey(state.keys['events]') || ""]: $event => ($setup.state.value=$event.trim()) })), null, _parent))
+2026-10-10T08:18:25.1192206Z   _push(`<output>${_ssrInterpolate($setup.state.value)}|${_ssrInterpolate($setup.state.other)}</output></section>`)
+2026-10-10T08:18:25.1192515Z }
+2026-10-10T08:18:25.1192669Z import Child from './Child.vue'
+2026-10-10T08:18:25.1192804Z import { state } from './fixture'
+2026-10-10T08:18:25.1192888Z 
+2026-10-10T08:18:25.1192890Z 
+2026-10-10T08:18:25.1192958Z export default {
+2026-10-10T08:18:25.1193069Z   __name: 'source',
+2026-10-10T08:18:25.1193179Z   ssrRender: ssrRender,
+2026-10-10T08:18:25.1193297Z   setup(__props) {
+2026-10-10T08:18:25.1193363Z 
+2026-10-10T08:18:25.1193365Z 
+2026-10-10T08:18:25.1193417Z const __returned__ = { Child, state }
+2026-10-10T08:18:25.1193630Z Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+2026-10-10T08:18:25.1193841Z return __returned__
+2026-10-10T08:18:25.1193944Z }
+2026-10-10T08:18:25.1193994Z 
+2026-10-10T08:18:25.1194036Z }
+2026-10-10T08:18:25.1194129Z --- legacy
+2026-10-10T08:18:25.1194399Z import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+2026-10-10T08:18:25.1194818Z import { mergeProps as _mergeProps, normalizeProps as _normalizeProps, toHandlerKey as _toHandlerKey } from "vue"
+2026-10-10T08:18:25.1195019Z 
+2026-10-10T08:18:25.1195021Z 
+2026-10-10T08:18:25.1195133Z function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+2026-10-10T08:18:25.1195343Z   _push(`<section${_ssrRenderAttrs(_attrs)}>`)
+2026-10-10T08:18:25.1195863Z   _push(_ssrRenderComponent($setup.Child, _mergeProps(_normalizeProps({ [state.keys['names]'][state.indices[state.index]] || ""]: $setup.state.value }), _normalizeProps({ [_toHandlerKey(state.keys['events]'][state.indices[state.index]]) || ""]: $event => ($setup.state.value=$event.trim()) })), null, _parent))
+2026-10-10T08:18:25.1196467Z   _push(`<output>${_ssrInterpolate($setup.state.value)}|${_ssrInterpolate($setup.state.other)}</output></section>`)
+2026-10-10T08:18:25.1196702Z }
+2026-10-10T08:18:25.1196805Z import Child from './Child.vue'
+2026-10-10T08:18:25.1196942Z import { state } from './fixture'
+2026-10-10T08:18:25.1197029Z 
+2026-10-10T08:18:25.1197031Z 
+2026-10-10T08:18:25.1197079Z export default {
+2026-10-10T08:18:25.1197191Z   __name: 'source',
+2026-10-10T08:18:25.1197299Z   ssrRender: ssrRender,
+2026-10-10T08:18:25.1197417Z   setup(__props) {
+2026-10-10T08:18:25.1197485Z 
+2026-10-10T08:18:25.1197487Z 
+2026-10-10T08:18:25.1197542Z const __returned__ = { Child, state }
+2026-10-10T08:18:25.1197751Z Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+2026-10-10T08:18:25.1197962Z return __returned__
+2026-10-10T08:18:25.1198066Z }
+2026-10-10T08:18:25.1198118Z 
+2026-10-10T08:18:25.1198160Z }
+2026-10-10T08:18:25.1198324Z /home/runner/_work/vize/vize/target/nextest/pr/vapor-sfc/326274-69/source.vue ["s4"]
+2026-10-10T08:18:25.1198522Z --- selected
+2026-10-10T08:18:25.1198802Z import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+2026-10-10T08:18:25.1199332Z import { mergeProps as _mergeProps, normalizeProps as _normalizeProps, toHandlerKey as _toHandlerKey } from "vue"
+2026-10-10T08:18:25.1199537Z 
+2026-10-10T08:18:25.1199539Z 
+2026-10-10T08:18:25.1199651Z function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+2026-10-10T08:18:25.1199867Z   _push(`<section${_ssrRenderAttrs(_attrs)}>`)
+2026-10-10T08:18:25.1200300Z   _push(_ssrRenderComponent($setup.Child, _mergeProps(_normalizeProps({ [state.keys['names]' || ""]: $setup.state.value }), _normalizeProps({ [_toHandlerKey(state.keys['events]') || ""]: $event => ($setup.state.value=$event.trim()) })), null, _parent))
+2026-10-10T08:18:25.1200829Z   _push(`<output>${_ssrInterpolate($setup.state.value)}|${_ssrInterpolate($setup.state.other)}</output></section>`)
+2026-10-10T08:18:25.1201066Z }
+2026-10-10T08:18:25.1201164Z import Child from './Child.vue'
+2026-10-10T08:18:25.1201300Z import { state } from './fixture'
+2026-10-10T08:18:25.1201388Z 
+2026-10-10T08:18:25.1201390Z 
+2026-10-10T08:18:25.1201521Z export default {
+2026-10-10T08:18:25.1201679Z   __name: 'source',
+2026-10-10T08:18:25.1201789Z   ssrRender: ssrRender,
+2026-10-10T08:18:25.1201903Z   setup(__props) {
+2026-10-10T08:18:25.1201969Z 
+2026-10-10T08:18:25.1201971Z 
+2026-10-10T08:18:25.1202028Z const __returned__ = { Child, state }
+2026-10-10T08:18:25.1202247Z Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+2026-10-10T08:18:25.1202456Z return __returned__
+2026-10-10T08:18:25.1202565Z }
+2026-10-10T08:18:25.1202615Z 
+2026-10-10T08:18:25.1202657Z }
+2026-10-10T08:18:25.1202750Z --- legacy
+2026-10-10T08:18:25.1203064Z import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "@vue/server-renderer"
+2026-10-10T08:18:25.1203474Z import { mergeProps as _mergeProps, normalizeProps as _normalizeProps, toHandlerKey as _toHandlerKey } from "vue"
+2026-10-10T08:18:25.1203673Z 
+2026-10-10T08:18:25.1203674Z 
+2026-10-10T08:18:25.1203785Z function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
+2026-10-10T08:18:25.1204002Z   _push(`<section${_ssrRenderAttrs(_attrs)}>`)
+2026-10-10T08:18:25.1204514Z   _push(_ssrRenderComponent($setup.Child, _mergeProps(_normalizeProps({ [state.keys['names]'][state.indices[state.index]] || ""]: $setup.state.value }), _normalizeProps({ [_toHandlerKey(state.keys['events]'][state.indices[state.index]]) || ""]: $event => ($setup.state.value=$event.trim()) })), null, _parent))
+2026-10-10T08:18:25.1205119Z   _push(`<output>${_ssrInterpolate($setup.state.value)}|${_ssrInterpolate($setup.state.other)}</output></section>`)
+2026-10-10T08:18:25.1205356Z }
+2026-10-10T08:18:25.1205455Z import Child from './Child.vue'
+2026-10-10T08:18:25.1205595Z import { state } from './fixture'
+2026-10-10T08:18:25.1205682Z 
+2026-10-10T08:18:25.1205684Z 
+2026-10-10T08:18:25.1205730Z export default {
+2026-10-10T08:18:25.1205839Z   __name: 'source',
+2026-10-10T08:18:25.1205952Z   ssrRender: ssrRender,
+2026-10-10T08:18:25.1206070Z   setup(__props) {
+2026-10-10T08:18:25.1206139Z 
+2026-10-10T08:18:25.1206141Z 
+2026-10-10T08:18:25.1206197Z const __returned__ = { Child, state }
+2026-10-10T08:18:25.1206416Z Object.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })
+2026-10-10T08:18:25.1206628Z return __returned__
+2026-10-10T08:18:25.1206737Z }
+2026-10-10T08:18:25.1206789Z 
+2026-10-10T08:18:25.1206827Z }
+2026-10-10T08:18:25.1206987Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-10-10T08:18:25.1207135Z 
+2026-10-10T08:18:25.1207308Z thread 'ssr_lanes_agree_on_sfc_templates' (485076) panicked at crates/vize_atelier_ssr/tests/davinci_ssr_corpus.rs:282:10:
+2026-10-10T08:18:25.1207587Z P3-8 SSR corpus thread must not panic: Any { .. }
+2026-10-10T08:18:25.1207766Z test ssr_lanes_agree_on_sfc_templates ... FAILED

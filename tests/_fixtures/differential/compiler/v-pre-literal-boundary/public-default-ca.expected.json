@@ -1,0 +1,114 @@
+[
+  {
+    "name": "own-empty",
+    "source": "<template><slot v-pre></slot></template>",
+    "kind": "dom",
+    "result": {
+      "bindings": null,
+      "code": "import { renderSlot as _renderSlot } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return _renderSlot(_ctx.$slots, \"default\")\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "own-empty",
+    "source": "<template><slot v-pre></slot></template>",
+    "kind": "vapor",
+    "result": {
+      "bindings": null,
+      "code": "import { createSlot as _createSlot } from 'vue';\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = _createSlot(\"default\")\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "inherited-empty",
+    "source": "<template><div v-pre><slot></slot></div></template>",
+    "kind": "dom",
+    "result": {
+      "bindings": null,
+      "code": "import { renderSlot as _renderSlot, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _renderSlot(_ctx.$slots, \"default\")\n  ]))\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "inherited-empty",
+    "source": "<template><div v-pre><slot></slot></div></template>",
+    "kind": "vapor",
+    "result": {
+      "bindings": null,
+      "code": "import { createSlot as _createSlot, setInsertionState as _setInsertionState, template as _template } from 'vue';\nconst t0 = _template(\"<div></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n1 = t0()\n  _setInsertionState(n1)\n  const n0 = _createSlot(\"default\")\n  return n1\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "normal-outlet",
+    "source": "<template><slot></slot></template>",
+    "kind": "dom",
+    "result": {
+      "bindings": null,
+      "code": "import { renderSlot as _renderSlot } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return _renderSlot(_ctx.$slots, \"default\")\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "normal-outlet",
+    "source": "<template><slot></slot></template>",
+    "kind": "vapor",
+    "result": {
+      "bindings": null,
+      "code": "import { createSlot as _createSlot } from 'vue';\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = _createSlot(\"default\")\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "original-nonempty",
+    "source": "<template><slot v-pre>{{ not }} an interpolation</slot></template>",
+    "kind": "dom",
+    "result": {
+      "bindings": null,
+      "code": "import { toDisplayString as _toDisplayString, renderSlot as _renderSlot, createTextVNode as _createTextVNode } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return _renderSlot(_ctx.$slots, \"default\", {}, () => [\n    _toDisplayString(_ctx.not),\n    _createTextVNode(\" an interpolation\")\n  ])\n}",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  },
+  {
+    "name": "original-nonempty",
+    "source": "<template><slot v-pre>{{ not }} an interpolation</slot></template>",
+    "kind": "vapor",
+    "result": {
+      "bindings": null,
+      "code": "import { createSlot as _createSlot, template as _template } from 'vue';\nconst t0 = _template(\"{{ not }} an interpolation\")\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = _createSlot(\"default\", null, () => {\n    const n1 = t0()\n    return n1\n  })\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+      "css": null,
+      "errors": [],
+      "macroArtifacts": [],
+      "map": null,
+      "warnings": []
+    }
+  }
+]

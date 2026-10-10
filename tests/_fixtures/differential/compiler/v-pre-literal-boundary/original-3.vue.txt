@@ -1,0 +1,1 @@
+<template><table><tr is="vue:Row" :[keys['name]']].camel="value"/></table></template>

@@ -8,6 +8,7 @@
 //! a directive is a static attribute.
 
 use alloc::vec::Vec;
+use vize_l1::markup::lex::dynamic_argument_boundary;
 
 /// Which directive a name spells.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -131,27 +132,16 @@ fn directive<'a>(
 /// Parse `text` as an argument followed by modifiers.
 fn arg_first<'a>(text: &'a str) -> (Option<Arg<'a>>, Vec<&'a str>) {
     if let Some(inner_and_rest) = text.strip_prefix('[') {
-        // Dynamic argument: to the matching `]`, bracket-aware so
-        // `[a[0]]` stays one argument. An unterminated bracket takes the
-        // rest of the name (total; the tokenizer's diagnostic already
-        // covers the malformed spelling).
-        let mut depth = 1usize;
-        for (index, byte) in inner_and_rest.bytes().enumerate() {
-            match byte {
-                b'[' => depth += 1,
-                b']' => {
-                    depth -= 1;
-                    if depth == 0 {
-                        let (inner, rest) = inner_and_rest
-                            .split_at_checked(index)
-                            .unwrap_or((inner_and_rest, ""));
-                        let rest = rest.strip_prefix(']').unwrap_or(rest);
-                        let modifiers = split_modifiers(rest.strip_prefix('.').unwrap_or(""));
-                        return (Some(Arg::Dynamic(inner)), modifiers);
-                    }
-                }
-                _ => {}
-            }
+        // Share the tokenizer's quoted and nested delimiter boundary. Recovery
+        // still keeps the whole remaining name when no closing `]` is found.
+        let (end, closed) = dynamic_argument_boundary(inner_and_rest);
+        if closed {
+            let (inner, rest) = inner_and_rest
+                .split_at_checked(end)
+                .unwrap_or((inner_and_rest, ""));
+            let rest = rest.strip_prefix(']').unwrap_or(rest);
+            let modifiers = split_modifiers(rest.strip_prefix('.').unwrap_or(""));
+            return (Some(Arg::Dynamic(inner)), modifiers);
         }
         return (Some(Arg::Dynamic(inner_and_rest)), Vec::new());
     }
@@ -232,6 +222,39 @@ mod tests {
 
         let unterminated = directive(classify(":[key"));
         assert_eq!(unterminated.arg, Some(Arg::Dynamic("key")));
+    }
+
+    #[test]
+    fn quoted_closing_brackets_keep_the_whole_dynamic_argument() {
+        for expression in [
+            "state.keys['names]'][state.indices[state.index]]",
+            "state.keys['events]'][state.indices[state.index]]",
+            r#"keys["na]me"]"#,
+            r"keys['escaped\']key']",
+            "keys[`name]${indices[index]}`]",
+        ] {
+            for prefix in [":", ".", "@", "#", "v-bind:", "v-on:", "v-pin:"] {
+                let spelling = vize_l0::cstr!("{prefix}[{expression}].camel.stop");
+                let d = directive(classify(&spelling));
+                assert_eq!(d.arg, Some(Arg::Dynamic(expression)), "{spelling}");
+                assert_eq!(d.modifiers, vec!["camel", "stop"], "{spelling}");
+            }
+        }
+    }
+
+    #[test]
+    fn incomplete_dynamic_arguments_keep_total_recovery() {
+        for (spelling, expression) in [
+            (":[", ""),
+            (":[key", "key"),
+            ("v-bind:[keys['name]'].camel", "keys['name]'].camel"),
+            ("v-on:[keys[`name]`].stop", "keys[`name]`].stop"),
+        ] {
+            let d = directive(classify(spelling));
+            assert_eq!(d.arg, Some(Arg::Dynamic(expression)), "{spelling}");
+            assert!(d.modifiers.is_empty(), "{spelling}");
+        }
+        assert_eq!(directive(classify(":[]")).arg, Some(Arg::Dynamic("")));
     }
 
     #[test]

@@ -14,6 +14,7 @@ import {
   runHostProcesses,
 } from "./ci-host-concurrency.mjs";
 import { stageProjectNative } from "./project-native-staging.ts";
+import { qualifyMixedDirectory8507 } from "./mixed-directory-8507-qualification.mjs";
 import {
   nativeHistoryReceipt,
   validateNativeHistoryBuild,
@@ -70,6 +71,9 @@ try {
       process.env.GITHUB_OUTPUT,
       `staging-directory=${artifacts}\nphase-walltime=${path.join(artifacts, "phase-walltime.json")}\n`,
     );
+  const mixedDirectory8507 = await timed("mixedDirectory8507", () =>
+    qualifyMixedDirectory8507({ root, packageDir, artifacts, receipt, binary }),
+  );
   const n8nReplay = await timed("baselinePreparation", () =>
     beginN8nReplay({ root, packageDir, artifacts, receipt, binary }),
   );
@@ -146,6 +150,7 @@ try {
           toolchain: receipt.toolchain,
           binarySha256: receipt.frozen.sha256,
           qualifications,
+          mixedDirectory8507,
           limits: [
             "authored wrapper controls only",
             "full licensed native/Vize-layer replay is qualified separately in n8n/qualification.json",

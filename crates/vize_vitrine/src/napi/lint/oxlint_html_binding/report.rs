@@ -79,7 +79,10 @@ fn render_inner(operation: &Operation, options: &OxlintHtmlOptions) -> Result<Re
                 &operation.projection.settings.help_level,
             )?;
             let mut json = String::new();
-            if operation.selection.host == HostProfile::Oxlint186 {
+            if matches!(
+                operation.selection.host,
+                HostProfile::Oxlint181 | HostProfile::Oxlint186
+            ) {
                 JSONReportHandler::new()
                     .render_report(&mut json, &diagnostic)
                     .map_err(|_| String::from("HTML JSON rendering failed"))?;
@@ -88,7 +91,10 @@ fn render_inner(operation: &Operation, options: &OxlintHtmlOptions) -> Result<Re
             }
             fragments.push(json);
             if options.format == "default" {
-                if operation.selection.host == HostProfile::Oxlint186 {
+                if matches!(
+                    operation.selection.host,
+                    HostProfile::Oxlint181 | HostProfile::Oxlint186
+                ) {
                     handler
                         .render_report(&mut output, &diagnostic)
                         .map_err(|_| String::from("HTML default rendering failed"))?;

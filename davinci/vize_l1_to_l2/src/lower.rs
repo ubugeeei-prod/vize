@@ -48,6 +48,7 @@ mod features;
 mod finish;
 mod foreign;
 mod forop;
+mod frozen;
 mod html;
 mod if_keys;
 mod leaf;
@@ -66,6 +67,8 @@ pub use caps::LegacyCaps;
 pub use element::frozen_attribute_name;
 pub use features::{LoweringFeatures, OpFamily};
 pub use foreign::{ForeignDialect, lower_source_block_with_foreign_expressions};
+#[doc(hidden)]
+pub use frozen::lower_with_frozen_element_spans;
 pub use if_keys::{BranchKey, BranchKeyKind, IfFacts, SAME_KEY_MESSAGE};
 
 // The one-scanner rule (#4365): the L2 passes re-derive binding names

@@ -16,6 +16,7 @@ mod entry;
 #[cfg(test)]
 mod experimental_tests;
 mod expression;
+mod frozen;
 #[cfg(all(test, feature = "legacy"))]
 mod legacy_tests;
 #[cfg(all(test, feature = "native-lex-parity"))]
@@ -25,10 +26,14 @@ mod pending_text;
 mod tokenizer_contract_tests;
 #[cfg(all(test, feature = "legacy"))]
 mod tokenizer_first_newline_witness;
+#[cfg(test)]
+mod v_pre_tests;
 mod whitespace;
 mod whitespace_context;
 
 pub use entry::*;
+#[doc(hidden)]
+pub use frozen::FrozenElements;
 pub use whitespace_context::{
     current_legacy_line_breaks, current_whitespace_strategy, with_whitespace_mode,
     with_whitespace_strategy,
@@ -98,6 +103,8 @@ pub struct Parser<'a> {
     in_pre: bool,
     /// Whether in v-pre block
     in_v_pre: bool,
+    /// Compiler opt-in custody; backing storage is reserved only for frozen tags.
+    frozen_elements: Option<Vec<'a, vize_l0::Span>>,
     open_table_count: usize,
     open_p_count: usize,
     open_a_count: usize,
@@ -169,14 +176,25 @@ pub(super) struct CurrentDirective<'a> {
 
 impl<'a> Parser<'a> {
     /// Parse the source and return the AST
-    pub fn parse(mut self) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
+    pub fn parse(self) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
+        let (root, errors, _) = self.parse_inner();
+        (root, errors)
+    }
+
+    fn parse_inner(
+        mut self,
+    ) -> (
+        RootNode<'a>,
+        std::vec::Vec<CompilerError>,
+        FrozenElements<'a>,
+    ) {
         // Initialize root node
         let allocator = self.allocator;
         let root = RootNode::new(allocator, self.source);
         self.root = Some(root);
 
         if !self.tokenize_template() {
-            return self.into_result();
+            return self.into_frozen_result();
         }
 
         // Freeze the last text run before anything walks the finished tree.
@@ -196,7 +214,7 @@ impl<'a> Parser<'a> {
             }
         }
 
-        self.into_result()
+        self.into_frozen_result()
     }
 
     /// Get source slice

@@ -1,0 +1,14 @@
+[
+    CompilerError {
+        code: EofInTag,
+        message: "Unexpected end of input inside a tag; inferred the missing tag close so parsing can continue.",
+        loc: Some(
+            SourceLocation {
+                span: Span {
+                    start: 28,
+                    end: 28,
+                },
+            },
+        ),
+    },
+]
