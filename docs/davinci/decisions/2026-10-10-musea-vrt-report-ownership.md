@@ -41,3 +41,17 @@ the second capture preserves the first whole report, repeated comparisons pass
 and preserve the other whole report. Fresh exact-head Actions, protected actual
 merge and publication remain pending. Hosted browser VRT needs a separate
 Node screenshot service and remains unfinished.
+
+Actual successor [Actions 38040050699](https://github.com/ubugeeei-prod/vize/actions/runs/38040050699)
+at `86d9f77840a935fb344009831ab6efbc8f73c35a` passed all eight source-native
+tests without skips and the original Chromium contracts. Both initial captures
+and zero-diff repeats retained distinct physical JSON/HTML reports and PNG
+owners. Removing Right, then running Left against Right's old-shape basename
+report, returned the explicit ownership refusal. Complete snapshot/report SHA,
+size and modification-time inventories remained unchanged. This preparation
+proof grants no full-source, protected-merge or publication credit.
+
+The retained screenshot also shows the existing generic Playwright-install
+hint for an ownership error and a removed Right entry still visible in the
+sidebar after the actual API returned only Left. This report law does not
+establish gallery removal synchronization or revise the shared error display.

@@ -51,3 +51,17 @@ in the gallery. The CLI honors the Vite base and Musea `basePath` from your conf
 `--base-url` selects the server origin. Hosted capture uses `--gallery-url` instead.
 
 See [snapshot identity and migration](./musea-snapshots.md) before reusing existing baselines or testing same-named Art files.
+
+## Gallery VRT reports
+
+**Run VRT** saves the selected Art's JSON and HTML reports in `.vize/reports`.
+A unique safe basename keeps its familiar name, such as `vrt-Button-report.json`.
+Same-named Arts receive separate deterministic report names, so capturing one
+keeps the other Art's report and baseline intact. Use the report paths shown
+by the gallery rather than constructing them from an Art basename.
+
+If a report's owner cannot be established, capture stops before changing reports
+or snapshots. Move both named JSON and HTML files to an archive directory and
+retry; keep those historical files until you have reviewed their contents.
+Removing one of two same-named Arts does not transfer its old report to the other.
+This applies to the development gallery; hosted galleries use the CLI above.
