@@ -119,3 +119,27 @@ warning-only `NODE_OPTIONS`; the actual public workflow retains every strict
 override refusal. All local laws are replayed under the real source CI flags.
 Review follow-up removes the unused Actions permission, matches each bad input's
 specific refusal reason and restores mutated fixtures even when an assertion fails.
+
+## Independent browser observations after a native failure
+
+The published `v0.439.0` consumer run
+[`38018568206`](https://github.com/ubugeeei-prod/vize/actions/runs/38018568206)
+failed its first original #8328 native comparison. The browser probe was skipped;
+that run supplies no #8329 acceptance.
+
+Keep native failures visible. Run the browser only when the reviewed-main/runtime
+guard, publication preparation, exact public installation and Chromium installation
+all succeeded, and the native step completed with success or failure. Cancellation,
+skipped native execution and failed prerequisites cannot start the browser. Its
+successful observation can qualify #8329 independently; the combined seal still
+requires both native and browser success with matching installed package/provider
+identities.
+
+Before its first assertion, the native probe retains the metadata and hash from
+the same loaded provider, explicitly recording that cases are not yet verified.
+After all unchanged browser assertions succeed, its bounded log summary records
+every phase, observed frame counts and actual Document identity controls. The full
+browser JSON remains in the artifact. Inert regression laws exercise the workflow
+outcome matrix and the actual native entry failing before its success receipt;
+they make no public runtime claim. Fresh source Actions, protected merge and a
+real public replay remain required.

@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 import { chromium, type Locator, type Page } from "playwright";
 import { createServer } from "vite";
 import vue from "@vitejs/plugin-vue";
+import { checkPaletteLoadOrder } from "./palette-load.browser-fixtures";
+import { checkPaletteReplacement } from "./palette-replacement.browser-fixtures";
 import { checkCopiedProps } from "./props-usage.browser-fixtures.ts";
 import { registerUsageCodeContracts } from "../../src/usage-code-contracts.ts";
 
@@ -229,6 +231,11 @@ await test(
         }),
       );
       await page.goto(`http://127.0.0.1:${address.port}/__musea__/`);
+      observations.push({
+        panel: "palette-load-order",
+        ...(await checkPaletteLoadOrder(page, repository, output)),
+      });
+      await checkPaletteReplacement(page, repository, observations);
       await page.locator(".art-item").first().click();
       await page.locator('[title="View source"]').last().click();
       const pre = page.locator(".source-pre");
