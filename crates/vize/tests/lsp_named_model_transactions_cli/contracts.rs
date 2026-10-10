@@ -59,7 +59,10 @@ pub fn bind(value: &Value, uris: &Value) -> Value {
 
 pub fn cases() -> Vec<Value> {
     assert_eq!(
-        format!("{:x}", Sha256::digest(CONTRACTS.as_bytes())),
+        Sha256::digest(CONTRACTS.as_bytes())
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>(),
         "dce60b59a09de699b8ba9aa928463790ff14627c8d5f6d46c8a50e23886c70b8",
         "immutable pre-query authored corpus"
     );
