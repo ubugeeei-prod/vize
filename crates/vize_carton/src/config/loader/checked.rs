@@ -15,7 +15,7 @@ pub(super) fn load_raw_config_checked(
         .map(Path::to_path_buf)
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
     if !base.exists() {
-        return Err(crate::cstr!("config path not found: {}", base.display()).into());
+        return Err(crate::cstr!("config file not found: {}", base.display()).into());
     }
     if base.is_file() {
         return parse(&base);
