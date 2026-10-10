@@ -12,6 +12,7 @@ import { generatePreviewModule, generatePreviewHtml } from "./preview/index.js";
 import { generateArtModule } from "./art-module.js";
 import { decodeUrlComponent, HttpError, resolveUrlPathInside } from "./security.js";
 import { toPascalCase } from "./utils.js";
+import { previewModuleId } from "./preview-module-id.js";
 import type { MuseaTokenPreviewConfig } from "./tokens/preview.js";
 import { generateDevGlobalsScript } from "./gallery/globals.js";
 export { generateDevGlobalsScript } from "./gallery/globals.js";
@@ -240,9 +241,7 @@ export function registerMiddleware(devServer: ViteDevServer, ctx: MiddlewareCont
     );
 
     try {
-      const result = await devServer.transformRequest(
-        `virtual:musea-preview:${artPath}:${variantName}`,
-      );
+      const result = await devServer.transformRequest(previewModuleId(artPath, variantName));
       if (result) {
         res.setHeader("Content-Type", "application/javascript");
         res.setHeader("Cache-Control", "no-cache");

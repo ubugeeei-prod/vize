@@ -1,0 +1,8 @@
+{
+  "count": 498,
+  "encoding": "JSON compact UTF-8 array",
+  "sha256": "79e7820352a34f1c4e3b6ff5bdb1bfb2645c8e809b12c62faac40f99518c4740",
+  "remarksBaselineSha256": "12581f531451d02c277281a35fa4714a128baee0c15ef0366d2cff3d3285359f",
+  "preAdditionMain": "76b98a8b913ae8e087b5f8e8692fbd9e85242232",
+  "observedFileSetFailure": "https://github.com/ubugeeei-prod/vize/actions/runs/38041073815/job/114182190768"
+}
