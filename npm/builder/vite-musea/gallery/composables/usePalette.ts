@@ -1,4 +1,4 @@
-import { ref, computed } from "vue";
+import { ref, shallowRef, computed } from "vue";
 import type { PaletteApiResponse, PaletteControl } from "../api";
 import { fetchPalette } from "../api";
 import {
@@ -12,11 +12,13 @@ import {
 } from "./paletteState";
 
 export function usePalette() {
-  const palette = ref<PaletteApiResponse | null>(null);
+  const palette = shallowRef<PaletteApiResponse | null>(null);
   const loading = ref(false);
   const error = ref<string | null>(null);
-  const values = ref<Record<string, unknown>>({});
-  const customProps = ref<CustomProp[]>([]);
+  // These JSON snapshots are replaced on every edit. Deep proxies reinterpret
+  // literal hasOwnProperty keys and make nested defaults uncloneable messages.
+  const values = shallowRef<Record<string, unknown>>({});
+  const customProps = shallowRef<CustomProp[]>([]);
   const deletedPaletteProps = ref<Set<string>>(new Set());
   let loadVersion = 0;
 
@@ -35,13 +37,11 @@ export function usePalette() {
   });
 
   const mergedValues = computed<Record<string, unknown>>(() => {
-    const result: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(values.value)) {
-      if (!deletedPaletteProps.value.has(k) || customPropNames.value.has(k)) {
-        result[k] = v;
-      }
-    }
-    return result;
+    return Object.fromEntries(
+      Object.entries(values.value).filter(
+        ([name]) => !deletedPaletteProps.value.has(name) || customPropNames.value.has(name),
+      ),
+    );
   });
 
   const customPropNames = computed<Set<string>>(

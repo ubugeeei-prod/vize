@@ -109,7 +109,8 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
       - if: steps.changes.outputs.readiness == 'true'
-        uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+        uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
         if: steps.changes.outputs.readiness == 'true'
       - name: Verify readiness merge SHA
@@ -177,7 +178,8 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
       - name: Aggregate app readiness
         env:
@@ -223,9 +225,8 @@ jobs:
           cache: true
           run-install: false
       - uses: ./.github/actions/setup-moonbit
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
-        with:
-          targets: wasm32-unknown-unknown
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable, targets: wasm32-unknown-unknown }
       - uses: ./.github/actions/setup-rust-sticky-cache
         with:
           key: testbox
@@ -273,7 +274,8 @@ jobs:
         with:
           ref: ${{ env.E2E_TARGET_SHA }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
       - name: Verify full App E2E SHA
         env:
@@ -335,7 +337,8 @@ jobs:
         with:
           ref: ${{ env.E2E_TARGET_SHA }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
       - uses: ./.github/actions/setup-rust-script
       - name: Aggregate full App E2E
         env:

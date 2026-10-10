@@ -9,6 +9,89 @@ import select
 import signal
 import sys
 import time
+from itertools import islice
+from typing import Optional
+
+
+def git_operation(arguments: list[bytes]) -> Optional[bytes]:
+    """Skip known Git global options; refuse ambiguous option shapes."""
+    flags = {b"--no-pager", b"--paginate", b"-p", b"-P", b"--bare",
+             b"--no-replace-objects", b"--literal-pathspecs", b"--glob-pathspecs",
+             b"--noglob-pathspecs", b"--icase-pathspecs", b"--no-optional-locks",
+             b"--no-lazy-fetch", b"--no-advice"}
+    values = {b"-C", b"-c", b"--git-dir", b"--work-tree", b"--namespace"}
+    assignments = (b"--git-dir=", b"--work-tree=", b"--namespace=", b"--config-env=")
+    index = 1
+    while index < len(arguments):
+        argument = arguments[index]
+        if argument in flags:
+            index += 1
+        elif argument in values:
+            if index + 1 >= len(arguments):
+                return None
+            if not arguments[index + 1] and argument != b"-C":
+                return None
+            index += 2
+        elif argument.startswith(assignments):
+            if not argument.split(b"=", 1)[1]:
+                return None
+            if argument.startswith(b"--config-env="):
+                fields = argument.split(b"=")
+                if len(fields) != 3 or not fields[1] or not fields[2]:
+                    return None
+            index += 1
+        elif argument.startswith((b"-C", b"-c")) and len(argument) > 2:
+            index += 1
+        elif not argument or argument.startswith(b"-"):
+            return None
+        else:
+            return argument
+    return None
+
+
+def command_phase(arguments: list[bytes]) -> str:
+    """Return only fixed labels, including Git's dispatched transport stages."""
+    binary = os.path.basename(arguments[0]).decode(errors="replace")
+    known = {
+        "vp", "node", "sh", "bash", "moon", "moonc", "moondoc", "gcc", "cc",
+        "clang", "git", "git-remote-http", "git-remote-https", "ssh", "release.exe",
+        "release",
+    }
+    phase = binary if binary in known else "other"
+    operations = {
+        "moon": (b"update", b"run", b"build"),
+        "git": (b"pull", b"fetch", b"remote-http", b"remote-https", b"index-pack",
+                b"credential", b"credential-cache", b"maintenance", b"config", b"rev-parse"),
+    }
+    operation = None
+    if binary == "git":
+        operation = git_operation(arguments)
+    elif len(arguments) > 1:
+        operation = arguments[1]
+    if operation in operations.get(binary, ()):
+        return phase + ":" + operation.decode()
+    return phase
+
+
+def process_channels(process_path: str) -> dict[str, str]:
+    """Retain only anonymous channel identities, never paths or socket peers."""
+    channels = {}
+    try:
+        with os.scandir(f"{process_path}/fd") as entries:
+            for entry in islice(entries, 256):
+                if not entry.name.isdecimal():
+                    continue
+                try:
+                    target = os.readlink(entry.path)
+                    if target.startswith(("pipe:[", "socket:[")):
+                        channels[entry.name] = target
+                except OSError:
+                    continue
+                if len(channels) >= 64:
+                    break
+    except OSError:
+        pass
+    return channels
 
 
 class LifecycleEvidence:
@@ -44,20 +127,14 @@ class LifecycleEvidence:
                         continue
                     with open(f"{entry.path}/cmdline", "rb") as source:
                         arguments = source.read(4096).split(b"\0")
-                    binary = os.path.basename(arguments[0]).decode(errors="replace")
-                    known = {"vp", "node", "sh", "bash", "moon", "moonc", "moondoc", "gcc", "cc", "clang", "git", "release.exe", "release"}
-                    phase = binary if binary in known else "other"
-                    if binary == "moon":
-                        for operation in (b"update", b"run", b"build"):
-                            if operation in arguments:
-                                phase += ":" + operation.decode()
-                                break
+                    phase = command_phase(arguments)
                     with open(f"{entry.path}/wchan") as source:
                         waiting = source.read().strip()
                     processes.append({"pid": int(entry.name), "ppid": int(stat[1]),
                                       "pgrp": int(stat[2]), "session": int(stat[3]),
                                       "foreground": int(stat[5]), "state": stat[0],
-                                      "phase": phase, "wait": waiting})
+                                      "phase": phase, "wait": waiting,
+                                      "channels": process_channels(entry.path)})
                 except (OSError, ValueError, IndexError):
                     continue
                 if len(processes) >= 256:

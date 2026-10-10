@@ -430,14 +430,14 @@ body.entry-page {
 
 .content pre {
   --vize-code-text: #211c17;
-  --vize-code-muted: #75695e;
-  --vize-code-keyword: #7f4e41;
-  --vize-code-string: #4f6554;
-  --vize-code-number: #7c6237;
-  --vize-code-type: #605448;
-  --vize-code-function: #6f5136;
-  --vize-code-property: #66503d;
-  --vize-code-punctuation: rgba(57, 48, 41, 0.72);
+  --vize-code-muted: #51473e;
+  --vize-code-keyword: #703b30;
+  --vize-code-string: #36513d;
+  --vize-code-number: #654515;
+  --vize-code-type: #51405f;
+  --vize-code-function: #653f23;
+  --vize-code-property: #53402d;
+  --vize-code-punctuation: #51463c;
   margin: 1.25rem 0;
   padding: 0.85rem 0.95rem;
   border: 1px solid color-mix(in srgb, var(--octc-color-border) 74%, transparent);
@@ -524,7 +524,7 @@ body.entry-page {
 [data-theme="dark"] .content pre,
 :root:not([data-theme="light"]) .content pre {
   --vize-code-text: #ede5d8;
-  --vize-code-muted: #938574;
+  --vize-code-muted: #b2a38f;
   --vize-code-keyword: #cf9a82;
   --vize-code-string: #a4b694;
   --vize-code-number: #cfb07a;

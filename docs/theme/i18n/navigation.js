@@ -62,6 +62,16 @@ const vizeDocsI18nNavigation = (() => {
       list.append(item);
     }
     section.append(list);
+    list.inert = !open;
+    if (typeof MutationObserver !== "undefined") {
+      // Size interpolation keeps the closing content painted briefly. Inert
+      // removes its links from focus/accessibility as soon as open changes.
+      new MutationObserver(() => {
+        const expanded = section.hasAttribute("open");
+        if (!expanded && list.contains(document.activeElement)) heading.focus();
+        list.inert = !expanded;
+      }).observe(section, { attributes: true, attributeFilter: ["open"] });
+    }
 
     return section;
   }
@@ -172,40 +182,64 @@ const vizeDocsI18nNavigation = (() => {
   }
 
   function installLocaleSwitcher(root = document) {
-    const headerActions = root.querySelector?.(".header-actions");
-    if (!headerActions || headerActions.querySelector(".docs-locale")) return;
-
     const locale = currentLocale();
-    const language = localeStrings(locale).ui.language;
-    const wrapper = document.createElement("label");
-    wrapper.className = "docs-locale";
-    wrapper.setAttribute("aria-label", language);
-
-    const labelElement = document.createElement("span");
-    labelElement.textContent = language;
-    const select = document.createElement("select");
-    select.className = "docs-locale-select";
-    select.setAttribute("aria-label", language);
-    for (const supportedLocale of sitemap().supportedLocales) {
-      const option = document.createElement("option");
-      option.value = supportedLocale.code;
-      option.textContent = supportedLocale.name;
-      option.selected = supportedLocale.code === locale;
-      select.append(option);
-    }
-    select.addEventListener("change", () => {
-      window.location.href = `${localizedPagePath(select.value)}${window.location.search}${window.location.hash}`;
+    globalThis.__vizeDocsLocaleSwitcher.install(root, {
+      locale,
+      language: localeStrings(locale).ui.language,
+      supportedLocales: sitemap().supportedLocales,
+      pagePath: localizedPagePath,
     });
-    wrapper.append(labelElement, select);
-
-    const searchButton = headerActions.querySelector(".search-button");
-    headerActions.insertBefore(wrapper, searchButton);
   }
 
   function initialize(root = document) {
     applyNavigationOrder(root);
     applyLocalizedChrome(root);
     installLocaleSwitcher(root);
+    installMobileNavigation(root);
+  }
+
+  function installMobileNavigation(root) {
+    const sidebar = root.querySelector?.(".sidebar");
+    if (!sidebar || sidebar.dataset.vizeMobileNavigation || !window.matchMedia) return;
+    sidebar.dataset.vizeMobileNavigation = "ready";
+    sidebar.id ||= "docs-navigation";
+    const controls = [...root.querySelectorAll(".menu-toggle, [data-mobile-menu]")];
+    const mobile = window.matchMedia("(max-width: 768px)");
+    let trigger = controls.at(-1);
+    const sync = () => {
+      const open = !mobile.matches || sidebar.classList.contains("open");
+      if (!open && sidebar.contains(document.activeElement)) trigger?.focus();
+      sidebar.inert = !open;
+      for (const control of controls) {
+        control.setAttribute("aria-controls", sidebar.id);
+        control.setAttribute("aria-expanded", String(open));
+      }
+    };
+    for (const control of controls) {
+      control.addEventListener("click", () => {
+        trigger = control;
+        // The site runtime owns the open class. Read its state after its handler.
+        queueMicrotask(sync);
+      });
+    }
+    root.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        !event.defaultPrevented &&
+        mobile.matches &&
+        sidebar.classList.contains("open") &&
+        (sidebar.contains(event.target) || event.target === trigger)
+      ) {
+        event.preventDefault();
+        sidebar.classList.remove("open");
+        root.querySelector(".overlay")?.classList.remove("open");
+        sync();
+        trigger?.focus();
+      }
+    });
+    new MutationObserver(sync).observe(sidebar, { attributes: true, attributeFilter: ["class"] });
+    mobile.addEventListener("change", sync);
+    sync();
   }
 
   return {
@@ -213,6 +247,7 @@ const vizeDocsI18nNavigation = (() => {
     canonicalPath,
     currentLocale,
     initialize,
+    installMobileNavigation,
   };
 })();
 

@@ -172,6 +172,24 @@ for (const [version, types] of [
       processes: loaded.size,
       originalProject: capture.qualified,
     });
+    const htmlCustody = { ...custody, calls: path.join(output, "html-native-calls.jsonl") };
+    const htmlConfiguration = path.join(output, "html-custody.json");
+    fs.writeFileSync(htmlConfiguration, JSON.stringify(htmlCustody, null, 2) + "\n");
+    const htmlPreload = fileURLToPath(new URL("./project-html-custody.cjs", import.meta.url));
+    run(process.execPath, ["src/html-cli.test.mjs"], {
+      cwd: packageDir,
+      env: {
+        ...process.env,
+        NODE_OPTIONS:
+          `${process.env.NODE_OPTIONS ?? ""} --require=${JSON.stringify(htmlPreload)}`.trim(),
+        VIZE_OXLINT_NATIVE_CUSTODY: htmlConfiguration,
+        VIZE_OXLINT_TEST_ENTRYPOINT: engine,
+        VIZE_OXLINT_HTML_CAPTURE: path.join(output, "original-html-cli.json"),
+      },
+    });
+    const htmlCapture = JSON.parse(fs.readFileSync(path.join(output, "original-html-cli.json")));
+    assert.equal(htmlCapture.complete, true);
+    qualifications.at(-1).originalHtml = htmlCapture.qualified;
     replayN8nHost(n8nReplay, engine, version);
   } finally {
     fs.rmSync(temporary, { recursive: true, force: true });

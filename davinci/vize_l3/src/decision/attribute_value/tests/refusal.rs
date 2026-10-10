@@ -152,15 +152,10 @@ fn attached_prefix_on_incomplete_original_file_never_seals_whole_target_facts() 
 }
 
 #[test]
-fn original_class_entity_text_and_unsupported_target_names_remain_precise_boundaries() -> Test {
-    for template in [
-        r#"<div class="a&amp;amp;b">x</div>"#,
-        r#"<div title="a &amp;lt; b">&amp;lt;</div>"#,
-    ] {
-        let arena = Allocator::default();
-        let source = alloc::format!("<template>{template}</template>");
-        check(completed(&arena, &source).is_err())?;
-    }
+fn original_entity_text_and_unsupported_target_names_remain_precise_boundaries() -> Test {
+    let arena = Allocator::default();
+    let source = r#"<template><div title="a &amp;lt; b">&amp;lt;</div></template>"#;
+    check(completed(&arena, source).is_err())?;
     let arena = Allocator::default();
     let original = completed(&arena, "<template><div hidden='&amp;lt;'/></template>")?;
     let analysis = vapor::build_native_vapor_file_decisions(original.view().map_err(|_| "view")?)
@@ -174,6 +169,33 @@ fn original_class_entity_text_and_unsupported_target_names_remain_precise_bounda
     )?;
     check(
         analysis
+            .vapor()
+            .ok_or("Vapor facts")?
+            .unsupported()
+            .iter()
+            .any(|hole| hole.reason == vapor::VaporUnsupported::AttributeSemantics),
+    )?;
+    Ok(())
+}
+
+#[test]
+fn original_class_retains_complete_dom_ssr_rows_and_precise_vapor_target_refusal() -> Test {
+    let arena = Allocator::default();
+    let source = r#"<template><div class="a&amp;amp;b">x</div></template>"#;
+    let original = completed(&arena, source)?;
+    let dom = native::build_native_dom_file_decisions(original.view().map_err(|_| "view")?)
+        .map_err(|_| "DOM original rows")?;
+    check(dom.dom().ok_or("DOM facts")?.unsupported().is_empty())?;
+    check(dom.original_attributes().ok_or("original row")?.len() == 1)?;
+    let ssr = ssr::build_native_ssr_file_decisions(original.view().map_err(|_| "view")?)
+        .map_err(|_| "SSR original rows")?;
+    check(ssr.ssr().ok_or("SSR facts")?.unsupported().is_empty())?;
+    check(ssr.original_attributes().ok_or("original row")?.len() == 1)?;
+    let vapor = vapor::build_native_vapor_file_decisions(original.view().map_err(|_| "view")?)
+        .map_err(|_| "Vapor original rows")?;
+    check(vapor.original_attributes().ok_or("original row")?.len() == 1)?;
+    check(
+        vapor
             .vapor()
             .ok_or("Vapor facts")?
             .unsupported()

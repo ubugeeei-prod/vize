@@ -61,7 +61,7 @@ assert.equal(
   ),
 );
 
-export const currentRequiredRun = readFileSync(
+export const jsxRequiredRun = readFileSync(
   new URL(
     "../../../tests/_fixtures/tooling/native-current-recipe-jsx-slot-8419.sh",
     import.meta.url,
@@ -69,15 +69,41 @@ export const currentRequiredRun = readFileSync(
   "utf8",
 );
 assert.equal(
-  hash(currentRequiredRun),
+  hash(jsxRequiredRun),
   "3e1cbab6ccc79028c9de0d086801c140b0e99f1876dc9b7002acb74144b600e7",
 );
 assert.equal(
-  currentRequiredRun,
+  jsxRequiredRun,
   ignoreRequiredRun.replace(
     " --test check_tsconfig_ignore_cli --config",
     " --test check_tsconfig_ignore_cli --test check_jsx_slot_parameter_types_cli --config",
   ),
+);
+
+export const currentRequiredRun = readFileSync(
+  new URL(
+    "../../../tests/_fixtures/tooling/native-current-recipe-selected-alias-3984.sh",
+    import.meta.url,
+  ),
+  "utf8",
+);
+assert.equal(
+  hash(currentRequiredRun),
+  "ae22cd812c7def2272acf9596ba7c9fe0e94d2c590b5f9d3411fad73b84b14a2",
+);
+const receiptCommands = [
+  "node tools/benchmarks/scripts/typechecker-template-emit-projection-receipt.mjs",
+  "node tools/benchmarks/scripts/typechecker-native-template-emit-receipt.mjs",
+  "node tools/benchmarks/scripts/typechecker-native-vue-helper-receipt.mjs",
+];
+assert.equal(
+  currentRequiredRun,
+  jsxRequiredRun
+    .replace(
+      " --test check_jsx_slot_parameter_types_cli --config",
+      " --test check_jsx_slot_parameter_types_cli --test check_canon_selected_alias_cli --config",
+    )
+    .replace(receiptCommands.join("\n") + "\n", receiptCommands.join("; ") + "\n"),
 );
 
 export function git(root, ...args) {

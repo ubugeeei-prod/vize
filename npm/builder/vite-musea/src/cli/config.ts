@@ -5,6 +5,7 @@ import { loadConfigFromFile, type PluginOption } from "vite";
 
 import type { MuseaOptions, MuseaVrtOptions } from "../types/index.js";
 import { readMuseaOptions } from "../plugin/options.js";
+import { publicBasePathFromViteBase } from "../static-base.js";
 
 const DEFAULT_INCLUDE = ["**/*.art.vue"];
 const DEFAULT_EXCLUDE = ["node_modules/**", "dist/**"];
@@ -18,6 +19,7 @@ const VIZE_CONFIG_NAMES = [
 
 export interface MuseaFileSet {
   root: string;
+  projectRoot: string;
   include: string[];
   exclude: string[];
 }
@@ -42,17 +44,35 @@ export async function loadMuseaFileSet(
     : await readVizeMuseaOptions(loaded?.configDir ?? cwd);
   const include = pluginOptions?.include ?? vizeOptions?.include ?? DEFAULT_INCLUDE;
   const exclude = pluginOptions?.exclude ?? vizeOptions?.exclude ?? DEFAULT_EXCLUDE;
+  const root = loaded?.root ?? cwd;
   return {
-    root: loaded?.root ?? cwd,
+    root,
+    projectRoot: path.resolve(root, pluginOptions?.projectRoot ?? "."),
     include,
     exclude,
   };
 }
 
+export async function loadMuseaPreviewBasePath(
+  configPath: string,
+  cwd = process.cwd(),
+): Promise<string> {
+  const loaded = await loadViteConfig(configPath, cwd);
+  const pluginOptions = loaded ? readPluginMuseaOptions(loaded.plugins) : undefined;
+  const shared =
+    pluginOptions?.basePath === undefined
+      ? await readVizeMuseaOptions(loaded?.configDir ?? cwd)
+      : undefined;
+  return publicBasePathFromViteBase(
+    loaded?.base,
+    pluginOptions?.basePath ?? shared?.basePath ?? "/__musea__",
+  );
+}
+
 async function loadViteConfig(
   configPath: string,
   cwd: string,
-): Promise<{ root: string; configDir: string; plugins: unknown[] } | undefined> {
+): Promise<{ root: string; configDir: string; plugins: unknown[]; base?: string } | undefined> {
   const resolvedConfigPath = path.isAbsolute(configPath)
     ? configPath
     : path.resolve(cwd, configPath);
@@ -77,6 +97,7 @@ async function loadViteConfig(
     root: configuredRoot ? path.resolve(configDir, configuredRoot) : configDir,
     configDir,
     plugins,
+    base: loaded.config.base,
   };
 }
 
@@ -90,7 +111,7 @@ function readPluginMuseaOptions(plugins: unknown[]): MuseaOptions | undefined {
 
 async function readVizeMuseaOptions(
   dir: string,
-): Promise<Pick<MuseaOptions, "include" | "exclude"> | undefined> {
+): Promise<Pick<MuseaOptions, "include" | "exclude" | "basePath"> | undefined> {
   for (const name of VIZE_CONFIG_NAMES) {
     const file = path.join(dir, name);
     if (!(await fileExists(file))) continue;
@@ -105,10 +126,10 @@ async function readVizeMuseaOptions(
         file,
       );
       const config = loaded?.config as
-        | { musea?: Pick<MuseaOptions, "include" | "exclude"> }
+        | { musea?: Pick<MuseaOptions, "include" | "exclude" | "basePath"> }
         | undefined;
       const musea = config?.musea;
-      if (musea?.include || musea?.exclude) return musea;
+      if (musea?.include || musea?.exclude || musea?.basePath !== undefined) return musea;
     } catch {
       continue;
     }

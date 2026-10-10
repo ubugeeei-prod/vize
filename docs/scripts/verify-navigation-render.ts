@@ -6,10 +6,19 @@ import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 import type { Browser } from "playwright";
 import { resolvePuppeteerExecutablePath } from "../browser-path.js";
-import { ruleRenderRoutes, verifyRenderedRulePackets } from "./rule-render-assertions.ts";
+import { verifyRenderedRulePackets } from "./rule-render-assertions.ts";
+import { navigationRenderRoutes } from "./navigation-render-routes.ts";
 import { capturePageRender } from "./capture-page-render.ts";
 import type { PageCapture } from "./capture-page-render.ts";
 import { verifyCaptureRenderControls } from "./capture-render-controls.ts";
+import {
+  verifyIntroductoryNavigation,
+  verifySidebarMotion,
+  verifyThemeReadability,
+  switchDocsTheme,
+} from "./theme-render-assertions.ts";
+import { verifyCommandTabs } from "./command-tab-render-assertions.ts";
+import { verifyLocaleRenderControls } from "./locale-control-render.ts";
 
 type FontUsage = { familyName: string; glyphCount: number };
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -49,6 +58,7 @@ function readPageMetrics() {
   };
 }
 type RouteReceipt = ReturnType<typeof readPageMetrics> & {
+  codeContrast: Awaited<ReturnType<typeof verifyThemeReadability>>;
   route: string;
   device: string;
   screenshot: string;
@@ -58,6 +68,7 @@ type RouteReceipt = ReturnType<typeof readPageMetrics> & {
     screenshot: string;
     capture: PageCapture;
     controlSelector: string;
+    codeContrast: Awaited<ReturnType<typeof verifyThemeReadability>>;
   }[];
   pageErrors: string[];
   japaneseFonts: FontUsage[];
@@ -73,18 +84,7 @@ const { values } = parseArgs({
 });
 const dist = path.resolve(values.dir);
 const output = path.resolve(values.output);
-const pages = [
-  "/",
-  "/getting-started",
-  "/guide/configuration",
-  "/guide/migration",
-  "/guide/vite-plus",
-  "/guide/vite-plugin",
-  "/guide/configuration-reference",
-  "/guide/compiler-configuration-reference",
-  ...ruleRenderRoutes,
-];
-const routes = values.routes?.split(",") ?? pages.flatMap((route) => [route, `/ja${route}`]);
+const routes = values.routes?.split(",") ?? navigationRenderRoutes;
 const types: Record<string, string> = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -122,6 +122,7 @@ try {
     headless: true,
   });
   await verifyCaptureRenderControls(browser, origin, output);
+  await verifyLocaleRenderControls(browser, origin, output);
   for (const { name: device, viewport } of [
     { name: "desktop", viewport: { width: 1440, height: 960 } },
     { name: "mobile", viewport: { width: 390, height: 844 } },
@@ -195,7 +196,11 @@ try {
         await session.detach();
       }
       const metrics = await page.evaluate(readPageMetrics);
+      await verifyIntroductoryNavigation(page, route);
+      await verifySidebarMotion(page, device);
+      const codeContrast = await verifyThemeReadability(page);
       const rulePackets = await verifyRenderedRulePackets(page, route);
+      await verifyCommandTabs(page, route);
       assert(metrics.bodyWidth <= viewport.width + 1, `${route}: page overflows viewport`);
       assert.equal(pageErrors.length, 0, pageErrors.join("\n"));
       const sidebar = page.locator(".sidebar");
@@ -216,6 +221,7 @@ try {
           await page.locator("[data-mobile-menu]").click();
           assert.equal(await sidebar.isVisible(), true);
           await page.locator("[data-mobile-menu]").click();
+          await sidebar.waitFor({ state: "hidden" });
           assert.equal(await sidebar.isVisible(), false);
         } else {
           const collapsed = page.locator(".sidebar details:not([open]) > summary").first();
@@ -278,13 +284,17 @@ try {
       const initialTheme = await page.locator("html").getAttribute("data-theme");
       const capture = await capturePageRender(page, output, screenshot);
       const themeScreenshots: RouteReceipt["themeScreenshots"] = [];
-      if (/^\/(?:ja\/)?rules\//.test(route)) {
+      if (
+        /^\/(?:ja\/)?rules\//.test(route) ||
+        /\/(?:guide\/content-mapper|getting-started)$/.test(route) ||
+        ["/", "/ja/"].includes(route)
+      ) {
         const controlSelector = device === "mobile" ? "[data-mobile-theme]" : ".theme-toggle";
         for (const theme of ["light", "dark"]) {
-          if ((await page.locator("html").getAttribute("data-theme")) !== theme)
-            await page.locator(controlSelector).click();
+          await switchDocsTheme(page, theme, device);
           assert.equal(await page.locator("html").getAttribute("data-theme"), theme);
           assert.equal(await page.evaluate(() => localStorage.getItem("theme")), theme);
+          const codeContrast = await verifyThemeReadability(page);
           const file = `${name}-${device}-${theme}.png`;
           const themeCapture =
             theme === initialTheme ? capture : await capturePageRender(page, output, file);
@@ -293,6 +303,7 @@ try {
             screenshot: theme === initialTheme ? screenshot : file,
             capture: themeCapture,
             controlSelector,
+            codeContrast,
           });
         }
       }
@@ -305,6 +316,7 @@ try {
         pageErrors,
         japaneseFonts,
         rulePackets,
+        codeContrast,
         ...metrics,
       });
       await page.close();

@@ -84,6 +84,8 @@ if (process.argv[2] === "prepare") {
     "crates/vize_maestro/src/server/state/workspace_project_files.rs",
     "crates/vize_maestro/src/server/state/workspace_project_files/paths.rs",
     "crates/vize_maestro/src/server/state/workspace_project_files/symbols.rs",
+    "crates/vize_maestro/src/server/state/workspace_project_files/worker.rs",
+    "crates/vize_maestro/src/server/state/workspace_project_files/worker/tests.rs",
     "crates/vize_maestro/src/server/state/workspace_project_files/symbols/tests.rs",
     "crates/vize_maestro/src/server/workspace_symbols.rs",
     // Art lint delivery retains the original 400-provider protocol corpus.

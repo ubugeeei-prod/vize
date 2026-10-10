@@ -1,0 +1,11 @@
+{
+  "values": {
+    "label": "Authored label",
+    "__proto__": { "retained": true },
+    "constructor": "Authored constructor",
+    "hasOwnProperty": "Authored method name",
+    "config": { "__proto__": { "nested": true }, "enabled": false }
+  },
+  "editedLabel": "Editor → generated preview",
+  "custom": { "count": 7, "items": [false, null, "<&>\""] }
+}

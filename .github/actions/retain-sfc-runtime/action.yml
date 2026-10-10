@@ -1,0 +1,18 @@
+name: Retain complete SFC runtime child outcomes
+description: Preserve original completed SFC child streams and source receipts after either test outcome
+runs:
+  using: composite
+  steps:
+    - name: Retain complete SFC runtime child outcomes
+      if: ${{ always() }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: vapor-sfc-runtime-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}
+        path: |
+          target/nextest/*/vapor-sfc/
+          target/nextest/*/ssr-nested-dynamic-arguments/
+          target/nextest/*/ssr-v-pre-boundaries/
+          target/nextest/*/ssr-component-camel-boundaries/
+          target/nextest/*/ssr-literal-slot-boundaries/
+        if-no-files-found: ignore
+        retention-days: 14

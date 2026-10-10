@@ -149,7 +149,6 @@ test("docs navigation exposes the language engineering practices page", () => {
     "/architecture/source-guide",
     "/architecture/language-engineering-practices",
     "/architecture/performance",
-    "/philosophy",
   ]);
   assert.equal(
     locales.en.labels["/architecture/language-engineering-practices"],

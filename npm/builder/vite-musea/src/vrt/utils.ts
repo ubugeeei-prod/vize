@@ -12,10 +12,16 @@ import path from "node:path";
 /**
  * Build URL for variant preview.
  */
-export function buildVariantUrl(baseUrl: string, artPath: string, variantName: string): string {
+export function buildVariantUrl(
+  baseUrl: string,
+  artPath: string,
+  variantName: string,
+  previewBasePath = "/__musea__",
+): string {
   const encodedPath = encodeURIComponent(artPath);
   const encodedVariant = encodeURIComponent(variantName);
-  return `${baseUrl}/__musea__/preview?art=${encodedPath}&variant=${encodedVariant}`;
+  const route = previewBasePath.replace(/^\/+|\/+$/g, "");
+  return `${baseUrl.replace(/\/+$/, "")}/${route ? `${route}/` : ""}preview?art=${encodedPath}&variant=${encodedVariant}`;
 }
 
 /**

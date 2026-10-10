@@ -18,10 +18,13 @@ export const SCRIPT_BASENAMES = [
   "i18n/locales/zh-CN",
   "i18n/locales/pt-BR",
   "i18n/locales/fr",
+  "i18n/locale-switcher",
   "i18n/navigation",
   "syntax-highlight-languages",
   "syntax-highlight-core",
   "syntax-highlight",
+  "command-variants",
+  "command-tabs",
 ];
 const VERTEX_SHADER_PLACEHOLDER = "__VERT_SRC__";
 const FRAGMENT_SHADER_PLACEHOLDER = "__FRAG_SRC__";

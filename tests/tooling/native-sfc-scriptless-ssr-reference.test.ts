@@ -19,10 +19,19 @@ const pack = JSON.parse(
     "utf8",
   ),
 );
-const nativePack = JSON.parse(
+const archiveNativePack = JSON.parse(
   fs.readFileSync(
     new URL(
       "../../crates/vize_atelier_sfc/tests/fixtures/native-scriptless-ssr-output.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
+const nativePack = JSON.parse(
+  fs.readFileSync(
+    new URL(
+      "../../crates/vize_atelier_sfc/tests/fixtures/native-scriptless-ssr-output-v2.json",
       import.meta.url,
     ),
     "utf8",
@@ -43,7 +52,6 @@ const refusalIds = [
   "binding",
   "interpolation",
   "for",
-  "class",
   "nested-whitespace",
   "handler-global",
   "handler-syntax",
@@ -51,14 +59,21 @@ const refusalIds = [
 
 function checkNativePacket(capture: any) {
   assert.equal(nativePack.schema, "vize.native-sfc.scriptless-ssr-output");
-  assert.equal(nativePack.version, 1);
+  assert.equal(nativePack.version, 2);
   assert.equal(capture.custody, "once_selected_scriptless_sfc");
   assert.equal(
     Object.hasOwn(capture, "suiteCompletion"),
     false,
     "partial positive packet grants no runtime credit",
   );
-  assert.deepEqual(capture, nativePack.capture);
+  assert.deepEqual(capture.modules, archiveNativePack.capture.modules);
+  let index = 0;
+  for (const original of archiveNativePack.capture.refusals) {
+    if (original.id === "class") {
+      for (const row of capture.classSuccessor.rows) assert.equal(row.source, original.source);
+    } else assert.deepEqual(capture.refusals[index++], original);
+  }
+  assert.equal(index, capture.refusals.length);
 }
 
 test("fourteen official complete SFC transforms retain primary modules, maps and SSR context", async () => {
@@ -103,7 +118,8 @@ test("fourteen official complete SFC transforms retain primary modules, maps and
 
 test("primary judge detects missing actual SSR-context registration and evaluated handlers", async () => {
   assert.throws(
-    () => checkNativePacket({ ...nativePack.capture, suiteCompletion: "positive_modules_only" }),
+    () =>
+      checkNativePacket({ ...archiveNativePack.capture, suiteCompletion: "positive_modules_only" }),
     /partial positive packet grants no runtime credit/,
   );
   const row = pack.fixtures.find((row: any) => row.id === "handler-nested");
@@ -237,6 +253,55 @@ test(
       );
       assert(typeof row.source === "string" && row.source.length > 0);
     }
+    const classRuntime = [];
+    for (const row of capture.classSuccessor.rows) {
+      const fixture = JSON.parse(
+        fs.readFileSync(
+          new URL(
+            "../../crates/vize_atelier_sfc/tests/fixtures/native-selected-static-class-vue-3.5.35.json",
+            import.meta.url,
+          ),
+          "utf8",
+        ),
+      ).fixtures.find((fixture: any) => fixture.id === "class-former-scriptless-refusal");
+      assert.equal(row.source, fixture.source);
+      assert.equal(row.filename, "anonymous.vue");
+      if (row.sourceMap) {
+        assert.deepEqual(JSON.parse(row.mapText), row.map);
+        checkMap(row);
+      } else {
+        assert.equal(row.mapText, null);
+        assert.equal(row.map, null);
+        assert.deepEqual(row.links, []);
+      }
+      const imports = fixture.ssr.code
+        .split("\n")
+        .filter((line: string) => line.startsWith("import "));
+      const officialCode =
+        imports.join("\n") +
+        "\nconst _sfc_main = {}\n;\n" +
+        fixture.ssr.code
+          .slice(imports.join("\n").length)
+          .trimStart()
+          .replace(/^export /, "") +
+        "\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main\n";
+      const native = await renderModule(row.code);
+      const official = await renderModule(officialCode);
+      assert.deepEqual(native, official);
+      assert.deepEqual(await renderModule(row.code), native);
+      assert.deepEqual(await renderModule(officialCode), official);
+      assert.deepEqual(
+        await directModule(row.code),
+        native.map((entry) => entry.html),
+      );
+      classRuntime.push({
+        ...row,
+        officialCode: fixture.ssr.code,
+        officialMap: fixture.ssr.map,
+        native,
+        official,
+      });
+    }
     const runtimeCapture = {
       custody: capture.custody,
       modules: 14,
@@ -247,12 +312,16 @@ test(
       completeUpstreamMapParity: false,
       viteContextParity: false,
       runtime,
+      classSuccessor: capture.classSuccessor,
+      classRuntime,
     };
-    assert.deepEqual(runtimeCapture, nativePack.runtime);
     if (process.env.VIZE_NATIVE_SFC_SSR_RUNTIME_CAPTURE)
       fs.writeFileSync(
         process.env.VIZE_NATIVE_SFC_SSR_RUNTIME_CAPTURE,
         JSON.stringify(runtimeCapture, null, 2) + "\n",
       );
+    assert.equal(nativePack.state, "reviewed", "whole successor is unreviewed");
+    assert.deepEqual(capture, nativePack.capture);
+    assert.deepEqual(runtimeCapture, nativePack.runtime);
   },
 );

@@ -37,6 +37,7 @@ runs:
         name: native-vapor-${{ github.sha }}-${{ github.run_attempt }}
         path: |
           ${{ runner.temp }}/native-vapor-modules.json
+          ${{ runner.temp }}/native-vapor-modules.json.class-successor.json
           ${{ runner.temp }}/native-vapor-runtime.json
           ${{ runner.temp }}/native-vapor-sfc-modules.json
           ${{ runner.temp }}/native-vapor-sfc-runtime.json

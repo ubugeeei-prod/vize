@@ -8,8 +8,11 @@ import { createServer } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { checkPaletteLoadOrder } from "./palette-load.browser-fixtures";
 import { checkPaletteReplacement } from "./palette-replacement.browser-fixtures";
+import { checkCopiedPropNames } from "./props-usage-names.browser-fixtures";
 import { checkCopiedProps } from "./props-usage.browser-fixtures.ts";
 import { registerUsageCodeContracts } from "../../src/usage-code-contracts.ts";
+import { registerPreviewPropsBrowserTest } from "./preview-props.browser-fixtures";
+import { registerPropEditorCancellationTest } from "./prop-editor-cancellation.browser-fixtures";
 
 registerUsageCodeContracts();
 
@@ -314,7 +317,9 @@ await test(
       assert.equal(colors["system/light"], colors["light/light"]);
       assert.equal(colors["system/dark"], colors["dark/dark"]);
       observations.push({ panel: "theme", colors });
-      observations.push(await checkCopiedProps(page, repository, output));
+      const copiedProps = await checkCopiedProps(page, repository, output);
+      observations.push(copiedProps);
+      await checkCopiedPropNames(page, repository, copiedProps.expected, observations);
       assert.deepEqual(errors, []);
     } finally {
       await mkdir(output, { recursive: true });
@@ -327,3 +332,6 @@ await test(
     }
   },
 );
+
+await registerPreviewPropsBrowserTest();
+await registerPropEditorCancellationTest();
