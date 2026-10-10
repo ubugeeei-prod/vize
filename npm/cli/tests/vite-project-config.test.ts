@@ -113,3 +113,59 @@ test("automatic discovery stops at an unconfigured monorepo package boundary", a
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("Vite root projects scoped paths while preserving global entries and authored values", async () => {
+  const root = path.join(os.tmpdir(), "vize-vite-root-fixture");
+  const source = {
+    root: "app",
+    vize: {
+      files: ["src/**/*.vue"],
+      ignores: ["src/Ignored.vue", "!src/Keep.vue", String.raw`src/\[id\].vue`],
+      typeChecker: { tsconfig: "tsconfig.json", corsaPath: "tools/corsa" },
+      entries: [
+        { files: ["src/**/*.vue"], linter: { rules: { "a11y/alt-text": "error" } } },
+        { basePath: "packages/ui", files: ["*.vue"] },
+      ],
+    },
+  };
+  const original = JSON.stringify(source);
+  const resolved = await resolveViteConfigExport(source, undefined, root);
+  assert.deepEqual(resolved, {
+    __vizeProjectRoot: path.join(root, "app"),
+    basePath: path.join(root, "app"),
+    files: ["src/**/*.vue"],
+    ignores: ["src/Ignored.vue", "!src/Keep.vue", String.raw`src/\[id\].vue`],
+    typeChecker: {
+      jsxTypecheck: true,
+      tsconfig: path.join(root, "app/tsconfig.json"),
+      corsaPath: path.join(root, "app/tools/corsa"),
+    },
+    entries: [
+      {
+        basePath: path.join(root, "app"),
+        files: ["src/**/*.vue"],
+        linter: { rules: { "a11y/alt-text": "error" } },
+      },
+      { basePath: path.join(root, "app/packages/ui"), files: ["*.vue"] },
+    ],
+  });
+  assert.equal(JSON.stringify(source), original);
+
+  const entries = await resolveViteConfigExport(
+    {
+      root: "app",
+      vize: [
+        { __vizeProjectRoot: "decoy", formatter: { singleQuote: true } },
+        { files: ["src/*.vue"] },
+      ],
+    },
+    undefined,
+    root,
+  );
+  assert.deepEqual(entries, [
+    { __vizeProjectRoot: path.join(root, "app"), typeChecker: { jsxTypecheck: true } },
+    { __vizeProjectRoot: "decoy", formatter: { singleQuote: true } },
+    { basePath: path.join(root, "app"), files: ["src/*.vue"] },
+    { __vizeProjectRoot: path.join(root, "app") },
+  ]);
+});

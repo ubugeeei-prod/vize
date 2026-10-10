@@ -1,0 +1,14 @@
+{
+  "src": {
+    "directory": true
+  },
+  "src/App.js": {
+    "text": "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\";\nconst message = \"hello\";\nexport default {\n  __name: \"App\",\n  setup(__props) {\n    return (_ctx, _cache) => {\n      return _openBlock(), _createElementBlock(\n        _Fragment,\n        null,\n        [_createElementVNode(\"my-widget\", null, \"  two  spaces  \"), _createElementVNode(\"p\", null, _toDisplayString(message))],\n        64\n        /* STABLE_FRAGMENT */\n      );\n    };\n  }\n};"
+  },
+  "src/Ignored.js": {
+    "text": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { src: \"app.png\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"img\", _hoisted_1))\n}"
+  },
+  "src/Image.js": {
+    "text": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { src: \"app.png\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"img\", _hoisted_1))\n}"
+  }
+}

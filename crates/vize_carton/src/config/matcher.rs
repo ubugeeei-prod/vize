@@ -4,6 +4,82 @@ use crate::String;
 use globset::{GlobBuilder, GlobMatcher};
 use std::path::{Component, Path, PathBuf};
 
+/// Ordered, escaped ignore sequences for host-projected project settings.
+///
+/// Patterns with a common base retain their declaration order;
+/// groups with different bases form independent ignore scopes.
+pub struct ProjectIgnoreSet {
+    scopes: Vec<LintPlanScope>,
+    cwd: PathBuf,
+}
+
+impl ProjectIgnoreSet {
+    pub fn new(ignores: &[crate::config::ConfigEntryIgnore], config_dir: &Path) -> Option<Self> {
+        if ignores.is_empty() {
+            return None;
+        }
+        let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+        let config_dir = absolute_path(config_dir, &cwd);
+        let mut groups: Vec<(Option<String>, Vec<String>)> = Vec::new();
+        for ignore in ignores {
+            let mut base = resolve_base_dir(ignore.base_path.as_deref(), &config_dir);
+            let (sign, pattern) = ignore
+                .pattern
+                .strip_prefix('!')
+                .map_or(("", ignore.pattern.as_str()), |pattern| ("!", pattern));
+            // An authored absolute pattern has the same matching meaning as
+            // before projection. Rebase it without interpreting glob syntax;
+            // an in-project absolute negative stays in the preceding sequence.
+            let path = Path::new(pattern);
+            let pattern = if path.is_absolute() {
+                let relative = if let Ok(relative) = path.strip_prefix(&base) {
+                    relative
+                } else {
+                    base = path.ancestors().last().unwrap_or(path).to_path_buf();
+                    path.strip_prefix(&base).unwrap_or(path)
+                };
+                normalize_path(relative)
+            } else {
+                String::from(pattern)
+            };
+            let base = Some(normalize_path(&base));
+            let group_index = groups
+                .iter()
+                .position(|(existing, _)| *existing == base)
+                .unwrap_or_else(|| {
+                    groups.push((base, Vec::new()));
+                    groups.len() - 1
+                });
+            let Some((_, patterns)) = groups.get_mut(group_index) else {
+                continue;
+            };
+            patterns.push(crate::cstr!("{sign}{pattern}"));
+            // Preserve the existing nested dependency ignore expansion without
+            // changing authored negation or escaped metacharacters.
+            let suffix = "node_modules/**";
+            if let Some(prefix) = pattern.strip_suffix(suffix)
+                && !pattern.ends_with("**/node_modules/**")
+            {
+                patterns.push(crate::cstr!("{sign}{prefix}**/{suffix}"));
+            }
+        }
+        Some(Self {
+            scopes: groups
+                .into_iter()
+                .map(|(base, patterns)| {
+                    LintPlanScope::new(base.as_deref(), None, &patterns, &config_dir, &cwd)
+                })
+                .collect(),
+            cwd,
+        })
+    }
+
+    pub fn is_ignored(&self, path: &Path) -> bool {
+        let absolute = absolute_path(path, &self.cwd);
+        self.scopes.iter().any(|scope| scope.ignores(&absolute))
+    }
+}
+
 pub struct LintPlanScope {
     base_dir: PathBuf,
     files: Option<GlobSequence>,
@@ -220,74 +296,4 @@ pub fn normalize_path(path: &Path) -> String {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::LintPlanScope;
-    use std::path::Path;
-
-    fn scope(files: Option<&[&str]>, ignores: &[&str]) -> LintPlanScope {
-        let files: Option<Vec<crate::String>> =
-            files.map(|patterns| patterns.iter().copied().map(Into::into).collect());
-        let ignores = ignores
-            .iter()
-            .copied()
-            .map(Into::into)
-            .collect::<Vec<crate::String>>();
-        let root = Path::new("/");
-        LintPlanScope::new(None, files.as_deref(), &ignores, root, root)
-    }
-
-    #[test]
-    fn escaped_metacharacters_match_literals_in_files_and_ignores() {
-        let root = Path::new("/");
-        for (pattern, matched, unmatched) in [
-            (
-                "pages/users/\\[id\\].vue",
-                "/pages/users/[id].vue",
-                "/pages/users/id.vue",
-            ),
-            (
-                "pages/users/\\].vue",
-                "/pages/users/].vue",
-                "/pages/users/x.vue",
-            ),
-            (
-                "pages/users/\\*.vue",
-                "/pages/users/*.vue",
-                "/pages/users/id.vue",
-            ),
-            (
-                "pages/users/\\?.vue",
-                "/pages/users/?.vue",
-                "/pages/users/a.vue",
-            ),
-            (
-                "pages/users/\\{id\\}.vue",
-                "/pages/users/{id}.vue",
-                "/pages/users/id.vue",
-            ),
-            (
-                "pages/users/[[]id].vue",
-                "/pages/users/[id].vue",
-                "/pages/users/id.vue",
-            ),
-        ] {
-            let files = scope(Some(&[pattern]), &[]);
-            assert!(files.matches(root.join(matched).as_path()), "{pattern}");
-            assert!(!files.matches(root.join(unmatched).as_path()), "{pattern}");
-            let ignored = scope(None, &[pattern]);
-            assert!(ignored.ignores(root.join(matched).as_path()), "{pattern}");
-            assert!(
-                !ignored.ignores(root.join(unmatched).as_path()),
-                "{pattern}"
-            );
-        }
-
-        let windows = scope(Some(&[r"src\**\*.vue"]), &[]);
-        assert!(windows.matches(Path::new("/src/components/App.vue")));
-        assert!(!windows.matches(Path::new("/packages/App.vue")));
-
-        let negated = scope(Some(&[r"src/**/*.vue", r"!.\src\generated\**"]), &[]);
-        assert!(negated.matches(Path::new("/src/App.vue")));
-        assert!(!negated.matches(Path::new("/src/generated/drop.vue")));
-    }
-}
+mod tests;

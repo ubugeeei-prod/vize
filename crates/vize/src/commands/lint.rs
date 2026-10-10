@@ -8,6 +8,7 @@ mod cross_file;
 mod entry_rules;
 mod fix;
 mod patterns;
+mod profile;
 mod rich;
 mod routes;
 mod stdout;
@@ -21,7 +22,9 @@ pub use args::LintArgs;
 
 use crate::profile_support;
 use aggregate::{LintRunAccumulator, should_retain_file_results};
-use collect::{LintIgnoreSet, collect_lint_inputs, resolve_lint_config_path};
+use collect::{
+    LintIgnoreSet, collect_lint_file_collection, collect_lint_inputs, resolve_lint_config_path,
+};
 use entry_rules::LinterRuleResolver;
 use fix::lint_source_with_optional_fix;
 use rayon::prelude::*;
@@ -32,9 +35,7 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 use vize_carton::source_io as fs;
-use vize_curator::profile::{
-    ProfileFileRow, ProfilePhase, ProfilePhaseKind, ProfileReport, print_profile_report,
-};
+use vize_curator::profile::ProfileFileRow;
 use vize_l0::{String, ToCompactString, cstr, profile, profiler::global_profiler};
 use vize_patina::{HelpLevel, LintPreset, OutputFormat};
 
@@ -44,7 +45,7 @@ pub fn run(mut args: LintArgs) {
     let locale = rich::parse_locale(args.locale.as_str());
     let render_details = aggregate::should_render_details(format, args.quiet);
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let (loaded_config, linter_plan, linter_features) = config_load::load(&mut args);
+    let (loaded_config, linter_plan, linter_features, project_root) = config_load::load(&mut args);
     crate::config::write_schema_for_config(loaded_config.source_path.as_deref());
     let linter_enabled = linter_plan.plan.base.enabled;
     let config_dir = loaded_config
@@ -61,9 +62,38 @@ pub fn run(mut args: LintArgs) {
         .type_checker
         .runtime_path()
         .map(|path| resolve_lint_config_path(config_dir, path));
-    let ignore_set = LintIgnoreSet::new(&linter_plan.plan.global_ignores, config_dir);
+    let ignore_set = if project_root.is_some() {
+        LintIgnoreSet::for_project(&linter_plan.plan.global_ignores, config_dir)
+    } else {
+        LintIgnoreSet::new(&linter_plan.plan.global_ignores, config_dir)
+    };
     let collect_start = Instant::now();
-    let (files, input_warnings) = collect_lint_inputs(&args.patterns, ignore_set.as_ref());
+    let default_patterns = args.patterns.is_empty().then(|| {
+        patterns::LINT_DEFAULT_PATTERNS
+            .iter()
+            .map(|pattern| {
+                project_root.as_deref().map_or_else(
+                    || String::from(*pattern),
+                    |root| {
+                        String::from(
+                            root.join(pattern.strip_prefix("./").unwrap_or(pattern))
+                                .to_string_lossy()
+                                .as_ref(),
+                        )
+                    },
+                )
+            })
+            .collect::<Vec<_>>()
+    });
+    let input_patterns = default_patterns.as_deref().unwrap_or(&args.patterns);
+    let (files, input_warnings) = if args.patterns.is_empty() {
+        (
+            collect_lint_file_collection(input_patterns, ignore_set.as_ref()).files,
+            0,
+        )
+    } else {
+        collect_lint_inputs(input_patterns, ignore_set.as_ref())
+    };
     let collect_time = collect_start.elapsed();
     if files.is_empty() {
         patterns::write_no_files(format, &args.patterns);
@@ -236,108 +266,24 @@ pub fn run(mut args: LintArgs) {
     );
 
     if args.profile {
-        let mut file_rows = profile_rows
-            .and_then(|profile_rows| profile_rows.into_inner().ok())
-            .unwrap_or_default();
-        file_rows.sort_by_key(|row| std::cmp::Reverse(row.total));
-
-        let total_read = file_rows
-            .iter()
-            .fold(Duration::ZERO, |acc, row| acc + row.primary);
-        let total_lint = file_rows
-            .iter()
-            .fold(Duration::ZERO, |acc, row| acc + row.secondary);
-        let total_bytes = file_rows.iter().fold(0usize, |acc, row| acc + row.bytes);
-        let mut phases = vec![
-            ProfilePhase {
-                name: "collect files",
-                duration: collect_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "glob and ignore-aware walk",
-            },
-            ProfilePhase {
-                name: "lint wall",
-                duration: lint_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "parallel worker elapsed time",
-            },
-            ProfilePhase {
-                name: "read total",
-                duration: total_read,
-                kind: ProfilePhaseKind::Cumulative,
-                note: "sum across worker threads",
-            },
-            ProfilePhase {
-                name: "lint total",
-                duration: total_lint,
-                kind: ProfilePhaseKind::Cumulative,
-                note: "sum across worker threads",
-            },
-        ];
-        if cross_file_enabled {
-            phases.push(ProfilePhase {
-                name: "cross-file lint",
-                duration: cross_file_time,
-                kind: ProfilePhaseKind::Wall,
-                note: "project graph diagnostics",
-            });
-        }
-        phases.push(ProfilePhase {
-            name: "render output",
-            duration: output_time,
-            kind: ProfilePhaseKind::Wall,
-            note: "diagnostic formatting",
-        });
-        let slow_threshold = Duration::from_millis(args.slow_threshold);
-        let mut recommendations: Vec<String> = Vec::new();
-        if let Some(summary) = operation_summary.as_ref()
-            && let Some(entry) = summary.entries.first()
-        {
-            recommendations.push(cstr!(
-                "Deepest hot operation: {} took {:.2}ms total across {} call(s).",
-                entry.name,
-                entry.total.as_secs_f64() * 1000.0,
-                entry.count
-            ));
-        }
-        for row in file_rows
-            .iter()
-            .filter(|row| row.total > slow_threshold)
-            .take(4)
-        {
-            recommendations.push(cstr!(
-                "{} exceeded the slow threshold; start with the lint rule preset and script/template size.",
-                row.path.display()
-            ));
-        }
-        if output_time > lint_time {
-            recommendations.push(
-                "Output rendering is heavier than linting; use --quiet during profiling runs that only need totals."
-                    .into(),
-            );
-        }
-
-        let summary = cstr!(
-            "{} file(s), {} error(s), {} warning(s), preset '{}'",
-            files.len(),
+        profile::ProfileContext {
+            args: &args,
+            profile_rows,
+            collect_time,
+            lint_time,
+            cross_file_enabled,
+            cross_file_time,
+            output_time,
+            elapsed,
+            operation_summary,
+            counter_summary,
+            allocation_summary,
+            files: &files,
             total_errors,
             total_warnings,
-            preset_name
-        );
-        let report = ProfileReport {
-            title: "lint",
-            summary: summary.as_str(),
-            total: elapsed,
-            phases: phases.as_slice(),
-            files: &file_rows,
-            slow_threshold,
-            throughput_bytes: Some(total_bytes),
-            operations: operation_summary.as_ref(),
-            counters: counter_summary.as_ref(),
-            allocations: allocation_summary,
-            recommendations: &recommendations,
-        };
-        print_profile_report(&report);
+            preset_name: preset_name.as_str(),
+        }
+        .print();
     }
 
     // `process::exit` below bypasses normal stdout teardown, so flush report output first.

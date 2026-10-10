@@ -58,7 +58,10 @@ pub struct BuildArgs {
     /// quote patterns in the shell.
     /// Backslashes are separators, not escapes. Use [*], [?], [[], or []] for
     /// literal *, ?, [, or ].
-    #[arg(default_value = "./**/*.vue")]
+    #[arg(
+        help = "File, directory, or glob inputs (output paths stay relative to their common root)\n\n[default: ./**/*.vue]",
+        long_help = "File, directory, or glob inputs (output paths stay relative to their common root)\n\nExisting paths are literal. Globs support *, ?, [...], and recursive **; quote patterns in the shell. Backslashes are separators, not escapes. Use [*], [?], [[], or []] for literal *, ?, [, or ].\n\n[default: ./**/*.vue]"
+    )]
     pub patterns: Vec<String>,
 
     /// Output directory (default: ./dist)

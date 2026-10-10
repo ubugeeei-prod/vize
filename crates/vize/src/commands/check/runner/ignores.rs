@@ -1,10 +1,11 @@
 use std::path::{Path, PathBuf};
 
-use super::{super::CheckArgs, collect::InputGlob};
+use super::collect::InputGlob;
 use crate::config;
 
 pub(super) struct CheckIgnoreSet {
     patterns: Vec<InputGlob>,
+    project: Option<config::matcher::ProjectIgnoreSet>,
 }
 
 impl CheckIgnoreSet {
@@ -14,20 +15,28 @@ impl CheckIgnoreSet {
             .flat_map(|ignore| expand_entry_ignore_patterns(ignore, config_dir))
             .filter_map(|pattern| InputGlob::new(pattern.to_string_lossy().as_ref()))
             .collect::<Vec<_>>();
-        (!patterns.is_empty()).then_some(Self { patterns })
+        (!patterns.is_empty()).then_some(Self {
+            patterns,
+            project: None,
+        })
+    }
+
+    pub(super) fn for_project(
+        ignores: &[config::ConfigEntryIgnore],
+        config_dir: &Path,
+    ) -> Option<Self> {
+        config::matcher::ProjectIgnoreSet::new(ignores, config_dir).map(|project| Self {
+            patterns: Vec::new(),
+            project: Some(project),
+        })
     }
 
     pub(super) fn is_ignored(&self, path: &Path) -> bool {
-        self.patterns.iter().any(|pattern| pattern.matches(path))
+        self.project.as_ref().map_or_else(
+            || self.patterns.iter().any(|pattern| pattern.matches(path)),
+            |project| project.is_ignored(path),
+        )
     }
-}
-
-pub(super) fn load_check_ignore_set(args: &CheckArgs, config_dir: &Path) -> Option<CheckIgnoreSet> {
-    if args.no_config {
-        return None;
-    }
-    let loaded_ignores = config::load_config_entry_ignores_with_source(args.config.as_deref());
-    CheckIgnoreSet::new(&loaded_ignores.ignores, config_dir)
 }
 
 pub(super) fn retain_unignored(files: &mut Vec<PathBuf>, ignore_set: Option<&CheckIgnoreSet>) {

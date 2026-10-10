@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const message = "hello";
+</script>
+
+<template>
+  <my-widget> two  spaces </my-widget><p>{{ message }}</p>
+</template>

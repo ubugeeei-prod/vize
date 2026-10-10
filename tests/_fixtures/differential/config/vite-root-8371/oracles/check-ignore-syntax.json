@@ -1,0 +1,49 @@
+{
+  "errorCount": 3,
+  "fileCount": 4,
+  "files": [
+    {
+      "diagnostics": [
+        "error:1:14 [TS2322] Type 'string' is not assignable to type 'number'."
+      ],
+      "file": "app/absolute/KeepItem.ts"
+    },
+    {
+      "diagnostics": [
+        "error:1:14 [TS2322] Type 'string' is not assignable to type 'number'."
+      ],
+      "file": "app/generated/KeepItem.ts"
+    },
+    {
+      "diagnostics": [
+        "error:1:14 [TS2322] Type 'string' is not assignable to type 'number'."
+      ],
+      "file": "app/src/id.ts"
+    },
+    {
+      "diagnostics": [],
+      "file": "app/src/valid.ts"
+    }
+  ],
+  "programs": [
+    {
+      "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "noEmit": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext"
+      },
+      "files": [
+        "app/absolute/KeepItem.ts",
+        "app/generated/KeepItem.ts",
+        "app/src/id.ts",
+        "app/src/valid.ts"
+      ],
+      "root": "app",
+      "tsconfig": "app/tsconfig.json"
+    }
+  ],
+  "warningCount": 0
+}

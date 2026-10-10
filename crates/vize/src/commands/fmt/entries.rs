@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use vize_l0::String;
 
-use super::patterns::{has_explicit_patterns, is_format_extension};
+use super::patterns::{default_fmt_patterns, is_format_extension};
 use super::{FmtArgs, files::FmtPattern};
 use crate::config;
 
@@ -18,14 +18,30 @@ pub(super) fn resolve_patterns(
     args: &FmtArgs,
     snapshot: &config::LoadedFormatterSnapshot,
 ) -> ResolvedFmtPatterns {
-    let explicit = has_explicit_patterns(&args.patterns);
-    let values = if explicit {
+    let explicit = !args.patterns.is_empty();
+    let values = if explicit && snapshot.project_root.is_some() {
+        compact_patterns(&args.patterns)
+    } else if explicit {
         load_fmt_entry_file_set(snapshot)
             .as_ref()
             .map(|entry_file_set| entry_file_set.expand_patterns(&args.patterns))
             .unwrap_or_else(|| compact_patterns(&args.patterns))
     } else {
-        compact_patterns(&args.patterns)
+        default_fmt_patterns()
+            .iter()
+            .map(|pattern| {
+                snapshot.project_root.as_deref().map_or_else(
+                    || String::from(pattern.as_str()),
+                    |root| {
+                        String::from(
+                            root.join(pattern.strip_prefix("./").unwrap_or(pattern))
+                                .to_string_lossy()
+                                .as_ref(),
+                        )
+                    },
+                )
+            })
+            .collect()
     };
     ResolvedFmtPatterns { values, explicit }
 }

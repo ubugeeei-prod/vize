@@ -28,12 +28,12 @@ mod patterns;
 pub(crate) use files::collect_files;
 use ignores::load_fmt_ignore_set;
 use options::build_format_options;
-use patterns::{FORMAT_EXTENSIONS_DISPLAY, default_fmt_patterns};
+use patterns::{FORMAT_EXTENSIONS_DISPLAY, FORMAT_PATTERN_HELP};
 #[derive(Args)]
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 pub struct FmtArgs {
     /// Vue/JS/TS/JSON/JSONC globs; YAML/Markdown formatting is not implemented.
-    #[arg(default_values_t = default_fmt_patterns())]
+    #[arg(help = FORMAT_PATTERN_HELP)]
     pub patterns: Vec<String>,
 
     /// Check formatting without writing (exit with error if files need formatting)

@@ -4,12 +4,12 @@ use clap::Args;
 use std::path::PathBuf;
 use vize_l0::String;
 
-use super::patterns::LINT_DEFAULT_PATTERNS;
-
 #[derive(Args)]
 pub struct LintArgs {
     /// Glob pattern(s) to match files supported by vize lint
-    #[arg(default_values = LINT_DEFAULT_PATTERNS)]
+    #[arg(
+        help = "Glob pattern(s) to match files supported by vize lint\n\n[default: ./**/*.vue ./**/*.html ./**/*.htm ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx]"
+    )]
     pub patterns: Vec<String>,
 
     /// Automatically fix problems when diagnostics provide safe text edits
