@@ -23,6 +23,18 @@ const authored = JSON.parse(
 const manager = PACKAGE_MANAGERS.yarn;
 const shape = PROJECT_SHAPES["vite-vue-js-checkjs"];
 
+function withYarnBinary(binary: string | undefined, check: () => void) {
+  const original = process.env[manager.binaryEnv];
+  try {
+    if (binary === undefined) delete process.env[manager.binaryEnv];
+    else process.env[manager.binaryEnv] = binary;
+    check();
+  } finally {
+    if (original === undefined) delete process.env[manager.binaryEnv];
+    else process.env[manager.binaryEnv] = original;
+  }
+}
+
 void test("Yarn checkJs is cell eight after the unchanged complete original seven", () => {
   assert.deepEqual(FRESH_INIT_MATRIX, [
     ...authored.originalSevenCells,
@@ -41,20 +53,24 @@ void test("Yarn checkJs keeps the pinned existing manager, linker and complete c
   assert.deepEqual(manager.projectFiles, { ".yarnrc.yml": "nodeLinker: node-modules\n" });
   assert.equal(authored.nodeLinker, "node-modules");
   assert.deepEqual(manager.environment, { YARN_ENABLE_IMMUTABLE_INSTALLS: "false" });
-  for (const [args, expected] of [
-    [manager.bootstrapArgs, authored.commands.bootstrap],
-    [manager.runScriptArgs("vize:check", []), authored.commands.generatedCheck],
-    [
+  withYarnBinary(undefined, () => {
+    for (const [args, expected] of [
+      [manager.bootstrapArgs, authored.commands.bootstrap],
+      [manager.runScriptArgs("vize:check", []), authored.commands.generatedCheck],
       [
-        ...manager.installArgs,
-        ...shape.plannedDependencies.map((name) => `${name}@file:<authenticated-packed-artifact>`),
+        [
+          ...manager.installArgs,
+          ...shape.plannedDependencies.map(
+            (name) => `${name}@file:<authenticated-packed-artifact>`,
+          ),
+        ],
+        authored.commands.plannedInstall,
       ],
-      authored.commands.plannedInstall,
-    ],
-  ]) {
-    const runner = managerCommand(manager, args, "linux");
-    assert.deepEqual([runner.command, ...runner.args], expected);
-  }
+    ]) {
+      const runner = managerCommand(manager, args, "linux");
+      assert.deepEqual([runner.command, ...runner.args], expected);
+    }
+  });
   assert.deepEqual(authored.commands.localCheck, [
     "<authenticated-node>",
     "<fresh-project>/node_modules/vize/bin/vize",
@@ -63,6 +79,21 @@ void test("Yarn checkJs keeps the pinned existing manager, linker and complete c
     "json",
     "--quiet",
   ]);
+});
+
+void test("Yarn checkJs keeps the supported binary override and complete authored arguments", () => {
+  withYarnBinary("/authored-yarn/bin/yarn", () => {
+    for (const expected of [
+      authored.commands.bootstrap,
+      authored.commands.generatedCheck,
+      authored.commands.plannedInstall,
+    ]) {
+      assert.deepEqual(managerCommand(manager, expected.slice(2), "linux"), {
+        command: "/authored-yarn/bin/yarn",
+        args: expected.slice(2),
+      });
+    }
+  });
 });
 
 void test("Yarn checkJs preserves all authored project and generated config bytes and full init stdout", () => {
