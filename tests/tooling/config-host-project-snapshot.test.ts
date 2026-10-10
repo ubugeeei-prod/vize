@@ -47,6 +47,15 @@ test("stage consumers receive the existing document and path values without host
 });
 
 test("path normalization retains the exact finite owner and rejects surplus host calls", () => {
+  assert.match(
+    read("crates/vize_maestro/src/ide.rs"),
+    /#\[cfg\(feature = "native"\)\]\s*pub\(crate\) use corsa_support::normalize_physical_path;/u,
+  );
+  assert.match(
+    read(consumers[1]),
+    /crate::ide::normalize_physical_path\(physical\.join\(relative\)\)/u,
+  );
+  assert.doesNotMatch(read(consumers[1]), /crate::ide::corsa_support::normalize_physical_path/u);
   assert.deepEqual(pathHostCallers[pathHost], [0, 0, 1]);
   const source = read(pathHost);
   assert.doesNotMatch(withoutHostRuntimeReferences(source, pathHost), forbidden);

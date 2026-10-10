@@ -207,3 +207,8 @@ its strict broken-link branch and the project walk's missing-ancestor behavior.
 The complete 59-write path replay and sole normalization tuple stay unchanged.
 The whole Vue-version getter moves into existing config reads without changing
 its body, cfg attributes or visibility. Original native vectors still apply.
+
+The fresh native build exposed a private-module access at the project path
+consumer. Re-export the same pure normalizer from the crate-visible IDE surface;
+keep its body, host tuple and existing rename consumers unchanged. Retain the
+whole original failed log and require fresh native compilation and protocol laws.
