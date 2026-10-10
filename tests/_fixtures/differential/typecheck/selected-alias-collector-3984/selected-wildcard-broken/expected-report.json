@@ -1,0 +1,44 @@
+{
+  "files": [
+    {
+      "file": "App.tsx",
+      "diagnostics": [
+        "error:2:7 [TS2322] Type 'number' is not assignable to type 'string'."
+      ]
+    },
+    {
+      "file": "wildcard.tsx",
+      "diagnostics": [
+        "error:2:7 [TS2322] Type 'number' is not assignable to type 'string'."
+      ]
+    }
+  ],
+  "programs": [
+    {
+      "root": ".",
+      "tsconfig": "tsconfig.json",
+      "compilerOptions": {
+        "jsx": "preserve",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "noEmit": true,
+        "paths": {
+          "@*": [
+            "__VIZE_ALIAS_ROOT__/generic*.tsx"
+          ],
+          "@x*": [
+            "__VIZE_ALIAS_ROOT__/wildcard*.tsx"
+          ]
+        },
+        "strict": true,
+        "target": "ES2022"
+      },
+      "files": [
+        "App.tsx"
+      ]
+    }
+  ],
+  "errorCount": 2,
+  "warningCount": 0,
+  "fileCount": 2
+}
