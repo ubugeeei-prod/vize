@@ -1,0 +1,8 @@
+// 日本語 😀
+import Host from './Host.vue';
+const value = 'ok';
+const count = 1;
+const view = <Host content={count > 0 ? <span>{value.missing}</span> : <>empty</>}
+  callback={() => <i>{value}</i>} {...{ extra: <b>{value}</b> }} />;
+const direct = <Host content=<u>{count}</u> callback={() => <>ok</>} />;
+void view; void direct;
