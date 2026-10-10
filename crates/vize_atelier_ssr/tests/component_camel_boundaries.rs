@@ -9,9 +9,10 @@ use std::{
     process::{Command, Stdio},
 };
 
-const CORPUS: &str = include_str!(
-    "../../../tests/_fixtures/differential/compiler/dynamic-component-camel/corpus.json"
-);
+const CORPUS: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/compiler/dynamic-component-camel/corpus.json"
+));
 
 #[test]
 fn dynamic_component_camel_preserves_key_count_scope_falsy_and_prop_order() {

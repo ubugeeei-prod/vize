@@ -20,15 +20,17 @@ use std::{
     process::{Command, Stdio},
 };
 
-const CORPUS: &str = include_str!(
-    "../../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/corpus.json"
-);
+const CORPUS: &str = include_str!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/corpus.json"
+));
 macro_rules! source {
     ($name:literal) => {
         (
             $name,
             include_str!(concat!(
-                "../../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/",
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/",
                 $name,
                 ".vue.txt"
             )),
