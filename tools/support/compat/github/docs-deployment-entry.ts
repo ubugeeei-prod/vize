@@ -2,7 +2,13 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { GitHub, sha256, stableJson, type Deployment } from "./docs-deployment-api.ts";
+import {
+  GitHub,
+  sha256,
+  stableJson,
+  terminalPagesMetadata,
+  type Deployment,
+} from "./docs-deployment-api.ts";
 import {
   artifacts,
   buildFromRun,
@@ -207,7 +213,7 @@ async function record() {
 async function finish() {
   const saved = state();
   assert(saved.receipt && saved.receiptId, "Recorded candidate custody");
-  const { publisher, job } = await ownPublisher(saved.repositoryId);
+  const { publisher, job } = await terminalPagesMetadata(() => ownPublisher(saved.repositoryId));
   const pages = await api.json<Artifact>("/actions/artifacts/" + saved.receipt.pagesArtifact.id);
   assert(
     publishedReceipt(saved.receipt, publisher, job, saved.build, pages),

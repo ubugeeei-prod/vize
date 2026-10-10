@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { Artifact, ManifestIdentity } from "./docs-deployment-policy.ts";
+import type { Artifact, ManifestIdentity, PublisherJob } from "./docs-deployment-policy.ts";
 
 export const sha256 = (bytes: string | Uint8Array) =>
   createHash("sha256").update(bytes).digest("hex");
@@ -14,7 +14,7 @@ export function stableJson(value: unknown): string {
     if (item !== null && typeof item === "object")
       return Object.fromEntries(
         Object.entries(item)
-          .sort(([a], [b]) => a.localeCompare(b))
+          .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
           .map(([key, child]) => [key, ordered(child)]),
       );
     return item;
@@ -30,6 +30,20 @@ export type Deployment = {
   creator: { login: string; type: string };
   payload: unknown;
 };
+
+export async function terminalPagesMetadata<T extends { job: PublisherJob }>(
+  read: () => Promise<T>,
+  pause = async () => await new Promise<void>((resolve) => setTimeout(resolve, 2000)),
+) {
+  let value = await read();
+  for (let retry = 0; retry < 5; retry++) {
+    const step = value.job.steps.find((item) => item.name === "Deploy to GitHub Pages");
+    if (step?.conclusion && step.completed_at) break;
+    await pause();
+    value = await read();
+  }
+  return value;
+}
 
 // Read a single member; neither archive can write paths, symlinks or executable code.
 export function archiveMember(bytes: Uint8Array, pages: boolean, member = "_og/manifest.json") {

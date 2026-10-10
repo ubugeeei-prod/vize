@@ -101,6 +101,10 @@ pagination at the cutoff, and explicitly recheck every older outstanding ID.
 Creation time alone cannot retire a writer queued before the anchor: its Pages
 effect can happen later. Resolve generic records to their primary jobs and refuse
 unqualified newer or uncertain effects and unknown writers.
+Also query all five active workflow statuses without a creation cutoff: a rerun
+keeps its old run creation time. Authenticate and retain each discovered current
+attempt, without replaying its obsolete completed attempts. Primary count and
+pagination completeness requirements also apply to these bounded status queries.
 
 Before allowing publication, authenticate every pending writer's exact workflow
 hash. The preserved legacy writer locks the whole job and checks fresh main
@@ -116,6 +120,11 @@ age and overall cleanup conclusion cannot discard it. The next immutable receipt
 preserves this complete outstanding journal with its own actual primary start,
 so steady reads cover new work and unresolved writers without retaining a
 permanent full-history dependency.
+The same skipped or unstarted effect filter applies to candidate custody records;
+an unexecuted newer candidate retains the older floor and still proves its guard
+when pending. Terminal metadata in the current writer's final custody step may
+refresh for at most ten seconds before applying the unchanged strict assertion.
+Canonical receipt hashes use code-unit key ordering, independent of runner locale.
 
 Workflow searches include the primary `total_count` on every page. GitHub limits
 [filtered workflow-run searches](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-workflow)
@@ -143,6 +152,16 @@ does not authorize discarding the floor. This initial migration scans publisher
 history and downloads the two original archives, so its API and archive cost
 must be measured in the read-only rehearsal and exact Actions before admission.
 
+For operations, enable GitHub failure notifications for `Deploy docs` and triage
+failed `Whole immutable receipt` or publisher-log assertions against the exact
+floor Deployment, publisher job and source artifact IDs. Before a long publication
+gap, increase repository Actions artifact/log retention and the original Docs
+artifact upload retention to cover it. Retention changes cannot recover already
+expired data. If primary log or identity metadata is already unavailable, retain
+the floor, report those exact IDs in an issue, and require a maintainer-reviewed
+recovery that restores equivalent primary custody before publishing. Never delete
+the floor or promote generic environment success to bypass the assertion.
+
 ## Required controls and delivery
 
 The source tests exercise a real Git DAG with a completed build that remains an
@@ -156,6 +175,10 @@ environments crossing the cutoff, new unknown writers, late uncertain effects,
 actual skip retirement and refusal when current custody metadata disappears.
 Primary-page controls also reject a truncated 1001-run workflow search and an
 incomplete smaller search, while accepting complete multipage and empty results.
+Review regressions reproduce an older unretained rerun in every active status,
+unknown guards without a Pages environment, newer skipped or unstarted candidate
+custody, locale-dependent JSON key ordering and stale terminal metadata. Original
+guard, count completeness and uncertain-effect controls remain in place.
 
 The existing strict erasable TypeScript CI gate includes every new entrypoint
 and control. Existing whole Docs build and release-preflight obligations stay

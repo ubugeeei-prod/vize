@@ -25,6 +25,12 @@ type HistoryRun = WorkflowRun & { created_at: string };
 type Effect = { publisher: WorkflowRun; job: PublisherJob };
 const pagesStep = (job: PublisherJob) =>
   job.steps.find((step) => step.name === "Deploy to GitHub Pages");
+const inertPages = (job: PublisherJob) => {
+  const step = pagesStep(job);
+  return (
+    !step || step.conclusion === "skipped" || (step.conclusion === null && step.started_at === null)
+  );
+};
 
 async function receiptAnchor(api: GitHub, repositoryId: number, currentRunId: number) {
   const candidates: Effect[] = [];
@@ -77,6 +83,17 @@ async function observeHistory(
   for (const run of runs)
     for (let attempt = 1; attempt <= run.run_attempt; attempt++)
       attempts.set(run.id + ":" + attempt, { runId: run.id, attempt });
+  const active = await Promise.all(
+    ["queued", "in_progress", "waiting", "pending", "requested"].map((status) =>
+      api.list<HistoryRun>(
+        "/actions/workflows/deploy-docs.yml/runs?branch=main&status=" + status,
+        "workflow_runs",
+      ),
+    ),
+  );
+  // Reruns retain the original creation time and can precede the journal cutoff.
+  for (const run of active.flat())
+    attempts.set(run.id + ":" + run.run_attempt, { runId: run.id, attempt: run.run_attempt });
   for (const item of outstanding.publisherAttempts)
     attempts.set(item.runId + ":" + item.attempt, item);
   const effects: Effect[] = [];
@@ -105,13 +122,7 @@ async function observeHistory(
       assert.equal(job.run_attempt, publisher.run_attempt);
       assert.equal(job.head_sha, publisher.head_sha);
       assert(job.steps.filter((step) => step.name === "Deploy to GitHub Pages").length <= 1);
-      const step = pagesStep(job);
-      if (
-        !step ||
-        step.conclusion === "skipped" ||
-        (step.conclusion === null && step.started_at === null)
-      )
-        continue;
+      if (inertPages(job)) continue;
       effects.push({ publisher, job });
     }
   }
@@ -180,7 +191,8 @@ export async function publicationState(
     guardedWorkflowHash,
   );
   for (const effect of candidates) {
-    if (!effects.some((item) => item.job.id === effect.job.id)) effects.push(effect);
+    if (!inertPages(effect.job) && !effects.some((item) => item.job.id === effect.job.id))
+      effects.push(effect);
     knownRuns.add(effect.publisher.id);
     if (
       effect.publisher.status !== "completed" &&
