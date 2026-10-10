@@ -25,10 +25,13 @@ impl Linter {
     /// Configure slot modifiers without enabling an unselected rule.
     pub fn with_valid_v_slot_allow_modifiers(mut self, allow_modifiers: bool) -> Self {
         if self.registry.has_rule("vue/valid-v-slot") {
-            self.registry
-                .replace(Box::new(crate::rules::vue::ValidVSlot::configured(
-                    allow_modifiers,
-                )));
+            if allow_modifiers {
+                self.registry
+                    .replace(Box::new(crate::rules::vue::ValidVSlot::allowing_modifiers()));
+            } else {
+                self.registry
+                    .replace(Box::new(crate::rules::vue::ValidVSlot));
+            }
         }
         self
     }

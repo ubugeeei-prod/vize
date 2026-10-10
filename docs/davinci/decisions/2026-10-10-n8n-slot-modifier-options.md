@@ -66,3 +66,18 @@ options-table control also requires the declared new rule in both languages.
 Add the Japanese option row and examples and preserve the full table comparison.
 These are source successors and require new exact-head Actions; failed source
 checks and historical consumer greens remain historical evidence.
+
+Protected candidate `68478f58` fails the original JSX markup ceiling with
+45,756 instructions against 45,385; all three repetitions agree. The same
+fixture/methodology at parent candidate `2e1bcf07` uses 45,385. Exclusive
+Callgrind delta is chiefly `markup::l2::binding::walk_items` (+381), with small
+changes in other markup callbacks. This measured window uses the unchanged
+default registry; configuration and allocation happen outside it. Do not
+attribute this evidence to the configured rule's Box without a measured call.
+Remove the failed whole Stack from the queue and qualify a repaired source;
+the budget and original observations remain unchanged. Independently remove
+unnecessary policy heap data: false selects the public unit rule, and true
+selects a private unit rule whose directive callback passes true. Both
+instances allocate no heap payload; explicit false still overrides prior true,
+and neither option enables an absent rule. Source and protected measurements
+must establish the actual resulting traversal cost before queue admission.

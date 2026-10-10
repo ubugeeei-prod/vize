@@ -232,13 +232,11 @@ mod mixed_default_tests;
 #[cfg(test)]
 mod tests;
 
-struct ConfiguredValidVSlot {
-    allow_modifiers: bool,
-}
+struct ConfiguredValidVSlot;
 
 impl ValidVSlot {
-    pub(crate) fn configured(allow_modifiers: bool) -> impl Rule {
-        ConfiguredValidVSlot { allow_modifiers }
+    pub(crate) fn allowing_modifiers() -> impl Rule {
+        ConfiguredValidVSlot
     }
 }
 
@@ -257,6 +255,6 @@ impl Rule for ConfiguredValidVSlot {
         element: &ElementNode<'a>,
         directive: &DirectiveNode<'a>,
     ) {
-        ValidVSlot.check_slot_directive(ctx, element, directive, self.allow_modifiers);
+        ValidVSlot.check_slot_directive(ctx, element, directive, true);
     }
 }
