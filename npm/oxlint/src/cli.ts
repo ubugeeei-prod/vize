@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process";
 import type { Writable } from "node:stream";
 
 import { expectsLintReport, getLintTargets } from "./cli/args.js";
@@ -9,6 +8,10 @@ import { rewriteReportedLocations } from "./cli/locations.js";
 import { prepareScriptlessWorkaroundFiles } from "./cli/workaround-files.js";
 import { prepareScopedSelection } from "./cli/scoped-selection.js";
 import { mergeProjectOutput } from "./cli/project-output.js";
+import { isStandaloneHtmlFile } from "./file-kinds.ts";
+import { prepareHtmlContext, executeHtml } from "./cli/html-operation.ts";
+import { mergeHtmlOutput, unavailableHtml, qualifyHtmlHost } from "./cli/html-project-output.ts";
+import { runOxlint } from "./cli/process.ts";
 
 async function main(): Promise<void> {
   const cwd = process.cwd();
@@ -17,19 +20,34 @@ async function main(): Promise<void> {
   const candidates = new Set<string>();
   const lintFiles = collectVueLikeFilesFromTargets(cwd, targets, (file) => candidates.add(file));
   const oxlintEntrypoint = resolveOxlintCliEntrypoint(cwd);
-  verifyOxlintCliEntrypoint(process.execPath, oxlintEntrypoint);
-  const scoped = await prepareScopedSelection(
-    cwd,
-    forwardedArgs,
-    lintFiles,
-    (args) => runOxlint(process.execPath, [oxlintEntrypoint, ...args], cwd),
-    candidates,
-  );
+  const version = verifyOxlintCliEntrypoint(process.execPath, oxlintEntrypoint);
+  const html = lintFiles.some(isStandaloneHtmlFile)
+    ? prepareHtmlContext(cwd, forwardedArgs, oxlintEntrypoint, version, candidates)
+    : undefined;
+  const vueFiles = html ? lintFiles.filter((file) => !isStandaloneHtmlFile(file)) : lintFiles;
+  let scoped: Awaited<ReturnType<typeof prepareScopedSelection>>;
+  try {
+    scoped = await prepareScopedSelection(
+      cwd,
+      forwardedArgs,
+      vueFiles,
+      (args) => runOxlint(process.execPath, [oxlintEntrypoint, ...args], cwd),
+      candidates,
+    );
+  } catch (error) {
+    if (!html) throw error;
+    // No normal source packet has been returned yet. Preserve one genuine
+    // unsplit normal run and make preparation failure visible without a carrier.
+    html.failure = error instanceof Error ? error.message : String(error);
+    scoped = {
+      result: await runOxlint(process.execPath, [oxlintEntrypoint, ...forwardedArgs], cwd),
+    };
+  }
   const sourceResult = scoped && "result" in scoped ? scoped.result : undefined;
   const transport = scoped && "prepared" in scoped ? scoped : undefined;
   const prepared = sourceResult
     ? prepareScriptlessWorkaroundFiles(cwd, [])
-    : (transport?.prepared ?? prepareScriptlessWorkaroundFiles(cwd, lintFiles));
+    : (transport?.prepared ?? prepareScriptlessWorkaroundFiles(cwd, vueFiles));
   const args = [
     oxlintEntrypoint,
     ...(transport?.args ?? [...forwardedArgs, ...prepared.appendedArgs]),
@@ -48,17 +66,40 @@ async function main(): Promise<void> {
         rewriteReportedLocations(result.stderr, prepared.locations),
         prepared.pathReplacements,
       );
-      merged = { ...result, stdout: mappedStdout, stderr: mappedStderr };
+      merged = {
+        ...result,
+        stdout: mappedStdout,
+        stderr: mappedStderr,
+        rawStdout: mappedStdout === result.stdout ? result.rawStdout : undefined,
+        rawStderr: mappedStderr === result.stderr ? result.rawStderr : undefined,
+      };
       if (transport?.originalResult)
         merged = mergeProjectOutput(transport.originalResult, merged, forwardedArgs);
+      if (html) {
+        try {
+          qualifyHtmlHost(html, merged);
+          const outcome = executeHtml(html);
+          if (!outcome.completed) throw new Error("original HTML operation is incomplete");
+          merged = mergeHtmlOutput(merged, outcome.completed, forwardedArgs);
+        } catch (error) {
+          merged = unavailableHtml(merged, error);
+        }
+      }
     } catch (error) {
       // Preparation, spawn, mapping and JSON failures retain authored packets.
       if (transport?.originalResult) {
         process.exitCode = Math.max(transport.originalResult.status ?? 1, result?.status ?? 1, 1);
-        await writeStream(process.stdout, transport.originalResult.stdout);
+        await writeStream(
+          process.stdout,
+          transport.originalResult.rawStdout ?? transport.originalResult.stdout,
+        );
         await writeStream(
           process.stderr,
-          transport.originalResult.stderr + (result?.stderr ?? "") + (result?.stdout ?? ""),
+          Buffer.concat([
+            transport.originalResult.rawStderr ?? Buffer.from(transport.originalResult.stderr),
+            result?.rawStderr ?? Buffer.from(result?.stderr ?? ""),
+            result?.rawStdout ?? Buffer.from(result?.stdout ?? ""),
+          ]),
         );
       }
       throw error;
@@ -66,11 +107,11 @@ async function main(): Promise<void> {
     const { stdout, stderr } = merged;
 
     if (stdout) {
-      await writeStream(process.stdout, stdout);
+      await writeStream(process.stdout, merged.rawStdout ?? stdout);
     }
 
     if (stderr) {
-      await writeStream(process.stderr, stderr);
+      await writeStream(process.stderr, merged.rawStderr ?? stderr);
     }
 
     if (merged.status === 0 && stdout === "" && stderr === "" && expectsLintReport(forwardedArgs)) {
@@ -107,41 +148,7 @@ main().catch((error: unknown) => {
   process.exitCode = Math.max(Number(process.exitCode) || 1, 1);
 });
 
-function runOxlint(
-  executable: string,
-  args: readonly string[],
-  cwd: string,
-): Promise<{ status: number | null; stderr: string; stdout: string }> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(executable, args, {
-      cwd,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-    const stdoutChunks: Buffer[] = [];
-    const stderrChunks: Buffer[] = [];
-
-    child.stdout.on("data", (chunk: Buffer | string) => {
-      stdoutChunks.push(asBuffer(chunk));
-    });
-    child.stderr.on("data", (chunk: Buffer | string) => {
-      stderrChunks.push(asBuffer(chunk));
-    });
-    child.on("error", reject);
-    child.on("close", (status) => {
-      resolve({
-        status,
-        stderr: Buffer.concat(stderrChunks).toString("utf8"),
-        stdout: Buffer.concat(stdoutChunks).toString("utf8"),
-      });
-    });
-  });
-}
-
-function asBuffer(chunk: Buffer | string): Buffer {
-  return typeof chunk === "string" ? Buffer.from(chunk) : chunk;
-}
-
-function writeStream(stream: Writable, text: string): Promise<void> {
+function writeStream(stream: Writable, text: string | Uint8Array): Promise<void> {
   return new Promise((resolve, reject) => {
     stream.write(text, (error) => {
       if (error) {

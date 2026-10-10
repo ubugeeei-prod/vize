@@ -15,8 +15,8 @@ const selected = (path) =>
   planToolingTests([path]).tests.filter((file) => file.startsWith("tests/tooling/release/"));
 
 void test("audited release contracts have complete imports and leave unresolved cases broad", () => {
-  assert.equal(releaseFiles.length, 34);
-  assert.equal(scoped.length, 29);
+  assert.equal(releaseFiles.length, 36);
+  assert.equal(scoped.length, 31);
   assert.deepEqual(unscoped, [
     "tests/tooling/release/release-guest-locks.test.ts",
     "tests/tooling/release/release-integration-catalog.test.ts",
@@ -29,6 +29,32 @@ void test("audited release contracts have complete imports and leave unresolved 
     assert.equal(localImportInputs(file).complete, true, `${file} import closure`);
   }
   assert.deepEqual(selected("davinci/vize_l1/src/parser.rs"), unscoped);
+});
+
+void test("installed VRT observer inputs select both complete audited contracts", () => {
+  const contracts = [
+    "tests/tooling/release/release-public-vrt-observer.test.ts",
+    "tests/tooling/release/release-public-vrt-reports.test.ts",
+  ];
+  for (const contract of contracts) {
+    assert.ok(scoped.includes(contract));
+    assert.equal(localImportInputs(contract).complete, true, contract);
+  }
+  for (const input of [
+    ...["api", "artifacts", "audit", "cli", "fixtures", "host", "hosted", "observer"].map(
+      (name) => `tools/support/release/public_acceptance/vrt_${name}.ts`,
+    ),
+    "tools/support/release/public_acceptance/accept.ts",
+    ".github/workflows/release-public-acceptance.yml",
+    "tests/tooling/fixtures/musea/snapshot-collision/left/Button.art.vue",
+    "tests/tooling/fixtures/musea/snapshot-collision/right/Button.art.vue",
+    "tests/_fixtures/differential/musea/gallery-vrt-options.json",
+    "tests/_fixtures/differential/musea/hosted-audits.json",
+    "tests/_fixtures/differential/musea/vrt-report-ownership.json",
+  ]) {
+    const tests = selected(input);
+    for (const contract of contracts) assert.ok(tests.includes(contract), `${input}: ${contract}`);
+  }
 });
 
 void test("Matrix attempt selectors select the new audited evidence contract", () => {

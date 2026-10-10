@@ -1,0 +1,21 @@
+{
+  "repository": "https://github.com/oxc-project/oxc",
+  "commit": "2ae2939bb2fd98796393658b21556b2a2467e047",
+  "files": {
+    "source_impls.rs": "e60ab469988c44bd54415457a6a0e5badd48e2a6b786e41692a9db11baee2794",
+    "protocol.rs": "c960dbfc78043539cae324d4b086ecf2f8462d419a1b4f80199cd6505ceeeb4d",
+    "named_source.rs": "24e94f7f33308e8ec71c6ee491ec16727f4ff678cf7e41963bcc121f432c07dc",
+    "handlers/theme.rs": "6b7e036058cf33b5b268eb002c72dbae5eb56c4dc0ac662b4e307f7cffe61555",
+    "handlers/json.rs": "0ab910c2ef495a90e7f7af91d2e8d8c40d885c3501a1199669f0b57e382b3794",
+    "handlers/mod.rs": "59e4125672992c3c60c9579baf682828ad57b61cd0a863ca1ae4cd25848a6d1a",
+    "handlers/graphical/snippet.rs": "cd93c570e374c762a3bcc47e3114bd1c0b711d95097a6a90a2e742891901a0cc",
+    "handlers/graphical/line.rs": "75f513b2e486b9da20b3737fa9caf39003fa4e11a7d40aaba2a71345281c2042",
+    "handlers/graphical/handler.rs": "fdbf45ce7af11366f4004f0fab463a279607ec07f51b26dcc3f96b21ba7fe6df",
+    "handlers/graphical/report.rs": "97f7784ca8dbcbf5607f5793f9ff1f1fa59139adfe1004196b643d382ead3cbb",
+    "handlers/graphical/span.rs": "e55b0d05df039e6c3829c1f01d93afcf7f017b6267bf6f885ecc3ac259dc1780",
+    "handlers/graphical/mod.rs": "e69a838e8fd0da276b2cb0ea98bda2e06e53e20d5abd3c5d130545ba5a059fc3",
+    "handlers/graphical/label.rs": "f070a7c9a56ba5c949b17edba9e03c8bec3042e2649f255c152533a499b94729",
+    "handlers/graphical/gutter.rs": "9d3e7cf35fef3d24fa542c443d500c5f308ad80f625fe563d2984b9730950c8e"
+  },
+  "adaptation": "Existing 0.142 Span facade; source scanner/underline helpers split at existing item boundaries; unused upstream lint expectation omitted; upstream production kernel only; original upstream tests are excluded."
+}

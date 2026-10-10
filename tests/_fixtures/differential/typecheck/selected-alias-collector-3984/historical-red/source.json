@@ -1,0 +1,19 @@
+{
+  "label": "source",
+  "command": [
+    "__SOURCE_WORKSPACE__/vize.fix-canon-exact-alias-3984-20261010/target/debug/vize",
+    "check",
+    "App.tsx",
+    "--quiet",
+    "--format",
+    "json",
+    "--corsa-path",
+    "__TEMP_ROOT__/vize-lsp439-20261010-fb402f3b/public-consumer/node_modules/@typescript/typescript-darwin-arm64/lib/tsc"
+  ],
+  "cwd": "__TEMP_ROOT__/vize-canon3984-collector-gap-20261010/selected-exact-missing/tsx",
+  "status": 1,
+  "signal": null,
+  "error": null,
+  "stdout": "{\n  \"files\": [\n    {\n      \"file\": \"App.tsx\",\n      \"diagnostics\": [\n        \"error:1:23 [TS2307] Cannot find module '@x' or its corresponding type declarations.\"\n      ]\n    },\n    {\n      \"file\": \"wildcard.tsx\",\n      \"diagnostics\": [\n        \"error:2:7 [TS2322] Type 'number' is not assignable to type 'string'.\"\n      ]\n    }\n  ],\n  \"programs\": [\n    {\n      \"root\": \".\",\n      \"tsconfig\": \"tsconfig.json\",\n      \"compilerOptions\": {\n        \"jsx\": \"preserve\",\n        \"module\": \"ESNext\",\n        \"moduleResolution\": \"bundler\",\n        \"noEmit\": true,\n        \"paths\": {\n          \"@x\": [\n            \"__TEMP_ROOT__/vize-canon3984-collector-gap-20261010/selected-exact-missing/tsx/missing.tsx\"\n          ],\n          \"@x*\": [\n            \"__TEMP_ROOT__/vize-canon3984-collector-gap-20261010/selected-exact-missing/tsx/wildcard*.tsx\"\n          ]\n        },\n        \"strict\": true,\n        \"target\": \"ES2022\"\n      },\n      \"files\": [\n        \"App.tsx\"\n      ]\n    }\n  ],\n  \"errorCount\": 2,\n  \"warningCount\": 0,\n  \"fileCount\": 2\n}\n",
+  "stderr": ""
+}

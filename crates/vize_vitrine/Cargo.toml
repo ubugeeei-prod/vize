@@ -26,6 +26,9 @@ napi = [
   "dep:glob",
   "dep:rayon",
   "dep:ignore",
+  "dep:oxlint_html_renderer186",
+  "dep:miette178",
+  "dep:regex",
   "vize_atelier_sfc/native",
   "glyph",
 ]
@@ -77,6 +80,11 @@ rayon = { workspace = true, optional = true }
 
 # Directory walking with .gitignore support (for lint)
 ignore = { workspace = true, optional = true }
+
+# Private final conversion for the two qualified Oxlint host profiles.
+oxlint_html_renderer186 = { path = "../../vendor/oxlint_html_renderer186", optional = true }
+regex = { workspace = true, optional = true }
+miette178 = { package = "oxc-miette", version = "=4.0.0", optional = true }
 
 # WASM (optional)
 wasm-bindgen = { workspace = true, optional = true }

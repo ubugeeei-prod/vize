@@ -1,0 +1,61 @@
+{
+  "inputFiles": [
+    "App.tsx",
+    "exact.tsx",
+    "genericx.tsx",
+    "tsconfig.json",
+    "vize.config.json",
+    "wildcard.tsx",
+    "wildcardx.tsx"
+  ],
+  "cases": [
+    {
+      "id": "selected-exact-missing",
+      "project": "selected-exact-missing",
+      "repairOf": null,
+      "exitCode": 1
+    },
+    {
+      "id": "exact-clean",
+      "project": "exact-clean",
+      "repairOf": null,
+      "exitCode": 0
+    },
+    {
+      "id": "exact-broken",
+      "project": "exact-repair",
+      "repairOf": null,
+      "exitCode": 1
+    },
+    {
+      "id": "exact-repair",
+      "project": "exact-repair",
+      "repairOf": "exact-broken",
+      "exitCode": 0
+    },
+    {
+      "id": "selected-target-fallback",
+      "project": "selected-target-fallback",
+      "repairOf": null,
+      "exitCode": 0
+    },
+    {
+      "id": "selected-longer-wildcard-missing",
+      "project": "selected-longer-wildcard-missing",
+      "repairOf": null,
+      "exitCode": 1
+    },
+    {
+      "id": "selected-wildcard-broken",
+      "project": "selected-wildcard-repair",
+      "repairOf": null,
+      "exitCode": 1
+    },
+    {
+      "id": "selected-wildcard-repair",
+      "project": "selected-wildcard-repair",
+      "repairOf": "selected-wildcard-broken",
+      "exitCode": 0
+    }
+  ]
+}

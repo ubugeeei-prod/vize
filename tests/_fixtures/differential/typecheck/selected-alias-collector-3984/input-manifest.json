@@ -1,0 +1,340 @@
+{
+  "files": [
+    {
+      "case": "selected-exact-missing",
+      "file": "App.tsx",
+      "bytes": 75,
+      "sha256": "255d4f7058e70cae7f42e3d915f8e58de1af23898bfb07a1183054f3b984d55f"
+    },
+    {
+      "case": "selected-exact-missing",
+      "file": "exact.tsx",
+      "bytes": 30,
+      "sha256": "9f511ef8ef036ccf79997da03857502d7ae47dbabf491266b9da9a9cca88fb6f"
+    },
+    {
+      "case": "selected-exact-missing",
+      "file": "genericx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "selected-exact-missing",
+      "file": "tsconfig.json",
+      "bytes": 326,
+      "sha256": "076dfc393604239da12a8dd412b1b2469b7a400a2d47e54e6a4db09ee64faf26"
+    },
+    {
+      "case": "selected-exact-missing",
+      "file": "vize.config.json",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+    },
+    {
+      "case": "selected-exact-missing",
+      "file": "wildcard.tsx",
+      "bytes": 73,
+      "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+    },
+    {
+      "case": "selected-exact-missing",
+      "file": "wildcardx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "exact-clean",
+      "file": "App.tsx",
+      "bytes": 75,
+      "sha256": "255d4f7058e70cae7f42e3d915f8e58de1af23898bfb07a1183054f3b984d55f"
+    },
+    {
+      "case": "exact-clean",
+      "file": "exact.tsx",
+      "bytes": 30,
+      "sha256": "56e5c5f3d8fd8eb13b28c1a7a0d40ec4594b0584ddbc45d8b6f76920d09ea65b"
+    },
+    {
+      "case": "exact-clean",
+      "file": "genericx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "exact-clean",
+      "file": "tsconfig.json",
+      "bytes": 324,
+      "sha256": "e84ad0247ec6877ad6012dbd771f677c6fb906ac33ede8c703ba4d308c1235e0"
+    },
+    {
+      "case": "exact-clean",
+      "file": "vize.config.json",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+    },
+    {
+      "case": "exact-clean",
+      "file": "wildcard.tsx",
+      "bytes": 73,
+      "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+    },
+    {
+      "case": "exact-clean",
+      "file": "wildcardx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "exact-broken",
+      "file": "App.tsx",
+      "bytes": 75,
+      "sha256": "255d4f7058e70cae7f42e3d915f8e58de1af23898bfb07a1183054f3b984d55f"
+    },
+    {
+      "case": "exact-broken",
+      "file": "exact.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "exact-broken",
+      "file": "genericx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "exact-broken",
+      "file": "tsconfig.json",
+      "bytes": 324,
+      "sha256": "e84ad0247ec6877ad6012dbd771f677c6fb906ac33ede8c703ba4d308c1235e0"
+    },
+    {
+      "case": "exact-broken",
+      "file": "vize.config.json",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+    },
+    {
+      "case": "exact-broken",
+      "file": "wildcard.tsx",
+      "bytes": 73,
+      "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+    },
+    {
+      "case": "exact-broken",
+      "file": "wildcardx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "exact-repair",
+      "file": "App.tsx",
+      "bytes": 75,
+      "sha256": "255d4f7058e70cae7f42e3d915f8e58de1af23898bfb07a1183054f3b984d55f"
+    },
+    {
+      "case": "exact-repair",
+      "file": "exact.tsx",
+      "bytes": 30,
+      "sha256": "56e5c5f3d8fd8eb13b28c1a7a0d40ec4594b0584ddbc45d8b6f76920d09ea65b"
+    },
+    {
+      "case": "exact-repair",
+      "file": "genericx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "exact-repair",
+      "file": "tsconfig.json",
+      "bytes": 324,
+      "sha256": "e84ad0247ec6877ad6012dbd771f677c6fb906ac33ede8c703ba4d308c1235e0"
+    },
+    {
+      "case": "exact-repair",
+      "file": "vize.config.json",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+    },
+    {
+      "case": "exact-repair",
+      "file": "wildcard.tsx",
+      "bytes": 73,
+      "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+    },
+    {
+      "case": "exact-repair",
+      "file": "wildcardx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "selected-target-fallback",
+      "file": "App.tsx",
+      "bytes": 75,
+      "sha256": "255d4f7058e70cae7f42e3d915f8e58de1af23898bfb07a1183054f3b984d55f"
+    },
+    {
+      "case": "selected-target-fallback",
+      "file": "exact.tsx",
+      "bytes": 30,
+      "sha256": "56e5c5f3d8fd8eb13b28c1a7a0d40ec4594b0584ddbc45d8b6f76920d09ea65b"
+    },
+    {
+      "case": "selected-target-fallback",
+      "file": "genericx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "selected-target-fallback",
+      "file": "tsconfig.json",
+      "bytes": 349,
+      "sha256": "095a984252eb11fe3f878258c4b73a9e95f342ae4264cb32ffe442401c823236"
+    },
+    {
+      "case": "selected-target-fallback",
+      "file": "vize.config.json",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+    },
+    {
+      "case": "selected-target-fallback",
+      "file": "wildcard.tsx",
+      "bytes": 73,
+      "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+    },
+    {
+      "case": "selected-target-fallback",
+      "file": "wildcardx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "selected-longer-wildcard-missing",
+      "file": "App.tsx",
+      "bytes": 75,
+      "sha256": "255d4f7058e70cae7f42e3d915f8e58de1af23898bfb07a1183054f3b984d55f"
+    },
+    {
+      "case": "selected-longer-wildcard-missing",
+      "file": "exact.tsx",
+      "bytes": 30,
+      "sha256": "9f511ef8ef036ccf79997da03857502d7ae47dbabf491266b9da9a9cca88fb6f"
+    },
+    {
+      "case": "selected-longer-wildcard-missing",
+      "file": "genericx.tsx",
+      "bytes": 73,
+      "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+    },
+    {
+      "case": "selected-longer-wildcard-missing",
+      "file": "tsconfig.json",
+      "bytes": 326,
+      "sha256": "b779d621681616325070322631ce383ff20b7a557b4fe64283e96fd9223c70a1"
+    },
+    {
+      "case": "selected-longer-wildcard-missing",
+      "file": "vize.config.json",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+    },
+    {
+      "case": "selected-longer-wildcard-missing",
+      "file": "wildcard.tsx",
+      "bytes": 73,
+      "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+    },
+    {
+      "case": "selected-longer-wildcard-missing",
+      "file": "wildcardx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "selected-wildcard-broken",
+      "file": "App.tsx",
+      "bytes": 75,
+      "sha256": "255d4f7058e70cae7f42e3d915f8e58de1af23898bfb07a1183054f3b984d55f"
+    },
+    {
+      "case": "selected-wildcard-broken",
+      "file": "exact.tsx",
+      "bytes": 30,
+      "sha256": "9f511ef8ef036ccf79997da03857502d7ae47dbabf491266b9da9a9cca88fb6f"
+    },
+    {
+      "case": "selected-wildcard-broken",
+      "file": "genericx.tsx",
+      "bytes": 73,
+      "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+    },
+    {
+      "case": "selected-wildcard-broken",
+      "file": "tsconfig.json",
+      "bytes": 327,
+      "sha256": "f2ba42bc1c8f0436dab571b11eb54cadf72bb21f3780993b0f421a9f8e895cbb"
+    },
+    {
+      "case": "selected-wildcard-broken",
+      "file": "vize.config.json",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+    },
+    {
+      "case": "selected-wildcard-broken",
+      "file": "wildcard.tsx",
+      "bytes": 73,
+      "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+    },
+    {
+      "case": "selected-wildcard-broken",
+      "file": "wildcardx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    },
+    {
+      "case": "selected-wildcard-repair",
+      "file": "App.tsx",
+      "bytes": 75,
+      "sha256": "255d4f7058e70cae7f42e3d915f8e58de1af23898bfb07a1183054f3b984d55f"
+    },
+    {
+      "case": "selected-wildcard-repair",
+      "file": "exact.tsx",
+      "bytes": 30,
+      "sha256": "9f511ef8ef036ccf79997da03857502d7ae47dbabf491266b9da9a9cca88fb6f"
+    },
+    {
+      "case": "selected-wildcard-repair",
+      "file": "genericx.tsx",
+      "bytes": 73,
+      "sha256": "be2ba11facb69b7e377d7a5f9a83faf77e44d93a47113f88dd2e1176b791d22f"
+    },
+    {
+      "case": "selected-wildcard-repair",
+      "file": "tsconfig.json",
+      "bytes": 327,
+      "sha256": "f2ba42bc1c8f0436dab571b11eb54cadf72bb21f3780993b0f421a9f8e895cbb"
+    },
+    {
+      "case": "selected-wildcard-repair",
+      "file": "vize.config.json",
+      "bytes": 38,
+      "sha256": "a60b47594ce48c3f50f5335bd5b46ecd0b0f130084abc1a9dd8b4239b3c1e028"
+    },
+    {
+      "case": "selected-wildcard-repair",
+      "file": "wildcard.tsx",
+      "bytes": 81,
+      "sha256": "cc12caec940ffd3dc3b66147b6231cf33142f9cb6a7b28276d2cb6b3467b114b"
+    },
+    {
+      "case": "selected-wildcard-repair",
+      "file": "wildcardx.tsx",
+      "bytes": 26,
+      "sha256": "50ccf44c3317cbe83f71c0683bac64586a9f1709a196217f0f5654bb907ddf92"
+    }
+  ]
+}

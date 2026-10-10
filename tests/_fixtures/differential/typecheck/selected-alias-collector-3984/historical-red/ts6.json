@@ -1,0 +1,17 @@
+{
+  "label": "ts6",
+  "command": [
+    "__NODE_RUNTIMES__/24.14.0/bin/node",
+    "__TEMP_ROOT__/vize-lsp439-20261010-fb402f3b/original-vue/node_modules/typescript/bin/tsc",
+    "--project",
+    "tsconfig.json",
+    "--pretty",
+    "false"
+  ],
+  "cwd": "__TEMP_ROOT__/vize-canon3984-collector-gap-20261010/selected-exact-missing/tsx",
+  "status": 2,
+  "signal": null,
+  "error": null,
+  "stdout": "App.tsx(1,23): error TS2307: Cannot find module '@x' or its corresponding type declarations.\n",
+  "stderr": ""
+}

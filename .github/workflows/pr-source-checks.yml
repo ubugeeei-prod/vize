@@ -56,7 +56,7 @@ jobs:
         id: canonical-corpus-plan
         env: { BASE_SHA: "${{ steps.comparison.outputs.base }}" }
         run: node tools/support/compat/github/canonical-corpus-selection.mjs "$BASE_SHA" "$GITHUB_SHA" "$GITHUB_EVENT_NAME"
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         if: ${{ steps.plan.outputs.rust == 'true' }}
         with: { toolchain: "1.99.0" }
       - name: Plan affected Rust crates
@@ -104,7 +104,8 @@ jobs:
         with: { node-version-file: "package.json", cache: true, run-install: false }
       - uses: ./.github/actions/setup-moonbit
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
@@ -153,7 +154,8 @@ jobs:
           run-install: false
       - uses: ./.github/actions/setup-moonbit
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
@@ -249,14 +251,12 @@ jobs:
         run: echo 'Playground browser tests skipped because this PR changes no compiler, Vite, or playground source paths.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-        with:
-          targets: wasm32-unknown-unknown
+        with: { toolchain: stable, targets: wasm32-unknown-unknown }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
-        with:
-          wild-version: "0.9.0"
+        with: { wild-version: 0.9.0 }
       - uses: ./.github/actions/setup-moonbit
         if: ${{ env.RUN_PLAYGROUND == 'true' }}
       - uses: ./.github/actions/setup-rust-sticky-cache

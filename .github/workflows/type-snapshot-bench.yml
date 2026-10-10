@@ -13,7 +13,9 @@ on:
       - "crates/vize_canon/src/batch/virtual_project/tests/type_source_snapshot.rs"
       - "crates/vize_canon/src/batch/virtual_project/dependency_scan.rs"
       - "crates/vize_canon/src/batch/virtual_project/dependency_scan/**"
+      - "crates/vize/src/commands/check/imports_aliases*.rs"
       - "tests/_fixtures/differential/typecheck/path-alias-precedence-3984/**"
+      - "tests/_fixtures/differential/typecheck/selected-alias-collector-3984/**"
       - "tools/benchmarks/scripts/canon-alias-*.mjs"
       - "crates/vize_atelier_sfc/examples/type_snapshot_bench.rs"
       - "tools/benchmarks/scripts/type-snapshot-paired.mjs"
@@ -63,7 +65,8 @@ jobs:
           path: base
           ref: ${{ env.BASE_SHA }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # stable
+        with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with:
           wild-version: "0.9.0"
@@ -135,7 +138,8 @@ jobs:
           path: base
           ref: ${{ env.BASE_SHA }}
           persist-credentials: false
-      - uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+      - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # stable
+        with: { toolchain: stable }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with:
           wild-version: "0.9.0"
@@ -174,6 +178,8 @@ jobs:
           cargo test --locked -p vize_canon --lib dependency_scan::resolution::alias_tests
           cargo test --locked -p vize_canon --lib batch::virtual_project::tests::alias_rewrite
           cargo test --locked -p vize_canon --lib app_only_suffix_alias_reports_and_repairs_the_authored_child
+          cargo test --locked -p vize --lib commands::check::imports_aliases::tests::selection -- --nocapture
+          node --test tools/benchmarks/scripts/canon-alias-collector.test.mjs
       - name: Build exact base and head CLIs with identical ci-opt settings
         run: |
           set -euo pipefail
