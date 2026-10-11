@@ -3,10 +3,11 @@ import fs from "node:fs";
 import { performance } from "node:perf_hooks";
 import { inspect } from "node:util";
 
-// Both branches already own real children. Join every terminal/raw outcome before
-// allowing the existing always-upload step to inspect their evidence directory.
+// Join both real-child branches and every terminal/raw outcome before the
+// existing always-upload step can inspect their evidence directory. Nested
+// preparation joins retain the same fixed two-branch boundary.
 export async function runQualificationBranches(branches, output) {
-  assert.equal(branches.length, 2, "the two original qualification branches only");
+  assert.equal(branches.length, 2, "exactly two qualification branches per join");
   assert.equal(new Set(branches.map(({ id }) => id)).size, branches.length);
   let interrupted;
   const interrupt = (signal) => (interrupted ??= signal);

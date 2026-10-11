@@ -63,6 +63,9 @@ export async function beginN8nReplay({ root, packageDir, artifacts, receipt, bin
       "scripts/n8n-baseline-partitions.test.mjs",
       "scripts/project-qualification-branches.test.mjs",
       "scripts/project-command-capture.test.mjs",
+      "scripts/n8n-preparation-overlap.test.mjs",
+      "scripts/n8n-preparation-worker.test.mjs",
+      "scripts/n8n-preparation-cancellation.test.mjs",
     ],
     {
       cwd: packageDir,

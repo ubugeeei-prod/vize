@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { test } from "node:test";
 import { runInNewContext } from "node:vm";
 import { parse } from "yaml";
+import { stageProjectNative } from "../../npm/oxlint/scripts/project-native-staging.ts";
 
 void test("walltime comparisons use the same source and runner without publishing authority", () => {
   const workflow = parse(
@@ -17,6 +21,7 @@ void test("walltime comparisons use the same source and runner without publishin
     "docs",
     "js",
     "n8n-baseline",
+    "n8n-preparation",
     "native",
     "rust",
   ]);
@@ -51,7 +56,15 @@ void test("baseline input partitions are manual-only, build once and retain both
   );
   const input = workflow.on.workflow_dispatch.inputs.component;
   assert.equal(input.default, "all");
-  assert.deepEqual(input.options, ["all", "js", "docs", "rust", "native", "n8n-baseline"]);
+  assert.deepEqual(input.options, [
+    "all",
+    "js",
+    "docs",
+    "rust",
+    "native",
+    "n8n-baseline",
+    "n8n-preparation",
+  ]);
   assert.equal(workflow.concurrency["cancel-in-progress"], false);
   const job = workflow.jobs["n8n-baseline"];
   assert.equal(
@@ -64,7 +77,7 @@ void test("baseline input partitions are manual-only, build once and retain both
       inputs: { component },
     });
   assert.equal(admitted(job, "workflow_dispatch", "n8n-baseline"), true);
-  for (const component of ["all", "js", "docs", "rust", "native"])
+  for (const component of ["all", "js", "docs", "rust", "native", "n8n-preparation"])
     assert.equal(admitted(job, "workflow_dispatch", component), false);
   assert.equal(admitted(job, "pull_request", "n8n-baseline"), false);
   for (const key of ["docs", "js", "native", "rust"]) {
@@ -107,4 +120,81 @@ void test("baseline input partitions are manual-only, build once and retain both
     upload.with.path,
     "target/ci-walltime/\ntarget/oxlint-original-project-transport/\nnpm/native/.artifacts/native/formatter-history/build-receipt.json\nnpm/native/.artifacts/native/formatter-history/build-process.json\nnpm/native/.artifacts/native/formatter-history/cargo.stdout.bin\nnpm/native/.artifacts/native/formatter-history/cargo.stderr.bin\n",
   );
+});
+
+void test("preparation overlap is an opt-in complete same-source comparison with unchanged baseline and host modes", () => {
+  const workflow = parse(
+    readFileSync(
+      new URL("../../.github/workflows/ci-walltime-benchmark.yml", import.meta.url),
+      "utf8",
+    ),
+  );
+  const job = workflow.jobs["n8n-preparation"];
+  const admitted = (event, component) =>
+    runInNewContext(job.if.slice(3, -3), {
+      github: { event_name: event },
+      inputs: { component },
+    });
+  assert.equal(admitted("workflow_dispatch", "n8n-preparation"), true);
+  for (const component of ["all", "js", "docs", "rust", "native", "n8n-baseline"])
+    assert.equal(admitted("workflow_dispatch", component), false);
+  assert.equal(admitted("pull_request", "n8n-preparation"), false);
+  assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+  assert.equal(job["timeout-minutes"], 60);
+  assert.deepEqual(job.env, { CARGO_BUILD_JOBS: "12", VIZE_N8N_BASELINE_MODE: "partitioned" });
+  assert.equal(job.steps.length, 6);
+  assert.equal(job.steps[0].with.ref, "${{ github.sha }}");
+  assert.equal(job.steps[1].uses, "./.github/actions/setup-js-package-tests");
+  assert.equal(job.steps[2].run, workflow.jobs["n8n-baseline"].steps[2].run);
+  const [sequential, overlap] = job.steps.slice(3, 5);
+  for (const [arm, mode] of [
+    [sequential, "sequential"],
+    [overlap, "overlap"],
+  ]) {
+    assert.equal(arm.env, undefined);
+    assert.equal(
+      arm.run,
+      `node npm/oxlint/scripts/check-project-transport.mjs --host-mode concurrent --preparation-mode ${mode} --phase-walltime target/ci-walltime/n8n-preparation-${mode}.json`,
+    );
+  }
+  assert.equal(sequential.if, undefined);
+  assert.equal(overlap.if, "${{ !cancelled() }}");
+  assert.equal(job["continue-on-error"], undefined);
+  for (const step of job.steps) assert.equal(step["continue-on-error"], undefined);
+  const upload = job.steps.at(-1);
+  assert.equal(upload.if, "${{ always() }}");
+  assert.equal(upload.uses, workflow.jobs["n8n-baseline"].steps.at(-1).uses);
+  assert.equal(upload.with.name, "ci-walltime-n8n-preparation-${{ github.sha }}");
+  assert.equal(upload.with.path, workflow.jobs["n8n-baseline"].steps.at(-1).with.path);
+  assert.equal(upload.with["if-no-files-found"], "error");
+  assert.equal(upload.with["retention-days"], 14);
+});
+
+void test("both benchmark arms stage the same source bytes into distinct retained campaign directories", (t) => {
+  // Exercise the actual staging operation; controlled bytes prove artifact
+  // separation only and do not qualify an addon or a performance result.
+  const root = mkdtempSync(path.join(os.tmpdir(), "vize-preparation-arms-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const binary = path.join(root, "controlled-source.bin"),
+    receipt = path.join(root, "build-receipt.json");
+  const bytes = Buffer.from("same controlled source bytes\\r\\n");
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  writeFileSync(binary, bytes);
+  const source = { head: "a".repeat(40), tree: "b".repeat(40), workingDiff: "controlled" };
+  writeFileSync(receipt, JSON.stringify({ source, frozen: { sha256 } }));
+  const arms = ["sequential", "overlap"].map((mode) => {
+    const staged = stageProjectNative(path.join(root, "campaigns"), binary, receipt, sha256);
+    writeFileSync(path.join(staged.artifacts, "phase-walltime.json"), JSON.stringify({ mode }));
+    return { mode, ...staged };
+  });
+  assert.notEqual(arms[0].artifacts, arms[1].artifacts);
+  for (const { mode, artifacts, binary: staged } of arms) {
+    assert.ok(readFileSync(staged).equals(bytes));
+    assert.ok(
+      readFileSync(path.join(artifacts, "build-receipt.json")).equals(readFileSync(receipt)),
+    );
+    assert.deepEqual(JSON.parse(readFileSync(path.join(artifacts, "phase-walltime.json"))), {
+      mode,
+    });
+  }
 });
