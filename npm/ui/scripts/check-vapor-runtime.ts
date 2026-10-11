@@ -123,7 +123,10 @@ rmSync(workDirectory, { recursive: true, force: true });
 // 4. Ratchet against the known-failure ledger.
 const ledger = JSON.parse(readFileSync(ledgerFile, "utf8")) as KnownFailures;
 const nextLedger: Record<string, Record<string, string>> = {};
-const summary: Record<string, { passed: number; knownFailures: number }> = {};
+const summary: Record<
+  string,
+  { passed: number; knownFailures: number; remainingFailureFixtures: readonly string[] }
+> = {};
 for (const [lane, records] of Object.entries(lanes)) {
   const known = ledger[lane] ?? {};
   const next: Record<string, string> = {};
@@ -143,7 +146,11 @@ for (const [lane, records] of Object.entries(lanes)) {
   nextLedger[lane] = Object.fromEntries(
     Object.entries(next).sort(([left], [right]) => left.localeCompare(right)),
   );
-  summary[lane] = { passed, knownFailures: Object.keys(next).length };
+  summary[lane] = {
+    passed,
+    knownFailures: Object.keys(next).length,
+    remainingFailureFixtures: Object.keys(nextLedger[lane] ?? {}),
+  };
 }
 
 /**

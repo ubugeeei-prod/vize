@@ -61,6 +61,15 @@ assertions. Any warning, thrown error, replaced root, missing component or
 failed DOM assertion remains fatal unless already present in the original
 ledger. No new failure exemptions or expanded budgets are permitted.
 
+The original server lane checks rendering success; it does not invoke each
+fixture's `assertServerMarkup`. A separate local diagnostic applying that
+additional oracle exposed failures for `icon`, `icon-button`,
+`media-player-time-display`, `scrubber-preview-time`, `signature-pad-canvas`,
+`webcam-capture-start-button` and `webcam-capture-shutter`. TODO: reproduce
+and repair those server-markup gaps before making that additional oracle a
+required whole-corpus gate. They are not new ledger exemptions. The added
+minimal regression already compares complete native and official SSR output.
+
 Local execution with published native 0.443 and the existing 527-fixture main
 corpus observed SSR 527 passing, mount 502 passing / 25 remaining failures,
 and hydration 479 passing / 48 remaining failures with same-version rc.11
