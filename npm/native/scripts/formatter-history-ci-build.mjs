@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
+import { readCiRequest } from "./formatter-history-ci-request.mjs";
 import {
   bytes,
   hash,
@@ -89,8 +90,10 @@ export function validateCiProfile(profile) {
   assert.equal(profile.overflow_checks, true);
 }
 export function beforeCiBuild(nativeDir) {
+  const source = nativeHistorySource(nativeDir);
   return {
-    source: nativeHistorySource(nativeDir),
+    source,
+    request: readCiRequest(nativeDir, source),
     environment: nativeHistoryBuildEnvironment(),
     generated: generatedBytes(nativeDir),
   };
@@ -187,6 +190,7 @@ export function captureCiBuild(nativeDir, before, build, sync) {
   const receipt = {
     schema: "vize.public-native-formatter-ci-build",
     version: 1,
+    request: before.request,
     sourceBefore: before.source,
     source,
     environment: validateNativeHistoryEnvironment({
@@ -242,6 +246,7 @@ export function validateCiArtifactCopies(nativeDir, receipt) {
 export function validateCiBuild(nativeDir, receipt) {
   assert.equal(receipt.schema, "vize.public-native-formatter-ci-build");
   assert.equal(receipt.version, 1);
+  assert.deepEqual(receipt.request, readCiRequest(nativeDir, receipt.sourceBefore));
   validateCiBuildCommand(receipt.process.command);
   validateProcess(receipt.process);
   validateProcess(receipt.synchronize);

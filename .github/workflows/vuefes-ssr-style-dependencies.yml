@@ -40,6 +40,7 @@ jobs:
           fi
           mkdir -p target/vuefes-ssr-style-dependencies
           git show HEAD:npm/native/index.d.ts > target/vuefes-ssr-style-dependencies/original-index.d.ts
+          node npm/native/scripts/build-ci.mjs --request-ci-capture
       - name: Original full VueFes VRT, with one native build
         uses: ./.github/actions/app-e2e-row
         with:

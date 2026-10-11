@@ -91,3 +91,38 @@ fails in its local compiler preparation. Their complete logs remain retained;
 neither is counted as passed. Original hosted tooling/native preparation and
 the exact source qualifier remain mandatory; no check or environment failure
 is replaced with fixture expectations.
+
+The exact `0dd6a7b` qualifier
+[38125005499](https://github.com/ubugeeei-prod/vize/actions/runs/38125005499)
+is terminal failed. All three original dev-home attempts retain the same
+`0.1235105465271594` ratio and byte-identical candidate/reference PNGs;
+37 cases remain unrun. Native metadata passed 58 controls, but both existing
+public formatter controls failed without a build receipt. The complete
+app import and SSR/DOM/hydration differentials did not execute after the
+Nuxt oracle's actual `npm ci` failure. Their absence gives no native credit.
+The current full app still has no captured root-module/CSSOM authority.
+The source bridge corpus covers the original script and official compiled
+script, not the complete implicit-template dependency graph.
+
+The one native ci build really ran on that runner, but Vite Task removed the
+custom capture flag from its cached script environment. A separate actual
+installed Task control reproduced the absent flag while retaining
+`GITHUB_ACTIONS` and `GITHUB_RUN_ID`. The qualifier now writes a source-bound
+capture request before the same build. Both request creation and reading
+require the actual Linux Actions context, matching run ID and committed
+source. A malformed or stale request fails before Cargo. This request records
+intent only; actual Cargo completion, profile, raw streams and emitted/local/
+frozen ELF custody remain necessary for the distinct ci receipt. The strict
+debug admission remains unchanged, and no second native build is introduced.
+
+The isolated Nuxt oracle failed with the actual missing `commander@11.1.0`
+lock entry. The actual npm 11.9.0 lock generator moved that identical entry
+from the root to `node_modules/svgo/node_modules/commander`; all other parsed
+lock data, dependency versions and integrity hashes remain unchanged.
+Fresh `npm ci` fails before this generator correction and installs all 676
+packages afterward. The original alpha.2 compiler/runtime lock is unchanged.
+The typed-lint failure in the stream-custody control is corrected with named
+records, preserving both full stream checks. Fourteen admission controls and
+the complete original-app source bridge pass locally. These repairs qualify
+preparation only; actual full-app cascade repair still requires source proof
+and the unchanged original 38-case Actions verdict.

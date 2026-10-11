@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { test } from "node:test";
+import { validateCiRequest } from "../../npm/native/scripts/formatter-history-ci-request.mjs";
 import {
   ciBuildCommand,
   validateCiBuildCommand,
@@ -45,6 +46,39 @@ void test("ci capture retains original one-build arguments; substituted commands
   assert.throws(() =>
     emittedNativeArtifact(Buffer.from('{"reason":"build-finished","success":false}\n')),
   );
+});
+
+void test("capture intent binds the actual Actions run and exact source; it is never build authority", () => {
+  // Controlled context models qualify request validation only, without any native execution.
+  const source = { head: "a".repeat(40), tree: "b".repeat(40) };
+  const context = { platform: "linux", githubActions: "true", runId: "38125005499" };
+  const request = {
+    schema: "vize.public-native-formatter-ci-build-request",
+    version: 1,
+    source,
+    runId: context.runId,
+  };
+  assert.equal(validateCiRequest(request, source, context), request);
+  for (const altered of [
+    { ...request, schema: "pretend-build-receipt" },
+    { ...request, version: 2 },
+    { ...request, source: { ...source, head: "stale" } },
+    { ...request, source: { ...source, tree: "altered" } },
+    { ...request, source: { ...source, authoredChanges: "allowed" } },
+    { ...request, runId: "other-run" },
+    { ...request, buildPassed: true },
+  ])
+    assert.throws(() => validateCiRequest(altered, source, context));
+  assert.throws(() => validateCiRequest(null, source, context));
+  for (const altered of [
+    { ...context, platform: "darwin" },
+    { ...context, githubActions: undefined },
+    { ...context, githubActions: "false" },
+    { ...context, runId: undefined },
+    { ...context, runId: "fabricated" },
+  ])
+    assert.throws(() => validateCiRequest(request, source, altered));
+  assert.throws(() => validateNativeHistoryBuild(os.tmpdir(), request));
 });
 void test("ci authority rejects test, optimized, debug, and missing profiles", () => {
   const profile = {
@@ -135,9 +169,9 @@ void test("whole raw streams reject altered hashes, bodies and absent authority"
       process: { stdout: bytes(Buffer.from("cargo\n")), stderr: bytes(Buffer.alloc(0)) },
       synchronize: { stdout: bytes(Buffer.from("sync\n")), stderr: bytes(Buffer.alloc(0)) },
     };
-    for (const [label, packet] of [
-      ["cargo", receipt.process],
-      ["sync", receipt.synchronize],
+    for (const { label, packet } of [
+      { label: "cargo", packet: receipt.process },
+      { label: "sync", packet: receipt.synchronize },
     ])
       for (const stream of ["stdout", "stderr"])
         fs.writeFileSync(

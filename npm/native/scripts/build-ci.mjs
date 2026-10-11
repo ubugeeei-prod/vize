@@ -1,6 +1,8 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import { ciRequestPath, writeCiRequest } from "./formatter-history-ci-request.mjs";
 import {
   ciBuildCommand,
   beforeCiBuild,
@@ -11,7 +13,11 @@ import {
 
 export function runCiBuild(
   nativeDir,
-  { capture = process.env.VIZE_NATIVE_CI_FORMATTER_HISTORY === "1", run = spawnSync } = {},
+  {
+    capture = process.env.VIZE_NATIVE_CI_FORMATTER_HISTORY === "1" ||
+      fs.existsSync(ciRequestPath(nativeDir)),
+    run = spawnSync,
+  } = {},
 ) {
   if (capture && (process.env.GITHUB_ACTIONS !== "true" || process.platform !== "linux"))
     throw Error("ci formatter custody requires the actual Linux Actions build");
@@ -47,5 +53,6 @@ export function runCiBuild(
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const nativeDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-  process.exitCode = runCiBuild(nativeDir);
+  if (process.argv[2] === "--request-ci-capture") writeCiRequest(nativeDir);
+  else process.exitCode = runCiBuild(nativeDir);
 }
