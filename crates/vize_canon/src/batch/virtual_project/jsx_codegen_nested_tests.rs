@@ -6,7 +6,7 @@ use super::*;
 fn parse_error_count(source: &str, source_type: oxc_span::SourceType) -> usize {
     oxc_parser::Parser::new(&oxc_allocator::Allocator::default(), source, source_type)
         .parse()
-        .errors
+        .diagnostics
         .len()
 }
 
