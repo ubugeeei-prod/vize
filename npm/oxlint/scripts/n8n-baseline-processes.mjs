@@ -3,6 +3,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
+import { publishWorkerRecord } from "./n8n-worker-record-publication.mjs";
 
 const errorPacket = (error) =>
   error == null
@@ -50,10 +51,7 @@ export async function runBaselineProcesses(
   }));
   const save = (record) => {
     try {
-      fs.writeFileSync(
-        path.join(record.output, "worker-process.json"),
-        JSON.stringify(record, null, 2) + "\n",
-      );
+      publishWorkerRecord(record);
     } catch (error) {
       record.error ??= errorPacket(error);
       stop(`worker ${record.index} evidence write error`);

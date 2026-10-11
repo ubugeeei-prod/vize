@@ -14,6 +14,7 @@ import {
   seedOriginalSources,
 } from "./n8n-baseline-partitions.mjs";
 import { runBaselineProcesses } from "./n8n-baseline-processes.mjs";
+import "./n8n-worker-record-publication.test.mjs";
 
 const inventory = {
   files: ["a.vue", "b.vue", "c.vue"].map((file, index) => ({ file, sha256: `source-${index}` })),
