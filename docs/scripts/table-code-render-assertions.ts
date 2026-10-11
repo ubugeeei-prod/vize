@@ -49,10 +49,10 @@ export async function verifyTableCodeReadability(page: Page, route: string) {
   ) {
     const japanese = route.startsWith("/ja/");
     const reference = route.endsWith("/experimentals-vue-rfcs");
-    const label = japanese && !reference ? "または" : "Or";
+    const label = japanese ? "または" : "Or";
     const limitation = reference
       ? japanese
-        ? "alternatives を左から右に試す"
+        ? "選択肢を左から右に試す"
         : "tries alternatives from left to right"
       : japanese
         ? "左から右に調べます。それぞれの選択肢の中で変数を束縛する構文は未対応です。"

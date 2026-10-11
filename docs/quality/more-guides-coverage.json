@@ -102,8 +102,8 @@
     {
       "route": "/guide/experimentals-vue-rfcs",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Reference expands opt-in guide; Japanese body still needs review."
+      "entry": "revised",
+      "note": "Complete Japanese RFC detail page reviewed: independent opt-in, diagnostics, native and virtual-TypeScript boundaries, comments, self recursion and slot cardinality; all sixteen original recipes, seven destinations, 109 syntax tokens and ten public bookmarks are preserved."
     },
     {
       "route": "/guide/formatter-import-sorting",

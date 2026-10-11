@@ -94,7 +94,10 @@ void test("Japanese experimentals guide retains complete recipes, syntax and pub
       resolve(content, `${locale}guide/experimentals-vue-rfcs.md`),
       "utf8",
     );
-    const referenceOr = details.split("\n").find((line) => line.startsWith("| Or |"));
+    const label = locale === "ja/" ? "または" : "Or";
+    const referenceOr = details
+      .split("\n")
+      .find((line) => new RegExp(`^\\| ${label}\\s*\\|`).test(line));
     assert.ok(referenceOr);
     assert.equal(
       referenceOr.split(/(?<!\\)\|/).length,
