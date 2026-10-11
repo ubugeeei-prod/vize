@@ -26,6 +26,10 @@ The observed pin is fetched by its exact object ID; both advertised refs are
 checked again. The existing complete pin parent/tree/message, generated metadata
 and source workflow/environment checks then select the whole original recipe.
 The receipt retains the initial event and each preparation observation.
+The dedicated handshake module is loaded from the authenticated workflow SHA's
+Git object, including when the original wrapper runs its two helpers from a
+temporary directory. Checkout module bytes cannot substitute for that authority.
+The split keeps both source modules within the existing 350-line growth limit.
 
 This fixes selection timing without changing workflow admission or native tests.
 The unique tooling companion covers delayed readiness, immediate complete

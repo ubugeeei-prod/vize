@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   awaitReleasePreparation,
   selectSourceRecipe,
+  sourcePreparationModule,
 } from "./typechecker-native-source-recipe.mjs";
-import { fixture, git } from "./typechecker-native-source-recipe-fixture.mjs";
+import { commit, fixture, git, put } from "./typechecker-native-source-recipe-fixture.mjs";
 
 function incomplete(pr) {
   return {
@@ -44,6 +46,38 @@ const observation = (f, pullRequest = f.event.pull_request, pin = f.pin) => ({
   pullRequest: structuredClone(pullRequest),
   source: f.source,
   pin,
+});
+
+await test("runtime preparation uses whole workflow-object module bytes and refuses missing authority", async () => {
+  await fixture(async (f) => {
+    const path = "tools/benchmarks/scripts/typechecker-native-source-preparation.mjs";
+    const bytes = readFileSync(
+      new URL("./typechecker-native-source-preparation.mjs", import.meta.url),
+    );
+    put(f.root, path, bytes);
+    const workflow = commit(f.root);
+    git(f.root, "checkout", "--detach", f.source);
+    put(f.root, path, 'throw new Error("checkout module must never execute");\n');
+    const module = await sourcePreparationModule(f.root, workflow);
+    const result = await awaitReleasePreparation(
+      {
+        ...f,
+        env: { ...f.env, GITHUB_WORKFLOW_SHA: workflow },
+        observe: async () => observation(f),
+        loadPin: async (pin) => pin,
+      },
+      module,
+    );
+    const expected = selectSourceRecipe(f);
+    assert.equal(result.recipe, expected.recipe);
+    assert.deepEqual(result.originalEnvironment, expected.originalEnvironment);
+    assert.deepEqual(result.changes, expected.changes);
+    await assert.rejects(sourcePreparationModule(f.root, f.source), {
+      code: "ERR_ASSERTION",
+      actual: 128,
+    });
+    await assert.rejects(sourcePreparationModule(f.root, "main"), /AssertionError/u);
+  });
 });
 
 await test("opened receipt waits for actual pin and complete live metadata, then selects the whole original source step", async () => {
