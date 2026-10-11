@@ -55,17 +55,17 @@ overall **failure**. It exercised 145 projects, 41 authored feature projects and
 authority (artifact `11708901126`). Its success does not qualify all 22 shards
 or the later source. The remaining LSP failures are:
 
-| Shard | Project | Failed contract | Artifact |
-| --- | --- | --- | --- |
-| 0 | varlet | Diagnostic publication lifecycle | 11709790048 |
-| 5 | primevue | Complete hover contract | 11709660532 |
-| 7 | vue3-antd-admin | Diagnostic publication lifecycle | 11709448378 |
-| 9 | naive-ui | Definition after backend retirement and EOF | 11709076194 |
-| 10 | voicevox, portal-vue | Complete hover contracts | 11709142093 |
-| 11 | vue-virtual-scroller | Complete hover contract | 11709097592 |
-| 12 | misskey | Complete reference vector | 11708683348 |
-| 13 | directus, lew-ui | Complete hover and reference contracts | 11709052485 |
-| 17 | buefy | Complete hover contract | 11709277551 |
+| Shard | Project              | Failed contract                             | Artifact    |
+| ----- | -------------------- | ------------------------------------------- | ----------- |
+| 0     | varlet               | Diagnostic publication lifecycle            | 11709790048 |
+| 5     | primevue             | Complete hover contract                     | 11709660532 |
+| 7     | vue3-antd-admin      | Diagnostic publication lifecycle            | 11709448378 |
+| 9     | naive-ui             | Definition after backend retirement and EOF | 11709076194 |
+| 10    | voicevox, portal-vue | Complete hover contracts                    | 11709142093 |
+| 11    | vue-virtual-scroller | Complete hover contract                     | 11709097592 |
+| 12    | misskey              | Complete reference vector                   | 11708683348 |
+| 13    | directus, lew-ui     | Complete hover and reference contracts      | 11709052485 |
+| 17    | buefy                | Complete hover contract                     | 11709277551 |
 
 Independent surface failures also remain: core-tools in eight shards,
 lint-divergence in 22, and typecheck-divergence in six. Original full packets are
