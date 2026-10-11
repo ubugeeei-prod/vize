@@ -133,7 +133,7 @@ export async function retirementTransportLaw(t: TestContext) {
   const endpoint = `https://registry.npmjs.org/${encodeURIComponent(first.name)}/${first.version}`;
   let endpointReads = 0;
   const fetch: typeof globalThis.fetch = async (input) => {
-    const url = String(input);
+    const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     if (url === endpoint && ++endpointReads < 3) throw network("ECONNRESET");
     const result = new Response(JSON.stringify({ error: "unavailable" }), { status: 503 });
     Object.defineProperty(result, "url", { value: url });

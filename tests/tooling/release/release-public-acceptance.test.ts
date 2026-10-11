@@ -33,10 +33,7 @@ import {
 } from "../support/release-public-acceptance-fixtures.ts";
 
 test("retirement refuses incomplete or ambiguous public absence", retirementAbsenceLaw);
-test(
-  "retirement transport retries are bounded and preserve absence refusals",
-  retirementTransportLaw,
-);
+test("retirement retries preserve complete absence refusals", retirementTransportLaw);
 test(
   "public browser observation requires completed prerequisites, preserving a strict seal",
   independentPublicObservationLaw,
