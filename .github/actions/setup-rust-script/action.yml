@@ -27,7 +27,20 @@ runs:
           echo "Found rust-script ${installed_version}; installing ${rust_script_version}" >&2
         fi
         cargo_bin="${CARGO_HOME:-$HOME/.cargo}/bin"
-        cargo install rust-script --version "$rust_script_version" --locked --force
+        if [ "${RUNNER_OS:-}" = "Linux" ] && [ "${RUNNER_ARCH:-}" = "X64" ]; then
+          rust_script_temp="$(mktemp -d "$RUNNER_TEMP/rust-script.XXXXXX")"
+          trap 'rm -rf "$rust_script_temp"' EXIT
+          archive="$rust_script_temp/rust-script.tar.gz"
+          curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 \
+            --output "$archive" \
+            "https://github.com/fornwall/rust-script/releases/download/0.34.0/rust-script-x86_64-unknown-linux-gnu.tar.gz"
+          bash "$GITHUB_ACTION_PATH/extract-prebuilt.sh" "$archive" "$rust_script_temp/runner" \
+            0700ecfe6c768c007f3e5a7919f4fedbf0a6727d275a196791f134a1742d4d13
+          mkdir -p "$cargo_bin"
+          install -m 0755 "$rust_script_temp/runner/rust-script" "$cargo_bin/rust-script"
+        else
+          cargo install rust-script --version "$rust_script_version" --locked --force
+        fi
         export PATH="$cargo_bin:$PATH"
         echo "$cargo_bin" >> "$GITHUB_PATH"
         installed_version="$(rust-script --version | sed -E 's/^rust-script[[:space:]]+([^[:space:]]+).*/\1/')"
