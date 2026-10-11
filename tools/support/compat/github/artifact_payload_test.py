@@ -130,6 +130,39 @@ class PayloadControls(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     verify_tree(destination, manifest)
 
+    def test_unreadable_directory_cannot_hide_extra_inventory(self):
+        directory = self.root / "permission-control"
+        directory.mkdir(mode=0o755)
+        closed = directory / "empty"
+        closed.mkdir()
+        (closed / "unexpected.raw").write_bytes(b"opaque unobserved bytes\x00\xff")
+        closed.chmod(0)
+        manifest = {"entries": [{"path": "empty", "kind": "directory", "mode": 0}]}
+        try:
+            if os.geteuid() == 0:
+                # A root runner can read mode000: exercise the real refusal as nobody.
+                self.root.chmod(0o755)
+                child = os.fork()
+                if child == 0:
+                    try:
+                        os.setgroups([])
+                        os.setgid(65534)
+                        os.setuid(65534)
+                        verify_tree(directory, manifest)
+                    except ValueError:
+                        os._exit(0)
+                    except BaseException:
+                        os._exit(2)
+                    os._exit(1)
+                _, status = os.waitpid(child, 0)
+                self.assertEqual(os.waitstatus_to_exitcode(status), 0,
+                                 "unreadable inventory must refuse under an unprivileged identity")
+            else:
+                with self.assertRaisesRegex(ValueError, "cannot inspect complete restored inventory"):
+                    verify_tree(directory, manifest)
+        finally:
+            closed.chmod(0o755)
+
     def test_corrupt_archive_and_whole_object(self):
         self.packed()
         with zipfile.ZipFile(self.envelope / PAYLOAD) as archive:
@@ -174,6 +207,12 @@ class PayloadControls(unittest.TestCase):
         manifest.symlink_to(external)
         with self.assertRaisesRegex(ValueError, "invalid envelope file"):
             self.restored("external-manifest")
+        external_tree = self.root / "external-tree"
+        external_tree.mkdir()
+        borrowed = self.root / "borrowed-root"
+        borrowed.symlink_to(external_tree, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "restored root must be an independent directory"):
+            verify_tree(borrowed, {"entries": []})
 
     def test_unsafe_duplicate_and_symlink_original_entries_fail_closed(self):
         for control in ("../escape", "/absolute", "duplicate", "symlink"):

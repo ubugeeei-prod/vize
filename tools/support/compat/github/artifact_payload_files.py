@@ -97,13 +97,17 @@ def validate_manifest(manifest, receipt):
 
 def verify_tree(root, manifest):
     root = Path(root)
+    require(stat.S_ISDIR(root.lstat().st_mode), "restored root must be an independent directory")
     expected = {row["path"]: row for row in manifest["entries"]}
     implicit = set()
     for name in expected:
         implicit.update(str(parent) for parent in PurePosixPath(name).parents if str(parent) != ".")
     actual = set()
     inodes = set()
-    for directory, directories, files in os.walk(root, followlinks=False):
+    def refuse_walk_error(error):
+        raise ValueError("cannot inspect complete restored inventory") from error
+
+    for directory, directories, files in os.walk(root, followlinks=False, onerror=refuse_walk_error):
         for name in directories + files:
             path = Path(directory) / name
             logical = path.relative_to(root).as_posix()

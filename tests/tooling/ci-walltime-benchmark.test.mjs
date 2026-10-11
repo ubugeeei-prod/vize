@@ -21,7 +21,16 @@ void test("walltime comparisons use the same source and runner without publishin
     Object.keys(workflow.jobs)
       .filter((name) => name !== "js-native-fault-diagnostic")
       .sort(),
-    ["artifact-payload", "artifact-payload-restore", "docs", "js", "n8n-baseline", "n8n-preparation", "native", "rust"],
+    [
+      "artifact-payload",
+      "artifact-payload-restore",
+      "docs",
+      "js",
+      "n8n-baseline",
+      "n8n-preparation",
+      "native",
+      "rust",
+    ],
   );
   for (const key of ["docs", "js", "native", "rust"]) {
     const job = workflow.jobs[key];

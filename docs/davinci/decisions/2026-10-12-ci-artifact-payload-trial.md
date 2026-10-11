@@ -27,6 +27,13 @@ damaged objects or substituted source/driver/artifact identity. Empty files,
 opaque raw streams, hidden names, Unicode, newline names and explicit empty
 directories remain covered. Controls also run with Python optimization enabled.
 
+Peer review reproduced a silent inventory omission in the original verifier:
+`os.walk` skipped an unreadable mode-000 directory and could miss an unexpected
+opaque child. Walking errors now refuse full verification, and the restored root
+must itself be an independent directory. A real permission control fails against
+the retained original helper and passes after the fix; root runners exercise it
+under an unprivileged child identity. Existing bytes and mode checks stay intact.
+
 Receipts record original and packed bytes, complete entry count, unique object
 bytes, read/hash/compress wall time and full restore/verify time. GNU time records
 CPU and peak resident memory for pack and restore; Actions step timestamps supply
