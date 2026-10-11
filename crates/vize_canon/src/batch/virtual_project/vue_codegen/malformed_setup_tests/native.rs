@@ -11,6 +11,8 @@ use std::{
 };
 use vize_carton::{String, cstr};
 
+mod comment_boundaries;
+mod public;
 mod rows;
 use rows::{Row, mapped_rows};
 
@@ -173,8 +175,9 @@ fn retain(root: &Path, phase: &str, packet: &Value) {
 }
 
 #[test]
-fn original_malformed_setup_native_vectors_remove_only_the_false_generic_and_module_errors() {
+fn original_malformed_setup_native_vectors_keep_all_syntax_and_repair_only_false_generics() {
     let Some(native) = native() else { return };
+    let mut cases = Vec::new();
     for issue in ["5071", "5823"] {
         let temporary = tempfile::tempdir().unwrap();
         let root = install(temporary.path(), issue);
@@ -190,32 +193,47 @@ fn original_malformed_setup_native_vectors_remove_only_the_false_generic_and_mod
         retain(&root, "descriptor-projections", &json!(projections));
         let (before, before_packet) = diagnose(&root, &native, "before", &old);
         let (after, after_packet) = diagnose(&root, &native, "after", &fresh);
-        let false_row = if issue == "5823" {
-            (
+        cases.push((issue, before, before_packet, after, after_packet));
+    }
+    for (issue, before, before_packet, after, after_packet) in cases {
+        if issue == "5823" {
+            let false_row = (
                 "main.vue".into(),
                 2,
                 11,
                 Some(2304),
                 Some(1),
                 "Cannot find name 'T'.".into(),
-            )
-        } else {
-            (
-                "withoutScript.vue".into(),
+            );
+            assert_eq!(
+                before.iter().filter(|row| **row == false_row).count(),
                 1,
-                20,
-                Some(2307),
-                Some(1),
-                "Cannot find module 'vue' or its corresponding type declarations.".into(),
-            )
-        };
-        assert_eq!(
-            before.iter().filter(|row| **row == false_row).count(),
-            1,
-            "{before_packet}"
-        );
-        let preserved: Vec<_> = before.into_iter().filter(|row| *row != false_row).collect();
-        assert_eq!(after, preserved, "{after_packet}");
+                "{before_packet}"
+            );
+            let preserved: Vec<_> = before.into_iter().filter(|row| *row != false_row).collect();
+            assert_eq!(after, preserved, "{after_packet}");
+        } else {
+            let original = vec![
+                (
+                    "withScript.vue".into(),
+                    0,
+                    18,
+                    Some(1005),
+                    Some(1),
+                    "';' expected.".into(),
+                ),
+                (
+                    "withoutScript.vue".into(),
+                    1,
+                    25,
+                    Some(1005),
+                    Some(1),
+                    "';' expected.".into(),
+                ),
+            ];
+            assert_eq!(before, original, "{before_packet}");
+            assert_eq!(after, before, "{after_packet}");
+        }
         let syntax: Vec<_> = after
             .iter()
             .filter(|row| matches!(row.3, Some(1005 | 1109)))

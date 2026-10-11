@@ -47,13 +47,24 @@ impl ScriptModulePlan {
     }
 }
 
-pub(super) fn collect_script_module_plan(script: &str) -> ScriptModulePlan {
+pub(super) fn collect_script_module_plan(
+    script: &str,
+    recover_lone_setup: bool,
+) -> ScriptModulePlan {
     let mut spans = Vec::new();
     let mut exported_types = FxHashSet::default();
     let allocator = Allocator::default();
     let parsed = parse_program_for_analysis(&allocator, script, SourceType::ts().with_module(true));
     let parsed = if parsed.panicked {
-        parse_program_for_analysis(&allocator, script, SourceType::tsx().with_module(true))
+        let retry_source = recover_lone_setup
+            .then(|| super::glued_import::terminated_lone_import_prefix(script))
+            .flatten()
+            .unwrap_or(script);
+        parse_program_for_analysis(
+            &allocator,
+            retry_source,
+            SourceType::tsx().with_module(true),
+        )
     } else {
         parsed
     };
@@ -233,7 +244,7 @@ mod tests {
     #[test]
     fn collect_import_span_includes_adjacent_ts_ignore_comment_group() {
         let script = "const before = 1;\n// FIXME: types\n// @ts-ignore\nimport Chart from \"chart.js/auto/auto\";\nconst after = 2;\n";
-        let spans = collect_script_module_plan(script).spans;
+        let spans = collect_script_module_plan(script, false).spans;
 
         assert_eq!(spans.len(), 1);
         assert_eq!(
@@ -245,7 +256,7 @@ mod tests {
     #[test]
     fn collect_import_span_leaves_regular_comments_in_script_body() {
         let script = "// import note\nimport Chart from \"chart.js/auto/auto\";\n";
-        let spans = collect_script_module_plan(script).spans;
+        let spans = collect_script_module_plan(script, false).spans;
 
         assert_eq!(spans.len(), 1);
         assert_eq!(

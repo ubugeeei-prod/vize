@@ -134,6 +134,8 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         is_async,
         has_script_setup,
         has_plain_script_scope,
+        recover_lone_setup,
+        options_script_source,
     } = script_metadata::ScriptMetadata::new(summary, script_content, generation_options);
 
     preamble::emit_module_preamble(&mut ts, summary, generation_options, legacy_vue2);
@@ -163,7 +165,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let options_script = if classify_default_export || collect_options_facts {
         profile!(
             "canon.virtual_ts.find_default_export_targets",
-            script_content
+            options_script_source
                 .map(|script| analyze_options_api_script(
                     script,
                     classify_default_export,
@@ -181,7 +183,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         ts.push_str(legacy_vue2::define_component_helper(legacy_vue2, dialect));
     }
     let module_plan = script_content
-        .map(script_module::collect_script_module_plan)
+        .map(|script| script_module::collect_script_module_plan(script, recover_lone_setup))
         .unwrap_or_default();
     let mut module_spans: Vec<(u32, u32)> = profile!("canon.virtual_ts.collect_module_spans", {
         let module_spans = module_plan.module_spans(summary, &namespace_hoist);
@@ -190,6 +192,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     let glued_import = glued_import::GluedImportSection::plan(
         script_content,
         generation_options.split_script_setup_offsets,
+        recover_lone_setup,
         &mut module_spans,
     );
     let mut ambient =

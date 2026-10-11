@@ -55,17 +55,22 @@ impl GluedImportSection {
     pub(super) fn plan(
         script: Option<&str>,
         split: Option<(usize, usize)>,
+        recover_lone_setup: bool,
         module_spans: &mut Vec<(u32, u32)>,
     ) -> Option<Self> {
-        let glued = Self::find(script?, split)?;
+        let script = script?;
+        let glued = Self::find(script, split).or_else(|| {
+            recover_lone_setup
+                .then(|| Self::find_lone_setup(script))
+                .flatten()
+        })?;
         module_spans.push(glued.span);
         module_spans.sort_unstable();
         Some(glued)
     }
 
-    /// Emit the section without a line break. The missing terminator is then
-    /// reported on the token behind it, which stands for the first token of the
-    /// classic `<script>`.
+    /// Emit the section without a line break. The token behind it maps to the
+    /// actual classic/setup token where Vue reports the missing terminator.
     pub(super) fn emit(
         glued: Option<&Self>,
         span: (u32, u32),
@@ -85,8 +90,8 @@ impl GluedImportSection {
         ts.push_str("export {};\n");
         mappings.push(VizeMapping {
             gen_range: token_start..token_start + "export".len(),
-            src_range: source_offset(glued.classic_token.0 as usize)
-                ..source_offset(glued.classic_token.1 as usize),
+            src_range: source_offset(glued.diagnostic_token.0 as usize)
+                ..source_offset(glued.diagnostic_token.1 as usize),
             sub_spans: Vec::new(),
         });
         true

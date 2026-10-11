@@ -5,6 +5,9 @@ at revision `88e8500c1e5f1b29d80f42c8ca065cc9cbd56899`; hashes and the original
 hosted error vectors are in `original-custody.json`. The copied MIT license
 preserves attribution. `real-errors.vue.txt` adds an actual undeclared name and
 number/string mismatch while keeping the original malformed setup expression.
+`valid-commented-import.vue.txt` retains a valid import followed by a block
+comment and newline before a genuine later expression error; its native
+boundary variants must not create additional import or terminator errors.
 
 The internal Canon filter `vue_codegen::malformed_setup_tests::` preserves
 complete before/after descriptor, Croquis, generated code and mapping packets.

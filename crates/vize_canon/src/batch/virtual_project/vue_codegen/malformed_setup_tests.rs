@@ -102,6 +102,8 @@ fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Val
 }
 
 fn packet(output: &GeneratedVueFile) -> serde_json::Value {
+    let imports = crate::batch::import_rewriter::ImportRewriter::new()
+        .collect_all_specifiers(&output.code, oxc_span::SourceType::ts().with_module(true));
     serde_json::json!({
         "wholeCode":output.code.as_str(),
         "wholeMappings":vize_carton::cstr!("{:#?}",output.mappings),
@@ -109,6 +111,7 @@ fn packet(output: &GeneratedVueFile) -> serde_json::Value {
         "wholePropDefaultKeyLinks":vize_carton::cstr!("{:#?}",output.prop_default_key_links),
         "wholeLocalDiagnostics":vize_carton::cstr!("{:#?}",output.diagnostics),
         "typedRouterImport":output.typed_router_import,
+        "wholeActualImportRewriterSpecifiers":imports,
     })
 }
 
@@ -166,7 +169,7 @@ fn assert_authored_maps(source: &str, output: &GeneratedVueFile) {
 #[test]
 fn full_malformed_descriptors_keep_their_setup_role_and_generic_without_recovering_an_ast() {
     for issue in ["5071", "5823"] {
-        for (_, source) in sources(issue) {
+        for (name, source) in sources(issue) {
             let (before, after, packet) = project(&source);
             assert_eq!(packet["analyzedSetup"], false);
             assert_authored_maps(&source, &after);
@@ -174,6 +177,28 @@ fn full_malformed_descriptors_keep_their_setup_role_and_generic_without_recoveri
                 assert!(before.code.contains("function __setup()"));
                 assert!(after.code.contains("function __setup<T>()"));
                 assert!(after.code.contains("info?: T;"));
+            } else {
+                let import = after.code.find("import { ref } from 'vue'").unwrap();
+                assert!(import < after.code.find("function __setup()").unwrap());
+                if name == "withScript.vue" {
+                    assert_eq!(after.code.matches("const __default__").count(), 1);
+                    assert!(!after.code.contains("export default{}"));
+                } else {
+                    assert!(
+                        !packet["before"]["wholeActualImportRewriterSpecifiers"]
+                            .as_array()
+                            .unwrap()
+                            .iter()
+                            .any(|specifier| specifier == "vue")
+                    );
+                }
+                assert!(
+                    packet["after"]["wholeActualImportRewriterSpecifiers"]
+                        .as_array()
+                        .unwrap()
+                        .iter()
+                        .any(|specifier| specifier == "vue")
+                );
             }
             assert!(!after.code.contains("async function __setup"));
         }
@@ -201,9 +226,49 @@ fn successful_setup_analysis_keeps_the_complete_original_projection_and_maps() {
             }
         }
     }
-    let (before, after, _) =
-        project("<script lang=\"ts\">export default {};\nconst invalid = ;</script>");
-    assert_eq!(before.code, after.code);
-    assert_eq!(before.mappings, after.mappings);
-    assert_eq!(before.semantic_links, after.semantic_links);
+    for source in [
+        "<script lang=\"ts\">export default {};\nconst invalid = ;</script>",
+        "<script lang=\"ts\">\nimport { ref } from 'vue'ref('');\nexport default {};\n</script>",
+    ] {
+        let (before, after, _) = project(source);
+        assert_eq!(before.code, after.code);
+        assert_eq!(before.mappings, after.mappings);
+        assert_eq!(before.semantic_links, after.semantic_links);
+    }
+}
+
+fn commented_imports() -> [&'static str; 6] {
+    [
+        "/*comment*/\n",
+        "/*comment*/;",
+        "/*\ncomment*/",
+        "/*comment*/\u{2028}",
+        "/*\u{2029}comment*/",
+        "/*comment*/\r",
+    ]
+}
+
+#[test]
+fn valid_commented_imports_remain_module_declarations_when_a_later_setup_parse_panics() {
+    for tail in commented_imports() {
+        let source = vize_carton::cstr!(
+            "<script setup lang=\"ts\">\nimport {{ ref }} from 'vue'{tail}ref('');\nconst broken = ;\nvoid broken;\n</script>\n"
+        );
+        if tail == commented_imports()[0] {
+            assert_eq!(
+                source.as_str(),
+                std::fs::read_to_string(Path::new(CORPUS).join("valid-commented-import.vue.txt"))
+                    .unwrap()
+            );
+        }
+        let (_, after, packet) = project(&source);
+        assert_eq!(packet["analyzedSetup"], false, "{packet}");
+        assert_authored_maps(&source, &after);
+        let import = after.code.find("import { ref } from 'vue'").unwrap();
+        assert!(
+            import < after.code.find("function __setup()").unwrap(),
+            "{packet}"
+        );
+        assert!(!after.code.contains("'vue'export"), "{packet}");
+    }
 }

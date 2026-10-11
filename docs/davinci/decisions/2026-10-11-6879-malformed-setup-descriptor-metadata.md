@@ -19,6 +19,41 @@ analysis retains its complete original signature, including async. No recovered
 AST facts, async inference, additional pipeline stage, or diagnostic suppression
 is introduced. This does not replace a product with Davinci; #6879 remains open.
 
+The first composed source `da43c7ccd2` remains failed. Its original tooling run
+38122423237 fixed #5823 but retained #5071's false Vue-module diagnostic and
+introduced TS2528 plus an unresolved `__default__` in the two-block source.
+Restoring the setup role exposed a second original parse boundary: the valid
+classic block's default export was classified by reparsing the whole merged
+script, so its malformed setup neighbor erased the export targets. The bounded
+correction classifies the actual classic prefix with the same existing parser
+only when descriptor-proved setup lacks analysis. For a descriptor-proved lone
+setup, the existing unterminated-import layout retains the authentic section
+at module scope and maps its following token to the actual setup token. Both
+original syntax coordinates and full diagnostic vectors remain required;
+successful setup and plain-only generation remain byte-exact controls. The
+new lone-setup finder preserves ASI across block comments, semicolons, LF, CR
+and Unicode line terminators. If a later setup error makes parsing panic, the
+existing TSX retry parses only its genuinely terminated leading import prefix;
+that returned AST remains the authority for module spans. No parser invocation
+is added. Whole-SFC/native controls require only the genuine later TS1109 for
+six valid comment boundaries, and preserve the real TS1005 for a same-line
+unterminated import. The original two-block finder remains unchanged. The
+first full qualifier 38122497358 is also retained as failed, with no green credit.
+Its original full App row passed all 15 negative diagnostic controls. Its
+same-config native LSP #5071 before vector already contained exactly the two
+original TS1005 diagnostics and no TS2307; the initial native test's once-TS2307
+premise was false. That law now requires complete before/after equality for
+#5071, while #5823 still requires a genuine before TS2304 for `T` and removal of
+only that false row. Both pairs are saved before either verdict is asserted.
+The public CLI's #5071 TS2307 remains a separate failing origin. Its generated
+project lives outside the authored package tree and uses the existing import
+rewriter, unlike the native control's original-tree paths/config. A lower
+production-collector control retains complete before/after specifier packets;
+the actual public checker separately must return only the original syntax
+vectors, retaining its generated files/config, full result and independently
+attested same-generated-config raw native vector. No CLI fix credit is taken
+until that public control and unchanged original tooling corpus pass.
+
 The regression corpus at
 `tests/_fixtures/differential/typechecker/malformed-setup-metadata/` retains all
 three complete original SFCs, both original project configurations and their

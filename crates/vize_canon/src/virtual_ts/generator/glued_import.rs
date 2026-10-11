@@ -5,17 +5,16 @@
 //! module and emits the classic `<script>` directly behind it, so the missing
 //! terminator is reported where the classic block begins, once. Every other
 //! shape of the section ends in a terminator or a line break and needs no
-//! special layout, and a lone `<script setup>` already reports the position
-//! where its section ends.
+//! special layout. A lone setup block without a recovered AST retains that
+//! same section at module scope and reports its actual following setup token.
 
 /// A setup import section glued to the statement that follows it, in offsets
 /// of the merged script.
 pub(super) struct GluedImportSection {
     /// The import section, from its first import to the glued statement.
     pub(super) span: (u32, u32),
-    /// The first token of the classic `<script>`: where the toolchain reports
-    /// the missing terminator.
-    pub(super) classic_token: (u32, u32),
+    /// The actual authored token where the missing terminator is reported.
+    pub(super) diagnostic_token: (u32, u32),
 }
 
 impl GluedImportSection {
@@ -34,11 +33,91 @@ impl GluedImportSection {
                 u32::try_from(setup_start + section_start).ok()?,
                 u32::try_from(setup_start + section_end).ok()?,
             ),
-            classic_token: (
+            diagnostic_token: (
                 u32::try_from(token_start).ok()?,
                 u32::try_from(token_start + token_len).ok()?,
             ),
         })
+    }
+
+    /// The same unterminated section in an actual, lone `<script setup>`.
+    pub(super) fn find_lone_setup(script: &str) -> Option<Self> {
+        let section_start = skip_trivia(script, 0);
+        let section_end = glued_section_end(script, section_start)?;
+        let (token_start, terminated) = lone_import_tail(script, section_end)?;
+        if terminated || script.get(token_start..)?.starts_with("import") {
+            return None;
+        }
+        let token_len = token_len(script.get(token_start..)?)?;
+        Some(Self {
+            span: (
+                u32::try_from(section_start).ok()?,
+                u32::try_from(token_start).ok()?,
+            ),
+            diagnostic_token: (
+                u32::try_from(token_start).ok()?,
+                u32::try_from(token_start + token_len).ok()?,
+            ),
+        })
+    }
+}
+
+/// A terminated leading import can still be parsed by the existing module
+/// parser retry when a later setup statement makes the full parse panic.
+pub(super) fn terminated_lone_import_prefix(source: &str) -> Option<&str> {
+    let mut cursor = skip_trivia(source, 0);
+    let mut prefix_end = None;
+    loop {
+        let rest = source.get(cursor..)?;
+        let Some(after) = rest.strip_prefix("import") else {
+            return prefix_end.and_then(|end| source.get(..end));
+        };
+        if !after.starts_with(|c: char| c.is_whitespace() || matches!(c, '{' | '*' | '\'' | '"')) {
+            return prefix_end.and_then(|end| source.get(..end));
+        }
+        let end = cursor + module_specifier_end(rest)?;
+        let (next, terminated) = lone_import_tail(source, end)?;
+        if !terminated {
+            return prefix_end.and_then(|end| source.get(..end));
+        }
+        prefix_end = Some(next);
+        cursor = skip_trivia(source, next);
+    }
+}
+
+/// Keep ASI and hidden semicolons separate from a genuinely glued statement.
+/// Only the new lone-setup path uses this; the existing two-block layout stays
+/// unchanged. Block comments with a line terminator also establish ASI.
+fn lone_import_tail(source: &str, mut cursor: usize) -> Option<(usize, bool)> {
+    let mut line_break = false;
+    loop {
+        let rest = source.get(cursor..)?;
+        let Some(first) = rest.chars().next() else {
+            return Some((cursor, true));
+        };
+        if first.is_whitespace() {
+            line_break |= matches!(first, '\n' | '\r' | '\u{2028}' | '\u{2029}');
+            cursor += first.len_utf8();
+        } else if rest.starts_with("/*") {
+            let end = rest.find("*/")? + 2;
+            line_break |= rest
+                .get(..end)?
+                .contains(['\n', '\r', '\u{2028}', '\u{2029}']);
+            cursor += end;
+        } else if rest.starts_with("//") {
+            cursor += rest
+                .find(['\n', '\r', '\u{2028}', '\u{2029}'])
+                .unwrap_or(rest.len());
+            line_break = true;
+        } else if let Some(attributes) = import_attributes_len(rest) {
+            cursor += attributes;
+            line_break = false;
+        } else {
+            return Some((
+                cursor + usize::from(first == ';'),
+                line_break || first == ';',
+            ));
+        }
     }
 }
 
@@ -136,7 +215,7 @@ mod tests {
     fn find(classic: &str, setup: &str) -> Option<((u32, u32), (u32, u32))> {
         let script = vize_carton::cstr!("{classic}\n{setup}");
         GluedImportSection::find(&script, Some((classic.len() + 1, 0)))
-            .map(|glued| (glued.span, glued.classic_token))
+            .map(|glued| (glued.span, glued.diagnostic_token))
     }
 
     #[test]
@@ -172,5 +251,32 @@ mod tests {
             assert_eq!(find("export default {};\n", setup), None, "{setup}");
         }
         assert_eq!(find("", "import { ref } from 'vue'ref('');"), None);
+    }
+
+    #[test]
+    fn a_lone_setup_section_retains_its_actual_following_token() {
+        let source = "\nimport { ref } from 'vue'ref('');\n";
+        assert_eq!(
+            GluedImportSection::find_lone_setup(source).map(|section| (
+                source.get(section.span.0 as usize..section.span.1 as usize),
+                source
+                    .get(section.diagnostic_token.0 as usize..section.diagnostic_token.1 as usize),
+            )),
+            Some((Some("import { ref } from 'vue'"), Some("ref")))
+        );
+        for source in [
+            "import { ref } from 'vue';ref('');",
+            "import { ref } from 'vue'\nref('');",
+            "import { ref } from 'vue'/*comment*/\nconst broken = ;",
+            "import { ref } from 'vue'/*comment*/;const broken = ;",
+            "import { ref } from 'vue'/*\ncomment*/const broken = ;",
+            "import { ref } from 'vue'/*comment*/\u{2028}const broken = ;",
+            "import { ref } from 'vue'/*\u{2029}comment*/const broken = ;",
+            "import('vue')",
+            "import.meta.env",
+            "ref('');",
+        ] {
+            assert!(GluedImportSection::find_lone_setup(source).is_none());
+        }
     }
 }

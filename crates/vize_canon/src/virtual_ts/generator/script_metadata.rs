@@ -10,12 +10,14 @@ pub(super) struct ScriptMetadata<'a> {
     pub(super) is_async: bool,
     pub(super) has_script_setup: bool,
     pub(super) has_plain_script_scope: bool,
+    pub(super) recover_lone_setup: bool,
+    pub(super) options_script_source: Option<&'a str>,
 }
 
 impl<'a> ScriptMetadata<'a> {
     pub(super) fn new(
         summary: &'a Croquis,
-        script_content: Option<&str>,
+        script_content: Option<&'a str>,
         options: VirtualTsGenerationOptions<'a>,
     ) -> Self {
         let analyzed_setup = summary
@@ -44,12 +46,37 @@ impl<'a> ScriptMetadata<'a> {
                 .authored_scripts
                 .is_some_and(|scripts| scripts.has_plain)
             || (script_content.is_some() && !has_script_setup);
+        let setup_without_analysis = !analyzed_setup
+            && options
+                .authored_scripts
+                .is_some_and(|scripts| scripts.has_setup);
         Self {
             authored_generic,
             generic_param,
             is_async,
             has_script_setup,
             has_plain_script_scope,
+            recover_lone_setup: setup_without_analysis && !has_plain_script_scope,
+            options_script_source: options_source(script_content, options, setup_without_analysis),
         }
     }
+}
+
+/// A failed setup parse must not prevent classifying the genuine classic block.
+fn options_source<'a>(
+    script: Option<&'a str>,
+    options: VirtualTsGenerationOptions<'_>,
+    setup_without_analysis: bool,
+) -> Option<&'a str> {
+    let script = script?;
+    if setup_without_analysis
+        && options
+            .authored_scripts
+            .is_some_and(|scripts| scripts.has_plain)
+        && let Some((setup_start, _)) = options.split_script_setup_offsets
+        && let Some(classic) = setup_start.checked_sub(1).and_then(|end| script.get(..end))
+    {
+        return Some(classic);
+    }
+    Some(script)
 }
