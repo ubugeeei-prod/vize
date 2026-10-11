@@ -6,6 +6,7 @@ import signal
 import subprocess
 import sys
 sys.dont_write_bytecode = True
+import tempfile
 import types
 import unittest
 from unittest.mock import patch
@@ -78,6 +79,25 @@ class SupervisorLaws(unittest.TestCase):
             packets = queue.Queue(16)
             supervisor.input_reader(io.StringIO(text), packets)
             self.assertEqual(list(packets.queue), expected)
+
+    def test_debugger_error_projection_excludes_messages_foreign_paths_and_context(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            for name in ["owned_worker_gdb.py", "owned_worker_identity.py", "owned_worker_capture.py", "owned_worker_supervisor.py"]:
+                (directory / name).write_text("reviewed source")
+            text = ('Traceback (most recent call last):\n  File "' + str(directory / "owned_worker_gdb.py") + '", line 17, in private_context\n'
+                    '  File "/foreign/owned_worker_gdb.py", line 1\n    private argv/environment\nNameError: private secret\n')
+            receipt = {}
+            supervisor.debugger_errors(io.BytesIO(text.encode()), directory, receipt)
+            packet = receipt["debuggerStderr"]
+            self.assertEqual(packet["bytes"], len(text.encode()))
+            self.assertEqual(packet["recognizedErrorTypes"], ["NameError"])
+            self.assertEqual([(frame["helper"], frame["line"]) for frame in packet["recognizedHelperFrames"]], [("owned_worker_gdb.py", 17)])
+            self.assertNotIn("private", json.dumps(packet))
+            self.assertNotIn("/foreign", json.dumps(packet))
+            broken = {}
+            supervisor.debugger_error_reader(io.BytesIO(b"secret"), directory / "missing", broken)
+            self.assertEqual(broken["gap"], "DebuggerErrorReaderFileNotFoundError")
 
 
 if __name__ == "__main__":

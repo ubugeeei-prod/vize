@@ -24,6 +24,7 @@ def publish(value):
         value = {"status": "unavailable", "gap": "DiagnosticTextExceedsBound", "hashing": dict(HASH_METRICS)}
         body = json.dumps(value)
     gdb.write(BEGIN + "\n" + body + "\n" + END + "\n")
+    gdb.flush()
 
 
 def verified(config):
@@ -167,6 +168,7 @@ def run(config):
 
 
 if __name__ == "__main__":
+    publish({"status": "debugger-phase", "phase": "script-started"})
     for setting in ["set pagination off", "set confirm off", "set auto-load off",
                     "set debuginfod enabled off", "set print frame-arguments none",
                     "set print entry-values no", "set follow-fork-mode parent",

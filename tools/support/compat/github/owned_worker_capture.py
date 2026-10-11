@@ -150,7 +150,7 @@ def read_markers(stream, packets, receipt):
         elif line == END and active:
             try:
                 packet = json.loads(body)
-                if not isinstance(packet, dict) or packet.get("status") not in ["attached", "SIGSEGV", "exited", "detached", "unavailable", "debugger-cleanup"]:
+                if not isinstance(packet, dict) or packet.get("status") not in ["attached", "SIGSEGV", "exited", "detached", "unavailable", "debugger-cleanup", "debugger-phase"]:
                     raise ValueError("Malformed diagnostic packet")
                 if "argv" in packet or "environment" in packet:
                     raise ValueError("Private fields in diagnostic packet")

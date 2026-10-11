@@ -46,6 +46,8 @@ class FakeGDB:
         self.inferior = types.SimpleNamespace(pid=0, threads=lambda: [self.original, thread(11)])
     def write(self, body):
         self.text.append(body)
+    def flush(self):
+        self.flushed = len(self.text)
     def selected_inferior(self):
         return self.inferior
     def selected_thread(self):
@@ -105,6 +107,7 @@ class GDBLaws(unittest.TestCase):
             packets.append(json.loads(lines[1]))
         self.assertEqual(adapter.events.stop.handlers, [])
         self.assertEqual(adapter.events.exited.handlers, [])
+        self.assertEqual(adapter.flushed, len(adapter.text))
         self.assertNotIn("private secret", "".join(adapter.text))
         self.assertNotIn("private startup arguments", "".join(adapter.text))
         self.assertFalse(any("bt full" in command or "locals" in command or "args" in command or "generate-core" in command for command in adapter.commands))

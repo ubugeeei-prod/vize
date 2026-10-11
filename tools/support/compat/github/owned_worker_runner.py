@@ -189,6 +189,7 @@ def observe(command, output):
                 drain_packets(packets, debugger, worker, leader, profile, root, output, receipt)
                 if debugger.poll() is not None or time.time() - receipt["debuggerStartedAt"] > 90:
                     close_gdb(debugger, reader, receipt)
+                    drain_packets(packets, debugger, worker, leader, profile, root, output, receipt)
                     worker.close()
                     debugger = None
             time.sleep(.02)
@@ -196,6 +197,7 @@ def observe(command, output):
     except Exception as error:
         receipt["observerGap"] = type(error).__name__
         close_gdb(debugger, reader, receipt)
+        drain_packets(packets, debugger, worker, leader, profile, root, output, receipt)
         debugger = None
         if worker:
             worker.close()

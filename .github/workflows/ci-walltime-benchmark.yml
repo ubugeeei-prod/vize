@@ -32,18 +32,10 @@ env:
 jobs:
   owned-worker-fault:
     if: ${{ github.event_name == 'workflow_dispatch' && (inputs.component == 'owned-worker-fault' || inputs.component == 'owned-worker-controls') }}
-    runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 35
-    env:
-      NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
-      CARGO_BUILD_JOBS: "12"
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { ref: "${{ github.sha }}", persist-credentials: false }
-      - uses: ./.github/actions/benchmark-owned-worker-fault
-        with:
-          source-sha: ${{ inputs.owned_worker_source_sha }}
-          controls-only: ${{ inputs.component == 'owned-worker-controls' }}
+    uses: ./.github/workflows/owned-worker-fault.yml
+    with:
+      source-sha: ${{ inputs.owned_worker_source_sha }}
+      controls-only: ${{ inputs.component == 'owned-worker-controls' }}
   js:
     if: ${{ (github.event_name == 'pull_request' && (github.event.label.name == 'ci-walltime-benchmark' || (github.event.action != 'labeled' && startsWith(github.head_ref, 'ci/optimize-')))) || (github.event_name == 'workflow_dispatch' && (inputs.component == 'all' || inputs.component == 'js')) }}
     runs-on: blacksmith-32vcpu-ubuntu-2404

@@ -83,6 +83,34 @@ actual `/proc` argument vector and child-v8 marker before STOP; require complete
 byte equality with the probe profile after the one script replacement. The
 controls-only component produces this packet without invoking the original JS
 runner, so actual debugger custody can be reviewed before the one SDK capture.
+Plan these steps in a reusable workflow, so checking out the separate frozen
+SDK source cannot erase a newly introduced local composite's post-job manifest.
+Keep the original physical cwd, argv, environment and source custody unchanged.
+Retain bounded supervisor/script phase markers and drain late cleanup packets
+before final evidence is written. On failed toy controls, verify worker birth,
+tracer zero and actual debugger reaping before releasing the authored watcher
+and waiting a bounded interval for its original runner to drain. A fallback kill
+targets only that still-unreaped authored runner and gives no cleanup credit.
+Hash GDB stderr while publishing only recognized exception types and reviewed
+helper basenames/line numbers/whole-source hashes. Message text, other paths and
+context remain excluded; unrecognized startup is an explicit observation gap.
+
+## First Linux controls packet
+
+Draft #8712 driver `a85c5a0f43bc231215548c4af53324ca2d4d4ab7`
+ran controls against fresh SDK source
+`c9a37e28dec3ed683e1c993c567d289206ef34d1`, run
+[38182533943](https://github.com/ubugeeei-prod/vize/actions/runs/38182533943),
+attempt 1, job `114597965505`. The first authored normal control failed with a
+timeout; subsequent controls did not run. The original SDK runner never started.
+The complete private profile matched before stopping the exact authored worker;
+all 29,059 tracked physical source bodies were equal before/after. No attached
+or cleanup marker was retained, so actual GDB custody and the startup cause are
+unavailable. Its 1,199 stdout bytes were retained only as a hash, and return code
+zero does not prove attachment or cleanup. The late-packet failure path and
+local composite post-hook manifest lookup require repair before another run.
+Artifact `11718068707` has whole ZIP SHA256
+`b14b7b481b8b589d8f8cac75153896b80888c7536cef78e9e150881eb772d5a4`.
 
 ## Qualification and remaining work
 
@@ -93,9 +121,9 @@ Meaningful actor/PID reuse/ESRCH/marker/privacy/partial attach/fault pass/cancel
 controls run in the ordinary tooling gate. A normal control exit or unavailable
 capture does not explain or repair the original SIGSEGV.
 
-TODO: obtain peer review of the complete helper and controls; wait for the
-existing shared source-custody guard repair and authenticated fresh SDK source;
-execute one explicitly authorized full diagnostic; retain its original runner
+TODO: peer-review the controls failure successor and qualify all four authentic
+Linux lifecycle packets before the explicitly authorized full diagnostic;
+retain its original runner
 status and finite packet gaps; attribute only actual fault/provider evidence;
 then obtain ordinary fresh-source full qualification independently. No blind
 retry of the historical failed source is authorized by this component.

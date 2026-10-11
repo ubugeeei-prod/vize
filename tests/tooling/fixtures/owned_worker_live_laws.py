@@ -37,6 +37,42 @@ def disable_core():
     resource.setrlimit(resource.RLIMIT_CORE, (0, hard))
 
 
+def cleanup_case(child, debugger, reader, packets, worker, leader, profile, root, stage, controls, receipt):
+    close_gdb(debugger, reader, receipt)
+    drain_packets(packets, debugger, worker, leader, profile, root, stage, receipt)
+    reaped = [packet for packet in receipt.get("gdbPackets", []) if packet["status"] == "debugger-cleanup"]
+    safe_release = debugger is None or (len(reaped) == 1 and reaped[0].get("debuggerReaped") is True)
+    if worker:
+        worker.close()
+        receipt["workerCleanup"] = list(worker.events)
+        try:
+            worker.check()
+            receipt["cleanupWorkerBirthVerified"] = True
+            receipt["cleanupTracerPid"] = worker.tracer()
+            if receipt["cleanupTracerPid"] != 0:
+                receipt["liveCleanupGap"] = "WorkerStillTraced"
+                safe_release = False
+            if "owned-worker-continued" not in worker.events: safe_release = False
+        except ProcessLookupError:
+            receipt["liveCleanupGap"] = "ESRCH-observation-gap"
+            safe_release = False
+        except (OSError, ValueError) as error:
+            receipt["liveCleanupGap"] = "WorkerCleanup" + type(error).__name__
+            safe_release = False
+    if child.poll() is None:
+        # Release only the authored fixture input, after debugger cleanup and
+        # verified pidfd resume; no descendant PID signalling or tree kill.
+        if safe_release: (controls / "release").write_text("normal")
+        else: receipt["liveCleanupGap"] = receipt.get("liveCleanupGap", "DebuggerReapingUnproved")
+        try:
+            receipt["cleanupOriginalReturnCode"] = child.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            receipt["liveCleanupGap"] = "ToyRunnerDidNotDrain"
+            child.kill()  # Only our own still-unreaped authored runner.
+            try: receipt["cleanupOriginalReturnCode"] = child.wait(timeout=5)
+            except subprocess.TimeoutExpired: receipt["liveCleanupGap"] = "ToyRunnerUnreaped"
+
+
 def run_case(root, stage, directory, mode):
     controls = directory / "control"
     controls.mkdir()
@@ -119,10 +155,11 @@ watcher.close();const mode=readFileSync(directory+'/release','utf8');if(mode==='
             raise ValueError("Genuine worker SIGINT was not distinguished from GDB during cancellation")
         receipt["originalReturnCode"] = status
         receipt["debuggerActuallyReaped"] = True
+    except Exception as error:
+        receipt["liveControlGap"] = type(error).__name__
+        raise
     finally:
-        close_gdb(debugger, reader, receipt)
-        if worker: worker.close()
-        if child.poll() is None: child.kill(); child.wait()
+        cleanup_case(child, debugger, reader, packets, worker, locals().get("leader"), profile, root, stage, controls, receipt)
         write_json(stage / "public/live-control.json", receipt)
         for public in (stage / "public").glob("*.json"):
             shutil.copyfile(public, output / "public" / ("live-" + mode + "-" + public.name))

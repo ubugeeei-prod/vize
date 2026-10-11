@@ -25,29 +25,33 @@ void test("worker ptrace is explicit manual-only and every original gate stays u
   for (const event of ["pull_request", "merge_group", "push", "schedule"])
     assert.equal(admitted(event, "owned-worker-fault"), false);
   assert.equal(workflow.on.workflow_dispatch.inputs.component.default, "all");
-  assert.equal(job["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
-  assert.equal(job["timeout-minutes"], 35);
-  assert.deepEqual(job.env, {
+  assert.equal(job.uses, "./.github/workflows/owned-worker-fault.yml");
+  const diagnostic = parse(read(".github/workflows/owned-worker-fault.yml"));
+  assert.deepEqual(Object.keys(diagnostic.on), ["workflow_call"]);
+  assert.deepEqual(diagnostic.env, workflow.env);
+  assert.equal(diagnostic.on.workflow_call.inputs["controls-only"].type, "boolean");
+  assert.equal(diagnostic.on.workflow_call.inputs["controls-only"].default, false);
+  const execution = diagnostic.jobs["owned-worker-fault"];
+  assert.equal(execution["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+  assert.equal(execution["timeout-minutes"], 35);
+  assert.deepEqual(execution.env, {
     NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169",
     CARGO_BUILD_JOBS: "12",
   });
-  const action = parse(read(".github/actions/benchmark-owned-worker-fault/action.yml"));
-  const steps = action.runs.steps;
+  const steps = execution.steps;
   const commands = steps.map((step) => step.run ?? "").join("\n");
   assert.equal((commands.match(/-- vp run --workspace-root test:js/g) ?? []).length, 1);
   assert.doesNotMatch(
     commands,
     /retry|test-name-pattern|continue-on-error|DISABLE_TSGO|core_pattern|sysctl/,
   );
-  assert.equal(steps[1].with.ref, "${{ steps.custody.outputs.source-sha }}");
-  assert.equal(steps[3].uses, "./.github/actions/setup-js-package-tests");
-  assert.equal(steps[4].if, "${{ inputs.controls-only == 'true' }}");
-  assert.match(steps[4].run, /owned_worker_capture\.py" controls$/);
-  assert.equal(steps[5].if, "${{ inputs.controls-only != 'true' }}");
-  assert.equal(
-    job.steps[1].with["controls-only"],
-    "${{ inputs.component == 'owned-worker-controls' }}",
-  );
+  assert.equal(steps[0].with.ref, "${{ github.sha }}");
+  assert.equal(steps[2].with.ref, "${{ steps.custody.outputs.source-sha }}");
+  assert.equal(steps[4].uses, "./.github/actions/setup-js-package-tests");
+  assert.equal(steps[5].if, "${{ inputs.controls-only }}");
+  assert.match(steps[5].run, /owned_worker_capture\.py" controls$/);
+  assert.equal(steps[6].if, "${{ !inputs.controls-only }}");
+  assert.equal(job.with["controls-only"], "${{ inputs.component == 'owned-worker-controls' }}");
   assert.equal(steps.at(-1).if, "${{ always() }}");
   assert.equal(steps.at(-1).with["if-no-files-found"], "error");
   assert.match(steps.at(-1).with.path, /\/public\/\*\.json/);

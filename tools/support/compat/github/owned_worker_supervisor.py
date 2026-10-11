@@ -1,9 +1,11 @@
 """Root supervisor owns only its debugger child and the verified worker pidfd."""
 import ctypes
+import hashlib
 import json
 import os
 from pathlib import Path
 import queue
+import re
 import signal
 import subprocess
 import sys
@@ -12,7 +14,7 @@ import threading
 import time
 
 from owned_worker_capture import Worker
-from owned_worker_identity import HASH_METRICS, same_birth, select, state
+from owned_worker_identity import HASH_METRICS, file_identity, same_birth, select, state
 
 
 def parent_death():
@@ -38,6 +40,34 @@ def input_reader(stream, packets):
         packets.put(body.strip())
 
 
+def debugger_errors(stream, directory, receipt):
+    digest, count, frames, errors = hashlib.sha256(), 0, [], []
+    allowed = {name: file_identity(directory / name)["sha256"] for name in
+               ["owned_worker_gdb.py", "owned_worker_identity.py", "owned_worker_capture.py", "owned_worker_supervisor.py"]}
+    kinds = {"NameError", "ModuleNotFoundError", "ImportError", "ValueError", "RuntimeError",
+             "AttributeError", "TypeError", "OSError", "PermissionError", "ProcessLookupError", "SyntaxError", "gdb.error"}
+    while True:
+        line = stream.readline(131073)
+        if not line: break
+        digest.update(line); count += len(line)
+        text = line.decode("utf8", errors="replace")
+        frame = re.fullmatch(r'\s*File "([^"\n]+)", line ([0-9]{1,6})(?:, in [^\n]*)?\n?', text)
+        if frame and len(frames) < 16:
+            path = Path(frame[1])
+            if path.parent == directory and path.name in allowed:
+                frames.append({"helper": path.name, "line": int(frame[2]), "sha256": allowed[path.name]})
+        kind = text.split(":", 1)[0]
+        if kind in kinds and len(errors) < 16: errors.append(kind)
+    receipt["debuggerStderr"] = {"bytes": count, "sha256": digest.hexdigest(),
+                                 "recognizedHelperFrames": frames, "recognizedErrorTypes": errors,
+                                 "selection": "closed helper identity/type projection; other text excluded"}
+
+
+def debugger_error_reader(stream, directory, receipt):
+    try: debugger_errors(stream, directory, receipt)
+    except Exception as error: receipt["gap"] = "DebuggerErrorReader" + type(error).__name__
+
+
 def reap_debugger(child, receipt):
     if child.poll() is None:
         for method in [lambda: child.send_signal(signal.SIGINT), child.terminate, child.kill]:
@@ -52,7 +82,7 @@ def reap_debugger(child, receipt):
 
 
 def supervise(config, directory):
-    child, worker = None, None
+    child, worker, error_reader = None, None, None
     receipt = {"status": "debugger-cleanup", "debuggerReaped": False,
                "workerResumed": False, "numericAttachAtomic": False}
     cancelled = threading.Event()
@@ -79,10 +109,13 @@ def supervise(config, directory):
         packets = queue.Queue(maxsize=16)
         if cancelled.is_set():
             raise InterruptedError("Supervisor parent vanished")
+        publish({"status": "debugger-phase", "phase": "supervisor-qualified"})
         child = subprocess.Popen(["gdb", "--batch", "-nx", "--nh", "-iex", "set auto-load off",
                                   "-iex", "set debuginfod enabled off", "-x", str(directory / "owned_worker_gdb.py")],
-                                 stdin=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                                 stdin=subprocess.PIPE, stderr=subprocess.PIPE,
                                  preexec_fn=parent_death)
+        error_reader = threading.Thread(target=debugger_error_reader, args=(child.stderr, directory, receipt), daemon=True)
+        error_reader.start()
         threading.Thread(target=input_reader, args=(sys.stdin, packets), daemon=True).start()
         deadline = time.monotonic() + 90
         while child.poll() is None and not cancelled.is_set() and time.monotonic() < deadline:
@@ -103,6 +136,9 @@ def supervise(config, directory):
                 reap_debugger(child, receipt)
             except Exception as error:
                 receipt["gap"] = "Reap" + type(error).__name__
+        if error_reader is not None:
+            error_reader.join(timeout=2)
+            if error_reader.is_alive(): receipt["gap"] = "DebuggerErrorReaderUnavailable"
         if worker is not None:
             worker.close()
             receipt["workerCleanup"] = worker.events
