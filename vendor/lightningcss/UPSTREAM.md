@@ -41,6 +41,10 @@ The following changes are deliberately separate from that import:
 - An explicit vendor-policy compatibility commit applies the existing Oxc
   third-party Clippy policy to this implementation. `deny(missing_docs)` remains
   intact; all first-party check commands remain unchanged.
+- The optional CLI dependency moves from Clap3 to Clap4 (`^4.5`, locked4.6.6)
+  to retire the old atty/proc-macro-error advisory paths. Entire original CLI
+  source and tests are retained; all-features debug/release execution is required,
+  including any diagnostic wording differences observed during qualification.
 
 Repository `Cargo.toml.orig` remains the original archive manifest. Its byte-exact
 copy `UPSTREAM-Cargo.toml` ships in the package because Cargo reserves and

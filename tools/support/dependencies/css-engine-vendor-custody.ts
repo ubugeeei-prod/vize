@@ -17,7 +17,7 @@ const modified: Record<string, string | null> = {
   "lightningcss/src/selector.rs":
     "ffd28f41d263e9590c7b63633ed474a607449cdc967f25945be79c16ff5e1ecf",
   "parcel_sourcemap/Cargo.toml": null,
-  "parcel_sourcemap/src/lib.rs": "d45599347d6c9f2861060430df6964e6a218bc71bfc440d2e55b967356dcb136",
+  "parcel_sourcemap/src/lib.rs": "64dfcee3713a976f2f504b3ddc8ac1d5152698b07f5b69098c74f30677a065a6",
   "parcel_sourcemap/src/sourcemap_error.rs":
     "b94de0fedbcc198e370d018c49fad57103e33b1788316c2457e1f7f2eb2cfbb0",
 };

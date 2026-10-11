@@ -100,10 +100,17 @@ contract remains unchanged. Current Clippy still has to execute on Actions.
 
 Actual initial Clippy fails on 36 pre-existing Parcel source diagnostics under
 Rust1.99/Vize's configuration: root disallowed std String/format interfaces and
-eight legacy style categories. Rewriting those public types or algorithms would
+eight legacy spelling categories. Rewriting those public types or algorithms would
 expand the bounded migration. A proposed, separately reviewed compatibility
 follow-up retains the original deny-all and names only those actual diagnostics;
 it is not an excuse to suppress first-party checks or change mapping algorithms.
+
+The exact diagnostic census is disallowed_types22, needless_return4,
+unnecessary_cast2, unnecessary_map_or2 and one each of the other six named
+categories. `suspicious_to_owned` concerns the existing temporary Cow spelling;
+its content is copied through `add_vlq_map`/`set_source_content` into owned strings.
+The full original from_json algorithm remains unchanged; this is not a blanket
+claim that suspicious diagnostics lack value elsewhere.
 
 The initial strict audit also exposes original optional CLI's atty0.2.14
 (RUSTSEC-2024-0375/2021-0145) and proc-macro-error1.0.4
@@ -114,6 +121,16 @@ feature and original tests and pass their actual debug/release qualification.
 No new advisory waiver is proposed. Initial JS/actionlint and dependency-direction
 jobs additionally failed external download timeouts; their raw red evidence is
 retained and new-source qualification remains required.
+
+Root approved preparation of the separate finite named lint/optional CLI
+compatibility change. The manifest retains `^4.5`; actual locked provider is
+Clap4.6.6, the same existing workspace provider. Resolving the change adds zero
+packages and removes twelve obsolete Clap3/atty/proc-macro-error route packages.
+All original CLI source and its 27 tests remain byte-exact; both profiles now
+enable all features. Source review identifies a likely Clap4 conflict-message
+wording difference at `browserslist_targets_exclusive`; no original assertion is
+silently rewritten or normalized. Actual failures must retain their complete
+before packet and receive a narrowly reviewed compatibility solution.
 
 ## Packaging, licenses and public API impact
 
@@ -174,6 +191,23 @@ uses the existing release SemVer toolchain Rust1.95, records its compiler/tool
 separately from the Rust1.99 downstream execution, and preserves any actual
 comparison nonzero exit. Initial artifact11718281627 and all three full
 consumer/lock/output packets remain retained; complete nine-plane proof is new.
+
+Exact successor18734 run38183205109 is terminal success on actual checkout
+`fe76cc36ec1b619dc52eae45cc5c74475fd2ac12`, which contains the source commit
+`18734dbe34c4c2542c13ea8bc3f4447e219ed119`. Independent authentication matches
+all 82 retained files and nineteen relevant Git blobs. Both Rust1.99 profiles
+execute all 65,536 RGB/alpha comparisons with exact counts, seven original/four
+authored Parcel laws and four actual child refusals, plus two complete Lightning
+map laws. Sole rkyv0.8.18 has std/bytecheck enabled. CLI/all-features qualification
+was not part of this run and remains separate.
+
+All nine whole downstream packets qualify: six baseline/fork executions exit0;
+candidate/original-engine reports new/raw two E0308, typed visitors one E0308 and
+two E0631, and external trait one E0053, each exit101. Actual unwaived Rust1.95
+and cargo-semver-checks0.47.0 report exit0 with222 passes/30 skips. That analyzer
+result cannot override the three genuine nominal incompatibilities, and its
+skipped analyses grant no coverage. Published/API compatibility and complete
+normal/protected consumer delivery remain unproven; the PR stays Draft.
 
 ## Preserved authorities and qualification
 

@@ -58,7 +58,7 @@ jobs:
           git rev-parse HEAD > "$RUNNER_TEMP/css-engine-evidence/source.txt"
           sha256sum Cargo.lock Cargo.toml vendor/lightningcss/Cargo.toml vendor/parcel_sourcemap/Cargo.toml > "$RUNNER_TEMP/css-engine-evidence/manifests.sha256"
       - name: Direct original engine inputs and full upstream library regressions
-        run: cargo test --locked -p vize_lightningcss --features bundler,sourcemap --profile ${{ matrix.profile }} --lib --tests -- --nocapture 2>&1 | tee "$RUNNER_TEMP/css-engine-evidence/engine.log"
+        run: cargo test --locked -p vize_lightningcss --all-features --profile ${{ matrix.profile }} --lib --tests -- --nocapture 2>&1 | tee "$RUNNER_TEMP/css-engine-evidence/engine.log"
       - name: Original and authored source-map archive contracts
         if: ${{ !cancelled() && steps.custody.outcome == 'success' }}
         run: cargo test --locked -p vize_parcel_sourcemap --features json --profile ${{ matrix.profile }} -- --nocapture 2>&1 | tee "$RUNNER_TEMP/css-engine-evidence/maps.log"

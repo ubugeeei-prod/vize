@@ -37,6 +37,11 @@ Archive bytes are an intentional rkyv format migration; no claim of compatibilit
 with old rkyv 0.7 buffers is made, and no unsafe old decoder is executed by the new
 malformed-input tests.
 
+A separate vendor compatibility change retains `deny(clippy::all)` and permits
+only the ten named diagnostics actually observed on its unchanged legacy spellings
+and public std String/format interfaces with Vize's configuration/Rust1.99.
+Other upstream diagnostics and all first-party lint/check policy remain intact.
+
 The package is `vize_parcel_sourcemap`, with library name `parcel_sourcemap` and
 the synchronized Vize workspace version. Consumers use a direct path with an
 exact registry fallback, rather than a root-only Cargo patch. This candidate is

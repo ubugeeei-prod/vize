@@ -1,4 +1,19 @@
 #![deny(clippy::all)]
+// Retain the imported public std types and algorithms. These exact legacy source
+// diagnostics are incompatible with Vize's config/current Clippy; first-party
+// policy and every other upstream deny remain unchanged.
+#![allow(
+    clippy::disallowed_macros,
+    clippy::disallowed_types,
+    clippy::manual_repeat_n,
+    clippy::needless_return,
+    clippy::single_match,
+    clippy::suspicious_to_owned,
+    clippy::unnecessary_cast,
+    clippy::unnecessary_map_or,
+    clippy::unnecessary_sort_by,
+    clippy::unused_enumerate_index
+)]
 
 pub mod mapping;
 pub mod mapping_line;
