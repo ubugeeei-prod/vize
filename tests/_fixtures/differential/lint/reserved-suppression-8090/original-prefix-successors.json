@@ -1,0 +1,115 @@
+{
+  "schema": "vize.lint.original-prefix-suppression-successors",
+  "version": 1,
+  "originalCorpus": {
+    "path": "tests/_fixtures/differential/lint/reserved-prefix-8090/originals.json",
+    "sha256": "65d7e2cbbdc5552f1d28338163d88506716fc8ebd6a2a88a0c5eab5670283144"
+  },
+  "cases": [
+    {
+      "id": "original-element-examples-components-theme-configurator-editor-color-picker-src-main",
+      "sourceSha256": "372f095ae77b2e425cc1835ef252b1ec9f96836e69d8d37ac03d2efec8175e08",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-button-src-button",
+      "sourceSha256": "2d1955586f9a61bcfe1feb2c5f6736a496c3466fbd7c2327491dfce9995a19b7",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-checkbox-src-checkbox-button",
+      "sourceSha256": "44b73d020e410c8628b1dfd20d66356923fdbc2206ff5a200a84a1f2ba14a90a",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-checkbox-src-checkbox-group",
+      "sourceSha256": "2d7534e22623e52238e0b992b7c187f66da80f6f65ecd5809371c2c2c4ac4acf",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-checkbox-src-checkbox",
+      "sourceSha256": "69e631d30dd287b36883900b77b0ff2cea2952c70506a8da4397681e208b502a",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-color-picker-src-main",
+      "sourceSha256": "f85b661a41d8e7d4ccc9d4605cec595ae89ab2e0eaeb2acf4b3fc9386331694a",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-date-picker-src-picker",
+      "sourceSha256": "8218a95ed6ded8efcbc052978e3aef792843684b4de10495af49a97e49dbdf7a",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-form-src-form-item",
+      "sourceSha256": "f0d54700fc15f05a391403a5d1ac739c785b1913dcc232f65ade6b6108b3654d",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-input-number-src-input-number",
+      "sourceSha256": "c9586e0a57b2960c19cfde6c4872fea8fb3eb59998f96494b0e18748501522fb",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-input-src-input",
+      "sourceSha256": "a8bd891ea1cb3319087b86610d10c630452353c0518048fef15a223e99019676",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-radio-src-radio-button",
+      "sourceSha256": "5817498ceeea3606a95299901cf29d2a1713b8340fb1ebe9d81221b47249af40",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-radio-src-radio-group",
+      "sourceSha256": "32f849881b72089443a19948913b61dd431eb816b908285a073d65290f2adb24",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-radio-src-radio",
+      "sourceSha256": "b040e9366a7a4f9fb2a69715e2a73e0a6f195bb91a6d0cfd379916daf91d3bc4",
+      "diagnostics": []
+    },
+    {
+      "id": "original-element-packages-select-src-select",
+      "sourceSha256": "ef4ea92e16c16d241c94504bca96a410e13e4900d405b811c6fb139345015f94",
+      "diagnostics": []
+    },
+    {
+      "id": "original-vue-uploader-src-components-file",
+      "sourceSha256": "88ffa33bb18b5c2efd1dc2d640d39e69784a92669386fc2e8a061339c7b39683",
+      "diagnostics": []
+    },
+    {
+      "id": "original-vue-element-admin-src-views-components-demo-count-to",
+      "sourceSha256": "019fa97282c2bbc654c7bdc16651f4510d8f56eebb75c0b7ff36da9f15844438",
+      "diagnostics": []
+    },
+    {
+      "id": "original-habitica-website-client-src-components-chat-chatmessages",
+      "sourceSha256": "ea7073e2dd2964187b97850a923788e990c37c9daf489fcd0ca290d0ebecf0d0",
+      "diagnostics": []
+    },
+    {
+      "id": "original-habitica-website-client-src-components-chat-emojiautocomplete",
+      "sourceSha256": "08d5559ebff4e3d2f8a0d9612ce829e36d6a4fc9f6b592a70a5c561c09d51754",
+      "diagnostics": []
+    },
+    {
+      "id": "original-habitica-website-client-src-components-ui-custommenudropdown",
+      "sourceSha256": "dfff3e351a99deccb3e817361bc31e57fb8317220a037c85b4830c34b01c61a6",
+      "diagnostics": []
+    },
+    {
+      "id": "original-bootstrap-vue-docs-pages-play",
+      "sourceSha256": "9297e6f5dd8e25dda9df68de21967150cd60727a97ea992a7b0ce835de29e469",
+      "diagnostics": []
+    },
+    {
+      "id": "original-vue-select-src-components-select",
+      "sourceSha256": "12f3b27bb0d85e07ab538f2813e7f3ddaaf8708ed4167b95c50a366f4cfd9b68",
+      "diagnostics": []
+    }
+  ]
+}

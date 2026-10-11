@@ -147,6 +147,10 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
         }
     }
 
+    let successors: Value = serde_json::from_str(include_str!(
+        "../../../tests/_fixtures/differential/lint/reserved-suppression-8090/original-prefix-successors.json"
+    )).unwrap();
+    assert_eq!(successors["cases"].as_array().unwrap().len(), 21);
     let original_cases = originals["cases"].as_array().unwrap();
     assert_eq!(original_cases.len(), 21);
     assert_eq!(
@@ -156,10 +160,13 @@ fn reserved_names_obey_exact_membership_and_group_policy_with_complete_packets()
             .sum::<usize>(),
         1
     );
-    for case in original_cases {
+    for (index, case) in original_cases.iter().enumerate() {
         let filename = case["filename"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
-        let diagnostics = case["diagnostics"].as_array().unwrap();
+        let successor = &successors["cases"][index];
+        assert_eq!(successor["id"], case["id"]);
+        assert_eq!(successor["sourceSha256"], case["sourceSha256"]);
+        let diagnostics = successor["diagnostics"].as_array().unwrap();
         let result = Linter::with_preset(LintPreset::Incremental)
             .with_enabled_rules(Some(vec![rule.into()]))
             .with_help_level(HelpLevel::Full)

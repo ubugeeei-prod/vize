@@ -2553,7 +2553,7 @@ script/no-reserved-keys · lint 规则
 禁止将 Vue 保留名称用作选项式 API 的 props/data/computed/methods/setup 键
 
 精度层级: exact
-适用范围: props/data/computed/methods/setup members of resolved Options API objects; asyncData, script-setup defineProps and ESLint suppression comments are outside
+适用范围: props/data/computed/methods/setup members of resolved Options API objects with block-scoped script/no-reserved-keys or registered vue/no-reserved-keys suppression; asyncData and script-setup defineProps are outside
 严重级别: 错误
 类别: script
 自动修复: 不支持

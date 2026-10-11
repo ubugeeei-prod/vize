@@ -48,7 +48,7 @@ const BOOLEAN_CONDITIONS: Domain = Domain::new(
 const TYPES: Domain =
     Domain::new("types the Corsa session resolves for the component; unresolved types are outside");
 const RESERVED_OPTIONS: Domain = Domain::new(
-    "props/data/computed/methods/setup members of resolved Options API objects; asyncData, script-setup defineProps and ESLint suppression comments are outside",
+    "props/data/computed/methods/setup members of resolved Options API objects with block-scoped script/no-reserved-keys or registered vue/no-reserved-keys suppression; asyncData and script-setup defineProps are outside",
 );
 
 /// Every Patina rule, sorted by name.

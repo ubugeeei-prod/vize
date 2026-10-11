@@ -1,0 +1,4 @@
+<script lang="ts">
+const marker = "// eslint-disable vue/no-reserved-keys"
+export default { data() { return { _private: 0 } } }
+</script>

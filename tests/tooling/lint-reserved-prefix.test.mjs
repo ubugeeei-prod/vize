@@ -13,6 +13,13 @@ await test("exact reserved membership and groups preserve complete CLI packets",
   const fixture = path.join(root, "tests/_fixtures/differential/lint/reserved-prefix-8090");
   const corpus = JSON.parse(fs.readFileSync(path.join(fixture, "cases.json"), "utf8"));
   const originals = JSON.parse(fs.readFileSync(path.join(fixture, "originals.json"), "utf8"));
+  const successorPath = "../reserved-suppression-8090/original-prefix-successors.json";
+  const successors = JSON.parse(fs.readFileSync(path.join(fixture, successorPath), "utf8"));
+  assert.equal(successors.cases.length, 21);
+  for (const [index, entry] of originals.cases.entries()) {
+    assert.equal(successors.cases[index].id, entry.id);
+    assert.equal(successors.cases[index].sourceSha256, entry.sourceSha256);
+  }
   const companions = JSON.parse(
     fs.readFileSync(path.join(fixture, "default-route-companions.json"), "utf8"),
   );
@@ -59,6 +66,7 @@ await test("exact reserved membership and groups preserve complete CLI packets",
     "api-order-main-source-refusal.log.gz",
     "cases.json",
     "originals.json",
+    successorPath,
     "original-sources.json",
     "bare-parent-successors.json",
     "default-route-companions.json",
@@ -132,10 +140,10 @@ await test("exact reserved membership and groups preserve complete CLI packets",
       },
     ]);
     scenarios.push(
-      ...originals.cases.map((entry) => ({
+      ...originals.cases.map((entry, index) => ({
         entry,
         preset: null,
-        findings: entry.diagnostics,
+        findings: successors.cases[index].diagnostics,
         config:
           JSON.stringify({ linter: { preset: "incremental", rules: { [corpus.rule]: "error" } } }) +
           "\n",

@@ -1,0 +1,1 @@
+<script setup>/* eslint-disable vue/no-reserved-keys */ const marker = 1</script><script>export default { data() { return { _private: 0 } } }</script>

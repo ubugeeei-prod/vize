@@ -1,0 +1,1533 @@
+{
+  "schema": "vize.lint.reserved-suppression-public-before",
+  "version": 1,
+  "baseline": {
+    "tag": "v0.443.0",
+    "sourceCommit": "15e116fa258c7aaba5c6fdd2456442535605abe8",
+    "binarySha256": "9ad7cf956351265a152a9bbfa08b8c50c85dadacef66529474bbb6170267e254",
+    "archiveSha256": "6378e10d0fa0568a0c1798b48d99b18a01f3e842f8c765fb11b80b638f39a73e",
+    "publicReleaseRun": 38081199501,
+    "referencePacket": "original-public-before.json"
+  },
+  "config": "{\"linter\":{\"preset\":\"incremental\",\"rules\":{\"script/no-reserved-keys\":\"error\"}}}\n",
+  "custody": [
+    {
+      "path": "cases.json",
+      "sha256": "00c17f8aa15a815efea86378d54881af531a3c894fa64f588f32c2d8a4cd0f0a"
+    },
+    {
+      "path": "observe-public-before.mjs",
+      "sha256": "d50e9a75595d96ac9917494c3b61d3a71d693731bc745df0a83de5166adc735e"
+    }
+  ],
+  "runs": [
+    {
+      "id": "no-directive",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control1.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "0c5946a41c6e50aef49e560680475e187e1f2449763d46ec1340a9e1a0d9b1d1"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control1.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 2,\n        \"column\": 36,\n        \"endLine\": 2,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control1.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 2,
+              "column": 36,
+              "endLine": 2,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control1.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 2,
+              "column": 36,
+              "endLine": 2,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "alias-next-line",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control2.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line vue/no-reserved-keys\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "cfcca874602703fb60d0a50ba8847680cae78e10e63d9779d7c746c5e4d84646"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control2.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 3,\n        \"column\": 36,\n        \"endLine\": 3,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control2.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control2.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "canonical-next-line",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control3.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line script/no-reserved-keys\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "d2e7f7b8faa17922cbb8b1cb29a239a75b94a39c7b8eaece0cf879e9357414d5"
+      },
+      "status": 0,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control3.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control3.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0,
+      "actual": [
+        {
+          "file": "Control3.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "plugin-canonical",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control4.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line vize/script/no-reserved-keys\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "57c8e90a52bf2707b2e1f78679e4dd9baedcc556df6cbf7dace138188c50d1a7"
+      },
+      "status": 0,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control4.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control4.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0,
+      "actual": [
+        {
+          "file": "Control4.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "plugin-alias",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control5.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line vize/vue/no-reserved-keys\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "93db310ab70f369970b5eddb8f86b4c3e800fb98e0258b65403215919a96c59f"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control5.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 3,\n        \"column\": 36,\n        \"endLine\": 3,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control5.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control5.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "foreign-rule",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control6.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line vue/no-reserved-props\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "ed65de392a046e68ed7593fa69ea19537cb51a764782ac5735a30b1b7a563906"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control6.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 3,\n        \"column\": 36,\n        \"endLine\": 3,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control6.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control6.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "foreign-plugin",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control7.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line foreign/no-reserved-keys\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "faf34810f64950fd045bc1d94e3d09d6430fc8c0fabf3a8d13f71474b4bb4dd0"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control7.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 3,\n        \"column\": 36,\n        \"endLine\": 3,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control7.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control7.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "case-sensitive-id",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control8.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line vue/No-Reserved-Keys\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "e534dbfa4c498574f2e20f0e9cc381b298306b6f0ea6a01232be07a1fe555b4b"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control8.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 3,\n        \"column\": 36,\n        \"endLine\": 3,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control8.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control8.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "string-marker",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control9.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\nconst marker = \"// eslint-disable vue/no-reserved-keys\"\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "72c6c3a1c8ee95884eda5d7ce97611a4842dc7a6e3e43862a0fe6ffe8117db04"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control9.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 3,\n        \"column\": 36,\n        \"endLine\": 3,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control9.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control9.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "template-marker",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control10.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\nconst marker = `// eslint-disable vue/no-reserved-keys`\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "fcf4911b4535ab25ee8d4b28878c5f4d94db5a5d6951c69a42a6c8df7c7688bd"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control10.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 3,\n        \"column\": 36,\n        \"endLine\": 3,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control10.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control10.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "block-next-line",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control11.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n/* eslint-disable-next-line vue/no-reserved-keys */\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "e58578cf653c3dee423863bc1c3b69236c0d47407909e22881f63ef0550b4547"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control11.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 3,\n        \"column\": 36,\n        \"endLine\": 3,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control11.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control11.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "same-line",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control12.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\nexport default { data() { return { _private: 0 } } } // eslint-disable-line vue/no-reserved-keys\n</script>\n",
+        "sha256": "0f694c53ab80d01f0b42085f1069487ac8906381ffe7639cca525c9a90e8756e"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control12.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 2,\n        \"column\": 36,\n        \"endLine\": 2,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control12.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 2,
+              "column": 36,
+              "endLine": 2,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control12.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 2,
+              "column": 36,
+              "endLine": 2,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "adjacent-next-line",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control13.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line vue/no-reserved-keys\nconst marker = 1\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "6bbcbb781f5374e02ac33535c8e4cec001da7dc852f162fde8014a0adadcfec0"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control13.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 4,\n        \"column\": 36,\n        \"endLine\": 4,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control13.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 4,
+              "column": 36,
+              "endLine": 4,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control13.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 4,
+              "column": 36,
+              "endLine": 4,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "region-enable",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control14.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n/* eslint-disable vue/no-reserved-keys */\nexport default { data() { return {\n_hidden: 0,\n/* eslint-enable vue/no-reserved-keys */\n_shown: 1\n} } }\n</script>\n",
+        "sha256": "196cfeb10a3a3b8627dde4fc99da37ac42fe7c7aacf7a339f4e9f9a6197e1f3a"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control14.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_hidden'\",\n        \"line\": 4,\n        \"column\": 1,\n        \"endLine\": 4,\n        \"endColumn\": 8,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      },\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_shown'\",\n        \"line\": 6,\n        \"column\": 1,\n        \"endLine\": 6,\n        \"endColumn\": 7,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 2,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control14.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_hidden'",
+              "line": 4,
+              "column": 1,
+              "endLine": 4,
+              "endColumn": 8,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            },
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_shown'",
+              "line": 6,
+              "column": 1,
+              "endLine": 6,
+              "endColumn": 7,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 2,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control14.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_hidden'",
+              "line": 4,
+              "column": 1,
+              "endLine": 4,
+              "endColumn": 8,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            },
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_shown'",
+              "line": 6,
+              "column": 1,
+              "endLine": 6,
+              "endColumn": 7,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 2,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "mixed-list-reason",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control15.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line vue/no-reserved-props, vue/no-reserved-keys -- own public instance\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "107ad0dfb8134b751f387fab436a38495ca3811826bacdc82d384f4b9a7adbf1"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control15.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 3,\n        \"column\": 36,\n        \"endLine\": 3,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control15.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control15.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "unrestricted-disable",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control16.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "a2bcc604cd0f031dca9e6884766cf8b671340e334519ab9f9bde66c9249ae06a"
+      },
+      "status": 0,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control16.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control16.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0,
+      "actual": [
+        {
+          "file": "Control16.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "oxlint-alias",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control17.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// oxlint-disable-next-line vue/no-reserved-keys\nexport default { data() { return { _private: 0 } } }\n</script>\n",
+        "sha256": "1ab193d46a03b9d10060a4691f0a350e65e4f3336856bd13e2ae823c13c008d6"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control17.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 3,\n        \"column\": 36,\n        \"endLine\": 3,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control17.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control17.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 3,
+              "column": 36,
+              "endLine": 3,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "setup-block-cannot-leak",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control18.vue"
+      ],
+      "input": {
+        "text": "<script setup>/* eslint-disable vue/no-reserved-keys */ const marker = 1</script><script>export default { data() { return { _private: 0 } } }</script>\n",
+        "sha256": "b7dec103fc004c294345df1b7baff646bb2b2ec6b0617dd2a88cc5b078ce71ea"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control18.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 1,\n        \"column\": 125,\n        \"endLine\": 1,\n        \"endColumn\": 133,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control18.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 1,
+              "column": 125,
+              "endLine": 1,
+              "endColumn": 133,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control18.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 1,
+              "column": 125,
+              "endLine": 1,
+              "endColumn": 133,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "normal-block-contained",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control19.vue"
+      ],
+      "input": {
+        "text": "<script>/* eslint-disable vue/no-reserved-keys */ export default { data() { return { _private: 0 } } }</script><script setup>const marker = 1</script>\n",
+        "sha256": "89a44578dd638d82283c5f452820712142f59aebf8fcdec072c04ed8ac62ae2a"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control19.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 1,\n        \"column\": 86,\n        \"endLine\": 1,\n        \"endColumn\": 94,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control19.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 1,
+              "column": 86,
+              "endLine": 1,
+              "endColumn": 94,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control19.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 1,
+              "column": 86,
+              "endLine": 1,
+              "endColumn": 94,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "style-block-cannot-leak",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control20.vue"
+      ],
+      "input": {
+        "text": "<style>/* eslint-disable vue/no-reserved-keys */</style><script>export default { data() { return { _private: 0 } } }</script>\n",
+        "sha256": "c257ebb4c1c1c0dcf466228e1885dbf7b1383358f8adb0f65393f2b97a608d80"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control20.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 1,\n        \"column\": 100,\n        \"endLine\": 1,\n        \"endColumn\": 108,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control20.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 1,
+              "column": 100,
+              "endLine": 1,
+              "endColumn": 108,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control20.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 1,
+              "column": 100,
+              "endLine": 1,
+              "endColumn": 108,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "unicode-crlf",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control21.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\r\nconst café = \"😀\";\r\n// eslint-disable-next-line vue/no-reserved-keys\r\nexport default { data() { return { _private: 0 } } }\r\n</script>\r\n",
+        "sha256": "90998f6f04004212f1fdfbe32c489aadf56145f08434765a79b4e8577e7d64b8"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control21.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_private'\",\n        \"line\": 4,\n        \"column\": 36,\n        \"endLine\": 4,\n        \"endColumn\": 44,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control21.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 4,
+              "column": 36,
+              "endLine": 4,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control21.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_private'",
+              "line": 4,
+              "column": 36,
+              "endLine": 4,
+              "endColumn": 44,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "method-public-instance",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control22.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n// eslint-disable-next-line vue/no-reserved-keys\nexport default { methods: { $emit() {} } }\n</script>\n",
+        "sha256": "7eece5d05200746083fcb6243d8b0925a4bc53bfdececef6d1f516e0b9c76618"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control22.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '$emit'\",\n        \"line\": 3,\n        \"column\": 29,\n        \"endLine\": 3,\n        \"endColumn\": 34,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 1,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control22.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '$emit'",
+              "line": 3,
+              "column": 29,
+              "endLine": 3,
+              "endColumn": 34,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control22.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '$emit'",
+              "line": 3,
+              "column": 29,
+              "endLine": 3,
+              "endColumn": 34,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 1,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "alias-disable-canonical-enable",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control23.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n/* eslint-disable vue/no-reserved-keys */\nexport default { data() { return {\n_hidden: 0,\n/* eslint-enable script/no-reserved-keys */\n_shown: 1\n} } }\n</script>\n",
+        "sha256": "af8960903d697fb76e420bcb8e52787fe5ed59eed4ae953cda3e049f4fd12e27"
+      },
+      "status": 1,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control23.vue\",\n    \"messages\": [\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_hidden'\",\n        \"line\": 4,\n        \"column\": 1,\n        \"endLine\": 4,\n        \"endColumn\": 8,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      },\n      {\n        \"ruleId\": \"script/no-reserved-keys\",\n        \"ruleDocsPath\": \"docs/content/rules/type-and-script.md\",\n        \"severity\": 2,\n        \"message\": \"[vize:script/no-reserved-keys] Reserved key '_shown'\",\n        \"line\": 6,\n        \"column\": 1,\n        \"endLine\": 6,\n        \"endColumn\": 7,\n        \"help\": \"Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal.\"\n      }\n    ],\n    \"errorCount\": 2,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control23.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_hidden'",
+              "line": 4,
+              "column": 1,
+              "endLine": 4,
+              "endColumn": 8,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            },
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_shown'",
+              "line": 6,
+              "column": 1,
+              "endLine": 6,
+              "endColumn": 7,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 2,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 1,
+      "actual": [
+        {
+          "file": "Control23.vue",
+          "messages": [
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_hidden'",
+              "line": 4,
+              "column": 1,
+              "endLine": 4,
+              "endColumn": 8,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            },
+            {
+              "ruleId": "script/no-reserved-keys",
+              "ruleDocsPath": "docs/content/rules/type-and-script.md",
+              "severity": 2,
+              "message": "[vize:script/no-reserved-keys] Reserved key '_shown'",
+              "line": 6,
+              "column": 1,
+              "endLine": 6,
+              "endColumn": 7,
+              "help": "Vue exposes built-in instance properties ($el, $data, $emit, ...) and reserves names starting with $ or _; rename this member so it is not shadowed by a framework internal."
+            }
+          ],
+          "errorCount": 2,
+          "warningCount": 0
+        }
+      ]
+    },
+    {
+      "id": "canonical-disable-alias-enable",
+      "argv": [
+        "lint",
+        "-c",
+        "vize.config.json",
+        "--format",
+        "json",
+        "--locale",
+        "en",
+        "--help-level",
+        "none",
+        "Control24.vue"
+      ],
+      "input": {
+        "text": "<script lang=\"ts\">\n/* eslint-disable script/no-reserved-keys */\nexport default { data() { return {\n_hidden: 0,\n/* eslint-enable vue/no-reserved-keys */\n_shown: 1\n} } }\n</script>\n",
+        "sha256": "6ff76b1095685b496ec1452155289f0bad83d72a1b722f66fbf0f67951f6c009"
+      },
+      "status": 0,
+      "error": null,
+      "signal": null,
+      "stdout": "[\n  {\n    \"file\": \"Control24.vue\",\n    \"messages\": [],\n    \"errorCount\": 0,\n    \"warningCount\": 0\n  }\n]",
+      "stderr": "",
+      "expected": [
+        {
+          "file": "Control24.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ],
+      "expectedStatus": 0,
+      "actual": [
+        {
+          "file": "Control24.vue",
+          "messages": [],
+          "errorCount": 0,
+          "warningCount": 0
+        }
+      ]
+    }
+  ]
+}

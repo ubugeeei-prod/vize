@@ -2446,7 +2446,7 @@ script/no-reserved-keys · lint ルール
 Options API の props・data・computed・methods・setup のキーに Vue の予約名を使うことを禁止する
 
 精度: exact
-対象: props/data/computed/methods/setup members of resolved Options API objects; asyncData, script-setup defineProps and ESLint suppression comments are outside
+対象: props/data/computed/methods/setup members of resolved Options API objects with block-scoped script/no-reserved-keys or registered vue/no-reserved-keys suppression; asyncData and script-setup defineProps are outside
 重大度: エラー
 カテゴリー: script
 自動修正: なし
