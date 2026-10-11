@@ -30,7 +30,6 @@ jobs:
       PUBLIC_TAG: ${{ inputs.tag }}
       PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
       PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
-      PUBLIC_OUTPUT: ${{ runner.temp }}/vize-public-musea-static-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Require reviewed main and absent runtime substitutions
         run: |
@@ -42,6 +41,7 @@ jobs:
               exit 1
             fi
           done
+          printf 'PUBLIC_OUTPUT=%s\n' "$RUNNER_TEMP/vize-public-musea-static-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_ENV"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ github.workflow_sha }}", fetch-depth: 0, persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1

@@ -24,6 +24,9 @@ CSS. Three browser laws must pass with zero skips. The workflow retains original
 adapted drivers, source fixtures, npm metadata/archives, HTTP bytes, whole DOM,
 screenshots, failure details and exact provider receipts. Bash propagates failures
 through tee; child-process failure, timeout or an incomplete denominator fails the run.
+The first workflow push exposed a job-environment context rejection before any job
+started. Initialize the evidence path from `RUNNER_TEMP` in the first bash step via
+`GITHUB_ENV`; the parsed-workflow law rejects unavailable `runner` job-env expressions.
 
 The original eight previews and the complete six-Self/globals browser law passed in
 a fresh public v0.443.0 macOS arm64 review. That observation is local evidence, not

@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { test } from "node:test";
+import { spawnSync } from "node:child_process";
+import { parse } from "yaml";
 import {
   adaptDriver,
   digest,
@@ -51,6 +53,45 @@ void test("terminal suite census rejects omitted, skipped and duplicate summarie
     complete + "# pass 3\n",
   ])
     assert.throws(() => assertSuiteCensus(invalid));
+});
+
+void test("manual acceptance workflow uses runner context only after a job starts", (t) => {
+  const workflow = parse(
+    fs.readFileSync(".github/workflows/release-musea-static-acceptance.yml", "utf8"),
+  );
+  const requireValid = (environment: Record<string, string>) => {
+    for (const value of Object.values(environment))
+      assert.doesNotMatch(value, /\$\{\{\s*runner\./u);
+  };
+  requireValid(workflow.jobs["public-browser"].env);
+  assert.throws(() => requireValid({ PUBLIC_OUTPUT: "${{ runner.temp }}/evidence" }));
+  assert.match(
+    workflow.jobs["public-browser"].steps[0].run,
+    /printf 'PUBLIC_OUTPUT=%s\\n'.*\$RUNNER_TEMP.*\$GITHUB_ENV/u,
+  );
+  const root = fs.mkdtempSync(path.join(tmpdir(), "musea-static-bootstrap-law-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const environment = {
+    PATH: process.env.PATH,
+    GITHUB_REPOSITORY: "ubugeeei-prod/vize",
+    GITHUB_REF: "refs/heads/main",
+    GITHUB_ENV: path.join(root, "environment"),
+    RUNNER_TEMP: root,
+    GITHUB_RUN_ID: "31",
+    GITHUB_RUN_ATTEMPT: "2",
+  };
+  const guard = workflow.jobs["public-browser"].steps[0].run;
+  const execute = (env: typeof environment & { NODE_OPTIONS?: string }) =>
+    spawnSync("bash", ["--noprofile", "--norc", "-e", "-o", "pipefail", "-c", guard], {
+      env,
+      encoding: "utf8",
+    });
+  assert.equal(execute(environment).status, 0);
+  const expected = `PUBLIC_OUTPUT=${root}/vize-public-musea-static-31-2\n`;
+  assert.equal(fs.readFileSync(environment.GITHUB_ENV, "utf8"), expected);
+  assert.equal(execute({ ...environment, NODE_OPTIONS: "forbidden" }).status, 1);
+  assert.equal(execute({ ...environment, GITHUB_REF: "refs/heads/unreviewed" }).status, 1);
+  assert.equal(fs.readFileSync(environment.GITHUB_ENV, "utf8"), expected);
 });
 
 void test("archive custody rejects a changed fixture and a provider file redirected outside the consumer", (t) => {
