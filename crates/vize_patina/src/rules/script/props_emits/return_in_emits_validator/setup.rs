@@ -54,10 +54,11 @@ pub(super) fn check<'a>(
     }
     for statement in &program.body {
         for_each_call(statement, |call| {
-            if is_macro_call(call) && call.type_arguments.is_none() {
-                if let Some(argument) = call.arguments.first().and_then(|a| a.as_expression()) {
-                    check_object(argument, program, offset, module, 0, result);
-                }
+            if is_macro_call(call)
+                && call.type_arguments.is_none()
+                && let Some(argument) = call.arguments.first().and_then(|a| a.as_expression())
+            {
+                check_object(argument, program, offset, module, 0, result);
             }
             false
         });
@@ -118,21 +119,20 @@ fn check_object<'a>(
                     check_object(initializer, program, offset, module, depth + 1, result);
                 }
                 Binding::Absent => {
-                    if let EmitsModuleScript::Parsed { program, offset } = module {
-                        if let Binding::Constant(initializer) =
+                    if let EmitsModuleScript::Parsed { program, offset } = module
+                        && let Binding::Constant(initializer) =
                             binding(program, identifier.name.as_str())
-                        {
-                            // A normal-script initializer resolves in its own
-                            // module scope and retains its original SFC offset.
-                            check_object(
-                                initializer,
-                                program,
-                                offset,
-                                EmitsModuleScript::Absent,
-                                depth + 1,
-                                result,
-                            );
-                        }
+                    {
+                        // A normal-script initializer resolves in its own
+                        // module scope and retains its original SFC offset.
+                        check_object(
+                            initializer,
+                            program,
+                            offset,
+                            EmitsModuleScript::Absent,
+                            depth + 1,
+                            result,
+                        );
                     }
                 }
                 Binding::Other => {}
