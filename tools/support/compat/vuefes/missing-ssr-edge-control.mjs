@@ -32,5 +32,4 @@ export function createMissingSsrEdgeControl({ producer, missingEdges, parse }) {
       return { code: altered, map: null };
     },
   };
-  let servedSsr, servedSheets;
 }

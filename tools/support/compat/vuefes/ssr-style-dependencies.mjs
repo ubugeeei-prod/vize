@@ -159,6 +159,7 @@ try {
     // edges after native compilation. Original/altered whole modules are kept;
     // it is not presented as the literal-H source producer.
     const negative = createMissingSsrEdgeControl({ producer, missingEdges, parse });
+    let servedSsr, servedSheets;
     const transport = {
       name: "fixture:whole-ssr-html",
       configureServer(server) {
