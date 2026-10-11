@@ -13,8 +13,11 @@ Actual Chrome exposes eight additional uppercase rules from the default
 framework theme: sidebar and contents titles, mobile footer labels, search
 scope labels, callout titles and three levels of API section headings. Set
 only their text transformation to `none` with finite selectors in the Vize
-theme. Preserve DOM tag-name conversion in the test support; it is a separate
-HTML contract and does not change displayed letter case.
+theme. Keep the readable shared rule in `letter-case.css`, imported by the
+existing stylesheet: source Actions rejected growing the over-limit
+`style.css` from 1088 to 1095 lines. Preserve that failure and the unchanged
+growth gate; the corrected large file shrinks. Preserve DOM tag-name conversion
+in the test support; it is a separate HTML contract and does not change displayed letter case.
 
 Two literal French and Portuguese product headings read `ESBUILD`; use the
 existing English and Japanese brand spelling `esbuild`. Their native heading
