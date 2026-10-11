@@ -431,8 +431,8 @@ jobs:
       - name: Upload Davinci allocation bench reports
         if: ${{ always() }}
         uses: ./.github/actions/upload-davinci-compact-storage-bench-reports
-      - name: Install Pkl CLI
-        run: npm install --global @pkl-community/pkl@0.27.2
+      - name: Install Pkl CLI and hydrate pinned native fixture
+        run: npm install --global @pkl-community/pkl@0.27.2 && git submodule update --init --force --depth 1 -- tests/_fixtures/_git/element-plus
       - name: Test
         env: { VIZE_TEST_REQUIRE_TSGO: "1" }
         uses: ./.github/actions/test-rust-workspace-differential
