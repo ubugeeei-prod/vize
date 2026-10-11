@@ -7,86 +7,135 @@ import { createVrtFixture, type VrtFixture } from "./vrt_fixtures.ts";
 import { cleanup, evidence, inventory } from "./vrt_artifacts.ts";
 import { observeVrtApi } from "./vrt_api.ts";
 import { observeHostedVrt } from "./vrt_hosted.ts";
+import { VrtSecrets } from "./vrt_secrets.ts";
+import { observeTrustedInstalledVrt } from "./vrt_trusted_observation.ts";
+import { assertTrustedVrtSurfacesClosed } from "./vrt_trusted_surface.ts";
+import { assertPublishedVrtChildrenClosed } from "./vrt_service_process.ts";
 
 rejectOverrides();
 const [version, output] = process.argv.slice(2);
 assert.ok(version && output);
-const e = await evidence(path.join(path.dirname(output), "musea-vrt"));
-const owned: { browser?: Browser } = {};
-let fixture: VrtFixture | undefined;
-let provider: ReturnType<typeof publicNative> | undefined;
-let failure: unknown;
-let stage = "installed-native-custody";
+const secrets = new VrtSecrets();
 try {
-  provider = publicNative(version);
-  await e.json("provider.json", { version, packages: provider.packages, loaded: provider.loaded });
-  stage = "sealed-delivered-inputs";
-  fixture = createVrtFixture(process.cwd());
-  await e.json("inputs.json", {
-    settings: fixture.settings,
-    arts: fixture.arts,
-    delay: fixture.delay,
-  });
-  stage = "public-chromium";
-  const { chromium } = await import("playwright");
-  const browser = (owned.browser = await chromium.launch({ headless: true }));
-  stage = "configured-public-api";
-  await observeVrtApi(browser, fixture, e);
-  stage = "mandatory-public-hosted-cli-and-audits";
-  await observeHostedVrt(browser, fixture, e);
-  stage = "final-installed-custody";
-  const final = publicNative(version);
-  assert.deepEqual(final.packages, provider.packages);
-  assert.deepEqual(final.loaded, provider.loaded);
+  const e = secrets.evidence(await evidence(path.join(path.dirname(output), "musea-vrt")));
+  const owned: { browser?: Browser } = {};
+  let fixture: VrtFixture | undefined;
+  let provider: ReturnType<typeof publicNative> | undefined;
+  let failure: unknown;
+  let stage = "installed-native-custody";
+  try {
+    provider = publicNative(version);
+    await e.json("provider.json", {
+      version,
+      packages: provider.packages,
+      loaded: provider.loaded,
+    });
+    stage = "sealed-delivered-inputs";
+    fixture = createVrtFixture(process.cwd());
+    await e.json("inputs.json", {
+      settings: fixture.settings,
+      arts: fixture.arts,
+      delay: fixture.delay,
+    });
+    stage = "public-chromium";
+    const { chromium } = await import("playwright");
+    const browser = (owned.browser = await chromium.launch({ headless: true }));
+    stage = "configured-public-api";
+    await observeVrtApi(browser, fixture, e);
+    stage = "mandatory-public-hosted-cli-and-audits";
+    await observeHostedVrt(browser, fixture, e);
+    stage = "mandatory-normally-trusted-public-https";
+    const assetDirectory = process.env.VRT_TUNNEL_DIRECTORY;
+    assert.ok(
+      assetDirectory && path.isAbsolute(assetDirectory),
+      "Approved owned pinned asset required",
+    );
+    await observeTrustedInstalledVrt(
+      browser,
+      {
+        consumer: process.cwd(),
+        assetDirectory,
+        binary: path.join(assetDirectory, "cloudflared-linux-amd64"),
+      },
+      e,
+      secrets,
+    );
+    stage = "final-installed-custody";
+    const final = publicNative(version);
+    assert.deepEqual(final.packages, provider.packages);
+    assert.deepEqual(final.loaded, provider.loaded);
+  } catch (error) {
+    const sanitizedError = secrets.sanitizeError(error);
+    failure = sanitizedError;
+    await e.json("failure.json", {
+      stage,
+      error: String(sanitizedError),
+      stack: sanitizedError instanceof Error ? sanitizedError.stack : undefined,
+    });
+  } finally {
+    try {
+      await cleanup(e, "observer-cleanup", [
+        { name: "chromium", run: async () => owned.browser?.close() },
+        {
+          name: "physical-project",
+          run: async () => {
+            if (fixture) {
+              await cp(fixture.root, path.join(e.output, "physical-project"), { recursive: true });
+              await e.json("physical-project-inventory.json", await inventory(fixture.root));
+            }
+          },
+        },
+      ]);
+    } catch (error) {
+      const sanitizedError = secrets.sanitizeError(error);
+      e.records.push({ phase: "cleanup", error: String(sanitizedError) });
+      failure ??= sanitizedError;
+    }
+    await e.json("observations.json", { version, stage, records: e.records, success: !failure });
+  }
+  if (failure) {
+    console.error(failure);
+    process.exitCode = 1;
+  } else {
+    assert.ok(provider);
+    await mkdir(path.dirname(output), { recursive: true });
+    await writeFile(
+      output,
+      JSON.stringify(
+        {
+          schema: "vize-public-installed-musea-vrt-v1",
+          version,
+          packages: provider.packages,
+          loaded: provider.loaded,
+          observations: e.records,
+          artifacts: e.output,
+          success: true,
+        },
+        null,
+        2,
+      ) + "\n",
+      { flag: "wx" },
+    );
+    console.log(JSON.stringify({ version, scope: "installed-public-musea-vrt", success: true }));
+  }
 } catch (error) {
-  failure = error;
-  await e.json("failure.json", {
-    stage,
-    error: String(error),
-    stack: error instanceof Error ? error.stack : undefined,
-  });
+  console.error(secrets.sanitizeError(error));
+  process.exitCode ||= 1;
 } finally {
   try {
-    await cleanup(e, "observer-cleanup", [
-      { name: "chromium", run: async () => owned.browser?.close() },
-      {
-        name: "physical-project",
-        run: async () => {
-          if (fixture) {
-            await cp(fixture.root, path.join(e.output, "physical-project"), { recursive: true });
-            await e.json("physical-project-inventory.json", await inventory(fixture.root));
-          }
-        },
-      },
+    const barriers = await Promise.allSettled([
+      Promise.resolve().then(assertTrustedVrtSurfacesClosed),
+      Promise.resolve().then(assertPublishedVrtChildrenClosed),
     ]);
-  } catch (error) {
-    e.records.push({ phase: "cleanup", error: String(error) });
-    failure ??= error;
+    assert.ok(
+      barriers.every((result) => result.status === "fulfilled"),
+      "Owned VRT closure barrier refused",
+    );
+    await secrets.seal(path.join(path.dirname(output), "vrt.log"), process.env.VRT_RETAINED_OUTPUT);
+  } catch {
+    console.error("VRT retained evidence refused; log publication withheld");
+    process.exitCode ||= 1;
+  } finally {
+    secrets.erase();
   }
-  await e.json("observations.json", { version, stage, records: e.records, success: !failure });
-}
-if (failure) {
-  console.error(failure);
-  process.exitCode = 1;
-} else {
-  assert.ok(provider);
-  await mkdir(path.dirname(output), { recursive: true });
-  await writeFile(
-    output,
-    JSON.stringify(
-      {
-        schema: "vize-public-installed-musea-vrt-v1",
-        version,
-        packages: provider.packages,
-        loaded: provider.loaded,
-        observations: e.records,
-        artifacts: e.output,
-        success: true,
-      },
-      null,
-      2,
-    ) + "\n",
-    { flag: "wx" },
-  );
-  console.log(JSON.stringify({ version, scope: "installed-public-musea-vrt", success: true }));
 }

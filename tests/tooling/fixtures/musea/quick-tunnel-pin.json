@@ -1,0 +1,51 @@
+{
+  "release": {
+    "id": 403974563,
+    "tag_name": "2026.10.0",
+    "url": "https://api.github.com/repos/cloudflare/cloudflared/releases/403974563",
+    "html_url": "https://github.com/cloudflare/cloudflared/releases/tag/2026.10.0",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2026-10-05T17:43:45Z",
+    "immutable": false,
+    "assets": [
+      {
+        "id": 613255386,
+        "name": "cloudflared-linux-amd64",
+        "state": "uploaded",
+        "size": 40129756,
+        "digest": "sha256:d33ff2d14475178d2012c2c56beba87389ac5ded27649519f198a7d3134a99db",
+        "browser_download_url": "https://github.com/cloudflare/cloudflared/releases/download/2026.10.0/cloudflared-linux-amd64",
+        "url": "https://api.github.com/repos/cloudflare/cloudflared/releases/assets/613255386"
+      }
+    ]
+  },
+  "asset": {
+    "id": 613255386,
+    "name": "cloudflared-linux-amd64",
+    "state": "uploaded",
+    "size": 40129756,
+    "digest": "sha256:d33ff2d14475178d2012c2c56beba87389ac5ded27649519f198a7d3134a99db",
+    "browser_download_url": "https://github.com/cloudflare/cloudflared/releases/download/2026.10.0/cloudflared-linux-amd64",
+    "url": "https://api.github.com/repos/cloudflare/cloudflared/releases/assets/613255386"
+  },
+  "tag": {
+    "ref": "refs/tags/2026.10.0",
+    "url": "https://api.github.com/repos/cloudflare/cloudflared/git/refs/tags/2026.10.0",
+    "object": {
+      "sha": "5eb7b904cb26e9ddc9b0ab490c8f1a0898155b34",
+      "type": "tag",
+      "url": "https://api.github.com/repos/cloudflare/cloudflared/git/tags/5eb7b904cb26e9ddc9b0ab490c8f1a0898155b34"
+    }
+  },
+  "tagObject": {
+    "sha": "5eb7b904cb26e9ddc9b0ab490c8f1a0898155b34",
+    "tag": "2026.10.0",
+    "url": "https://api.github.com/repos/cloudflare/cloudflared/git/tags/5eb7b904cb26e9ddc9b0ab490c8f1a0898155b34",
+    "object": {
+      "sha": "18cdfe0a6fc7b72a0702d255a1f984e776ce0498",
+      "type": "commit",
+      "url": "https://api.github.com/repos/cloudflare/cloudflared/git/commits/18cdfe0a6fc7b72a0702d255a1f984e776ce0498"
+    }
+  }
+}

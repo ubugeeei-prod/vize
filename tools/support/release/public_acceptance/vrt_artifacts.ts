@@ -180,7 +180,7 @@ export function assertSummary(report: VrtReport | ApiCapture, total: number, cou
 /** Bind whole physical JSON data to the actual parsed HTTP packet without normalizing either. */
 export function assertApiReport(
   report: VrtReport,
-  packet: ApiCapture,
+  packet: Pick<ApiCapture, "results" | "summary">,
   width: number,
   height: number,
 ) {

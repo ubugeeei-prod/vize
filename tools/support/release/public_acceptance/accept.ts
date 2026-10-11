@@ -19,6 +19,7 @@ import { derivePublicationPlan, readRawBlob } from "./plan.ts";
 import { verifyPublication } from "./registry.ts";
 import { materializeVrtInputs, vrtHarness } from "./vrt_fixtures.ts";
 import { assertVrtCustody } from "./vrt_artifacts.ts";
+import { materializeLiteralVrtInputs } from "./vrt_literal.ts";
 
 rejectOverrides();
 const source = publicInputs(process.env);
@@ -42,7 +43,25 @@ const consumerHarness = [
   "browser.ts",
   "gallery.ts",
   "browser_observation.ts",
+  "vrt_secrets.ts",
+  "vrt_retained.ts",
+  "vrt_retained_scan.ts",
   ...vrtHarness,
+  "vrt_tunnel.ts",
+  "vrt_tunnel_process.ts",
+  "vrt_service_announcement.ts",
+  "vrt_service_process.ts",
+  "vrt_trusted_surface.ts",
+  "vrt_literal.ts",
+  "vrt_trusted_network.ts",
+  "vrt_trusted_ui.ts",
+  "vrt_trusted_observation.ts",
+  "vrt_trusted_report_isolation.ts",
+  "vrt_trusted_failures.ts",
+  "vrt_trusted_gallery.ts",
+  "vrt_trusted_color_build.ts",
+  "vrt_trusted_color_capture.ts",
+  "vrt_trusted_colors.ts",
 ];
 
 if (process.argv[2] === "prepare") {
@@ -138,12 +157,16 @@ export default function publicSetup(app, context) {
     copyFileSync(path.join(toolDirectory, name), path.join(consumer, name));
   }
   const vrtInputs = materializeVrtInputs(consumer, (file) => readRawBlob(root, source.head, file));
+  const trustedInputs = materializeLiteralVrtInputs(consumer, (file) =>
+    readRawBlob(root, source.head, file),
+  );
   const consumerSources = [
     "package.json",
     "preview.setup.ts",
     "preview.one-argument.ts",
     ...fixtures.map((fixture) => fixture.file.slice(fixturePrefix.length)),
     ...vrtInputs.map((entry) => entry.file),
+    ...trustedInputs.map((entry) => entry.file),
   ].map((file) => ({ file, sha256: digest(readFileSync(path.join(consumer, file))) }));
   save("preparation.json", {
     source,
@@ -151,6 +174,7 @@ export default function publicSetup(app, context) {
     version,
     fixtures,
     vrtInputs,
+    trustedInputs,
     consumerSources,
     authority: authority(),
     toolingCommit: execFileSync("git", ["--no-replace-objects", "-C", root, "rev-parse", "HEAD"], {
