@@ -3,6 +3,7 @@ import {
   "moonbitlang/async",
   "moonbitlang/async/fs" @afs,
   "moonbitlang/async/process",
+  "moonbitlang/core/env",
   "moonbitlang/x/fs" @xfs,
   "moonbitlang/x/sys",
 }

@@ -29,7 +29,9 @@ const newBody = 'new-provider';
 fs.writeFileSync(binary, oldBody);
 // Only this isolated worker replaces dlopen, exercising Node's real require cache.
 require.extensions['.node'] = (module, filename) => {
-  module.exports = Object.freeze({ body: fs.readFileSync(filename, 'utf8') });
+  const body = fs.readFileSync(filename, 'utf8');
+  const token = crypto.createHash('sha256').update(body).digest('hex').slice(0, 32);
+  module.exports = Object.freeze({ body, getNativeBuildToken: () => token });
 };
 ${script}
 `,
@@ -41,41 +43,49 @@ ${script}
   }
 }
 
-test("identity belongs to loaded memory and is streamed only on its first load", () => {
+test("identity belongs to the loaded image and its getter runs only once", () => {
   probe(`
-const originalRead = fs.readSync;
-let reads = 0;
-fs.readSync = (...args) => { reads++; return originalRead(...args); };
+const originalHandler = require.extensions['.node'];
+let getterCalls = 0;
+require.extensions['.node'] = (module, filename) => {
+  originalHandler(module, filename);
+  const original = module.exports;
+  module.exports = Object.freeze({ body: original.body, getNativeBuildToken: () => { getterCalls++; return original.getNativeBuildToken(); } });
+};
+process.report.getReport = () => { throw Error('loader must not request a process-wide report'); };
 const binding = requireWithBindingIdentity(localRequire, binary);
 const identity = getBindingIdentity(binding);
 assert.equal(binding.body, oldBody);
 assert.equal(identity.kind, 'native');
-assert.equal(identity.sha256, crypto.createHash('sha256').update(oldBody).digest('hex'));
-assert.equal(identity.bytes, Buffer.byteLength(oldBody));
+assert.equal(identity.token, crypto.createHash('sha256').update(oldBody).digest('hex').slice(0, 32));
 assert.equal(Object.isFrozen(identity), true);
-const firstReads = reads;
-assert.ok(firstReads > 0);
+assert.equal(getterCalls, 1);
 const stat = fs.statSync(binary);
 fs.writeFileSync(binary, newBody);
 fs.utimesSync(binary, stat.atime, stat.mtime);
 assert.equal(requireWithBindingIdentity(localRequire, binary), binding);
 assert.equal(getBindingIdentity(binding), identity);
 assert.equal(binding.body, oldBody);
-assert.equal(reads, firstReads, 'cached memory must never be rehashed from current disk');
+assert.equal(getterCalls, 1, 'the actual image identity must stay immutable');
 const fresh = require('node:child_process').spawnSync(process.execPath, ['-e', \`
-  require.extensions['.node'] = (m, f) => m.exports = { body: require('node:fs').readFileSync(f, 'utf8') };
+  require.extensions['.node'] = (m, f) => {
+    const body = require('node:fs').readFileSync(f, 'utf8');
+    const token = require('node:crypto').createHash('sha256').update(body).digest('hex').slice(0, 32);
+    m.exports = { body, getNativeBuildToken: () => token };
+  };
   const h = require(${JSON.stringify(helper)});
   console.log(JSON.stringify(h.getBindingIdentity(h.requireWithBindingIdentity(require, \${JSON.stringify(binary)}))));
 \`], { encoding: 'utf8' });
 assert.equal(fresh.status, 0, fresh.stderr);
 const successor = JSON.parse(fresh.stdout);
-assert.equal(successor.sha256, crypto.createHash('sha256').update(newBody).digest('hex'));
-assert.notEqual(successor.sha256, identity.sha256);
+assert.equal(successor.token, crypto.createHash('sha256').update(newBody).digest('hex').slice(0, 32));
+assert.notEqual(successor.token, identity.token);
 `);
 });
 
-test("previously loaded and non-native providers fail toward a process identity", () => {
+test("uninstrumented and non-native providers fail toward a process identity", () => {
   probe(`
+require.extensions['.node'] = (module, filename) => { module.exports = Object.freeze({ body: fs.readFileSync(filename, 'utf8') }); };
 const previous = localRequire(binary);
 fs.writeFileSync(binary, newBody);
 assert.equal(requireWithBindingIdentity(localRequire, binary), previous);
@@ -84,7 +94,7 @@ assert.equal(identity.kind, 'process');
 assert.equal(getBindingIdentity(previous), identity);
 assert.equal(previous.body, oldBody);
 const custom = path.join(__dirname, 'custom.cjs');
-fs.writeFileSync(custom, 'module.exports = Object.freeze({ provider: "custom" });');
+fs.writeFileSync(custom, 'module.exports = Object.freeze({ getNativeBuildToken: () => "00000000000000000000000000000000" });');
 const customBinding = requireWithBindingIdentity(localRequire, custom);
 const customIdentity = getBindingIdentity(customBinding);
 assert.equal(customIdentity.kind, 'process');
@@ -93,7 +103,7 @@ assert.equal(Object.isFrozen(customIdentity), true);
 `);
 });
 
-test("a file replaced during successful loading cannot claim its earlier body", () => {
+test("a file replaced during successful loading retains the actual image token", () => {
   probe(`
 require.extensions['.node'] = (module, filename) => {
   const replacement = filename + '.replacement';
@@ -101,10 +111,52 @@ require.extensions['.node'] = (module, filename) => {
   fs.writeFileSync(replacement, newBody);
   fs.utimesSync(replacement, stat.atime, stat.mtime);
   fs.renameSync(replacement, filename);
-  module.exports = { body: fs.readFileSync(filename, 'utf8') };
+  module.exports = { body: newBody, getNativeBuildToken: () => '11111111111111111111111111111111' };
 };
 const binding = requireWithBindingIdentity(localRequire, binary);
 assert.equal(binding.body, newBody);
-assert.equal(getBindingIdentity(binding).kind, 'process');
+assert.deepEqual(getBindingIdentity(binding), { kind: 'native', token: '11111111111111111111111111111111' });
+`);
+});
+
+test("OS image reuse survives require-cache eviction and independent helper copies", () => {
+  probe(`
+const images = new Map();
+require.extensions['.node'] = (module, filename) => {
+  if (!images.has(filename)) images.set(filename, fs.readFileSync(filename, 'utf8'));
+  const body = images.get(filename);
+  const token = crypto.createHash('sha256').update(body).digest('hex').slice(0, 32);
+  module.exports = Object.freeze({ body, getNativeBuildToken: () => token });
+};
+const before = requireWithBindingIdentity(localRequire, binary);
+const first = getBindingIdentity(before);
+const helperCopy = path.join(__dirname, 'independent-helper.cjs');
+fs.copyFileSync(${JSON.stringify(helper)}, helperCopy);
+const other = localRequire(helperCopy);
+assert.equal(other.getBindingIdentity(before), first, 'same-isolate helper copies retain actual binding identity');
+fs.writeFileSync(binary, newBody);
+delete require.cache[binary];
+const reloaded = other.requireWithBindingIdentity(localRequire, binary);
+assert.notEqual(reloaded, before);
+assert.equal(reloaded.body, oldBody, 'model the independently observed same-path OS image reuse');
+assert.equal(other.getBindingIdentity(reloaded).token, first.token);
+assert.notEqual(other.getBindingIdentity(reloaded).token, crypto.createHash('sha256').update(newBody).digest('hex').slice(0, 32));
+`);
+});
+
+test("cached deleted-path bindings preserve successful require and resolver failures refuse persistence", () => {
+  probe(`
+const previous = localRequire(binary);
+fs.unlinkSync(binary);
+let calls = 0;
+const cachedRequire = (specifier) => { calls++; return localRequire(specifier); };
+cachedRequire.resolve = () => { throw Error('original path unavailable'); };
+assert.equal(requireWithBindingIdentity(cachedRequire, binary), previous);
+assert.equal(calls, 1, 'require must execute exactly once before optional resolution');
+assert.equal(getBindingIdentity(previous).kind, 'process');
+const failure = Error('original load failure');
+const failingRequire = () => { throw failure; };
+failingRequire.resolve = () => { throw Error('resolver must not run after failed loading'); };
+assert.throws(() => requireWithBindingIdentity(failingRequire, binary), (error) => error === failure);
 `);
 });

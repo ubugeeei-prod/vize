@@ -2,6 +2,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync } 
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { execFileSync, spawnSync } from "node:child_process";
+import { nativeBuildEnvironment } from "./native-build-environment.mjs";
 
 import {
   captureNativeHistoryBuild,
@@ -94,7 +95,7 @@ if (captureHistory) buildArgs.push("--", "--message-format=json-render-diagnosti
 
 const buildResult = spawnSync("pnpm", buildArgs, {
   cwd: packageDir,
-  env: resolveDarwinBuildEnv(),
+  env: nativeBuildEnvironment(resolveDarwinBuildEnv()),
   stdio: captureHistory ? ["inherit", "pipe", "pipe"] : "inherit",
   maxBuffer: 64 * 1024 * 1024,
 });

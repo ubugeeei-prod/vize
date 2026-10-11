@@ -35,7 +35,7 @@ SHA-256 `3f0cca4c330ef9295bca944b4b5f41455a6882f0bfafdac0f34c3f3a62cb09c9`.
 It retains original inputs, full modules, complete results, load-time native
 body/stat observations and harnesses; no reference packet is rewritten.
 
-## Decision
+## Initial attempt, superseded by the image-token decision below
 
 Capture identity at the existing common successful native require boundary.
 Stream SHA-256 once before the first `.node` load; compare device, inode, size,
@@ -114,3 +114,89 @@ not block the first fresh official release's original #8623/#8631 acceptance;
 a normal version bump already separates their manifest namespace. Neither the
 source controls nor cache qualification establish publication or broad issue
 completion.
+
+## Newly observed same-path operating-system reload
+
+The preceding eight phases qualify ordinary fresh-process warm rollover only.
+A separate real-native control loads the old public body, atomically replaces
+its owned native slot with the unchanged source body, removes the `.node`
+require-cache entry and loads the same filename again. Node returns a new
+JavaScript binding, but all fourteen complete results remain from the old
+mapped image. The first implementation incorrectly assigns the replacement
+file's SHA-256 to that binding. A fresh process returns the complete successor
+authority. This is an unresolved correctness failure; PR #8704 stays off queue.
+
+The full original twenty-eight results and fresh successor authority are
+retained under `/tmp/vize-native-cache-os-reload-diagnostic-20261012`.
+Its custody index is
+`/tmp/vize-native-cache-os-reload-diagnostic-custody-20261012.json`, SHA-256
+`4f5fd66223ed55ac84985fb627eab8583972b1211a74859cbe51e3cbd1b5d07a`.
+Independent new slots reproduce the failure after helperless preload and
+cache eviction, across two helper copies, and in a fresh Worker isolate.
+Only their `sharedObjects` arrays are recorded, never whole diagnostic reports
+or environment contents. Every case positively exposes the old mapped path.
+
+Known prior image loads and unavailable process-wide identity must refuse
+persistent reuse and receive a stable process identity. A Symbol registry can
+share path history among helper copies in one isolate; it is not proof of
+process-wide ownership. A path absent from an OS report does not by itself
+prove which native body executes. Preserve all previous scoped receipts.
+
+TODO: qualify a bounded refusal guard with the unchanged native bodies, all
+fourteen original whole modules and the frozen dependency/browser plane.
+Avoid adding loader waits: [Node 24.14.0's report implementation](https://github.com/nodejs/node/blob/v24.14.0/src/node_report.cc)
+synchronously collects child-worker reports, while its
+[loaded-library implementation](https://github.com/nodejs/node/blob/v24.14.0/src/debug_utils.cc)
+uses platform image enumeration. These APIs require explicit visibility and
+worker-boundary evidence before being used as production identity authority.
+
+## Reviewed image-token successor
+
+An additive `getNativeBuildToken()` getter returns a token embedded in the
+actually linked image. Each existing native build invocation creates a fresh
+128-bit token, overrides an inherited token, and passes it to Rust. The build
+script watches that environment value so a warm Cargo cache relinks this crate
+with the new token. Direct uninstrumented builds return no token. Keep the
+separate partial `VIZE_PLUGIN_HOST_BUILD_ID` contract unchanged: its watched
+source closure and revision are not full native-image authority.
+
+The common successful require boundary reads the actual image getter once and
+keeps an immutable identity for its returned binding. File replacement and
+same-path OS reload cannot replace the token of already mapped code. Execute
+require exactly once before optional path resolution; preserve its original
+failure, and permit cached bindings whose disk path no longer resolves.
+Unknown, old, WASI, custom JavaScript, inaccessible or invalid-token providers
+receive a stable process nonce. No production disk hash, report or startup
+image scan is required. Vite keys include the actual image token alongside the
+existing package version, complete options and unchanged manifest format.
+
+Independent producer inventory covers local release/debug, CI, and the Moon
+release helper's Apple Cargo and non-Apple NAPI paths. Its complete fourteen
+source blobs and twenty-nine caller rows are retained in
+`/tmp/vize-native-build-producer-inventory-20261012.json`, SHA-256
+`b562858d4642d171b25c5bf1475e75ca2a5ba10aca98d1e1f9e793fee049beb7`.
+Seventeen isolated controls pass, including same-path image reuse, independent
+helper copies, deleted-path cached loading, original errors, old-build refusal,
+same-image persistence and fresh build-environment identity. These modeled
+image tests do not replace actual native qualification.
+
+Three MoonBit native runtime controls execute byte-exact extracts of the two
+production functions: every nibble including zero padding, actual platform
+entropy and complete inherited-environment preservation with token override.
+The complete fifty-five-file custody index is
+`/tmp/vize-native-build-token-moon-whitebox-custody-20261012.json`, SHA-256
+`d24e7ed2e4305596121ae0a093aa53552d8c808e5020366f3300c435a6f191c5`.
+Local full-package execution remains unqualified because the existing `x`
+dependency uses syntax rejected by the available local toolchains. The durable
+whitebox tests must execute in the selected Actions producer before native
+building; extracting functions is separate evidence, never full-package credit.
+
+The existing Native Smoke default/schedule retains all six host and twelve
+fresh-install cases. An explicit Darwin ARM64 host-only dispatch reuses all
+original host steps and retains a source/token/binary custody artifact; it
+establishes selected producer evidence only. Obtain that one necessary fresh
+Actions image and reuse it for the frozen fourteen-module, 154-entry, eleven
+browser-assertion controls and all four actual OS reload cases. Preserve the
+ordinary healthy cross-process fourteen-module restore. No local duplicate
+native builder is authorized for this qualification. Source Actions, exact
+protected integration, actual merge and public acceptance remain pending.

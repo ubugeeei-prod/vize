@@ -41,12 +41,32 @@ fn safe_is_file(path : String) -> Bool {
   }
 }
 
+fn native_build_token(random : Bytes) -> String {
+  let mut token = ""
+  for byte in random {
+    token += byte.to_hex()
+  }
+  token
+}
+
+// Override inherited identities once for each actual native build invocation.
+fn native_build_environment() -> Map[String, String]? {
+  guard @env.rand(16) is Some(random) else {
+    println("Could not allocate native build identity")
+    return None
+  }
+  let environment = @env.get_env_vars()
+  environment["VIZE_NATIVE_BUILD_TOKEN"] = native_build_token(random)
+  Some(environment)
+}
+
 async fn build_apple_package(
   package_dir : String,
   manifest_path : String,
   crate_name : String,
   target : String,
 ) -> Int {
+  guard native_build_environment() is Some(extra_env) else { return 1 }
   let exit_code = @process.run(
     "cargo",
     [
@@ -62,6 +82,8 @@ async fn build_apple_package(
       target,
     ],
     cwd=package_dir,
+    extra_env~,
+    inherit_env=false,
   )
   if exit_code != 0 {
     return exit_code
@@ -128,7 +150,8 @@ async fn run_app() -> Int {
   if cross_compile {
     command_args.push("--cross-compile")
   }
-  @process.run("vp", command_args, cwd=args[0])
+  guard native_build_environment() is Some(extra_env) else { return 1 }
+  @process.run("vp", command_args, cwd=args[0], extra_env~, inherit_env=false)
 }
 
 async fn main {

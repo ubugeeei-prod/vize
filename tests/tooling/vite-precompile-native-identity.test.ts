@@ -9,10 +9,13 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const worker = `
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
 const require = createRequire(process.env.IDENTITY_FIXTURE + '/worker.cjs');
 require.extensions['.node'] = (module, filename) => {
-  module.exports = { body: fs.readFileSync(filename, 'utf8') };
+  const body = fs.readFileSync(filename, 'utf8');
+  const token = crypto.createHash('sha256').update(body).digest('hex').slice(0, 32);
+  module.exports = process.env.LEGACY_PROVIDER === '1' ? { body } : { body, getNativeBuildToken: () => token };
 };
 const { computePrecompileCacheKey: key } = await import(process.env.IDENTITY_FIXTURE + '/key.ts');
 const first = key({ ssr: false, vapor: true });
@@ -55,9 +58,14 @@ function fixture(withIdentity: boolean): string {
   return directory;
 }
 
-function observe(directory: string, replace = false) {
+function observe(directory: string, replace = false, legacy = false) {
   const result = spawnSync(process.execPath, ["--input-type=module", "--eval", worker], {
-    env: { ...process.env, IDENTITY_FIXTURE: directory, REPLACE_BODY: replace ? "1" : "0" },
+    env: {
+      ...process.env,
+      IDENTITY_FIXTURE: directory,
+      REPLACE_BODY: replace ? "1" : "0",
+      LEGACY_PROVIDER: legacy ? "1" : "0",
+    },
     encoding: "utf8",
   });
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
@@ -70,7 +78,7 @@ function observe(directory: string, replace = false) {
   };
 }
 
-test("same-version cache keys follow loaded bodies across hot and fresh processes", () => {
+test("same-version cache keys follow actual image tokens across hot and fresh processes", () => {
   const directory = fixture(true);
   try {
     const before = observe(directory, true);
@@ -91,12 +99,23 @@ test("same-version cache keys follow loaded bodies across hot and fresh processe
   }
 });
 
-test("older wrappers without a body capture cannot reuse another process's cache", () => {
+test("older wrappers without identity support cannot reuse another process's cache", () => {
   const directory = fixture(false);
   try {
     const first = observe(directory);
     assert.equal(first.first, first.again);
     assert.notEqual(first.first, observe(directory).first);
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test("legacy native images behind the new wrapper cannot authorize cross-process persistence", () => {
+  const directory = fixture(true);
+  try {
+    const first = observe(directory, false, true);
+    assert.equal(first.first, first.again);
+    assert.notEqual(first.first, observe(directory, false, true).first);
   } finally {
     fs.rmSync(directory, { recursive: true, force: true });
   }

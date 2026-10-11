@@ -7,8 +7,8 @@
  *
  * - **Manifest identity** (`computePrecompileCacheKey`) covers everything
  *   outside the source text that determines the batch output: the manifest
- *   format version, the resolved `@vizejs/native` version, the SHA-256 of
- *   the native body captured at its successful load, and the resolved native batch
+ *   format version, the resolved `@vizejs/native` version, the immutable token
+ *   embedded in the actual native image, and the resolved native batch
  *   compile options (Vue dialect/`vueVersion`, `vapor`, `ssr`, `mode`,
  *   `templateSyntax`, `customRenderer`, `customElements`, runtime module/global
  *   names, and every experimental flag). The key names the manifest file, so a different
@@ -65,16 +65,14 @@ function stableStringify(value: unknown): string {
 }
 
 const unresolvedCompilerNonce = crypto.randomUUID();
-type BindingIdentity =
-  | { kind: "native"; sha256: string; bytes: number }
-  | { kind: "process"; nonce: string };
+type BindingIdentity = { kind: "native"; token: string } | { kind: "process"; nonce: string };
 
 /**
  * Identity of the native compiler that produced (or would produce) the output.
  *
- * The successful loader captures the binary body once, including pnpm sibling
- * packages and path/universal fallbacks. Later file replacements cannot relabel
- * code already in memory. An uncaptured provider gets a process-only namespace,
+ * The successful loader reads the linked image's token once, including pnpm
+ * siblings and path/universal fallbacks. OS image reuse or file replacement
+ * cannot relabel code already in memory. Unknown providers get a process namespace,
  * so an old wrapper or unknown backend cannot reuse another process's output.
  */
 function resolveCompilerIdentity(): unknown {
@@ -90,9 +88,7 @@ function resolveCompilerIdentity(): unknown {
     return {
       version: typeof version === "string" ? version : "unknown",
       binding:
-        identity.kind === "native"
-          ? { kind: identity.kind, sha256: identity.sha256, bytes: identity.bytes }
-          : identity,
+        identity.kind === "native" ? { kind: identity.kind, token: identity.token } : identity,
     };
   } catch {
     return { version: "unresolved", binding: { kind: "process", nonce: unresolvedCompilerNonce } };
