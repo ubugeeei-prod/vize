@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { vueVaporVersion } from "./vue-vapor-release.mjs";
 
 const chunks = [];
@@ -15,10 +15,11 @@ const fromVue = createRequire(fromUi.resolve("vue-vapor-runtime/package.json"));
 const compiler = fromVue("@vue/compiler-sfc");
 assert.equal(compiler.version, vueVaporVersion);
 
-function stock(source, filename) {
+async function stock(source, filename) {
   const parsed = compiler.parse(source, { filename });
   assert.deepEqual(parsed.errors, []);
   const descriptor = parsed.descriptor;
+  const isTS = descriptor.scriptSetup?.lang === "ts" || descriptor.script?.lang === "ts";
   const script = compiler.compileScript(descriptor, {
     id: "slot-defaults",
     genDefaultAs: "__component",
@@ -27,11 +28,16 @@ function stock(source, filename) {
     source: descriptor.template.content,
     filename,
     id: "slot-defaults",
-    compilerOptions: { bindingMetadata: script.bindings },
+    compilerOptions: { bindingMetadata: script.bindings, isTS },
   });
   assert.deepEqual(template.errors, []);
   assert.deepEqual(template.tips, []);
-  return `${script.content}\n${template.code}\n__component.render = render;\nexport default __component;\n`;
+  const code = `${script.content}\n${template.code}\n__component.render = render;\nexport default __component;\n`;
+  if (!isTS) return code;
+  const fromPlugin = createRequire(fromUi.resolve("@vitejs/plugin-vue/package.json"));
+  const { transformWithOxc } = await import(pathToFileURL(fromPlugin.resolve("vite")).href);
+  const plain = await transformWithOxc(code, `${filename}.ts`, { lang: "ts", sourcemap: false });
+  return plain.code;
 }
 
 function trace(value) {
@@ -52,7 +58,7 @@ function trace(value) {
 const official = {
   ...input,
   backend: "vdom",
-  code: stock(input.appSource, "App.vue"),
-  child: stock(input.childSource, "Child.vue"),
+  code: await stock(input.appSource, "App.vue"),
+  child: await stock(input.childSource, "Child.vue"),
 };
 process.stdout.write(JSON.stringify({ current: trace(input), oracle: trace(official) }));
