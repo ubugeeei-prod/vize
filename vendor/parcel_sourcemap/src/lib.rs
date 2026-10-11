@@ -16,14 +16,7 @@ pub use sourcemap_error::{SourceMapError, SourceMapErrorType};
 use std::borrow::Cow;
 use std::io;
 
-use rkyv::{
-    archived_root,
-    ser::{
-        serializers::{AlignedSerializer, AllocScratch, CompositeSerializer},
-        Serializer,
-    },
-    AlignedVec, Archive, Deserialize, Infallible, Serialize,
-};
+use rkyv::{util::AlignedVec, Archive, Deserialize, Serialize};
 
 use vlq_utils::{is_mapping_separator, read_relative_vlq};
 
@@ -341,21 +334,14 @@ impl SourceMap {
 
     // Write the sourcemap instance to a buffer
     pub fn to_buffer(&self, output: &mut AlignedVec) -> Result<(), SourceMapError> {
-        output.clear();
-        let mut serializer = CompositeSerializer::new(
-            AlignedSerializer::new(output),
-            AllocScratch::default(),
-            Infallible,
-        );
-        serializer.serialize_value(&self.inner)?;
+        *output = rkyv::to_bytes::<rkyv::rancor::Error>(&self.inner)?;
         Ok(())
     }
 
     // Create a sourcemap instance from a buffer
     pub fn from_buffer(project_root: &str, buf: &[u8]) -> Result<SourceMap, SourceMapError> {
-        let archived = unsafe { archived_root::<SourceMapInner>(buf) };
         // TODO: see if we can use the archived data directly rather than deserializing at all...
-        let inner = archived.deserialize(&mut Infallible)?;
+        let inner = rkyv::from_bytes::<SourceMapInner, rkyv::rancor::Error>(buf)?;
         Ok(SourceMap {
             project_root: String::from(project_root),
             inner,

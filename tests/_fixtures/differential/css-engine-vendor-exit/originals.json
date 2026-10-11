@@ -1,0 +1,106 @@
+{
+  "schema": "vize.css-engine-vendor-exit-originals",
+  "baseline": "a6633fb68b110d07abd5ee5a6049bc15f20f9c7f",
+  "files": [
+    {
+      "path": "crates/vize_atelier_sfc/tests/css_engine_panic_boundary.rs",
+      "bytes": 13989,
+      "sha256": "7eefb93c2985526b20fe38ce76ffe09594064a17f08d85e9fcb6b54b6a197df7"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/App.expected.txt",
+      "bytes": 131,
+      "sha256": "849f6453ebc66b8315137c54b8cbb92a7a2870e42faca32ed9b7c7c3f429c347"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/App.vue.txt",
+      "bytes": 123,
+      "sha256": "49ee657c2f6708bb81acdf1276c5e3de31971207bc9b224ede1e6756fd855fad"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/README.md",
+      "bytes": 2757,
+      "sha256": "128629ab70121b57c3bc28f2ed9c86391ba31806369a5ca92c4439d5c881239b"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/cases.json",
+      "bytes": 28206,
+      "sha256": "32b8bb5632bc0755d1540ff828f3e70eb5e41ec45cb0c81de4df67a787f572c1"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/color-original.css.txt",
+      "bytes": 28,
+      "sha256": "0f607d61c9295b93886115c38ab4f76071254e2da08b03b186f0654be1c9ce2a"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/custody.json",
+      "bytes": 3107,
+      "sha256": "f35ab03beeedcc848c4ead9784932e4f2b8dfd04524249fb89aced2a374d1c42"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/issue-3295.body.txt",
+      "bytes": 2704,
+      "sha256": "612ba85e93b0a316befe871788220756a48abbd6334c535e74d2494dc93fd38a"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/issue-3295.json",
+      "bytes": 2951,
+      "sha256": "fc1b7ae09f0d24747dadabc10d85d04b10319f53d47095ddaa4b9581d2bbc761"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/issue-4961.body.txt",
+      "bytes": 406,
+      "sha256": "8d607a8bdb857afa52b27b9cfe16a9f3071cba50f6fe69d389a99ebb62bfe797"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/issue-4961.json",
+      "bytes": 569,
+      "sha256": "ac64c36193abd2e5f93004796bb62459642793554b296a63a32ba43ddd4eedf9"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/number-original.css.txt",
+      "bytes": 27,
+      "sha256": "d790ef1ee15baffebd81b761f8ae144620e2f5d229b71d4961218c891db0e912"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/opacity-original.css.txt",
+      "bytes": 20,
+      "sha256": "ae89b0f17d9f2f5977960f37a095657014b45164b1b15e023116db3c5341551a"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/source-baseline/fixedpoints.json",
+      "bytes": 5308,
+      "sha256": "47f40f8f72b4216e80e176c77dba579a379b3f3798bc7e91e62e11416d053c36"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/source-baseline/original-boundary-routes-probe.json",
+      "bytes": 9815,
+      "sha256": "c1d538147e954dead41359b4fc39345cd2748771920fd75ccdeb896463cc78fd"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/source-baseline/original-percentage-probe.json",
+      "bytes": 6024,
+      "sha256": "89ebe65f056e1fa3d86a4a140affb1b866444281611d083abe81231945d9cdc6"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/source-baseline/probes.json",
+      "bytes": 24078,
+      "sha256": "a9f8933d8922d17ced2437773fa01248ec08ec1d45758b8474841f0182caded4"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-3295/source-baseline/source-affinity.json",
+      "bytes": 5341,
+      "sha256": "3ae57ea9af39300ffa0d40afe4673c497c99a346e3fe5b6338ef10344d2e3751"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-cli-3295/capture.json",
+      "bytes": 36304,
+      "sha256": "ee393a3e8982c2e46bbbec4732c6d02265c432b7c3bae1d98e9cf201844aa609"
+    },
+    {
+      "path": "tests/_fixtures/differential/css-engine-boundary-cli-3295/expected.json",
+      "bytes": 7170,
+      "sha256": "df020b3786c5213819c07cdacda718968938750910bfcc245090016af818e019"
+    }
+  ]
+}

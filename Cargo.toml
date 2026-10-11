@@ -2,6 +2,8 @@
 resolver = "3"
 exclude = ["vendor/oxc_parser_compat"]
 members = [
+  "vendor/parcel_sourcemap",
+  "vendor/lightningcss",
   "vendor/oxc_parser",
   "vendor/oxc_formatter",
   "vendor/oxlint_html_renderer186",
@@ -217,7 +219,7 @@ mimalloc = "=0.1.52"
 
 # CSS
 cssparser = "=0.37.0"
-lightningcss = "=1.0.0-alpha.72"
+lightningcss = { package = "vize_lightningcss", version = "=0.443.0", path = "vendor/lightningcss" }
 parcel_selectors = "=0.28.3"
 
 # Terminal / layout

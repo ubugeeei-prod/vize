@@ -1,0 +1,112 @@
+name: CSS engine vendor candidate
+on:
+  pull_request:
+    paths:
+      - "vendor/lightningcss/**"
+      - "vendor/parcel_sourcemap/**"
+      - "tools/support/dependencies/*css-engine*"
+      - "tests/external-consumers/css-engine-identity/**"
+      - "tests/_fixtures/differential/css-engine-vendor-exit/**"
+      - ".github/workflows/css-engine-vendor-candidate.yml"
+  workflow_dispatch: {}
+permissions: { contents: read }
+concurrency:
+  group: css-vendor-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_BUILD_JOBS: "12"
+  CARGO_PROFILE_DEV_DEBUG: "0"
+  CARGO_PROFILE_TEST_DEBUG: "0"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  engine:
+    name: CSS engines (${{ matrix.profile }})
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix: { profile: [dev, release] }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", run-install: false }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: css-vendor-
+          key: engines-${{ matrix.profile }}
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Authenticate original source and panic authorities
+        run: |
+          mkdir -p "$RUNNER_TEMP/css-engine-evidence"
+          cargo metadata --locked --format-version 1 > "$RUNNER_TEMP/css-engine-evidence/metadata.json"
+          node tools/support/dependencies/css-engine-vendor-custody.ts "$RUNNER_TEMP/css-engine-evidence/metadata.json" > "$RUNNER_TEMP/css-engine-evidence/custody.json"
+          rustc -Vv > "$RUNNER_TEMP/css-engine-evidence/rustc.txt"
+          git rev-parse HEAD > "$RUNNER_TEMP/css-engine-evidence/source.txt"
+          sha256sum Cargo.lock Cargo.toml vendor/lightningcss/Cargo.toml vendor/parcel_sourcemap/Cargo.toml > "$RUNNER_TEMP/css-engine-evidence/manifests.sha256"
+      - name: Direct original engine inputs and full upstream library regressions
+        run: cargo test --locked -p vize_lightningcss --features bundler,sourcemap --profile ${{ matrix.profile }} --lib --tests -- --nocapture 2>&1 | tee "$RUNNER_TEMP/css-engine-evidence/engine.log"
+      - name: Original and authored source-map archive contracts
+        run: cargo test --locked -p vize_parcel_sourcemap --features json --profile ${{ matrix.profile }} -- --nocapture 2>&1 | tee "$RUNNER_TEMP/css-engine-evidence/maps.log"
+      - name: Preserve source-bound evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-engine-${{ matrix.profile }}-${{ github.sha }}
+          path: ${{ runner.temp }}/css-engine-evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+  public-types:
+    name: CSS Rust downstream identity and SemVer
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { fetch-depth: 0 }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
+        with: { toolchain: "1.99.0" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          cache-key-prefix: css-vendor-
+          key: downstream
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Execute one whole downstream body in all three dependency planes
+        env:
+          CSS_ENGINE_BASE_SHA: a6633fb68b110d07abd5ee5a6049bc15f20f9c7f
+        run: bash tools/support/dependencies/css-engine-downstream.sh
+      - uses: taiki-e/install-action@184183c2401be73c3bf42c2e61268aa5855379c1 # v2
+        with: { tool: cargo-semver-checks }
+      - name: Preserve the actual unwaived Patina API comparison
+        env:
+          CSS_ENGINE_BASE_SHA: a6633fb68b110d07abd5ee5a6049bc15f20f9c7f
+        run: |
+          status=0
+          cargo semver-checks check-release --package vize_patina --baseline-rev "$CSS_ENGINE_BASE_SHA" --release-type patch > "$RUNNER_TEMP/css-engine-identity/semver.log" 2>&1 || status=$?
+          cat "$RUNNER_TEMP/css-engine-identity/semver.log"
+          printf '%s\n' "$status" > "$RUNNER_TEMP/css-engine-identity/semver-exit.txt"
+          # Preserve a genuine API or tooling failure as a red gate. This
+          # candidate cannot claim compatibility by masking the tool's exit.
+          exit "$status"
+      - name: Preserve whole downstream and unwaived SemVer results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: css-engine-public-types-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/css-engine-identity/*/stdout.log
+            ${{ runner.temp }}/css-engine-identity/*/stderr.log
+            ${{ runner.temp }}/css-engine-identity/*/exit.txt
+            ${{ runner.temp }}/css-engine-identity/*/Cargo.toml
+            ${{ runner.temp }}/css-engine-identity/*/Cargo.lock
+            ${{ runner.temp }}/css-engine-identity/*.txt
+            ${{ runner.temp }}/css-engine-identity/semver.log
+          if-no-files-found: error
+          retention-days: 14

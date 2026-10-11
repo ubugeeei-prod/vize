@@ -26,8 +26,8 @@ impl<'i> Parse<'i> for Percentage {
   fn parse<'t>(input: &mut Parser<'i, 't>) -> Result<Self, ParseError<'i, ParserError<'i>>> {
     match input.try_parse(Calc::parse) {
       Ok(Calc::Value(v)) => return Ok(*v),
-      // Percentages are always compatible, so they will always compute to a value.
-      Ok(_) => unreachable!(),
+      // A percentage calculation must resolve to a percentage, not a number.
+      Ok(_) => return Err(input.new_custom_error(ParserError::InvalidValue)),
       _ => {}
     }
 
