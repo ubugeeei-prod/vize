@@ -56,7 +56,23 @@ refusal before checking the repaired generated owner. It requires the exact sour
 whole two-error JS/TS diagnostic vector plus the declaration member. Its full
 raw report and physical source custody are retained under `target/differential/`.
 The pinned whole source inventory regression also passes. The local machine
-has no qualified executable, so this control remains pending
-hosted execution. Fresh source Actions, protected suites, actual merge, all four
+has no qualified executable. Original child head `b38e12bb3b1d14383a58389ecb02ecedaa7a6797`
+passed the complete native control in source run `38151936023`, tooling shard 1,
+job `114507444790`. Its retained whole packet has SHA-256
+`bc81bab6c4deb679952ce1e3709f031b54c6c570320d350aa7a0face6fd54e98`,
+producer source `3440ed3ffad6e985d55ecf6f3e10d24848798690` and binary SHA-256
+`2c693dd1343f16d5f167e4bb317b55cb1adebf7983ef3a13467b6d8853b2731f`.
+It preserves the old exit-2 refusal, new exit-1 findings, both complete
+`TS2322` diagnostics and all three checked members. This predecessor evidence
+does not qualify a successor head.
+
+The shared observer insertion and adjacent canonical rows require reviewed
+composition with #8667, so existing #8673 becomes its GitHub native Stack
+child. Both complete original Rust test modules remain byte-identical; runtime
+code uses the automatic three-way merge. The frozen project inventories and
+original complete native packet remain unchanged. Fresh composed source
+Actions and a new native packet are required. The ready parent can enter the
+protected queue as a contiguous prefix without waiting for this child.
+Protected suites, actual merge, all four
 full original-project runs, the remaining Matrix failures and public release
 acceptance remain unfinished. This observer repair claims no measured gain.
