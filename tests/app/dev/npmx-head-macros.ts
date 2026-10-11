@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { readNpmxHeadFixtureContent, readNpmxHeadSourceEvidence } from "./npmx-head-contract.ts";
 
 type HeadState = {
@@ -15,12 +15,28 @@ type HeadState = {
   twitterTitle: string[];
 };
 
+type RouterRouteRecord = {
+  aliasOf?: { path: string };
+  meta?: Record<string, unknown>;
+  name?: string | symbol | null;
+  path: string;
+};
+
+type RouteRecordSnapshot = {
+  aliasOf: string | null;
+  meta: Record<string, unknown>;
+  name: string | null;
+  path: string;
+};
+
 export type RouteSnapshot = {
   fullPath: string;
+  matched: RouteRecordSnapshot[];
   meta: Record<string, unknown>;
   name: string | null;
   params: Record<string, unknown>;
   path: string;
+  records: RouteRecordSnapshot[];
 };
 
 function expectedHead(
@@ -95,9 +111,11 @@ export async function readCurrentRoute(page: Page): Promise<RouteSnapshot> {
         config?: {
           globalProperties?: {
             $router?: {
+              getRoutes?: () => RouterRouteRecord[];
               currentRoute?: {
                 value?: {
                   fullPath?: string;
+                  matched?: RouterRouteRecord[];
                   meta?: Record<string, unknown>;
                   name?: string | symbol | null;
                   params?: Record<string, unknown>;
@@ -109,14 +127,29 @@ export async function readCurrentRoute(page: Page): Promise<RouteSnapshot> {
         };
       };
     } | null;
-    const route = root?.__vue_app__?.config?.globalProperties?.$router?.currentRoute?.value;
-    if (!route?.path || !route.fullPath) throw new Error("Nuxt router currentRoute is unavailable");
+    const router = root?.__vue_app__?.config?.globalProperties?.$router;
+    const route = router?.currentRoute?.value;
+    if (!route?.path || !route.fullPath || !route.matched || !router?.getRoutes) {
+      throw new Error("Nuxt router currentRoute or route records are unavailable");
+    }
+    const captureRecord = (record: RouterRouteRecord): RouteRecordSnapshot => ({
+      aliasOf: record.aliasOf?.path ?? null,
+      meta: JSON.parse(JSON.stringify(record.meta ?? {})) as Record<string, unknown>,
+      name: record.name == null ? null : String(record.name),
+      path: record.path,
+    });
     return {
       fullPath: route.fullPath,
+      matched: route.matched.map(captureRecord),
       meta: JSON.parse(JSON.stringify(route.meta ?? {})) as Record<string, unknown>,
       name: route.name == null ? null : String(route.name),
       params: JSON.parse(JSON.stringify(route.params ?? {})) as Record<string, unknown>,
       path: route.path,
+      records: router
+        .getRoutes()
+        .filter((record) => record.name === route.name)
+        .map(captureRecord)
+        .sort((left, right) => (left.path < right.path ? -1 : left.path > right.path ? 1 : 0)),
     };
   });
 }
@@ -144,17 +177,32 @@ async function expectDocsRoute(
 ): Promise<void> {
   await navigateWithNuxtRouter(page, requestedPath);
   const route = await readCurrentRoute(page);
+  await test.info().attach(`npmx-route-${requestedPath}`, {
+    body: JSON.stringify(route, null, 2),
+    contentType: "application/json",
+  });
+  const recordPaths: Record<string, string> = {
+    "/package-docs/nuxt/v/4.0.0": "/package-docs/:path+",
+    "/package/docs/nuxt/v/4.0.0": "/package/docs/:path+",
+    "/docs/nuxt/v/4.0.0": "/docs/:path+",
+  };
+  const recordPath = recordPaths[requestedPath];
+  if (recordPath === undefined) throw new Error(`unknown authored docs route: ${requestedPath}`);
+  const canonicalRecordPath = "/package-docs/:path+";
+  const expectedRecord = (path: string): RouteRecordSnapshot => ({
+    aliasOf: path === canonicalRecordPath ? null : canonicalRecordPath,
+    meta: { scrollMargin: 180 },
+    name: "docs",
+    path,
+  });
   expect(route).toEqual({
     fullPath: requestedPath,
-    meta: {
-      alias: ["/package/docs/:path+", "/docs/:path+"],
-      name: "docs",
-      path: "/package-docs/:path+",
-      scrollMargin: 180,
-    },
+    matched: [expectedRecord(recordPath)],
+    meta: { scrollMargin: 180 },
     name: "docs",
     params: { path: ["nuxt", "v", "4.0.0"] },
     path: requestedPath,
+    records: ["/docs/:path+", canonicalRecordPath, "/package/docs/:path+"].map(expectedRecord),
   });
   await expectDocumentHead(page, expectedDocsHead);
 }
@@ -219,12 +267,25 @@ export async function verifyNpmxHeadMacros(
     }
 
     await navigateWithNuxtRouter(page, "/accessibility");
-    expect(await readCurrentRoute(page)).toEqual({
+    const accessibilityRoute = await readCurrentRoute(page);
+    await test.info().attach("npmx-route-accessibility", {
+      body: JSON.stringify(accessibilityRoute, null, 2),
+      contentType: "application/json",
+    });
+    const accessibilityRecord = {
+      aliasOf: null,
+      meta: {},
+      name: "accessibility",
+      path: "/accessibility",
+    };
+    expect(accessibilityRoute).toEqual({
       fullPath: "/accessibility",
+      matched: [accessibilityRecord],
       meta: {},
       name: "accessibility",
       params: {},
       path: "/accessibility",
+      records: [accessibilityRecord],
     });
     await expectDocumentHead(page, accessibilityHead);
   } finally {

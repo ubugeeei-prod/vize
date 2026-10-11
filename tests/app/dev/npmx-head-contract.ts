@@ -29,6 +29,7 @@ export const NPMX_HEAD_SOURCE_CONTRACTS = {
     anchors: [
       "definePageMeta({",
       "name: 'docs'",
+      "path: '/package-docs/:path+'",
       "alias: ['/package/docs/:path+', '/docs/:path+']",
       "scrollMargin: 180",
       "useSeoMeta({",
