@@ -28,7 +28,7 @@ void test("actual whole browser controls exit failed and close their server when
   const timer = setTimeout(() => {
     expired = true;
     if (process.platform === "win32") child.kill();
-    else process.kill(-child.pid, "SIGTERM");
+    else if (typeof child.pid === "number") process.kill(-child.pid, "SIGTERM");
   }, 5_000);
   try {
     const code = await new Promise((resolve, reject) => {

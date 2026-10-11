@@ -199,3 +199,12 @@ refusal; the correction exits failed promptly and releases the server.
 Its original browser assertions and the app's passive sidecar are unchanged.
 These are preparation and transport repairs. The original current-app
 CSSOM/module packet and complete unchanged VRT remain unqualified.
+
+The exact `fd8b2d9` ordinary JS check rejects one warning: the missing-browser
+watchdog negates the optional `ChildProcess.pid`. It now sends the original
+process-group signal only when that PID is a number. The same installed
+Vite Plus 0.1.24 whole-source lint reproduces that diagnostic before the
+guard and removes it after; its other 269 local diagnostics are unchanged.
+The genuine missing-browser child still exits
+failed promptly. Local warning counts do not establish Actions acceptance.
+The running `fd8b2d9` discovery source and its 38-case verdict stay immutable.
