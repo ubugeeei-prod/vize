@@ -1,8 +1,9 @@
 //! Interpolation delimiter validation and tokenizer setup.
 
 use super::{Parser, callbacks::ParserCallbacks};
-use crate::tokenizer::Tokenizer;
 use vize_l0::Vec;
+use vize_l1::markup::lex::compat::adapter::CompatSink;
+use vize_l1::markup::{Component, Delimiters, Document, LexOptions, Lexer};
 use vize_relief::{
     RootNode,
     errors::{CompilerError, ErrorCode},
@@ -25,20 +26,32 @@ impl<'a> Parser<'a> {
         let delimiter_close: Vec<'a, u8> =
             Vec::from_iter_in(self.options.delimiters.1.bytes(), &self.allocator);
         let document = self.document;
-        let in_tag_comments = self.options.experimental_in_tag_comments;
-        #[cfg(feature = "legacy")]
-        let triple_mustache = self.raw_html_interpolation_enabled();
-        let mut tokenizer = Tokenizer::with_delimiters(
-            self.source,
-            ParserCallbacks { parser: self },
-            &delimiter_open,
-            &delimiter_close,
-        );
-        tokenizer.set_tolerate_declarations(document);
-        tokenizer.set_in_tag_comments(in_tag_comments);
-        #[cfg(feature = "legacy")]
-        tokenizer.set_triple_mustache(triple_mustache);
-        tokenizer.tokenize();
+        let source = self.source;
+        let options = LexOptions {
+            delimiters: Delimiters {
+                open: &delimiter_open,
+                close: &delimiter_close,
+            },
+            in_tag_comments: self.options.experimental_in_tag_comments,
+            raw_interpolation: {
+                #[cfg(feature = "legacy")]
+                {
+                    self.raw_html_interpolation_enabled()
+                }
+                #[cfg(not(feature = "legacy"))]
+                {
+                    false
+                }
+            },
+        };
+        // Keep the original compatibility sink and lexer instantiation. The
+        // private callback alone opts into complete borrowed attribute values.
+        let sink = CompatSink::new(ParserCallbacks { parser: self });
+        if document {
+            Lexer::<Document, _>::new(source, sink, options).run();
+        } else {
+            Lexer::<Component, _>::new(source, sink, options).run();
+        }
         true
     }
 

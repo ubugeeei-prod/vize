@@ -5,86 +5,10 @@
     reason = "compare complete debug ASTs in the test oracle"
 )]
 
-use super::{Parser, callbacks::ParserCallbacks, current_whitespace_strategy};
-use vize_l0::{Allocator, Vec};
-use vize_l1::markup::lex::compat::adapter::CompatSink;
-use vize_l1::markup::{Component, Delimiters, Document, LexOptions, Lexer};
-use vize_relief::{
-    RootNode,
-    errors::CompilerError,
-    options::{ParserOptions, WhitespaceStrategy},
-};
-
-fn parse_with_adapter<'a>(mut parser: Parser<'a>) -> (RootNode<'a>, std::vec::Vec<CompilerError>) {
-    let allocator = parser.allocator;
-    parser.root = Some(RootNode::new(allocator, parser.source));
-
-    let delimiter_open: Vec<'a, u8> =
-        Vec::from_iter_in(parser.options.delimiters.0.bytes(), &allocator);
-    let delimiter_close: Vec<'a, u8> =
-        Vec::from_iter_in(parser.options.delimiters.1.bytes(), &allocator);
-    assert!(!delimiter_open.is_empty() && !delimiter_close.is_empty());
-    let source = parser.source;
-    let document = parser.document;
-    let options = LexOptions {
-        delimiters: Delimiters {
-            open: &delimiter_open,
-            close: &delimiter_close,
-        },
-        in_tag_comments: parser.options.experimental_in_tag_comments,
-        raw_interpolation: {
-            #[cfg(feature = "legacy")]
-            {
-                crate::legacy::LegacyDialectCapabilities::for_dialect(parser.options.dialect)
-                    .raw_html_interpolation
-            }
-            #[cfg(not(feature = "legacy"))]
-            {
-                false
-            }
-        },
-    };
-    if document {
-        Lexer::<Document, _>::new(
-            source,
-            CompatSink::new(ParserCallbacks {
-                parser: &mut parser,
-            }),
-            options,
-        )
-        .run();
-    } else {
-        Lexer::<Component, _>::new(
-            source,
-            CompatSink::new(ParserCallbacks {
-                parser: &mut parser,
-            }),
-            options,
-        )
-        .run();
-    }
-    parser.flush_pending_text();
-    parser.handle_unclosed_elements();
-    if let Some(ref mut root) = parser.root {
-        match current_whitespace_strategy(parser.options.whitespace) {
-            WhitespaceStrategy::Condense => {
-                super::condense_whitespace(
-                    allocator,
-                    &mut root.children,
-                    parser.options.is_pre_tag,
-                );
-            }
-            WhitespaceStrategy::Preserve => {
-                super::preserve_whitespace(
-                    allocator,
-                    &mut root.children,
-                    parser.options.is_pre_tag,
-                );
-            }
-        }
-    }
-    parser.into_result()
-}
+use super::Parser;
+use super::compat_reference::parse_with_compat as parse_with_adapter;
+use vize_l0::Allocator;
+use vize_relief::options::ParserOptions;
 
 fn assert_parser_parity_with_options(source: &str, document: bool, options: ParserOptions) {
     let old_allocator = Allocator::new();
@@ -119,11 +43,21 @@ fn shared_lexer_adapter_preserves_parser_ast_and_diagnostics() {
     {
         assert_parser_parity(fixture.source, false);
     }
-    for source in [
+    // The original multi-scalar source is retained as a named consumer change;
+    // public compatibility events keep their first-scalar law.
+    super::attribute_entity_witness::tests::assert_complete_change(
+        "native-adapter-fjlig",
         "<p title='&fjlig;'>&fjlig;</p>",
-        "<x / >",
-        "<div a='unfinished",
-    ] {
+        false,
+        ParserOptions::default(),
+        &[super::attribute_entity_witness::Change {
+            directive: false,
+            name: "title",
+            before: "f",
+            after: "fj",
+        }],
+    );
+    for source in ["<x / >", "<div a='unfinished"] {
         assert_parser_parity(source, false);
     }
     assert_parser_parity("<!DOCTYPE html><main>{{ value }}</main>", true);

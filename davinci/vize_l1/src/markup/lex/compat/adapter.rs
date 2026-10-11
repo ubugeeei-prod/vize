@@ -25,7 +25,7 @@ impl<C> CompatSink<C> {
     }
 }
 
-fn first_scalar(value: DecodedEntity) -> Option<char> {
+pub(super) fn first_scalar(value: DecodedEntity) -> Option<char> {
     match value {
         DecodedEntity::Named(text) => text.chars().next(),
         DecodedEntity::Numeric(ch) => Some(ch),
@@ -82,9 +82,7 @@ impl<C: Callbacks> Sink for CompatSink<C> {
     }
 
     fn on_attrib_entity_value(&mut self, value: DecodedEntity, start: usize, end: usize) {
-        if let Some(first) = first_scalar(value) {
-            self.callbacks.on_attrib_entity(first, start, end);
-        }
+        self.callbacks.on_attrib_entity_value(value, start, end);
     }
 
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {

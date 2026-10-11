@@ -2,6 +2,8 @@
 //!
 //! Parser callbacks remain the production legacy route. These frozen witnesses
 //! cover their actual v-pre scopes, namespace/recovery and dialect options.
+//! Options6/9 retain named BEFORE history and require separate full production
+//! AFTER witnesses for the declared complete-attribute correction.
 
 use super::tokenizer_first_newline_witness as correction;
 use super::{Parser, WhitespaceStrategy};
@@ -14,6 +16,7 @@ struct Oracle {
     mismatches: usize,
     capture: Option<std::fs::File>,
     corrections: bool,
+    attribute_corrections: bool,
     correction_hits: u8,
 }
 
@@ -95,6 +98,7 @@ fn oracle(expected: &'static [u8], name: &str) -> Oracle {
         mismatches: 0,
         capture,
         corrections: name == "fixtures.bin",
+        attribute_corrections: name == "options.bin",
         correction_hits: 0,
     }
 }
@@ -132,6 +136,23 @@ fn record(
     };
     let tree = cstr!("{tree:#?}");
     let errors = cstr!("{errors:#?}");
+    // Only these two named attribute corrections compare immutable history at
+    // its original public compat boundary. Separate whole production AFTER
+    // packets must pass their authored values/every other field first.
+    let historical_tree = cases
+        .attribute_corrections
+        .then(|| {
+            super::attribute_entity_witness::named_frozen_options_before(
+                cases.index,
+                source,
+                document,
+                &recorded_options,
+                &tree,
+                &errors,
+            )
+        })
+        .flatten();
+    let tree = historical_tree.as_ref().unwrap_or(&tree);
     cases.check(
         &[source.as_bytes(), tree.as_bytes(), errors.as_bytes()],
         context,

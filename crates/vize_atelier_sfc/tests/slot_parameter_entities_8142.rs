@@ -127,10 +127,12 @@ fn decoded_legacy_slot_entity_output_preserves_literal_controls_and_known_gaps()
             .expect("actual declarations");
         assert_eq!(declarations.len(), 1);
         assert_eq!(declarations[0]["name"], "item");
-        // This is a recorded preexisting gap, not evidence of correct mapping.
+        // The original knownDeclarationOffset and before packets retain the
+        // preexisting gap. Current declarations use the independently authored
+        // physical anchor; every original compiler/runtime packet stays below.
         assert_eq!(
             declarations[0]["declarationOffset"],
-            case["knownDeclarationOffset"]
+            case["independentlyAuthoredPhysicalDeclarationOffset"]
         );
         for (expected, observed) in case["expected"]
             .as_array()

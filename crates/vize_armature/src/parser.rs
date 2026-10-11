@@ -8,7 +8,13 @@
 //! - `whitespace` - Whitespace condensing logic
 
 mod attribute;
+#[cfg(test)]
+mod attribute_entity_sink;
+#[cfg(test)]
+mod attribute_entity_witness;
 mod callbacks;
+#[cfg(test)]
+mod compat_reference;
 mod constructor;
 mod delimiters;
 mod element;

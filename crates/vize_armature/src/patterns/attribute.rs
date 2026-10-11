@@ -1,10 +1,9 @@
 //! Rebase decoded pattern spans through the same entity decoder as HTML attributes.
 
 use super::{MatchArm, MatchPattern, PatternKind, PatternSyntaxError, parse_match_pattern};
-use crate::tokenizer::entity_decode::try_decode_entity;
-use htmlize::Context;
 use oxc_span::Span;
 use vize_l0::String;
+use vize_l1::markup::entity::{EntityContext, decode_one};
 
 struct Attribute {
     text: String,
@@ -19,10 +18,22 @@ impl Attribute {
         while let Some(rest) = source.get(at..)
             && let Some(first) = rest.chars().next()
         {
-            let (ch, len) = try_decode_entity(rest.as_bytes(), Context::Attribute)
-                .unwrap_or((first, first.len_utf8()));
-            text.push(ch);
-            offsets.extend(std::iter::repeat_n(at as u32, ch.len_utf8() - 1));
+            let len = if let Some((decoded, len)) =
+                decode_one(rest.as_bytes(), EntityContext::Attribute)
+            {
+                // A named entity can decode to multiple scalars. All interior
+                // decoded byte boundaries belong to the same authored entity.
+                decoded.for_each(|ch| {
+                    text.push(ch);
+                    offsets.extend(std::iter::repeat_n(at as u32, ch.len_utf8()));
+                });
+                offsets.pop();
+                len
+            } else {
+                text.push(first);
+                offsets.extend(std::iter::repeat_n(at as u32, first.len_utf8() - 1));
+                first.len_utf8()
+            };
             at += len;
             offsets.push(at as u32);
         }
@@ -152,6 +163,34 @@ mod tests {
         assert_eq!(
             &source[binding.span.start as usize..binding.span.end as usize],
             "\u{00e9}"
+        );
+    }
+
+    #[test]
+    fn complete_named_entities_keep_every_scalar_and_authored_boundaries() {
+        let source = "{ '&fjlig;': const item }";
+        let attribute = Attribute::new(source);
+        assert_eq!(attribute.text, "{ 'fj': const item }");
+        let decoded_item = attribute.text.find("item").unwrap() as u32;
+        assert_eq!(
+            attribute.offset(decoded_item),
+            source.find("item").unwrap() as u32,
+        );
+        let start = attribute.text.find("fj").unwrap() as u32;
+        let authored = source.find("&fjlig;").unwrap() as u32;
+        assert_eq!(attribute.offset(start), authored);
+        assert_eq!(attribute.offset(start + 1), authored);
+        assert_eq!(attribute.offset(start + 2), authored + 7);
+        let arm = parse_match_attribute(source).unwrap();
+        assert_eq!(arm.bindings.len(), 1);
+        assert_eq!(arm.bindings[0].name, "item");
+        assert_eq!(
+            arm.bindings[0].span.start,
+            source.find("item").unwrap() as u32
+        );
+        assert_eq!(
+            arm.bindings[0].span.end,
+            source.find("item").unwrap() as u32 + 4
         );
     }
 }

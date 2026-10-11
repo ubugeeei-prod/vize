@@ -4,6 +4,7 @@
 //! with the parser by implementing the `Callbacks` trait.
 
 use crate::tokenizer::{Callbacks, QuoteType};
+use vize_l1::markup::entity::DecodedEntity;
 use vize_relief::errors::ErrorCode;
 
 use super::Parser;
@@ -85,6 +86,10 @@ impl<'a, 'p> Callbacks for ParserCallbacks<'a, 'p> {
     fn on_attrib_entity(&mut self, ch: char, start: usize, end: usize) {
         self.parser.flush_pending_text();
         self.parser.on_attrib_entity_impl(ch, start, end);
+    }
+
+    fn on_attrib_entity_value(&mut self, value: DecodedEntity, start: usize, end: usize) {
+        self.parser.on_attrib_entity_value_impl(value, start, end);
     }
 
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize) {

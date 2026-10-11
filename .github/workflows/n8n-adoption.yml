@@ -44,6 +44,7 @@ on:
       - crates/vize_carton/src/config/**
       - crates/vize_patina/**
       - crates/vize_armature/**
+      - crates/vize_croquis/**
       - crates/vize_relief/**
       - davinci/vize_l1/src/markup/lex/native/dynamic_arg*
       - vendor/oxc_parser/**
@@ -145,6 +146,68 @@ jobs:
         run: cargo test --locked --profile ci -p vize_atelier_core --features legacy --test legacy_template_sugar --test legacy_slot_binding_handoff_8142 -- --nocapture
       - name: Verify source SFC default-slot runtime and iterator laws
         run: cargo test --locked --profile ci -p vize_atelier_sfc --features legacy-dom-differential --test n8n_default_slot_loops --test slot_parameter_entities_8142 -- --nocapture
+      - name: Retain whole default and legacy attribute entity parser captures
+        if: ${{ !cancelled() }}
+        run: |
+          qualification="$GITHUB_WORKSPACE/target/differential/attribute-entity-qualification-8142/${{ github.run_id }}-${{ github.run_attempt }}"
+          mkdir -p "$qualification"
+          git rev-parse HEAD > "$qualification/source-sha.txt"
+          rustc -Vv > "$qualification/rustc.txt"
+          cargo -V > "$qualification/cargo.txt"
+          failed=0
+          for phase in default legacy-native; do
+            phase_dir="$qualification/$phase"
+            mkdir -p "$phase_dir/tokenizer-captures"
+            entity_packets=target/differential/attribute-entity-consumer-8142
+            if [[ -d "$entity_packets" ]]; then
+              mv "$entity_packets" "$phase_dir/preexisting-attribute-packets"
+            fi
+            args=(--locked --profile ci -p vize_armature --lib)
+            if [[ "$phase" == legacy-native ]]; then
+              args+=(--features legacy,native-lex-parity)
+            fi
+            set +e
+            VIZE_TOKENIZER_CAPTURE_DIR="$phase_dir/tokenizer-captures" \
+              cargo test "${args[@]}" -- --nocapture 2>&1 | tee "$phase_dir/cargo.log"
+            pipeline_status=("${PIPESTATUS[@]}")
+            test_status=${pipeline_status[0]}
+            capture_status=${pipeline_status[1]}
+            set -e
+            printf '%s\n' "$test_status" > "$phase_dir/status.txt"
+            printf '%s\n' "$capture_status" > "$phase_dir/capture-status.txt"
+            if [[ -d "$entity_packets" ]]; then
+              mv "$entity_packets" "$phase_dir/attribute-packets"
+            fi
+            if [[ "$test_status" != 0 || "$capture_status" != 0 ]]; then
+              failed=1
+            fi
+          done
+          exit "$failed"
+      - name: Retain all authored physical declaration and invalid-window laws
+        if: ${{ !cancelled() }}
+        run: |
+          qualification="$GITHUB_WORKSPACE/target/differential/attribute-entity-qualification-8142/${{ github.run_id }}-${{ github.run_attempt }}"
+          mkdir -p "$qualification/croquis"
+          coordinates=target/differential/slot-declaration-physical-8142
+          if [[ -d "$coordinates" ]]; then
+            mv "$coordinates" "$qualification/croquis/preexisting-packets"
+          fi
+          set +e
+          cargo test --locked --profile ci -p vize_croquis --lib \
+            drawer::template::slot_scope_tests:: -- --nocapture 2>&1 | tee "$qualification/croquis/cargo.log"
+          pipeline_status=("${PIPESTATUS[@]}")
+          test_status=${pipeline_status[0]}
+          capture_status=${pipeline_status[1]}
+          set -e
+          printf '%s\n' "$test_status" > "$qualification/croquis/status.txt"
+          printf '%s\n' "$capture_status" > "$qualification/croquis/capture-status.txt"
+          if [[ -d "$coordinates" ]]; then
+            mv "$coordinates" "$qualification/croquis/packets"
+          fi
+          if [[ "$capture_status" != 0 ]]; then
+            exit "$capture_status"
+          fi
+          exit "$test_status"
       - name: Install pinned TypeScript consumer for the original typed slot controls
         run: vp install --frozen-lockfile --prefer-offline
       - name: Verify whole inline setup default parameters and original typed callback runtime laws
@@ -183,6 +246,14 @@ jobs:
           name: n8n-slot-entity-runtime-${{ github.run_id }}-${{ github.run_attempt }}
           path: target/differential/slot-parameter-entities-8142
           if-no-files-found: error
+      - name: Upload complete attribute entity BEFORE and authored actual AFTER observations
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: n8n-attribute-entity-8142-${{ github.run_id }}-${{ github.run_attempt }}
+          path: target/differential/attribute-entity-qualification-8142/${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          retention-days: 14
       - name: Upload all original typed slot compiler and runtime packets
         if: ${{ !cancelled() && hashFiles('target/differential/slot-default-setup-bindings-8142/compiler-packets.json') != '' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

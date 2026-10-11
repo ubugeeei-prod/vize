@@ -88,17 +88,23 @@ impl Drawer {
                     let (prop_names, props_pattern, prop_offsets) = if let Some(ref exp) = dir.exp {
                         let content = expression_content(exp, &self.template_source);
                         let base = exp.loc().span.start;
+                        let span = exp.loc().span;
+                        let authored = self
+                            .template_source
+                            .get(span.start as usize..span.end as usize);
                         let prop_bindings = profile!(
                             "croquis.template.v_slot.extract_props",
-                            match exp {
-                                ExpressionNode::Simple(node) =>
+                            match (exp, authored) {
+                                (ExpressionNode::Simple(node), Some(_)) =>
                                     extract_retained_slot_prop_bindings(node).unwrap_or_default(),
-                                ExpressionNode::Compound(_) => SmallVec::new(),
+                                _ => SmallVec::new(),
                             }
                         );
                         let prop_names =
                             prop_bindings.iter().map(|(name, _)| name.clone()).collect();
-                        let prop_offsets = slot_prop_declaration_offsets(base, &prop_bindings);
+                        let prop_offsets = authored
+                            .map(|raw| slot_prop_declaration_offsets(base, &prop_bindings, raw))
+                            .unwrap_or_default();
                         (prop_names, Some(CompactString::new(content)), prop_offsets)
                     } else {
                         (smallvec![], None, SmallVec::new())
@@ -137,14 +143,14 @@ impl Drawer {
         });
 
         if state.slot_scope.is_none() && self.legacy_vue2 && self.options.analyze_template_scopes {
-            state.slot_scope = legacy_slot_scope(el);
+            state.slot_scope = legacy_slot_scope(el, &self.template_source);
         }
 
         state
     }
 }
 
-fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInfo> {
+fn legacy_slot_scope(el: &ElementNode<'_>, source: &str) -> Option<super::scopes::SlotScopeInfo> {
     let scope_attr = el
         .props
         .iter()
@@ -159,10 +165,12 @@ fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInf
             })
         })?;
     let value = scope_attr.value.as_ref()?;
+    let span = value.loc.span;
+    let authored = source.get(span.start as usize..span.end as usize)?;
     let pattern = value.content;
     let prop_bindings = extract_slot_prop_bindings(pattern);
     let prop_names = prop_bindings.iter().map(|(name, _)| name.clone()).collect();
-    let prop_offsets = slot_prop_declaration_offsets(value.loc.span.start, &prop_bindings);
+    let prop_offsets = slot_prop_declaration_offsets(span.start, &prop_bindings, authored);
     let slot_name = el
         .props
         .iter()
@@ -188,10 +196,19 @@ fn legacy_slot_scope(el: &ElementNode<'_>) -> Option<super::scopes::SlotScopeInf
 fn slot_prop_declaration_offsets(
     base_offset: u32,
     prop_bindings: &[(CompactString, u32)],
+    authored: &str,
 ) -> SmallVec<[(CompactString, u32); 4]> {
     let mut offsets = SmallVec::new();
+    let has_entities = authored.contains('&');
     for (name, relative) in prop_bindings {
-        offsets.push((name.clone(), base_offset + relative));
+        // Retained OXC offsets address decoded parameter bytes. Scope
+        // declarations address authored template bytes, as navigation does.
+        let physical = if has_entities {
+            vize_armature::patterns::attribute_source_offset(authored, *relative)
+        } else {
+            *relative
+        };
+        offsets.push((name.clone(), base_offset + physical));
     }
     offsets
 }

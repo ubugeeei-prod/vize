@@ -1,5 +1,7 @@
 use vize_l0::ErrorCode;
 
+use crate::markup::entity::DecodedEntity;
+
 use super::char_codes::{
     CARRIAGE_RETURN, FORM_FEED, GT, LOWER_A, LOWER_Z, NEWLINE, SLASH, SPACE, TAB, UPPER_A, UPPER_Z,
 };
@@ -97,6 +99,18 @@ pub trait Callbacks {
 
     fn on_attrib_data(&mut self, start: usize, end: usize);
     fn on_attrib_entity(&mut self, char: char, start: usize, end: usize);
+
+    /// Receive the already-decoded attribute value with its authored span.
+    ///
+    /// Existing callback implementations keep the original first-scalar event.
+    /// A consumer that owns complete attribute values may explicitly override
+    /// this provided method. Text entities retain their separate old contract.
+    fn on_attrib_entity_value(&mut self, value: DecodedEntity, start: usize, end: usize) {
+        if let Some(first) = super::adapter::first_scalar(value) {
+            self.on_attrib_entity(first, start, end);
+        }
+    }
+
     fn on_attrib_end(&mut self, quote: QuoteType, end: usize);
     fn on_attrib_name(&mut self, start: usize, end: usize);
     fn on_attrib_name_end(&mut self, end: usize);

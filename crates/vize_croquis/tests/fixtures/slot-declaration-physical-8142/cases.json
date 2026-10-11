@@ -1,0 +1,298 @@
+{
+  "schema": "vize.slot-declaration-physical.authored-v1",
+  "authority": "Complete source and binding marker positions authored before any execution; positions are UTF-8 authored byte offsets, not decoded or UTF-16 offsets.",
+  "cases": [
+    {
+      "id": "modern/literal-space",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\" { item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": " { item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          29
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/numeric-space",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"&#32;{ item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": " { item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          33
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/numeric-tab",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"&#9;{ item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": "\t{ item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          32
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/named-space",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"&nbsp;{ item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": " { item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          34
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/two-spaces",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"&#32;&#x20;{ item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": "  { item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          39
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/entity-crlf",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"&#13;&#10;{ item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": "\r\n{ item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          38
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/astral-key",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"{ '&#x1f680;': item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": "{ '🚀': item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          41
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/multi-scalar-key",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"{ '&fjlig;': item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": "{ 'fj': item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          39
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/unknown-reference",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"{ '&foo;': item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": "{ '&foo;': item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          37
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/malformed-number",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"{ '&#xzz;': item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": "{ '&#xzz;': item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          38
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/decode-once",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"{ '&amp;#32;': item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": "{ '&#32;': item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          41
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/property-default-read",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"&#32;{ 'item': local = outside }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": " { 'item': local = outside }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "local",
+          41
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/nested-local-bindings",
+      "legacy": false,
+      "source": "<p>item</p><Panel v-slot=\"&#32;{ outer: { item }, list: [row] }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": " { outer: { item }, list: [row] }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          42
+        ],
+        [
+          "row",
+          57
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "modern/unicode-before-slot",
+      "legacy": false,
+      "source": "<p>前置き🚀 item</p><Panel v-slot=\"&#32;{ item }\">{{ item }}{{ local }}{{ row }}</Panel>",
+      "decodedPattern": " { item }",
+      "component": "Panel",
+      "declarations": [
+        [
+          "item",
+          47
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "slot-scope/numeric-space",
+      "legacy": true,
+      "source": "<p>item</p><Child><template slot-scope=\"&#32;{ item }\">{{ item }}{{ local }}{{ row }}</template></Child>",
+      "decodedPattern": " { item }",
+      "component": "Child",
+      "declarations": [
+        [
+          "item",
+          47
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "slot-scope/multi-scalar-key",
+      "legacy": true,
+      "source": "<p>item</p><Child><template slot-scope=\"{ '&fjlig;': item }\">{{ item }}{{ local }}{{ row }}</template></Child>",
+      "decodedPattern": "{ 'fj': item }",
+      "component": "Child",
+      "declarations": [
+        [
+          "item",
+          53
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "slot-scope/nested-local-bindings",
+      "legacy": true,
+      "source": "<p>item</p><Child><template slot-scope=\"&#32;{ outer: { item }, list: [row] }\">{{ item }}{{ local }}{{ row }}</template></Child>",
+      "decodedPattern": " { outer: { item }, list: [row] }",
+      "component": "Child",
+      "declarations": [
+        [
+          "item",
+          56
+        ],
+        [
+          "row",
+          71
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "scope/numeric-space",
+      "legacy": true,
+      "source": "<p>item</p><Child><template scope=\"&#32;{ item }\">{{ item }}{{ local }}{{ row }}</template></Child>",
+      "decodedPattern": " { item }",
+      "component": "Child",
+      "declarations": [
+        [
+          "item",
+          42
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "scope/multi-scalar-key",
+      "legacy": true,
+      "source": "<p>item</p><Child><template scope=\"{ '&fjlig;': item }\">{{ item }}{{ local }}{{ row }}</template></Child>",
+      "decodedPattern": "{ 'fj': item }",
+      "component": "Child",
+      "declarations": [
+        [
+          "item",
+          48
+        ]
+      ],
+      "parserErrors": []
+    },
+    {
+      "id": "scope/nested-local-bindings",
+      "legacy": true,
+      "source": "<p>item</p><Child><template scope=\"&#32;{ outer: { item }, list: [row] }\">{{ item }}{{ local }}{{ row }}</template></Child>",
+      "decodedPattern": " { outer: { item }, list: [row] }",
+      "component": "Child",
+      "declarations": [
+        [
+          "item",
+          51
+        ],
+        [
+          "row",
+          66
+        ]
+      ],
+      "parserErrors": []
+    }
+  ]
+}

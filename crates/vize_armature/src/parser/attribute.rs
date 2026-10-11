@@ -4,6 +4,7 @@
 //! attribute data (values), and finalization of attribute and directive nodes.
 
 use vize_l0::{Box, String, Vec, appends};
+use vize_l1::markup::entity::DecodedEntity;
 use vize_relief::{
     AttributeNode, ConstantType, DirectiveNode, ExpressionNode, PropNode, SimpleExpressionNode,
     TextNode,
@@ -94,6 +95,29 @@ impl<'a> Parser<'a> {
     pub(super) fn on_attrib_entity_impl(&mut self, ch: char, start: usize, end: usize) {
         let mut content = [0_u8; 4];
         self.accumulate_attr_or_dir_value(ch.encode_utf8(&mut content), start, end);
+    }
+
+    /// Complete decoded values arrive only at an actual attribute entity.
+    /// Named expansions already borrow valid UTF-8 from the entity table;
+    /// append those bytes once instead of decoding and encoding each scalar.
+    #[cold]
+    pub(super) fn on_attrib_entity_value_impl(
+        &mut self,
+        value: DecodedEntity,
+        start: usize,
+        end: usize,
+    ) {
+        match value {
+            DecodedEntity::Named("") => {}
+            DecodedEntity::Named(content) => {
+                self.flush_pending_text();
+                self.accumulate_attr_or_dir_value(content, start, end);
+            }
+            DecodedEntity::Numeric(ch) => {
+                self.flush_pending_text();
+                self.on_attrib_entity_impl(ch, start, end);
+            }
+        }
     }
 
     /// Helper to accumulate attribute or directive value
