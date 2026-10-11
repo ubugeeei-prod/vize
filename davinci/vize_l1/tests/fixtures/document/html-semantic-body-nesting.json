@@ -1,0 +1,158 @@
+[
+  {
+    "name": "seven semantic containers remain body siblings",
+    "source": "<!DOCTYPE html><html><head></head><body>before<article>0<!--article--></article>tail<aside>1<!--aside--></aside>tail<footer>2<!--footer--></footer>tail<header>3<!--header--></header>tail<main>4<!--main--></main>tail<nav>5<!--nav--></nav>tail<section>6<!--section--></section>tail</body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["article", 2, []],
+      ["aside", 2, []],
+      ["footer", 2, []],
+      ["header", 2, []],
+      ["main", 2, []],
+      ["nav", 2, []],
+      ["section", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [3, "before"],
+          [1, "article"],
+          [3, "tail"],
+          [1, "aside"],
+          [3, "tail"],
+          [1, "footer"],
+          [3, "tail"],
+          [1, "header"],
+          [3, "tail"],
+          [1, "main"],
+          [3, "tail"],
+          [1, "nav"],
+          [3, "tail"],
+          [1, "section"],
+          [3, "tail"]
+        ]
+      ],
+      [
+        "article",
+        [
+          [3, "0"],
+          [8, "article"]
+        ]
+      ],
+      [
+        "aside",
+        [
+          [3, "1"],
+          [8, "aside"]
+        ]
+      ],
+      [
+        "footer",
+        [
+          [3, "2"],
+          [8, "footer"]
+        ]
+      ],
+      [
+        "header",
+        [
+          [3, "3"],
+          [8, "header"]
+        ]
+      ],
+      [
+        "main",
+        [
+          [3, "4"],
+          [8, "main"]
+        ]
+      ],
+      [
+        "nav",
+        [
+          [3, "5"],
+          [8, "nav"]
+        ]
+      ],
+      [
+        "section",
+        [
+          [3, "6"],
+          [8, "section"]
+        ]
+      ]
+    ]
+  },
+  {
+    "name": "seven explicitly nested semantic containers preserve every parent",
+    "source": "<!DOCTYPE html><html><head></head><body><article><aside><footer><header><main><nav><section><span>leaf</span></section></nav></main></header></footer></aside></article><div>end</div></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["article", 2, []],
+      ["aside", 3, []],
+      ["footer", 4, []],
+      ["header", 5, []],
+      ["main", 6, []],
+      ["nav", 7, []],
+      ["section", 8, []],
+      ["span", 9, []],
+      ["div", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "article"],
+          [1, "div"]
+        ]
+      ],
+      ["article", [[1, "aside"]]],
+      ["aside", [[1, "footer"]]],
+      ["footer", [[1, "header"]]],
+      ["header", [[1, "main"]]],
+      ["main", [[1, "nav"]]],
+      ["nav", [[1, "section"]]],
+      ["section", [[1, "span"]]],
+      ["span", [[3, "leaf"]]],
+      ["div", [[3, "end"]]]
+    ]
+  },
+  {
+    "name": "existing div span and void packet is unchanged",
+    "source": "<!DOCTYPE html><html><head></head><body><div><span>control</span><br/><hr><img alt=old><input disabled></div></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["div", 2, []],
+      ["span", 3, []],
+      ["br", 3, []],
+      ["hr", 3, []],
+      ["img", 3, [["alt", "old"]]],
+      ["input", 3, [["disabled", ""]]]
+    ],
+    "nodes": [
+      ["body", [[1, "div"]]],
+      [
+        "div",
+        [
+          [1, "span"],
+          [1, "br"],
+          [1, "hr"],
+          [1, "img"],
+          [1, "input"]
+        ]
+      ],
+      ["span", [[3, "control"]]],
+      ["br", []],
+      ["hr", []],
+      ["img", []],
+      ["input", []]
+    ]
+  }
+]

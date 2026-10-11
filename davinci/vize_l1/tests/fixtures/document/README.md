@@ -50,3 +50,13 @@ nested original parents, slash/case forms and following text/comment/sibling
 boundaries. The existing body void family is an unchanged-semantics control.
 This is bounded Document structure, without petite-vue meaning or a product
 route switch; general insertion policies and obsolete void tags remain open.
+
+`html-semantic-body-containers.json` and `html-semantic-body-nesting.json` keep
+ten complete original sources and whole ancestry, effective attributes and
+direct child-node packets for `article`, `aside`, `footer`, `header`, `main`,
+`nav` and `section`. The independently authored packets execute in native Rust
+and actual Chromium, including seven mixed-case/slash names, normalized
+attribute duplicates, harmless `xmlns` attributes, literal/reference CRLF/NUL,
+complete sibling and nested parent boundaries, and an existing-tag control.
+All containers require explicit matching ends; implied-end/table policies,
+foreign namespaces, formatting/raw elements and Vue syntax remain refused.

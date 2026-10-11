@@ -1,0 +1,296 @@
+[
+  {
+    "name": "article folding, ignored slash, attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><ARTICLE Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/><span>α&amp;β</span><!--z\r\n\u0000--><br/> tail</ARTICLE><div>end</div></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "article",
+        2,
+        [
+          ["data-x", "猫&amp;\r\n�"],
+          ["disabled", ""],
+          ["xmlns", "http://www.w3.org/2000/svg"]
+        ]
+      ],
+      ["span", 3, []],
+      ["br", 3, []],
+      ["div", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "article"],
+          [1, "div"]
+        ]
+      ],
+      [
+        "article",
+        [
+          [1, "span"],
+          [8, "z\n�"],
+          [1, "br"],
+          [3, " tail"]
+        ]
+      ],
+      ["span", [[3, "α&β"]]],
+      ["br", []],
+      ["div", [[3, "end"]]]
+    ]
+  },
+  {
+    "name": "aside folding, ignored slash, attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><ASIDE Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/><span>α&amp;β</span><!--z\r\n\u0000--><br/> tail</ASIDE><div>end</div></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "aside",
+        2,
+        [
+          ["data-x", "猫&amp;\r\n�"],
+          ["disabled", ""],
+          ["xmlns", "http://www.w3.org/2000/svg"]
+        ]
+      ],
+      ["span", 3, []],
+      ["br", 3, []],
+      ["div", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "aside"],
+          [1, "div"]
+        ]
+      ],
+      [
+        "aside",
+        [
+          [1, "span"],
+          [8, "z\n�"],
+          [1, "br"],
+          [3, " tail"]
+        ]
+      ],
+      ["span", [[3, "α&β"]]],
+      ["br", []],
+      ["div", [[3, "end"]]]
+    ]
+  },
+  {
+    "name": "footer folding, ignored slash, attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><FOOTER Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/><span>α&amp;β</span><!--z\r\n\u0000--><br/> tail</FOOTER><div>end</div></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "footer",
+        2,
+        [
+          ["data-x", "猫&amp;\r\n�"],
+          ["disabled", ""],
+          ["xmlns", "http://www.w3.org/2000/svg"]
+        ]
+      ],
+      ["span", 3, []],
+      ["br", 3, []],
+      ["div", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "footer"],
+          [1, "div"]
+        ]
+      ],
+      [
+        "footer",
+        [
+          [1, "span"],
+          [8, "z\n�"],
+          [1, "br"],
+          [3, " tail"]
+        ]
+      ],
+      ["span", [[3, "α&β"]]],
+      ["br", []],
+      ["div", [[3, "end"]]]
+    ]
+  },
+  {
+    "name": "header folding, ignored slash, attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><HEADER Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/><span>α&amp;β</span><!--z\r\n\u0000--><br/> tail</HEADER><div>end</div></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "header",
+        2,
+        [
+          ["data-x", "猫&amp;\r\n�"],
+          ["disabled", ""],
+          ["xmlns", "http://www.w3.org/2000/svg"]
+        ]
+      ],
+      ["span", 3, []],
+      ["br", 3, []],
+      ["div", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "header"],
+          [1, "div"]
+        ]
+      ],
+      [
+        "header",
+        [
+          [1, "span"],
+          [8, "z\n�"],
+          [1, "br"],
+          [3, " tail"]
+        ]
+      ],
+      ["span", [[3, "α&β"]]],
+      ["br", []],
+      ["div", [[3, "end"]]]
+    ]
+  },
+  {
+    "name": "main folding, ignored slash, attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><MAIN Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/><span>α&amp;β</span><!--z\r\n\u0000--><br/> tail</MAIN><div>end</div></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "main",
+        2,
+        [
+          ["data-x", "猫&amp;\r\n�"],
+          ["disabled", ""],
+          ["xmlns", "http://www.w3.org/2000/svg"]
+        ]
+      ],
+      ["span", 3, []],
+      ["br", 3, []],
+      ["div", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "main"],
+          [1, "div"]
+        ]
+      ],
+      [
+        "main",
+        [
+          [1, "span"],
+          [8, "z\n�"],
+          [1, "br"],
+          [3, " tail"]
+        ]
+      ],
+      ["span", [[3, "α&β"]]],
+      ["br", []],
+      ["div", [[3, "end"]]]
+    ]
+  },
+  {
+    "name": "nav folding, ignored slash, attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><NAV Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/><span>α&amp;β</span><!--z\r\n\u0000--><br/> tail</NAV><div>end</div></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "nav",
+        2,
+        [
+          ["data-x", "猫&amp;\r\n�"],
+          ["disabled", ""],
+          ["xmlns", "http://www.w3.org/2000/svg"]
+        ]
+      ],
+      ["span", 3, []],
+      ["br", 3, []],
+      ["div", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "nav"],
+          [1, "div"]
+        ]
+      ],
+      [
+        "nav",
+        [
+          [1, "span"],
+          [8, "z\n�"],
+          [1, "br"],
+          [3, " tail"]
+        ]
+      ],
+      ["span", [[3, "α&β"]]],
+      ["br", []],
+      ["div", [[3, "end"]]]
+    ]
+  },
+  {
+    "name": "section folding, ignored slash, attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><SECTION Data-X='猫&amp;amp;&#13;\r\n\u0000' data-x=lost disabled xmlns=\"http://www.w3.org/2000/svg\"/><span>α&amp;β</span><!--z\r\n\u0000--><br/> tail</SECTION><div>end</div></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "section",
+        2,
+        [
+          ["data-x", "猫&amp;\r\n�"],
+          ["disabled", ""],
+          ["xmlns", "http://www.w3.org/2000/svg"]
+        ]
+      ],
+      ["span", 3, []],
+      ["br", 3, []],
+      ["div", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "section"],
+          [1, "div"]
+        ]
+      ],
+      [
+        "section",
+        [
+          [1, "span"],
+          [8, "z\n�"],
+          [1, "br"],
+          [3, " tail"]
+        ]
+      ],
+      ["span", [[3, "α&β"]]],
+      ["br", []],
+      ["div", [[3, "end"]]]
+    ]
+  }
+]

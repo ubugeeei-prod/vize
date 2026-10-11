@@ -180,7 +180,8 @@ impl Builder<'_, '_> {
             (
                 Mode::InBody,
                 "div" | "span" | "br" | "hr" | "img" | "input" | "area" | "embed" | "source"
-                | "track" | "wbr",
+                | "track" | "wbr" | "article" | "aside" | "footer" | "header" | "main" | "nav"
+                | "section",
             ) => Mode::InBody,
             _ => return Err(Refusal::ExplicitEnvelope),
         };
@@ -264,7 +265,11 @@ impl Builder<'_, '_> {
             (Mode::InHead, "head") => Mode::Body,
             (Mode::InBody, "body") => Mode::HtmlEnd,
             (Mode::HtmlEnd, "html") => Mode::End,
-            (Mode::InBody, "div" | "span") => Mode::InBody,
+            (
+                Mode::InBody,
+                "div" | "span" | "article" | "aside" | "footer" | "header" | "main" | "nav"
+                | "section",
+            ) => Mode::InBody,
             _ => return Err(Refusal::ExplicitEnvelope),
         };
         self.stack.pop();
@@ -301,7 +306,8 @@ impl Builder<'_, '_> {
 fn name(raw: &str) -> Option<&'static str> {
     [
         "html", "head", "body", "div", "span", "base", "link", "meta", "br", "hr", "img", "input",
-        "area", "embed", "source", "track", "wbr",
+        "area", "embed", "source", "track", "wbr", "article", "aside", "footer", "header", "main",
+        "nav", "section",
     ]
     .into_iter()
     .find(|name| raw.eq_ignore_ascii_case(name))

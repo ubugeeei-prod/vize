@@ -51,6 +51,13 @@ pub(super) fn children<'s, 'o, 'a>(
             | "source"
             | "track"
             | "wbr"
+            | "article"
+            | "aside"
+            | "footer"
+            | "header"
+            | "main"
+            | "nav"
+            | "section"
     ) {
         return Err(Refusal::UnsupportedNodeParent(parent.opening));
     }
