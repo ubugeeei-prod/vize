@@ -26,6 +26,11 @@ void test("inherited SVG bindings retain a separate complete corpus and no relea
   assert.equal(controls[0].expectedTrees.length, controls[0].steps.length + 2);
   assert.deepEqual(controls[0].expectedTrees.at(-1), []);
   assert.deepEqual(controls[0].expectedNamespacePhases.at(-1), []);
+  assert.equal(entry.runtime.sourceProvider, "fresh-source-napi");
+  assert.equal(entry.runtime.oracleProvider, "independent-stock-vdom");
+  assert.equal(entry.runtime.sourceBrowser, "physical Chromium");
+  for (const target of [entry.runtime.browserTarget, entry.runtime.helper])
+    assert.ok(readFileSync(new URL(`../../${target}`, import.meta.url)).length > 0);
   assert.equal(entry.runtime.nativeHandled, 0);
   assert.equal(entry.runtime.lockedVue, "3.6.0-rc.9");
   assert.equal(entry.runtime.reportedVueExecution, "unexecuted");

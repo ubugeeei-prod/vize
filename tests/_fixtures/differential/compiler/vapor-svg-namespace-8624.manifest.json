@@ -29,12 +29,15 @@
         "source": "independently authored complete SVG and HTML integration-point mount/update/removal/unmount expectations; whole locked Vue VDOM differential packet"
       },
       "runtime": {
-        "rustTarget": "crates/vize_atelier_sfc/tests/vapor_svg_namespace.rs",
-        "helper": "tests/tooling/support/vapor-slot-defaults-7886.mjs",
+        "helper": "playground/e2e/support/svg-namespace-corpus-plugin.ts",
         "lockedVue": "3.6.0-rc.9",
         "reportedVue": "3.6.0-rc.10",
         "reportedVueExecution": "unexecuted",
-        "nativeHandled": 0
+        "nativeHandled": 0,
+        "browserTarget": "playground/e2e/vapor-svg-namespace-corpus.test.ts",
+        "sourceProvider": "fresh-source-napi",
+        "oracleProvider": "independent-stock-vdom",
+        "sourceBrowser": "physical Chromium"
       }
     }
   ]

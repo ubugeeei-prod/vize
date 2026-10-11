@@ -20,10 +20,12 @@ The separate `vapor-svg-namespace-8624` differential corpus contains a whole SFC
 with SVG `a`, `filter`, `feGaussianBlur`, `view` and `switch`, an ordinary HTML
 `a`, and an HTML `a` inside `foreignObject`. Independently authored complete
 mount, update, class/style removal and unmount trees accompany its namespace,
-class and computed-color vectors. The existing locked rc.9 VDOM oracle compares
-the product's complete runtime trace and every authored tree and namespace phase.
-The class and computed-color vectors are separate physical rc.10 assertions;
-the source runtime does not claim browser class ownership or computed styles.
+class and computed-color vectors. The existing Actions playground browser gate executes the fresh source NAPI
+producer and independently compiled stock VDOM against one pinned rc.9 browser
+runtime. It compares both complete four-phase traces and every authored tree,
+namespace, class and computed-color vector, SVGAnimatedString ownership, physical
+bounds, style removal and retained-node disposal. The unchanged whole App and
+controls are hash-checked before compilation, with separate emission digests.
 Focused compiler controls exercise both the default and retained lowering paths.
 
 The original third-party sources, six original control rows, and two authored
@@ -39,3 +41,16 @@ check normalized class/style updates and removal, and retain exact package,
 lockfile, emitted-module and release-source custody. The first SVG/slot release
 cut proceeds independently; #8624 remains open until its actual installed
 release acceptance passes.
+
+Exact a581b18 source Check 38148305379 exposed a Happy DOM oracle defect:
+its static template parser assigns SVG namespaces to HTML children inside SVG
+foreignObject, desc and title. Physical Chromium and the independent VDOM
+renderer assign XHTML. All whole trees, class/style/title changes and disposal
+otherwise matched; the [complete failed packet](./fixtures/vapor-svg-namespace-8624/happy-dom-failed-whole-packet.json)
+retains the source head/run/job and both whole traces as failed evidence.
+Replace only this newly introduced emulator target with the stronger existing
+physical browser gate, preserving the entire authored App, controls and all
+namespace assertions. Original third-party Rust targets and their checks remain
+active. No new workflow, pipeline dependency, runtime normalization or namespace
+expectation exception is introduced; source and protected browser checks still
+must pass, and they grant no installed/public rc.10 acceptance credit.

@@ -95,8 +95,8 @@
     },
     {
       "path": "vapor-svg-namespace-8624.manifest.json",
-      "sha256": "3f9105f02677f6fb733311e9eef5d6818d98fb3380b10d8987347af9b35a22e1",
-      "adapter": "compiler-rust-whole-source-runtime-v1",
+      "sha256": "be6e0c00a3c824e87a50b5d1d0351eb93badd7fe4f7a0d927f7c993c2c10f102",
+      "adapter": "compiler-source-napi-browser-v1",
       "workflow": ".github/workflows/check.yml"
     }
   ]
