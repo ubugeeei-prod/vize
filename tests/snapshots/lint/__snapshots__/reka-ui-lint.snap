@@ -33,6 +33,17 @@
     "file": "packages/core/src/Accordion/story/AccordionAnimated.story.vue",
     "messages": [
       {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AccordionAnimated.story' should be PascalCase or kebab-case",
+        "line": 33,
+        "column": 11,
+        "endLine": 33,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -56,17 +67,40 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/Accordion/story/AccordionChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AccordionChromatic.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Accordion/story/AccordionHorizontal.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AccordionHorizontal.story' should be PascalCase or kebab-case",
+        "line": 11,
+        "column": 11,
+        "endLine": 11,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -80,29 +114,22 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Accordion/story/AccordionMultiple.story.vue",
     "messages": [
       {
-        "ruleId": "a11y/form-control-has-label",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
-        "line": 72,
-        "column": 21,
-        "endLine": 75,
-        "endColumn": 10,
-        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 1
-  },
-  {
-    "file": "packages/core/src/Accordion/story/AccordionSingle.story.vue",
-    "messages": [
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AccordionMultiple.story' should be PascalCase or kebab-case",
+        "line": 14,
+        "column": 11,
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -116,11 +143,51 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
+  },
+  {
+    "file": "packages/core/src/Accordion/story/AccordionSingle.story.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AccordionSingle.story' should be PascalCase or kebab-case",
+        "line": 14,
+        "column": 11,
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
+        "ruleId": "a11y/form-control-has-label",
+        "ruleDocsPath": "docs/content/rules/accessibility.md",
+        "severity": 1,
+        "message": "[vize:a11y/form-control-has-label] <input> elements must have an associated label",
+        "line": 72,
+        "column": 21,
+        "endLine": 75,
+        "endColumn": 10,
+        "help": "Option 1: Use <label> with for:\n  <label for=\"email\">Email</label>\n  <input id=\"email\" type=\"email\">\nOption 2: Wrap input in label:\n  <label>\n  Email\n  <input type=\"email\">\n  </label>\nOption 3: Use aria-label:\n  <input type=\"search\" aria-label=\"Search\">\nNote: Placeholder is NOT a substitute for a label."
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Accordion/story/AccordionViewport.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AccordionViewport.story' should be PascalCase or kebab-case",
+        "line": 11,
+        "column": 11,
+        "endLine": 11,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -134,7 +201,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Accordion/story/_Accordion.vue",
@@ -210,9 +277,21 @@
   },
   {
     "file": "packages/core/src/AlertDialog/story/AlertDialog.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AlertDialog.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/AlertDialog/story/_AlertDialog.vue",
@@ -240,9 +319,21 @@
   },
   {
     "file": "packages/core/src/AspectRatio/story/AspectRatio.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AspectRatio.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Autocomplete/AutocompleteInput.vue",
@@ -258,9 +349,21 @@
   },
   {
     "file": "packages/core/src/Autocomplete/story/AutocompleteDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'AutocompleteDefault.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Autocomplete/story/_Autocomplete.vue",
@@ -282,27 +385,27 @@
   },
   {
     "file": "packages/core/src/Avatar/AvatarFallback.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
-    "file": "packages/core/src/Avatar/AvatarImage.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 53,
-        "column": 5,
-        "endLine": 53,
-        "endColumn": 15,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 28,
+        "column": 21,
+        "endLine": 28,
+        "endColumn": 27,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
     "warningCount": 1
+  },
+  {
+    "file": "packages/core/src/Avatar/AvatarImage.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Avatar/AvatarRoot.vue",
@@ -314,15 +417,15 @@
     "file": "packages/core/src/Avatar/story/Avatar.story.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
+        "ruleId": "vue/component-definition-name-casing",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 90,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Avatar.story' should be PascalCase or kebab-case",
+        "line": 29,
         "column": 11,
-        "endLine": 90,
-        "endColumn": 29,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
+        "endLine": 29,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
@@ -420,43 +523,126 @@
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarChromatic.story' should be PascalCase or kebab-case",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarDefault.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarDir.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarDir.story' should be PascalCase or kebab-case",
+        "line": 7,
+        "column": 11,
+        "endLine": 7,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarFixedWeeksForLocales.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarFixedWeeksForLocales.story' should be PascalCase or kebab-case",
+        "line": 42,
+        "column": 11,
+        "endLine": 42,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarLocales.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarLocales.story' should be PascalCase or kebab-case",
+        "line": 42,
+        "column": 11,
+        "endLine": 42,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarMultiple.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarMultiple.story' should be PascalCase or kebab-case",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarPopover.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarPopover.story' should be PascalCase or kebab-case",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -503,31 +689,79 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 5
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarSelect.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarSelect.story' should be PascalCase or kebab-case",
+        "line": 55,
+        "column": 11,
+        "endLine": 55,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarValidation.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarValidation.story' should be PascalCase or kebab-case",
+        "line": 18,
+        "column": 11,
+        "endLine": 18,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarWeek.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarWeek.story' should be PascalCase or kebab-case",
+        "line": 7,
+        "column": 11,
+        "endLine": 7,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/CalendarYearIncrement.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CalendarYearIncrement.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Calendar/story/_Calendar.vue",
@@ -635,6 +869,17 @@
     "file": "packages/core/src/Checkbox/story/Checkbox.story.vue",
     "messages": [
       {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Checkbox.story' should be PascalCase or kebab-case",
+        "line": 12,
+        "column": 11,
+        "endLine": 12,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
         "ruleId": "a11y/label-has-for",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -691,13 +936,25 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 5
+    "warningCount": 6
   },
   {
     "file": "packages/core/src/Checkbox/story/CheckboxGroup.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'CheckboxGroup.story' should be PascalCase or kebab-case",
+        "line": 10,
+        "column": 11,
+        "endLine": 10,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Checkbox/story/_Checkbox.vue",
@@ -802,9 +1059,21 @@
   },
   {
     "file": "packages/core/src/Collapsible/story/Collapsible.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Collapsible.story' should be PascalCase or kebab-case",
+        "line": 10,
+        "column": 11,
+        "endLine": 10,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Collapsible/story/_Collapsible.vue",
@@ -844,9 +1113,21 @@
   },
   {
     "file": "packages/core/src/ColorArea/story/ColorAreaDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ColorAreaDemo.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ColorArea/story/_ColorArea.vue",
@@ -882,6 +1163,17 @@
     "file": "packages/core/src/ColorField/story/ColorFieldDemo.story.vue",
     "messages": [
       {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ColorFieldDemo.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
         "ruleId": "a11y/label-has-for",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -894,7 +1186,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/ColorField/story/_ColorField.vue",
@@ -916,9 +1208,21 @@
   },
   {
     "file": "packages/core/src/ColorPicker/story/ColorPickerDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ColorPickerDemo.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ColorPicker/story/_ColorPicker.vue",
@@ -958,9 +1262,21 @@
   },
   {
     "file": "packages/core/src/ColorSlider/story/ColorSliderDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ColorSliderDemo.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ColorSlider/story/_ColorSlider.vue",
@@ -1006,9 +1322,21 @@
   },
   {
     "file": "packages/core/src/ColorSwatch/story/ColorSwatchDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ColorSwatchDemo.story' should be PascalCase or kebab-case",
+        "line": 7,
+        "column": 11,
+        "endLine": 7,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ColorSwatch/story/_ColorSwatch.vue",
@@ -1054,9 +1382,21 @@
   },
   {
     "file": "packages/core/src/ColorSwatchPicker/story/ColorSwatchPickerDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ColorSwatchPickerDemo.story' should be PascalCase or kebab-case",
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ColorSwatchPicker/story/_ColorSwatchPicker.vue",
@@ -1180,31 +1520,90 @@
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxAsync.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxAsync.story' should be PascalCase or kebab-case",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxAsyncOptions.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxAsyncOptions.story' should be PascalCase or kebab-case",
+        "line": 42,
+        "column": 11,
+        "endLine": 42,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxBasic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxBasic.story' should be PascalCase or kebab-case",
+        "line": 29,
+        "column": 11,
+        "endLine": 29,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxCancel.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxCancel.story' should be PascalCase or kebab-case",
+        "line": 32,
+        "column": 11,
+        "endLine": 32,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxCustom.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxCustom.story' should be PascalCase or kebab-case",
+        "line": 25,
+        "column": 11,
+        "endLine": 25,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -1229,43 +1628,115 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxMultiple.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxMultiple.story' should be PascalCase or kebab-case",
+        "line": 25,
+        "column": 11,
+        "endLine": 25,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxObject.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxObject.story' should be PascalCase or kebab-case",
+        "line": 27,
+        "column": 11,
+        "endLine": 27,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxReactive.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxReactive.story' should be PascalCase or kebab-case",
+        "line": 12,
+        "column": 11,
+        "endLine": 12,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxScrolling.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxScrolling.story' should be PascalCase or kebab-case",
+        "line": 12,
+        "column": 11,
+        "endLine": 12,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxSelectMenu.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxSelectMenu.story' should be PascalCase or kebab-case",
+        "line": 33,
+        "column": 11,
+        "endLine": 33,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/ComboboxVirtual.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ComboboxVirtual.story' should be PascalCase or kebab-case",
+        "line": 17,
+        "column": 11,
+        "endLine": 17,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Combobox/story/_Combobox.vue",
@@ -1461,9 +1932,21 @@
   },
   {
     "file": "packages/core/src/ContextMenu/story/ContextMenu.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ContextMenu.story' should be PascalCase or kebab-case",
+        "line": 32,
+        "column": 11,
+        "endLine": 32,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ContextMenu/story/_ContextMenu.vue",
@@ -1485,21 +1968,9 @@
   },
   {
     "file": "packages/core/src/DateField/DateFieldInput.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 64,
-        "column": 5,
-        "endLine": 77,
-        "endColumn": 12,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/DateField/DateFieldRoot.vue",
@@ -1509,19 +1980,54 @@
   },
   {
     "file": "packages/core/src/DateField/story/DateFieldChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateFieldChromatic.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateField/story/DateFieldDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateFieldDefault.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateField/story/DateFieldGranular.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateFieldGranular.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "html/id-duplication",
         "ruleDocsPath": "docs/content/rules/html.md",
@@ -1557,19 +2063,43 @@
       }
     ],
     "errorCount": 3,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateField/story/DateFieldInvalid.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateFieldInvalid.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateField/story/DateFieldLocales.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateFieldLocales.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateField/story/_DateField.vue",
@@ -1627,21 +2157,9 @@
   },
   {
     "file": "packages/core/src/DatePicker/DatePickerContent.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 31,
-        "column": 7,
-        "endLine": 38,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/DatePicker/DatePickerField.vue",
@@ -1717,45 +2235,81 @@
   },
   {
     "file": "packages/core/src/DatePicker/DatePickerTrigger.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/DatePicker/story/DatePickerChromatic.story.vue",
     "messages": [
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 19,
-        "column": 5,
-        "endLine": 21,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DatePickerChromatic.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
     "warningCount": 1
   },
   {
-    "file": "packages/core/src/DatePicker/story/DatePickerChromatic.story.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
     "file": "packages/core/src/DatePicker/story/DatePickerDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DatePickerDefault.story' should be PascalCase or kebab-case",
+        "line": 26,
+        "column": 11,
+        "endLine": 26,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DatePicker/story/DatePickerGranular.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DatePickerGranular.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DatePicker/story/DatePickerValidation.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DatePickerValidation.story' should be PascalCase or kebab-case",
+        "line": 21,
+        "column": 11,
+        "endLine": 21,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DatePicker/story/_DatePicker.vue",
@@ -1795,21 +2349,9 @@
   },
   {
     "file": "packages/core/src/DateRangeField/DateRangeFieldInput.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 66,
-        "column": 5,
-        "endLine": 76,
-        "endColumn": 12,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/DateRangeField/DateRangeFieldRoot.vue",
@@ -1819,27 +2361,75 @@
   },
   {
     "file": "packages/core/src/DateRangeField/story/DateRangeFieldChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateRangeFieldChromatic.story' should be PascalCase or kebab-case",
+        "line": 15,
+        "column": 11,
+        "endLine": 15,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateRangeField/story/DateRangeFieldDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateRangeFieldDefault.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateRangeField/story/DateRangeFieldGranular.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateRangeFieldGranular.story' should be PascalCase or kebab-case",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateRangeField/story/DateRangeFieldValidation.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateRangeFieldValidation.story' should be PascalCase or kebab-case",
+        "line": 15,
+        "column": 11,
+        "endLine": 15,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateRangeField/story/_DateRangeField.vue",
@@ -1915,21 +2505,9 @@
   },
   {
     "file": "packages/core/src/DateRangePicker/DateRangePickerContent.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 31,
-        "column": 7,
-        "endLine": 38,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/DateRangePicker/DateRangePickerField.vue",
@@ -2005,45 +2583,81 @@
   },
   {
     "file": "packages/core/src/DateRangePicker/DateRangePickerTrigger.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/DateRangePicker/story/DateRangePickerChromatic.story.vue",
     "messages": [
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 19,
-        "column": 5,
-        "endLine": 21,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateRangePickerChromatic.story' should be PascalCase or kebab-case",
+        "line": 12,
+        "column": 11,
+        "endLine": 12,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
     "warningCount": 1
   },
   {
-    "file": "packages/core/src/DateRangePicker/story/DateRangePickerChromatic.story.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
     "file": "packages/core/src/DateRangePicker/story/DateRangePickerDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateRangePickerDefault.story' should be PascalCase or kebab-case",
+        "line": 26,
+        "column": 11,
+        "endLine": 26,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateRangePicker/story/DateRangePickerGranular.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateRangePickerGranular.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateRangePicker/story/DateRangePickerValidation.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DateRangePickerValidation.story' should be PascalCase or kebab-case",
+        "line": 21,
+        "column": 11,
+        "endLine": 21,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DateRangePicker/story/_DateRangePicker.vue",
@@ -2107,21 +2721,9 @@
   },
   {
     "file": "packages/core/src/Dialog/DialogContentNonModal.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 54,
-        "column": 5,
-        "endLine": 76,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Dialog/DialogDescription.vue",
@@ -2167,33 +2769,93 @@
   },
   {
     "file": "packages/core/src/Dialog/story/Dialog.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Dialog.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Dialog/story/DialogExternalTrigger.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DialogExternalTrigger.story' should be PascalCase or kebab-case",
+        "line": 18,
+        "column": 11,
+        "endLine": 18,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Dialog/story/DialogProgrammatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DialogProgrammatic.story' should be PascalCase or kebab-case",
+        "line": 26,
+        "column": 11,
+        "endLine": 26,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Dialog/story/DialogProgrammaticClose.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DialogProgrammaticClose.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Dialog/story/DialogWithDropdown.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DialogWithDropdown.story' should be PascalCase or kebab-case",
+        "line": 14,
+        "column": 11,
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Dialog/story/_Dialog.vue",
@@ -2240,6 +2902,17 @@
     "file": "packages/core/src/DismissableLayer/story/DismissableLayerBasic.story.vue",
     "messages": [
       {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DismissableLayerBasic.story' should be PascalCase or kebab-case",
+        "line": 24,
+        "column": 11,
+        "endLine": 24,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2285,11 +2958,22 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 5
   },
   {
     "file": "packages/core/src/DismissableLayer/story/DismissableLayerDialog.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DismissableLayerDialog.story' should be PascalCase or kebab-case",
+        "line": 15,
+        "column": 11,
+        "endLine": 15,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -2314,11 +2998,22 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/DismissableLayer/story/DismissableLayerPopoverNested.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DismissableLayerPopoverNested.story' should be PascalCase or kebab-case",
+        "line": 10,
+        "column": 11,
+        "endLine": 10,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -2332,7 +3027,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/DismissableLayer/story/_DismissableBox.vue",
@@ -2436,32 +3131,9 @@
   },
   {
     "file": "packages/core/src/Drawer/DrawerContent.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Event' is a browser-only global and is not available in SSR",
-        "line": 70,
-        "column": 7,
-        "endLine": 75,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Event' is a browser-only global and is not available in SSR",
-        "line": 81,
-        "column": 7,
-        "endLine": 81,
-        "endColumn": 56,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Drawer/DrawerContentImpl.vue",
@@ -2551,6 +3223,17 @@
     "file": "packages/core/src/Drawer/story/Drawer.story.vue",
     "messages": [
       {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Drawer.story' should be PascalCase or kebab-case",
+        "line": 67,
+        "column": 11,
+        "endLine": 67,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -2574,7 +3257,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/Drawer/story/_Drawer.vue",
@@ -2608,21 +3291,9 @@
   },
   {
     "file": "packages/core/src/DropdownMenu/DropdownMenuContent.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 61,
-        "column": 5,
-        "endLine": 69,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/DropdownMenu/DropdownMenuFilter.vue",
@@ -2704,44 +3375,45 @@
   },
   {
     "file": "packages/core/src/DropdownMenu/DropdownMenuTrigger.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
-        "line": 48,
-        "column": 7,
-        "endLine": 60,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 61,
-        "column": 7,
-        "endLine": 71,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/DropdownMenu/story/DropdownMenu.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DropdownMenu.story' should be PascalCase or kebab-case",
+        "line": 42,
+        "column": 11,
+        "endLine": 42,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DropdownMenu/story/DropdownMenuFilter.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'DropdownMenuFilter.story' should be PascalCase or kebab-case",
+        "line": 44,
+        "column": 11,
+        "endLine": 44,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/DropdownMenu/story/_DropdownMenu.vue",
@@ -2823,15 +3495,39 @@
   },
   {
     "file": "packages/core/src/Editable/story/EditableChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'EditableChromatic.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Editable/story/EditableDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'EditableDefault.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Editable/story/_DummyEditable.vue",
@@ -2877,13 +3573,69 @@
   },
   {
     "file": "packages/core/src/FocusScope/FocusScope.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'document' is a browser-only global and is not available in SSR",
+        "line": 156,
+        "column": 3,
+        "endLine": 156,
+        "endColumn": 11,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'document' is a browser-only global and is not available in SSR",
+        "line": 157,
+        "column": 3,
+        "endLine": 157,
+        "endColumn": 11,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MutationObserver' is a browser-only global and is not available in SSR",
+        "line": 158,
+        "column": 32,
+        "endLine": 158,
+        "endColumn": 48,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'CustomEvent' is a browser-only global and is not available in SSR",
+        "line": 174,
+        "column": 26,
+        "endLine": 174,
+        "endColumn": 37,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 4
   },
   {
     "file": "packages/core/src/FocusScope/story/FocusScopeMultiple.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'FocusScopeMultiple.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -2952,7 +3704,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 7
   },
   {
     "file": "packages/core/src/HoverCard/HoverCardArrow.vue",
@@ -2973,27 +3725,16 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 111,
-        "column": 7,
-        "endLine": 118,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 111,
-        "column": 7,
-        "endLine": 118,
-        "endColumn": 9,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'document' is a browser-only global and is not available in SSR",
+        "line": 39,
+        "column": 18,
+        "endLine": 39,
+        "endColumn": 26,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/HoverCard/HoverCardPortal.vue",
@@ -3016,6 +3757,17 @@
   {
     "file": "packages/core/src/HoverCard/story/HoverCard.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'HoverCard.story' should be PascalCase or kebab-case",
+        "line": 14,
+        "column": 11,
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/anchor-is-valid",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -3040,11 +3792,22 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/HoverCard/story/HoverMultiCard.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'HoverMultiCard.story' should be PascalCase or kebab-case",
+        "line": 10,
+        "column": 11,
+        "endLine": 10,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -3058,7 +3821,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/HoverCard/story/_HoverCard.vue",
@@ -3080,45 +3843,33 @@
   },
   {
     "file": "packages/core/src/Label/Label.story.vue",
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Label.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
+    "errorCount": 0,
+    "warningCount": 1
+  },
+  {
+    "file": "packages/core/src/Label/Label.vue",
     "messages": [],
     "errorCount": 0,
     "warningCount": 0
   },
   {
-    "file": "packages/core/src/Label/Label.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
-        "line": 24,
-        "column": 5,
-        "endLine": 27,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 1
-  },
-  {
     "file": "packages/core/src/Listbox/ListboxContent.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 37,
-        "column": 7,
-        "endLine": 55,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Listbox/ListboxFilter.vue",
@@ -3152,21 +3903,9 @@
   },
   {
     "file": "packages/core/src/Listbox/ListboxRoot.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 426,
-        "column": 5,
-        "endLine": 432,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Listbox/ListboxVirtualizer.vue",
@@ -3176,27 +3915,75 @@
   },
   {
     "file": "packages/core/src/Listbox/story/ListboxChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ListboxChromatic.story' should be PascalCase or kebab-case",
+        "line": 14,
+        "column": 11,
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Listbox/story/ListboxDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ListboxDemo.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Listbox/story/ListboxFilter.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ListboxFilter.story' should be PascalCase or kebab-case",
+        "line": 10,
+        "column": 11,
+        "endLine": 10,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Listbox/story/ListboxVirtual.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ListboxVirtual.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Listbox/story/_Listbox.vue",
@@ -3254,61 +4041,15 @@
   },
   {
     "file": "packages/core/src/Menu/MenuItem.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 59,
-        "column": 5,
-        "endLine": 68,
-        "endColumn": 6,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 69,
-        "column": 5,
-        "endLine": 84,
-        "endColumn": 6,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 69,
-        "column": 5,
-        "endLine": 84,
-        "endColumn": 6,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Menu/MenuItemImpl.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 89,
-        "column": 7,
-        "endLine": 96,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Menu/MenuItemIndicator.vue",
@@ -3372,124 +4113,105 @@
   },
   {
     "file": "packages/core/src/Menu/MenuSubContent.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Node' is a browser-only global and is not available in SSR",
-        "line": 61,
-        "column": 7,
-        "endLine": 72,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 80,
-        "column": 7,
-        "endLine": 98,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 80,
-        "column": 7,
-        "endLine": 98,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 80,
-        "column": 7,
-        "endLine": 98,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Menu/MenuSubTrigger.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Element' is a browser-only global and is not available in SSR",
-        "line": 135,
-        "column": 7,
-        "endLine": 142,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 147,
-        "column": 7,
-        "endLine": 158,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
-        "line": 147,
-        "column": 7,
-        "endLine": 158,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Menu/story/MenuCheckboxItems.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'MenuCheckboxItems.story' should be PascalCase or kebab-case",
+        "line": 18,
+        "column": 11,
+        "endLine": 18,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Menu/story/MenuRadioItems.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'MenuRadioItems.story' should be PascalCase or kebab-case",
+        "line": 23,
+        "column": 11,
+        "endLine": 23,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Menu/story/MenuStyled.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'MenuStyled.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Menu/story/MenuSubMenu.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'MenuSubMenu.story' should be PascalCase or kebab-case",
+        "line": 16,
+        "column": 11,
+        "endLine": 16,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Menu/story/MenuWithLabels.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'MenuWithLabels.story' should be PascalCase or kebab-case",
+        "line": 53,
+        "column": 11,
+        "endLine": 53,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Menu/story/_Menu.vue",
@@ -3595,21 +4317,9 @@
   },
   {
     "file": "packages/core/src/Menubar/MenubarContent.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 90,
-        "column": 5,
-        "endLine": 94,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Menubar/MenubarGroup.vue",
@@ -3691,27 +4401,27 @@
   },
   {
     "file": "packages/core/src/Menubar/MenubarTrigger.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Menubar/story/Menubar.story.vue",
     "messages": [
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 80,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Menubar.story' should be PascalCase or kebab-case",
+        "line": 31,
         "column": 11,
-        "endLine": 90,
-        "endColumn": 13,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+        "endLine": 31,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
     "warningCount": 1
-  },
-  {
-    "file": "packages/core/src/Menubar/story/Menubar.story.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
   },
   {
     "file": "packages/core/src/Menubar/story/_Menubar.vue",
@@ -3793,9 +4503,21 @@
   },
   {
     "file": "packages/core/src/MonthPicker/story/MonthPickerDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'MonthPickerDefault.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/MonthPicker/story/_MonthPicker.vue",
@@ -3877,9 +4599,21 @@
   },
   {
     "file": "packages/core/src/MonthRangePicker/story/MonthRangePickerDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'MonthRangePickerDefault.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/MonthRangePicker/story/_MonthRangePicker.vue",
@@ -3967,25 +4701,72 @@
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuAlignment.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'NavigationMenuAlignment.story' should be PascalCase or kebab-case",
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuBasic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'NavigationMenuBasic.story' should be PascalCase or kebab-case",
+        "line": 23,
+        "column": 11,
+        "endLine": 23,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'NavigationMenuChromatic.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuDemo.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'NavigationMenuDemo.story' should be PascalCase or kebab-case",
+        "line": 19,
+        "column": 11,
+        "endLine": 19,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -3996,17 +4777,6 @@
         "endLine": 54,
         "endColumn": 26,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
-      },
-      {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 51,
-        "column": 25,
-        "endLine": 54,
-        "endColumn": 26,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       }
     ],
     "errorCount": 0,
@@ -4014,15 +4784,39 @@
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuSubmenus.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'NavigationMenuSubmenus.story' should be PascalCase or kebab-case",
+        "line": 21,
+        "column": 11,
+        "endLine": 21,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/NavigationMenu/story/NavigationMenuViewport.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'NavigationMenuViewport.story' should be PascalCase or kebab-case",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/NavigationMenu/story/_LinkGroup.vue",
@@ -4133,15 +4927,39 @@
   },
   {
     "file": "packages/core/src/NumberField/story/NumberField.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'NumberField.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/NumberField/story/NumberFieldChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'NumberFieldChromatic.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/NumberField/story/_NumberField.vue",
@@ -4211,9 +5029,21 @@
   },
   {
     "file": "packages/core/src/Pagination/story/PaginationDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PaginationDefault.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Pagination/story/_Pagination.vue",
@@ -4247,15 +5077,39 @@
   },
   {
     "file": "packages/core/src/PinInput/story/PinInput.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PinInput.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/PinInput/story/PinInputNumeric.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PinInputNumeric.story' should be PascalCase or kebab-case",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/PinInput/story/_PinInput.vue",
@@ -4324,21 +5178,9 @@
   },
   {
     "file": "packages/core/src/Popover/PopoverContentNonModal.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 36,
-        "column": 5,
-        "endLine": 65,
-        "endColumn": 6,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Popover/PopoverPortal.vue",
@@ -4366,37 +5208,108 @@
   },
   {
     "file": "packages/core/src/Popover/story/PopoverBodyLock.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PopoverBodyLock.story' should be PascalCase or kebab-case",
+        "line": 16,
+        "column": 11,
+        "endLine": 16,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Popover/story/PopoverBoundary.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PopoverBoundary.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Popover/story/PopoverCustomAnchor.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PopoverCustomAnchor.story' should be PascalCase or kebab-case",
+        "line": 14,
+        "column": 11,
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Popover/story/PopoverCustomArrow.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PopoverCustomArrow.story' should be PascalCase or kebab-case",
+        "line": 17,
+        "column": 11,
+        "endLine": 17,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Popover/story/PopoverDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PopoverDemo.story' should be PascalCase or kebab-case",
+        "line": 16,
+        "column": 11,
+        "endLine": 16,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Popover/story/PopoverForceMount.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PopoverForceMount.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -4410,11 +5323,22 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Popover/story/PopoverModality.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PopoverModality.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -4439,19 +5363,43 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/Popover/story/PopoverNested.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PopoverNested.story' should be PascalCase or kebab-case",
+        "line": 15,
+        "column": 11,
+        "endLine": 15,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Popover/story/PopoverProgrammaticClose.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PopoverProgrammaticClose.story' should be PascalCase or kebab-case",
+        "line": 12,
+        "column": 11,
+        "endLine": 12,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Popover/story/_Popover.vue",
@@ -4479,38 +5427,27 @@
   },
   {
     "file": "packages/core/src/Popper/PopperArrow.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Popper/PopperContent.vue",
     "messages": [
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Element' is a browser-only global and is not available in SSR",
-        "line": 40,
-        "column": 5,
-        "endLine": 43,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 40,
-        "column": 5,
-        "endLine": 43,
-        "endColumn": 7,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 378,
+        "column": 27,
+        "endLine": 378,
+        "endColumn": 33,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
-  },
-  {
-    "file": "packages/core/src/Popper/PopperContent.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Popper/PopperRoot.vue",
@@ -4540,6 +5477,39 @@
     "file": "packages/core/src/Presence/story/PresenceAnimation.story.vue",
     "messages": [
       {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 14,
+        "column": 22,
+        "endLine": 14,
+        "endColumn": 28,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 18,
+        "column": 5,
+        "endLine": 18,
+        "endColumn": 11,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PresenceAnimation.story' should be PascalCase or kebab-case",
+        "line": 23,
+        "column": 11,
+        "endLine": 23,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -4552,17 +5522,40 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 4
   },
   {
     "file": "packages/core/src/Presence/story/PresenceBasic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PresenceBasic.story' should be PascalCase or kebab-case",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Presence/story/PresenceTransition.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'PresenceTransition.story' should be PascalCase or kebab-case",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -4576,7 +5569,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Presence/story/_Animation.vue",
@@ -4611,6 +5604,17 @@
         "help": "Use TypeScript type parameter: defineProps<{ msg: string }>()"
       },
       {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "line": 4,
+        "column": 9,
+        "endLine": 4,
+        "endColumn": 20,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
         "ruleId": "type/require-typed-emits",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
@@ -4634,7 +5638,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 4
   },
   {
     "file": "packages/core/src/Progress/ProgressIndicator.vue",
@@ -4651,6 +5655,17 @@
   {
     "file": "packages/core/src/Progress/story/Progress.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Progress.story' should be PascalCase or kebab-case",
+        "line": 15,
+        "column": 11,
+        "endLine": 15,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -4675,7 +5690,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/Progress/story/_Progress.vue",
@@ -4721,9 +5736,21 @@
   },
   {
     "file": "packages/core/src/RadioGroup/story/RadioGroup.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'RadioGroup.story' should be PascalCase or kebab-case",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/RadioGroup/story/_Radio.vue",
@@ -4853,25 +5880,72 @@
   },
   {
     "file": "packages/core/src/RangeCalendar/story/RangeCalendarChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'RangeCalendarChromatic.story' should be PascalCase or kebab-case",
+        "line": 21,
+        "column": 11,
+        "endLine": 21,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/RangeCalendar/story/RangeCalendarDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'RangeCalendarDefault.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/RangeCalendar/story/RangeCalendarMultiple.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'RangeCalendarMultiple.story' should be PascalCase or kebab-case",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/RangeCalendar/story/RangeCalendarPopover.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'RangeCalendarPopover.story' should be PascalCase or kebab-case",
+        "line": 17,
+        "column": 11,
+        "endLine": 17,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -4918,19 +5992,43 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 5
   },
   {
     "file": "packages/core/src/RangeCalendar/story/RangeCalendarValidation.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'RangeCalendarValidation.story' should be PascalCase or kebab-case",
+        "line": 18,
+        "column": 11,
+        "endLine": 18,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/RangeCalendar/story/RangeCalendarWeek.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'RangeCalendarWeek.story' should be PascalCase or kebab-case",
+        "line": 7,
+        "column": 11,
+        "endLine": 7,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/RangeCalendar/story/_DummyRangeCalendar.vue",
@@ -4988,15 +6086,39 @@
   },
   {
     "file": "packages/core/src/Rating/story/RatingChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'RatingChromatic.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Rating/story/RatingDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'RatingDefault.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Rating/story/_Rating.vue",
@@ -5024,27 +6146,27 @@
   },
   {
     "file": "packages/core/src/RovingFocus/RovingFocusItem.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/RovingFocus/story/RovingFocusBasic.story.vue",
     "messages": [
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
-        "line": 110,
-        "column": 7,
-        "endLine": 118,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'RovingFocusBasic.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
     "warningCount": 1
-  },
-  {
-    "file": "packages/core/src/RovingFocus/story/RovingFocusBasic.story.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
   },
   {
     "file": "packages/core/src/RovingFocus/story/_Button.vue",
@@ -5059,21 +6181,10 @@
         "endLine": 18,
         "endColumn": 11,
         "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 29,
-        "column": 7,
-        "endLine": 35,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/RovingFocus/story/_ButtonGroup.vue",
@@ -5125,9 +6236,32 @@
   },
   {
     "file": "packages/core/src/ScrollArea/ScrollAreaScrollbarGlimpse.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 68,
+        "column": 20,
+        "endLine": 68,
+        "endColumn": 26,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 78,
+        "column": 20,
+        "endLine": 78,
+        "endColumn": 26,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/ScrollArea/ScrollAreaScrollbarHover.vue",
@@ -5143,9 +6277,21 @@
   },
   {
     "file": "packages/core/src/ScrollArea/ScrollAreaScrollbarScroll.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 47,
+        "column": 20,
+        "endLine": 47,
+        "endColumn": 26,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ScrollArea/ScrollAreaScrollbarVisible.vue",
@@ -5179,33 +6325,93 @@
   },
   {
     "file": "packages/core/src/ScrollArea/story/ScrollAreaBasic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ScrollAreaBasic.story' should be PascalCase or kebab-case",
+        "line": 18,
+        "column": 11,
+        "endLine": 18,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ScrollArea/story/ScrollAreaChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ScrollAreaChromatic.story' should be PascalCase or kebab-case",
+        "line": 7,
+        "column": 11,
+        "endLine": 7,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ScrollArea/story/ScrollAreaChromaticBoth.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ScrollAreaChromaticBoth.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ScrollArea/story/ScrollAreaChromaticHorizontal.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ScrollAreaChromaticHorizontal.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ScrollArea/story/ScrollAreaChromaticVertical.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ScrollAreaChromaticVertical.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ScrollArea/story/_ScrollArea.vue",
@@ -5295,6 +6501,28 @@
     "file": "packages/core/src/Select/SelectContentImpl.vue",
     "messages": [
       {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'document' is a browser-only global and is not available in SSR",
+        "line": 171,
+        "column": 5,
+        "endLine": 171,
+        "endColumn": 13,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'document' is a browser-only global and is not available in SSR",
+        "line": 172,
+        "column": 5,
+        "endLine": 172,
+        "endColumn": 13,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
         "ruleId": "a11y/interactive-supports-focus",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -5304,43 +6532,10 @@
         "endLine": 328,
         "endColumn": 10,
         "help": "Why: Interactive roles imply the element can be activated by keyboard users.\nFix:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>\nBetter: Use native interactive elements:\n  <button @click=\"handle\">Click me</button>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Element' is a browser-only global and is not available in SSR",
-        "line": 303,
-        "column": 11,
-        "endLine": 314,
-        "endColumn": 12,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 303,
-        "column": 11,
-        "endLine": 314,
-        "endColumn": 12,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 303,
-        "column": 11,
-        "endLine": 314,
-        "endColumn": 12,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 3
   },
   {
     "file": "packages/core/src/Select/SelectGroup.vue",
@@ -5356,21 +6551,9 @@
   },
   {
     "file": "packages/core/src/Select/SelectItem.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 172,
-        "column": 7,
-        "endLine": 174,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Select/SelectItemAlignedPosition.vue",
@@ -5469,21 +6652,9 @@
   },
   {
     "file": "packages/core/src/Select/SelectTrigger.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 129,
-        "column": 7,
-        "endLine": 142,
-        "endColumn": 8,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Select/SelectValue.vue",
@@ -5505,13 +6676,36 @@
   },
   {
     "file": "packages/core/src/Select/story/SelectDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SelectDemo.story' should be PascalCase or kebab-case",
+        "line": 31,
+        "column": 11,
+        "endLine": 31,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Select/story/SelectForm.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SelectForm.story' should be PascalCase or kebab-case",
+        "line": 32,
+        "column": 11,
+        "endLine": 32,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/no-refer-to-non-existent-id",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -5525,13 +6719,25 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Select/story/SelectWithinDialog.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SelectWithinDialog.story' should be PascalCase or kebab-case",
+        "line": 28,
+        "column": 11,
+        "endLine": 28,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Select/story/_Select.vue",
@@ -5589,9 +6795,21 @@
   },
   {
     "file": "packages/core/src/Separator/Separator.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Separator.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Separator/Separator.vue",
@@ -5607,54 +6825,9 @@
   },
   {
     "file": "packages/core/src/Slider/SliderImpl.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 32,
-        "column": 5,
-        "endLine": 48,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 49,
-        "column": 5,
-        "endLine": 62,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 63,
-        "column": 5,
-        "endLine": 66,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 67,
-        "column": 5,
-        "endLine": 73,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Slider/SliderRange.vue",
@@ -5694,21 +6867,57 @@
   },
   {
     "file": "packages/core/src/Slider/story/SliderChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SliderChromatic.story' should be PascalCase or kebab-case",
+        "line": 11,
+        "column": 11,
+        "endLine": 11,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Slider/story/SliderDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SliderDemo.story' should be PascalCase or kebab-case",
+        "line": 11,
+        "column": 11,
+        "endLine": 11,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Slider/story/SliderExtremes.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SliderExtremes.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Slider/story/_Slider.vue",
@@ -5730,9 +6939,32 @@
   },
   {
     "file": "packages/core/src/Splitter/SplitterGroup.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'ResizeObserver' is a browser-only global and is not available in SSR",
+        "line": 229,
+        "column": 30,
+        "endLine": 229,
+        "endColumn": 44,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
+        "line": 241,
+        "column": 26,
+        "endLine": 241,
+        "endColumn": 37,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Splitter/SplitterPanel.vue",
@@ -5748,57 +6980,165 @@
   },
   {
     "file": "packages/core/src/Splitter/story/SplitterAction.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SplitterAction.story' should be PascalCase or kebab-case",
+        "line": 15,
+        "column": 11,
+        "endLine": 15,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Splitter/story/SplitterChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SplitterChromatic.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Splitter/story/SplitterCollapsible.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SplitterCollapsible.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Splitter/story/SplitterConditional.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SplitterConditional.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Splitter/story/SplitterDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SplitterDemo.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Splitter/story/SplitterDirection.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SplitterDirection.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Splitter/story/SplitterOverflow.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SplitterOverflow.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Splitter/story/SplitterPersistence.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SplitterPersistence.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Splitter/story/SplitterPixelSizing.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'SplitterPixelSizing.story' should be PascalCase or kebab-case",
+        "line": 27,
+        "column": 11,
+        "endLine": 27,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Splitter/story/_Splitter.vue",
@@ -5862,15 +7202,39 @@
   },
   {
     "file": "packages/core/src/Stepper/story/StepperChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'StepperChromatic.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Stepper/story/StepperDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'StepperDefault.story' should be PascalCase or kebab-case",
+        "line": 34,
+        "column": 11,
+        "endLine": 34,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Stepper/story/_DummyStepper.vue",
@@ -5928,9 +7292,21 @@
   },
   {
     "file": "packages/core/src/Switch/Switch.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Switch.story' should be PascalCase or kebab-case",
+        "line": 10,
+        "column": 11,
+        "endLine": 10,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Switch/SwitchRoot.vue",
@@ -5988,33 +7364,45 @@
   },
   {
     "file": "packages/core/src/Tabs/TabsTrigger.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
+  },
+  {
+    "file": "packages/core/src/Tabs/story/Tabs.story.vue",
     "messages": [
       {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'MouseEvent' is a browser-only global and is not available in SSR",
-        "line": 54,
-        "column": 7,
-        "endLine": 64,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Tabs.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
       }
     ],
     "errorCount": 0,
     "warningCount": 1
   },
   {
-    "file": "packages/core/src/Tabs/story/Tabs.story.vue",
-    "messages": [],
-    "errorCount": 0,
-    "warningCount": 0
-  },
-  {
     "file": "packages/core/src/Tabs/story/TabsVertical.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TabsVertical.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Tabs/story/_Tabs.vue",
@@ -6072,21 +7460,57 @@
   },
   {
     "file": "packages/core/src/TagsInput/story/TagsInput.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TagsInput.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TagsInput/story/TagsInputCombobox.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TagsInputCombobox.story' should be PascalCase or kebab-case",
+        "line": 21,
+        "column": 11,
+        "endLine": 21,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TagsInput/story/TagsInputObject.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TagsInputObject.story' should be PascalCase or kebab-case",
+        "line": 20,
+        "column": 11,
+        "endLine": 20,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TagsInput/story/_TagsInput.vue",
@@ -6150,21 +7574,9 @@
   },
   {
     "file": "packages/core/src/TimeField/TimeFieldInput.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 64,
-        "column": 5,
-        "endLine": 77,
-        "endColumn": 12,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/TimeField/TimeFieldRoot.vue",
@@ -6174,19 +7586,54 @@
   },
   {
     "file": "packages/core/src/TimeField/story/TimeFieldChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TimeFieldChromatic.story' should be PascalCase or kebab-case",
+        "line": 12,
+        "column": 11,
+        "endLine": 12,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TimeField/story/TimeFieldDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TimeFieldDefault.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TimeField/story/TimeFieldGranular.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TimeFieldGranular.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "html/id-duplication",
         "ruleDocsPath": "docs/content/rules/html.md",
@@ -6211,19 +7658,43 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TimeField/story/TimeFieldInvalid.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TimeFieldInvalid.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TimeField/story/TimeFieldLocales.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TimeFieldLocales.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TimeField/story/_TimeField.vue",
@@ -6245,21 +7716,9 @@
   },
   {
     "file": "packages/core/src/TimeRangeField/TimeRangeFieldInput.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 66,
-        "column": 5,
-        "endLine": 76,
-        "endColumn": 12,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/TimeRangeField/TimeRangeFieldRoot.vue",
@@ -6269,27 +7728,75 @@
   },
   {
     "file": "packages/core/src/TimeRangeField/story/TimeRangeFieldChromatic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TimeRangeFieldChromatic.story' should be PascalCase or kebab-case",
+        "line": 14,
+        "column": 11,
+        "endLine": 14,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TimeRangeField/story/TimeRangeFieldDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TimeRangeFieldDefault.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TimeRangeField/story/TimeRangeFieldGranular.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TimeRangeFieldGranular.story' should be PascalCase or kebab-case",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TimeRangeField/story/TimeRangeFieldValidation.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TimeRangeFieldValidation.story' should be PascalCase or kebab-case",
+        "line": 15,
+        "column": 11,
+        "endLine": 15,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/TimeRangeField/story/_DummyTimeRangeField.vue",
@@ -6329,21 +7836,9 @@
   },
   {
     "file": "packages/core/src/Toast/FocusProxy.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 16,
-        "column": 5,
-        "endLine": 20,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Toast/ToastAction.vue",
@@ -6353,9 +7848,21 @@
   },
   {
     "file": "packages/core/src/Toast/ToastAnnounce.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'requestAnimationFrame' is a browser-only global and is not available in SSR",
+        "line": 17,
+        "column": 10,
+        "endLine": 17,
+        "endColumn": 31,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toast/ToastAnnounceExclude.vue",
@@ -6389,54 +7896,9 @@
   },
   {
     "file": "packages/core/src/Toast/ToastRoot.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 69,
-        "column": 7,
-        "endLine": 74,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 75,
-        "column": 7,
-        "endLine": 84,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 85,
-        "column": 7,
-        "endLine": 95,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 96,
-        "column": 7,
-        "endLine": 108,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Toast/ToastRootImpl.vue",
@@ -6451,32 +7913,10 @@
         "endLine": 213,
         "endColumn": 47,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 223,
-        "column": 9,
-        "endLine": 252,
-        "endColumn": 11,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 253,
-        "column": 9,
-        "endLine": 280,
-        "endColumn": 11,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toast/ToastTitle.vue",
@@ -6491,73 +7931,99 @@
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Element' is a browser-only global and is not available in SSR",
-        "line": 177,
-        "column": 7,
-        "endLine": 181,
-        "endColumn": 9,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 135,
+        "column": 5,
+        "endLine": 135,
+        "endColumn": 11,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       },
       {
         "ruleId": "ssr/no-browser-globals-in-ssr",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 177,
-        "column": 7,
-        "endLine": 181,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'Element' is a browser-only global and is not available in SSR",
-        "line": 202,
-        "column": 7,
-        "endLine": 206,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 202,
-        "column": 7,
-        "endLine": 206,
-        "endColumn": 9,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 136,
+        "column": 5,
+        "endLine": 136,
+        "endColumn": 11,
         "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Toast/story/ToastDemo.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ToastDemo.story' should be PascalCase or kebab-case",
+        "line": 29,
+        "column": 11,
+        "endLine": 29,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toast/story/ToastDemoFromDialog.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ToastDemoFromDialog.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toast/story/ToastDemoKeyChange.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ToastDemoKeyChange.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toast/story/ToastMultiple.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ToastMultiple.story' should be PascalCase or kebab-case",
+        "line": 8,
+        "column": 11,
+        "endLine": 8,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toast/story/_Toast.vue",
@@ -6579,9 +8045,21 @@
   },
   {
     "file": "packages/core/src/Toggle/Toggle.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Toggle.story' should be PascalCase or kebab-case",
+        "line": 17,
+        "column": 11,
+        "endLine": 17,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toggle/Toggle.vue",
@@ -6603,9 +8081,21 @@
   },
   {
     "file": "packages/core/src/ToggleGroup/story/ToggleGroup.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'ToggleGroup.story' should be PascalCase or kebab-case",
+        "line": 13,
+        "column": 11,
+        "endLine": 13,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/ToggleGroup/story/_ScopedToggleGroup.vue",
@@ -6651,32 +8141,9 @@
   },
   {
     "file": "packages/core/src/Toolbar/ToolbarLink.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 24,
-        "column": 7,
-        "endLine": 26,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 24,
-        "column": 7,
-        "endLine": 26,
-        "endColumn": 9,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Toolbar/ToolbarRoot.vue",
@@ -6704,9 +8171,21 @@
   },
   {
     "file": "packages/core/src/Toolbar/story/Toolbar.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Toolbar.story' should be PascalCase or kebab-case",
+        "line": 17,
+        "column": 11,
+        "endLine": 17,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Toolbar/story/_Toolbar.vue",
@@ -6746,21 +8225,9 @@
   },
   {
     "file": "packages/core/src/Tooltip/TooltipContentImpl.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'HTMLElement' is a browser-only global and is not available in SSR",
-        "line": 99,
-        "column": 5,
-        "endLine": 104,
-        "endColumn": 7,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Tooltip/TooltipPortal.vue",
@@ -6790,6 +8257,17 @@
     "file": "packages/core/src/Tooltip/stories/Tooltip.content.story.vue",
     "messages": [
       {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Tooltip.content.story' should be PascalCase or kebab-case",
+        "line": 9,
+        "column": 11,
+        "endLine": 9,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
+      {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -6813,13 +8291,25 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Tooltip/stories/Tooltip.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'Tooltip.story' should be PascalCase or kebab-case",
+        "line": 10,
+        "column": 11,
+        "endLine": 10,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Tooltip/stories/_Tooltip.vue",
@@ -6841,32 +8331,9 @@
   },
   {
     "file": "packages/core/src/Tree/TreeItem.vue",
-    "messages": [
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 198,
-        "column": 7,
-        "endLine": 198,
-        "endColumn": 135,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      },
-      {
-        "ruleId": "ssr/no-browser-globals-in-ssr",
-        "ruleDocsPath": "docs/content/rules/ssr.md",
-        "severity": 1,
-        "message": "[vize:ssr/no-browser-globals-in-ssr] 'KeyboardEvent' is a browser-only global and is not available in SSR",
-        "line": 199,
-        "column": 7,
-        "endLine": 199,
-        "endColumn": 134,
-        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "packages/core/src/Tree/TreeRoot.vue",
@@ -6882,19 +8349,54 @@
   },
   {
     "file": "packages/core/src/Tree/story/TreeAsync.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TreeAsync.story' should be PascalCase or kebab-case",
+        "line": 67,
+        "column": 11,
+        "endLine": 67,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Tree/story/TreeBasic.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TreeBasic.story' should be PascalCase or kebab-case",
+        "line": 7,
+        "column": 11,
+        "endLine": 7,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Tree/story/TreeCheckbox.story.vue",
     "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TreeCheckbox.story' should be PascalCase or kebab-case",
+        "line": 10,
+        "column": 11,
+        "endLine": 10,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      },
       {
         "ruleId": "a11y/form-control-has-label",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
@@ -6908,19 +8410,43 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "packages/core/src/Tree/story/TreeNested.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TreeNested.story' should be PascalCase or kebab-case",
+        "line": 7,
+        "column": 11,
+        "endLine": 7,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Tree/story/TreeVirtual.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'TreeVirtual.story' should be PascalCase or kebab-case",
+        "line": 22,
+        "column": 11,
+        "endLine": 22,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/Tree/story/_Tree.vue",
@@ -7044,9 +8570,21 @@
   },
   {
     "file": "packages/core/src/YearPicker/story/YearPickerDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'YearPickerDefault.story' should be PascalCase or kebab-case",
+        "line": 6,
+        "column": 11,
+        "endLine": 6,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/YearPicker/story/_YearPicker.vue",
@@ -7128,9 +8666,21 @@
   },
   {
     "file": "packages/core/src/YearRangePicker/story/YearRangePickerDefault.story.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "vue/component-definition-name-casing",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/component-definition-name-casing] Component file name 'YearRangePickerDefault.story' should be PascalCase or kebab-case",
+        "line": 5,
+        "column": 11,
+        "endLine": 5,
+        "endColumn": 11,
+        "help": "Rename the file to PascalCase or kebab-case:\n  myComponent.vue  -> MyComponent.vue\n  my-Component.vue -> my-component.vue"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "packages/core/src/YearRangePicker/story/_YearRangePicker.vue",

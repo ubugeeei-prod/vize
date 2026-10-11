@@ -1,0 +1,76 @@
+[
+  {
+    "project": "naive-ui",
+    "producerRevision": "4262809614210a9531c585c1e40db4f42275206e",
+    "runtimeNode": "24.14.0",
+    "scriptSha256": "6f51970081cd6e2a1b30092d2bfc0e14c9622589e2652a3c00f794997a366794",
+    "embeddedSources": {
+      "vite-runtime.mjs": "9538e6450dc6fcdce6b6b07c9e82dc8302f21c6bb1e93125822a841a6a433921",
+      "module-runtime.mjs": "a5d247f627f4a45924f61d72253114349b512c23817487b45c0a068db69f7eda"
+    },
+    "selectedConfigSha256": "2228b6a35c8b5297cd4174b2173f0d060606ad17c5f7e21853e3c665c29ea46d",
+    "actualVite": {
+      "entry": "/private/tmp/vize-app-e2e-lint-diagnosis-20261011/dependency-generation/naive-ui/node_modules/.pnpm/vite@8.3.4_@types+node@24.19.2_esbuild@0.28.2_tsx@4.23.15_yaml@2.9.1/node_modules/vite/dist/node/index.js",
+      "version": "8.3.4"
+    },
+    "exitCode": 0,
+    "stdout": "{\"typeChecker\":{\"jsxTypecheck\":true}}",
+    "stderr": ""
+  },
+  {
+    "project": "voicevox",
+    "producerRevision": "4262809614210a9531c585c1e40db4f42275206e",
+    "runtimeNode": "24.14.0",
+    "scriptSha256": "6f51970081cd6e2a1b30092d2bfc0e14c9622589e2652a3c00f794997a366794",
+    "embeddedSources": {
+      "vite-runtime.mjs": "9538e6450dc6fcdce6b6b07c9e82dc8302f21c6bb1e93125822a841a6a433921",
+      "module-runtime.mjs": "a5d247f627f4a45924f61d72253114349b512c23817487b45c0a068db69f7eda"
+    },
+    "selectedConfigSha256": "6e63c473a78567619661a8dcdc877ae39a397c17e3e70480dc04e0aa5a2c224c",
+    "actualVite": {
+      "entry": "/private/tmp/vize-app-e2e-lint-diagnosis-20261011/dependency-generation/voicevox/node_modules/.pnpm/vite@8.0.13_@types+node@24.10.10_esbuild@0.28.0_jiti@2.7.0_sass-embedded@1.99.0_sass@1.100.0_tsx@4.22.1_yaml@2.8.3/node_modules/vite/dist/node/index.js",
+      "version": "8.0.13"
+    },
+    "exitCode": 0,
+    "stdout": "{\"typeChecker\":{\"jsxTypecheck\":true}}",
+    "stderr": ""
+  },
+  {
+    "project": "misskey",
+    "producerRevision": "4262809614210a9531c585c1e40db4f42275206e",
+    "runtimeNode": "24.14.0",
+    "scriptSha256": "6f51970081cd6e2a1b30092d2bfc0e14c9622589e2652a3c00f794997a366794",
+    "embeddedSources": {
+      "vite-runtime.mjs": "9538e6450dc6fcdce6b6b07c9e82dc8302f21c6bb1e93125822a841a6a433921",
+      "module-runtime.mjs": "a5d247f627f4a45924f61d72253114349b512c23817487b45c0a068db69f7eda"
+    },
+    "selectedConfigSha256": "04831834e297f94010534c7c7612bfab969ef2217615d709e9d8ceeb7bafbe85",
+    "actualVite": {
+      "entry": "/private/tmp/vize-app-e2e-lint-diagnosis-20261011/dependency-generation/misskey/node_modules/.pnpm/vite@7.3.1_@types+node@24.10.13_sass@1.97.3_terser@5.46.0_tsx@4.21.0/node_modules/vite/dist/node/index.js",
+      "version": "7.3.1"
+    },
+    "exitCode": 0,
+    "stdout": "{\"typeChecker\":{\"jsxTypecheck\":true}}",
+    "stderr": ""
+  },
+  {
+    "project": "npmx.dev",
+    "sourceRevision": "c9e8be91e61eeeae956e2068722caa09e293cc68",
+    "producerRevision": "4262809614210a9531c585c1e40db4f42275206e",
+    "runtimeNode": "24.14.0",
+    "scriptSha256": "6f51970081cd6e2a1b30092d2bfc0e14c9622589e2652a3c00f794997a366794",
+    "embeddedSources": {
+      "vite-runtime.mjs": "9538e6450dc6fcdce6b6b07c9e82dc8302f21c6bb1e93125822a841a6a433921",
+      "module-runtime.mjs": "a5d247f627f4a45924f61d72253114349b512c23817487b45c0a068db69f7eda"
+    },
+    "selectedConfigSha256": "e47eb38f147bf87746554775407976e81ef73e582c003ccd520cebd5638fca50",
+    "originalPackageSha256": "30c3261d4621cfa6280326f87b89dc4ee0a9327799d4352bf9d4f5d31c575bd2",
+    "originalLockSha256": "49462888719521ac8664116b766856f6d2b8fc9fdff83e504d7710d8c2952cac",
+    "effectiveLockSha256": "6cdfe35228adac418da3832edec9a3c3a82430202799fadb55d87e9466ed46c5",
+    "installedLunaria": "0.2.0",
+    "originalFrozenClosure": false,
+    "exitCode": 0,
+    "stdout": "{\"typeChecker\":{\"jsxTypecheck\":true},\"formatter\":{}}",
+    "stderr": ""
+  }
+]

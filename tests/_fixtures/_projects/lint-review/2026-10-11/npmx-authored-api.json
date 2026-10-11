@@ -1,0 +1,15 @@
+{
+  "sourceRevision": "c9e8be91e61eeeae956e2068722caa09e293cc68",
+  "originalSourcePackageSha256": "30c3261d4621cfa6280326f87b89dc4ee0a9327799d4352bf9d4f5d31c575bd2",
+  "originalSourceLockSha256": "49462888719521ac8664116b766856f6d2b8fc9fdff83e504d7710d8c2952cac",
+  "officialDependencyVersion": "0.2.0",
+  "effectiveLockSha256": "6cdfe35228adac418da3832edec9a3c3a82430202799fadb55d87e9466ed46c5",
+  "fullAuthoredEntry": "lunaria/lunaria.ts",
+  "entryGitBlob": "c173aead382b6afb12e3f3ef68c167bbc83d670c",
+  "authenticatedHistoryCommits": 2103,
+  "exitCode": 0,
+  "stdout": "Generated dist/lunaria/index.html and dist/lunaria/status.json\n",
+  "statusSha256": "d4404e14f094c08773535cc4a7cec81549bdc3512b60b2242ba0704b4bbcb68f",
+  "htmlSha256": "7b3922d3aa6d281ac08e3f2d0e1846b4ad5e5dd32ebe12054323854a2a9d39fe",
+  "originalFrozenClosure": false
+}

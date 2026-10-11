@@ -44,10 +44,16 @@ function shellQuote(value: string): string {
   return `'${value.replaceAll("'", "'\\''")}'`;
 }
 
-function readCommandStdout(cmd: string, cwd: string, timeoutMs: number): string {
+function readCommandStdout(
+  cmd: string,
+  cwd: string,
+  timeoutMs: number,
+  env?: NodeJS.ProcessEnv,
+): string {
   try {
     return execSync(cmd, {
       cwd,
+      env,
       timeout: timeoutMs,
       maxBuffer: 100 * 1024 * 1024,
     }).toString();
@@ -251,7 +257,7 @@ const __vizeIntentionalTypeError: number = "not-a-number";
 
 export function runCrashFreeVizeLint(
   app: AppConfig,
-  options: { timeoutMs?: number } = {},
+  options: { timeoutMs?: number; env?: NodeJS.ProcessEnv } = {},
 ): VizeLintSummary {
   const lintConfig = app.lint!;
   const timeoutMs = options.timeoutMs ?? 180_000;
@@ -260,7 +266,7 @@ export function runCrashFreeVizeLint(
   console.log(`Running: ${cmd}`);
 
   const startedAt = performance.now();
-  const stdout = readCommandStdout(cmd, lintConfig.cwd, timeoutMs);
+  const stdout = readCommandStdout(cmd, lintConfig.cwd, timeoutMs, options.env);
   const durationMs = performance.now() - startedAt;
   const parsed = JSON.parse(stdout) as unknown[];
 

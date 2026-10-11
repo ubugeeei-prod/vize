@@ -592,7 +592,7 @@ function cleanMutableWorktreeCaches(workDir: string): void {
   }
 }
 
-function syncGitFixtureWorktree(name: string, variant?: string): string {
+export function syncGitFixtureWorktree(name: string, variant?: string): string {
   const sourceDir = getGitFixtureSourceDir(name);
   const workDir = getMutableGitFixtureDir(name, variant);
   const parentDir = path.dirname(workDir);

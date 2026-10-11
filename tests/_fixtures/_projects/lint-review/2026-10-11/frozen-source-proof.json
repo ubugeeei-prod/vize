@@ -1,0 +1,43 @@
+[
+  {
+    "name": "naive-ui",
+    "revision": "b26496a26536918204722cb9b9e5dd9bfe31c893",
+    "originalFiles": 3592,
+    "inventorySha256": "33f6ba6b09a821a6ef2b1ddc5a6cb747a80c3c0510fc852fe9f3f228d44644f5",
+    "gitlinks": [],
+    "allOriginalBlobsAndUnixModesExact": true,
+    "sourceRoot": "/tmp/vize-app-e2e-lint-diagnosis-20261011/dependency-generation/naive-ui"
+  },
+  {
+    "name": "voicevox",
+    "revision": "0a7fcc8523410ad294b51b70a46575c4d21371ac",
+    "originalFiles": 836,
+    "inventorySha256": "dc57ecf06f8340610fc1f2619f44063be8ef74f0fdfef82ad590256ff8473c7e",
+    "gitlinks": [],
+    "allOriginalBlobsAndUnixModesExact": true,
+    "sourceRoot": "/tmp/vize-app-e2e-lint-diagnosis-20261011/dependency-generation/voicevox"
+  },
+  {
+    "name": "misskey",
+    "revision": "810faa8e5db4bbf9d6d408a61df148559340ee99",
+    "originalFiles": 4751,
+    "inventorySha256": "bafcbf2a983d844a516950ad68b3761194df427e7b0312b879b7bd493c6c8674",
+    "gitlinks": [
+      {
+        "path": "fluent-emojis",
+        "revision": "cae981eb4c5189ea9ea3230e83b876a5068df7d1"
+      }
+    ],
+    "allOriginalBlobsAndUnixModesExact": true,
+    "sourceRoot": "/tmp/vize-app-e2e-lint-diagnosis-20261011/dependency-generation/misskey"
+  },
+  {
+    "name": "npmx.dev",
+    "revision": "c9e8be91e61eeeae956e2068722caa09e293cc68",
+    "originalFiles": 1162,
+    "inventorySha256": "afd94af5729468f8e35dad866eaacc8dfcc3eb31dd9c3d592456b73716befd4b",
+    "gitlinks": [],
+    "allOriginalBlobsAndUnixModesExact": true,
+    "sourceRoot": "/tmp/vize-app-e2e-lint-diagnosis-20261011/dependency-generation/npmx.dev-api-source"
+  }
+]

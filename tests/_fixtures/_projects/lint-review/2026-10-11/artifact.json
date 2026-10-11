@@ -1,0 +1,44 @@
+{
+  "head": "605429c660b328bb03bec5bbfef15961e59fcaf0",
+  "run": 38111801880,
+  "job": 114388842067,
+  "artifact": 11691797306,
+  "zip_sha256": "d792e1ab18405030b693aae1bd75ad22b485ed0ec1bee22ecb24bae67d01298b",
+  "entries": [
+    {
+      "path": "target/app-e2e-logs/full-lint-all.log",
+      "bytes": 42263,
+      "sha256": "fb14033f6665c6265290762d16c92e52c554e3a518e1a80905b7c6bf20719592"
+    },
+    {
+      "path": "tests/snapshots/lint/__snapshots__/ant-design-vue-lint.snap.actual",
+      "bytes": 282319,
+      "sha256": "25472e0ab44be45a036d1ece58ca76b2687ba6adacda71a5cee21b2cce50ae33",
+      "expectedSha256": "a58a44c4e6280f8fee8c3a11e052bb40287d82f57ac16aad62d245c28df9778c"
+    },
+    {
+      "path": "tests/snapshots/lint/__snapshots__/elk-lint.snap.actual",
+      "bytes": 176363,
+      "sha256": "96e5cce586dae7928054cf3e02a419208605c78c3ebc21273feea40cd1620f6e",
+      "expectedSha256": "ac9047d616b0ab12d78355a355b0ba6b08793d75383f6c227214ca36f5698cfc"
+    },
+    {
+      "path": "tests/snapshots/lint/__snapshots__/nuxt-ui-lint.snap.actual",
+      "bytes": 36095,
+      "sha256": "37cbd0f25f35332c621ddc5f094869013884f1eff9a0fadf5b4182b197f4ef75",
+      "expectedSha256": "3caae7509c95a14c699b39a7bb75a56843d185090d6c76232fddd500eac82352"
+    },
+    {
+      "path": "tests/snapshots/lint/__snapshots__/reka-ui-lint.snap.actual",
+      "bytes": 300553,
+      "sha256": "2aa51a264a46555340172b4c52af5ad9096ebc86d6644cf96a38a94115589502",
+      "expectedSha256": "1943d3c65a2c34cdf48eb8fb58cdf7d880ec556511b1b612c549bf895a0f0050"
+    },
+    {
+      "path": "tests/snapshots/lint/__snapshots__/vuefes-2025-lint.snap.actual",
+      "bytes": 29654,
+      "sha256": "306ca3ddc3421652a74484a6b4f9f90d3de2099026a7cbb174b9eea041930b7c",
+      "expectedSha256": "d5eda3e00ad769ef140e071949ee5f414c204eccd121c08102f69df04a5b5f99"
+    }
+  ]
+}

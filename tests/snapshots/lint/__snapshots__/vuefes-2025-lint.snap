@@ -7,130 +7,27 @@
   },
   {
     "file": "app/components/OgImage/OgDefault.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 17,
-        "column": 7,
-        "endLine": 17,
-        "endColumn": 26,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 61,
-        "column": 7,
-        "endLine": 61,
-        "endColumn": 27,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/components/OgImage/OgNameBadge.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 75,
-        "column": 7,
-        "endLine": 75,
-        "endColumn": 35,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 102,
-        "column": 9,
-        "endLine": 102,
-        "endColumn": 46,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 161,
-        "column": 9,
-        "endLine": 161,
-        "endColumn": 30,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 0
   },
   {
     "file": "app/components/OgImage/OgSpeaker.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 50,
-        "column": 7,
-        "endLine": 50,
-        "endColumn": 35,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 65,
-        "column": 7,
-        "endLine": 65,
-        "endColumn": 32,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/components/OgImage/OgSponsor.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 92,
-        "column": 7,
-        "endLine": 92,
-        "endColumn": 35,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 122,
-        "column": 7,
-        "endLine": 122,
-        "endColumn": 30,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/components/SponsorGrid.vue",
@@ -156,21 +53,10 @@
         "endLine": 15,
         "endColumn": 21,
         "help": "Remove unused prop or use it in your template/script"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 42,
-        "column": 16,
-        "endLine": 42,
-        "endColumn": 43,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/components/button/VFButton.vue",
@@ -216,21 +102,9 @@
   },
   {
     "file": "app/components/form/VFFileInput.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 56,
-        "column": 26,
-        "endLine": 56,
-        "endColumn": 47,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/form/VFForm.vue",
@@ -290,6 +164,17 @@
     "file": "app/components/menu/VFMenuItem.vue",
     "messages": [
       {
+        "ruleId": "vue/no-unused-properties",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-properties] Prop 'id' is defined but never used",
+        "line": 3,
+        "column": 3,
+        "endLine": 3,
+        "endColumn": 14,
+        "help": "Remove unused prop or use it in your template/script"
+      },
+      {
         "ruleId": "script/no-duplicate-attr-inheritance",
         "ruleDocsPath": "docs/content/rules/type-and-script.md",
         "severity": 1,
@@ -302,7 +187,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "app/components/menu/VFSpMenu.vue",
@@ -329,32 +214,10 @@
         "endLine": 218,
         "endColumn": 5,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 243,
-        "column": 11,
-        "endLine": 243,
-        "endColumn": 39,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 259,
-        "column": 11,
-        "endLine": 259,
-        "endColumn": 70,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 1
   },
   {
     "file": "app/components/scrollAttention/VFScrollAttention.vue",
@@ -364,21 +227,9 @@
   },
   {
     "file": "app/components/section/VFSection.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 27,
-        "column": 9,
-        "endLine": 27,
-        "endColumn": 30,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/components/toast/VFToast.vue",
@@ -394,9 +245,21 @@
   },
   {
     "file": "app/layouts/default.vue",
-    "messages": [],
+    "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 91,
+        "column": 25,
+        "endLine": 91,
+        "endColumn": 31,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      }
+    ],
     "errorCount": 0,
-    "warningCount": 0
+    "warningCount": 1
   },
   {
     "file": "app/pages/_components/SectionAccess.vue",
@@ -531,32 +394,9 @@
   },
   {
     "file": "app/pages/_components/StaffGridItem.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 36,
-        "column": 10,
-        "endLine": 36,
-        "endColumn": 26,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 41,
-        "column": 27,
-        "endLine": 41,
-        "endColumn": 43,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/pages/code-of-conduct/index.vue",
@@ -566,50 +406,15 @@
   },
   {
     "file": "app/pages/event/_components/EventSpeakerCard.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 14,
-        "column": 10,
-        "endLine": 14,
-        "endColumn": 34,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/event/index.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 129,
-        "column": 66,
-        "endLine": 129,
-        "endColumn": 81,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 138,
-        "column": 70,
-        "endLine": 138,
-        "endColumn": 85,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/pages/index.vue",
@@ -654,36 +459,13 @@
   },
   {
     "file": "app/pages/related-events/index.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 62,
-        "column": 14,
-        "endLine": 62,
-        "endColumn": 35,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/speaker/[speakerId]/index.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 108,
-        "column": 16,
-        "endLine": 108,
-        "endColumn": 47,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -840,25 +622,13 @@
       }
     ],
     "errorCount": 2,
-    "warningCount": 13
+    "warningCount": 12
   },
   {
     "file": "app/pages/speaker/_components/SpeakerCard.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 34,
-        "column": 12,
-        "endLine": 34,
-        "endColumn": 36,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/speaker/index.vue",
@@ -869,28 +639,6 @@
   {
     "file": "app/pages/sponsors/[sponsorId]/index.vue",
     "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 101,
-        "column": 18,
-        "endLine": 101,
-        "endColumn": 52,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 136,
-        "column": 18,
-        "endLine": 136,
-        "endColumn": 50,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
       {
         "ruleId": "vue/permitted-contents",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -904,7 +652,7 @@
       }
     ],
     "errorCount": 1,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "app/pages/sponsors/_components/SponsorTag.vue",
@@ -920,21 +668,9 @@
   },
   {
     "file": "app/pages/store/_components/StoreItemCard.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 21,
-        "column": 12,
-        "endLine": 21,
-        "endColumn": 27,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "app/pages/store/_components/StorePreOrderButton.vue",
@@ -1051,17 +787,6 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 91,
-        "column": 24,
-        "endLine": 91,
-        "endColumn": 48,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 106,
         "column": 39,
@@ -1082,7 +807,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/pages/timetable/_components/TimetableCell.vue",
@@ -1091,17 +816,6 @@
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 96,
-        "column": 24,
-        "endLine": 96,
-        "endColumn": 48,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
         "message": "[vize:vue/no-unsafe-url] Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
         "line": 111,
         "column": 39,
@@ -1122,7 +836,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "app/pages/timetable/_components/TimetableHead.vue",
@@ -1133,6 +847,17 @@
   {
     "file": "app/pages/timetable/index.vue",
     "messages": [
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'window' is a browser-only global and is not available in SSR",
+        "line": 55,
+        "column": 3,
+        "endLine": 55,
+        "endColumn": 9,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
       {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
@@ -1154,17 +879,6 @@
         "endLine": 123,
         "endColumn": 24,
         "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 127,
-        "column": 11,
-        "endLine": 127,
-        "endColumn": 118,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,

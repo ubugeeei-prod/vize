@@ -1,0 +1,13 @@
+{
+  "producerRevision": "605429c660b328bb03bec5bbfef15961e59fcaf0",
+  "runtimeNode": "24.14.0",
+  "embeddedScriptSha256": "84570350cec1779b16cb989d05d3fcf34a8097182c7229e4a610f6ac065d3549",
+  "originalSourceRevision": "c9e8be91e61eeeae956e2068722caa09e293cc68",
+  "dependencyMigration": "same official0.2.0 effective frozen graph as proposedproducer",
+  "originalFrozenClosure": false,
+  "exitCode": 0,
+  "stdout": "{\"typeChecker\":{\"jsxTypecheck\":true},\"formatter\":{}}",
+  "stderr": "",
+  "wholeProjectionBytesEqual": true,
+  "wholeExitAndStderrEqual": true
+}

@@ -1,0 +1,69 @@
+{
+  "revision": "c9e8be91e61eeeae956e2068722caa09e293cc68",
+  "originalFrozenClosure": false,
+  "reason": "The integrity-pinned pkg.pr.new 904b935 preview is unavailable (HTTP404); the original manifest and lock remain lint source inputs. Only a separate installer graph migrates the dependency to official stable0.2.0.",
+  "inputs": {
+    "package.json": "30c3261d4621cfa6280326f87b89dc4ee0a9327799d4352bf9d4f5d31c575bd2",
+    "pnpm-lock.yaml": "49462888719521ac8664116b766856f6d2b8fc9fdff83e504d7710d8c2952cac",
+    "pnpm-workspace.yaml": "ffd8124f48c3495dee3b01c128bf8e0d43afb5c195aa83f4a95e27aa0f81cb37"
+  },
+  "originalDependency": {
+    "name": "@lunariajs/core",
+    "specifier": "https://pkg.pr.new/lunariajs/lunaria/@lunariajs/core@904b935",
+    "integrity": "sha512-N0PDFIitA/Vzh5V6BtTacWU9jgSDJJtPLHamRLMU85mohmyuVW/pggHX8dzdV5ieqZeHEz8pDZSzH4I0hOYxOg==",
+    "publicationCommit": "904b9353f5002a7278d23ba5464c8ef106e21024"
+  },
+  "replacement": {
+    "name": "@lunariajs/core",
+    "specifier": "0.2.0",
+    "dist": {
+      "integrity": "sha512-JuQsDStxiznw4Km0ab/FNH2VxVfWm08oJdjevRUOY7duN6nPKvBkk9rvXD6zPDlvauPWTf9RFuJ3lD4l+o9M4g==",
+      "shasum": "a7d158bd5197fd421c71519a954f904493433e92",
+      "tarball": "https://registry.npmjs.org/@lunariajs/core/-/core-0.2.0.tgz",
+      "fileCount": 77,
+      "unpackedSize": 174394,
+      "attestations": {
+        "url": "https://registry.npmjs.org/-/npm/v1/attestations/@lunariajs%2fcore@0.2.0",
+        "provenance": {
+          "predicateType": "https://slsa.dev/provenance/v1"
+        }
+      },
+      "signatures": [
+        {
+          "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+          "sig": "MEUCIQC86uB7MRRcl43Ydy5Ac/jyEbD6n/vwPo9Ok7OmX5ZVJAIgDl26Nc/1h8mtcZkMoysUmekm9nM7zKRiq3MhempdT0I="
+        }
+      ]
+    }
+  },
+  "effectiveInputs": {
+    "package.json": "7fc768cb42dbb71533421bab14b433bffe6e4570458a9048a97992d5c3378bf8",
+    "pnpm-lock.yaml": "6cdfe35228adac418da3832edec9a3c3a82430202799fadb55d87e9466ed46c5"
+  },
+  "lockReview": {
+    "replacement": "@lunariajs/core@0.2.0",
+    "effectiveLockSha256": "6cdfe35228adac418da3832edec9a3c3a82430202799fadb55d87e9466ed46c5",
+    "allOtherOriginalImportersPackageAndSnapshotEntriesIdentical": true,
+    "newPackageNodes": [
+      "@lunariajs/core@0.2.0",
+      "encoding@0.1.13",
+      "gettext-parser@9.1.1",
+      "iconv-lite@0.6.3",
+      "neotraverse@1.0.1",
+      "picomatch@4.0.7",
+      "yaml@2.9.1",
+      "zod@4.6.5"
+    ],
+    "newDependencySnapshotNodes": [
+      "@lunariajs/core@0.2.0(supports-color@10.2.2)",
+      "encoding@0.1.13",
+      "gettext-parser@9.1.1",
+      "iconv-lite@0.6.3",
+      "neotraverse@1.0.1",
+      "picomatch@4.0.7",
+      "yaml@2.9.1",
+      "zod@4.6.5"
+    ],
+    "originalCoreReplaced": "https://pkg.pr.new/lunariajs/lunaria/@lunariajs/core@904b935"
+  }
+}

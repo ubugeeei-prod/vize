@@ -1,14 +1,16 @@
-import { describe, it, before } from "node:test";
+import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { execSync } from "node:child_process";
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import { npmxApp, VIZE_BIN, requireVizeBin } from "../../_helpers/apps.ts";
+import { prepareLintFixtureDependencies } from "../../_helpers/lint-fixture-dependencies.ts";
 import { assertSnapshot } from "../../_helpers/snapshot.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT_DIR = path.join(__dirname, "__snapshots__");
 const app = npmxApp;
+let fixture: ReturnType<typeof prepareLintFixtureDependencies>;
 
 interface LintFileResult {
   file: string;
@@ -19,10 +21,12 @@ interface LintFileResult {
 describe(`${app.name} lint (linter)`, () => {
   before(() => {
     requireVizeBin();
+    fixture = prepareLintFixtureDependencies(app);
   });
+  after(() => fixture?.verify());
 
   it("vize lint does not crash and snapshot matches", () => {
-    const lintConfig = app.lint!;
+    const lintConfig = fixture.app.lint!;
     const patterns = lintConfig.patterns.map((p) => `'${p}'`).join(" ");
     const cmd = `${VIZE_BIN} lint ${patterns} --format json --quiet`;
     console.log(`Running: ${cmd}`);
@@ -31,6 +35,7 @@ describe(`${app.name} lint (linter)`, () => {
     try {
       stdout = execSync(cmd, {
         cwd: lintConfig.cwd,
+        env: fixture.env,
         timeout: 120_000,
         maxBuffer: 100 * 1024 * 1024,
       }).toString();

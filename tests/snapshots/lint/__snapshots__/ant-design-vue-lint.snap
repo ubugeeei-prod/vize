@@ -656,21 +656,9 @@
   },
   {
     "file": "components/calendar/demo/customize-header.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Slot prop 'onChange' from slot 'headerRender' is defined but never used",
-        "line": 22,
-        "column": 56,
-        "endLine": 22,
-        "endColumn": 64,
-        "help": "Consider removing unused slot props or prefix with underscore"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "components/calendar/demo/index.vue",
@@ -927,28 +915,6 @@
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 23,
-        "column": 9,
-        "endLine": 23,
-        "endColumn": 42,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 23,
-        "column": 14,
-        "endLine": 23,
-        "endColumn": 39,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "a11y/alt-text",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -958,32 +924,10 @@
         "endLine": 27,
         "endColumn": 41,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
-      },
-      {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 27,
-        "column": 7,
-        "endLine": 27,
-        "endColumn": 41,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 27,
-        "column": 12,
-        "endLine": 27,
-        "endColumn": 38,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 9
+    "warningCount": 5
   },
   {
     "file": "components/carousel/demo/fade.vue",
@@ -1073,17 +1017,6 @@
     "file": "components/cascader/demo/index.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'Search' is registered but never used in template",
-        "line": 1,
-        "column": 11,
-        "endLine": 2,
-        "endColumn": 6,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/no-reserved-component-names",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -1093,6 +1026,17 @@
         "endLine": 47,
         "endColumn": 11,
         "help": "Rename the component to avoid using reserved names"
+      },
+      {
+        "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'Search' is registered but never used in template",
+        "line": 47,
+        "column": 5,
+        "endLine": 47,
+        "endColumn": 11,
+        "help": "Remove the unused import or use the component in your template"
       },
       {
         "ruleId": "vue/require-scoped-style",
@@ -2956,17 +2900,6 @@
     "file": "components/image/demo/placeholder.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 23,
-        "column": 7,
-        "endLine": 23,
-        "endColumn": 102,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "ssr/no-hydration-mismatch",
         "ruleDocsPath": "docs/content/rules/ssr.md",
         "severity": 1,
@@ -2979,7 +2912,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "components/image/demo/preview-group-visible.vue",
@@ -3487,21 +3420,10 @@
         "endLine": 38,
         "endColumn": 39,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 48,
-        "column": 25,
-        "endLine": 48,
-        "endColumn": 50,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "components/list/demo/resposive.vue",
@@ -3528,39 +3450,16 @@
         "endLine": 44,
         "endColumn": 33,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 46,
-        "column": 39,
-        "endLine": 46,
-        "endColumn": 57,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
-    "errorCount": 0,
-    "warningCount": 2
-  },
-  {
-    "file": "components/mentions/demo/async.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 21,
-        "column": 12,
-        "endLine": 21,
-        "endColumn": 37,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
     "warningCount": 1
+  },
+  {
+    "file": "components/mentions/demo/async.vue",
+    "messages": [],
+    "errorCount": 0,
+    "warningCount": 0
   },
   {
     "file": "components/mentions/demo/basic.vue",
@@ -4179,21 +4078,10 @@
         "endLine": 73,
         "endColumn": 39,
         "help": "Fix:\n  <!-- Use a valid URL -->\n  <a href=\"/about\">About</a>\n  \n  <!-- For click handlers, use <button> -->\n  <button @click=\"handleClick\">Action</button>\n  \n  <!-- For dynamic URLs -->\n  <a :href=\"url\">Link</a>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 74,
-        "column": 48,
-        "endLine": 74,
-        "endColumn": 63,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "components/page-header/demo/ghost.vue",
@@ -4791,21 +4679,10 @@
         "endLine": 22,
         "endColumn": 74,
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
-      },
-      {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 22,
-        "column": 5,
-        "endLine": 22,
-        "endColumn": 74,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "components/qrcode/demo/status.vue",
@@ -5138,32 +5015,9 @@
   },
   {
     "file": "components/segmented/demo/custom.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 21,
-        "column": 21,
-        "endLine": 21,
-        "endColumn": 39,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 27,
-        "column": 21,
-        "endLine": 27,
-        "endColumn": 39,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 0
   },
   {
     "file": "components/segmented/demo/disabled.vue",
@@ -5410,21 +5264,10 @@
         "endLine": 42,
         "endColumn": 37,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 44,
-        "column": 43,
-        "endLine": 44,
-        "endColumn": 61,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "components/slider/demo/basic.vue",
@@ -7182,17 +7025,6 @@
     "file": "components/transfer/demo/index.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'Search' is registered but never used in template",
-        "line": 1,
-        "column": 11,
-        "endLine": 2,
-        "endColumn": 6,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/no-reserved-component-names",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -7202,6 +7034,17 @@
         "endLine": 37,
         "endColumn": 11,
         "help": "Rename the component to avoid using reserved names"
+      },
+      {
+        "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'Search' is registered but never used in template",
+        "line": 37,
+        "column": 5,
+        "endLine": 37,
+        "endColumn": 11,
+        "help": "Remove the unused import or use the component in your template"
       }
     ],
     "errorCount": 1,
@@ -7239,21 +7082,9 @@
   },
   {
     "file": "components/transfer/demo/tree-transfer.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unused-vars",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-vars] Slot prop 'onItemSelect' from slot 'children' is defined but never used",
-        "line": 28,
-        "column": 55,
-        "endLine": 28,
-        "endColumn": 67,
-        "help": "Consider removing unused slot props or prefix with underscore"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "components/tree-select/demo/async.vue",
@@ -7519,17 +7350,6 @@
     "file": "components/tree/demo/index.vue",
     "messages": [
       {
-        "ruleId": "vue/no-unused-components",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unused-components] Component 'Search' is registered but never used in template",
-        "line": 1,
-        "column": 11,
-        "endLine": 2,
-        "endColumn": 6,
-        "help": "Remove the unused import or use the component in your template"
-      },
-      {
         "ruleId": "vue/no-reserved-component-names",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 2,
@@ -7539,6 +7359,17 @@
         "endLine": 41,
         "endColumn": 11,
         "help": "Rename the component to avoid using reserved names"
+      },
+      {
+        "ruleId": "vue/no-unused-components",
+        "ruleDocsPath": "docs/content/rules/vue.md",
+        "severity": 1,
+        "message": "[vize:vue/no-unused-components] Component 'Search' is registered but never used in template",
+        "line": 41,
+        "column": 5,
+        "endLine": 41,
+        "endColumn": 11,
+        "help": "Remove the unused import or use the component in your template"
       }
     ],
     "errorCount": 1,
@@ -7745,21 +7576,9 @@
   },
   {
     "file": "components/upload/demo/avatar.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 33,
-        "column": 26,
-        "endLine": 33,
-        "endColumn": 41,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "components/upload/demo/basic.vue",
@@ -7898,21 +7717,9 @@
   },
   {
     "file": "components/upload/demo/picture-card.vue",
-    "messages": [
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 32,
-        "column": 46,
-        "endLine": 32,
-        "endColumn": 65,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      }
-    ],
+    "messages": [],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 0
   },
   {
     "file": "components/upload/demo/picture-style.vue",
@@ -8068,21 +7875,10 @@
         "endLine": 59,
         "endColumn": 46,
         "help": "Add rel=\"noopener noreferrer\" to links that open in a new tab: noopener protects window.opener, and noreferrer suppresses referrer data"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 60,
-        "column": 23,
-        "endLine": 60,
-        "endColumn": 41,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 4
+    "warningCount": 3
   },
   {
     "file": "site/src/components/DemoBox.vue",
@@ -8176,17 +7972,6 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 58,
-        "column": 15,
-        "endLine": 62,
-        "endColumn": 16,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -8209,17 +7994,6 @@
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 68,
-        "column": 15,
-        "endLine": 72,
-        "endColumn": 16,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -8240,17 +8014,6 @@
         "endLine": 97,
         "endColumn": 15,
         "help": "Why: Non-interactive elements (div, span, etc.) should not have click/keyboard handlers without a role.\nFix options:\n1. Use a native interactive element:\n  <button @click=\"handle\">Click me</button>\n2. Add role and tabindex:\n  <div role=\"button\" tabindex=\"0\" @click=\"handle\">\n  Click me\n  </div>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 90,
-        "column": 15,
-        "endLine": 94,
-        "endColumn": 16,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       },
       {
         "ruleId": "vue/require-scoped-style",
@@ -8265,7 +8028,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 16
+    "warningCount": 13
   },
   {
     "file": "site/src/components/SimpleLayout.vue",
@@ -8317,6 +8080,17 @@
     "file": "site/src/components/rice/CarbonAds.vue",
     "messages": [
       {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'location' is a browser-only global and is not available in SSR",
+        "line": 14,
+        "column": 14,
+        "endLine": 14,
+        "endColumn": 22,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
+      },
+      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8329,7 +8103,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 1
+    "warningCount": 2
   },
   {
     "file": "site/src/components/rice/GoogleAds.vue",
@@ -8381,28 +8155,6 @@
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 3,
-        "column": 5,
-        "endLine": 3,
-        "endColumn": 91,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 3,
-        "column": 34,
-        "endLine": 3,
-        "endColumn": 88,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "a11y/click-events-have-key-events",
         "ruleDocsPath": "docs/content/rules/accessibility.md",
         "severity": 1,
@@ -8426,7 +8178,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 6
+    "warningCount": 4
   },
   {
     "file": "site/src/components/rice/sponsors.vue",
@@ -8533,10 +8285,21 @@
         "endLine": 15,
         "endColumn": 57,
         "help": "Security Risk: v-html renders raw HTML and can execute malicious scripts from user input.\nAlternatives:\n1. Use text interpolation (auto-escaped):\n  <p>{{ userContent }}</p>\n2. Use a sanitization library:\n  import DOMPurify from 'dompurify'\n  const safeHtml = DOMPurify.sanitize(userInput)\n3. Use a markdown renderer with XSS protection\nIf you must use v-html:\n- Never use with user-provided content\n- Only use with trusted, static content"
+      },
+      {
+        "ruleId": "ssr/no-browser-globals-in-ssr",
+        "ruleDocsPath": "docs/content/rules/ssr.md",
+        "severity": 1,
+        "message": "[vize:ssr/no-browser-globals-in-ssr] 'location' is a browser-only global and is not available in SSR",
+        "line": 25,
+        "column": 16,
+        "endLine": 25,
+        "endColumn": 24,
+        "help": "Move browser-only code to client lifecycle hooks like onMounted() or use <ClientOnly>"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 3
   },
   {
     "file": "site/src/layouts/Footer.vue",
@@ -8654,17 +8417,6 @@
     "file": "site/src/layouts/Menu.vue",
     "messages": [
       {
-        "ruleId": "vue/require-v-for-key",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 2,
-        "message": "[vize:vue/require-v-for-key] Elements in iteration expect to have 'v-bind:key' directives. Element: <template>",
-        "line": 27,
-        "column": 17,
-        "endLine": 27,
-        "endColumn": 35,
-        "help": "Why: The :key attribute helps Vue's virtual DOM efficiently track and update list items.\nFix: Add a unique identifier as the key:\n  <li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n  </li>\nBest practices:\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)"
-      },
-      {
         "ruleId": "vue/no-unsafe-url",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -8698,7 +8450,7 @@
         "help": "Rename the component to avoid using reserved names"
       }
     ],
-    "errorCount": 2,
+    "errorCount": 1,
     "warningCount": 2
   },
   {
@@ -8822,21 +8574,10 @@
         "endLine": 3,
         "endColumn": 57,
         "help": "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 4,
-        "column": 23,
-        "endLine": 4,
-        "endColumn": 34,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
       }
     ],
     "errorCount": 0,
-    "warningCount": 2
+    "warningCount": 1
   },
   {
     "file": "site/src/layouts/header/Menu.vue",
@@ -8979,28 +8720,6 @@
         "help": "Add an alt attribute: <img alt=\"Description\"> or <img alt=\"\"> for decorative images"
       },
       {
-        "ruleId": "a11y/img-alt",
-        "ruleDocsPath": "docs/content/rules/accessibility.md",
-        "severity": 1,
-        "message": "[vize:a11y/img-alt] <img> elements must have an alt attribute for accessibility",
-        "line": 12,
-        "column": 7,
-        "endLine": 15,
-        "endColumn": 9,
-        "help": "Why: Screen readers use alt text to describe images to visually impaired users.\nFor informative images:\n  <img src=\"chart.png\" alt=\"Sales increased 20% in Q4\">\nFor decorative images:\n  <img src=\"decoration.png\" alt=\"\">\nFor complex images:\n  <img src=\"diagram.png\" alt=\"Process flow\" aria-describedby=\"desc\">\n  <p id=\"desc\">Detailed description...</p>"
-      },
-      {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 13,
-        "column": 9,
-        "endLine": 13,
-        "endColumn": 76,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "vue/no-template-target-blank",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -9068,7 +8787,7 @@
       }
     ],
     "errorCount": 3,
-    "warningCount": 9
+    "warningCount": 7
   },
   {
     "file": "site/src/theme/template/IconDisplay/CopyableIcon.vue",
@@ -9091,17 +8810,6 @@
         "help": "Use CSS text-align or margin: auto instead."
       },
       {
-        "ruleId": "vue/no-unsafe-url",
-        "ruleDocsPath": "docs/content/rules/vue.md",
-        "severity": 1,
-        "message": "[vize:vue/no-unsafe-url] Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
-        "line": 63,
-        "column": 23,
-        "endLine": 63,
-        "endColumn": 99,
-        "help": "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol"
-      },
-      {
         "ruleId": "vue/require-scoped-style",
         "ruleDocsPath": "docs/content/rules/vue.md",
         "severity": 1,
@@ -9114,7 +8822,7 @@
       }
     ],
     "errorCount": 0,
-    "warningCount": 3
+    "warningCount": 2
   },
   {
     "file": "site/src/views/theme-editor/JSONEditor/index.vue",

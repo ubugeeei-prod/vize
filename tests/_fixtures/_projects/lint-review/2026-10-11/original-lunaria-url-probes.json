@@ -1,0 +1,14 @@
+[
+  {
+    "url": "https://pkg.pr.new/@lunariajs/core@904b935",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "url": "https://pkg.pr.new/lunariajs/lunaria/@lunariajs/core@904b9353f5002a7278d23ba5464c8ef106e21024",
+    "error": "HTTP Error 403: Forbidden"
+  },
+  {
+    "url": "https://pkg.pr.new/lunariajs/lunaria/@lunariajs/core@904b935.tgz",
+    "error": "HTTP Error 403: Forbidden"
+  }
+]
