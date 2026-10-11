@@ -41,3 +41,44 @@ establish the cost of packing a live source tree. Global adoption remains TODO
 until producer integration, physical native acceptance, original consumer
 equivalence and a complete same-source cost comparison pass. Report measured
 bytes and times separately from any target or unmeasured CI speedup.
+
+## Measured complete historical formatter round trip
+
+[Actions run 38159309222](https://github.com/ubugeeei-prod/vize/actions/runs/38159309222)
+passed both jobs at driver `cbd123f8eb84b57f77fb1c1db33dadfd280c89b6`, with
+original source `a49936db24d9540e0630b42474654190d575294b`. Both the complete
+original ZIP API digest and all 142,033 decoded file bodies were verified. The
+fresh consumer restored all 142,033 files, independent inodes, modes and paths.
+
+| Measurement                                 |                      Observed value |
+| ------------------------------------------- | ----------------------------------: |
+| Original ZIP                                |                 1,758,920,917 bytes |
+| Uploaded complete envelope                  |                   474,358,605 bytes |
+| All three experimental retained artifacts   |                   480,761,556 bytes |
+| Unique objects                              |                              67,948 |
+| Decoded original / unique bodies            | 7,807,255,030 / 3,345,896,436 bytes |
+| Original download and digest                |                      16.248 seconds |
+| Pack receipt / GNU wall time                |              48.417 / 49.94 seconds |
+| Pack user / system CPU                      |                42.32 / 6.42 seconds |
+| Pack peak resident memory                   |                         338,060 KiB |
+| Envelope upload / consumer download step    |               2.664 / 3.885 seconds |
+| Complete restore and verify / GNU wall time |              28.798 / 28.84 seconds |
+| Restore user / system CPU                   |               18.24 / 10.52 seconds |
+| Restore peak resident memory                |                         245,644 KiB |
+
+The complete envelope is 73.03% smaller than the original ZIP; including the
+separate provenance and consumer artifacts, this experiment retains 72.67% fewer
+new bytes. The existing original remains retained, so this trial itself increases
+total storage. Packing and verification add about 79 seconds of work; this is a
+measured transfer-size result, not an end-to-end CI speedup or source acceptance.
+
+All 90 native TypeScript `lib/tsc` bodies now have complete SHA-256 evidence,
+each equal to `4f2de678286401759b3fb4475bafe35b8f32b4b3a07d92642bbf37eadc9b34a4`.
+The trial also retains all other distinct objects; no oxlint historical binary
+was sampled, substituted or removed. The local regression fixture additionally
+contains different equal-size bodies with equal CRC32, which remain distinct
+SHA-256 objects. The authenticated producer manifest digest is
+`61e378a67fe68c1b716bd12bed4aa52e240efcd1d6b72a726d8407d511a37cdd`;
+envelope artifact `11709409248`, producer `11709549012` and consumer
+`11709643770` retain the complete proof. Actual queue qualification remains
+separate from this historical round trip.

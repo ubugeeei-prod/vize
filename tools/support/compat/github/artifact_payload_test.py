@@ -31,6 +31,9 @@ class PayloadControls(unittest.TestCase):
                 self.add(archive, f"historical-{index}/source-native.node", bytes([index]) * 2048)
             self.add(archive, "雪/.hidden/name\nnewline", b"opaque\x00\x80\xff\r\n", 0o600)
             self.add(archive, "stderr.raw", b"")
+            # Different equal-size bodies with the same CRC32 must remain distinct.
+            self.add(archive, "crc-collision-a.bin", b"plumless")
+            self.add(archive, "crc-collision-b.bin", b"buckeroo")
             directory = zipfile.ZipInfo("empty/")
             directory.external_attr = (0o040750 << 16) | 0x10
             archive.writestr(directory, b"")
@@ -85,6 +88,11 @@ class PayloadControls(unittest.TestCase):
         self.assertEqual(len({row["sha256"] for row in native_rows}), 1)
         historical = [row for row in manifest["entries"] if row["path"].endswith("source-native.node")]
         self.assertEqual(len({row["sha256"] for row in historical}), 3)
+        collisions = [row for row in manifest["entries"] if row["path"].startswith("crc-collision-")]
+        self.assertEqual(len({row["sha256"] for row in collisions}), 2)
+        with zipfile.ZipFile(self.original) as archive:
+            a, b = (archive.getinfo(f"crc-collision-{name}.bin") for name in ("a", "b"))
+            self.assertEqual((a.CRC, a.file_size), (b.CRC, b.file_size))
         for name, (body, mode) in self.expected.items():
             self.assertEqual((restored / name).read_bytes(), body)
             self.assertEqual((restored / name).stat().st_mode & 0o7777, mode)
