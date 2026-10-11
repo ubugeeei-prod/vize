@@ -4,6 +4,59 @@ title: Doctor Diagnostics
 
 # Doctor Diagnostics
 
+Use `vize doctor` to investigate application health across Vue components and script modules.
+It reports problems such as dependency-injection mismatches, circular imports, server/client
+boundaries, and cross-component prop contracts, with the source locations that explain each finding.
+Start with a terminal report, inspect the affected code, and rerun after making a change.
+
+Install the CLI using [Getting Started](../getting-started.md), or find the other commands in the
+[CLI guide](cli.md#doctor).
+
+## Run Your First Report
+
+From your project directory, analyze the source directory:
+
+```bash
+vize doctor src
+```
+
+Replace `src` with your application's source directory. Run `vize doctor` without a path to scan
+the current workspace, or pass several directories to include shared application code:
+
+```bash
+vize doctor src packages/shared
+```
+
+The command reads Vue SFCs and script modules without changing your files. The text report starts
+with the workspace, a health score out of 100, and counts of errors, warnings, and notices. Each
+finding includes a diagnostic code, message, and source location; use those locations to inspect
+the affected relationship before changing the code. Rerun the same command to check the result.
+
+A report with no findings means the current analyzers found no problems in the selected sources.
+It does not establish that every application behavior has been checked. The command exits with
+`1` for a certain or high-confidence error, and `2` when discovery, analysis, or report output fails.
+Warnings and lower-confidence findings do not block by default. The full policy is explained in
+[Scoring and Exit Status](#scoring-and-exit-status).
+
+## Save a Report for CI
+
+Use JSON when another tool needs to consume the findings:
+
+```bash
+vize doctor src --format json > doctor-report.json
+```
+
+The JSON report retains diagnostic identities, evidence, and scoring metadata. Redirection saves
+the report without changing the command's exit status. Keep the status when Doctor owns your CI
+gate; use `--exit-zero` only when another system owns the blocking policy. Read the
+[Automation Contract](#automation-contract) before building a report consumer.
+
+## Narrow the Findings
+
+Add filters when you need to focus on a category, severity, rule, or changed source. Filtering
+selects findings after analysis; it does not reduce which analyzers run. Start with the complete
+report so that relevant cross-component context remains visible, then use the options below.
+
 `vize doctor` analyzes the application once, then projects the immutable report into the view a
 person, CI gate, editor, or AI integration needs. Filters never change which analyzers run or mutate
 the evidence graph. They select findings after analysis and produce a newly scored report.

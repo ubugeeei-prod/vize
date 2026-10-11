@@ -84,8 +84,8 @@
     {
       "route": "/guide/doctor",
       "locales": ["en"],
-      "entry": "audited",
-      "note": "Filter reference starts with internal report model; practical first-run flow still needs review."
+      "entry": "revised",
+      "note": "Practical first-run, source inspection, exit policy and JSON report guidance precede the retained complete filter/scoring reference. Actual CLI arguments and reporter reviewed; native desktop/mobile and deployed acceptance remain required."
     },
     {
       "route": "/guide/experimentals",
