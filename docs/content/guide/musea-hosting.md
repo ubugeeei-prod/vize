@@ -52,6 +52,31 @@ in the gallery. The CLI honors the Vite base and Musea `basePath` from your conf
 
 See [snapshot identity and migration](./musea-snapshots.md) before reusing existing baselines or testing same-named Art files.
 
+## Reviewing hosted screenshots in the browser
+
+Open a built gallery over HTTPS and start a local session on the machine where
+Playwright and your baselines are installed:
+
+```bash
+vp exec musea-vrt serve --gallery-url https://example.com/site/__musea__/
+```
+
+Select an Art and open **VRT**. Paste the printed **VRT endpoint** and **Session
+token**, then select **Connect VRT**. Chrome may ask to allow loopback access for
+this gallery. If access is blocked, allow it in that site's settings or use the
+CLI capture command above.
+
+**Run VRT** shows the actual baseline, current capture and diff images in the
+gallery. Review the change, select **Update snapshots**, and run again to accept
+it. Clear the checkbox and repeat the capture to confirm the updated baseline.
+You can download the complete JSON and HTML reports from the result pane.
+
+The session listens only on your machine and accepts the gallery URL you started
+it with. It keeps its token for that session; restarting prints a new token.
+Snapshots and per-Art reports stay local under `.vize/snapshots` and `.vize/reports`,
+or your configured `--output`/`--config` paths. Stop the companion with Ctrl-C.
+The hosted site continues serving static files and needs no Node process.
+
 ## Gallery VRT reports
 
 **Run VRT** saves the selected Art's JSON and HTML reports in `.vize/reports`.
@@ -64,4 +89,5 @@ If a report's owner cannot be established, capture stops before changing reports
 or snapshots. Move both named JSON and HTML files to an archive directory and
 retry; keep those historical files until you have reviewed their contents.
 Removing one of two same-named Arts does not transfer its old report to the other.
-This applies to the development gallery; hosted galleries use the CLI above.
+The development gallery and local hosted-gallery sessions use this ownership
+rule; the standalone hosted CLI remains available for CI and batch captures.

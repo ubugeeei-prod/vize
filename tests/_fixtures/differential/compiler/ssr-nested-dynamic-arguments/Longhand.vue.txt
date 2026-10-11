@@ -1,0 +1,1 @@
+<script setup>import Child from './Child.vue'; import { state } from './fixture';</script><template><section><Child v-bind:[state.keys['names]'][state.indices[state.index]]]="state.value" v-on:[state.keys['events]'][state.indices[state.index]]]="state.value=$event.trim()"/><output>{{ state.value }}|{{ state.other }}</output></section></template>

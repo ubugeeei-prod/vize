@@ -258,7 +258,7 @@ export async function verifyNavigationRenderJob(
   const themeScreenshots = await phase("theme-captures", async () => {
     const themeScreenshots: RouteReceipt["themeScreenshots"] = [];
     if (
-      /^\/(?:ja\/)?rules\//.test(route) ||
+      /^\/(?:ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\//.test(route) ||
       /\/(?:guide\/content-mapper|getting-started)$/.test(route) ||
       ["/", "/ja/"].includes(route)
     ) {

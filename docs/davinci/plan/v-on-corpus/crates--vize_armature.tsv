@@ -1,2 +1,4 @@
 file	spelling
+crates/vize_armature/src/parser/attribute/head/tests.rs	@b.stop
+crates/vize_armature/src/parser/attribute/head/tests.rs	v-on:click.stop
 crates/vize_armature/src/parser/tests.rs	@click.stop.prevent

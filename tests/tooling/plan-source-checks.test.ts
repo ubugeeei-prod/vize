@@ -53,6 +53,15 @@ void test("package changes run package tests while documentation stays fast", ()
   });
 });
 
+void test("the project config projection embedded by Rust runs all consuming source gates", () => {
+  assert.deepEqual(planSourceChecks(["crates/vize_carton/src/config/loader/vite-runtime.mjs"]), {
+    rust: true,
+    js: true,
+    tooling: false,
+    playground: true,
+  });
+});
+
 void test("merge groups run every source suite regardless of the changed paths", () => {
   for (const paths of [
     [],

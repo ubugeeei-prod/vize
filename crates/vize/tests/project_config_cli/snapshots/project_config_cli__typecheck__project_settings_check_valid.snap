@@ -1,0 +1,47 @@
+---
+source: crates/vize/tests/project_config_cli/typecheck.rs
+expression: "serde_json::to_string_pretty(&report).unwrap()"
+---
+{
+  "errorCount": 0,
+  "fileCount": 3,
+  "files": [
+    {
+      "diagnostics": [],
+      "file": "src/Child.vue"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/Consumer.vue"
+    },
+    {
+      "diagnostics": [],
+      "file": "src/contracts.ts"
+    }
+  ],
+  "programs": [
+    {
+      "compilerOptions": {
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "noEmit": true,
+        "paths": {
+          "@/*": [
+            "<project>/src/*"
+          ]
+        },
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2022"
+      },
+      "files": [
+        "src/Child.vue",
+        "src/Consumer.vue",
+        "src/contracts.ts"
+      ],
+      "root": ".",
+      "tsconfig": "tsconfig.json"
+    }
+  ],
+  "warningCount": 0
+}

@@ -15,57 +15,6 @@ export const INIT_LINT_HELP_LEVEL = "short";
 /** VS Code extension id published from `editors/vscode`. */
 export const VSCODE_EXTENSION_ID = "ubugeeei.vize";
 
-export interface VizeConfigFeatures {
-  readonly lint: boolean;
-  readonly fmt: boolean;
-  readonly typecheck: boolean;
-  readonly vite: boolean;
-}
-
-/**
- * Builds `vize.config.ts` from the selected features.
- *
- * Only selected features contribute a block, so a project that asked for the
- * formatter alone does not silently get a type checker it never opted into.
- */
-export function renderVizeConfig(features: VizeConfigFeatures): string {
-  const blocks: string[] = [
-    `  compiler: {
-    templateSyntax: "standard",
-  },`,
-  ];
-  if (features.lint) {
-    blocks.push(`  linter: {
-    enabled: true,
-    preset: "${INIT_LINT_PRESET}",
-  },`);
-  }
-  if (features.fmt) {
-    blocks.push(`  formatter: {
-    singleAttributePerLine: false,
-    sortBlocks: true,
-  },`);
-  }
-  if (features.typecheck) {
-    blocks.push(`  typeChecker: {
-    enabled: true,
-    strict: true,
-    jsxTypecheck: true,
-  },`);
-  }
-  if (features.vite) {
-    blocks.push(`  vite: {
-    scanPatterns: ["src/**/*.vue"],
-  },`);
-  }
-  return `import { defineConfig } from "vize";
-
-export default defineConfig({
-${blocks.join("\n")}
-});
-`;
-}
-
 /** Minimum project config written only when typechecking is selected and no config exists. */
 export function renderTypecheckTsconfig(typescript: boolean, nuxtMajor?: number | null): string {
   if (nuxtMajor !== undefined) {

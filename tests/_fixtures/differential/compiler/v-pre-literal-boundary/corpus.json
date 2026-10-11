@@ -1,0 +1,54 @@
+{
+  "issue": 8504,
+  "scope": "three original default compiler controls, four valued ordering neighbors and literal Other; separate from original12 nested SSR runtime population",
+  "cases": [
+    {
+      "name": "original-1",
+      "file": "original-1.vue.txt",
+      "bytes": 117,
+      "sha256": "1edb3c68e0e3caff35a2f55389ec9ed14d37de30604b88f06eb121c5717f3441"
+    },
+    {
+      "name": "original-2",
+      "file": "original-2.vue.txt",
+      "bytes": 98,
+      "sha256": "34c3c51536e4f2464d16808dac7d6ec935e68e0f9bc295234bc516909c0ffc5b"
+    },
+    {
+      "name": "original-3",
+      "file": "original-3.vue.txt",
+      "bytes": 85,
+      "sha256": "8dc84039ae99b4d5ca6646a6b1062f85d5b53aad37e0853104de423ae6982bf2"
+    },
+    {
+      "name": "order-1",
+      "file": "order-1.vue.txt",
+      "bytes": 117,
+      "sha256": "c6c4c755238994e50b3e0ba068629a12d77a7b7b7925126a5445603752513bbb"
+    },
+    {
+      "name": "order-2",
+      "file": "order-2.vue.txt",
+      "bytes": 122,
+      "sha256": "a0f8c29c301069e9287f9050ba397c642f317f839eaa5995f4e35f374b4c8b37"
+    },
+    {
+      "name": "order-3",
+      "file": "order-3.vue.txt",
+      "bytes": 122,
+      "sha256": "45017c431b0bc4cb6fd8aa946126c9333ce3bb2d2a938f50b280c72e2d96305f"
+    },
+    {
+      "name": "order-4",
+      "file": "order-4.vue.txt",
+      "bytes": 122,
+      "sha256": "89bee51e37a10816f6dfbab88cb987df7d2538eb9e1977bc75ed11fd5de039ee"
+    },
+    {
+      "name": "literal-other",
+      "file": "literal-other.vue.txt",
+      "bytes": 117,
+      "sha256": "da6f2db51d8074808660ceffcc713217f933a44d7e36971e07a069fbedbf423d"
+    }
+  ]
+}

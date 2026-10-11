@@ -88,8 +88,8 @@ test("practical instructions precede long implementation reference tables", () =
     ],
     [
       "ja",
-      "## Vize クラス変更",
-      "## ソース信号",
+      "## 変更の種類",
+      "## 参考資料",
       "### SFC をコンパイルする",
       "### コンパイラオプションの互換性",
     ],

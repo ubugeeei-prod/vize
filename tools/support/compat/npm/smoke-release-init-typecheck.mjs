@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { assertNoDedicatedConfig } from "./smoke-release-init-fresh.mjs";
 
 function runResult(command, args, options = {}) {
   const isWindowsBatch = process.platform === "win32" && /\.(cmd|bat)$/i.test(command);
@@ -217,19 +218,20 @@ function runInitTypecheckCase(installDir, vizeBin, language, runtimePeerDependen
 
   const packagePath = path.join(projectDir, "package.json");
   const tsconfigPath = path.join(projectDir, "tsconfig.json");
-  const configPath = path.join(projectDir, "vize.config.ts");
   const manifest = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, "utf8"));
   assert.equal(manifest.scripts["vize:check"], "vize check");
   assert.equal(tsconfig.compilerOptions.allowJs, language === "javascript" ? true : undefined);
   assert.equal(tsconfig.compilerOptions.checkJs, language === "javascript" ? true : undefined);
 
-  const initializedBytes = [packagePath, tsconfigPath, configPath].map((filename) =>
+  assertNoDedicatedConfig(projectDir);
+  const initializedBytes = [packagePath, tsconfigPath].map((filename) =>
     fs.readFileSync(filename, "utf8"),
   );
   run(process.execPath, initArgs, { cwd: installDir });
+  assertNoDedicatedConfig(projectDir);
   assert.deepEqual(
-    [packagePath, tsconfigPath, configPath].map((filename) => fs.readFileSync(filename, "utf8")),
+    [packagePath, tsconfigPath].map((filename) => fs.readFileSync(filename, "utf8")),
     initializedBytes,
     `${language} init should be idempotent`,
   );

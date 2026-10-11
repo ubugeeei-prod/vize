@@ -1,0 +1,9 @@
+<script setup lang="ts">
+export interface Props { value?: string }
+defineProps<Props>();
+defineModel<string>('nextValue', { default: "" });
+const untouched = "saveItem";
+void untouched;
+</script>
+
+<template><span>model</span></template>

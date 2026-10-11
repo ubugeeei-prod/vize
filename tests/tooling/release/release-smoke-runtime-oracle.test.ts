@@ -108,9 +108,7 @@ test("the release command rejects a packed CLI that accepts every broken project
     );
     // This deliberately broken checker handles setup successfully, then always
     // returns a clean report. The real release entrypoint must catch that lie.
-    fs.writeFileSync(
-      path.join(packageRoot, "bin/vize"),
-      `#!/usr/bin/env node
+    const historicalFalseCleanCli = `#!/usr/bin/env node
 const fs = require("node:fs");
 const path = require("node:path");
 const args = process.argv.slice(2);
@@ -128,9 +126,12 @@ if (args[0] === "init") {
 } else {
   console.log(JSON.stringify({ errorCount: 0, files: [] }));
 }
-`,
-      { mode: 0o755 },
+`;
+    const configFreeFalseCleanCli = historicalFalseCleanCli.replace(
+      '  fs.writeFileSync(path.join(project, "vize.config.ts"), "export default {};\\n");\n',
+      "",
     );
+    fs.writeFileSync(path.join(packageRoot, "bin/vize"), configFreeFalseCleanCli, { mode: 0o755 });
     const result = spawnSync(
       "rust-script",
       [

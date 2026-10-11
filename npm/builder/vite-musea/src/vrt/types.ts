@@ -45,6 +45,8 @@ export interface VrtSummary {
  * Extended VRT options aligned with Rust VrtConfig.
  */
 export interface ExtendedVrtOptions extends VrtOptions {
+  /** Optional fixed-gallery Document boundary used only by hosted VRT sessions. */
+  hostedNavigation?: string;
   /** Exact preview URLs from a built gallery's static manifest. Missing entries fail closed. */
   previewUrls?: Record<string, Record<string, string>>;
   /** Root used for stable project-relative Art identities. */

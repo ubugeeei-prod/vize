@@ -2,7 +2,7 @@
 title: 自動インポート
 ---
 
-<!-- Reviewed translation; source: guide/auto-imports.md; scope: introduction, headings and reading order -->
+<!-- Reviewed translation; source: guide/auto-imports.md; scope: complete document -->
 
 # 自動インポート
 
@@ -32,14 +32,10 @@ export default defineNuxtConfig({
 });
 ```
 
-`ui` はコンポーネントと各ファミリーの `use*` 関数を登録します。`prefix`、ファミリー単位の
-`include` / `exclude`、関数の登録を省く `composables: false` を指定できます。
-`composables` は `@vizejs/composable` の実行時エクスポートを登録します。
-対象は `include` / `exclude` のエントリー名（例: `"use-toggle"`）や `names` で絞れます。
-両方が同じ名前を提供する場合は `@vizejs/ui` の登録が優先されます。
+- `ui` は `addComponent` で `@vizejs/ui` のコンポーネント（`<VzDialogTrigger>`、`<VzButton>` など）を登録し、各ファミリーが公開する `use*` 関数（`useFieldWiring`、`useSafeAreaInsets` など）も自動インポートします。`prefix`、ファミリー単位の `include` / `exclude`、関数の登録を省く `composables: false`、[ローカルソースのオプション](#コピーしたソースを使う) を指定できます。
+- `composables` は `addImports` で `@vizejs/composable` の実行時エクスポートを登録します。対象は `include` / `exclude` のエントリー名（例: `"use-toggle"`）や `names` で絞れ、ローカルソースのオプションも使えます。両方が同じ名前を提供する場合は `@vizejs/ui` の登録が優先されます。
 
-Nuxt は `components.d.ts` と `imports.d.ts` を生成します。
-登録内容はプロジェクトにインストールしたパッケージのバージョンに従います。
+Nuxt は型付きの `components.d.ts` と `imports.d.ts` を生成するため、テンプレートとスクリプトで型情報を利用できます。登録対象はプロジェクトからパッケージを解決して決まるので、インストールしたバージョンに従います。
 
 ## Vite
 
@@ -59,8 +55,7 @@ AutoImport({ resolvers: [VizeUiComposablesResolver(), VizeComposableResolver()] 
 
 `AutoImport({ imports: [...] })` の形式を使う場合は、`vizeUiImports()` と
 `vizeComposableImports()` が `{ "<module>": ["name", ...] }` の設定を返します。
-独自の構成では `createVizeUiComponentDeclarations()` と
-`createVizeComposableDeclarations()` で型宣言を生成できます。
+独自の構成では `createVizeUiComponentDeclarations()` と `createVizeComposableDeclarations()` で、通常はプラグインが生成する `GlobalComponents` とグローバルな `.d.ts` 宣言を生成できます。
 
 ## コピーしたソースを使う
 
@@ -72,7 +67,7 @@ VizeUiResolver({ source: "local" }); // ./vize-lib.lock.json を読む
 VizeComposableResolver({ source: "local", root: projectRoot, lockfile: "vize-lib.lock.json" });
 ```
 
-ロックファイルに記録された項目は `<root>/<dir>/<entry>` に解決されます。
+`vize-lib.lock.json` に記録された項目は `<root>/<dir>/<entry>` に解決されます。たとえば `src/components/vize/families/actions/button/button.ts` のような、コピーしたソースを使います。
 その他の項目はパッケージにフォールバックします。フォールバックを止めるには `fallback: false` を指定します。
 Nuxt の `ui` と `composables` にも同じオプションがあります。
 

@@ -1,0 +1,15 @@
+export default {
+  vize: {
+    compiler: {
+      whitespace: "preserve",
+      customElements: ["my-widget"],
+    },
+    formatter: { singleQuote: true },
+    linter: {
+      preset: "essential",
+      rules: { "a11y/alt-text": "error" },
+    },
+    typeChecker: { strict: true, jsxTypecheck: true },
+    languageServer: { formatting: true, lint: false, typecheck: false },
+  },
+};

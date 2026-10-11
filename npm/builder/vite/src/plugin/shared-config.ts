@@ -1,4 +1,9 @@
-import { VIZE_CONFIG_FILE_ENV, loadConfig, resolveConfigExport } from "../config.ts";
+import {
+  VIZE_CONFIG_FILE_ENV,
+  loadConfig,
+  resolveConfigExport,
+  resolveViteConfigExport,
+} from "../config.ts";
 import type { createLogger } from "../transform.ts";
 import type { ConfigEnv, ResolvedVizeConfig, VizeOptions } from "../types.ts";
 
@@ -53,6 +58,7 @@ export async function resolveSharedConfig(
   root: string,
   env: ConfigEnv,
   logger: ReturnType<typeof createLogger>,
+  viteConfig?: unknown,
 ): Promise<ResolvedVizeConfig | null> {
   let fileConfig: ResolvedVizeConfig | null = null;
   if (options.configMode !== false) {
@@ -62,6 +68,7 @@ export async function resolveSharedConfig(
         mode: options.configMode ?? "root",
         configFile,
         env,
+        viteConfig: false,
       });
       if (fileConfig) logger.log("Loaded config from vize.config file");
     } catch (error) {
@@ -79,5 +86,9 @@ export async function resolveSharedConfig(
     }
   }
 
-  return mergeSharedConfig(fileConfig, inlineConfig);
+  const projectConfig =
+    viteConfig === undefined || options.configMode === false
+      ? null
+      : await resolveViteConfigExport(viteConfig, env);
+  return mergeSharedConfig(mergeSharedConfig(projectConfig, fileConfig), inlineConfig);
 }

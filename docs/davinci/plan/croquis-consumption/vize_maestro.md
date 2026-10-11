@@ -14,8 +14,8 @@ One shard of the [Croquis consumption matrix](../croquis-consumption.md): resolv
 | `AnalyzerOptions`              | type  | `analyzer`          |     3 |     3 |
 | `ComponentShape`               | type  | `croquis`           |     1 |     1 |
 | `Croquis`                      | type  | `croquis`           |     9 |    13 |
-| `Drawer`                       | type  | `drawer`            |    20 |    23 |
-| `DrawerOptions`                | type  | `drawer`            |    20 |    23 |
+| `Drawer`                       | type  | `drawer`            |    21 |    23 |
+| `DrawerOptions`                | type  | `drawer`            |    21 |    23 |
 | `MacroTracker`                 | type  | `macros`            |     1 |     4 |
 | `ScopeBinding`                 | type  | `scope`             |     1 |     1 |
 | `ScopeData`                    | type  | `scope`             |     4 |     9 |

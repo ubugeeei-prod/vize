@@ -37,6 +37,7 @@ use text_parent::TextWhitespace;
 pub(crate) struct Cx<'a> {
     pub allocator: &'a Allocator,
     block: SourceBlock<'a>,
+    pub(super) frozen_openings: super::frozen::FrozenOpenings<'a>,
     /// The complete authored source that L0 spans are measured against.
     pub source: &'a str,
     next_op: u32,
@@ -83,6 +84,7 @@ impl<'a> Cx<'a> {
         Self {
             allocator,
             block,
+            frozen_openings: super::frozen::FrozenOpenings::Absent,
             source: block.root_source(),
             next_op: 0,
             exhausted: false,
@@ -106,6 +108,10 @@ impl<'a> Cx<'a> {
             custom_element_patterns: custom_element_patterns.to_vec(),
             custom_element_predicate,
         }
+    }
+
+    pub(super) fn source_block(&self) -> SourceBlock<'a> {
+        self.block
     }
 
     /// Record that this lowering built an op of `family`.

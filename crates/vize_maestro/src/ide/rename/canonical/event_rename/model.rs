@@ -5,7 +5,10 @@ use vize_croquis::{Drawer, DrawerOptions};
 use vize_l0::FxHashSet;
 
 use crate::ide::IdeContext;
-use crate::ide::corsa_support::{CanonicalSemanticPosition, CanonicalVirtualDocument};
+pub(super) use crate::ide::corsa_support::model_declaration_ranges as declaration_ranges;
+use crate::ide::corsa_support::{
+    CanonicalSemanticPosition, CanonicalVirtualDocument, model_linked_semantic_positions,
+};
 
 pub(super) fn query_is_declaration(ctx: &IdeContext<'_>) -> bool {
     declaration_ranges(&ctx.content, ctx.uri.path())
@@ -59,42 +62,6 @@ pub(super) fn usage_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
         .collect()
 }
 
-pub(super) fn declaration_ranges(source: &str, filename: &str) -> Vec<Range<usize>> {
-    let Some(descriptor) = vize_incremental::parse_descriptor(filename, source) else {
-        return Vec::new();
-    };
-    let Some(script) = descriptor.script_setup.as_ref() else {
-        return Vec::new();
-    };
-    let mut drawer = Drawer::with_options(DrawerOptions {
-        analyze_script: true,
-        ..Default::default()
-    });
-    drawer.analyze_script_setup(&script.content);
-    let croquis = drawer.finish();
-    croquis
-        .macros
-        .models()
-        .iter()
-        .filter_map(|model| {
-            let (start, end) = croquis.macros.model_declaration(model.name.as_str())?;
-            let mut range = script.loc.start + start as usize..script.loc.start + end as usize;
-            let authored = source.get(range.clone())?;
-            let unquoted = authored
-                .strip_prefix(['\'', '"'])
-                .and_then(|name| name.strip_suffix(['\'', '"']))
-                .unwrap_or(authored);
-            (unquoted == model.name).then(|| {
-                if unquoted.len() != authored.len() {
-                    range.start += 1;
-                    range.end -= 1;
-                }
-                range
-            })
-        })
-        .collect()
-}
-
 pub(super) fn linked_positions(
     ctx: &IdeContext<'_>,
     document: &CanonicalVirtualDocument,
@@ -141,106 +108,12 @@ fn collect_linked_positions(
     range: tower_lsp::lsp_types::Range,
     positions: &mut FxHashSet<CanonicalSemanticPosition>,
 ) {
-    let Some((request_uri, source_uri, source, result)) = virtual_result(ctx, document, uri) else {
-        return;
-    };
-    let Some(start_post) =
-        crate::ide::position_to_offset(&result.code, range.start.line, range.start.character)
-    else {
-        return;
-    };
-    let start = result
-        .import_source_map
-        .get_original_offset(start_post as u32) as usize;
-    let Some(seed) = result
-        .source_mappings
-        .iter()
-        .filter(|mapping| start >= mapping.gen_range.start && start <= mapping.gen_range.end)
-        .min_by_key(|mapping| mapping.gen_range.len())
-    else {
-        return;
-    };
-    if !mapping_is_model_declaration(source, source_uri.path(), &seed.src_range) {
-        return;
-    }
-    for mapping in result.source_mappings.iter().filter(|mapping| {
-        mapping.src_range == seed.src_range && mapping.gen_range != seed.gen_range
-    }) {
-        let generated = result
-            .import_source_map
-            .get_virtual_offset(mapping.gen_range.start as u32) as usize;
-        let query = generated
-            + usize::from(
-                result
-                    .code
-                    .as_bytes()
-                    .get(generated)
-                    .is_some_and(|byte| matches!(byte, b'\'' | b'"')),
-            );
-        let (line, character) = crate::ide::offset_to_position(&result.code, query);
-        positions.insert(CanonicalSemanticPosition {
-            request_uri: request_uri.clone(),
-            line,
-            character,
-        });
-    }
-}
-
-fn virtual_result<'a>(
-    ctx: &'a IdeContext<'_>,
-    document: &'a CanonicalVirtualDocument,
-    uri: &str,
-) -> Option<(
-    &'a vize_l0::String,
-    &'a tower_lsp::lsp_types::Url,
-    &'a str,
-    &'a crate::ide::diagnostics::VirtualTsResult,
-)> {
-    if uri == document.request_uri {
-        return Some((
-            &document.request_uri,
-            ctx.uri,
-            &ctx.content,
-            &document.virtual_result,
-        ));
-    }
-    document
-        .dependencies
-        .iter()
-        .find(|dependency| uri == dependency.request_uri)
-        .map(|dependency| {
-            (
-                &dependency.request_uri,
-                &dependency.source_uri,
-                dependency.source.as_str(),
-                &dependency.virtual_result,
-            )
-        })
-}
-
-/// `'…'` or `"…"`: at least two bytes, opened and closed by the same quote.
-fn is_quoted_literal(text: &str) -> bool {
-    matches!(text.as_bytes(), [open @ (b'\'' | b'"'), .., close] if open == close)
-}
-
-fn mapping_is_model_declaration(source: &str, filename: &str, mapping: &Range<usize>) -> bool {
-    let Some(authored) = source.get(mapping.clone()) else {
-        return false;
-    };
-    if !is_quoted_literal(authored) {
-        return false;
-    }
-    declaration_ranges(source, filename)
-        .into_iter()
-        .any(|range| {
-            let Some(start) = range.start.checked_sub(1) else {
-                return false;
-            };
-            let end = range.end.saturating_add(1);
-            source
-                .get(start..end)
-                .is_some_and(|authored| is_quoted_literal(authored) && &(start..end) == mapping)
-        })
+    positions.extend(model_linked_semantic_positions(
+        ctx,
+        document,
+        uri,
+        &crate::ide::corsa_support::tower_range(range),
+    ));
 }
 
 fn annotatable_range(

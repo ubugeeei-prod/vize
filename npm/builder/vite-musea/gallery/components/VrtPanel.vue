@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, watch } from "vue";
 import { mdiLoading, mdiImageOutline } from "@mdi/js";
 import { runVrt } from "../api";
 import { isStaticGallery } from "../staticApi";
 import MdiIcon from "./MdiIcon.vue";
 import StaticVrtNotice from "./StaticVrtNotice.vue";
+import HostedVrtConnection from "./HostedVrtConnection.vue";
+import HostedVrtReports from "./HostedVrtReports.vue";
+import VrtResults from "./VrtResults.vue";
+import { useHostedVrt } from "../composables/useHostedVrt";
 import type { VrtResult, VrtSummary, VrtArtifacts } from "./vrtResults";
 
 const props = defineProps<{
@@ -19,39 +23,43 @@ const summary = ref<VrtSummary | null>(null);
 const error = ref<string | null>(null);
 const updateSnapshots = ref(false);
 const artifacts = ref<VrtArtifacts | null>(null);
-
-const groupedResults = computed(() => {
-  const groups: Record<string, VrtResult[]> = Object.create(null);
-  for (const r of results.value) {
-    const key = r.variantName;
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(r);
-  }
-  return groups;
-});
+const hosted = useHostedVrt();
+let hostedAuthority = 0;
+watch(
+  hosted.connected,
+  () => {
+    if (!isStaticGallery) return;
+    hostedAuthority++;
+    isRunning.value = false;
+    hasRun.value = false;
+    results.value = [];
+    summary.value = null;
+    artifacts.value = null;
+    error.value = null;
+  },
+  { flush: "sync" },
+);
 
 async function runTest() {
+  const authority = hostedAuthority;
   isRunning.value = true;
   error.value = null;
 
   try {
-    const data = await runVrt(props.artPath, updateSnapshots.value);
+    const data = isStaticGallery
+      ? await hosted.run(props.artPath, updateSnapshots.value)
+      : await runVrt(props.artPath, updateSnapshots.value);
+    if (isStaticGallery && authority !== hostedAuthority) return;
     results.value = data.results;
     summary.value = data.summary;
     artifacts.value = data.artifacts ?? null;
     hasRun.value = true;
   } catch (e) {
+    if (isStaticGallery && authority !== hostedAuthority) return;
     error.value = e instanceof Error ? e.message : String(e);
   } finally {
-    isRunning.value = false;
+    if (!isStaticGallery || authority === hostedAuthority) isRunning.value = false;
   }
-}
-
-function getStatusIcon(result: VrtResult): string {
-  if (result.error) return "error";
-  if (result.isNew) return "new";
-  if (result.passed) return "pass";
-  return "fail";
 }
 </script>
 
@@ -59,7 +67,7 @@ function getStatusIcon(result: VrtResult): string {
   <div class="vrt-panel">
     <div class="vrt-header">
       <h3 class="vrt-title">Visual Regression Testing</h3>
-      <div v-if="!isStaticGallery" class="vrt-actions">
+      <div v-if="!isStaticGallery || hosted.connected.value" class="vrt-actions">
         <label class="vrt-update-label">
           <input v-model="updateSnapshots" type="checkbox" class="vrt-checkbox" />
           Update snapshots
@@ -72,18 +80,27 @@ function getStatusIcon(result: VrtResult): string {
       </div>
     </div>
 
-    <StaticVrtNotice v-if="isStaticGallery" />
+    <HostedVrtConnection
+      v-if="isStaticGallery"
+      :connected="hosted.connected.value"
+      :error="hosted.connectionError.value"
+      @connect="hosted.connect"
+    />
+    <StaticVrtNotice v-if="isStaticGallery && !hosted.connected.value" />
     <div v-else-if="error" class="vrt-error">
       <p>{{ error }}</p>
-      <p class="vrt-hint">Make sure Playwright is installed: <code>npm install playwright</code></p>
+      <p v-if="!isStaticGallery" class="vrt-hint">
+        Make sure Playwright is installed: <code>npm install playwright</code>
+      </p>
     </div>
 
     <div v-else-if="!hasRun" class="vrt-empty">
       <p>Click "Run VRT" to capture and compare screenshots.</p>
-      <p class="vrt-hint">Requires Playwright to be installed.</p>
+      <p v-if="!isStaticGallery" class="vrt-hint">Requires Playwright to be installed.</p>
     </div>
 
     <template v-else>
+      <HostedVrtReports v-if="hosted.reports.value" @download="hosted.download" />
       <div v-if="summary" class="vrt-summary">
         <div class="vrt-stat total">
           <span class="vrt-stat-value">{{ summary.total }}</span>
@@ -123,39 +140,7 @@ function getStatusIcon(result: VrtResult): string {
         </div>
       </div>
 
-      <div class="vrt-results">
-        <div
-          v-for="(variantResults, variantName) in groupedResults"
-          :key="variantName"
-          class="vrt-variant"
-        >
-          <div class="vrt-variant-name">{{ variantName }}</div>
-          <div class="vrt-viewports">
-            <div
-              v-for="result in variantResults"
-              :key="result.viewport"
-              class="vrt-viewport"
-              :class="getStatusIcon(result)"
-            >
-              <span class="vrt-viewport-name">{{ result.viewport }}</span>
-              <div class="vrt-viewport-body">
-                <span class="vrt-status" :class="getStatusIcon(result)">
-                  <template v-if="result.error">Error</template>
-                  <template v-else-if="result.isNew">New baseline</template>
-                  <template v-else-if="result.passed">Pass</template>
-                  <template v-else> Diff {{ result.diffPercentage?.toFixed(2) }}% </template>
-                </span>
-                <code
-                  v-if="result.diffPath || result.currentPath || result.snapshotPath"
-                  class="vrt-result-path"
-                >
-                  {{ result.diffPath || result.currentPath || result.snapshotPath }}
-                </code>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <VrtResults :results />
     </template>
   </div>
 </template>
@@ -340,76 +325,6 @@ function getStatusIcon(result: VrtResult): string {
   .vrt-stat-value {
     color: var(--musea-info);
   }
-}
-
-.vrt-status.pass {
-  color: var(--musea-success);
-}
-
-.vrt-status.fail,
-.vrt-status.error {
-  color: var(--musea-error);
-}
-
-.vrt-status.new {
-  color: var(--musea-info);
-}
-
-.vrt-results {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.vrt-variant {
-  background: var(--musea-bg-secondary);
-  border: 1px solid var(--musea-border);
-  border-radius: var(--musea-radius-sm);
-  padding: 0.75rem;
-}
-
-.vrt-variant-name {
-  font-weight: 600;
-  font-size: 0.8125rem;
-  margin-bottom: 0.5rem;
-}
-
-.vrt-viewports {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.vrt-viewport {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  background: var(--musea-bg-tertiary);
-  border-radius: var(--musea-radius-sm);
-  font-size: 0.75rem;
-}
-
-.vrt-viewport-name {
-  color: var(--musea-text-secondary);
-}
-
-.vrt-viewport-body {
-  display: grid;
-  gap: 0.25rem;
-}
-
-.vrt-status {
-  font-weight: 600;
-  font-size: 0.6875rem;
-}
-
-.vrt-result-path {
-  color: var(--musea-text-muted);
-  font-size: 0.6875rem;
-  font-family: var(--musea-font-mono);
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 
 @keyframes spin {

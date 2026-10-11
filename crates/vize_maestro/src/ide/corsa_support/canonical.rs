@@ -12,6 +12,7 @@ mod component_project;
 mod exact_edits;
 mod local_binding_references;
 mod mapping;
+mod model_links;
 mod open;
 mod project;
 pub(super) mod rename;
@@ -27,6 +28,7 @@ pub(crate) use local_binding_references::local_binding_reference_position;
 use mapping::source_offset_to_virtual_generated_offset;
 pub(crate) use mapping::{canonical_source_offset_to_position, map_canonical_lsp_range};
 pub(super) use mapping::{map_lsp_range_to_source, map_virtual_result_lsp_range_to_source};
+pub(crate) use model_links::{model_declaration_ranges, model_linked_semantic_positions};
 pub(crate) use open::{open_canonical_virtual_document, open_canonical_virtual_document_strict};
 pub(crate) use project::{
     CanonicalProjectOpenError, open_canonical_virtual_project_document,

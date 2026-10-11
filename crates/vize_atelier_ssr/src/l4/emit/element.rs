@@ -43,7 +43,15 @@ impl<'r, 'a> Emitter<'_, 'r, 'a, '_, '_, '_> {
         css_vars: bool,
     ) -> Result<()> {
         let tag = plan_source(&open, SsrStringPayloadKind::TagName)?;
-        if REFUSED_TAGS.contains(&tag) || !vize_l0::is_native_tag(tag) {
+        // ElementOp already owns literal tag classification (including v-pre).
+        // Configured custom selectors remain gated at the source entry.
+        let literal_empty_slot = tag == "slot"
+            && self
+                .facts
+                .frozen_slots
+                .as_ref()
+                .is_some_and(|facts| facts.permits(element));
+        if REFUSED_TAGS.contains(&tag) && !literal_empty_slot {
             return Err(LegacyReason::Element.into());
         }
         // `<template #default>` inside `<Suspense>` is not a tag. A plain

@@ -1,6 +1,8 @@
 tests/fuzz/regressions/js_ts_expression/slow-unit-* -text
 # Keep GitHub language statistics focused on authored source code.
 *.snap linguist-generated=true
+# Retain the compiler's authored whole-output whitespace in project config oracles.
+crates/vize/tests/snapshots/project_config_cli__project_settings_build_*.snap whitespace=-blank-at-eol
 docs/content/generated/rules/en/all.md linguist-generated=true -text whitespace=-blank-at-eol
 docs/content/generated/rules/ja/all.md linguist-generated=true -text whitespace=-blank-at-eol
 docs/content/rules/reference/script-no-with-defaults.md whitespace=-blank-at-eol

@@ -10,6 +10,7 @@ use tower_lsp::lsp_types::{Location, PrepareRenameResponse, Range, Url};
 #[cfg(test)]
 mod art_variant_fallback_tests;
 mod canonical;
+pub(crate) use canonical::{model_declaration_ranges, model_linked_semantic_positions};
 #[cfg(test)]
 mod canonical_dependency_tests;
 #[cfg(test)]

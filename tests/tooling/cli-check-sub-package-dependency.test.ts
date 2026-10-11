@@ -162,6 +162,7 @@ function runCheck(workspace: string): ParsedCheck {
     [
       ...VIZE.prefix,
       "check",
+      "--no-config",
       "--tsconfig",
       "../../tsconfig.json",
       "--corsa-path",

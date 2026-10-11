@@ -1,0 +1,79 @@
+{
+  "issue": 8371,
+  "historical": {
+    "path": "case.json",
+    "sha256": "68e99ed53e60082b57b1eb2a65ae37be3157f45d465bb29c5ea4f494a44e3cf9",
+    "caseId": "no-config-default"
+  },
+  "currentDefault": {
+    "id": "no-config-current-default",
+    "config": null,
+    "explicit": null,
+    "initializationOptions": {
+      "editor": true,
+      "ecosystem": true,
+      "lint": true,
+      "typecheck": true
+    },
+    "hoverProvider": true,
+    "formattingProvider": true,
+    "hover": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst total: \"3\"\n```"
+      },
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 6
+        },
+        "end": {
+          "line": 1,
+          "character": 11
+        }
+      }
+    },
+    "hoverProviderPresent": true,
+    "formattingProviderPresent": true,
+    "formattedSource": "<script setup lang=\"ts\">\nconst total = \"3\";\n</script>\n\n<template>\n  {{ total }}\n</template>\n"
+  },
+  "explicitFormattingFalse": {
+    "id": "no-config-explicit-formatting-false",
+    "config": null,
+    "explicit": {
+      "editor": true,
+      "ecosystem": true,
+      "lint": true,
+      "typecheck": true,
+      "formatting": false
+    },
+    "initializationOptions": {
+      "editor": true,
+      "ecosystem": true,
+      "lint": true,
+      "typecheck": true,
+      "formatting": false
+    },
+    "hoverProvider": true,
+    "formattingProvider": null,
+    "hover": {
+      "contents": {
+        "kind": "markdown",
+        "value": "```typescript\nconst total: \"3\"\n```"
+      },
+      "range": {
+        "start": {
+          "line": 1,
+          "character": 6
+        },
+        "end": {
+          "line": 1,
+          "character": 11
+        }
+      }
+    },
+    "hoverProviderPresent": true,
+    "formattingProviderPresent": false,
+    "formattingResult": null
+  }
+}

@@ -28,6 +28,11 @@ await test("native renderer input preserves route/source bytes and replaces only
     };
     for (const [locale, text] of Object.entries(catalogues))
       put(`content/generated/rules/${locale}/all.md`, text);
+    for (const locale of ["en", "ja", "zh-CN", "pt-BR", "fr"]) {
+      const prefix = locale === "en" ? "" : `${locale}/`;
+      put(`content/${prefix}rules/vue.md`, `${locale} Vue source index\n`);
+      put(`content/generated/rules/${locale}/vue.md`, `${locale} complete Vue examples\n`);
+    }
     put(".generated/content/stale.md", "Previous build must not survive\n");
     const staged = materializeContent(root);
     assert.equal(staged, join(root, ".generated/content"));
@@ -39,6 +44,20 @@ await test("native renderer input preserves route/source bytes and replaces only
       );
     assert.equal(readFileSync(join(staged, "rules/all.md"), "utf8"), catalogues.en);
     assert.equal(readFileSync(join(staged, "ja/rules/all.md"), "utf8"), catalogues.ja);
+    for (const locale of ["en", "ja", "zh-CN", "pt-BR", "fr"]) {
+      const prefix = locale === "en" ? "" : `${locale}/`;
+      assert.equal(
+        readFileSync(join(staged, `${prefix}rules/vue.md`), "utf8"),
+        `${locale} complete Vue examples\n`,
+      );
+      assert.throws(() => readFileSync(join(staged, `generated/rules/${locale}/vue.md`)), {
+        code: "ENOENT",
+      });
+      assert.equal(
+        readFileSync(join(root, `content/${prefix}rules/vue.md`), "utf8"),
+        `${locale} Vue source index\n`,
+      );
+    }
     for (const locale of ["en", "ja"])
       assert.throws(() => readFileSync(join(staged, `generated/rules/${locale}/all.md`)), {
         code: "ENOENT",

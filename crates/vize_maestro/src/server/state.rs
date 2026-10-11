@@ -164,7 +164,7 @@ pub struct ServerState {
     workspace_folder_configs: RwLock<Vec<workspace_folders::WorkspaceFolderConfig>>,
     /// Formatting options (loaded from vize.config.json)
     #[cfg(feature = "glyph")]
-    format_options: RwLock<vize_glyph::FormatOptions>,
+    format_options: RwLock<(vize_glyph::FormatOptions, bool)>,
     /// Corsa bridge for native TypeScript language features. Lazily
     /// initialized; cleared again by [`Self::retire_corsa_bridge`] when the
     /// backend process dies mid-session so the next request can respawn it

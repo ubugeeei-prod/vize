@@ -325,9 +325,9 @@ void test("content-mapper L0 surface stays on the preferred physical name", () =
     (consumer) => consumer.id === "typechecker-content-mapper",
   );
   assert.ok(contentMapper);
-  assert.equal(contentMapper.surfaceCounts.l0, 9);
+  assert.equal(contentMapper.surfaceCounts.l0, 15);
   assert.equal(contentMapper.nameKindCounts.compat, 0);
-  assert.equal(contentMapper.nameKindCounts.preferred, 9);
+  assert.equal(contentMapper.nameKindCounts.preferred, 15);
   assert.ok(
     contentMapper.sites
       .filter((site) => site.surfaceId === "l0")

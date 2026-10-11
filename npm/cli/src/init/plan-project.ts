@@ -5,7 +5,7 @@ import { DEFAULT_SCRIPTS, detectJsonIndent, parsePackageJson } from "../setup/co
 import type { ProjectDetection } from "./detect.js";
 import { skipped, type PlanDraft } from "./plan-types.js";
 import type { FeatureId, FeatureSelection } from "./select.js";
-import { renderTypecheckTsconfig, renderVizeConfig } from "./templates.js";
+import { renderTypecheckTsconfig } from "./templates.js";
 
 /** Scripts each feature contributes, reusing the command strings `setup` ships. */
 const FEATURE_SCRIPTS: Readonly<Record<FeatureId, readonly string[]>> = {
@@ -17,14 +17,13 @@ const FEATURE_SCRIPTS: Readonly<Record<FeatureId, readonly string[]>> = {
 };
 
 /**
- * Plans `vize.config.ts` and the fmt/typecheck feature results.
+ * Plans the typecheck scaffold and the fmt/typecheck feature results.
  *
- * Only selected features contribute a block, so asking for the formatter alone
- * does not hand the project a type checker it never opted into. An existing Vize
- * config is never rewritten: merging into a user's config is exactly the kind of
- * guess that loses their settings.
+ * CLI tools use project settings and sensible defaults without a dedicated
+ * config. Only typechecking needs a tsconfig scaffold; existing project and Vize
+ * configs keep their exact contents.
  */
-export function planVizeConfig(
+export function planToolSettings(
   detection: ProjectDetection,
   selection: FeatureSelection,
   draft: PlanDraft,
@@ -46,34 +45,22 @@ export function planVizeConfig(
       continue;
     }
     const scaffoldsTsconfig = id === "typecheck" && detection.tsconfig === null;
+    const addsScripts = FEATURE_SCRIPTS[id].some((name) => !(name in detection.scripts));
+    const detail = scaffoldsTsconfig
+      ? "writes tsconfig.json"
+      : id === "typecheck"
+        ? "uses tsconfig.json and project settings"
+        : "uses project settings and formatter defaults";
     draft.features.push({
       id,
-      outcome: scaffoldsTsconfig || detection.vizeConfig === null ? "configured" : "unchanged",
-      detail: scaffoldsTsconfig
-        ? detection.vizeConfig === null
-          ? "writes tsconfig.json and vize.config.ts"
-          : `writes tsconfig.json; ${detection.vizeConfig} already exists and was left unchanged`
-        : detection.vizeConfig === null
-          ? "writes vize.config.ts"
-          : `${detection.vizeConfig} already exists and was left unchanged`,
+      outcome: scaffoldsTsconfig || addsScripts ? "configured" : "unchanged",
+      detail:
+        detection.vizeConfig === null
+          ? detail
+          : `${detail}; ${detection.vizeConfig} already exists and was left unchanged`,
       snippet: null,
     });
   }
-
-  const needsConfig = selection.lint || selection.fmt || selection.typecheck;
-  if (!needsConfig || detection.vizeConfig !== null) {
-    return;
-  }
-  draft.files.push({
-    filename: path.join(detection.root, "vize.config.ts"),
-    source: renderVizeConfig({
-      lint: selection.lint,
-      fmt: selection.fmt,
-      typecheck: selection.typecheck,
-      vite: detection.framework === "vite",
-    }),
-  });
-  draft.createdFiles.push("vize.config.ts");
 }
 
 /**

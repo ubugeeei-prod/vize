@@ -45,7 +45,6 @@ test("a Nuxt project is configured through the Nuxt module, not the Vite plugin"
   assert.deepEqual(result.written, [
     "oxlint.config.ts",
     "nuxt.config.ts",
-    "vize.config.ts",
     ".vscode/extensions.json",
     "package.json",
   ]);
@@ -84,6 +83,7 @@ test("Nuxt typecheck scaffolds its generated config and prepares types", async (
 
     const result = await runInit(root, args);
     assert.ok(result.written.includes("tsconfig.json"));
+    assert.equal(exists(root, "vize.config.ts"), false);
     assert.deepEqual(
       JSON.parse(read(root, "tsconfig.json")),
       major === 4
@@ -249,7 +249,7 @@ test("an oxlint config name oxlint never reads is reported, not counted as confi
   ]);
 
   assert.equal(result.plan?.lintTarget.kind, "oxlint");
-  assert.deepEqual(result.plan?.createdFiles, ["oxlint.config.ts", "vize.config.ts"]);
+  assert.deepEqual(result.plan?.createdFiles, ["oxlint.config.ts"]);
   assert.equal(read(root, "oxlint.config.mjs"), "export default {};\n");
   assert.equal(
     result.output.split("\n")[6],

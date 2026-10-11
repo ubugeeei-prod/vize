@@ -9,6 +9,16 @@ use vize_l0::Allocator;
 fn select(source: &str, options: &SsrCompilerOptions) -> SsrL4Selection {
     let allocator = Allocator::new();
     let experimental = SsrCompilerExperimentalOptions::default();
+    let (root, errors, frozen) = vize_atelier_core::parser::Parser::with_options(
+        &allocator,
+        source,
+        crate::stage_options::parser_options(options),
+    )
+    .parse_with_frozen_elements();
+    assert!(
+        !errors.iter().any(|error| !error.is_recoverable()),
+        "{errors:?}"
+    );
     select_ssr_lane(
         &allocator,
         source,
@@ -18,6 +28,7 @@ fn select(source: &str, options: &SsrCompilerOptions) -> SsrL4Selection {
             template_syntax: TemplateSyntaxMode::Standard,
             has_custom_elements: false,
             slotted: true,
+            frozen: Some((&root, &frozen)),
         },
     )
 }

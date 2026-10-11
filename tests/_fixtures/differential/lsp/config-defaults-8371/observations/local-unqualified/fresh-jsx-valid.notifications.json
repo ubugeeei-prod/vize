@@ -1,0 +1,17 @@
+[
+  {
+    "method": "window/logMessage",
+    "params": {
+      "message": "vize_maestro LSP server initialized",
+      "type": 3
+    }
+  },
+  {
+    "method": "textDocument/publishDiagnostics",
+    "params": {
+      "diagnostics": [],
+      "uri": "file:///Users/ubugeeei/Source/github.com/ubugeeei-prod/vize.fix-lsp-fresh-capability-successor-8371/target/vize-tests/lsp-fresh-capability-policy/workspaces/fresh-jsx-valid-kb7MiV/src/Consumer.jsx",
+      "version": 1
+    }
+  }
+]

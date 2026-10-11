@@ -119,6 +119,13 @@ pub trait Callbacks {
     fn is_in_v_pre(&self) -> bool {
         false
     }
+
+    /// Opt in to directive-head framing while `is_in_v_pre` remains true.
+    /// This changes lexical callbacks only; attribute semantics belong to the
+    /// owner. The published facade's original stream remains the default.
+    fn directive_heads_in_verbatim(&self) -> bool {
+        false
+    }
 }
 
 /// Check if character is a tag start character (a-z, A-Z)

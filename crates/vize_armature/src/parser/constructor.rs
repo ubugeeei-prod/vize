@@ -78,6 +78,7 @@ impl<'a> Parser<'a> {
             errors: std::vec::Vec::new(),
             in_pre: false,
             in_v_pre: false,
+            frozen_elements: None,
             open_table_count: 0,
             open_p_count: 0,
             open_a_count: 0,

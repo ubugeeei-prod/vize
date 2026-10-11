@@ -151,7 +151,13 @@ export function vize(
         isSsrBuild: !!resolvedConfig.build?.ssr,
       };
 
-      const sharedConfigPromise = resolveSharedConfig(options, state.root, configEnv, state.logger);
+      const sharedConfigPromise = resolveSharedConfig(
+        options,
+        state.root,
+        configEnv,
+        state.logger,
+        resolvedConfig,
+      );
       // Vite runs configResolved hooks in parallel. Register the pending lookup
       // before yielding so companion plugins can await this exact config.
       const sharedConfig = await configBridge.register(

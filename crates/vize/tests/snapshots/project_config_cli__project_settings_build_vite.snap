@@ -1,0 +1,13 @@
+---
+source: crates/vize/tests/project_config_cli.rs
+expression: configured
+---
+import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock("div", null, [
+    _createElementVNode("p", null, "  two  spaces  "),
+    _createTextVNode(),
+    _createElementVNode("my-widget")
+  ]))
+}

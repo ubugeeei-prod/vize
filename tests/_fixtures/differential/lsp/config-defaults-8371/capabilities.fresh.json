@@ -1,0 +1,228 @@
+{
+  "textDocumentSync": {
+    "openClose": true,
+    "change": 2,
+    "willSave": false,
+    "willSaveWaitUntil": false,
+    "save": {
+      "includeText": false
+    }
+  },
+  "selectionRangeProvider": true,
+  "hoverProvider": true,
+  "completionProvider": {
+    "resolveProvider": true,
+    "triggerCharacters": [
+      "\"",
+      "'",
+      ":",
+      "@",
+      ".",
+      "<",
+      "=",
+      "/",
+      ">",
+      "+",
+      "^",
+      "*",
+      "(",
+      ")",
+      "#",
+      "[",
+      "]",
+      "$",
+      "-",
+      "{",
+      "}"
+    ]
+  },
+  "signatureHelpProvider": {
+    "triggerCharacters": [
+      "(",
+      ",",
+      "<"
+    ],
+    "retriggerCharacters": [
+      ")"
+    ]
+  },
+  "definitionProvider": true,
+  "declarationProvider": true,
+  "typeDefinitionProvider": true,
+  "implementationProvider": true,
+  "callHierarchyProvider": true,
+  "referencesProvider": true,
+  "documentHighlightProvider": true,
+  "documentSymbolProvider": true,
+  "workspaceSymbolProvider": true,
+  "codeActionProvider": {
+    "codeActionKinds": [
+      "quickfix"
+    ],
+    "resolveProvider": false
+  },
+  "codeLensProvider": {
+    "resolveProvider": false
+  },
+  "documentLinkProvider": {
+    "resolveProvider": false
+  },
+  "colorProvider": true,
+  "foldingRangeProvider": true,
+  "renameProvider": {
+    "prepareProvider": true
+  },
+  "linkedEditingRangeProvider": true,
+  "semanticTokensProvider": {
+    "legend": {
+      "tokenTypes": [
+        "namespace",
+        "type",
+        "class",
+        "enum",
+        "interface",
+        "struct",
+        "typeParameter",
+        "parameter",
+        "variable",
+        "property",
+        "enumMember",
+        "event",
+        "function",
+        "method",
+        "macro",
+        "keyword",
+        "modifier",
+        "comment",
+        "string",
+        "number",
+        "regexp",
+        "operator",
+        "decorator"
+      ],
+      "tokenModifiers": [
+        "declaration",
+        "definition",
+        "readonly",
+        "static",
+        "deprecated",
+        "abstract",
+        "async",
+        "modification",
+        "documentation",
+        "defaultLibrary"
+      ]
+    },
+    "range": true,
+    "full": true
+  },
+  "inlayHintProvider": true,
+  "experimental": {
+    "vize": {
+      "jsxTypecheck": true
+    }
+  },
+  "workspace": {
+    "workspaceFolders": {
+      "supported": true,
+      "changeNotifications": true
+    },
+    "fileOperations": {
+      "didCreate": {
+        "filters": [
+          {
+            "scheme": "file",
+            "pattern": {
+              "glob": "**/*.d.{ts,mts,cts}",
+              "matches": "file"
+            }
+          },
+          {
+            "scheme": "file",
+            "pattern": {
+              "glob": "**/*.vue",
+              "matches": "file"
+            }
+          },
+          {
+            "scheme": "file",
+            "pattern": {
+              "glob": "**/*",
+              "matches": "folder"
+            }
+          }
+        ]
+      },
+      "didRename": {
+        "filters": [
+          {
+            "scheme": "file",
+            "pattern": {
+              "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+              "matches": "file"
+            }
+          },
+          {
+            "scheme": "file",
+            "pattern": {
+              "glob": "**/*",
+              "matches": "folder"
+            }
+          }
+        ]
+      },
+      "willRename": {
+        "filters": [
+          {
+            "scheme": "file",
+            "pattern": {
+              "glob": "**/*.{vue,ts,tsx,d.ts,d.mts,d.cts,js,jsx,mts,cts,mjs,cjs}",
+              "matches": "file"
+            }
+          },
+          {
+            "scheme": "file",
+            "pattern": {
+              "glob": "**/*",
+              "matches": "folder"
+            }
+          }
+        ]
+      },
+      "didDelete": {
+        "filters": [
+          {
+            "scheme": "file",
+            "pattern": {
+              "glob": "**/*.d.{ts,mts,cts}",
+              "matches": "file"
+            }
+          },
+          {
+            "scheme": "file",
+            "pattern": {
+              "glob": "**/*.vue",
+              "matches": "file"
+            }
+          },
+          {
+            "scheme": "file",
+            "pattern": {
+              "glob": "**/*",
+              "matches": "folder"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "documentFormattingProvider": true,
+  "documentRangeFormattingProvider": true,
+  "documentOnTypeFormattingProvider": {
+    "firstTriggerCharacter": ";",
+    "moreTriggerCharacter": [
+      "}",
+      "\n"
+    ]
+  }
+}

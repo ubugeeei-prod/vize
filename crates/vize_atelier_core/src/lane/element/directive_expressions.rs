@@ -17,6 +17,15 @@ pub(super) fn process_directive_expressions<'a>(
 ) {
     for prop in el.props.iter_mut() {
         if let PropNode::Directive(dir) = prop {
+            if ctx.options.ssr
+                && matches!(dir.name, "bind" | "on")
+                && let Some(arg @ ExpressionNode::Simple(simple)) = &dir.arg
+                && !simple.is_static
+                && !(crate::codegen::is_valid_js_identifier(simple.content)
+                    && !matches!(simple.content, "true" | "false" | "null" | "undefined"))
+            {
+                dir.arg = Some(process_expression(ctx, arg, false));
+            }
             if matches!(dir.name, "bind" | "on")
                 && !ctx.options.ssr
                 && !ctx.options.vapor
@@ -104,5 +113,7 @@ pub(super) fn process_directive_expressions<'a>(
     }
 }
 
+#[cfg(test)]
+mod ssr_keys;
 #[cfg(test)]
 mod tests;

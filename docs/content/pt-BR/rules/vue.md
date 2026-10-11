@@ -1,492 +1,119 @@
 ---
-title: Regras do Vue
+title: Regras Vue
 ---
 
-<!-- Generated translation; source: rules/vue.md -->
-
-# Regras do Vue
-
-As regras do Vue são regras de Patina em fila única. Eles inspecionam a estrutura do template SFC, a sintaxe das diretivas, a nomeação
-componentes e os riscos de correção específicos do Vue antes que o código chegue ao tempo de execução.
-
-## `vue/require-v-for-key`
-
-Exige que todo `v-for` nó tenha uma chave estável.
-
-Gravidade padrão: `error`
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <li v-for="item in items">{{ item.name }}</li>
-</template>
-```
-
-Bom:
-
-```vue
-<template>
-  <li v-for="item in items" :key="item.id">{{ item.name }}</li>
-</template>
-```
-
-## `vue/no-use-v-if-with-v-for`
-
-Reporta um nó que `v-if` e `v-for` ao mesmo tempo. Filtrar um valor computado mantém a identidade da lista
-estável e facilita a análise do modelo.
-
-Gravidade padrão: `warning`
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <li v-for="item in items" v-if="item.visible" :key="item.id">
-    {{ item.name }}
-  </li>
-</template>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-const visibleItems = computed(() => items.filter((item) => item.visible));
-</script>
-
-<template>
-  <li v-for="item in visibleItems" :key="item.id">
-    {{ item.name }}
-  </li>
-</template>
-```
-
-## `vue/no-mutating-props`
-
-Relata para os adereços. O componente proprietário deve atualizar o valor por meio de um evento ou de um modelo
-binding.
-
-Gravidade padrão: `error`
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ count: number }>();
-
-props.count++;
-</script>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-const props = defineProps<{ count: number }>();
-const emit = defineEmits<{ "update:count": [value: number] }>();
-
-function increment() {
-  emit("update:count", props.count + 1);
-}
-</script>
-```
-
-## `vue/no-v-html`
-
-Reports `v-html` porque renderiza HTML bruto e pode transformar conteúdo controlado pelo usuário em um sumidouro XSS.
-
-Gravidade padrão: `warning`
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <article v-html="content" />
-</template>
-```
-
-Bom:
-
-```vue
-<template>
-  <article>{{ content }}</article>
-</template>
-```
-
-## `vue/no-child-content`
-
-Relata conteúdo filho sobre elementos que também usam `v-html` ou `v-text`. O Vue substitui as crianças em
-tempo de execução, então o conteúdo criado é enganoso.
-
-Gravidade padrão: `error`
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <p v-text="message">Fallback text</p>
-</template>
-```
-
-Bom:
-
-```vue
-<template>
-  <p v-text="message" />
-</template>
-```
-
-## `vue/no-duplicate-attributes`
-
-Relata atributos duplicados no mesmo elemento.
-
-Gravidade padrão: `error`
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <button class="primary" class="large">Save</button>
-</template>
-```
-
-Bom:
-
-```vue
-<template>
-  <button class="primary large">Save</button>
-</template>
-```
-
-## `vue/no-dupe-v-else-if`
-
-Relata condições repetidas em uma cadeia de `v-if` / `v-else-if` .
-
-Gravidade padrão: `error`
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <p v-if="status === 'ready'">Ready</p>
-  <p v-else-if="status === 'ready'">Still ready</p>
-</template>
-```
-
-Bom:
-
-```vue
-<template>
-  <p v-if="status === 'ready'">Ready</p>
-  <p v-else-if="status === 'loading'">Loading</p>
-</template>
-```
-
-## `vue/no-template-shadow`
-
-Relatórios de variáveis modelo que ignoram variáveis de um escopo externo. Isso evita referências acidentais
-a um valor diferente do que o leitor espera.
-
-Gravidade padrão: `warning`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-const item = ref("selected");
-</script>
-
-<template>
-  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
-</template>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-const selectedItem = ref("selected");
-</script>
-
-<template>
-  <p v-for="item in items" :key="item.id">{{ item.name }}</p>
-</template>
-```
-
-## `vue/no-unsafe-url`
-
-Relata vinculações de URL e atributos estáticos que podem se resolver em esquemas inseguros como
-`javascript:`, `vbscript:`ou payloads executáveis `data:`.
-
-Gravidade padrão: `warning`
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <iframe src="javascript:alert(1)"></iframe>
-  <object data="data:text/html,<script>alert(1)</script>"></object>
-  <img srcset="/safe.png 1x, javascript:alert(1) 2x" />
-  <a :href="nextUrl">Continue</a>
-</template>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-const rawNextUrl = ref("/next");
-const nextUrl = computed(() => {
-  return rawNextUrl.value.startsWith("/") ? rawNextUrl.value : "/";
-});
-</script>
-
-<template>
-  <iframe src="/embedded/report" title="Report"></iframe>
-  <img srcset="/avatar.png 1x, /avatar@2x.png 2x" />
-  <a :href="nextUrl">Continue</a>
-</template>
-```
-
-## `vue/no-unused-components`
-
-Reporta componentes registrados localmente que nunca aparecem no modelo.
-
-Gravidade padrão: `warning`
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-import UserAvatar from "./UserAvatar.vue";
-</script>
-
-<template>
-  <p>{{ user.name }}</p>
-</template>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-import UserAvatar from "./UserAvatar.vue";
-</script>
-
-<template>
-  <UserAvatar :user="user" />
-</template>
-```
-
-## `vue/no-unused-properties`
-
-Relata os props declarados por `defineProps` que não são usados pelo componente.
-
-Gravidade padrão: `warning`
-Presets: `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<script setup lang="ts">
-defineProps<{ title: string; description: string }>();
-</script>
-
-<template>
-  <h1>{{ title }}</h1>
-</template>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-defineProps<{ title: string; description: string }>();
-</script>
-
-<template>
-  <h1>{{ title }}</h1>
-  <p>{{ description }}</p>
-</template>
-```
-
-## `vue/require-component-is`
-
-Os relatórios `<component>` sem `is` vinculação.
-
-Gravidade padrão: `error`
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <component />
-</template>
-```
-
-Bom:
-
-```vue
-<template>
-  <component :is="currentComponent" />
-</template>
-```
-
-## `vue/use-unique-element-ids`
-
-Reporta IDs literais estáticos em locais onde `useId()` é mais seguro para reutilização de componentes e SSR.
-
-Gravidade padrão: `warning`
-Presets: `nuxt`, `opinionated`
-
-Ruim:
-
-```vue
-<template>
-  <label for="email">Email</label>
-  <input id="email" />
-</template>
-```
-
-Bom:
-
-```vue
-<script setup lang="ts">
-const emailId = useId();
-</script>
-
-<template>
-  <label :for="emailId">Email</label>
-  <input :id="emailId" />
-</template>
-```
-
-## Regras de Sintaxe e Estilo
-
-Essas regras não precisam de exemplos longos, mas ainda assim se comportam como regras de primeira classe e podem ser
-configuradas pelo nome.
-
-`vue/attribute-hyphenation` impõe o estilo de nomeação de atributos em componentes personalizados. Padrão:
-`warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
-
-`vue/attribute-order` impõe uma ordem de atributos estável. Padrão: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
-
-`vue/component-definition-name-casing` impõe nomes de definição de componentes do PascalCase. Padrão:
-`warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
-
-`vue/component-name-in-template-casing` aplica a inclusão de nomes de componentes em templates. Padrão:
-`warning`. Presets: `nuxt`, `opinionated`.
-
-`vue/html-quotes` impõe o estilo de aspas para atributos HTML. Padrão: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
-
-`vue/html-self-closing` impõe um estilo de auto-fechamento. Padrão: `warning`. Presets: `nuxt`,
-`opinionated`. Configure `linter.ruleOptions["vue/html-self-closing"]` com `html.void`,
-`html.normal`, `html.component`, `svg` e `math`. Cada valor aceita `"always"`, `"never"` ou
-`"any"`. Por padrão, o Vize usa `"always"` para HTML void, componentes, SVG e MathML, e `"any"`
-para HTML normal.
-
-`vue/multi-word-component-names` exige que os nomes dos componentes contenham mais de uma palavra. Padrão:
-`error`. Presets: `essential`, `nuxt`, `opinionated`.
-
-`vue/mustache-interpolation-spacing` impõe espaçamento dentro da interpolação do bigode. Padrão:
-`warning`. Presets: `happy-path`, `nuxt`, `opinionated`.
-
-`vue/no-boolean-attr-value` não permite valores explícitos para atributos HTML booleanos. Padrão:
-`warning`. Presets: `nuxt`, `opinionated`.
-
-`vue/no-inline-style` desencoraja atributos de `style` em linha. Padrão: `warning`. Presets: `nuxt`,
-`opinionated`.
-
-`vue/no-lone-template` proíbe embalagens `<template>` desnecessárias. Padrão: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
-
-`vue/no-multi-spaces` proíbe espaços repetidos em templates. Padrão: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
-
-`vue/no-non-component-keep-alive-child` relata wrappers de elemento nativo diretamente sob
-`<KeepAlive>`, porque Vue só consegue armazenar em cache VNodes de componente. Padrão: `warning`.
-Presets: nenhum (opt-in). Wrappers somente com `v-show` são ignorados.
-
-`vue/no-preprocessor-lang` desencoraja linguagens de pré-processador CSS em blocos SFC. Padrão: `warning`.
-Presets: `nuxt`, `opinionated`.
-
-`vue/no-reserved-component-names` não permite nomes reservados de HTML ou Vue como nomes de componentes. Padrão:
-`error`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
-
-`vue/no-script-non-standard-lang` desencoraja linguagens de script não padrão. Padrão: `warning`.
-Presets: `nuxt`, `opinionated`.
-
-`vue/no-src-attribute` desencoraja atributos externos de `src` nos blocos SFC. Padrão: `warning`.
-Presets: `nuxt`, `opinionated`.
-
-`vue/no-template-key` proíbe `key` `<template>`. Padrão: `error`. Presets: `essential`,
-`happy-path`, `nuxt`, `opinionated`.
-
-`vue/no-template-lang` desencoraja `lang` em `<template>`. Padrão: `warning`. Presets: `nuxt`,
-`opinionated`.
-
-`vue/no-textarea-mustache` impede a interpolação do bigode dentro `<textarea>`. Padrão: `error`.
-Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
-
-`vue/no-unused-vars` reporta variáveis não utilizadas introduzidas por `v-for` e `v-slot`. Padrão:
-`warning`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
-
-`vue/no-useless-template-attributes` desabilita atributos em `<template>` que o Vue ignora. Padrão:
-`error`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
-
-`vue/no-v-text-v-html-on-component` não permite `v-text` ou `v-html` sobre elementos componentes. Padrão:
-`error`. Presets: `essential`, `happy-path`, `nuxt`, `opinionated`.
-
-`vue/permitted-contents` aplica regras de modelos de conteúdo HTML dentro dos templates do Vue. Padrão: `error`.
-Presets: `happy-path`, `nuxt`, `opinionated`.
-
-`vue/prefer-props-shorthand` recomenda sintaxe abreviada para adereços. Padrão: `warning`. Presets:
-`nuxt`, `opinionated`.
-
-`vue/prop-name-casing` impõe uma capitalização (`camelCase` por padrão) para os nomes de props
-declarados via `defineProps`; o lado do modelo pertence a `vue/attribute-hyphenation`. Padrão:
-`warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
-
-`vue/require-component-registration` requer importação ou registro explícito de componentes. Padrão:
-`warning`. Presets: `opinionated`.
-
-`vue/require-scoped-style` exige `scoped` em blocos no estilo SFC. Padrão: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
-
-`vue/scoped-event-names` recomenda nomes de eventos com escopo, como `form:submit`. Padrão: `warning`.
-Presets: `nuxt`, `opinionated`.
-
-`vue/sfc-element-order` impõe a ordem dos blocos SFC de nível superior. Padrão: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
-
-`vue/single-style-block` recomenda manter os estilos em um único bloco. Padrão: `warning`. Presets:
-`happy-path`, `nuxt`, `opinionated`.
-
-`vue/use-v-on-exact` impõe `.exact` quando manipuladores baseados em modificadores coexistem. Padrão: `warning`.
-Presets: `essential`, `nuxt`, `opinionated`.
-
-`vue/v-bind-style`, `vue/v-on-style`e `vue/v-slot-style` impõem preferências de estilo diretivo.
-Padrão: `warning`. Presets: `nuxt` e/ou `happy-path`, mais `opinionated`.
-
-`vue/valid-attribute-name`, `vue/valid-v-bind`, `vue/valid-v-else`, `vue/valid-v-for`,
-`vue/valid-v-if`, `vue/valid-v-memo`, `vue/valid-v-model`, `vue/valid-v-on`, `vue/valid-v-show`,
-e `vue/valid-v-slot` reportam a sintaxe inválida da diretiva do Vue. Padrão: `error`. Presets:
-`essential`, `happy-path`, `nuxt`, `opinionated`.
-
-`vue/warn-custom-block` e `vue/warn-custom-directive` alertam sobre pontos de extensão personalizados do Vue que
-precisam de suporte ou registro de hosts. Padrão: `warning`. Presets: `nuxt`, `opinionated`.
+# Regras Vue
+
+Cada regra Vue reúne nesta página sua finalidade, configuração e exemplos incorreto e correto. As linhas destacadas mostram a alteração; o código copiado preserva o conteúdo completo.
+
+<span id="regras-do-vue"></span>
+<span id="regras-de-sintaxe-e-estilo"></span>
+
+| Regra | Exemplos | Finalidade |
+| --- | --- | --- |
+| [`vue/a11y-img-alt`](https://vizejs.dev/pt-BR/rules/vue.html#vue-a11y-img-alt) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-a11y-img-alt-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-a11y-img-alt-good) | Exigir o atributo alt nas imagens para garantir acessibilidade |
+| [`vue/attribute-hyphenation`](https://vizejs.dev/pt-BR/rules/vue.html#vue-attribute-hyphenation) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-attribute-hyphenation-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-attribute-hyphenation-good) | Aplicar um padrão de nomes de atributos em componentes personalizados |
+| [`vue/attribute-order`](https://vizejs.dev/pt-BR/rules/vue.html#vue-attribute-order) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-attribute-order-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-attribute-order-good) | Aplicar uma ordem consistente aos atributos |
+| [`vue/component-definition-name-casing`](https://vizejs.dev/pt-BR/rules/vue.html#vue-component-definition-name-casing) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-component-definition-name-casing-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-component-definition-name-casing-good) | Exigir PascalCase ou kebab-case nos nomes de definição de componentes |
+| [`vue/component-name-in-template-casing`](https://vizejs.dev/pt-BR/rules/vue.html#vue-component-name-in-template-casing) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-component-name-in-template-casing-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-component-name-in-template-casing-good) | Aplicar um padrão específico de maiúsculas e minúsculas aos nomes de componentes nos templates |
+| [`vue/html-button-has-type`](https://vizejs.dev/pt-BR/rules/vue.html#vue-html-button-has-type) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-html-button-has-type-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-html-button-has-type-good) | Exigir um type explícito e válido nos elementos button |
+| [`vue/html-quotes`](https://vizejs.dev/pt-BR/rules/vue.html#vue-html-quotes) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-html-quotes-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-html-quotes-good) | Aplicar um padrão de aspas aos atributos HTML |
+| [`vue/html-self-closing`](https://vizejs.dev/pt-BR/rules/vue.html#vue-html-self-closing) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-html-self-closing-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-html-self-closing-good) | Aplicar um padrão de tags com fechamento automático |
+| [`vue/max-template-complexity`](https://vizejs.dev/pt-BR/rules/vue.html#vue-max-template-complexity) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-max-template-complexity-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-max-template-complexity-good) | Limitar a complexidade do próprio template de um componente, tanto ciclomática quanto cognitiva |
+| [`vue/multi-word-component-names`](https://vizejs.dev/pt-BR/rules/vue.html#vue-multi-word-component-names) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-multi-word-component-names-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-multi-word-component-names-good) | Exigir nomes de componentes com mais de uma palavra |
+| [`vue/mustache-interpolation-spacing`](https://vizejs.dev/pt-BR/rules/vue.html#vue-mustache-interpolation-spacing) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-mustache-interpolation-spacing-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-mustache-interpolation-spacing-good) | Aplicar espaçamento consistente dentro das interpolações com chaves duplas |
+| [`vue/no-array-index-key`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-array-index-key) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-array-index-key-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-array-index-key-good) | Proibir o uso direto da variável de índice de v-for como :key |
+| [`vue/no-bare-strings-in-template`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-bare-strings-in-template) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-bare-strings-in-template-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-bare-strings-in-template-good) | Proibir texto legível por pessoas diretamente no template quando ele deve ser internacionalizado |
+| [`vue/no-boolean-attr-value`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-boolean-attr-value) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-boolean-attr-value-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-boolean-attr-value-good) | Proibir valores explícitos em atributos HTML booleanos |
+| [`vue/no-child-content`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-child-content) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-child-content-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-child-content-good) | Proibir conteúdo filho ao usar v-html ou v-text |
+| [`vue/no-deprecated-filter`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-filter) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-filter-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-filter-good) | Proibir a sintaxe obsoleta de filtros do Vue 2 com o operador de barra vertical |
+| [`vue/no-deprecated-functional-template`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-functional-template) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-functional-template-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-functional-template-good) | Proibir o atributo `functional` no `<template>` de um SFC |
+| [`vue/no-deprecated-html-element-is`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-html-element-is) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-html-element-is-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-html-element-is-good) | Proibir o atributo `is` em elementos HTML nativos |
+| [`vue/no-deprecated-inline-template`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-inline-template) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-inline-template-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-inline-template-good) | Proibir o atributo obsoleto `inline-template` |
+| [`vue/no-deprecated-router-link-tag-prop`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-router-link-tag-prop) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-router-link-tag-prop-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-router-link-tag-prop-good) | Proibir a prop `tag` em &lt;router-link&gt; |
+| [`vue/no-deprecated-scope-attribute`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-scope-attribute) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-scope-attribute-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-scope-attribute-good) | Proibir o atributo obsoleto `scope` em &lt;template&gt; |
+| [`vue/no-deprecated-slot-attribute`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-slot-attribute) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-slot-attribute-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-slot-attribute-good) | Proibir o atributo obsoleto `slot` |
+| [`vue/no-deprecated-slot-scope-attribute`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-slot-scope-attribute) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-slot-scope-attribute-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-slot-scope-attribute-good) | Proibir o atributo obsoleto `slot-scope` |
+| [`vue/no-deprecated-v-bind-sync`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-v-bind-sync) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-v-bind-sync-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-v-bind-sync-good) | Proibir o modificador obsoleto `.sync` em `v-bind` |
+| [`vue/no-deprecated-v-on-native-modifier`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-v-on-native-modifier) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-v-on-native-modifier-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-v-on-native-modifier-good) | Proibir o modificador obsoleto `.native` em `v-on` |
+| [`vue/no-deprecated-v-on-number-modifiers`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-v-on-number-modifiers) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-v-on-number-modifiers-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-deprecated-v-on-number-modifiers-good) | Proibir modificadores numéricos obsoletos de `keyCode` em `v-on` |
+| [`vue/no-dupe-v-else-if`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-dupe-v-else-if) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-dupe-v-else-if-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-dupe-v-else-if-good) | Proibir condições duplicadas em cadeias de `v-if` / `v-else-if` |
+| [`vue/no-duplicate-attributes`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-duplicate-attributes) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-duplicate-attributes-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-duplicate-attributes-good) | Proibir atributos duplicados no mesmo elemento |
+| [`vue/no-empty-component-block`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-empty-component-block) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-empty-component-block-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-empty-component-block-good) | Proibir blocos vazios em SFCs |
+| [`vue/no-inline-style`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-inline-style) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-inline-style-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-inline-style-good) | Desencorajar o uso de atributos de estilo inline |
+| [`vue/no-invalid-html-attribute`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-invalid-html-attribute) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-invalid-html-attribute-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-invalid-html-attribute-good) | Proibir valores estáticos inválidos para atributos HTML |
+| [`vue/no-lone-template`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-lone-template) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-lone-template-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-lone-template-good) | Proibir elementos `<template>` desnecessários |
+| [`vue/no-multi-spaces`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-multi-spaces) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-multi-spaces-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-multi-spaces-good) | Proibir vários espaços consecutivos |
+| [`vue/no-multiple-objects-in-class`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-multiple-objects-in-class) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-multiple-objects-in-class-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-multiple-objects-in-class-good) | Proibir vários objetos literais dentro de uma vinculação de array em :class |
+| [`vue/no-multiple-template-root`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-multiple-template-root) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-multiple-template-root-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-multiple-template-root-good) | Proibir vários nós raiz em um template |
+| [`vue/no-mutating-props`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-mutating-props) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-mutating-props-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-mutating-props-good) | Proibir a mutação de props de componentes |
+| [`vue/no-negated-v-if-condition`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-negated-v-if-condition) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-negated-v-if-condition-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-negated-v-if-condition-good) | Proibir uma condição negada em v-if quando a cadeia tiver v-else |
+| [`vue/no-non-component-keep-alive-child`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-non-component-keep-alive-child) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-non-component-keep-alive-child-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-non-component-keep-alive-child-good) | Proibir invólucros de elementos comuns diretamente abaixo de `<KeepAlive>` |
+| [`vue/no-preprocessor-lang`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-preprocessor-lang) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-preprocessor-lang-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-preprocessor-lang-good) | Desencorajar o uso de preprocessadores CSS em favor de CSS moderno |
+| [`vue/no-reserved-component-names`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-reserved-component-names) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-reserved-component-names-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-reserved-component-names-good) | Proibir o uso de nomes reservados como nomes de componentes |
+| [`vue/no-root-v-if`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-root-v-if) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-root-v-if-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-root-v-if-good) | Proibir v-if no único elemento raiz de um template |
+| [`vue/no-script-non-standard-lang`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-script-non-standard-lang) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-script-non-standard-lang-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-script-non-standard-lang-good) | Desencorajar valores não padronizados de lang em scripts |
+| [`vue/no-src-attribute`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-src-attribute) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-src-attribute-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-src-attribute-good) | Desencorajar o atributo src em blocos de SFCs |
+| [`vue/no-static-inline-styles`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-static-inline-styles) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-static-inline-styles-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-static-inline-styles-good) | Proibir atributos estáticos de estilo inline |
+| [`vue/no-template-key`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-key) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-key-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-key-good) | Proibir o atributo `key` em `<template>` |
+| [`vue/no-template-lang`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-lang) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-lang-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-lang-good) | Desencorajar o atributo lang no bloco template |
+| [`vue/no-template-shadow`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-shadow) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-shadow-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-shadow-good) | Proibir nomes de variáveis que ocultam variáveis de um escopo externo |
+| [`vue/no-template-target-blank`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-target-blank) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-target-blank-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-template-target-blank-good) | Proibir target="_blank" sem rel="noopener noreferrer" |
+| [`vue/no-textarea-mustache`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-textarea-mustache) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-textarea-mustache-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-textarea-mustache-good) | Proibir interpolação com chaves duplas em `<textarea>` |
+| [`vue/no-undefined-refs`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-undefined-refs) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-undefined-refs-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-undefined-refs-good) | Proibir referências a variáveis não definidas nos templates |
+| [`vue/no-unsafe-url`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unsafe-url) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unsafe-url-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unsafe-url-good) | Alertar sobre vinculações de URL potencialmente inseguras |
+| [`vue/no-unsandboxed-iframe`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unsandboxed-iframe) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unsandboxed-iframe-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unsandboxed-iframe-good) | Exigir um atributo sandbox nos elementos iframe |
+| [`vue/no-unused-components`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-components) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-components-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-components-good) | Proibir o registro de componentes não usados nos templates |
+| [`vue/no-unused-properties`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-properties) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-properties-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-properties-good) | Proibir propriedades não usadas definidas em defineProps |
+| [`vue/no-unused-refs`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-refs) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-refs-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-refs-good) | Reportar refs de template (ref="x") nunca referenciadas em &lt;script&gt; |
+| [`vue/no-unused-setup-bindings`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-setup-bindings) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-setup-bindings-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-setup-bindings-good) | Proibir variáveis de script setup que nunca são lidas |
+| [`vue/no-unused-vars`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-vars) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-vars-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-unused-vars-good) | Proibir definições de variáveis não usadas nas diretivas v-for e v-slot |
+| [`vue/no-use-v-else-with-v-for`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-use-v-else-with-v-for) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-use-v-else-with-v-for-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-use-v-else-with-v-for-good) | Proibir `v-else-if` ou `v-else` no mesmo elemento que `v-for` |
+| [`vue/no-use-v-if-with-v-for`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-use-v-if-with-v-for) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-use-v-if-with-v-for-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-use-v-if-with-v-for-good) | Proibir `v-if` no mesmo elemento que `v-for` |
+| [`vue/no-useless-mustaches`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-useless-mustaches) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-useless-mustaches-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-useless-mustaches-good) | Proibir interpolação com chaves duplas cuja expressão seja uma string literal constante |
+| [`vue/no-useless-template-attributes`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-useless-template-attributes) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-useless-template-attributes-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-useless-template-attributes-good) | Proibir atributos sem efeito em elementos `<template>` |
+| [`vue/no-useless-v-bind`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-useless-v-bind) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-useless-v-bind-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-useless-v-bind-good) | Proibir um v-bind cujo valor seja uma string literal simples |
+| [`vue/no-v-for-template-key-on-child`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-for-template-key-on-child) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-for-template-key-on-child-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-for-template-key-on-child-good) | Proibir `key` no filho de um `<template v-for>` |
+| [`vue/no-v-html`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-html) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-html-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-html-good) | Alertar sobre v-html para prevenir vulnerabilidades XSS |
+| [`vue/no-v-text`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-text) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-text-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-text-good) | Proibir a diretiva v-text; preferir interpolação com chaves duplas |
+| [`vue/no-v-text-v-html-on-component`](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-text-v-html-on-component) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-text-v-html-on-component-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-no-v-text-v-html-on-component-good) | Proibir v-text / v-html em elementos de componente |
+| [`vue/permitted-contents`](https://vizejs.dev/pt-BR/rules/vue.html#vue-permitted-contents) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-permitted-contents-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-permitted-contents-good) | Aplicar as regras do modelo de conteúdo HTML |
+| [`vue/prefer-props-shorthand`](https://vizejs.dev/pt-BR/rules/vue.html#vue-prefer-props-shorthand) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-prefer-props-shorthand-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-prefer-props-shorthand-good) | Recomendar sintaxe abreviada para props (Vue 3.4+) |
+| [`vue/prefer-true-attribute-shorthand`](https://vizejs.dev/pt-BR/rules/vue.html#vue-prefer-true-attribute-shorthand) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-prefer-true-attribute-shorthand-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-prefer-true-attribute-shorthand-good) | Preferir a forma abreviada para um atributo booleano vinculado a `true` |
+| [`vue/prop-name-casing`](https://vizejs.dev/pt-BR/rules/vue.html#vue-prop-name-casing) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-prop-name-casing-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-prop-name-casing-good) | Aplicar um padrão de maiúsculas e minúsculas aos nomes de props declaradas |
+| [`vue/require-component-is`](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-component-is) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-component-is-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-component-is-good) | Exigir `v-bind:is` em elementos `<component>` |
+| [`vue/require-component-registration`](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-component-registration) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-component-registration-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-component-registration-good) | Exigir importação ou registro explícito de componentes |
+| [`vue/require-scoped-style`](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-scoped-style) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-scoped-style-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-scoped-style-good) | Exigir o atributo scoped nas tags style |
+| [`vue/require-toggle-inside-transition`](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-toggle-inside-transition) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-toggle-inside-transition-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-toggle-inside-transition-good) | Exigir uma alternância no elemento envolvido por `<transition>` |
+| [`vue/require-v-for-key`](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-v-for-key) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-v-for-key-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-require-v-for-key-good) | Exigir `v-bind:key` nas diretivas `v-for` |
+| [`vue/scoped-event-names`](https://vizejs.dev/pt-BR/rules/vue.html#vue-scoped-event-names) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-scoped-event-names-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-scoped-event-names-good) | Recomendar nomes de eventos com escopo no formato context:event |
+| [`vue/sfc-element-order`](https://vizejs.dev/pt-BR/rules/vue.html#vue-sfc-element-order) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-sfc-element-order-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-sfc-element-order-good) | Aplicar uma ordem consistente aos elementos de nível superior dos SFCs |
+| [`vue/single-style-block`](https://vizejs.dev/pt-BR/rules/vue.html#vue-single-style-block) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-single-style-block-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-single-style-block-good) | Recomendar um único bloco style |
+| [`vue/slot-name-casing`](https://vizejs.dev/pt-BR/rules/vue.html#vue-slot-name-casing) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-slot-name-casing-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-slot-name-casing-good) | Exigir kebab-case nos slots nomeados usados por v-slot |
+| [`vue/this-in-template`](https://vizejs.dev/pt-BR/rules/vue.html#vue-this-in-template) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-this-in-template-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-this-in-template-good) | Proibir `this.` nas expressões do template |
+| [`vue/use-unique-element-ids`](https://vizejs.dev/pt-BR/rules/vue.html#vue-use-unique-element-ids) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-use-unique-element-ids-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-use-unique-element-ids-good) | Exigir IDs de elementos únicos por meio de useId(), em vez de literais estáticos |
+| [`vue/use-v-on-exact`](https://vizejs.dev/pt-BR/rules/vue.html#vue-use-v-on-exact) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-use-v-on-exact-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-use-v-on-exact-good) | Exigir o modificador `.exact` em `v-on` quando houver manipuladores baseados em modificadores |
+| [`vue/v-bind-style`](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-bind-style) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-bind-style-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-bind-style-good) | Aplicar um padrão de sintaxe à diretiva `v-bind` |
+| [`vue/v-on-event-hyphenation`](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-on-event-hyphenation) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-on-event-hyphenation-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-on-event-hyphenation-good) | Exigir hífens nos nomes de eventos personalizados em v-on de componentes |
+| [`vue/v-on-handler-style`](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-on-handler-style) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-on-handler-style-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-on-handler-style-good) | Exigir manipuladores de v-on escritos como referência a método ou função inline |
+| [`vue/v-on-style`](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-on-style) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-on-style-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-on-style-good) | Aplicar um padrão de sintaxe à diretiva `v-on` |
+| [`vue/v-slot-style`](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-slot-style) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-slot-style-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-v-slot-style-good) | Aplicar um padrão de sintaxe à diretiva `v-slot` |
+| [`vue/valid-attribute-name`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-attribute-name) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-attribute-name-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-attribute-name-good) | Exigir nomes de atributos válidos |
+| [`vue/valid-template-root`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-template-root) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-template-root-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-template-root-good) | Exigir uma raiz `<template>` válida para a semântica de fragmentos do Vue 3 |
+| [`vue/valid-v-bind`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-bind) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-bind-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-bind-good) | Exigir diretivas `v-bind` válidas |
+| [`vue/valid-v-cloak`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-cloak) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-cloak-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-cloak-good) | Exigir diretivas `v-cloak` válidas |
+| [`vue/valid-v-else`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-else) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-else-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-else-good) | Exigir diretivas `v-else` válidas |
+| [`vue/valid-v-for`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-for) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-for-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-for-good) | Exigir diretivas `v-for` válidas |
+| [`vue/valid-v-html`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-html) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-html-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-html-good) | Exigir diretivas `v-html` válidas |
+| [`vue/valid-v-if`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-if) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-if-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-if-good) | Exigir diretivas `v-if` válidas |
+| [`vue/valid-v-memo`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-memo) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-memo-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-memo-good) | Exigir diretivas `v-memo` válidas |
+| [`vue/valid-v-model`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-model) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-model-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-model-good) | Exigir diretivas `v-model` válidas |
+| [`vue/valid-v-on`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-on) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-on-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-on-good) | Exigir diretivas `v-on` válidas |
+| [`vue/valid-v-once`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-once) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-once-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-once-good) | Exigir diretivas `v-once` válidas |
+| [`vue/valid-v-show`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-show) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-show-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-show-good) | Exigir diretivas `v-show` válidas |
+| [`vue/valid-v-slot`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-slot) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-slot-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-slot-good) | Exigir diretivas `v-slot` válidas |
+| [`vue/valid-v-text`](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-text) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-text-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-valid-v-text-good) | Exigir diretivas `v-text` válidas |
+| [`vue/warn-custom-block`](https://vizejs.dev/pt-BR/rules/vue.html#vue-warn-custom-block) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-warn-custom-block-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-warn-custom-block-good) | Alertar sobre blocos personalizados em arquivos SFC |
+| [`vue/warn-custom-directive`](https://vizejs.dev/pt-BR/rules/vue.html#vue-warn-custom-directive) | [Incorreto](https://vizejs.dev/pt-BR/rules/vue.html#vue-warn-custom-directive-bad) · [Correto](https://vizejs.dev/pt-BR/rules/vue.html#vue-warn-custom-directive-good) | Alertar sobre diretivas personalizadas que precisam de registro |
+
+[Todas as regras](./all.md) · [Opções das regras](/rules/options.md) · [Mapa de migração do ESLint](/rules/migration.md) · [Verificações do projeto](./cross-file.md) · [Atributos entre componentes](/rules/project/vue-cross-file-attrs-fallthrough.md)

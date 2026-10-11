@@ -127,4 +127,11 @@ pub trait Sink {
     fn mode(&self) -> LexMode {
         LexMode::Normal
     }
+
+    /// Keep directive-head lexical framing in verbatim content. The owner
+    /// still interprets these callbacks as opaque attributes. Existing sinks
+    /// retain the original plain-attribute callback stream by default.
+    fn directive_heads_in_verbatim(&self) -> bool {
+        false
+    }
 }

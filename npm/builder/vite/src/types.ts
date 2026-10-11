@@ -10,6 +10,13 @@ import type {
 } from "./plugin-vue-types.ts";
 import type { VizeVueFeatures } from "./vue-features.ts";
 
+declare module "vite" {
+  interface UserConfig {
+    /** Native compiler, lint, format, checker, editor and Musea settings shared with the CLI. */
+    vize?: UserConfigExport;
+  }
+}
+
 export type {
   VizeInspectorLintPlanProvider,
   VizeInspectorLintPlanRequest,

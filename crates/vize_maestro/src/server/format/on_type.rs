@@ -49,6 +49,7 @@ use crate::ide::position_to_offset;
 /// `None` means the request is not answerable at all: the document has no such
 /// line, or the formatter could not parse the file — routine while typing.
 /// `Some(vec![])` means "nothing to change here".
+#[cfg(test)]
 pub(crate) fn format_on_type(
     content: &str,
     filename: &str,
@@ -56,16 +57,32 @@ pub(crate) fn format_on_type(
     options: &vize_glyph::FormatOptions,
     vue_version: vize_glyph::VueVersion,
 ) -> Option<Vec<TextEdit>> {
+    format_on_type_with_template_whitespace(
+        content,
+        filename,
+        position,
+        options,
+        vue_version,
+        false,
+    )
+}
+
+pub(crate) fn format_on_type_with_template_whitespace(
+    content: &str,
+    filename: &str,
+    position: Position,
+    options: &vize_glyph::FormatOptions,
+    vue_version: vize_glyph::VueVersion,
+    preserve_template_whitespace: bool,
+) -> Option<Vec<TextEdit>> {
     let line_start = position_to_offset(content, position.line, 0)?;
 
     let allocator = vize_glyph::Allocator::with_capacity(content.len());
-    let formatted = vize_glyph::format_sfc_with_allocator_and_vue_version(
-        content,
-        options,
-        &allocator,
-        vue_version,
-    )
-    .ok()?;
+    let formatted =
+        vize_glyph::GlyphFormatter::new_with_vue_version(options, &allocator, vue_version)
+            .with_template_whitespace_preserved(preserve_template_whitespace)
+            .format(content)
+            .ok()?;
     if !formatted.changed {
         return Some(Vec::new());
     }

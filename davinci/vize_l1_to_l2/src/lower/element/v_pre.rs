@@ -24,7 +24,7 @@ use super::super::directive::{AttrForm, Directive, classify};
 /// and every `.modifier` are all lost, so `v-bind:x` freezes as
 /// `v-bindx`, `:[d]` as `:d` and `v-my:a.m` as `v-mya`. A shorthand
 /// prefix is part of the head and stays, so `:x`, `@c`, `.p` and `^a`
-/// are unchanged. `@vue/compiler-dom` does exactly the same.
+/// are unchanged. This is the shipped compatibility contract, not current compiler-dom parity.
 pub(super) fn frozen_name<'a>(
     allocator: &'a Allocator,
     authored: &'a str,
@@ -65,3 +65,6 @@ pub fn frozen_attribute_name<'a>(allocator: &'a Allocator, authored: &'a str) ->
         AttrForm::Static => authored,
     }
 }
+
+/// Correct compiler-only head projection; default/public callers keep compatibility.
+pub(super) use vize_l1::markup::directive::frozen_attribute_name as literal_attribute_name;

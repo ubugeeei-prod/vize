@@ -96,7 +96,12 @@ pub(super) fn emit_authored_event_map(
                 .as_str(),
         );
         ts.push_str("];\n");
-        mappings.map_whole_symbol(generated_start..generated_end, authored_range);
+        mappings.map_model_symbol(
+            ts,
+            generated_start..generated_end,
+            authored_range,
+            model.name.as_str(),
+        );
     }
     ts.push_str("};\n");
 }

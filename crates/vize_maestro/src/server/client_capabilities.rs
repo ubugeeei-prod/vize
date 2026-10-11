@@ -11,7 +11,9 @@ impl MaestroServer {
             .experimental
             .get_or_insert_with(|| serde_json::json!({}));
         experimental["vize"] = serde_json::json!({
-            "jsxTypecheck": cfg!(feature = "native") && self.state.jsx_typecheck_enabled()
+            "jsxTypecheck": cfg!(feature = "native")
+                && self.state.is_lsp_typecheck_enabled()
+                && self.state.jsx_typecheck_enabled()
         });
         capabilities
     }

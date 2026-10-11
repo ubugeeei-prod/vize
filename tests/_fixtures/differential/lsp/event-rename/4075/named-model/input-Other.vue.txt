@@ -1,0 +1,7 @@
+<script setup lang="ts">
+export interface Props { value?: string }
+defineProps<Props>();
+defineModel<string>('saveItem', { default: "" });
+</script>
+
+<template><span>unrelated</span></template>

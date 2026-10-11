@@ -97,14 +97,15 @@ export default defineConfig({
         cwd: root,
       },
     ]);
-    assert.deepEqual(result.createdFiles, ["vize.config.ts"]);
+    assert.deepEqual(result.createdFiles, ["tsconfig.json"]);
     assert.equal(result.migratedViteConfig, "vite.config.ts");
     assert.equal(result.enabledVitePlusLint, true);
     assert.match(read(root, "vite.config.ts"), /from "@vizejs\/vite-plugin"/u);
     assert.match(read(root, "vite.config.ts"), /plugins: \[vue\(\)\]/u);
     assert.match(read(root, "vite.config.ts"), /createVizeLintConfig/u);
     assert.match(read(root, "vite.config.ts"), /preset: "happy-path"/u);
-    assert.match(read(root, "vize.config.ts"), /defineConfig/u);
+    assert.equal(fs.existsSync(path.join(root, "vize.config.ts")), false);
+    assert.equal(JSON.parse(read(root, "tsconfig.json")).compilerOptions.checkJs, true);
     assert.equal(fs.existsSync(path.join(root, "oxlint.config.ts")), false);
 
     const scripts = packageJson(root).scripts as Record<string, string>;
@@ -118,7 +119,7 @@ export default defineConfig({
     assert.equal(scripts["vize:ready"], "vize ready src");
 
     const firstSources = new Map(
-      ["package.json", "vite.config.ts", "vize.config.ts"].map((filename) => [
+      ["package.json", "vite.config.ts", "tsconfig.json"].map((filename) => [
         filename,
         read(root, filename),
       ]),
@@ -223,9 +224,10 @@ test("reports files written before a later atomic write fails", () => {
             fs.writeFileSync(filename, source);
           },
         }),
-      /Setup partially completed: wrote vize\.config\.ts before oxlint\.config\.ts failed/u,
+      /Setup partially completed: wrote tsconfig\.json before oxlint\.config\.ts failed/u,
     );
-    assert.ok(fs.existsSync(path.join(root, "vize.config.ts")));
+    assert.ok(fs.existsSync(path.join(root, "tsconfig.json")));
+    assert.equal(fs.existsSync(path.join(root, "vize.config.ts")), false);
     assert.equal(fs.existsSync(path.join(root, "oxlint.config.ts")), false);
     assert.deepEqual(packageJson(root), { name: "partial-write-fixture", private: true });
   } finally {
@@ -323,7 +325,7 @@ export default { plugins: [vuePlugin()] }
       encoding: "utf8",
     });
 
-    assert.match(output, /\[vize setup\] created vize\.config\.ts/u);
+    assert.match(output, /\[vize setup\] created tsconfig\.json/u);
     assert.match(output, /install dependencies with: vp add -D/u);
     assert.match(output, /configuration written; install dependencies before running Vize/u);
     assert.match(read(root, "vite.config.mjs"), /@vizejs\/vite-plugin/u);
