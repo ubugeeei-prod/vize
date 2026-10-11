@@ -102,6 +102,9 @@ pub(super) fn materialized_source_offset_to_generated_offset(
     }
 }
 
+#[cfg(test)]
+mod component_tag_tests;
+
 fn mapping_for_source_offset(
     mappings: &[vize_canon::virtual_ts::VizeMapping],
     offset: usize,

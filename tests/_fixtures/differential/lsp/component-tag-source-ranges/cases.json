@@ -1,0 +1,93 @@
+[
+  {
+    "name": "dynamic-expression",
+    "script": "function choose() { return {} as any; }",
+    "template": "<component :is=\"choose()\" />",
+    "templateOffset": 100,
+    "tagRange": {
+      "start": 101,
+      "end": 110
+    },
+    "query": {
+      "offset": 116,
+      "token": "choose"
+    }
+  },
+  {
+    "name": "named-dynamic",
+    "script": "const LongComponentName = {} as any;",
+    "template": "<component :is=\"LongComponentName\" />",
+    "templateOffset": 100,
+    "tagRange": {
+      "start": 101,
+      "end": 110
+    },
+    "query": {
+      "offset": 116,
+      "token": "LongComponentName"
+    }
+  },
+  {
+    "name": "member-dynamic",
+    "script": "const registry = { Card: {} as any };",
+    "template": "<component :is=\"registry.Card\" />",
+    "templateOffset": 100,
+    "tagRange": {
+      "start": 101,
+      "end": 110
+    },
+    "query": {
+      "offset": 116,
+      "token": "registry"
+    }
+  },
+  {
+    "name": "static",
+    "script": "const StaticCard = {} as any;",
+    "template": "<StaticCard />",
+    "templateOffset": 100,
+    "tagRange": {
+      "start": 101,
+      "end": 111
+    }
+  },
+  {
+    "name": "reserved-looking-static",
+    "opaque": true,
+    "script": "",
+    "template": "<__vize_dynamic_is_0 />",
+    "templateOffset": 100,
+    "tagRange": {
+      "start": 101,
+      "end": 120
+    }
+  },
+  {
+    "name": "nested-dynamic",
+    "script": "function choose() { return {} as any; }",
+    "template": "<section>\n  <component :is=\"choose()\" />\n</section>",
+    "templateOffset": 100,
+    "tagRange": {
+      "start": 113,
+      "end": 122
+    },
+    "query": {
+      "offset": 128,
+      "token": "choose"
+    }
+  },
+  {
+    "name": "utf8-crlf-dynamic",
+    "script": "function choose() { return {} as any; }",
+    "template": "😀\r\n<component :is=\"choose()\" />",
+    "templateOffset": 100,
+    "tagRange": {
+      "start": 107,
+      "end": 116
+    },
+    "query": {
+      "offset": 122,
+      "token": "choose"
+    }
+  }
+]

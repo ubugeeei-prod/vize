@@ -38,7 +38,6 @@ pub(super) fn generate_generic_props_call(
     source_context: ComponentPropSource<'_>,
     indent: &str,
 ) {
-    let template_offset = source_context.offset;
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
     let expr_indent = if usage.vif_guard.is_some() {
         cstr!("{indent}  ")
@@ -78,12 +77,17 @@ pub(super) fn generate_generic_props_call(
     // #3450 oracle reads `src/Parent.vue(6,12)` for `<template><Child …`, where
     // column 12 is the `C`. Same derivation as the navigation references in
     // `scope::component_prop_navigation`.
-    let tag_src_start = (template_offset + usage.start + 1) as usize;
-    mappings.push(VizeMapping {
-        gen_range: literal_range,
-        src_range: tag_src_start..tag_src_start + usage.name.len(),
-        sub_spans: Vec::new(),
-    });
+    if let Some(src_range) = crate::virtual_ts::component_tag::source_range(
+        source_context.template,
+        source_context.offset,
+        usage,
+    ) {
+        mappings.push(VizeMapping {
+            gen_range: literal_range,
+            src_range,
+            sub_spans: Vec::new(),
+        });
+    }
 
     if usage.vif_guard.is_some() {
         append!(*ts, "{indent}}}\n");

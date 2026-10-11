@@ -76,6 +76,10 @@ fn options_method_definition_returns_one_complete_authored_target() {
             .definition(&doc.request_uri, line, character)
             .await
             .expect("actual native definition must answer");
+        assert!(
+            !raw.is_empty(),
+            "actual native definition cannot use a synchronous fallback; query {line}:{character}"
+        );
         let mapped =
             crate::ide::corsa_support::map_canonical_corsa_locations(&native_ctx, &doc, raw);
         assert!(
