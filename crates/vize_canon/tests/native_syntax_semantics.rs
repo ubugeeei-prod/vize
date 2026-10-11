@@ -294,7 +294,7 @@ fn unavailable_native_semantic_transport_cannot_report_empty_clean() {
         "{cli_error}\nSame-config native diagnostic completion failed: corsa error (exit code -1): Failed to start Corsa API session: rpc error -32041: native diagnostic transport intentionally unavailable"
     );
     assert_eq!(message.as_str(), api_completion);
-    transport_refusal::assert_exact_denial(&denied_bootstraps);
+    transport_refusal::assert_exact_denial(&denied_bootstraps, &attempts);
     println!("{message}");
 }
 

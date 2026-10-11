@@ -82,9 +82,30 @@ pub(super) fn capture_and_replay(root: &Path, wrapper: &Path) -> Value {
     json!(packets)
 }
 
-pub(super) fn assert_exact_denial(packets: &Value) {
+pub(super) fn assert_exact_denial(packets: &Value, attempts: &str) {
     let packets = packets.as_array().unwrap();
     assert!(!packets.is_empty(), "actual bootstrap denial is required");
+    // PID filenames do not establish invocation order. Bind the count and
+    // entire typed trace records, so no attempted transport loses custody.
+    let mut traced: Vec<_> = attempts.split_inclusive('\n').map(str::to_owned).collect();
+    let mut captured: Vec<_> = packets
+        .iter()
+        .map(|packet| {
+            format!(
+                "{}\n",
+                packet["wholeOriginalNativeClientBootstrap"]["argv"]
+                    .as_array()
+                    .unwrap()
+                    .first()
+                    .unwrap()
+                    .as_str()
+                    .unwrap()
+            )
+        })
+        .collect();
+    traced.sort();
+    captured.sort();
+    assert_eq!(traced, captured, "every attempted transport needs a packet");
     for packet in packets {
         let original = &packet["wholeOriginalNativeClientBootstrap"];
         let request = frame_body(&original["wholeRequestFrame"]);
@@ -116,6 +137,10 @@ pub(super) fn assert_exact_denial(packets: &Value) {
         assert_eq!(
             replay["wholeReplayBootstrapPacket"]["wholeRequestFrame"],
             original["wholeRequestFrame"]
+        );
+        assert_eq!(
+            replay["wholeReplayBootstrapPacket"]["wholeResponseFrame"],
+            original["wholeResponseFrame"]
         );
         assert_eq!(
             replay["wholeReplayBootstrapPacket"]["runtime"],

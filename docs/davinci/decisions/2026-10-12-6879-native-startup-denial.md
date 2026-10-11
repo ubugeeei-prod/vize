@@ -34,6 +34,9 @@ peer source. Replay the captured real bootstrap, including its original ID
 and argv, through the identical wrapper. Require byte-exact whole stdout,
 whole stderr and process exit 41, plus identical runtime/source identity.
 Retain every original and replay packet before asserting the verdict.
+Bind every whole original transport-trace record to the captured argv by
+exact count and contents; PID filenames grant no invocation-order claim.
+Require the replay packet's entire response frame to equal the original too.
 
 The unavailable-transport law still requires the whole genuine CLI response
 `post-request.d.cts(1294,1): error TS1128: Declaration or statement expected.`,
@@ -50,6 +53,10 @@ test files, the new test peer and this decision change. The explicitly
 reserved existing foundation row 43 gains only this document link; all other
 349 rows and all incoming text remain intact. No production, SDK, fixture
 source, diagnostic golden or performance ceiling changes.
+Publication replays this fixture on freshly authenticated main
+`ce5f407ebb10517a0797e15b2e07845fd52003b5`, preserving its incoming foundation
+rows. The local observation below remains evidence from the initial base;
+the refreshed source requires its own hosted qualification.
 
 The locked targeted integration law passes locally on Rust 1.99's default
 test profile: one passed, none failed or ignored, three filtered. It uses the
