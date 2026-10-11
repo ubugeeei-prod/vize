@@ -505,8 +505,8 @@ compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_vapor_sfc.rs	5	l
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_vapor_sfc.rs	5	l1	L1	stage	vize_l1	preferred	3
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_vapor_sfc.rs	5	l2	L2	stage	vize_l2	preferred	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/native_vapor_sfc.rs	5	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/nuxt_page_meta_dependencies.rs	8	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
-compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/nuxt_page_meta_dependencies.rs	8	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/nuxt_page_meta_dependencies.rs	3	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
+compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/nuxt_page_meta_dependencies.rs	3	raw_oxc	raw OXC	raw	oxc_parser	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/parse_facade.rs	5	croquis	Croquis analysis	old	vize_croquis	legacy	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/root_patterned_template.rs	97	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	test/dev	crates/vize_atelier_sfc/tests/root_patterned_template.rs	97	raw_oxc	raw OXC	raw	oxc_ast	raw	1
