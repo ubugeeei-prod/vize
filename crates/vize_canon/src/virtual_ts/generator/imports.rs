@@ -8,6 +8,7 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
+use oxc_syntax::identifier::is_identifier_name;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::{CompactString, FxHashSet, String};
@@ -133,7 +134,11 @@ pub(super) fn collect_setup_binding_anchor_names(
                 .typed()
                 .map(|(name, _)| String::from(name))
                 .filter(|name| {
-                    template_referenced_names.is_none_or(|names| names.contains(name.as_str()))
+                    // Typed bindings include quoted prop keys. Only lexical
+                    // identifiers can be read by the generated `void name` anchor.
+                    is_identifier_name(name)
+                        && template_referenced_names
+                            .is_none_or(|names| names.contains(name.as_str()))
                 })
                 .collect()
         });

@@ -170,3 +170,7 @@ fn is_reserved_anchor_name(name: &str) -> bool {
             | "public"
     )
 }
+
+#[cfg(test)]
+#[path = "anchors_tests.rs"]
+mod tests;
