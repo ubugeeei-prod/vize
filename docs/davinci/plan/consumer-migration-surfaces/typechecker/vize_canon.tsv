@@ -317,6 +317,10 @@ typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/unk
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/unknown_original_options_tests.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen.rs	7	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/vue_codegen/editor_script_tests.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests.rs	12	carton	Carton host/compatibility	old	vize_carton	legacy	8
+typechecker	Typechecker	test/dev	crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests/native.rs	12	carton	Carton host/compatibility	old	vize_carton	legacy	3
+typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen/malformed_setup_tests/native/rows.rs	6	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen/style_modules.rs	15	carton	Carton host/compatibility	old	vize_carton	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen/template.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/batch/virtual_project/vue_codegen/template.rs	8	old_ast	old AST/parser	old	vize_relief	legacy	1
@@ -531,8 +535,8 @@ typechecker	Typechecker	source	crates/vize_canon/src/template_instance_names.rs	
 typechecker	Typechecker	test/dev	crates/vize_canon/src/tests.rs	13	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/typecheck_service.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	4
 typechecker	Typechecker	source	crates/vize_canon/src/types.rs	3	carton	Carton host/compatibility	old	vize_carton	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	134	old_ast	old AST/parser	old	vize_relief	legacy	1
-typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	134	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	136	old_ast	old AST/parser	old	vize_relief	legacy	1
+typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts.rs	136	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	12	carton	Carton host/compatibility	old	vize_carton	legacy	3
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	12	old_ast	old AST/parser	old	vize_armature	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/class_component_props_tests.rs	12	croquis	Croquis analysis	old	vize_croquis	legacy	2
@@ -637,9 +641,9 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/vapo
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/vif_chain.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/vif_chain/emit.rs	9	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/expressions/vif_chain/emit.rs	9	croquis	Croquis analysis	old	vize_croquis	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator.rs	77	carton	Carton host/compatibility	old	vize_carton	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator.rs	77	old_ast	old AST/parser	old	vize_relief	legacy	1
-typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator.rs	77	croquis	Croquis analysis	old	vize_croquis	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator.rs	78	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator.rs	78	old_ast	old AST/parser	old	vize_relief	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator.rs	78	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/anchors_tests.rs	1	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/anchors_tests.rs	1	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	test/dev	crates/vize_canon/src/virtual_ts/generator/anchors_tests.rs	1	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
@@ -761,6 +765,7 @@ typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks/ambient/projection.rs	4	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks/ambient/projection.rs	4	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_blocks/ambient/projection/emit.rs	2	carton	Carton host/compatibility	old	vize_carton	legacy	1
+typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_metadata.rs	3	croquis	Croquis analysis	old	vize_croquis	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	8	carton	Carton host/compatibility	old	vize_carton	legacy	1
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	8	croquis	Croquis analysis	old	vize_croquis	legacy	2
 typechecker	Typechecker	source	crates/vize_canon/src/virtual_ts/generator/script_module.rs	8	raw_oxc	raw OXC	raw	oxc_allocator	raw	1

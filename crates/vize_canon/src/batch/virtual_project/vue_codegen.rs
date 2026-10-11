@@ -20,7 +20,8 @@ use vize_atelier_sfc::{
 use crate::batch::SfcBlockType;
 use crate::batch::error::CorsaResult;
 use crate::virtual_ts::{
-    VirtualTsGenerationOptions, VirtualTsOptions, generate_virtual_ts_with_offsets_and_checks,
+    AuthoredScriptMetadata, VirtualTsGenerationOptions, VirtualTsOptions,
+    generate_virtual_ts_with_offsets_and_checks,
 };
 
 use super::diagnostics::{
@@ -39,6 +40,8 @@ mod types;
 pub(super) use types::{GeneratedVueFile, VueCodegenOptions};
 #[cfg(test)]
 mod editor_script_tests;
+#[cfg(test)]
+mod malformed_setup_tests;
 
 pub(super) fn generate_vue_virtual_ts(
     path: &Path,
@@ -256,6 +259,7 @@ pub(super) fn generate_vue_virtual_ts(
             template_offset,
             options,
             VirtualTsGenerationOptions {
+                authored_scripts: Some(AuthoredScriptMetadata::from_descriptor(descriptor)),
                 check_options: codegen_options.check_options,
                 dialect: codegen_options.dialect,
                 preserve_unused_diagnostics: codegen_options.preserve_unused_diagnostics,

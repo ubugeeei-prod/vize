@@ -125,6 +125,8 @@ type __VizeJsxComponentCall<C> = C extends abstract new (...args: any[]) => any 
 declare function __vize_jsx_component__<C>(component: C): __VizeJsxComponentCall<C>;\n\
 declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: __VizeJsxSlotPayload<C, N>) => unknown): any;\n";
 #[cfg(feature = "native")]
+pub(crate) use types::AuthoredScriptMetadata;
+#[cfg(feature = "native")]
 pub(crate) use types::ResolveStyleClassNames;
 #[cfg(any(test, feature = "native"))]
 pub(crate) use types::VirtualTsCheckOptions;

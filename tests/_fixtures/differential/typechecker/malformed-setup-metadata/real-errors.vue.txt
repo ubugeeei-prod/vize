@@ -1,0 +1,9 @@
+<script lang="ts" generic="T" setup>
+const { info } = defineProps<{
+    info?: T;
+}>();
+
+const foo = ;
+const missing = __vizeReallyMissing;
+const mismatch: number = "not-a-number";
+</script>

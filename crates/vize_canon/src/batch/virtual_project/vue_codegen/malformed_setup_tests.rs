@@ -1,0 +1,209 @@
+//! Whole authored parse-failure packets keep descriptor roles and attributes.
+#![expect(clippy::unwrap_used, reason = "complete authored fixture laws")]
+#![expect(
+    clippy::disallowed_types,
+    reason = "fixture strings retain exact bytes"
+)]
+
+use super::{GeneratedVueFile, VueCodegenOptions, generate_vue_virtual_ts};
+use crate::virtual_ts::{VirtualTsGenerationOptions, VirtualTsOptions};
+use std::path::Path;
+use vize_atelier_sfc::{SfcParseOptions, croquis::SfcCroquisOptions, parse_sfc};
+use vize_croquis::ScopeKind;
+
+#[cfg(unix)]
+mod native;
+
+const WORKSPACE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/vue-language-tools/upstream/test-workspace"
+);
+const CORPUS: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/malformed-setup-metadata"
+);
+
+fn options() -> VueCodegenOptions<'static> {
+    VueCodegenOptions {
+        check_options: Default::default(),
+        typed_router_root: None,
+        preserve_unused_diagnostics: false,
+        options_api: false,
+        preserve_authored_component: false,
+        preserve_script_on_template_error: true,
+        component_name: None,
+        preserve_event_navigation: false,
+        legacy_vue2: false,
+        dialect: Default::default(),
+        template_syntax: Default::default(),
+        experimental_in_tag_comments: false,
+        experimental_patterned_template: false,
+        experimental_strict_slot_children: false,
+        hoist_shared_preamble: false,
+        omit_vite_client_reference: false,
+        runtime_prop_resolve_cache: None,
+    }
+}
+
+fn project(source: &str) -> (GeneratedVueFile, GeneratedVueFile, serde_json::Value) {
+    let path = Path::new("App.vue");
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    let analysis = vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_context(
+        &descriptor,
+        None,
+        SfcCroquisOptions::full(),
+    );
+    let script = analysis.script_content.as_deref();
+    let retained =
+        super::super::diagnostics::collect_script_parse_fallbacks(path, source, &descriptor, true);
+    // The same descriptor analysis and exact original generation flags are
+    // the before path. No recovered AST or hand-built summary stands in for it.
+    let prior = crate::virtual_ts::generate_virtual_ts_with_offsets_and_checks(
+        &analysis.croquis,
+        script,
+        None,
+        analysis.script_offset,
+        0,
+        &VirtualTsOptions::default(),
+        VirtualTsGenerationOptions {
+            split_script_setup_offsets: analysis.split_script_setup_offsets(&descriptor),
+            script_syntax_boundaries: &retained.boundaries,
+            ..Default::default()
+        },
+    );
+    let (mappings, semantic_links, prop_default_key_links) = prior.mapping.into_binding_parts();
+    let before = GeneratedVueFile {
+        code: prior.code,
+        mappings,
+        semantic_links,
+        prop_default_key_links,
+        diagnostics: retained.diagnostics,
+        typed_router_import: false,
+    };
+    let after = generate_vue_virtual_ts(
+        path,
+        source,
+        &descriptor,
+        &VirtualTsOptions::default(),
+        options(),
+    )
+    .unwrap();
+    let packet = serde_json::json!({
+        "wholeAuthoredSource":source,
+        "wholeDescriptor":vize_carton::cstr!("{descriptor:#?}"),
+        "wholeCroquis":vize_carton::cstr!("{:#?}",analysis.croquis),
+        "wholeAnalyzedScript":script,
+        "scriptOffset":analysis.script_offset,
+        "splitOffsets":analysis.split_script_setup_offsets(&descriptor),
+        "analyzedSetup":analysis.croquis.scopes.iter().any(|scope| matches!(scope.kind,ScopeKind::ScriptSetup)),
+        "before":packet(&before), "after":packet(&after),
+    });
+    (before, after, packet)
+}
+
+fn packet(output: &GeneratedVueFile) -> serde_json::Value {
+    serde_json::json!({
+        "wholeCode":output.code.as_str(),
+        "wholeMappings":vize_carton::cstr!("{:#?}",output.mappings),
+        "wholeSemanticLinks":vize_carton::cstr!("{:#?}",output.semantic_links),
+        "wholePropDefaultKeyLinks":vize_carton::cstr!("{:#?}",output.prop_default_key_links),
+        "wholeLocalDiagnostics":vize_carton::cstr!("{:#?}",output.diagnostics),
+        "typedRouterImport":output.typed_router_import,
+    })
+}
+
+fn sources(issue: &str) -> Vec<(&'static str, std::string::String)> {
+    let names: &[&str] = if issue == "5823" {
+        &["main.vue"]
+    } else {
+        &["withScript.vue", "withoutScript.vue"]
+    };
+    names
+        .iter()
+        .map(|name| {
+            let source = std::fs::read_to_string(
+                Path::new(WORKSPACE)
+                    .join("tsc")
+                    .join(vize_carton::cstr!("_failed_#{issue}").as_str())
+                    .join(name),
+            )
+            .unwrap();
+            assert_eq!(
+                source,
+                std::fs::read_to_string(
+                    Path::new(CORPUS).join(vize_carton::cstr!("{issue}-{name}.txt").as_str())
+                )
+                .unwrap()
+            );
+            (*name, source)
+        })
+        .collect()
+}
+
+fn assert_authored_maps(source: &str, output: &GeneratedVueFile) {
+    assert!(!output.mappings.is_empty());
+    for mapping in &output.mappings {
+        assert!(source.get(mapping.src_range.clone()).is_some());
+        assert!(output.code.get(mapping.gen_range.clone()).is_some());
+    }
+    let descriptor = parse_sfc(source, SfcParseOptions::default()).unwrap();
+    let setup = descriptor.script_setup.as_ref().unwrap();
+    let authored = if setup.content.contains("info?: T;") {
+        "info?: T;"
+    } else {
+        "'vue'"
+    };
+    assert!(
+        output.code.contains(authored),
+        "authored script tokens must remain intact"
+    );
+    let source_start = source.find(authored).unwrap();
+    assert!(output.mappings.iter().any(|mapping| {
+        mapping.src_range.start <= source_start && mapping.src_range.end > source_start
+    }));
+}
+
+#[test]
+fn full_malformed_descriptors_keep_their_setup_role_and_generic_without_recovering_an_ast() {
+    for issue in ["5071", "5823"] {
+        for (_, source) in sources(issue) {
+            let (before, after, packet) = project(&source);
+            assert_eq!(packet["analyzedSetup"], false);
+            assert_authored_maps(&source, &after);
+            if issue == "5823" {
+                assert!(before.code.contains("function __setup()"));
+                assert!(after.code.contains("function __setup<T>()"));
+                assert!(after.code.contains("info?: T;"));
+            }
+            assert!(!after.code.contains("async function __setup"));
+        }
+    }
+}
+
+#[test]
+fn successful_setup_analysis_keeps_the_complete_original_projection_and_maps() {
+    for issue in ["5071", "5823"] {
+        for (_, source) in sources(issue) {
+            let source = source
+                .replace("'vue'ref", "'vue';ref")
+                .replace("const foo = ;", "const foo = 1;");
+            for source in [
+                source.clone(),
+                source.replace("const foo = 1;", "const foo = await Promise.resolve(1);"),
+            ] {
+                let (before, after, packet) = project(&source);
+                assert_eq!(packet["analyzedSetup"], true);
+                assert_eq!(before.code, after.code);
+                assert_eq!(before.mappings, after.mappings);
+                assert_eq!(before.semantic_links, after.semantic_links);
+                assert_eq!(before.prop_default_key_links, after.prop_default_key_links);
+                assert_authored_maps(&source, &after);
+            }
+        }
+    }
+    let (before, after, _) =
+        project("<script lang=\"ts\">export default {};\nconst invalid = ;</script>");
+    assert_eq!(before.code, after.code);
+    assert_eq!(before.mappings, after.mappings);
+    assert_eq!(before.semantic_links, after.semantic_links);
+}

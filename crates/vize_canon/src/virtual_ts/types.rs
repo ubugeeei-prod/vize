@@ -180,7 +180,31 @@ pub(crate) fn is_safe_ts_lib_reference(lib: &str) -> bool {
 }
 
 #[derive(Debug, Clone, Copy, Default)]
+pub(crate) struct AuthoredScriptMetadata<'a> {
+    pub(crate) has_setup: bool,
+    pub(crate) has_plain: bool,
+    pub(crate) setup_generic: Option<&'a str>,
+}
+
+#[cfg(feature = "native")]
+impl<'a> AuthoredScriptMetadata<'a> {
+    pub(crate) fn from_descriptor(descriptor: &'a vize_atelier_sfc::SfcDescriptor<'_>) -> Self {
+        Self {
+            has_setup: descriptor.script_setup.is_some(),
+            has_plain: descriptor.script.is_some(),
+            setup_generic: descriptor
+                .script_setup
+                .as_ref()
+                .and_then(|setup| setup.attrs.get("generic"))
+                .map(|value| value.as_ref()),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct VirtualTsGenerationOptions<'a> {
+    /// Descriptor-owned block roles and attributes survive script parse failure.
+    pub(crate) authored_scripts: Option<AuthoredScriptMetadata<'a>>,
     pub(crate) check_options: VirtualTsCheckOptions,
     /// Configured Vue dialect for this project (default [`VueVersion::V3`]).
     ///

@@ -1,0 +1,87 @@
+{
+  "schema": "vize.malformedSetupMetadataOriginalCustody",
+  "revision": "88e8500c1e5f1b29d80f42c8ca065cc9cbd56899",
+  "parentSource": "065baa944869b10e267ddcaf85f7812471a4a5f9",
+  "originalFiles": [
+    {
+      "source": "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#5071/withScript.vue",
+      "fixture": "5071-withScript.vue.txt",
+      "sha256": "f961ce9efe34f6ae7c7c1720ebe80dc0de75fff119aa48af685b004d6600f45c",
+      "bytes": 117
+    },
+    {
+      "source": "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#5071/withoutScript.vue",
+      "fixture": "5071-withoutScript.vue.txt",
+      "sha256": "d8b5dc17be7dc80c403c74044c452826dc45704c0e2d4e837a7350122dfe1a1d",
+      "bytes": 69
+    },
+    {
+      "source": "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#5071/tsconfig.json",
+      "fixture": "5071-tsconfig.json.txt",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9",
+      "bytes": 65
+    },
+    {
+      "source": "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#5823/main.vue",
+      "fixture": "5823-main.vue.txt",
+      "sha256": "dda9f44c81f62b9877962884853d5565fcf7bb9e4a8b725bed513d45dac98daa",
+      "bytes": 113
+    },
+    {
+      "source": "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsc/_failed_#5823/tsconfig.json",
+      "fixture": "5823-tsconfig.json.txt",
+      "sha256": "4ee9e5268ee5f06e85179079aed0d022e5c84fe631223d2485379140b1f20de9",
+      "bytes": 65
+    },
+    {
+      "source": "tests/_fixtures/vue-language-tools/upstream/test-workspace/tsconfig.base.json",
+      "fixture": "tsconfig.base.json.txt",
+      "sha256": "03699de82ec7ef479fa4258ea729a800fd8c7e02af7525d659cc5dd4d04f1c12",
+      "bytes": 323
+    }
+  ],
+  "referenceDiagnostics": {
+    "5071": [
+      {
+        "file": "withScript.vue",
+        "line": 1,
+        "column": 19,
+        "code": 1005
+      },
+      {
+        "file": "withoutScript.vue",
+        "line": 2,
+        "column": 26,
+        "code": 1005
+      }
+    ],
+    "5823": [
+      {
+        "file": "main.vue",
+        "line": 6,
+        "column": 13,
+        "code": 1109
+      }
+    ]
+  },
+  "observedAdditionalDiagnostics": {
+    "5071": [
+      {
+        "file": "withoutScript.vue",
+        "line": 2,
+        "column": 21,
+        "code": 2307
+      }
+    ],
+    "5823": [
+      {
+        "file": "main.vue",
+        "line": 3,
+        "column": 12,
+        "code": 2304
+      }
+    ]
+  },
+  "originalLogSha256": "b014831c49f857ae436214438a3061c322a825aca5824d3f466a06d8a0d6cfe9",
+  "qualification": "pending actual complete fourth-source Actions"
+}
