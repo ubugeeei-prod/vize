@@ -66,7 +66,7 @@ onMounted(() => placeNote(0, 0, true));
       >
     </div>
     <section ref="board" class="drag-board" aria-label="Bounded note board">
-      <article ref="note" class="drag-note" :style="style" aria-label="Draggable review note">
+      <article ref="note" class="drag-note" :style aria-label="Draggable review note">
         <button ref="handle" type="button" aria-label="Drag review note">Drag note</button>
         <span>{{ draft }}</span>
       </article>
@@ -128,8 +128,9 @@ onMounted(() => placeNote(0, 0, true));
 }
 .drag-note {
   --note-surface: Canvas;
+  --note-layer: 1;
   position: fixed;
-  z-index: 1;
+  z-index: var(--note-layer);
   box-sizing: border-box;
   inline-size: 160px;
   block-size: 120px;

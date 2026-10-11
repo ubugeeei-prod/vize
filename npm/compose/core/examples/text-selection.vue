@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { useId } from "vue";
 import { useTextSelection } from "@vizejs/composable/text-selection";
 
+const excerptLabelId = useId();
 const { text, ranges, rects } = useTextSelection();
 
 function clearSelection(): void {
@@ -10,13 +12,13 @@ function clearSelection(): void {
 
 <template>
   <div class="composable-example">
-    <p id="excerpt-label">Editable guide excerpt</p>
+    <p :id="excerptLabelId">Editable guide excerpt</p>
     <div
       class="selection-excerpt"
       contenteditable="true"
       role="textbox"
       aria-multiline="true"
-      aria-labelledby="excerpt-label"
+      :aria-labelledby="excerptLabelId"
       tabindex="0"
     >
       Inspect this Vue guide.

@@ -41,6 +41,9 @@ while the platform mutates the same Selection object. No ranges and an empty
 collapsed caret differ. Clear is the example's explicit native document action;
 its host is never replaced. SSR and initial hydration retain the empty fallback
 until mounting attaches the real document. The excerpt is local unsaved DOM text.
+Use Vue's SSR-safe per-instance ID for its actual label relationship. Keep the
+authored-source zero-warning gate: use shorthand style binding and a local CSS
+layer variable in the draggable example, without weakening any native law.
 
 Add these laws to the existing complete capture dispatcher without a new
 pipeline, observer shim, synthetic pointer event or reduced checkpoint.
