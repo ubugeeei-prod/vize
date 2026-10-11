@@ -84,6 +84,14 @@ pub trait Sink {
     }
 
     fn on_open_tag_name(&mut self, start: usize, end: usize);
+
+    /// Whether the just-opened `title` belongs to SVG. Called immediately
+    /// after its name event; owners use their existing live parent scope.
+    /// Stateless sinks preserve the original HTML RCDATA callback stream.
+    fn svg_title_children(&self) -> bool {
+        false
+    }
+
     fn on_open_tag_end(&mut self, end: usize);
     fn on_self_closing_tag(&mut self, end: usize);
     fn on_close_tag(&mut self, start: usize, end: usize);

@@ -43,6 +43,13 @@ impl<P: Profile, S: Sink> Lexer<'_, P, S> {
     pub(super) fn state_in_tag_name(&mut self, c: u8) {
         if is_end_of_tag_section(c) {
             self.sink.on_open_tag_name(self.section_start, self.index);
+            if self.in_rcdata
+                && self.current_sequence == Some(super::sequences::Sequence::TitleEnd)
+                && self.sink.svg_title_children()
+            {
+                self.in_rcdata = false;
+                self.current_sequence = None;
+            }
             self.section_start = self.index;
             self.state = State::BeforeAttrName;
             self.state_before_attr_name(c);

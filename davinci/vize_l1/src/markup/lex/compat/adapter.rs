@@ -61,6 +61,10 @@ impl<C: Callbacks> Sink for CompatSink<C> {
         self.callbacks.on_open_tag_name(start, end);
     }
 
+    fn svg_title_children(&self) -> bool {
+        self.callbacks.svg_title_children()
+    }
+
     fn on_open_tag_end(&mut self, end: usize) {
         self.callbacks.on_open_tag_end(end);
     }

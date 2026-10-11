@@ -233,6 +233,12 @@ impl<P: SurfacePolicy> Sink for VueSink<'_, '_, P> {
         self.recorder.on_open_tag_name(start, end);
     }
 
+    fn svg_title_children(&self) -> bool {
+        self.stack.last().is_some_and(|parent| {
+            parent.ns == Namespace::Svg && !matches!(parent.tag, "foreignObject" | "desc" | "title")
+        })
+    }
+
     fn on_open_tag_end(&mut self, end: usize) {
         let (verbatim, facts) = self.finish_tag(false);
         if P::LINT_TAGS {

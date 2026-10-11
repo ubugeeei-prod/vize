@@ -31,6 +31,19 @@ The provider must be the actually loaded `.node` binding inside this checkout's
 Actions must successfully build that artifact before the existing browser test.
 Focused compiler controls exercise both the default and retained lowering paths.
 
+The focused SVG `title` compiler control exposed a separate tokenizer defect:
+the HTML RCDATA mode escaped its child markup. Resolve only an opening `title`
+from each parser owner's existing live parent scope, after the name callback.
+SVG parents permit children; HTML integration points (`foreignObject`, `desc`
+and `title`) preserve HTML RCDATA. This adds no namespace stack, allocation,
+input walk or dependency from a level crate to a legacy crate. Stateless raw
+callback consumers retain their existing token stream. Both production parser
+owners consume a separately registered eleven-row complete ordered-tree/text
+corpus, including HTML title/textarea, nested SVG, integration points,
+self-closing/sibling boundaries, MathML and a similarly named ordinary tag.
+Native checks additionally verify byte fidelity. These are parser controls;
+they confer no published compiler or browser execution credit.
+
 The original third-party sources, six original control rows, and two authored
 physical SVG controls stay unchanged. This additive namespace campaign does
 not inherit their acceptance credit. Its runtime manifest reports rc.10 as

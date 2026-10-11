@@ -98,6 +98,12 @@
       "sha256": "be6e0c00a3c824e87a50b5d1d0351eb93badd7fe4f7a0d927f7c993c2c10f102",
       "adapter": "compiler-source-napi-browser-v1",
       "workflow": ".github/workflows/check.yml"
+    },
+    {
+      "path": "vapor-svg-title-8624.manifest.json",
+      "sha256": "93668e54e09ae5d03af28e4d6154f8e54e47e5b7361c7e17a28942331603a338",
+      "adapter": "compiler-rust-whole-source-parser-v1",
+      "workflow": ".github/workflows/check.yml"
     }
   ]
 }
