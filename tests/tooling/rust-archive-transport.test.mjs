@@ -12,7 +12,7 @@ const workflow = parse(read(".github/workflows/rust-archive-transport-benchmark.
 const producer = parse(read(".github/actions/measure-rust-archive-window/action.yml"));
 const consumer = parse(read(".github/actions/verify-rust-archive-window/action.yml"));
 
-test("Rust transport remains a manual experiment with two fresh arms and all four partitions", () => {
+void test("Rust transport remains a manual experiment with two fresh arms and all four partitions", () => {
   assert.deepEqual(workflow.on, { workflow_dispatch: null, workflow_call: null });
   assert.deepEqual(workflow.permissions, { contents: "read", actions: "read" });
   assert.deepEqual(workflow.jobs.consumer.strategy.matrix, {
@@ -31,7 +31,7 @@ test("Rust transport remains a manual experiment with two fresh arms and all fou
   assert.equal(workflow.jobs.compare.if, "${{ always() && !cancelled() }}");
 });
 
-test("the existing manual bridge admits only the explicit Rust transport component", () => {
+void test("the existing manual bridge admits only the explicit Rust transport component", () => {
   const bridge = parse(read(".github/workflows/ci-walltime-benchmark.yml"));
   const job = bridge.jobs["rust-archive-window"];
   assert.deepEqual(job.permissions, { contents: "read", actions: "read" });
@@ -51,7 +51,7 @@ test("the existing manual bridge admits only the explicit Rust transport compone
   }
 });
 
-test("the original whole ZIP, complete tar proof and all raw observations remain durable", () => {
+void test("the original whole ZIP, complete tar proof and all raw observations remain durable", () => {
   const steps = producer.runs.steps;
   assert.equal(steps.find((step) => step.id === "original").env.PAYLOAD_ARTIFACT_ID, "11706049605");
   assert.equal(
@@ -73,7 +73,7 @@ test("the original whole ZIP, complete tar proof and all raw observations remain
   assert.match(raw.with.path, /rust-window-worker/);
 });
 
-test("frozen consumer source, profile, fixtures and pinned decoder remain unchanged", () => {
+void test("frozen consumer source, profile, fixtures and pinned decoder remain unchanged", () => {
   const steps = consumer.runs.steps;
   const checkout = steps.find((step) => step.uses?.startsWith("actions/checkout@"));
   assert.equal(checkout.with.ref, "e057b3dd9e8ebed0dee7f4239a34daa2b410f7a0");
@@ -101,7 +101,7 @@ test("frozen consumer source, profile, fixtures and pinned decoder remain unchan
   );
 });
 
-test("real whole-frame, source, missing-partition and result controls survive Python optimization", () => {
+void test("real whole-frame, source, missing-partition and result controls survive Python optimization", () => {
   for (const options of [[], ["-O"]]) {
     const result = spawnSync(
       "python3",
