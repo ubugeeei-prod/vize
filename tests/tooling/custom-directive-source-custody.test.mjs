@@ -208,7 +208,7 @@ test("integrated replay authenticates both complete source arms and refuses fore
     fs.writeFileSync(path.join(checkout, absent), "// foreign historically absent body\n");
     refuse(run("baseline"), /historically absent production body exists/);
     restore();
-    refuse(run("unknown"), /AssertionError/);
+    refuse(run("unknown"), /unknown counterfactual arm/);
     refuse(run("candidate", integrated), /unknown historical baseline/);
     refuse(run("candidate", before, integrated), /candidate must equal HEAD/);
     refuse(
@@ -277,7 +277,7 @@ test("integrated replay authenticates both complete source arms and refuses fore
     );
     assert.deepEqual(accept(run()), candidate);
     fs.writeFileSync(productionSource, "// foreign production\n");
-    refuse(run(), /AssertionError/);
+    refuse(run(), /source body changed/);
     restore();
     git(["update-ref", "-d", `${replaceBase}${integrated}`]);
   } finally {

@@ -52,7 +52,7 @@ def tree(revision):
 
 assert baseline == historical_before, ("unknown historical baseline", baseline)
 assert git("rev-parse", "HEAD").decode().strip() == candidate, "candidate must equal HEAD"
-assert phase in ("baseline", "candidate")
+assert phase in ("baseline", "candidate"), ("unknown counterfactual arm", phase)
 git("merge-base", "--is-ancestor", integrated_after, candidate)
 before, integrated, common = tree(historical_before), tree(integrated_after), tree(candidate)
 for path in sorted(production):
@@ -82,7 +82,7 @@ def member(path, entry):
         assert bool(physical.stat().st_mode & 0o111) == (mode == "100755"), ("source mode changed", path)
     raw = os.readlink(path).encode() if mode == "120000" else physical.read_bytes()
     actual = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
-    assert actual == blob, (path, actual, blob)
+    assert actual == blob, ("source body changed", path, actual, blob)
     return {"path": path, "mode": mode, "blob": blob, "bytes": len(raw),
             "sha256": hashlib.sha256(raw).hexdigest()}
 
