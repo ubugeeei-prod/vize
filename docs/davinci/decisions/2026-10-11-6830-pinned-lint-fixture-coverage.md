@@ -16,6 +16,12 @@ rewrites remain confined to their existing consumers. Setup verifies the
 owning Gitlink, every original file's complete Git blob, its file type and
 Unix executable mode before and after lint. Nested Gitlinks are authenticated
 and exported too; an empty submodule cannot inherit its parent's identity.
+Environment commands bind the native CLI installed by `setup-vp` directly,
+since package scripts prepend a local `vp` that lacks `env`. The first
+source run [38115298910](https://github.com/ubugeeei-prod/vize/actions/runs/38115298910)
+proved this setup defect: eleven cases passed, while all four preparations
+failed before install. The corrected CLI path and bytes join runtime receipts;
+manager versions, Node runtime and complete fixture inputs stay explicit.
 
 | Fixture  | Original pin                               | Authored pnpm | Effective config Vite          | Setup                                                                                 |
 | -------- | ------------------------------------------ | ------------- | ------------------------------ | ------------------------------------------------------------------------------------- |

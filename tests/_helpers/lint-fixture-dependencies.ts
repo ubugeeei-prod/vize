@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import { type AppConfig, syncGitFixtureWorktree } from "./apps.ts";
 import { prepareSeparateLintInstallGraph } from "./lint-fixture-install-graph.ts";
+import { resolveLintEnvironmentCli } from "./lint-fixture-runtime.ts";
 import {
   assertPinnedFixtureFiles,
   exportPinnedFixtureGitlinks,
@@ -78,7 +79,8 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
     HUSKY: "0",
   };
   const prefix = ["env", "exec", "--node", process.versions.node, "pnpm"];
-  const actualManager = execFileSync("vp", [...prefix, "--version"], {
+  const environmentCli = resolveLintEnvironmentCli();
+  const actualManager = execFileSync(environmentCli, [...prefix, "--version"], {
     cwd: root,
     env,
     encoding: "utf8",
@@ -87,7 +89,7 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
   assert.equal(actualManager, manager[1], "fixture must run its authored package-manager version");
   console.log(`[vize:lint-setup] ${name}@${source.revision} with ${pkg.packageManager}`);
   execFileSync(
-    "vp",
+    environmentCli,
     [...prefix, "install", "--frozen-lockfile", "--ignore-scripts", "--prefer-offline"],
     { cwd: installRoot, env, stdio: "inherit", timeout: 900_000 },
   );
@@ -96,7 +98,7 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
   // Electron path. Browser downloads and application generators are unrelated
   // to reading these original lint inputs and remain in their existing suites.
   if (name === "voicevox") {
-    execFileSync("vp", [...prefix, "exec", "install-electron"], {
+    execFileSync(environmentCli, [...prefix, "exec", "install-electron"], {
       cwd: root,
       env,
       stdio: "inherit",
@@ -105,7 +107,7 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
     fs.copyFileSync(path.join(root, ".env.example"), path.join(root, ".env"));
   }
   if (name === "misskey") {
-    execFileSync("vp", [...prefix, "--dir", "packages/i18n", "build"], {
+    execFileSync(environmentCli, [...prefix, "--dir", "packages/i18n", "build"], {
       cwd: root,
       env,
       stdio: "inherit",
@@ -162,6 +164,8 @@ export function prepareLintFixtureDependencies(app: AppConfig): PreparedLintFixt
       lockSha256,
       packageManager: pkg.packageManager,
       actualManager,
+      environmentCli,
+      environmentCliSha256: sha256(fs.readFileSync(environmentCli)),
       node: process.versions.node,
       originalFrozenClosure: name !== "npmx.dev" && name !== "naive-ui",
       generatedLock: name === "naive-ui",
