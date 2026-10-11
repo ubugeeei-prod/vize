@@ -22,7 +22,7 @@ import {
 } from "../../tools/support/release/typed_defaults/distribution.mjs";
 import { officialFixture } from "./support/released-typed-defaults-fixtures.mjs";
 
-test("official C/H/source PR/R tag custody accepts inert bindings and refuses every changed authority", async () => {
+await test("official C/H/source PR/R tag custody accepts inert bindings and refuses every changed authority", async () => {
   await authenticate(officialFixture().options, officialFixture().read);
   const mutations = [
     [
@@ -105,7 +105,7 @@ test("official C/H/source PR/R tag custody accepts inert bindings and refuses ev
   }
 });
 
-test("runtime override and source checkout consumer substitutions are refused before execution", (t) => {
+await test("runtime override and source checkout consumer substitutions are refused before execution", (t) => {
   const f = officialFixture();
   const env = {
     PUBLIC_CUT: f.options.cut,
@@ -139,7 +139,7 @@ test("runtime override and source checkout consumer substitutions are refused be
   assert.throws(() => consumerPaths(paths, checkout), /fresh public paths/);
 });
 
-test("the actual observer refuses an untrusted branch or unsupported host before product execution", (t) => {
+await test("the actual observer refuses an untrusted branch or unsupported host before product execution", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "typed-untrusted-observer-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const f = officialFixture();
@@ -207,7 +207,7 @@ function archiveFixture(t, kind = "regular") {
   return { root, archive, bytes, checksum, tag, assets, extract };
 }
 
-test("single official GNU archive, both digests and exact sidecar are required; repacks fail", (t) => {
+await test("single official GNU archive, both digests and exact sidecar are required; repacks fail", (t) => {
   const f = archiveFixture(t);
   const assets = selectAssets({ assets: f.assets }, f.tag);
   verifyAssets(assets, f.bytes, f.checksum);
@@ -228,7 +228,7 @@ test("single official GNU archive, both digests and exact sidecar are required; 
   assert.throws(() => verifyAssets(wrongAssets, f.bytes, wrong), /exact archive checksum/);
 });
 
-test("inert ELF transport controls retain regular bytes; scripts, symlinks, extra members and foreign binary refuse", (t) => {
+await test("inert ELF transport controls retain regular bytes; scripts, symlinks, extra members and foreign binary refuse", (t) => {
   const f = archiveFixture(t);
   const consumer = path.join(f.root, "consumer");
   fs.mkdirSync(consumer);

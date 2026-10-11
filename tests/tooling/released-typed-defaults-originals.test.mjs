@@ -35,7 +35,7 @@ function substitute(fixture, name, change) {
   });
 }
 
-test("immutable H source must retain every authored fixture and all 51 n8n rules", async (t) => {
+await test("immutable H source must retain every authored fixture and all 51 n8n rules", async (t) => {
   const root = temporary(t),
     good = corpusFixture();
   const fixtures = await loadFixtures(good.head, path.join(root, "good"), good.read, good.treeSha);
@@ -106,7 +106,7 @@ test("immutable H source must retain every authored fixture and all 51 n8n rules
   }
 });
 
-test("original 56 + 80 + 144 whole vectors refuse source, configuration, warning and provider expectation drift", async (t) => {
+await test("original 56 + 80 + 144 whole vectors refuse source, configuration, warning and provider expectation drift", async (t) => {
   const root = temporary(t),
     fixture = corpusFixture();
   const originals = await loadFixtures(
@@ -184,7 +184,7 @@ test("original 56 + 80 + 144 whole vectors refuse source, configuration, warning
   }
 });
 
-test("whole process verification refuses count-preserving JSON drift and retains removed source/config reads", (t) => {
+await test("whole process verification refuses count-preserving JSON drift and retains removed source/config reads", (t) => {
   const root = temporary(t),
     source = path.join(root, "source.vue"),
     config = path.join(root, "vize.config.json");

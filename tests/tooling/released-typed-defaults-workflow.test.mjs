@@ -15,7 +15,7 @@ const workflow = parse(
 );
 const job = workflow.jobs["public-cli"];
 
-test("runner-dependent consumer paths are resolved only at a permitted step context", () => {
+await test("runner-dependent consumer paths are resolved only at a permitted step context", () => {
   // GitHub rejects runner context at jobs.<job_id>.env before scheduling a job.
   for (const value of Object.values(job.env)) assert.doesNotMatch(value, /\$\{\{\s*runner\./);
   assert.equal(Object.keys(workflow.on).join(), "workflow_dispatch");
@@ -23,7 +23,7 @@ test("runner-dependent consumer paths are resolved only at a permitted step cont
   assert(job.steps[0].env.PUBLIC_OUTPUT.startsWith("${{ runner.temp }}/"));
 });
 
-test("the actual first-step shell guard rejects foreign refs and every runtime preload before exporting consumer paths", (t) => {
+await test("the actual first-step shell guard rejects foreign refs and every runtime preload before exporting consumer paths", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "typed-public-shell-guard-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const env = {
