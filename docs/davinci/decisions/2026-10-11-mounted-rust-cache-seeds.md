@@ -55,3 +55,32 @@ Exact-head Actions, protected merge and repeated trusted main runs must verify
 the real archive omission. First-seed compression remains expected. A measured
 Check speedup is unfinished until those hosted results exist; this change alone
 does not solve the full-tooling or JS-package critical paths.
+
+## Fresh composition and retained failed evidence
+
+The original protected candidate `c395492c78117aae12e764235c85fa2e106a53e3`
+[failed its full Rust shard](https://github.com/ubugeeei-prod/vize/actions/runs/38109119091/job/114381540965):
+`native_vue_check::array_annotations::original_array_vue_keeps_script_and_literal_checks_but_refuses_bound_templates`
+returned `Backend(Timeout)` after 30.056 seconds at
+`crates/vize_canon/tests/native_vue_check/array_annotations.rs:51`;
+4,535 of 4,536 tests passed. Its original 16-thread profile, 30-second bound,
+zero retries, complete raw log and JUnit remain retained. The earlier registry
+transport failure is a separate failed candidate. Neither failure is relabelled.
+
+The finite [original-archive diagnostic](https://github.com/ubugeeei-prod/vize/actions/runs/38111373780)
+completed the original law in 0.30 seconds and its typed observer in 0.42 seconds;
+all five observed backend processes completed. It did not reproduce the timeout
+and does not establish the full-shard cause. The later protected candidate
+`50b750163d4fa43ac2c1fb5f430f46434f60c90b` passed the unchanged law in 0.373 seconds
+with the original 16-thread profile. Its successful full suite qualifies that
+composition, rather than fixing the old failure. Native artifact packing occurs
+after execution and cannot explain this earlier Rust request timeout.
+
+After actual #8573 merge `f3c340a0dfaeace5074e187a78bc936b96088005`, replay the
+whole original cache change once on the authenticated #8536 parent
+`970e2960a4e1d4d87b59e8f04eeba72a3383948e` and register native Stack #8536 -> #8561.
+The cache code, fatal guards, author and original commit message stay unchanged.
+This is one fresh composition qualification, with no source-fix credit for the
+old timeout: both exact source heads and the protected queue must pass all
+original workloads. Trusted main cold-seed and subsequent-seed measurements
+remain required before claiming real archive omission or Check speedup.
