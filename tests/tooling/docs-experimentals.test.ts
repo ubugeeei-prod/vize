@@ -195,23 +195,23 @@ test("Japanese experimentals docs mirror the complete reference", () => {
     "utf8",
   );
 
-  assert.match(experimentals, /# Experimentals/);
-  assert.match(experimentals, /\[Vue RFC Experimental Details\]\(\.\/experimentals-vue-rfcs\.md\)/);
-  assert.match(experimentals, /\[Experimentals Reference\]\(\.\/experimentals-reference\.md\)/);
+  assert.match(experimentals, /# 実験的な機能/);
+  assert.match(experimentals, /\[Vue RFC の実験機能の詳細\]\(\.\/experimentals-vue-rfcs\.md\)/);
+  assert.match(experimentals, /\[実験機能のリファレンス\]\(\.\/experimentals-reference\.md\)/);
   assert.match(experimentals, /## 推奨設定/);
-  assert.match(experimentals, /## Surface Matrix/);
-  assert.match(experimentals, /## Direct API Fields/);
-  assert.match(experimentals, /`vize check`, LSP\/type-check project API/);
-  assert.match(experimentals, /必要な opt-in を報告/);
+  assert.match(experimentals, /## 対応範囲と制限/);
+  assert.match(experimentals, /## 低レベル API のフィールド/);
+  assert.match(experimentals, /`vize check`、LSP とプロジェクトの型検査 API/);
+  assert.match(experimentals, /機能を有効にする設定が必要だと報告/);
   assert.match(experimentals, /`vize\(\{ vapor \}\)` と `compiler\.vapor` が優先/);
   assert.match(experimentals, /`vize\(\{ jsxMode \}\)` と `compiler\.jsxMode` が優先/);
-  assert.match(experimentals, /`v-when="_"` は fallback pattern/);
-  assert.match(experimentals, /`v-case` は古い Vize 実験の互換 alias/);
-  assert.match(experimentals, /同じ行の `>` \/ `\/>` は comment text として消費されます/);
-  assert.match(experimentals, /component named `Self` を shadow/);
-  assert.match(experimentals, /`defineSlots` contract も同じ marker shape/);
-  assert.match(experimentals, /TypeScript の permissive behavior に degrade/);
-  assert.match(experimentals, /`<Self>` は特別ですが、`<self>` は特別ではありません/);
+  assert.match(experimentals, /`v-when="_"` は、他の分岐が一致しなかった場合のパターン/);
+  assert.match(experimentals, /`v-case` は、古い Vize の実験機能との互換名/);
+  assert.match(experimentals, /同じ行にある `>` や `\/>` はコメントの内容として読み込まれます/);
+  assert.match(experimentals, /`Self` という名前のコンポーネントより優先/);
+  assert.match(experimentals, /`defineSlots` も同じ形式のマーカーを公開/);
+  assert.match(experimentals, /TypeScript の通常の許容範囲になります/);
+  assert.match(experimentals, /`<Self>` は特別ですが、`<self>` は通常のタグ/);
   for (const key of experimentalKeys) {
     assert.match(experimentals, new RegExp(escapeRegExp(key)), `${key} must be documented in ja`);
   }

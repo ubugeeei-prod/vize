@@ -90,8 +90,8 @@
     {
       "route": "/guide/experimentals",
       "locales": ["en", "ja"],
-      "entry": "audited",
-      "note": "Opt-in introduction and examples present; long switch inventory still needs reader-flow review."
+      "entry": "revised",
+      "note": "Complete Japanese guide reviewed against the current English contract: seven flags, disabled defaults, precedence, original examples and public aliases; practical Canon single-file trial retains its project-check boundary."
     },
     {
       "route": "/guide/experimentals-reference",
