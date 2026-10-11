@@ -26,6 +26,10 @@ void test("third-party Vapor runtime packs retain the original report and every 
         .replace("<!-- SlotOwner.vue -->\n", "");
       assert.equal(JSON.parse(read(`${pack.inputs.root}/Child.vue.json`)), owner);
     }
+    if (pack.inputs.root === "vapor-root-fallthrough-8625") {
+      const outer = reported.split("<!-- FallthroughInner.vue -->\n")[0].replace('<!-- FallthroughOuter.vue, mounted with { "data-owner": "outer" } -->\n', "");
+      assert.equal(JSON.parse(read(`${pack.inputs.root}/App.vue.json`)), outer);
+    }
     assert.equal(pack.runtime.nativeHandled, 0);
     assert.equal(pack.runtime.lockedVue, "3.6.0-rc.9");
   }

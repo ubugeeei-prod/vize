@@ -38,9 +38,10 @@ fn reported_renamed_and_nested_slot_props_match_locked_vue() {
 #[test]
 fn reported_nested_component_rejects_owner_fallthrough_attrs() {
     report::compare(
-        include_str!(
-            "../../../tests/_fixtures/differential/compiler/vapor-root-fallthrough-8625/App.vue.txt"
-        ),
+        &serde_json::from_str::<String>(include_str!(
+            "../../../tests/_fixtures/differential/compiler/vapor-root-fallthrough-8625/App.vue.json"
+        ))
+        .expect("whole original FallthroughOuter source"),
         include_str!(
             "../../../tests/_fixtures/differential/compiler/vapor-root-fallthrough-8625/Child.vue.txt"
         ),

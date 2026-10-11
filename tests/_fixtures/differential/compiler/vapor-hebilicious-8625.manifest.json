@@ -10,8 +10,8 @@
         "root": "vapor-root-fallthrough-8625",
         "files": [
           {
-            "path": "App.vue.txt",
-            "sha256": "9bb9545e23fa97b84c3e105e5d1048e4356192f2e6f56e53cf9fc9032710f83a"
+            "path": "App.vue.json",
+            "sha256": "752519d9cd37630ae49921d2e00a0eeb20850327e84c19685bcf3d53390cea20"
           },
           {
             "path": "Child.vue.txt",

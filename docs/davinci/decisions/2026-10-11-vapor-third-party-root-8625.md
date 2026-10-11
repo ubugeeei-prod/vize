@@ -3,7 +3,11 @@
 Preserve Hebilicious's #8620 root selection and all focused single, keyed,
 conditional, nested and sibling controls. Move its root collector to a small
 module to keep generate.rs inside the existing 350-line source budget. Both
-recursive function bodies and stack protection remain unchanged.
+recursive function bodies and stack protection remain unchanged. The composed
+slot and root fixes also move the existing scope lookup into context/scopes.rs
+without changing its resolution order or body; context.rs stays below the same
+source limit. Exact trailing source newlines are retained in JSON inputs and
+decoded without trimming.
 
 The historical capture-b11eb and its five expected files remain immutable.
 The root-document-order fixture gets one explicit current successor: only the

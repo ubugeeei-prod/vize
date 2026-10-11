@@ -1,0 +1,1 @@
+"<script setup lang=\"ts\" vapor>\nimport FallthroughInner from \"./FallthroughInner.vue\";\n</script>\n\n<template>\n  <section id=\"outer\">\n    <FallthroughInner />\n  </section>\n</template>\n\n"
