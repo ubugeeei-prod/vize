@@ -109,6 +109,9 @@ The shared App suite keeps its existing behavior when the capture environment
 variable is absent. No expected snapshot, diagnostic, count, deadline or
 program selection changes in this layer.
 
+The retention reader passes a bound TypeScript file-read callback, preserving
+the complete config bytes while meeting the original zero-warning source gate.
+
 The exact composed `888a4898a8` qualifier 38129574946 remains failed. Its
 whole #5071 programs retain their real malformed import, so the existing OXC
 whole-program parser refuses its AST both before and after; both actual import

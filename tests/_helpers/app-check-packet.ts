@@ -68,7 +68,7 @@ export function retainAppCheckPacket(input: CheckPacketInput): void {
     configs.add(absolute);
     retain(absolute, role);
     if (!fs.existsSync(absolute)) return;
-    const result = ts.readConfigFile(absolute, ts.sys.readFile);
+    const result = ts.readConfigFile(absolute, (file) => ts.sys.readFile(file));
     if (result.error) {
       missing.push({
         role: "config-parse",
