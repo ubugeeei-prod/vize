@@ -28,10 +28,11 @@ jobs:
       PUBLIC_TAG: ${{ inputs.tag }}
       PUBLIC_SOURCE_PR: ${{ inputs.source_pr }}
       PUBLIC_RELEASE_RUN: ${{ inputs.release_run }}
-      PUB_CONSUMER: ${{ runner.temp }}/vize-typed-default-consumer-${{ github.run_id }}-${{ github.run_attempt }}
-      PUBLIC_OUTPUT: ${{ runner.temp }}/vize-typed-default-evidence-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Require reviewed main and absent runtime overrides before Node startup
+        env:
+          PUB_CONSUMER: ${{ runner.temp }}/vize-typed-default-consumer-${{ github.run_id }}-${{ github.run_attempt }}
+          PUBLIC_OUTPUT: ${{ runner.temp }}/vize-typed-default-evidence-${{ github.run_id }}-${{ github.run_attempt }}
         shell: bash
         run: |
           set -euo pipefail
@@ -43,6 +44,7 @@ jobs:
               exit 1
             fi
           done
+          printf 'PUB_CONSUMER=%s\nPUBLIC_OUTPUT=%s\n' "$PUB_CONSUMER" "$PUBLIC_OUTPUT" >> "$GITHUB_ENV"
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { ref: "${{ github.workflow_sha }}", fetch-depth: 1, persist-credentials: false }
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
@@ -55,7 +57,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: released-typed-defaults-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ env.PUBLIC_OUTPUT }}
+          path: ${{ runner.temp }}/vize-typed-default-evidence-${{ github.run_id }}-${{ github.run_attempt }}
           if-no-files-found: error
           retention-days: 30
           include-hidden-files: true
