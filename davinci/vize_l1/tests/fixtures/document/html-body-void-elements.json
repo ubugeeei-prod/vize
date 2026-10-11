@@ -1,0 +1,329 @@
+[
+  {
+    "name": "all five original bare void tags",
+    "source": "<!DOCTYPE html><html><head></head><body><area><embed><source><track><wbr></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["area", 2, []],
+      ["embed", 2, []],
+      ["source", 2, []],
+      ["track", 2, []],
+      ["wbr", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "area"],
+          [1, "embed"],
+          [1, "source"],
+          [1, "track"],
+          [1, "wbr"]
+        ]
+      ],
+      ["area", []],
+      ["embed", []],
+      ["source", []],
+      ["track", []],
+      ["wbr", []]
+    ]
+  },
+  {
+    "name": "all five original slashes stay void under div",
+    "source": "<!DOCTYPE html><html><head></head><body><div><area/><embed/><source/><track/><wbr/></div><span>end</span></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["div", 2, []],
+      ["area", 3, []],
+      ["embed", 3, []],
+      ["source", 3, []],
+      ["track", 3, []],
+      ["wbr", 3, []],
+      ["span", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "div"],
+          [1, "span"]
+        ]
+      ],
+      [
+        "div",
+        [
+          [1, "area"],
+          [1, "embed"],
+          [1, "source"],
+          [1, "track"],
+          [1, "wbr"]
+        ]
+      ],
+      ["area", []],
+      ["embed", []],
+      ["source", []],
+      ["track", []],
+      ["wbr", []],
+      ["span", [[3, "end"]]]
+    ]
+  },
+  {
+    "name": "ASCII folding retains following text and comment parents",
+    "source": "<!DOCTYPE html><html><head></head><body>前🙂<WbR>a&amp;b<!--tail--><SpAn><SoUrCe/>\r\n&#13;<TrAcK>last</sPaN><EMBED><AREA></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["wbr", 2, []],
+      ["span", 2, []],
+      ["source", 4, []],
+      ["track", 4, []],
+      ["embed", 2, []],
+      ["area", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [3, "前🙂"],
+          [1, "wbr"],
+          [3, "a&b"],
+          [8, "tail"],
+          [1, "span"],
+          [1, "embed"],
+          [1, "area"]
+        ]
+      ],
+      ["wbr", []],
+      [
+        "span",
+        [
+          [1, "source"],
+          [3, "\n\r"],
+          [1, "track"],
+          [3, "last"]
+        ]
+      ],
+      ["source", []],
+      ["track", []],
+      ["embed", []],
+      ["area", []]
+    ]
+  },
+  {
+    "name": "area complete original static attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><area DATA-V=\"α&amp;amp;&#13;\r\n\u0000\" data-v=ignored disabled><span>after</span></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "area",
+        2,
+        [
+          ["data-v", "α&amp;\r\n�"],
+          ["disabled", ""]
+        ]
+      ],
+      ["span", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "area"],
+          [1, "span"]
+        ]
+      ],
+      ["area", []],
+      ["span", [[3, "after"]]]
+    ]
+  },
+  {
+    "name": "embed complete original static attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><embed DATA-V=\"α&amp;amp;&#13;\r\n\u0000\" data-v=ignored disabled><span>after</span></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "embed",
+        2,
+        [
+          ["data-v", "α&amp;\r\n�"],
+          ["disabled", ""]
+        ]
+      ],
+      ["span", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "embed"],
+          [1, "span"]
+        ]
+      ],
+      ["embed", []],
+      ["span", [[3, "after"]]]
+    ]
+  },
+  {
+    "name": "source complete original static attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><source DATA-V=\"α&amp;amp;&#13;\r\n\u0000\" data-v=ignored disabled><span>after</span></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "source",
+        2,
+        [
+          ["data-v", "α&amp;\r\n�"],
+          ["disabled", ""]
+        ]
+      ],
+      ["span", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "source"],
+          [1, "span"]
+        ]
+      ],
+      ["source", []],
+      ["span", [[3, "after"]]]
+    ]
+  },
+  {
+    "name": "track complete original static attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><track DATA-V=\"α&amp;amp;&#13;\r\n\u0000\" data-v=ignored disabled><span>after</span></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "track",
+        2,
+        [
+          ["data-v", "α&amp;\r\n�"],
+          ["disabled", ""]
+        ]
+      ],
+      ["span", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "track"],
+          [1, "span"]
+        ]
+      ],
+      ["track", []],
+      ["span", [[3, "after"]]]
+    ]
+  },
+  {
+    "name": "wbr complete original static attributes and following sibling",
+    "source": "<!DOCTYPE html><html><head></head><body><wbr DATA-V=\"α&amp;amp;&#13;\r\n\u0000\" data-v=ignored disabled><span>after</span></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      [
+        "wbr",
+        2,
+        [
+          ["data-v", "α&amp;\r\n�"],
+          ["disabled", ""]
+        ]
+      ],
+      ["span", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [1, "wbr"],
+          [1, "span"]
+        ]
+      ],
+      ["wbr", []],
+      ["span", [[3, "after"]]]
+    ]
+  },
+  {
+    "name": "existing body void family keeps its original ancestry",
+    "source": "<!DOCTYPE html><html><head></head><body><div><br/><hr><img><input/></div></body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["div", 2, []],
+      ["br", 3, []],
+      ["hr", 3, []],
+      ["img", 3, []],
+      ["input", 3, []]
+    ],
+    "nodes": [
+      ["body", [[1, "div"]]],
+      [
+        "div",
+        [
+          [1, "br"],
+          [1, "hr"],
+          [1, "img"],
+          [1, "input"]
+        ]
+      ],
+      ["br", []],
+      ["hr", []],
+      ["img", []],
+      ["input", []]
+    ]
+  },
+  {
+    "name": "new void callback boundaries keep once decoded text",
+    "source": "<!DOCTYPE html><html><head></head><body>A\u0000<area>&amp;amp;<embed>&#13;\r\n<source><!--&amp;--><track>&NotEqualTilde;<wbr>Ω</body></html>",
+    "elements": [
+      ["html", null, []],
+      ["head", 0, []],
+      ["body", 0, []],
+      ["area", 2, []],
+      ["embed", 2, []],
+      ["source", 2, []],
+      ["track", 2, []],
+      ["wbr", 2, []]
+    ],
+    "nodes": [
+      [
+        "body",
+        [
+          [3, "A"],
+          [1, "area"],
+          [3, "&amp;"],
+          [1, "embed"],
+          [3, "\r\n"],
+          [1, "source"],
+          [8, "&amp;"],
+          [1, "track"],
+          [3, "≂̸"],
+          [1, "wbr"],
+          [3, "Ω"]
+        ]
+      ],
+      ["area", []],
+      ["embed", []],
+      ["source", []],
+      ["track", []],
+      ["wbr", []]
+    ]
+  }
+]

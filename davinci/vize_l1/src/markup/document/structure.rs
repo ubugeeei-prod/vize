@@ -49,7 +49,8 @@ pub enum DocumentHtmlRefusal {
 ///
 /// Supported envelope: exactly `<!DOCTYPE html>`, `html`, `head`, then `body`,
 /// with explicit matching ends. Head children are `base`, `link` and `meta`;
-/// body elements are `div`, `span`, `br`, `hr`, `img` and `input`. HTML names
+/// body elements are `div`, `span`, `br`, `hr`, `img`, `input`, `area`, `embed`,
+/// `source`, `track` and `wbr`. HTML names
 /// match without ASCII case, and a slash never closes a nonvoid HTML element.
 /// Static attributes borrow their original callback ranges, with HTML ASCII
 /// name folding, first duplicate retention and once-decoded scalar values.
@@ -172,7 +173,7 @@ impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
         attribute::attributes(self.tree, self.element)
     }
 
-    /// Original direct child nodes of body, div, span and true body voids.
+    /// Original direct child nodes of body, div, span and admitted body voids.
     /// Text callbacks coalesce across references, comments retain literal
     /// reference bytes, and child elements use the existing original adjacency.
     /// Head/html insertion modes refuse. Body text after its authored closing

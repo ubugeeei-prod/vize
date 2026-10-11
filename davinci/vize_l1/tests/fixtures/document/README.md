@@ -41,3 +41,12 @@ line boundaries, ignored text NULL versus comment replacement, literal comment
 reference spellings, empty/long-hyphen comments, Unicode, once-only payloads,
 void/nonvoid insertion and nested original parents are covered. General HTML
 tree policies, outer node modes and petite-vue semantics remain unfinished.
+
+`html-body-void-elements.json` contains ten complete original sources and
+independently authored whole ancestry, effective attribute and direct-node
+packets. Native Rust and actual Chromium compare the same packets for
+`area`, `embed`, `source`, `track` and `wbr`, including empty child views,
+nested original parents, slash/case forms and following text/comment/sibling
+boundaries. The existing body void family is an unchanged-semantics control.
+This is bounded Document structure, without petite-vue meaning or a product
+route switch; general insertion policies and obsolete void tags remain open.

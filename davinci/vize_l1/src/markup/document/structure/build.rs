@@ -159,14 +159,29 @@ impl Builder<'_, '_> {
         }
         let void = matches!(
             name,
-            "base" | "link" | "meta" | "br" | "hr" | "img" | "input"
+            "base"
+                | "link"
+                | "meta"
+                | "br"
+                | "hr"
+                | "img"
+                | "input"
+                | "area"
+                | "embed"
+                | "source"
+                | "track"
+                | "wbr"
         );
         self.mode = match (self.mode, name) {
             (Mode::Html, "html") => Mode::Head,
             (Mode::Head, "head") => Mode::InHead,
             (Mode::Body, "body") => Mode::InBody,
             (Mode::InHead, "base" | "link" | "meta") => Mode::InHead,
-            (Mode::InBody, "div" | "span" | "br" | "hr" | "img" | "input") => Mode::InBody,
+            (
+                Mode::InBody,
+                "div" | "span" | "br" | "hr" | "img" | "input" | "area" | "embed" | "source"
+                | "track" | "wbr",
+            ) => Mode::InBody,
             _ => return Err(Refusal::ExplicitEnvelope),
         };
         let parent = self.stack.last().copied();
@@ -286,6 +301,7 @@ impl Builder<'_, '_> {
 fn name(raw: &str) -> Option<&'static str> {
     [
         "html", "head", "body", "div", "span", "base", "link", "meta", "br", "hr", "img", "input",
+        "area", "embed", "source", "track", "wbr",
     ]
     .into_iter()
     .find(|name| raw.eq_ignore_ascii_case(name))

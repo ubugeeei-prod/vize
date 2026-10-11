@@ -39,7 +39,18 @@ pub(super) fn children<'s, 'o, 'a>(
 ) -> Result<DocumentHtmlChildNodes<'s, 'o, 'a>, Refusal> {
     if !matches!(
         parent.name,
-        "body" | "div" | "span" | "br" | "hr" | "img" | "input"
+        "body"
+            | "div"
+            | "span"
+            | "br"
+            | "hr"
+            | "img"
+            | "input"
+            | "area"
+            | "embed"
+            | "source"
+            | "track"
+            | "wbr"
     ) {
         return Err(Refusal::UnsupportedNodeParent(parent.opening));
     }
