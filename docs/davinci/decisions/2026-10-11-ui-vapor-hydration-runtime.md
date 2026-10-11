@@ -66,10 +66,20 @@ fixture's `assertServerMarkup`. A separate local diagnostic with published
 native 0.443 exposed prop loss in `icon` and `icon-button` under both providers:
 the icon lost its accessible title/description and the button lost its ARIA
 label. Official Vue compilation preserves those props. The rc.11
-provider additionally fails four old assertions solely because of its new
+provider additionally fails four old assertions because of its new
 fallback comment markers: `media-player-time-display`, `scrubber-preview-time`,
-`webcam-capture-start-button` and `webcam-capture-shutter`. TODO: confirm the
-two candidate defects against the current source and repair them; qualify
+`webcam-capture-start-button` and `webcam-capture-shutter`. The
+[complete source-built SSR receipts](../evidence/2026-10-11-ui-vapor-ssr-markup-gaps.json)
+confirm all seven against actual native source head `591667c9a6d98b10a7ed9cd3631a2c2e1c0bde30`:
+every unchanged authored server-markup assertion was applied to the captured
+raw 533-row SSR output. The original reference passes 530 assertions; the
+supported provider passes 526. Both render all 533 successfully. Complete actual
+HTML, original expected expressions, authored SFC sources and hashes, provider
+labels and the actually loaded source binary are retained. Local module loading
+only supplies the pure original assertions; no local rendering receives source
+credit. TODO under [#6100](https://github.com/ubugeeei-prod/vize/issues/6100)
+and compiler fix-history [#6880](https://github.com/ubugeeei-prod/vize/issues/6880): repair scoped union
+property extraction for the two confirmed icon defects; qualify
 the additional server-markup oracle for the real provider's marker contract
 while retaining its existing content assertions and original reference
 coverage. These observations create no ledger exemptions. The added minimal
@@ -108,7 +118,29 @@ original reference ledger.
 | Mount          |          502 |                     60 |                     25 |
 | Hydration      |          479 |                    158 |                     48 |
 
-The stale-ledger diagnostic does not make the overall Check run green. Replay
-all 529 fixtures after #8553 and all 533 after #8555; retain the four finite-range
-fixtures as required successes in the supported lane. Actual merge and a release
-containing the changes remain required.
+The stale-ledger diagnostic does not make the overall Check run green. The
+private composition starts from the actual #8553 merge
+`db6e7805e5c26aafe8ae1614bc77668cd3459d1d` (529 fixtures), retains the exact
+#8555 source at `49acf8c4173ae8dde78a0b23520b92f386458af0`, and adds the runtime
+pairing to execute all 533. The source-built supported UI gate in
+[Actions 38109593412](https://github.com/ubugeeei-prod/vize/actions/runs/38109593412/job/114382213283)
+passes the original renderer, lint, static, story and Vapor gates, plus 3,833
+tests across 497 files in each standard/production run. SSR renders 533, mount
+passes 508 with 25 retained failures, and hydration passes 485 with 48 retained
+failures; no new failure or stale entry remains. All four finite-range fixtures
+are required successes, with no new ledger entry.
+
+The same complete workload on the original reference retains its 60 mount and
+158 hydration ledger entries byte-for-byte. Its only four new failures reproduce
+the original ProgressBar `undefined.nodes` exception. Two existing duplicate
+names account for 62 mount failure rows and 164 hydration failure rows; the latter
+includes the four new failures. The reference process retains its failing exit
+status. A private negative oracle checks precisely those four errors, complete
+fixture ordering, every retained failure and the reference ledger's original
+bytes. The first wrapper replay failed while parsing a pretty-printed story
+summary, after both workloads executed; the parser correction changes no
+product, fixture or oracle. The corrected complete private run
+[38109890341](https://github.com/ubugeeei-prod/vize/actions/runs/38109890341/job/114383084822)
+at `3ce7146b283ae69f5c2470a241b58a48bccd5161` is terminal SUCCESS. Its
+source-built 533-fixture controls and strict before/after receipt all pass.
+Fresh PR head Actions, protected merge and release inclusion remain required.

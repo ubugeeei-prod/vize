@@ -74,8 +74,9 @@ export function registerSfcHooks(lane: SfcLane): void {
       : supported
         ? pathToFileURL(require.resolve("vue-vapor-runtime-supported/dist/vue.cjs.js")).href
         : undefined;
-  // The declared Node implementation exposes generated SSR helpers as named
-  // exports; the Vue wrapper does not on Node 24.
+  // Route both server specifiers to the declared implementation. Routing them
+  // to Vue's wrapper would redirect its internal @vue/server-renderer require
+  // back to the wrapper itself.
   const supportedRequire = createRequire(
     require.resolve("vue-vapor-runtime-supported/package.json"),
   );
