@@ -82,6 +82,29 @@ complete generated declarations and declaration differences are uploaded.
 
 ## Remaining acceptance
 
+The first source qualifier on `e23560400b7642e4925c98e6da513b628ce64709`
+([run 38117641371](https://github.com/ubugeeei-prod/vize/actions/runs/38117641371))
+failed the unchanged dev-home VRT at 0.1235105465271594 on all three retries;
+37 later cases were not run. Retaining the SSR dependency alone did not repair
+the application cascade. The native metadata test also exposed its own invalid
+nonnull source-map assumption: SSR maps are optional. The regression checks
+that imports preserve the compiler's actual optional map contract and explicitly
+selects the non-Vapor compiler.
+
+The whole official/native fixture retained passing cold DOM and hydration
+observations, but then its response-body observer rejected a redirect. It also
+retained native direct stylesheet responses with HTTP 404 and raw native SSR
+with eight duplicated scope attributes. None is excused by the DOM observations.
+Whole source artifact 11694287884 has SHA256
+`75a5082e87c8303d19160befa66193f7a1bfa9ecda1110826f1ae7e37c4d9c2c`;
+the separate original VRT artifact 11694228045 has SHA256
+`aa9517114adde002f444095832cd08af607cf277ccfe10acbb1bad16b9e43613`.
+
+The dedicated source qualifier is manually dispatched against the composed
+Stack's literal head once its dependent source fixes are sealed. This avoids
+repeating the full native build and 38-case workload for incomplete intermediate
+layers. Existing shared App E2E and protected checks remain required.
+
 The actual original-H diagnostic native binary and Vue runtime are distinct
 from the earlier published 0.443.0 Darwin control. Its mistaken rc.11 control
 is superseded by the exact alpha.2 control and is not acceptance evidence.

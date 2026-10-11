@@ -7,14 +7,6 @@ on:
         description: Exact source SHA; the dispatch ref must point at it
         required: true
         type: string
-  pull_request:
-    paths:
-      - npm/builder/vite/src/utils/index.ts
-      - npm/builder/vite/src/compiler-ssr-style-dependencies.test.ts
-      - tests/_fixtures/differential/compiler/vuefes-heading-cascade/**
-      - tests/_fixtures/differential/compiler/vuefes-heading-cascade.manifest.json
-      - tools/support/compat/vuefes/**
-      - .github/workflows/vuefes-ssr-style-dependencies.yml
 
 concurrency:
   group: vuefes-ssr-style-dependencies-${{ github.ref }}
@@ -26,7 +18,7 @@ permissions:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   CARGO_TERM_COLOR: always
-  QUALIFIER_SHA: ${{ inputs.target_sha || github.event.pull_request.head.sha }}
+  QUALIFIER_SHA: ${{ inputs.target_sha }}
 
 jobs:
   vuefes-ssr-style-dependencies:

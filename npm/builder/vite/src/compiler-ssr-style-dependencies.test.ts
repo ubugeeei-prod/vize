@@ -28,7 +28,12 @@ const controls = [
 for (const [index, source] of controls.entries()) {
   for (const ssr of [false, true]) {
     const filePath = `/src/VFHeading-${index}.vue`;
-    const compiled = compileFile(filePath, new Map(), { ssr, sourceMap: true }, source);
+    const compiled = compileFile(
+      filePath,
+      new Map(),
+      { ssr, vapor: false, sourceMap: true },
+      source,
+    );
     const output = generateOutputWithMap(compiled, {
       ssr,
       filePath,
@@ -43,7 +48,13 @@ for (const [index, source] of controls.entries()) {
       );
     }
     assert.doesNotMatch(output.code, /document\.createElement\('style'\)/);
-    assert.ok(output.map, "style imports retain the native source map");
+    const nativeMap = compiled.map ? JSON.parse(compiled.map) : null;
+    assert.equal(
+      output.map !== null,
+      nativeMap !== null,
+      "style imports preserve the compiler's optional source-map contract",
+    );
+    if (nativeMap) assert.deepEqual(output.map!.sourcesContent, nativeMap.sourcesContent);
     if (index !== 1) assert.ok(compiled.styles![0].content.includes("@media (--mobile)"));
   }
 }
