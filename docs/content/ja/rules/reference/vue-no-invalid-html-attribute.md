@@ -11,7 +11,7 @@ title: "vue/no-invalid-html-attribute"
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-a の rel に、stylesheet の link 要素向けの stylesheet を指定しています。
+a の rel に、スタイルシートを参照する link 要素用の stylesheet を指定しています。
 
 ```vue
 <template>
@@ -55,6 +55,6 @@ a の rel に、ヘルプへの参照を表す help を指定します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs#L12) · [全ルール](../all.md)

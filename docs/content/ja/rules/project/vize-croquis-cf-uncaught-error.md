@@ -31,7 +31,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -72,7 +72,7 @@ const input = "{";
 
 ## 良い
 
-親で子のエラーを受ける `onErrorCaptured` を登録します。`false` は伝播を止めます。実際の画面では復旧用の UI も用意します。
+親で子のエラーを受ける `onErrorCaptured` を登録します。`false` を返すと伝播が止まります。実際に使うエラー境界では、復旧に役立つ UI も用意してください。
 
 `App.vue`
 
@@ -94,7 +94,7 @@ const input = "{";
 <template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

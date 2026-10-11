@@ -4,7 +4,7 @@ title: "SSR ルール"
 
 # SSR ルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
 
 | ルール | 例 | 目的 |
@@ -23,7 +23,7 @@ SSR で実行されるコードのブラウザー専用グローバル参照を�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -63,7 +63,7 @@ const width = window.innerWidth;
 
 **良い**
 
-初期の幅をサーバーでも扱える ref の値にし、ブラウザー API の参照を SSR の setup ではなくクライアントで実行する `onMounted` に移します。
+幅を ref(0) で初期化し、ブラウザー API の参照をクライアントで実行される `onMounted` に移します。これにより、SSR の setup ではブラウザー API を参照しません。
 
 ```vue annotate="add:2,3,4,5,6"
 <script setup lang="ts">
@@ -75,7 +75,7 @@ onMounted(() => {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs#L158) · [全ルール](all.md)
 
@@ -88,7 +88,7 @@ onMounted(() => {
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -140,6 +140,6 @@ const seed = useState("seed", () => "stable");
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_hydration_mismatch.rs#L122) · [全ルール](all.md)

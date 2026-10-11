@@ -1,0 +1,2872 @@
+{
+  "originalSourceSha": "6f1fb62906ba5c0b74c885d8290fc2a49cfa2415",
+  "entries": [
+    {
+      "path": "docs/content/ja/rules/reference/a11y-alt-text.md",
+      "englishPath": "docs/content/rules/reference/a11y-alt-text.md",
+      "id": "a11y/alt-text",
+      "originalJapaneseSha256": "62cd490b1e830b01c5c3e70d76aff8f4bb8f0e3c39ff9c8ba36cfa9929928711",
+      "originalEnglishSha256": "a6f9312a392178af14b4e23b71ada901b34ea72ec6563cbe7440e35aeae4536b",
+      "wholeCodeSha256": "56cca2c10113cbb9bb91cf43d9bc73b2f97245a2ca6c50dbe23541a914bd07db",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-anchor-has-content.md",
+      "englishPath": "docs/content/rules/reference/a11y-anchor-has-content.md",
+      "id": "a11y/anchor-has-content",
+      "originalJapaneseSha256": "47d2afcfe11fc8348c4f79fffb42b742f5ef4670e67801385f9a326ca3f33a1b",
+      "originalEnglishSha256": "c0f23b291ddbb6e52abf66822ef2299b17f56b6393ff1d308950f89780342893",
+      "wholeCodeSha256": "5063c838aa06fe5a0bda04426dac3a8b230df0d1824ec558313f2e58f5a0a227",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-anchor-is-valid.md",
+      "englishPath": "docs/content/rules/reference/a11y-anchor-is-valid.md",
+      "id": "a11y/anchor-is-valid",
+      "originalJapaneseSha256": "93d26b85164b81fde9219ad10a28ff368ff62981f6f38b5dea4c663d550e28da",
+      "originalEnglishSha256": "93c11dc9f1b8a17732d9dfe0293b4942ccf59f0d6058a11f7795fa9c80e63134",
+      "wholeCodeSha256": "fc9fbad7288aab3c5746dda58c76c0f4087e78cb253ff8b4326597a37e481a77",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-aria-props.md",
+      "englishPath": "docs/content/rules/reference/a11y-aria-props.md",
+      "id": "a11y/aria-props",
+      "originalJapaneseSha256": "92f2546bf72d43fc4bc16f449734a572fa0ab6515b2aa3a07279433efa4719ee",
+      "originalEnglishSha256": "78925c128f43fd70a2d8cae7ecc9d3ca06ecfce752caa9c588c272cc13d5a690",
+      "wholeCodeSha256": "9666258475574e697efe4ac6595eaa23c0f32565135b6e9a5d3422d731cbba4b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-aria-role.md",
+      "englishPath": "docs/content/rules/reference/a11y-aria-role.md",
+      "id": "a11y/aria-role",
+      "originalJapaneseSha256": "454ae6e90d5e6edaa34d8be097f0e5502173166ed0d2c8a5fe5b7564fd88867f",
+      "originalEnglishSha256": "53efa370b2d4a2ad26c56af13087baf4a84f14d032ffe607a8a7039aab02bebe",
+      "wholeCodeSha256": "45d6ab43fe0e58ed098e0fc49d51724b433a63e8c9af7531d51e668231f68c16",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-aria-unsupported-elements.md",
+      "englishPath": "docs/content/rules/reference/a11y-aria-unsupported-elements.md",
+      "id": "a11y/aria-unsupported-elements",
+      "originalJapaneseSha256": "869155156dc9f0e687aaa6ffda0008eef114ee39e2c2679cf09443886be80532",
+      "originalEnglishSha256": "1d6f0e2f762f6b3292ce3e21de8d12976f4ffec914b447e21b1b6d973b068ee6",
+      "wholeCodeSha256": "b9b98cd4f422f1ffadb71bb7fc6cc7fb251c5309ca28f220636e332890b9466e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-click-events-have-key-events.md",
+      "englishPath": "docs/content/rules/reference/a11y-click-events-have-key-events.md",
+      "id": "a11y/click-events-have-key-events",
+      "originalJapaneseSha256": "e323ce2f0ed42d564ec95b0206db4feb73a5593b1e0f40350cf44bc54b6fe2f4",
+      "originalEnglishSha256": "3f73bddf7e598233a032038053638151678a12c71b25a131c9d41804d1dc08f6",
+      "wholeCodeSha256": "5aaec58713fc0abd6c1bd443017122aa6e77baa860037ee396c64f74cc2bf5d8",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-form-control-has-label.md",
+      "englishPath": "docs/content/rules/reference/a11y-form-control-has-label.md",
+      "id": "a11y/form-control-has-label",
+      "originalJapaneseSha256": "640c75ae3dffc776e26f099c187a36d42bb7450b9d314f70f9228e5a71dcda8a",
+      "originalEnglishSha256": "cd7c125ad0e9ad7007a01cd4d0fe4c71de2ceab3b2396d44aa938d05fa2ea23c",
+      "wholeCodeSha256": "6122aa05eea1ce8cd5c5098045db7b4295b433774ca182591e02c287035e1565",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-heading-has-content.md",
+      "englishPath": "docs/content/rules/reference/a11y-heading-has-content.md",
+      "id": "a11y/heading-has-content",
+      "originalJapaneseSha256": "ac4d3e74cb24119ad2c119247433fe6a618964770b434e5ceb43469fc675c82a",
+      "originalEnglishSha256": "9f62e23dd0084d2935127b18f192bf565dbbc469d9c763ba25b7f4ff2901bb3f",
+      "wholeCodeSha256": "02ab76ce0101e5bcee8dccf37fe70244fdeb829866df7285bd538b27da098096",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-heading-levels.md",
+      "englishPath": "docs/content/rules/reference/a11y-heading-levels.md",
+      "id": "a11y/heading-levels",
+      "originalJapaneseSha256": "31e7e970b12926ddf0fd2a29cf14a020bbfae632b32d7bfa8cb91aa81a11145c",
+      "originalEnglishSha256": "5d22e509e710fc4a56b92525125e5c88925d8906be6cc1a9ac1df2920cb86fcb",
+      "wholeCodeSha256": "f4bc640c33864f77cf79d0ec7b5cac9bcbe6992d3a64fe24ff6fee503ae87191",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-iframe-has-title.md",
+      "englishPath": "docs/content/rules/reference/a11y-iframe-has-title.md",
+      "id": "a11y/iframe-has-title",
+      "originalJapaneseSha256": "e04e9b76fbc5be2606721445e5f7b209ba0442502a5e20d70b56861a13003a5a",
+      "originalEnglishSha256": "b7ed9f46d508e5ca88e9a0612f4f029882a6b5741453679a2f84391b43621134",
+      "wholeCodeSha256": "c6c35169e379f021f02823eddc7bb469c4ec7d55691b6cd374dbc89eb425ca18",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-img-alt.md",
+      "englishPath": "docs/content/rules/reference/a11y-img-alt.md",
+      "id": "a11y/img-alt",
+      "originalJapaneseSha256": "04a14ca0e77a64dc70a6c44846561e11867dc9660b7f8b97411ec22acbb60eda",
+      "originalEnglishSha256": "d0fd9092716656c8d3c8f9bfd39397bc30f4b0bfbf366176ebf870413645c9dc",
+      "wholeCodeSha256": "be6e1a7d35258bb4a95eb9905f092d4a1ffc0b4054d16c4caed12ad11564d551",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-interactive-supports-focus.md",
+      "englishPath": "docs/content/rules/reference/a11y-interactive-supports-focus.md",
+      "id": "a11y/interactive-supports-focus",
+      "originalJapaneseSha256": "0a62742848235fe758a47ff9cc32cf9cc85117fdaf5d1237a5aa271deafc342d",
+      "originalEnglishSha256": "b2f8da159f266ed927b408ed723c48f47820fff9509bccfca070ed3a857ccf2b",
+      "wholeCodeSha256": "2b3cb5394c75fc4669b732da64dc79b8c3cf0aedd5c3a5e409c9b016f779e1d5",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-label-has-for.md",
+      "englishPath": "docs/content/rules/reference/a11y-label-has-for.md",
+      "id": "a11y/label-has-for",
+      "originalJapaneseSha256": "99780b245b7d443a7478ddb5d085f67c617e2093b40e61665aacc1af7fdb2424",
+      "originalEnglishSha256": "b0ed0ef3ac932d65d52d8237c65ddfc3c06d7d0271c28d4191c9d7316a63d8e9",
+      "wholeCodeSha256": "bb965da941c58aa20df65b04e589d5a3c59b6c14fb95ef5c18db84a18a008468",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-landmark-roles.md",
+      "englishPath": "docs/content/rules/reference/a11y-landmark-roles.md",
+      "id": "a11y/landmark-roles",
+      "originalJapaneseSha256": "d302db9cbe79210257170ee7531926563d9bd34261d226acf31a7512e89018e2",
+      "originalEnglishSha256": "9e5ed18faaae40c486729922692dc1b0cb15b62e7ac11248942881d1f1b0bb36",
+      "wholeCodeSha256": "19452fd25c0817ab243f989f2b7ca08cedd7386bee593bfd43fc9fe102c7deaa",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-media-has-caption.md",
+      "englishPath": "docs/content/rules/reference/a11y-media-has-caption.md",
+      "id": "a11y/media-has-caption",
+      "originalJapaneseSha256": "eaa07eb5b8ec2bbb8c44ef6ee18cf0506221b4bb0fa1cef8e42ad6ebe00b4d1b",
+      "originalEnglishSha256": "f5c8e593161379827f9294917c152d5f3ab0b1e22f21d942bbe30482d6335458",
+      "wholeCodeSha256": "045c6929fb24690ca95243d3013e33752cf165f232b665d9f289c6cd5227c098",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-mouse-events-have-key-events.md",
+      "englishPath": "docs/content/rules/reference/a11y-mouse-events-have-key-events.md",
+      "id": "a11y/mouse-events-have-key-events",
+      "originalJapaneseSha256": "1b6a850cf1cabc6b3157bdebb847662b52ae4c7eabfd08e9769cace33f5f9c8c",
+      "originalEnglishSha256": "52249b5a1ad4036880276f326bbf2992d110a32927888413a1467f62a20f55b6",
+      "wholeCodeSha256": "7021687e1bd167b98996d6c0645d5e04913fe9d26932ee38dceeba550d07cb95",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-no-access-key.md",
+      "englishPath": "docs/content/rules/reference/a11y-no-access-key.md",
+      "id": "a11y/no-access-key",
+      "originalJapaneseSha256": "a94918d0a10af589c134156b9a8a393acbde8c1fb28ea086504820fd192564bf",
+      "originalEnglishSha256": "5340a36db8fbf820ac5fda30cfb84bd78fdaab0694d286dea8d27e815a42bb71",
+      "wholeCodeSha256": "e2dab17140a6b4168f60d5656e5f1fd7447a62673687adae5168212235006e08",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-no-aria-hidden-on-focusable.md",
+      "englishPath": "docs/content/rules/reference/a11y-no-aria-hidden-on-focusable.md",
+      "id": "a11y/no-aria-hidden-on-focusable",
+      "originalJapaneseSha256": "6b6327df17e499a5a420db339fc22998bb373cab78c6357fe359bde53d1d41be",
+      "originalEnglishSha256": "9e93db31689f8b7cf575c5152f47b6ec505f7149f318a656ff7f305e2954046c",
+      "wholeCodeSha256": "860af8435827258bfbbe1614bbbf497b40e640dd310c0ebeb0a617db72f2d33e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-no-autofocus.md",
+      "englishPath": "docs/content/rules/reference/a11y-no-autofocus.md",
+      "id": "a11y/no-autofocus",
+      "originalJapaneseSha256": "aa98ab3c4a1adeb042c27addc9f1e05a85689a6ba7ca7062246ecf3b657a2d3a",
+      "originalEnglishSha256": "0e6abf5302d205efec0648c2272c4dcfd5a852ec3e80abcaeaf44315dff7d6e1",
+      "wholeCodeSha256": "764506bc5b5f21a8123a660561c8c7cbee1b8b8167730b28403393800e13a6c3",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-no-distracting-elements.md",
+      "englishPath": "docs/content/rules/reference/a11y-no-distracting-elements.md",
+      "id": "a11y/no-distracting-elements",
+      "originalJapaneseSha256": "c0191d695815651846c9ad6dc5ad386d0a7fd33ffd21e9d2574feeeba3b56f03",
+      "originalEnglishSha256": "a9103de978d7cd102532e937f4756ac8c89612f33e26727f8b81d4b13157be17",
+      "wholeCodeSha256": "ed255dcf3da138a927d16caa71f7b6abadadd3b0113510cdf1e14321be1daaf0",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-no-i-for-icon.md",
+      "englishPath": "docs/content/rules/reference/a11y-no-i-for-icon.md",
+      "id": "a11y/no-i-for-icon",
+      "originalJapaneseSha256": "d397b43857baf36a64ed3e4a40505ed5ae2fdfaa3f971222ee586853ae68aa21",
+      "originalEnglishSha256": "0841541b1c47985edf36faccf7831700fcef44068f8980e7597f363cda4b51b6",
+      "wholeCodeSha256": "b2a5c8aee3e8acd275a422e5bc3e1372b0e3f317ec099ead6ca6ffc172c91a20",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-no-redundant-roles.md",
+      "englishPath": "docs/content/rules/reference/a11y-no-redundant-roles.md",
+      "id": "a11y/no-redundant-roles",
+      "originalJapaneseSha256": "6c1f934372d7fe590e7dbb726e66699d94a4adf4829cdc54d774a11f2f54bbf8",
+      "originalEnglishSha256": "f1271a76809058fb1914e7b9f048e7702b1d2f757558ec06953878507065a03e",
+      "wholeCodeSha256": "cd130b15daf97308f5496e2dce5d7ec63162258a35328847a758659d62eeacaa",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-no-refer-to-non-existent-id.md",
+      "englishPath": "docs/content/rules/reference/a11y-no-refer-to-non-existent-id.md",
+      "id": "a11y/no-refer-to-non-existent-id",
+      "originalJapaneseSha256": "34afa1b205a7f626dafa4db7cd67704ab80177ee2fcb72c75ddc48435e69d9e1",
+      "originalEnglishSha256": "28e0cbda7ab85383060031d01bce6ebd479231bcf46d8a97fd4f170cff07c5b6",
+      "wholeCodeSha256": "f712400f14388a53cc8157c06c410077e4691ce0da286d77dd746b33f9e08e31",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-no-role-presentation-on-focusable.md",
+      "englishPath": "docs/content/rules/reference/a11y-no-role-presentation-on-focusable.md",
+      "id": "a11y/no-role-presentation-on-focusable",
+      "originalJapaneseSha256": "49685f0b3af6c4b422784b8c1b66fa25203cf5b8f4ec5502323f47f37df22acf",
+      "originalEnglishSha256": "7b7115c49298780abb1640c580ff34459f6d52fe47b703fdbeee012500994c4b",
+      "wholeCodeSha256": "9fb7a6d259c4caaa2a37c6f96be9cdf72e34421fb4f868d56adcf56b4d64fa42",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-no-static-element-interactions.md",
+      "englishPath": "docs/content/rules/reference/a11y-no-static-element-interactions.md",
+      "id": "a11y/no-static-element-interactions",
+      "originalJapaneseSha256": "9f0e8cd211339c1c4e5cb559549afe12dab3d5c269f3624c1622ce730ba94e69",
+      "originalEnglishSha256": "5f202456c044e95feab6280608501c7748061d5f0ef1f6cbad5f0ee30c3a854a",
+      "wholeCodeSha256": "53368b4b72e626d4f151533b7f62433bdb8c0317b9521d637dd64da9f246e9e9",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-placeholder-label-option.md",
+      "englishPath": "docs/content/rules/reference/a11y-placeholder-label-option.md",
+      "id": "a11y/placeholder-label-option",
+      "originalJapaneseSha256": "00296ccf9a79f22d9bfc099becffb903b6192a41cb358a379e37f65ea3806dc8",
+      "originalEnglishSha256": "6fc7851a1bb2ae485f0630c5809cc2c47b263c7f48b5b899a8420e6342043143",
+      "wholeCodeSha256": "569174f912e97a943220b2a598c1b88f083d8a9ebb4b454a0c6fe50472cefa49",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-role-has-required-aria-props.md",
+      "englishPath": "docs/content/rules/reference/a11y-role-has-required-aria-props.md",
+      "id": "a11y/role-has-required-aria-props",
+      "originalJapaneseSha256": "6a8c7975cee15aac8d960c5755a64a93af1d4832f1eb248c9f38bba58b49f0ed",
+      "originalEnglishSha256": "25d82ae9b52c9ddcd64b6b4d02fb362566f3e494ec08d7eee0a9fd3c9372ab5a",
+      "wholeCodeSha256": "1f0fd3bdefe1f3543b10328ee2b0a99d660b867da840835a22b04cc96561e5f2",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-tabindex-no-positive.md",
+      "englishPath": "docs/content/rules/reference/a11y-tabindex-no-positive.md",
+      "id": "a11y/tabindex-no-positive",
+      "originalJapaneseSha256": "177f59c59344aeb6be4358f6abcbbe924840a30a7a6a6d2a5646bfed8874d1d0",
+      "originalEnglishSha256": "86ff11dffb0d68abe44be75bd552db54cee8b163d6969de7ea8d590df345b312",
+      "wholeCodeSha256": "f8509a6c9436f0d5fae1a1819fe62b3e8275636f0c2a3108f7240b77fa60e1b4",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/a11y-use-list.md",
+      "englishPath": "docs/content/rules/reference/a11y-use-list.md",
+      "id": "a11y/use-list",
+      "originalJapaneseSha256": "8f4be18d22a9016b27cd24d326ecb52de24dd54c615a76d61a08bfd3b06a57bf",
+      "originalEnglishSha256": "37037120c61327f63051212c89f4683ce94a374e95e805d4f07b1f7cfd483b1f",
+      "wholeCodeSha256": "7e6a654103e7d7b99388dc854df8cccd22e355721bcdcb1d9e4a994304e0904a",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/css-no-display-none.md",
+      "englishPath": "docs/content/rules/reference/css-no-display-none.md",
+      "id": "css/no-display-none",
+      "originalJapaneseSha256": "c466c1edcc4dabe90254e54b3857d56299d28dad6a5f6053108d6201f3f732a2",
+      "originalEnglishSha256": "d9d789e2748250169f2f584d6df4aefd9b2a28967c753707af4952fcaac102be",
+      "wholeCodeSha256": "4451ef0c64933442e9bf131867b3fb3ab4c8a4db288d32248290aaa97fcfce07",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/css-no-hardcoded-values.md",
+      "englishPath": "docs/content/rules/reference/css-no-hardcoded-values.md",
+      "id": "css/no-hardcoded-values",
+      "originalJapaneseSha256": "44206a09ea6089409a0b7cd3829fc720a83c7308e117233a9134db5242de6289",
+      "originalEnglishSha256": "cc33e9b35f531bcd4ef7939eb9569545e53c14297e8de3f5b46dd16990e742d9",
+      "wholeCodeSha256": "aab640198ee5b9971164d02c546182612c13e4a9bf8c7684fd57edae55decabe",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/css-no-id-selectors.md",
+      "englishPath": "docs/content/rules/reference/css-no-id-selectors.md",
+      "id": "css/no-id-selectors",
+      "originalJapaneseSha256": "7709c262d6bed0d8396a0e89dd83da2cc515e438aba6356d6c0c5e52f37d93c0",
+      "originalEnglishSha256": "b8c1f2abf695e7f4e97b7dde5b371090cdf2e3c4fac054ea11b23814dfa35b70",
+      "wholeCodeSha256": "84ac163101db44468c742c9412510d703d1a99a45e1f39e0f0e1e0004b7582b1",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/css-no-important.md",
+      "englishPath": "docs/content/rules/reference/css-no-important.md",
+      "id": "css/no-important",
+      "originalJapaneseSha256": "f4fe2068aa88fecc604fdc7bbbaa47fedc9baf8c7497aef1064a756356321306",
+      "originalEnglishSha256": "95c5b25219b8e527b07f66cb21a218ccbf6032cccd9561f4b09fa15e38052554",
+      "wholeCodeSha256": "b40b6586fb8159365ec1c0667aaebfcba9830c2e5a896eb20240cb0d6d64509b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/css-no-utility-classes.md",
+      "englishPath": "docs/content/rules/reference/css-no-utility-classes.md",
+      "id": "css/no-utility-classes",
+      "originalJapaneseSha256": "98389b408053e12b60eaf6b3365a0f531ed3c1a416050edafbc819690149018d",
+      "originalEnglishSha256": "511dea11af557cf2ab7fd4fc7dbc27532849517fcc22a7302f08fb096172f884",
+      "wholeCodeSha256": "70242f7b95a079144a1b0bda3c20cafa33fb7d3573898179d85fd73cd4e1eed0",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/css-no-v-bind-performance.md",
+      "englishPath": "docs/content/rules/reference/css-no-v-bind-performance.md",
+      "id": "css/no-v-bind-performance",
+      "originalJapaneseSha256": "a680fc7d8bddcbc9cb9db742847c1b215df6d62916e28688c88768940b37eb55",
+      "originalEnglishSha256": "c4974cdba51f89a7b645f8a5d8ee2b64eccc97b49f94015841151d4b182a2b74",
+      "wholeCodeSha256": "7bb45c41e62408fa06bfb0f46c9fc6f9b6117c76206f8a6b993da381e79e96f2",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/css-prefer-logical-properties.md",
+      "englishPath": "docs/content/rules/reference/css-prefer-logical-properties.md",
+      "id": "css/prefer-logical-properties",
+      "originalJapaneseSha256": "0549ef456816a4c4fed521831d55c5a8e5418f23b93ca7270e2ef2cf721303bc",
+      "originalEnglishSha256": "34990ee0f793d1a85b406998d2e8fb98f6493ec8217c28e31eb7167910d123d7",
+      "wholeCodeSha256": "010335cc86aead409579eae55bf0c40724808ecdada6888cea75f2321a7704f0",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/css-prefer-nested-selectors.md",
+      "englishPath": "docs/content/rules/reference/css-prefer-nested-selectors.md",
+      "id": "css/prefer-nested-selectors",
+      "originalJapaneseSha256": "0d4735a84a9be1cb6e397dc40ead3d88ba8ae467ce1969e2efac820d42201cf2",
+      "originalEnglishSha256": "83ab60645be8d9adecdc385b7b6876dc4ee69878541166b5b4bdbf0954fcd092",
+      "wholeCodeSha256": "dc46b98138e6cbbe937fa9a44ac0311c4503d07fc69a795b925b9140092382d6",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/css-prefer-slotted.md",
+      "englishPath": "docs/content/rules/reference/css-prefer-slotted.md",
+      "id": "css/prefer-slotted",
+      "originalJapaneseSha256": "768e2618fccd62cd82a44f10163ecbb41fa86c5779aa7609964d91516ada5ff7",
+      "originalEnglishSha256": "ee0f6501dfb583293a806798b85f3e9305e81a8c74d2ad55536c7bc251d7a541",
+      "wholeCodeSha256": "8eb9c3c298d9e4e222d96b9d585188d713bcf2c56ae3127bdcf2d4ad6002db04",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/css-require-font-display.md",
+      "englishPath": "docs/content/rules/reference/css-require-font-display.md",
+      "id": "css/require-font-display",
+      "originalJapaneseSha256": "23dd3388745ec194296be3691d62d8d754f35d4cd480e523266b752f03c3e4cf",
+      "originalEnglishSha256": "7c0fe8f09862901562534e90a93cb1ab086b4b9cae5656f99b77e31a54be138e",
+      "wholeCodeSha256": "98b64c319afa855eb3bbef31880da10a959b93198cd772b59192a47c1fc6e3fc",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ecosystem-nuxt-prefer-nuxt-link.md",
+      "englishPath": "docs/content/rules/reference/ecosystem-nuxt-prefer-nuxt-link.md",
+      "id": "ecosystem/nuxt-prefer-nuxt-link",
+      "originalJapaneseSha256": "99b8d84183312dbec18f02f8bd95b7bb815c9d2362dab8436735d32384357f2f",
+      "originalEnglishSha256": "b3076a890f9bdbc31c5d1699deb01c4797ebe96108007dab255c39916c665777",
+      "wholeCodeSha256": "b6c0315de5af539d86bfd3dbd52f4301ef088438781b6afe444a2378e72350ba",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ecosystem-pinia-prefer-store-to-refs.md",
+      "englishPath": "docs/content/rules/reference/ecosystem-pinia-prefer-store-to-refs.md",
+      "id": "ecosystem/pinia-prefer-store-to-refs",
+      "originalJapaneseSha256": "dc6d3d47af7869be5540df5d066d5f1e12028d711f616708e5459f2b80873cb1",
+      "originalEnglishSha256": "d85ca5431eb0966a665d277b3cd20e2c30c9abbeac9aa5d8df1d5a6c75b839c2",
+      "wholeCodeSha256": "367d90f25cd202043b20140b3342f289ed0adfef7b58237dec4a5c47e83c113f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ecosystem-router-link-require-to.md",
+      "englishPath": "docs/content/rules/reference/ecosystem-router-link-require-to.md",
+      "id": "ecosystem/router-link-require-to",
+      "originalJapaneseSha256": "bc8149f3e5bcea8dcbf2debb34af13fd6c1c13688781f0f0f61b87a1a2a1b4c3",
+      "originalEnglishSha256": "e3570845cda368ec94825b8875e810cf986468e15f8146119ad0cf78bd4b0f2c",
+      "wholeCodeSha256": "3717ea0cdab38203946e033b6bb09b5114fc429b74ee57a29060ac2c14c72042",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ecosystem-void-link-require-href.md",
+      "englishPath": "docs/content/rules/reference/ecosystem-void-link-require-href.md",
+      "id": "ecosystem/void-link-require-href",
+      "originalJapaneseSha256": "159cd54cf3e6403695491e09458694e11e80b0ea93c76972ce96d83da70a03bf",
+      "originalEnglishSha256": "41b75dc9dc21632d0190195c708966c219f9ed0a321cd038452227645f499fc0",
+      "wholeCodeSha256": "29f9b52a0f6727d4b33d45d433809ed96079b8986ad7f71489a2fac80aecf783",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ecosystem-void-link-valid-method.md",
+      "englishPath": "docs/content/rules/reference/ecosystem-void-link-valid-method.md",
+      "id": "ecosystem/void-link-valid-method",
+      "originalJapaneseSha256": "9a83ac5e0cf4d328b00479fd9ec20388866735d87f929c813f16512a65f53136",
+      "originalEnglishSha256": "fd5baf223272fb65e360a2574381c9f7e1bbc8decbc0e3d6c8538abc401a4046",
+      "wholeCodeSha256": "a5ff1310672a4d8b703670c91ab63480e447fc3378d4e3077913655b40a329ce",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ecosystem-vue-i18n-no-missing-key.md",
+      "englishPath": "docs/content/rules/reference/ecosystem-vue-i18n-no-missing-key.md",
+      "id": "ecosystem/vue-i18n-no-missing-key",
+      "originalJapaneseSha256": "af78a54c2b050acc7981c7bf85655929c0ba64615b4ed1de2319679a97e912a4",
+      "originalEnglishSha256": "7813d5acc112b9d9de4f443f7e49bbcc3bfedcb773a23bd2318721184feb844e",
+      "wholeCodeSha256": "c5fde79b5740362282474cc89118faee738fc48260a7866422f9a8778405da4f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ecosystem-vue-router-prefer-named-link.md",
+      "englishPath": "docs/content/rules/reference/ecosystem-vue-router-prefer-named-link.md",
+      "id": "ecosystem/vue-router-prefer-named-link",
+      "originalJapaneseSha256": "d7bc243e6455a9ab6e6b23519613d175b44ed11db4e0a1e6c13480fb30b3881f",
+      "originalEnglishSha256": "6cca9a8e7ef6ac3e15f7a8a9709c67671e3cf0d6ca5c44871b90ed0cae14bbf6",
+      "wholeCodeSha256": "e05251a7785cecf065f7bf7448565b2bf730bd5d734d0ca1656faefaaa47580d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ecosystem-vue-router-prefer-named-push.md",
+      "englishPath": "docs/content/rules/reference/ecosystem-vue-router-prefer-named-push.md",
+      "id": "ecosystem/vue-router-prefer-named-push",
+      "originalJapaneseSha256": "f32e09a5f7d8218acee9e73b69b82eebcbbface2fde16e17fcf001242940a97f",
+      "originalEnglishSha256": "dfe25f7ceca06b4715aaae2b38016196adbda605037415aedee7b97eea7a501c",
+      "wholeCodeSha256": "287e757480362ad47a46e8c27abef4297384cfb2bb9e32d037bf086572f6d77c",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ecosystem-vue-test-utils-no-html-snapshot.md",
+      "englishPath": "docs/content/rules/reference/ecosystem-vue-test-utils-no-html-snapshot.md",
+      "id": "ecosystem/vue-test-utils-no-html-snapshot",
+      "originalJapaneseSha256": "f66af7d8b1a5d8bd6379ad2599eab0048e221734ab2747c4e3abe2366faafd07",
+      "originalEnglishSha256": "9e189577124c73438079a0692f548f215710909ada5f560623e6583ff7fa3220",
+      "wholeCodeSha256": "bcd2448f49001e6736bbe179b8aa4745ca8c385f422fb5be6513171ce355e2b8",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/html-deprecated-attr.md",
+      "englishPath": "docs/content/rules/reference/html-deprecated-attr.md",
+      "id": "html/deprecated-attr",
+      "originalJapaneseSha256": "2befd92209be681fe35a78523cae2972bff141c750c7722f5602fee9ac193c81",
+      "originalEnglishSha256": "c2803fe2c489ececd116172216a3cf43ac15304a8087458af6b60be5b6c17c4b",
+      "wholeCodeSha256": "1cc51b4f9eee102cbb200e4b62fc895c670b084e194710f5c54efe8944f3c50f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/html-deprecated-element.md",
+      "englishPath": "docs/content/rules/reference/html-deprecated-element.md",
+      "id": "html/deprecated-element",
+      "originalJapaneseSha256": "613758556b2f5cd9cbdabbee0280f0b8814527e9dae7987a495f448ce4b84644",
+      "originalEnglishSha256": "fa1bae6bd4948de4fceb8ed6eba45708ba4c81fb71d1a448f34cb037192dee31",
+      "wholeCodeSha256": "a2abbadd8bddea8bb19a79e6da6dd8cc3146368968f504b2a0d1e5aea3b5d0f7",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/html-id-duplication.md",
+      "englishPath": "docs/content/rules/reference/html-id-duplication.md",
+      "id": "html/id-duplication",
+      "originalJapaneseSha256": "9230ff2c6c7f032b1cd3861b7b454d1aaee4d31daf56bfb91f6f82dd876e74de",
+      "originalEnglishSha256": "a22ab9aed8f283fe9f928ef2c615be8733432c283b9638e06177a89e3fb22574",
+      "wholeCodeSha256": "a26b1d7d9c7655b051901204000a2e5283d76a4d2e7025b8f92231daeef188b8",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/html-no-consecutive-br.md",
+      "englishPath": "docs/content/rules/reference/html-no-consecutive-br.md",
+      "id": "html/no-consecutive-br",
+      "originalJapaneseSha256": "888bc334ab2e63d2c55239af6eecf704a09e240b294a7e87b337eefe10369def",
+      "originalEnglishSha256": "0843bceaedea86fca2e2a1279ff3d4ec8577304a09884bb5ea7ff3e1268a6ea5",
+      "wholeCodeSha256": "9a78af3a37db93e0b35f869c65861e9bbfdaf9bfe1fc5195edc990e4cf5dda0d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/html-no-dupe-style-properties.md",
+      "englishPath": "docs/content/rules/reference/html-no-dupe-style-properties.md",
+      "id": "html/no-dupe-style-properties",
+      "originalJapaneseSha256": "7c866d2c53a91089ef125f03be40f035c977aaccf87d365c1e7422d0d2c6a6d3",
+      "originalEnglishSha256": "304e3075e3ad751b71526fd477f89494615c9b2b49152416fb038b90157fc95c",
+      "wholeCodeSha256": "70463df31736b72cbb9cac4a0c457010bebd6e0c6a7bc53e714ce9a92a91647a",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/html-no-duplicate-class.md",
+      "englishPath": "docs/content/rules/reference/html-no-duplicate-class.md",
+      "id": "html/no-duplicate-class",
+      "originalJapaneseSha256": "9a301e79423cbcd78640950cce850f9e69ea61c6fcc9a41232086e421cacf964",
+      "originalEnglishSha256": "c549be849e4f7b4a46a91c2cb835946c152b00551344b83911332742d7827e94",
+      "wholeCodeSha256": "0f91e899a00fbf93b9ca89796929c7d73590c0123d94d10f1a9dd78bf076332f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/html-no-duplicate-dt.md",
+      "englishPath": "docs/content/rules/reference/html-no-duplicate-dt.md",
+      "id": "html/no-duplicate-dt",
+      "originalJapaneseSha256": "5a77e36a8f3bc9808a5b661e7d54b54f8440c2d222216639d9677f8e399011a4",
+      "originalEnglishSha256": "7e31c641f156c0a7dfb648499a9647c1edbcc9c8045f0777378f38a6048fd1ca",
+      "wholeCodeSha256": "61e540fd1c76d5374a96312dd6a4926b17b5e8c45641502f8b326e4b20689f27",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/html-no-empty-palpable-content.md",
+      "englishPath": "docs/content/rules/reference/html-no-empty-palpable-content.md",
+      "id": "html/no-empty-palpable-content",
+      "originalJapaneseSha256": "bccc8ad54ded649793a2efda8e465c616de0ee8d3a7063933cedbd4013a0612a",
+      "originalEnglishSha256": "2deda55ea492ba3600a0533ec557f64892516221b0b5b0cda26778cee57a5b49",
+      "wholeCodeSha256": "33f3b5b13d1c766310429ff1edb919e5eb903b0942ff1a935f34c3a46a6cfb0b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/html-require-datetime.md",
+      "englishPath": "docs/content/rules/reference/html-require-datetime.md",
+      "id": "html/require-datetime",
+      "originalJapaneseSha256": "0aef899368639aec4b927bf477d27d24b0fa14fc843756405ff1c298ded81095",
+      "originalEnglishSha256": "986e72c6893a1b9b6c33137a0d05d43e0d726dac96e945e4e28019ecea635bdf",
+      "wholeCodeSha256": "dcd66ea7a72419e055900245845bf5e72f91761c2cde905416303c73a4d3b6d4",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/musea-no-empty-variant.md",
+      "englishPath": "docs/content/rules/reference/musea-no-empty-variant.md",
+      "id": "musea/no-empty-variant",
+      "originalJapaneseSha256": "ba5564fd822f52682d74e7897f38bcef23a3f44dc438a9a3b7f5bb6babbab2e2",
+      "originalEnglishSha256": "4b8668532345c83edc1302ba02d9f799b1aeae6ef1988e10121bceab4e7d5196",
+      "wholeCodeSha256": "14dcebd16c5842d67b534d4d465fab1151a356fd4c1221d3307b4327a53bfe1e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/musea-prefer-design-tokens.md",
+      "englishPath": "docs/content/rules/reference/musea-prefer-design-tokens.md",
+      "id": "musea/prefer-design-tokens",
+      "originalJapaneseSha256": "291746ad8e891d8f3c8ef7cd3684a09826bb2ce80ea345fdab531af6ccb45385",
+      "originalEnglishSha256": "f8cd9f071d0e5f49a4372cfddcf48a251510be21580b1b73316ab7eaeebe5114",
+      "wholeCodeSha256": "d318c736d3f9408c8be36feae8fcdd54dea04458b057441682233106ce83def8",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/musea-require-component.md",
+      "englishPath": "docs/content/rules/reference/musea-require-component.md",
+      "id": "musea/require-component",
+      "originalJapaneseSha256": "fe7093d5de872229d215516474928e0e8e4dfc0397cd2d592661b9b44b68355f",
+      "originalEnglishSha256": "bbdba0f1bd0eaed10eabfdc38a2acc620ec554dee501d4f86712ac4e6e206e29",
+      "wholeCodeSha256": "73f96555ed6f436f0eca25313e771e43bd2be29ebf7474fc56cb4840fd74e242",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/musea-require-title.md",
+      "englishPath": "docs/content/rules/reference/musea-require-title.md",
+      "id": "musea/require-title",
+      "originalJapaneseSha256": "23a9ff87e2d904f3883550834a71e8583be1cf89dd080ac7fbd265b37cbba0f9",
+      "originalEnglishSha256": "b6e15c7635424c1a3b343dcfe150d7b42a7b36c09c21ed34eb987fd78b521535",
+      "wholeCodeSha256": "6b5e08604119e6fb4df5158a4c61405c54d71f311720a2f07d9bf3222115f158",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/musea-unique-variant-names.md",
+      "englishPath": "docs/content/rules/reference/musea-unique-variant-names.md",
+      "id": "musea/unique-variant-names",
+      "originalJapaneseSha256": "87f3f67871d74498a99fcf0baa94b66b4eed8a3268b8ab7c447ae18df300362c",
+      "originalEnglishSha256": "4d01f322dffab927dbfa8d34627bc3c55160f4a5d9f51bd750fbda2ca6b36ebb",
+      "wholeCodeSha256": "9c9cdacad54c9800388aa5b588739e690beff5e3fa17c9ed620e64c3d8028133",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/musea-valid-variant.md",
+      "englishPath": "docs/content/rules/reference/musea-valid-variant.md",
+      "id": "musea/valid-variant",
+      "originalJapaneseSha256": "ec9cde8138cd4b94b2707404b0349126e661391c50bf85daa10b31f77fdef48d",
+      "originalEnglishSha256": "5089a020003b1b1fd63fb890e5811612a4b8d1169fa975a9124d6cfe81574138",
+      "wholeCodeSha256": "23ecbeb612819a41f81334e58816d875a851f92939412955eaff4c20f3c0cbd1",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/nuxt-no-nuxt-config-test-key.md",
+      "englishPath": "docs/content/rules/reference/nuxt-no-nuxt-config-test-key.md",
+      "id": "nuxt/no-nuxt-config-test-key",
+      "originalJapaneseSha256": "271225faba2fa1108f7603e4f569c1da8e06105278c0b7223e08056d2c1f51d4",
+      "originalEnglishSha256": "0402cc85e3d2d2979104413f77f6200ea0027fe4dd78bedcd323d980802cc2bc",
+      "wholeCodeSha256": "54f1da843f0e47c0c4f95bdecaf19b9562ac68f9d87dd8c790f89bb192fa5292",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/nuxt-no-page-meta-runtime-values.md",
+      "englishPath": "docs/content/rules/reference/nuxt-no-page-meta-runtime-values.md",
+      "id": "nuxt/no-page-meta-runtime-values",
+      "originalJapaneseSha256": "8feb1d382315c93290a8a967b9a1de27ade09b0685aec246bab2bcc0c19f6cdd",
+      "originalEnglishSha256": "dbbfbf42684e34e2a1e99bf8fc13c7e5cb333ff8919bca85997c0c6df9c64ff7",
+      "wholeCodeSha256": "00f269d68fd9fb62855283170a3431ca55790c786317c5edb28d24d81afc1139",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/nuxt-nuxt-config-keys-order.md",
+      "englishPath": "docs/content/rules/reference/nuxt-nuxt-config-keys-order.md",
+      "id": "nuxt/nuxt-config-keys-order",
+      "originalJapaneseSha256": "6fca22d780af1e1665f3e821d0dbea1b9efab792266352a168f37be033f7ac6a",
+      "originalEnglishSha256": "47c66a46eea7e0b72a62b27897398dc2251dddd3ff84c9a06afb51fc45247e23",
+      "wholeCodeSha256": "cd8e1dc612c77492b9ad9537fa7dbdb8836f48dbdfaac107f1f0c8dafccdb504",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/nuxt-prefer-import-meta.md",
+      "englishPath": "docs/content/rules/reference/nuxt-prefer-import-meta.md",
+      "id": "nuxt/prefer-import-meta",
+      "originalJapaneseSha256": "479e33c11208979faa0359d14d5b9f0832e563e3be72d03b93e9921478d6315f",
+      "originalEnglishSha256": "efcdec853df63c4ab2876b299d1016036698102c05640b66db406b01746590b2",
+      "wholeCodeSha256": "ad9541acd00e03837bbab883b99ee2327208523f2d101b4eebed69fa492d0994",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/petite-vue-no-unsupported-directive.md",
+      "englishPath": "docs/content/rules/reference/petite-vue-no-unsupported-directive.md",
+      "id": "petite-vue/no-unsupported-directive",
+      "originalJapaneseSha256": "51ac197161b82031ac91d93878390a9fc3b9159db56fd0b7a2607a455500acce",
+      "originalEnglishSha256": "05fc66330e066d0deb6cefe0a6d1484e801fc38507e385c3ca4e95d0f11eb556",
+      "wholeCodeSha256": "4f92d85b91b9a982bcd2e92c16f2ca5627987a2be46913c3fe0456d81c830aef",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/petite-vue-valid-v-effect.md",
+      "englishPath": "docs/content/rules/reference/petite-vue-valid-v-effect.md",
+      "id": "petite-vue/valid-v-effect",
+      "originalJapaneseSha256": "67843d56a7dba530767f1592ccb91baa34771595b69a43518c287199c221a1c5",
+      "originalEnglishSha256": "d9fa3dad69ea5ddfafa31ccb2f1085ebdd7f354136c8181de761fa40682687d8",
+      "wholeCodeSha256": "a9f44e2562df2a6534b3b558b09c4851103a5c8c939e540c0c17882250d128b4",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/petite-vue-valid-v-scope.md",
+      "englishPath": "docs/content/rules/reference/petite-vue-valid-v-scope.md",
+      "id": "petite-vue/valid-v-scope",
+      "originalJapaneseSha256": "4c8588bc21732a5f9b5fd6b466eea76775416a9c81a5c5c4111c580dd8b57ee8",
+      "originalEnglishSha256": "16ca250e6aab6b558ceaca57d6f8bc3ff2d70e49024c2c107bcae728a931df49",
+      "wholeCodeSha256": "f0e10ca818ae39e31d0e0951afd4d8a63d7a87e10fd3e083b4f3e2e2d9180007",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-component-options-name-casing.md",
+      "englishPath": "docs/content/rules/reference/script-component-options-name-casing.md",
+      "id": "script/component-options-name-casing",
+      "originalJapaneseSha256": "a48597eaa5b53c17f96661be7bf8e2e11f4b1f01df2c100453d294f78f8072a2",
+      "originalEnglishSha256": "efc2ca17fa29754aad47550931df4b9a43463b66d30c7a97f55a35192271b341",
+      "wholeCodeSha256": "c036bc9efb35f79ad486f6a99db82ff7191b1573d23af4a6150190e87402a293",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-custom-event-name-casing.md",
+      "englishPath": "docs/content/rules/reference/script-custom-event-name-casing.md",
+      "id": "script/custom-event-name-casing",
+      "originalJapaneseSha256": "4a3045b292bf678684486870afd641cedaeb1b4303da49ca7c214cfa6a2bfed8",
+      "originalEnglishSha256": "76b8005b68f5e82ced9eeb4e9c59cd08b1324c72db81ddea6c38d988c951cdce",
+      "wholeCodeSha256": "c9cd095a875ce2bc89712ceb86093e7b1d56dbf9eda6dd1996731bb2dda5d2fc",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-define-emits-declaration.md",
+      "englishPath": "docs/content/rules/reference/script-define-emits-declaration.md",
+      "id": "script/define-emits-declaration",
+      "originalJapaneseSha256": "c9e356728110554518e8904dfa30eba7a6583d513abd1c16c08199c280cc51c7",
+      "originalEnglishSha256": "e37f8dbb53e16d9c7fe52ae41f9d2129727ef3ce5667c174ee6a98e308f0356b",
+      "wholeCodeSha256": "af745a12e2076968f6a6f5fa6cf8278fc360ca56ed2069895822e13d0b8232ec",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-define-macros-order.md",
+      "englishPath": "docs/content/rules/reference/script-define-macros-order.md",
+      "id": "script/define-macros-order",
+      "originalJapaneseSha256": "37829f00339e9816400ca2f6e1f35501aff6d4f9c15a637de388bbce3faf39d0",
+      "originalEnglishSha256": "eebb14eb7f2b54d55c21612b1851315f6fe13b87195b03bb3f0ae08ad92a7382",
+      "wholeCodeSha256": "44983b00fddef509b3319b47e286f6896f0dfab4102b5569b68f2ee3f3bb3fb7",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-define-props-declaration.md",
+      "englishPath": "docs/content/rules/reference/script-define-props-declaration.md",
+      "id": "script/define-props-declaration",
+      "originalJapaneseSha256": "22437b2f8c87f8294d0ef8cfa94a6c405d0f679d28afa9169a8dedb78d9d217c",
+      "originalEnglishSha256": "33bd7e6feb97374a0bfd369dfa9fbb2d7c9d32313c9c722929ae32d57a2a638a",
+      "wholeCodeSha256": "11378de49d1e564b52a9dceb75931b50cb0fb455fc25a42438b1f0160f8ba22a",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-define-props-destructuring.md",
+      "englishPath": "docs/content/rules/reference/script-define-props-destructuring.md",
+      "id": "script/define-props-destructuring",
+      "originalJapaneseSha256": "a74d6c88068522f00e9ba0616a36cb0c235a6ec89fd6c5e5b5fd6161e0edef0c",
+      "originalEnglishSha256": "38fe4e388fc481ca096f225e795f7625f805d76f122e5609425d8e9e210ce774",
+      "wholeCodeSha256": "b9952c4541abf2bc1e02a2d3f98b4713116b5fd15ba6beb6a3e4e6d482b5929e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-arrow-functions-in-watch.md",
+      "englishPath": "docs/content/rules/reference/script-no-arrow-functions-in-watch.md",
+      "id": "script/no-arrow-functions-in-watch",
+      "originalJapaneseSha256": "abf41ee7e35ff358e4515bf71562beb7dd1bb2bcaf6667ba42795c64f07fa2c8",
+      "originalEnglishSha256": "d1c98d480c632d1dd44f2698ab9e8381767d7c92384b1294516693d5693af671",
+      "wholeCodeSha256": "64116980390a9b72cbfd7d3c083c33ebfddd1f12db6094751353108d0001017d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-async-in-computed.md",
+      "englishPath": "docs/content/rules/reference/script-no-async-in-computed.md",
+      "id": "script/no-async-in-computed",
+      "originalJapaneseSha256": "1fbc21f1ba8f93866167c85cc5277cd49d9f6f26700e666692c32ef29196d3ee",
+      "originalEnglishSha256": "6a24371add33f28527fd3cba4b9623589972f72a0c649de6e3cf05076fdbc02d",
+      "wholeCodeSha256": "8a43bbde9df09f5cc4d99d34ff662157f19d962de4af39c8bc30a58e98307eae",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-boolean-default.md",
+      "englishPath": "docs/content/rules/reference/script-no-boolean-default.md",
+      "id": "script/no-boolean-default",
+      "originalJapaneseSha256": "2f2296ab5fa30cc85a9be846f096dbdbf09d0d2c26d2ee0a5cfc80f23c3121d6",
+      "originalEnglishSha256": "fd67d54464cd5448860ece5c36d70ecd1b80c4bf54a601793d7231217de7a2cd",
+      "wholeCodeSha256": "7471515d83e651fc973bd9e97f411c3508481d482c72b81bae1ae66cafbdbb71",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-deep-destructure-in-props.md",
+      "englishPath": "docs/content/rules/reference/script-no-deep-destructure-in-props.md",
+      "id": "script/no-deep-destructure-in-props",
+      "originalJapaneseSha256": "ff263aedfece9ba770126b773cb86a173554041e95350f96c05eca624f6080e1",
+      "originalEnglishSha256": "b5a60f086117334adadefad2cc5e2a0f1b9a155a8efa45c0d2c4e5d2387d0436",
+      "wholeCodeSha256": "c648b57d4370cacd0354a7ec44412074a422c61e215885834c6d1fb3f29e2686",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-deprecated-data-object-declaration.md",
+      "englishPath": "docs/content/rules/reference/script-no-deprecated-data-object-declaration.md",
+      "id": "script/no-deprecated-data-object-declaration",
+      "originalJapaneseSha256": "b72410dc664edd12d01528e02fd10cfe8f2abd712e7a0c07830295a8e174c9f8",
+      "originalEnglishSha256": "ef019c0b2f2a4d155f2847a5f0805527d749e8ba7a4a13658bff95664ada5c01",
+      "wholeCodeSha256": "e48d90999e3f6afc238d0f6ffca7d6e7d811339d415dd388461b4c67c1b58baf",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-deprecated-destroyed-lifecycle.md",
+      "englishPath": "docs/content/rules/reference/script-no-deprecated-destroyed-lifecycle.md",
+      "id": "script/no-deprecated-destroyed-lifecycle",
+      "originalJapaneseSha256": "f2988e78cefa2475cf7c61027f2798f49e7dfa830a771e78173b4b9526e912f0",
+      "originalEnglishSha256": "9d655aa2a020772203a2749a654f0b4216c9c8eb58d7cccc6d8459c3ba5db139",
+      "wholeCodeSha256": "ce621edc5e14004d58a37ee9a872737a6b32f28c7a2a44a376168c26dac0477d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-deprecated-dollar-listeners-api.md",
+      "englishPath": "docs/content/rules/reference/script-no-deprecated-dollar-listeners-api.md",
+      "id": "script/no-deprecated-dollar-listeners-api",
+      "originalJapaneseSha256": "6e9881542edc582e8ec566ac98edf500b12e3a8cb081ea80966cd0e868f7a8b2",
+      "originalEnglishSha256": "b9984885d57261ac152cd1f94bd746fc2e365089d0f600fba76ef20724cb56a1",
+      "wholeCodeSha256": "5bd2a3884ead3bbb25fec3024a51f51688b7bfd07484d536a3a1bc38dabbfd15",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-deprecated-dollar-scopedslots-api.md",
+      "englishPath": "docs/content/rules/reference/script-no-deprecated-dollar-scopedslots-api.md",
+      "id": "script/no-deprecated-dollar-scopedslots-api",
+      "originalJapaneseSha256": "8acd282ec9660f81bba42ca3006df09772540d949dfc4c2669731d49d843be35",
+      "originalEnglishSha256": "0fa19c8a31ab59b6785c602b571d6a94b131f20d6fd78ff676ff9e273d8b3409",
+      "wholeCodeSha256": "f29f7883836871002dfca18813387bbbb153b6507ed74c0065e6a2fd732433c7",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-deprecated-events-api.md",
+      "englishPath": "docs/content/rules/reference/script-no-deprecated-events-api.md",
+      "id": "script/no-deprecated-events-api",
+      "originalJapaneseSha256": "e01e5a3fb2ff03a522c635f608411739df1926e7f9cdae9d3d9d86b221da529b",
+      "originalEnglishSha256": "12e2aa4074f1d646fd1a3568edbc40aa95f02ed0e8cbaa31a9ab0ef2d9ac99f9",
+      "wholeCodeSha256": "a12ca627480049cae5e900df9de5596747c654a4f6a641dc6050eea7639dbcc7",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-deprecated-props-default-this.md",
+      "englishPath": "docs/content/rules/reference/script-no-deprecated-props-default-this.md",
+      "id": "script/no-deprecated-props-default-this",
+      "originalJapaneseSha256": "625be0d1dc1a0249a673712096f7c29c4bc044d5ba2dcd8dc80158e72219816c",
+      "originalEnglishSha256": "c7d63bd36c11b1aba147425afdf24d40abee3a4f0e690c1b35480224274eb7ec",
+      "wholeCodeSha256": "28294f5bc6d04bd025babb8019739b096250c492e10f2e539315aafd153d0ac6",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-dupe-keys.md",
+      "englishPath": "docs/content/rules/reference/script-no-dupe-keys.md",
+      "id": "script/no-dupe-keys",
+      "originalJapaneseSha256": "e7c59f37ab3d1da4e4c1e1e00ee79021d528ebd0aeb77deeefc87b742bcc6e85",
+      "originalEnglishSha256": "f0272dd821d0803a4add6398d4571e16b4da5a978ae5dd415fe11a97771b4ff0",
+      "wholeCodeSha256": "2d7d09cdcc00076db14f59e4bfaf6a2a9f38ee16fd1954ae6982a1161340efa2",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-duplicate-attr-inheritance.md",
+      "englishPath": "docs/content/rules/reference/script-no-duplicate-attr-inheritance.md",
+      "id": "script/no-duplicate-attr-inheritance",
+      "originalJapaneseSha256": "5bef2d2c81d79a3f2a7e1d0885e6f3d174689db536f9388bfcb0e62ecd76048b",
+      "originalEnglishSha256": "e54237aeb08d58789922250516c9455ba8842a2c00ce28c1df3aa7b39a11c1c8",
+      "wholeCodeSha256": "ef4716ab808f89a7c952c942a590458ef172e2b0348c2502f1516fc70f60377f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-export-in-script-setup.md",
+      "englishPath": "docs/content/rules/reference/script-no-export-in-script-setup.md",
+      "id": "script/no-export-in-script-setup",
+      "originalJapaneseSha256": "7c13ae67c9791496964338ad9e0ccc177a25248e19c3fe3f2e606a1a27cf9529",
+      "originalEnglishSha256": "8c04a43e20397380bbf1d8ae0ae100c8c5d8ed572125f4a5377fc25c4d57535f",
+      "wholeCodeSha256": "28b8c0c5442ee8c5febbdd5b86c8d5893b850d946481778c1f6aa2a38de02dc0",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-get-current-instance.md",
+      "englishPath": "docs/content/rules/reference/script-no-get-current-instance.md",
+      "id": "script/no-get-current-instance",
+      "originalJapaneseSha256": "29a47bcf7e16679174c4eba19281020fdcfda325625e861742b01f3a6475f3b8",
+      "originalEnglishSha256": "a1f573138501bbcb4b0dd1f0bc9e46ebb05e393d7306f8cd18e8a4de4c26130d",
+      "wholeCodeSha256": "8e08e59a763005579254ef43bed7fedaebb4e9ce38ea0752bb7b07b5c0cff7b6",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-import-compiler-macros.md",
+      "englishPath": "docs/content/rules/reference/script-no-import-compiler-macros.md",
+      "id": "script/no-import-compiler-macros",
+      "originalJapaneseSha256": "315aae919404b2e89d8716f2f3cd4920a8dac94eb1c29bab700f5a4155afcaab",
+      "originalEnglishSha256": "244f317fddcbb1b3633af45eaf97e490b280cf02fab217bb1052b516ff5889db",
+      "wholeCodeSha256": "66e0e8c6a316690b46810c4dc85c5b5403a9ff634fd58503777b41ddeeb9ff26",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-internal-imports.md",
+      "englishPath": "docs/content/rules/reference/script-no-internal-imports.md",
+      "id": "script/no-internal-imports",
+      "originalJapaneseSha256": "9f6d4568aca233fd3c269c9db5e6d9447ae737cce7497ec9907755e4a962cf30",
+      "originalEnglishSha256": "5681f1e788b607a44ac32012dfa932b624ba83477382405acfe182494dc2c94b",
+      "wholeCodeSha256": "f67d3e73f414b82ea4b463a23c9aa2e3f7796b4f3269ec886590340e86adfa0f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-multiple-slot-args.md",
+      "englishPath": "docs/content/rules/reference/script-no-multiple-slot-args.md",
+      "id": "script/no-multiple-slot-args",
+      "originalJapaneseSha256": "35a5c4d8e6f142e2bf3324212341a2587e44ded1277f408b96b6f4662df16efa",
+      "originalEnglishSha256": "feb6d37fae809de63ce18bed73be1ef3851c90b58c0a26d54b918114517a2a84",
+      "wholeCodeSha256": "104c06aa844a938b945f0e53faf96aa24ace01cf001953dd94345fe7ec162825",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-next-tick.md",
+      "englishPath": "docs/content/rules/reference/script-no-next-tick.md",
+      "id": "script/no-next-tick",
+      "originalJapaneseSha256": "1ae7b55c466aed44da37038e9b04a95974e7f88a7a9173850516a64e733e2db6",
+      "originalEnglishSha256": "54a98879e8a1f55455ef11c76a197f37a29eecc3771c09e08132ea372868db07",
+      "wholeCodeSha256": "3401bff92004646429d1c562d3a1783e7c18dc1ce0cb122907470e449044901c",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-options-api.md",
+      "englishPath": "docs/content/rules/reference/script-no-options-api.md",
+      "id": "script/no-options-api",
+      "originalJapaneseSha256": "cf443c000bcb743bc860cbb5c31a4c1e6821a1692b173eef4f241c9caa7c064c",
+      "originalEnglishSha256": "722922b926ae9672a96ad2570c13c2276391fffa7fc286d12635e03112d3d0a2",
+      "wholeCodeSha256": "d0cd9f858fedc34c9210dbd4332df104c5615349f9ae1adcd8750c77e3759eed",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-potential-component-option-typo.md",
+      "englishPath": "docs/content/rules/reference/script-no-potential-component-option-typo.md",
+      "id": "script/no-potential-component-option-typo",
+      "originalJapaneseSha256": "bf4809a2a2e8a3efd0194b2500048563d07e454d1fb3fae1414c706924b5300d",
+      "originalEnglishSha256": "439657deab4e990b293ab5b095d7bb6985285f8d1ea1cbabf4871676fae99619",
+      "wholeCodeSha256": "32eec695d5f3484048e89a8020aef1acb5380c4f6fada61eed6324e88aac9b26",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-reactive-destructure.md",
+      "englishPath": "docs/content/rules/reference/script-no-reactive-destructure.md",
+      "id": "script/no-reactive-destructure",
+      "originalJapaneseSha256": "f0c316fa1853e0dfc150ce9170532fed24a735def4d51f80ae534b54a7e24c04",
+      "originalEnglishSha256": "4498a42310a5f8bafa950e5ebd5940095d87ce98108b0f1109a87febce2674c3",
+      "wholeCodeSha256": "40a80ca08c15cdaa83c7e43f05116ca42163f734ff9bdb85b83c3285f08af98e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-ref-as-operand.md",
+      "englishPath": "docs/content/rules/reference/script-no-ref-as-operand.md",
+      "id": "script/no-ref-as-operand",
+      "originalJapaneseSha256": "23a6bf5a2c8239a601b536afb5fa61b87cdf2827750ef0b18561036a205a3b22",
+      "originalEnglishSha256": "e873b689589b7199087870d0209f170012c9275adfaefddbf61dc582b1bacaf7",
+      "wholeCodeSha256": "6781f5c24b5936baab2f3e9da95e8ae9633c64f965612bafbe7fae001a50992f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-required-prop-with-default.md",
+      "englishPath": "docs/content/rules/reference/script-no-required-prop-with-default.md",
+      "id": "script/no-required-prop-with-default",
+      "originalJapaneseSha256": "6f7a933f289189c2eebda6e7e117f463c89d26516c4ac25988cf70bf51e7145e",
+      "originalEnglishSha256": "1e57df3a14ee444f66a4d34ae7560a68de4f9217401d515502f1acfffadb44b0",
+      "wholeCodeSha256": "7c7f0a8e263a8f247ae3a7e035d0a2eac468b625d3f94c72e4eb7f7d95cf0611",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-reserved-identifiers.md",
+      "englishPath": "docs/content/rules/reference/script-no-reserved-identifiers.md",
+      "id": "script/no-reserved-identifiers",
+      "originalJapaneseSha256": "6a5bd77aedb37fc8d06ebfc88b10b2806600ade775ae972c53f84a6c41a1cac7",
+      "originalEnglishSha256": "c042ffab7b4c96e3883ff3ded8c26d452efd8945713c84d4ee635e222cbdfafe",
+      "wholeCodeSha256": "cf6479468d16c65566aec4b570a461e4e45fae04d64c1f86e4a3a676a6671c40",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-reserved-keys.md",
+      "englishPath": "docs/content/rules/reference/script-no-reserved-keys.md",
+      "id": "script/no-reserved-keys",
+      "originalJapaneseSha256": "af15397b059c526e56c6a6c7a45e500c7c7d2d49a26aa32970e1699cf2b50ef5",
+      "originalEnglishSha256": "dd1845711f168a04a0ba086a463d54b2b1bb78b16587eefa4fdad13d92b0f1a0",
+      "wholeCodeSha256": "67df17152fc66eb8ac15202335163a1ffdc0ebd0f20ffb53db8dc693849c0bba",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-reserved-props.md",
+      "englishPath": "docs/content/rules/reference/script-no-reserved-props.md",
+      "id": "script/no-reserved-props",
+      "originalJapaneseSha256": "b4c990fcb1a1eef49d1a920741b9982ced690aa5ea1d096ea0e7366e210ceb11",
+      "originalEnglishSha256": "8e518e89ef79ae6e5dee5d80e06dbfb4e30e7d9c0faa422e3629bccb3c02c35e",
+      "wholeCodeSha256": "851f2f0e8fc56987a1961c7df8d9605467520d20f376b6831c6e81677fdbe926",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-restricted-globals.md",
+      "englishPath": "docs/content/rules/reference/script-no-restricted-globals.md",
+      "id": "script/no-restricted-globals",
+      "originalJapaneseSha256": "342fa1f21e8bd701c84455c2e83a73a71581e89c3111d54fed798790bd079408",
+      "originalEnglishSha256": "3930ad5f4cd60ad0e9ae57aef26ce67fd6c188bddfa521fb3cb86126639d7f9f",
+      "wholeCodeSha256": "b5d54ef24d1cf19b364055a0fac06e0dfcbce396776d436a99fddc3c37a6360e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-restricted-members.md",
+      "englishPath": "docs/content/rules/reference/script-no-restricted-members.md",
+      "id": "script/no-restricted-members",
+      "originalJapaneseSha256": "e7385ae794067867b6ffa36e50821ce0f79cb089a02122adcdabd2f4dc6b6b76",
+      "originalEnglishSha256": "46edf7a82117a52cb1fccc8e613fea98dbe6751e5b1ef85001f1eb3b803112d1",
+      "wholeCodeSha256": "f6c34e2a6091ec155b1d79aaaa18b540b38745afa81b62d125e65f7a59f09542",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-side-effects-in-computed-properties.md",
+      "englishPath": "docs/content/rules/reference/script-no-side-effects-in-computed-properties.md",
+      "id": "script/no-side-effects-in-computed-properties",
+      "originalJapaneseSha256": "0f802e07c9d55fcce3145e43beacb4395f88a1df5ba6f02709f4cd4c25bb8744",
+      "originalEnglishSha256": "ea7463ca8e8c7f69548d954183b8927a576dcb669c0288d5cd1e09a916b3e47b",
+      "wholeCodeSha256": "62b7d0c08f1e1cbcbbdc8e8d3ff959a5dd74f3694a85eb678c4d5f3548b7a495",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-top-level-ref-in-script.md",
+      "englishPath": "docs/content/rules/reference/script-no-top-level-ref-in-script.md",
+      "id": "script/no-top-level-ref-in-script",
+      "originalJapaneseSha256": "5cdd82b3bc20fd9e7ce2c24c8f997eeabe48ed8c7bf212d70c13a955027cebc6",
+      "originalEnglishSha256": "b455c1f72863b614526ff9f88792bf196626ce5cadf244dbfcb446b192cb57ba",
+      "wholeCodeSha256": "9759ae8b50ca5d4ce4cad42bc8e02305f312edaebc9a74688f0b97d17889f39e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-unstable-nested-components.md",
+      "englishPath": "docs/content/rules/reference/script-no-unstable-nested-components.md",
+      "id": "script/no-unstable-nested-components",
+      "originalJapaneseSha256": "64f7d71d5575b6940ea40c90fdf5e85ed5c3825627fa0b2b309b140ffe6f343a",
+      "originalEnglishSha256": "90cf0c16026839c3b930dfc8370cefef05f18406204abc909b4c9fd6ba609048",
+      "wholeCodeSha256": "5e649688ef94b8537455a7b78ed81a3e69c60a6fde4dea351e708d0ad1cabeef",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-unused-emit-declarations.md",
+      "englishPath": "docs/content/rules/reference/script-no-unused-emit-declarations.md",
+      "id": "script/no-unused-emit-declarations",
+      "originalJapaneseSha256": "de2765ef205e4bab4ade5e05acc80da2d2aea456c01298208367abcff00f9275",
+      "originalEnglishSha256": "134823a297bcd64f02783b210b46dd20c90605284ac952be870d46a0a37b7f43",
+      "wholeCodeSha256": "a5968cef98208751d27d0256903e6fe1e758f5adb30f3f076fa98669ef20ebc4",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-use-computed-property-like-method.md",
+      "englishPath": "docs/content/rules/reference/script-no-use-computed-property-like-method.md",
+      "id": "script/no-use-computed-property-like-method",
+      "originalJapaneseSha256": "1e631eed94b96a8af6ae93b46b78456f1be3804e41fcc5f44ae5e7995e61c6cd",
+      "originalEnglishSha256": "7274aaa35bb3f92e7b247c0ee96eb651306eca7a23f96ce2eb8c58f05c42c150",
+      "wholeCodeSha256": "92fa721e2e419d3e25eb5dfab98020db0e8d8abaa0f3c73866373fe3e79c1b83",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-no-with-defaults.md",
+      "englishPath": "docs/content/rules/reference/script-no-with-defaults.md",
+      "id": "script/no-with-defaults",
+      "originalJapaneseSha256": "a2d2ed4494146bd1d8f5f49b8a470232db231390d6482aafb933b473e9e65fdb",
+      "originalEnglishSha256": "3738adff3d09bae5261a7313b02917eca5b1d3a00ae3577e9a2b764822de2d79",
+      "wholeCodeSha256": "e93ba7ca3d5807995643fd4f5a1eddcea050ed493eca1f9a21bf9d82459335b0",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-prefer-computed.md",
+      "englishPath": "docs/content/rules/reference/script-prefer-computed.md",
+      "id": "script/prefer-computed",
+      "originalJapaneseSha256": "f8392d107c7a363aa90a259787b6dccda1afaeae20dbd784f669023c69054307",
+      "originalEnglishSha256": "4381f3d858b549f28c421486721b869f8213416bf34a60a991f03768587b8f05",
+      "wholeCodeSha256": "bf29483b26fbba28c2b3e9f48938c7268aa2fabf343bf956eeed1a50fe719cdf",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-prefer-define-options.md",
+      "englishPath": "docs/content/rules/reference/script-prefer-define-options.md",
+      "id": "script/prefer-define-options",
+      "originalJapaneseSha256": "6bec313753ee837b74ec2dbec743d842c23e75c35f21b1aa9e8a795c1ddfe2ca",
+      "originalEnglishSha256": "2c35f27496bc6a3656d8a64f4409320d3f91388e0774bbd55afaa10e705b8816",
+      "wholeCodeSha256": "4f44c99d31ee37f89e471ccb1790525af63e886c20f4f3ecdda0641d0551764d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-prefer-import-from-vue.md",
+      "englishPath": "docs/content/rules/reference/script-prefer-import-from-vue.md",
+      "id": "script/prefer-import-from-vue",
+      "originalJapaneseSha256": "9e5fb9dd1e4144b608fc44b71e2e995a5aa1680552488039e2647ea9d7c992e2",
+      "originalEnglishSha256": "02f667617b4e8247c47fe57e679af0a5ed8702eac48e1e9362f7982692533ada",
+      "wholeCodeSha256": "b3a7932a0fa21f7786b9660ada45f3d6db6544b85696c7fdaf0515db338b8ce8",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-prefer-ref-over-reactive.md",
+      "englishPath": "docs/content/rules/reference/script-prefer-ref-over-reactive.md",
+      "id": "script/prefer-ref-over-reactive",
+      "originalJapaneseSha256": "8b939f7313f3a3997898ae3a1205915a124c73adead9a548ab26349780ec5caf",
+      "originalEnglishSha256": "2434e2552a61dbef19e852d5acb5094468d7ef7edf07ad26a8328b244332e765",
+      "wholeCodeSha256": "db99a437df34e6c452d9aba36b8a628b21147cd04f4e315e9e74017fd963b129",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-prefer-use-attrs.md",
+      "englishPath": "docs/content/rules/reference/script-prefer-use-attrs.md",
+      "id": "script/prefer-use-attrs",
+      "originalJapaneseSha256": "5d42d206a4c2c8afee3a8dba2e302768fb7ca72d1257ef569df8dd3d23f0a2f8",
+      "originalEnglishSha256": "01dc4f94807bfae15e54db9a27e1147756a82a9fa2a75808ea23b464acf00718",
+      "wholeCodeSha256": "09c80331cd0301b72c5f8ab3e4a1c310f19422cf1ea90cd3b9f60cfb4891f037",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-prefer-use-id.md",
+      "englishPath": "docs/content/rules/reference/script-prefer-use-id.md",
+      "id": "script/prefer-use-id",
+      "originalJapaneseSha256": "3f544abef43cc992bfeb8661e6fd3ad2f1503acfef9d207074784d3d9ac6ecc9",
+      "originalEnglishSha256": "d97ef2ba6ead110bad70153db378bb249a4702e466ae1bc2b260b9ee63a6809e",
+      "wholeCodeSha256": "2fca89a143e419540da731944596545bc3ad05ee0bffbfdf25ff029d4c9a330b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-prefer-use-slots.md",
+      "englishPath": "docs/content/rules/reference/script-prefer-use-slots.md",
+      "id": "script/prefer-use-slots",
+      "originalJapaneseSha256": "db79b8445d46df3ed46053d56f704e57bba43433d4bf95ff3f38ca19f8345d6d",
+      "originalEnglishSha256": "3687498c67f5c627aad19fca17fd781f3e19fae326fb468b3f114e5aac8fdb16",
+      "wholeCodeSha256": "1e217765056636431aa8fe14d5ec162ea8f626c758708ffc93716e935950ed5d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-prefer-use-template-ref.md",
+      "englishPath": "docs/content/rules/reference/script-prefer-use-template-ref.md",
+      "id": "script/prefer-use-template-ref",
+      "originalJapaneseSha256": "6f27d6785691ad8d3ed5b412d40b61887b6daedd3067658a5d66ff583fe5b1bb",
+      "originalEnglishSha256": "7a4b7cdcdbf62a9c356b689d2ce6557b8b0768c9764aaa8b59a4528a71ba952d",
+      "wholeCodeSha256": "d2e43b6cc38bc551130ef30eafa12b5dce75c27852edc48d627ccc8568b2d0f6",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-require-default-prop.md",
+      "englishPath": "docs/content/rules/reference/script-require-default-prop.md",
+      "id": "script/require-default-prop",
+      "originalJapaneseSha256": "cf34368ee8b5a9db31c75f6eb6d6ce4d3e8b4fa1e776b8708570307d16f46619",
+      "originalEnglishSha256": "70702a4ed1d483706142725b413ee1ca11e0b1f3f3aea3c7e2226cbf6eb38a26",
+      "wholeCodeSha256": "dbdc24a0e8d213bbcc5bd1df48a9e81589e696d4b4dd0d415b7b6049e32b766c",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-require-explicit-emits.md",
+      "englishPath": "docs/content/rules/reference/script-require-explicit-emits.md",
+      "id": "script/require-explicit-emits",
+      "originalJapaneseSha256": "40e982e977776cd3934e6d42a714c2795ad37b1e4ace0391a075d7ccbb9d9d2e",
+      "originalEnglishSha256": "8ec22b35e9ce462a8d56e43ad6f4b551a67e00ca37e2f2ce9cafb67e53938c1b",
+      "wholeCodeSha256": "c88c89329ec1c706562c8cb72d05e2c9c314abb5ed9e30eab530ce1047a2ee54",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-require-explicit-slots.md",
+      "englishPath": "docs/content/rules/reference/script-require-explicit-slots.md",
+      "id": "script/require-explicit-slots",
+      "originalJapaneseSha256": "4af691fd3221aa7fe7b5b3f51f723f97e5bf6c5e9b578ddf05f173751a2955bd",
+      "originalEnglishSha256": "f485449fc83a9b7d6a53df39024b4f13764a0b64b5fd9224391725aad83f6711",
+      "wholeCodeSha256": "26e7c6bf5f986b8387e6bfea8145de9b46c99caf3db3292f513d5cc829c76a8f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-require-function-return-type.md",
+      "englishPath": "docs/content/rules/reference/script-require-function-return-type.md",
+      "id": "script/require-function-return-type",
+      "originalJapaneseSha256": "78d87ef4a65cd308c275ec7f21cf2ec48b52ec8fc3ce6e19b2ab5269a76d46ba",
+      "originalEnglishSha256": "187b186d59358ac26f11200149dcab52cf57266be392da747dc59e9f2c7a8240",
+      "wholeCodeSha256": "4e8b8518c133dd3862207a6040fbbb36b150004fe23ef13ce34aa2be022f8a17",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-require-prop-type-constructor.md",
+      "englishPath": "docs/content/rules/reference/script-require-prop-type-constructor.md",
+      "id": "script/require-prop-type-constructor",
+      "originalJapaneseSha256": "47f546737a5c4f5ab7b2aa5538e022ee8d255f9a673620ea6b9faa39b0727558",
+      "originalEnglishSha256": "5b6ef9a00376d0f2cfe25927326f45fc3cdad93a9b04fa9ec4f62360fa878dfe",
+      "wholeCodeSha256": "d1c95adf547196a9c7c63bc7a3dde21ef2e48ea54af3a2761019cebfc0437fa3",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-require-prop-types.md",
+      "englishPath": "docs/content/rules/reference/script-require-prop-types.md",
+      "id": "script/require-prop-types",
+      "originalJapaneseSha256": "8a1bf5510ee8b07f1af1a8749d7155793b2a8faf8895a9452a7954f2cdc781bf",
+      "originalEnglishSha256": "944b437aab8f179a62f6a1a2f2a8055b665bc91f764b54cb5ddba3e4a368741f",
+      "wholeCodeSha256": "2f90abf15f492bd85044ec7b5c5d73952c6e54c6b5b6e4dadd6b38c0267fd52f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-require-symbol-provide.md",
+      "englishPath": "docs/content/rules/reference/script-require-symbol-provide.md",
+      "id": "script/require-symbol-provide",
+      "originalJapaneseSha256": "3a14026a6157d65de5e4576d4fb0b3e5f5f77e871ebc0aa859502efb44146822",
+      "originalEnglishSha256": "201704ad2bf4c8494bb0531d252f490032ebfa054bde61e8a9cfb3acd3dd31c2",
+      "wholeCodeSha256": "a6a3abfbc2c4b0e27fb36b8fb916a540d35572b4b6ee65c7625c18f34a5920b1",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-require-typed-object-prop.md",
+      "englishPath": "docs/content/rules/reference/script-require-typed-object-prop.md",
+      "id": "script/require-typed-object-prop",
+      "originalJapaneseSha256": "8627fecc767c45f29356efdff7e69417a33c2c5bde838e1175fa4a7d2bba3670",
+      "originalEnglishSha256": "78f4595fcdfc831b6a8e4457b25551a6ef3799cd4011b9e636c7330d2326112a",
+      "wholeCodeSha256": "0e858626d3acb514b595b362da101426b9e762be8e5a2476823bf7ddc4918572",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-require-typed-ref.md",
+      "englishPath": "docs/content/rules/reference/script-require-typed-ref.md",
+      "id": "script/require-typed-ref",
+      "originalJapaneseSha256": "dc9d47087ef2cd3736c7429488ade9e727f6c144996de2c2000dd2108a30b895",
+      "originalEnglishSha256": "55bca531219236e87d3784ed57372571fb6a63a4e80a4d55b0b5cdf6e8250748",
+      "wholeCodeSha256": "c213b825d61e88b556aa7a81df7ecefc3560b482c90c000ba86b7c6f8dc93fd3",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-require-valid-default-prop.md",
+      "englishPath": "docs/content/rules/reference/script-require-valid-default-prop.md",
+      "id": "script/require-valid-default-prop",
+      "originalJapaneseSha256": "09da7d89b60ad2b20c8c502720289c3a898fb6aeca875b1c8f5b4a16856766b6",
+      "originalEnglishSha256": "68e342693b00c8744ff6c4e232a050e718c5c09332edb1cda1c61ae9fb48e121",
+      "wholeCodeSha256": "a7224df7d348b590333f7efa72413bb854954aaacfa7a212e4a5a7f0e20d87e0",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-return-in-computed-property.md",
+      "englishPath": "docs/content/rules/reference/script-return-in-computed-property.md",
+      "id": "script/return-in-computed-property",
+      "originalJapaneseSha256": "3ee1cf1d50fe192d27a66d84b5fa92d430711759c50d911ef510e9eefd8100f7",
+      "originalEnglishSha256": "9fbc5da94259ad0325e4a0fea341b3417311268f650a54ad213aeaf3fb41583f",
+      "wholeCodeSha256": "2bdf1aa88514cd7bd933dd487fbd68f4a0ee63d0a6e7a5a93ef1a897b4fe3eb0",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-return-in-emits-validator.md",
+      "englishPath": "docs/content/rules/reference/script-return-in-emits-validator.md",
+      "id": "script/return-in-emits-validator",
+      "originalJapaneseSha256": "9748febaf11765ef47a14820a103f2e2e22525b0d5ed7dbf73dd834c4f9247b2",
+      "originalEnglishSha256": "db60cfb7a077c56d6f8b35e200463fa3ac9dfec05f8b75c65ed004f1e5ef0221",
+      "wholeCodeSha256": "25020207c956f0cefc46bddc9633fe3481b76eeb3757233978d443f7d0aebefa",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-valid-define-emits.md",
+      "englishPath": "docs/content/rules/reference/script-valid-define-emits.md",
+      "id": "script/valid-define-emits",
+      "originalJapaneseSha256": "87c8d782488f36408ab7ddab76efc049adcddaee60fbb243fc837b94ea2b7479",
+      "originalEnglishSha256": "c1609cd0f9aafd622c2507d9cc0bad89f2c1b4a7c0176ae0c58431cb4bf99f9f",
+      "wholeCodeSha256": "b67e87228c28661b5d9fbbb9697f16a65139fb3d456a736e88b8fd7f47fd1554",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-valid-define-options.md",
+      "englishPath": "docs/content/rules/reference/script-valid-define-options.md",
+      "id": "script/valid-define-options",
+      "originalJapaneseSha256": "327ab5fd607f8a95a9ac33451518a36fbfc22373ea955cbfef6cb28527f7df6f",
+      "originalEnglishSha256": "5feffb348ecb8a0e724232be6b95c2136b4b7f2efc7c4d455c1891609f678c44",
+      "wholeCodeSha256": "af9f0db0d420cd83a530da61b216650f437070eea344f45d67d91e71ddb1bf95",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-valid-define-props.md",
+      "englishPath": "docs/content/rules/reference/script-valid-define-props.md",
+      "id": "script/valid-define-props",
+      "originalJapaneseSha256": "6569464010710a1621d4cb0e243a364a5dbbe3651daf689a436506f14a6a0924",
+      "originalEnglishSha256": "1edd138c62962d5d4c7a227ec0ee64c7e6490f362c7a73bfa4447dfe33e0894d",
+      "wholeCodeSha256": "97fab2cdcf3a561186f9f74d8cb448ada3d75908b767156f2138377a2c0df6fb",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/script-valid-next-tick.md",
+      "englishPath": "docs/content/rules/reference/script-valid-next-tick.md",
+      "id": "script/valid-next-tick",
+      "originalJapaneseSha256": "c87338813ba120c48f905cca18bf581a0d9bb2a165d0b2fe690236a09619ebf3",
+      "originalEnglishSha256": "3ff36a5667f7c2d58e935c3a707273b34a9063dc1c1d4d426b65490bdcfe4748",
+      "wholeCodeSha256": "d4683cca22fd94c1a755e9daacadf82b9a4be27a72c6f724c24c9116d713a99d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ssr-no-browser-globals-in-ssr.md",
+      "englishPath": "docs/content/rules/reference/ssr-no-browser-globals-in-ssr.md",
+      "id": "ssr/no-browser-globals-in-ssr",
+      "originalJapaneseSha256": "3df072a09541cac512792be3c708b822be7012abbbb283f7815ece43aa67aa48",
+      "originalEnglishSha256": "4bfb6bdff487ee257229d6d2edb78d425b8c3c3b15535bfad9c91b70841b37d8",
+      "wholeCodeSha256": "1ebc96c27fb5d4e9367c5c93a97ea4141a5d3aef89cb87663cefc8ed76fa85ef",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/ssr-no-hydration-mismatch.md",
+      "englishPath": "docs/content/rules/reference/ssr-no-hydration-mismatch.md",
+      "id": "ssr/no-hydration-mismatch",
+      "originalJapaneseSha256": "3e95298d119038b648a94dc947c564b59ac01d64f88c006e9fecf8fd959d2448",
+      "originalEnglishSha256": "925bb28de6c35d4713da2c82d08f6e2db01d87784928697a656b25b6633221fe",
+      "wholeCodeSha256": "cb24a8fc76f1407e043ff3ba5e2a1bc60759f3b05a0c767100279156ecb94959",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/type-no-floating-promises.md",
+      "englishPath": "docs/content/rules/reference/type-no-floating-promises.md",
+      "id": "type/no-floating-promises",
+      "originalJapaneseSha256": "099b982ccb38ddb42e6cfcaa1403f14181c464d97b8e4cc9b751e6f8df51715c",
+      "originalEnglishSha256": "2e431ba14cb9630950a179cfe8d5b07004c41924d518e8e7a66e6a601f252756",
+      "wholeCodeSha256": "11cb3000fa61f85485bd02e89e8f1d4d7844ae9da690bbab2ad2f33a22918d70",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/type-no-reactivity-loss.md",
+      "englishPath": "docs/content/rules/reference/type-no-reactivity-loss.md",
+      "id": "type/no-reactivity-loss",
+      "originalJapaneseSha256": "4a8cbbc1759ab4707d330b4325e4a1c13cb8a2b49102f3d1e3d1dbbc643433ae",
+      "originalEnglishSha256": "3cc93da6e7058d2dad11b76ee70a8f9f49f08e0657430e63ba6838f293394c30",
+      "wholeCodeSha256": "3313231c06416ea961dcbb9a6c2bb20e06e8afae0770a945de12b13ccf8a54cc",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/type-no-unsafe-template-binding.md",
+      "englishPath": "docs/content/rules/reference/type-no-unsafe-template-binding.md",
+      "id": "type/no-unsafe-template-binding",
+      "originalJapaneseSha256": "ff9f10ff8d633e4d62ee9150fe8381d20a2e82cf86fd56db011c5ce9ef6a0c43",
+      "originalEnglishSha256": "dbdae217393dd0587308b1c92f52bafdcf1177191ed02e22de03ce376903dca4",
+      "wholeCodeSha256": "d27b7179edc62cd3f14d31237ee3d94b6654945b8ff0bbb450a0d157824bc431",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/type-require-typed-emits.md",
+      "englishPath": "docs/content/rules/reference/type-require-typed-emits.md",
+      "id": "type/require-typed-emits",
+      "originalJapaneseSha256": "6f847d05520665f0f3d3824bb638716bcee71acbad6f698b32cdc18570b95428",
+      "originalEnglishSha256": "582d0ccd865f8b2788b72b387e79a45626b158d4cdbf6df3ed3a1a64f563d655",
+      "wholeCodeSha256": "7e49eb572b457d06b5d8ff71cf3468cdfd931d23ad0773e54101b4d72c3f769a",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/type-require-typed-props.md",
+      "englishPath": "docs/content/rules/reference/type-require-typed-props.md",
+      "id": "type/require-typed-props",
+      "originalJapaneseSha256": "a037ad37de10906e5e6a1595a33bff7b0bf29d32b24c8bd702be7a24dd92c3e9",
+      "originalEnglishSha256": "604e2598a703e96f6e9b03e7fd1a8b46aa6282d558adae97e65da092aa3df974",
+      "wholeCodeSha256": "523fb68d15221f6472553bb58028bb49cce92b8c1e41737d473d5f29a47ed327",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/type-strict-boolean-expressions.md",
+      "englishPath": "docs/content/rules/reference/type-strict-boolean-expressions.md",
+      "id": "type/strict-boolean-expressions",
+      "originalJapaneseSha256": "41905f43175c1d3321c613c658bf22a5006a50f216bd6c3ab6c36e66105e8658",
+      "originalEnglishSha256": "5a21771d8997ed6ac8704fe8116214dab9f4bb2a4ae02ba79cd35624ee30ea10",
+      "wholeCodeSha256": "0979f111aaf25ebb4e2137c1c702bfaca0c6e861bbb2718a7db9ac5677b97c25",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vapor-no-inline-template.md",
+      "englishPath": "docs/content/rules/reference/vapor-no-inline-template.md",
+      "id": "vapor/no-inline-template",
+      "originalJapaneseSha256": "bc72285123405741c1eb81a18d24ac17bf7e0b79a462f395852a281173c9697a",
+      "originalEnglishSha256": "70291053ceb1b694eb818ce452b689c83c96758e8f652317db2b965b0b680967",
+      "wholeCodeSha256": "c6fe4f9c0361cb421b8745ce0d8a709834a8cddecdb0031b9831dcb0ad1d9d7e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vapor-no-vue-lifecycle-events.md",
+      "englishPath": "docs/content/rules/reference/vapor-no-vue-lifecycle-events.md",
+      "id": "vapor/no-vue-lifecycle-events",
+      "originalJapaneseSha256": "a98274b712ba78e9663e7d81e123cf273b4005e4f20dbe11f8a59bab2f6d4506",
+      "originalEnglishSha256": "0a8f9dff6a5321e6edbb379025cd8ac430bd541d9532f49129bbb09c3b284315",
+      "wholeCodeSha256": "7263dc3133e2e03689d55bc4a5fda4b0cb14514caa701a7a77473ecfc24d5ee9",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vapor-prefer-static-class.md",
+      "englishPath": "docs/content/rules/reference/vapor-prefer-static-class.md",
+      "id": "vapor/prefer-static-class",
+      "originalJapaneseSha256": "c69ffae3991c30f0d1de131413b407094a2c9896bfaf6b294509fd5ea2f78b05",
+      "originalEnglishSha256": "261801874dc209bd7dfcc53a345daca9bb99a4447b35d258e91edc85e34e7660",
+      "wholeCodeSha256": "a87f8e7825a751dc0aca0074a1c9abf6d0aed5f43055e93c4a61e4ffb79bc092",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vapor-require-vapor-attribute.md",
+      "englishPath": "docs/content/rules/reference/vapor-require-vapor-attribute.md",
+      "id": "vapor/require-vapor-attribute",
+      "originalJapaneseSha256": "eb90bb589770b13b33d86efda20b1aa1d1328d74b577089f8649c240456a534a",
+      "originalEnglishSha256": "6f25778240fa914f0949bb2d52db0f9bb7ccae36a65530088691d763951b97ad",
+      "wholeCodeSha256": "2db51433a214881796f7398391e7274d3825ecb223f5234a01135e7d41f8a9dc",
+      "supportFacts": [
+        "現在の対応: `no-sfc-finding`"
+      ]
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-a11y-img-alt.md",
+      "englishPath": "docs/content/rules/reference/vue-a11y-img-alt.md",
+      "id": "vue/a11y-img-alt",
+      "originalJapaneseSha256": "ace5d677d05d30c7c3e2a3fe75256c7403782deec93715df64c7e6b8dc5bdd4f",
+      "originalEnglishSha256": "bdb89b4d4dcc34a7eae3e364f64768e553dc9d0dc012963575480cab8861a319",
+      "wholeCodeSha256": "3f22a87fb5799dde0162bc9e5b14ea64f87e7a68ff1b6b3b95f9383480255026",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-attribute-hyphenation.md",
+      "englishPath": "docs/content/rules/reference/vue-attribute-hyphenation.md",
+      "id": "vue/attribute-hyphenation",
+      "originalJapaneseSha256": "9e9d5ade440575d5354209b7dfaf79c9238643c094ad98b6247b8fb0a5c3f243",
+      "originalEnglishSha256": "cace99c6701ff4200ab187cc638a3a0a3caa70074d558801b61bddd4b3d64378",
+      "wholeCodeSha256": "0ee1d948a1061d5f97e05be73fddb56ccf2de2e0f81403c80c52b3dc9272f4d5",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-attribute-order.md",
+      "englishPath": "docs/content/rules/reference/vue-attribute-order.md",
+      "id": "vue/attribute-order",
+      "originalJapaneseSha256": "e2b48dadc3cbb1116c088899f10b8e8d6b75b6d4c9bac2f717abb21e95db0d67",
+      "originalEnglishSha256": "15bf0210218f06fc5e8b10573844b5aea7b67fe6d10e4ba5aeb6f86e2ce71652",
+      "wholeCodeSha256": "822d3344b691039c2c11c83706004e9274f29f28378a2a8e38ff9ae16f48196e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-component-definition-name-casing.md",
+      "englishPath": "docs/content/rules/reference/vue-component-definition-name-casing.md",
+      "id": "vue/component-definition-name-casing",
+      "originalJapaneseSha256": "4f5d1267a615cdb3869f97bd65faf2108beb615ce2d7870884319db0b9173603",
+      "originalEnglishSha256": "47fb226add4006304a634ea3a806318a0f36a92d2a50dce5febfa7511b9e95dc",
+      "wholeCodeSha256": "eb7f7d761e290cddbc271945fa8ec02250d0486f471e0280e46732d4263dd9c4",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-component-name-in-template-casing.md",
+      "englishPath": "docs/content/rules/reference/vue-component-name-in-template-casing.md",
+      "id": "vue/component-name-in-template-casing",
+      "originalJapaneseSha256": "99db20e438f279ab5551e9be8e28ba4d0b64f7cda9b8bae77f794e446c73e736",
+      "originalEnglishSha256": "ed8d58f78be3ea07dfd3e3415529aee7086f984cb5ed18ccb825d9666ae37387",
+      "wholeCodeSha256": "7f644ad296c900ea928e86e67fbf2f60763e8f82cb77917403c3fd7edc64919d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-html-button-has-type.md",
+      "englishPath": "docs/content/rules/reference/vue-html-button-has-type.md",
+      "id": "vue/html-button-has-type",
+      "originalJapaneseSha256": "f80d3158280fba36048812aaaf07bde6d37ec5129227229e6efa42d6837a8fa6",
+      "originalEnglishSha256": "957a3bdf1fe92933895b0c3b83f5631c0387ffa76a935dd1383b8d07e1c4791d",
+      "wholeCodeSha256": "ce4a27fac1def036650ca87db7b98a82da8951cc1ffc98554f9efe20cbf16227",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-html-quotes.md",
+      "englishPath": "docs/content/rules/reference/vue-html-quotes.md",
+      "id": "vue/html-quotes",
+      "originalJapaneseSha256": "dd8072c56d11cc02476ba52d0b380243476842d8ca1e2e4d4530672cf2634bed",
+      "originalEnglishSha256": "d49cf8090ef6b27abbac376c0973440b1d15cf0c7e7ba9dd0947713bae06248b",
+      "wholeCodeSha256": "87eb3095cf969db943ce871e8ff519ef46d716ec15a7baeef2983b71ff7dc344",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-html-self-closing.md",
+      "englishPath": "docs/content/rules/reference/vue-html-self-closing.md",
+      "id": "vue/html-self-closing",
+      "originalJapaneseSha256": "7d0df5e6e43e8bcf3e6537209bdea493ee43a01e90a6798d5b021593c754c3c9",
+      "originalEnglishSha256": "8116646105a0916237c6670357f16b389d16d73ae7c668667cb874cfd5c5e999",
+      "wholeCodeSha256": "6340d95ba82503a4698e35dd5d871a5d65d6cacc5f01fdea9ec5d671725a9619",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-max-template-complexity.md",
+      "englishPath": "docs/content/rules/reference/vue-max-template-complexity.md",
+      "id": "vue/max-template-complexity",
+      "originalJapaneseSha256": "6bbf1469b637678ca239979a74a997ec06584b746d92104bcba1bcbf78be369c",
+      "originalEnglishSha256": "7dcb6c5dcd12c9ac890ccd2bc546bc223ac55fa1089d8a6739d2b7f7e150d9ee",
+      "wholeCodeSha256": "ce9a16e640646906a5b6a40a7937d7d102f18079f3113f4a7780cf7db969e103",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-multi-word-component-names.md",
+      "englishPath": "docs/content/rules/reference/vue-multi-word-component-names.md",
+      "id": "vue/multi-word-component-names",
+      "originalJapaneseSha256": "3939e211115328c98fc017d7c535148fa80dc6d445953cf8f54692f03501c4eb",
+      "originalEnglishSha256": "74c5a730343d42c1daab5638f6a3bc1d9c928ef75c7df02e2e4cd0010bcb0208",
+      "wholeCodeSha256": "ead3836dc303d0e18ae4ad7cdf0a53f1afd65e941c398509edbbda6ab915aea1",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-mustache-interpolation-spacing.md",
+      "englishPath": "docs/content/rules/reference/vue-mustache-interpolation-spacing.md",
+      "id": "vue/mustache-interpolation-spacing",
+      "originalJapaneseSha256": "2b47e288e7e5cd0478aee5abd3dc1dcab22bc725706e3a1146344fc170cd9fdd",
+      "originalEnglishSha256": "0209d21d4a3048ba55847fa86791851ae9880986c2e16ae865c2343203addc05",
+      "wholeCodeSha256": "c9682e3ccba702576ae69c2fe12046b95765a66cde33cb9776187fb41bdd1712",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-array-index-key.md",
+      "englishPath": "docs/content/rules/reference/vue-no-array-index-key.md",
+      "id": "vue/no-array-index-key",
+      "originalJapaneseSha256": "1f6a2b6b05b0b6891f5495fe5f9c713c847d7058c3e927e78c20baf434b9f354",
+      "originalEnglishSha256": "2c1657f9b53c2dc29d989f19036281b803c189bea45f80c563b740c52f5f3db5",
+      "wholeCodeSha256": "8f77e447754927f2caf808e172e127a7dc23ea2c79c39aa6e02d6a3498388ae5",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-bare-strings-in-template.md",
+      "englishPath": "docs/content/rules/reference/vue-no-bare-strings-in-template.md",
+      "id": "vue/no-bare-strings-in-template",
+      "originalJapaneseSha256": "d6bc0dd142895b49935c30d4675503cf277695c01a3ff62cb9349beff53a8f4c",
+      "originalEnglishSha256": "e8872893749fa048a137562de90439a55db9fa56cd740b6b38716d8bd2115cfe",
+      "wholeCodeSha256": "570cfb2e6cd56e89ff7998587257747ff06fa0469fda29f71427c7e9bdd23cfb",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-boolean-attr-value.md",
+      "englishPath": "docs/content/rules/reference/vue-no-boolean-attr-value.md",
+      "id": "vue/no-boolean-attr-value",
+      "originalJapaneseSha256": "9eece153a9e832f8242fea80329a85ba8f134d842f941468fc9996beb815edb3",
+      "originalEnglishSha256": "41e1c05df2260f45b224f53b394930435c366abc8b4a66f1d5b0b52fffcc31bc",
+      "wholeCodeSha256": "e4113b297823fe3ee56ec085531f9f82c1cf621365863f097d37613258412fc5",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-child-content.md",
+      "englishPath": "docs/content/rules/reference/vue-no-child-content.md",
+      "id": "vue/no-child-content",
+      "originalJapaneseSha256": "7d96ceaf97c7ca0a7ddda14eaf5ab2d1fc1ae87ef0ea3b8986885aac424a84f7",
+      "originalEnglishSha256": "38f92a812a35b76bc7a697843a9751faf928e41b1e5f0ee8adf275d58ccd0d9d",
+      "wholeCodeSha256": "ae5e31d12aca78cd3358ac919e4dd1076e271dc0819b86c51b569a9b5a790d46",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-filter.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-filter.md",
+      "id": "vue/no-deprecated-filter",
+      "originalJapaneseSha256": "95976de8e6924a97a1add682ba1cb9395a02dc545b6ae833d4b56995118c64a2",
+      "originalEnglishSha256": "a28713d53de8320ba9641e93d42db11e1822eee1c6fe6dcf6de9dfec02511328",
+      "wholeCodeSha256": "02e88675142035991cc14cd7d61ba250c8f8a9e85a5f49cabf48f81c0a805dbd",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-functional-template.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-functional-template.md",
+      "id": "vue/no-deprecated-functional-template",
+      "originalJapaneseSha256": "87f7dd2c0b1c83b94c48add7b3ba3f0be21bcbb5332d01948314a4053b888b55",
+      "originalEnglishSha256": "3e2b61fe174652ae754e03662f3e950236c6c4869565be111efc93976f943211",
+      "wholeCodeSha256": "38b0f2fbd0430e2bf77ce452b876fb671234ab2f0dedd264fcad1189af03a4ab",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-html-element-is.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-html-element-is.md",
+      "id": "vue/no-deprecated-html-element-is",
+      "originalJapaneseSha256": "36dcdcf051d1744740d7715260077d02456410af44c4a29e95b954dca871a828",
+      "originalEnglishSha256": "c6d29e09958cae6f161ea655fe8de9846e2736182bb700719bb722cb9faf6e14",
+      "wholeCodeSha256": "e5f2440be75162b007d1b28265ba656ec2afff8406f68a51e38f44620d4a7d43",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-inline-template.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-inline-template.md",
+      "id": "vue/no-deprecated-inline-template",
+      "originalJapaneseSha256": "1d1c1e42763abc2283ccbb7b806dabf78ca72af13b088c473d2dbb12853056cb",
+      "originalEnglishSha256": "1f141777736b0b090a65b736c623c6fc780ecda890a0d18fcc2a56fc109e97af",
+      "wholeCodeSha256": "846af9652536688625eb226b3852ee623794f6f776b9ec357550a698c8ed3b57",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-router-link-tag-prop.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-router-link-tag-prop.md",
+      "id": "vue/no-deprecated-router-link-tag-prop",
+      "originalJapaneseSha256": "86cfe19f5b57e7a5e34ccd1b43d10a776f99a96c43fccafff3f6d84e7f1edc0d",
+      "originalEnglishSha256": "1d41ea1d6c9416cdeb53f9d6461e05c1ce943e0c3ecde6ea50ce21aeab768689",
+      "wholeCodeSha256": "ae82efdde6f42a24358c9d506f64fc14ecbcc8374cb304649e2f9d737e433da2",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-scope-attribute.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-scope-attribute.md",
+      "id": "vue/no-deprecated-scope-attribute",
+      "originalJapaneseSha256": "8ff72af7bbd104cae133829b8963eaa9a0e120c8da603d181b61d81a011e3a18",
+      "originalEnglishSha256": "275b872bf1262d3e29863a8b306153fdf709baf45e0537cf7b9aa5985a830f24",
+      "wholeCodeSha256": "493ad564a28c4791851cdfc63e1dbee3e5728888d2f897a8f2367313f4822588",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-slot-attribute.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-slot-attribute.md",
+      "id": "vue/no-deprecated-slot-attribute",
+      "originalJapaneseSha256": "8abf5d07fbb765482a5207847738a82b6fd4454e40e87b251dde61c80ced9856",
+      "originalEnglishSha256": "dae3bbb90dfcef85fec1f63bf22ddb394e126f1fd12fc078b69bbf932d92da91",
+      "wholeCodeSha256": "cd49e1a6eb7e63504700dae61cb92441c06f9366ecffb19705ad90e26b5a697f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-slot-scope-attribute.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-slot-scope-attribute.md",
+      "id": "vue/no-deprecated-slot-scope-attribute",
+      "originalJapaneseSha256": "a9792ca47e532610311b086c751d837e55ca1183230c9f3bf31b4040909c732f",
+      "originalEnglishSha256": "0d6f943a6865818f2b362fa3d7066e42fd494ee1e5472cfc7b98abb9835e0468",
+      "wholeCodeSha256": "fa8a7608e4786f47304539480f0e41a43b21b8a333de7a0c915ac25d007c50a6",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-v-bind-sync.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-v-bind-sync.md",
+      "id": "vue/no-deprecated-v-bind-sync",
+      "originalJapaneseSha256": "c38453d8b3d2e697e2c3241f19f32e8f3f32b0518fd4d4383753fcf6821844ee",
+      "originalEnglishSha256": "b0ad09eb23ba804ebb6adc887ed88afe268bcc122a8233b8e37261220b93218c",
+      "wholeCodeSha256": "c8f3cb6f05718c1f334759b67d734a40c5f916ae93130b55db209a6142b5ab03",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-v-on-native-modifier.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-v-on-native-modifier.md",
+      "id": "vue/no-deprecated-v-on-native-modifier",
+      "originalJapaneseSha256": "1b7bc7a625a64c7a7e5aa75e21e918fdc7899ad8ff719749be81bac12f1987cb",
+      "originalEnglishSha256": "865f530b6d71a90957b3c33410dccd3f9d5b6d63e7933c6a2e76384fe81c7ea6",
+      "wholeCodeSha256": "56a32fb5536152598d02a40d7430c738eecf96df8eaf43273ed396323ca471ee",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-deprecated-v-on-number-modifiers.md",
+      "englishPath": "docs/content/rules/reference/vue-no-deprecated-v-on-number-modifiers.md",
+      "id": "vue/no-deprecated-v-on-number-modifiers",
+      "originalJapaneseSha256": "d8f5096280f00b0d595855f353a23bb84f7ca3887f64ee01ed23a99c018017cd",
+      "originalEnglishSha256": "d0be85dbb0dccf39f7d0b8a0df12bd638c17c34c78144f23301cf54a6b37f5c6",
+      "wholeCodeSha256": "1a27c5b6fde61b6d93dda136a445af775760fb1d326bc461bb9d25e9a59dfb43",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-dupe-v-else-if.md",
+      "englishPath": "docs/content/rules/reference/vue-no-dupe-v-else-if.md",
+      "id": "vue/no-dupe-v-else-if",
+      "originalJapaneseSha256": "90da3fa88ada77dfbfaeebe9676cf483a54ec90e4c9f0bd7e25c9850f653fd47",
+      "originalEnglishSha256": "2070eacf667373bd3f346a1fd018fc064b1b53358247d042821d2ffb7a540a03",
+      "wholeCodeSha256": "89d46fb123c03920e88f8810cc838a2390699459cce11902f6b85caf0f15d931",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-duplicate-attributes.md",
+      "englishPath": "docs/content/rules/reference/vue-no-duplicate-attributes.md",
+      "id": "vue/no-duplicate-attributes",
+      "originalJapaneseSha256": "a9eb3eb8396d0353bacc74fc3922df72a786b266004d0fe8fcda8b9f97bdd88a",
+      "originalEnglishSha256": "15e85b5c5cfa66628a7e91e908ead3dc6deb108735feaa439a2fbd99dc2e36ce",
+      "wholeCodeSha256": "b07519b4663f0b6d2a1cc9b35177ef7df6618e2b7c677776b337a03175f94dd2",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-empty-component-block.md",
+      "englishPath": "docs/content/rules/reference/vue-no-empty-component-block.md",
+      "id": "vue/no-empty-component-block",
+      "originalJapaneseSha256": "f9428952d26841b021c812d5bcc226b010ff72bf464fb6d74a10f4574fafe89d",
+      "originalEnglishSha256": "a9868f036ae0c4795270dded542b1e250f5492142e429a132299d8422133f0d3",
+      "wholeCodeSha256": "7b0318884844e38af612f21983a03c775a4ac06c6b6bd22bb44b6fcbf1ccbb30",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-inline-style.md",
+      "englishPath": "docs/content/rules/reference/vue-no-inline-style.md",
+      "id": "vue/no-inline-style",
+      "originalJapaneseSha256": "85e4e8a1a5853f45a033b8359ed02c410422e61286496b95cc4fb99808512ed2",
+      "originalEnglishSha256": "ee06afc75b7e696c4f4ae111531b5d57e47c1b5eb45b2ac6b4c1319f04eddf6f",
+      "wholeCodeSha256": "83a60f4de031d8d8f90012404448b5859f47367b2716950d448e52d3970e3761",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-invalid-html-attribute.md",
+      "englishPath": "docs/content/rules/reference/vue-no-invalid-html-attribute.md",
+      "id": "vue/no-invalid-html-attribute",
+      "originalJapaneseSha256": "6e303a1348ffee21d4b23a29af1cd78345f564e4c21c02072617bf9357acb97c",
+      "originalEnglishSha256": "87406e3204fc78474c7816a1568882a329baa4fc2b543d3c48e3c3a252bcda4d",
+      "wholeCodeSha256": "7148a8a4811bbfafed23046b6d0574eeb96d85be414d7fc8531972bccc0d8cbc",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-lone-template.md",
+      "englishPath": "docs/content/rules/reference/vue-no-lone-template.md",
+      "id": "vue/no-lone-template",
+      "originalJapaneseSha256": "2b33d18662999c207b37391eed8cc0273b8c9d27f0b4429d669bf26cc27fe4ee",
+      "originalEnglishSha256": "d675a910793a9679b398747da5c8f711c1fb493c7b2caff213a9868d7cffc7b8",
+      "wholeCodeSha256": "a652634eaceee1a616b7c40ecba036a7963beb3d1c78213b01909c335f32ec87",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-multi-spaces.md",
+      "englishPath": "docs/content/rules/reference/vue-no-multi-spaces.md",
+      "id": "vue/no-multi-spaces",
+      "originalJapaneseSha256": "c63a5e811dc403699bd4039387f8c7dda89017d14d5577fc748cf1f39c272344",
+      "originalEnglishSha256": "8843d1041f2c4c9e897f377c6532bf5fa7aa7a412af471aca0bb6355eb6c95c3",
+      "wholeCodeSha256": "d77b3f689e6219732e7640f56e15910ca4f8efd015ebc3259ff15a438aee7c5b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-multiple-objects-in-class.md",
+      "englishPath": "docs/content/rules/reference/vue-no-multiple-objects-in-class.md",
+      "id": "vue/no-multiple-objects-in-class",
+      "originalJapaneseSha256": "7e77f6b8340525ab86ccf856bae87e771efc2d617ade18152934b8569f7857ee",
+      "originalEnglishSha256": "fe0d51a669d7867ed86bd773c9893e40440888cd418177c7e72cd0acde9ad0f5",
+      "wholeCodeSha256": "d0c7f02fa99bbab111fb6ff13e6899d0c043c4e53dbd8d5003367899de04a73d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-multiple-template-root.md",
+      "englishPath": "docs/content/rules/reference/vue-no-multiple-template-root.md",
+      "id": "vue/no-multiple-template-root",
+      "originalJapaneseSha256": "ea80044b16543350851181b5e493dfe8c3e77f6513c8b819aaa2996249bc2faf",
+      "originalEnglishSha256": "2b68b18b3f2340977b91e6a5c380465ef53fd706c58f2fef8223deed3686ed31",
+      "wholeCodeSha256": "1979c859a57eabb713390d6eb7ade4fb74cc125bd60fc4c3e35dabfa4ce85aaf",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-mutating-props.md",
+      "englishPath": "docs/content/rules/reference/vue-no-mutating-props.md",
+      "id": "vue/no-mutating-props",
+      "originalJapaneseSha256": "902d1a760717ed7bd5ab93563d2e3d625aae5db53d8c7cf4291b59bfafc70e4a",
+      "originalEnglishSha256": "12bc05f44fed93cc9fdfa75a7ea04b4178b4c0fb2391e708a18d12ac0b49cf93",
+      "wholeCodeSha256": "415c7ae3249499ed0397836563f87f4833987034a4297b1554f85b188599e3fe",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-negated-v-if-condition.md",
+      "englishPath": "docs/content/rules/reference/vue-no-negated-v-if-condition.md",
+      "id": "vue/no-negated-v-if-condition",
+      "originalJapaneseSha256": "45ffb3b0cffc7dc1cc28bfc42712916c833438e076ea798154bd92ca3f97deb6",
+      "originalEnglishSha256": "740a64f3d754980b98d76db4706e160229bd826b8729d423cde2f9b2ecea868c",
+      "wholeCodeSha256": "9e98fff401f43d85d7aeb47387b1543e6c6015c40a7d988e91776950411c83f2",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-non-component-keep-alive-child.md",
+      "englishPath": "docs/content/rules/reference/vue-no-non-component-keep-alive-child.md",
+      "id": "vue/no-non-component-keep-alive-child",
+      "originalJapaneseSha256": "ed43001558828af543852ae6ec4b3c7d7b571bbf4505ba76ead0e20950b5c690",
+      "originalEnglishSha256": "e748c2a7d959b36989281f5d579eb38d3721d521e9036fba0954c62a2c6322c2",
+      "wholeCodeSha256": "8aec4c3c598a5e5839ba891b8519be5320a5e0759b9004d20adf292e69087b32",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-preprocessor-lang.md",
+      "englishPath": "docs/content/rules/reference/vue-no-preprocessor-lang.md",
+      "id": "vue/no-preprocessor-lang",
+      "originalJapaneseSha256": "9ee87839a1a145c6a6a8488d9fd5266d6f5b5647938759cc720a1ddbd52b0696",
+      "originalEnglishSha256": "7974965b3415225f463e2f8777ab047ee5c05ef7ec73a4cb5313873a3fc453e9",
+      "wholeCodeSha256": "d6dbadf4e81464a101c8b316d0e9317b3ff45268737b13c90751682e1680294f",
+      "supportFacts": [
+        "現在の対応: `no-sfc-finding`"
+      ]
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-reserved-component-names.md",
+      "englishPath": "docs/content/rules/reference/vue-no-reserved-component-names.md",
+      "id": "vue/no-reserved-component-names",
+      "originalJapaneseSha256": "9ae377f531490d046347573cc7b4a93a957126ff1b0d92a08f757546ff5d8c28",
+      "originalEnglishSha256": "151a721e4ea5718d39d86afdc923eba478e9ac22038ff58570d3b0f931b6b031",
+      "wholeCodeSha256": "2293b3f3be09bae406935f5af54c59114dc8430b79faa9ba4c9a673764260895",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-root-v-if.md",
+      "englishPath": "docs/content/rules/reference/vue-no-root-v-if.md",
+      "id": "vue/no-root-v-if",
+      "originalJapaneseSha256": "9dc7b406152438522ae43446b028e9071817b0e1a1211d4bd11e2359f1e45497",
+      "originalEnglishSha256": "743531de3584b762aab5881925d28bb5c8f1b0d4a6360f6f7a59eec64446b6a0",
+      "wholeCodeSha256": "fa096e4c05588103b3b88b0f823f4e98efe9fda1629ed32e33f568aa23b7a615",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-script-non-standard-lang.md",
+      "englishPath": "docs/content/rules/reference/vue-no-script-non-standard-lang.md",
+      "id": "vue/no-script-non-standard-lang",
+      "originalJapaneseSha256": "2566e73721f08341b93a9a76a7b0eb14d19e3b26e965e94026946376d86c5248",
+      "originalEnglishSha256": "3479aeafe9ea1e99203e266e53f823ce9132885580c23423f0944f29af30ff8f",
+      "wholeCodeSha256": "20cfe5dc671a5743c76f1c4ba102523277fe70ef48ac5b498e68c636dcf49f2b",
+      "supportFacts": [
+        "現在の対応: `no-sfc-finding`"
+      ]
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-src-attribute.md",
+      "englishPath": "docs/content/rules/reference/vue-no-src-attribute.md",
+      "id": "vue/no-src-attribute",
+      "originalJapaneseSha256": "76ebccbf0ca544b7b9df2e435b40942da43220d28d0e5bdfcc901833193bbeda",
+      "originalEnglishSha256": "732bde9f407c9805955fa8eb31b6085503dea4579c1710b2d0a3989e31651a20",
+      "wholeCodeSha256": "4732880e7bdcdb44a50124e90ebd3e80104e461953efc2d7c710ce4c5fee288d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-static-inline-styles.md",
+      "englishPath": "docs/content/rules/reference/vue-no-static-inline-styles.md",
+      "id": "vue/no-static-inline-styles",
+      "originalJapaneseSha256": "f09ed2396f9b210c59a01b2bf81a45cae3c16219339d96807122fac1a3bc6511",
+      "originalEnglishSha256": "e902cc54c16abdf659faabc203b997df11746499918d93cb242b7ec17a03da57",
+      "wholeCodeSha256": "a120e9d8a6b41d546a72273f130b4776d1a50519f116c1d54dd385b2e661358b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-template-key.md",
+      "englishPath": "docs/content/rules/reference/vue-no-template-key.md",
+      "id": "vue/no-template-key",
+      "originalJapaneseSha256": "701550aee4bc874f4642aa823ac46781d014043b2b674162ff2b793844636dfc",
+      "originalEnglishSha256": "325d4233774f3c995e158807e16d8665861f823cdc830eee65b3a41a7f0a89c0",
+      "wholeCodeSha256": "d2242bce4752842d9b8a093d7c7f77df07866f0ebb87fc7100b05c9af7d3b916",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-template-lang.md",
+      "englishPath": "docs/content/rules/reference/vue-no-template-lang.md",
+      "id": "vue/no-template-lang",
+      "originalJapaneseSha256": "da7b24913ce8a315f3889fbbfdb8a9cfebe69ef8f86b27d686dede8e0ff61b05",
+      "originalEnglishSha256": "5eec4e0fe0aa01c1491aa182edc3140a5c09a2c228c200479a54b78afaaf4764",
+      "wholeCodeSha256": "796cf4c1c40c3cfa7791dca9b5ec48362eca7a09f6a08db6b6ad46e24b8d6912",
+      "supportFacts": [
+        "現在の対応: `no-sfc-finding`"
+      ]
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-template-shadow.md",
+      "englishPath": "docs/content/rules/reference/vue-no-template-shadow.md",
+      "id": "vue/no-template-shadow",
+      "originalJapaneseSha256": "98f5d3f9417236d31fa4cc49d35760a3f25b2f70cdabe841a4f583ac046fa2af",
+      "originalEnglishSha256": "a70f243c368ccf90bdc16961fc7ab15896cbbba42f1ba37cd5a073e9f46dc28d",
+      "wholeCodeSha256": "140cf6edeb18e32c15af148cef57e016f83182e06ef9e16fac5212a6f888fad0",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-template-target-blank.md",
+      "englishPath": "docs/content/rules/reference/vue-no-template-target-blank.md",
+      "id": "vue/no-template-target-blank",
+      "originalJapaneseSha256": "bd588a58fe6ccffd2d747857adc65c4fe2d23959ce08ab08185dbdd953b13b5f",
+      "originalEnglishSha256": "7f54f50d9f164c4565a83ca04c450f92eff79445ae2c99f9de614ef36e27a1fa",
+      "wholeCodeSha256": "518a402ab1c46069335472193ab647ac77eeaa7f61bf7889e31a1ee36142cc7a",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-textarea-mustache.md",
+      "englishPath": "docs/content/rules/reference/vue-no-textarea-mustache.md",
+      "id": "vue/no-textarea-mustache",
+      "originalJapaneseSha256": "ce8979497d0638214888d62a95b3373948c10a2d465864c7d66eaeb367c8016a",
+      "originalEnglishSha256": "92b61df60b882c90eb74ce3a1d86895528a17ee6eee9d055aa0fd9be6598bade",
+      "wholeCodeSha256": "57acb41605feafa9c11dad3520f3181c390deb52a909d73eb1de08d8f3b92a42",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-undefined-refs.md",
+      "englishPath": "docs/content/rules/reference/vue-no-undefined-refs.md",
+      "id": "vue/no-undefined-refs",
+      "originalJapaneseSha256": "dfe48c07df2e77e3e03d49cb0a5254d0f6129161990b600944f572e658200209",
+      "originalEnglishSha256": "628a22bd450b82983cd426a83c569b41463196c85031c5f0a0f5cba7a1782515",
+      "wholeCodeSha256": "e31989d24957dde7e068043bb2e7de3124c8a00ab6e267aabdcce373ad2ff6b5",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-unsafe-url.md",
+      "englishPath": "docs/content/rules/reference/vue-no-unsafe-url.md",
+      "id": "vue/no-unsafe-url",
+      "originalJapaneseSha256": "75c54d6ad08476f41754d8f2f46db607987ea37e19589fcd12600d77c73a1990",
+      "originalEnglishSha256": "b603b1e4385cae0d5006bb25132e2b775d3d75129c53297277b1d5c76bf446f2",
+      "wholeCodeSha256": "68d721124972c3baa74417e907008eaeec2edc427502e5ae0baaabced7eb884a",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-unsandboxed-iframe.md",
+      "englishPath": "docs/content/rules/reference/vue-no-unsandboxed-iframe.md",
+      "id": "vue/no-unsandboxed-iframe",
+      "originalJapaneseSha256": "cb9030295fb80e420c602d64bee4adfa7431a1feb54a6b79d5addbb2e0e7b6c9",
+      "originalEnglishSha256": "3ee2fcae9b7f3df4102cb8955ee45bc6b01a0c4c83a74754bf522db6cde0f1ef",
+      "wholeCodeSha256": "71750df49b88e11571e7751b496f6882b573a2ea25fd1c7b27220a47a31fe0ea",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-unused-components.md",
+      "englishPath": "docs/content/rules/reference/vue-no-unused-components.md",
+      "id": "vue/no-unused-components",
+      "originalJapaneseSha256": "e359f0076de35c41be73d9420eb3a0c0e230e0fbf2488d840a0eb272f2bfccaa",
+      "originalEnglishSha256": "05550824038a9b2cf0557f31de3077b861dc44b17ff00928240db7adde63d147",
+      "wholeCodeSha256": "5b57abe3147811b02931d05403218128c656a321af6f25219b8a4acf933ea234",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-unused-properties.md",
+      "englishPath": "docs/content/rules/reference/vue-no-unused-properties.md",
+      "id": "vue/no-unused-properties",
+      "originalJapaneseSha256": "a3b7984584b86543a3f4cc644adc55a16b394e5fbfcb88c91f08fc079854557c",
+      "originalEnglishSha256": "75110d1cd93b624be9f9e52bb5bb7a75abbe809f31516cb9caa11d80f977b6b9",
+      "wholeCodeSha256": "5bcc320124a6d1822a9291178b9060ed6c36d92faf337ca7b884bcdfb79dfad2",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-unused-refs.md",
+      "englishPath": "docs/content/rules/reference/vue-no-unused-refs.md",
+      "id": "vue/no-unused-refs",
+      "originalJapaneseSha256": "1d6a9103dcccfec763d404a5c7e5c7f4a465ca6dec45348c1a38b08b1a333278",
+      "originalEnglishSha256": "a73607d182f1dbe23f134c08390fbb9b7dd95ed0c2995f935fd7d6f61fb5cdb2",
+      "wholeCodeSha256": "f010dea73460ff9f3f9be149f68a8db82749a2405d77fb1b859724f1b2651048",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-unused-setup-bindings.md",
+      "englishPath": "docs/content/rules/reference/vue-no-unused-setup-bindings.md",
+      "id": "vue/no-unused-setup-bindings",
+      "originalJapaneseSha256": "54fae171e0cf9dde97ac0fe4ab469f90ae32e6a902c1de8a5bbcfc938f0b3a05",
+      "originalEnglishSha256": "78f9ecc29f06a06f7e8110d7af3a08c79aa1139b4f99c00d2165068cdcd71f73",
+      "wholeCodeSha256": "86c80df0fb4eaa2bb330f891a7c472bc44246d0306a72340957875535efb03bf",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-unused-vars.md",
+      "englishPath": "docs/content/rules/reference/vue-no-unused-vars.md",
+      "id": "vue/no-unused-vars",
+      "originalJapaneseSha256": "9682eab3f8dc6bd0885e37fd04e6dcfc415f881ae46c09b32fff40862eecd95b",
+      "originalEnglishSha256": "46d821a8ba8331b1cdc1911dd52bde5779003f7c17bb8bef99596d2e78c2daf3",
+      "wholeCodeSha256": "066123385aa1c55a4442c756520859966a01a281860727a22706373c1135675d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-use-v-else-with-v-for.md",
+      "englishPath": "docs/content/rules/reference/vue-no-use-v-else-with-v-for.md",
+      "id": "vue/no-use-v-else-with-v-for",
+      "originalJapaneseSha256": "0d75bc4b1e26023412dda6d07521cf07fd7f4ff1187467f49c678f669569c954",
+      "originalEnglishSha256": "8a90c559a6680fd258cfa86410859aa62b88a08f67c26a5cfb58afd9ec6fef9e",
+      "wholeCodeSha256": "7227442b345bf796549410174a3893d5ca6ed2840a44ec3e8f62229eac553cae",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-use-v-if-with-v-for.md",
+      "englishPath": "docs/content/rules/reference/vue-no-use-v-if-with-v-for.md",
+      "id": "vue/no-use-v-if-with-v-for",
+      "originalJapaneseSha256": "0742875d1c3c897d379a23d19cb43788fb8722c7c11a36b0fc2547072852cf95",
+      "originalEnglishSha256": "a489b91eec456091b2b1b65e1e6752da2aabeb37384541129cb5978c35946d83",
+      "wholeCodeSha256": "95528e4986fdea2a4436f8badeb8ab732fa7b7ed0a9c620411bc3898c94d9a59",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-useless-mustaches.md",
+      "englishPath": "docs/content/rules/reference/vue-no-useless-mustaches.md",
+      "id": "vue/no-useless-mustaches",
+      "originalJapaneseSha256": "575ccde433dac1948f4475a29f66e79bff964d1bc69c8d59ed1c7c1155d33c8e",
+      "originalEnglishSha256": "6ca94409524849bbd2c3e1ca76ea701a3b6025d4f89cfc6a00c15a7ba1dd3c4f",
+      "wholeCodeSha256": "8e4b860aa3896ba4b5f1c76428d27895a0b6e08e1eb4a8bae6c1a6976568dca6",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-useless-template-attributes.md",
+      "englishPath": "docs/content/rules/reference/vue-no-useless-template-attributes.md",
+      "id": "vue/no-useless-template-attributes",
+      "originalJapaneseSha256": "83389e6616b8ddcc1eff170c73af97a484c6e24f36650b28665a362fe03980a2",
+      "originalEnglishSha256": "7852f5d5d02bc0dac94072a8c260c51f7f9a9ce926296ca775232b12a11a84bf",
+      "wholeCodeSha256": "2c3b59f87566199c6144f8c5fecca401cfa3917d6d218cf593a81c3255b0450b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-useless-v-bind.md",
+      "englishPath": "docs/content/rules/reference/vue-no-useless-v-bind.md",
+      "id": "vue/no-useless-v-bind",
+      "originalJapaneseSha256": "f26f42b3ee2eb2949834a7908a0328d7d84214b5a6dba3e8b790b2cb6036abe7",
+      "originalEnglishSha256": "94e779a46bf1f63a90022cd3c0a42e2819a942aba3a6edd34721ed376ed3d97a",
+      "wholeCodeSha256": "9efbfb141a185aba97062bf5d379c29ffa5a2248d2cdeb388b0aa5472d00140b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-v-for-template-key-on-child.md",
+      "englishPath": "docs/content/rules/reference/vue-no-v-for-template-key-on-child.md",
+      "id": "vue/no-v-for-template-key-on-child",
+      "originalJapaneseSha256": "ddd3f895df942e4b9af1679bbd08837e2034945ff5aa0a920f8fa51d00ee8049",
+      "originalEnglishSha256": "d6f2d8dee425c84998b18446577f4454b35cdfaeab8049d9ce45bf798b036bf6",
+      "wholeCodeSha256": "207178e3cf6daccd8861e8327a957769a9601f19a993687d4144a87102a3dd68",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-v-html.md",
+      "englishPath": "docs/content/rules/reference/vue-no-v-html.md",
+      "id": "vue/no-v-html",
+      "originalJapaneseSha256": "f0b71d8531f2997eb070fcdf809cdb9430eacae3cf992f09826695263feb48c6",
+      "originalEnglishSha256": "53bb8e1bbae33e275f16d01367717bf8d8dc6616a8a96020a33eefa39bbd7689",
+      "wholeCodeSha256": "db8691d8265b4190b50b7f253173c73498d54e2aee43a9048503f5f9ef631016",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-v-text-v-html-on-component.md",
+      "englishPath": "docs/content/rules/reference/vue-no-v-text-v-html-on-component.md",
+      "id": "vue/no-v-text-v-html-on-component",
+      "originalJapaneseSha256": "c9461831c13d1d64c739f792b4a583bcb15bd4b4c7f418d6fc637c02fb1a9b8c",
+      "originalEnglishSha256": "26affe5536b190902b76d7178e89c2323f24a15df3034a18513a28bf475f74ed",
+      "wholeCodeSha256": "57d124924ea68157d4c7103037bf412cd523efb63e34d301bd58b9b67172f911",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-no-v-text.md",
+      "englishPath": "docs/content/rules/reference/vue-no-v-text.md",
+      "id": "vue/no-v-text",
+      "originalJapaneseSha256": "abad6494e01d557d9f04f7774e76f22f41739777c34f7abeea051a0a31da4adf",
+      "originalEnglishSha256": "ebf6e68ee9ccfcb173264d1569a82c7f997549948a958142c38d16ddda69a86b",
+      "wholeCodeSha256": "5f867acdfcc1bc92b55d93f6f39764c8721effc4ca883b2663a81952a8673613",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-permitted-contents.md",
+      "englishPath": "docs/content/rules/reference/vue-permitted-contents.md",
+      "id": "vue/permitted-contents",
+      "originalJapaneseSha256": "ee896fc6af9c45411e37a6438d929e4c23124a7df3563c117925369f4f1c6987",
+      "originalEnglishSha256": "da4face324962225d025630a896e6abf17e200e403d463486f3849774f29cc58",
+      "wholeCodeSha256": "fcb82c5774d3fd563d1e66aadc0b82c7b84a19f7631cc44f24be30ded92cb84b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-prefer-props-shorthand.md",
+      "englishPath": "docs/content/rules/reference/vue-prefer-props-shorthand.md",
+      "id": "vue/prefer-props-shorthand",
+      "originalJapaneseSha256": "3c868c6d8c670de7b3242f36bdbac07bbb1cc0110974555260986bb5d264e172",
+      "originalEnglishSha256": "bc131bc57f8bfb7125654100cc6551fb8bc3ea3a4b88ac3e3368c7cee7de9c8e",
+      "wholeCodeSha256": "2b8371ca2425cb80ccd02a88f7c607c6c5cee19b88c7ac44af36d694d7bc9be0",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-prefer-true-attribute-shorthand.md",
+      "englishPath": "docs/content/rules/reference/vue-prefer-true-attribute-shorthand.md",
+      "id": "vue/prefer-true-attribute-shorthand",
+      "originalJapaneseSha256": "198229c25f760518badaf9df810870281e45c4f66a631cd7c13191be8b184172",
+      "originalEnglishSha256": "82ed1fe072f465d12321a04582644a918d5d4be8fbf807b3effb746d1f0f9f35",
+      "wholeCodeSha256": "a10dc24eb6ef33fe1298ae4d7611a72baa5664901fab89156075b7fb9f701bf9",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-prop-name-casing.md",
+      "englishPath": "docs/content/rules/reference/vue-prop-name-casing.md",
+      "id": "vue/prop-name-casing",
+      "originalJapaneseSha256": "9b2ba26bd0c3ce0d468b7b0727a71b7c160ffbc1ddd6d9a8e71d50003bb4557d",
+      "originalEnglishSha256": "14c29e9b7837f0d7eb3826194181a1fe530e64abf9380d45c60e40494d1adaf2",
+      "wholeCodeSha256": "fd17c488baf9c82c1226da55874d91bfd5b4aa36130608430a4925fd82c377bf",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-require-component-is.md",
+      "englishPath": "docs/content/rules/reference/vue-require-component-is.md",
+      "id": "vue/require-component-is",
+      "originalJapaneseSha256": "e11e2bef3016dbf0bd7e54208a3903399d27fc4dadd9647407305fd7d5df7808",
+      "originalEnglishSha256": "5b36c9cc75d377b5b616fdc44a03c53059ed3e9365cb506464f04b9f50f9b98b",
+      "wholeCodeSha256": "61f61da329d1505db52a7a7db94b3f88775343da22c2ff8053fd110e54cb36a5",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-require-component-registration.md",
+      "englishPath": "docs/content/rules/reference/vue-require-component-registration.md",
+      "id": "vue/require-component-registration",
+      "originalJapaneseSha256": "75f8f90ab6a6a7bd005231847ea959dcf511d7c1c6441ce2474d297a48c2e1ea",
+      "originalEnglishSha256": "cb20387693381ad7ef9cadc841e61b6279f5cf1980a405052808855146a11887",
+      "wholeCodeSha256": "cc6c570a319ef308e34af8239593122c39c6d81ce94a2958f651e7ceb748b0f8",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-require-scoped-style.md",
+      "englishPath": "docs/content/rules/reference/vue-require-scoped-style.md",
+      "id": "vue/require-scoped-style",
+      "originalJapaneseSha256": "45e0159a8e8b19f62abe98e230f77f7df843575ac9114329e0f416ebad0b8445",
+      "originalEnglishSha256": "54c75c52ba4982a12d2abd8aca1bd48a1c0687b383e48ca22a5ba848ae57f969",
+      "wholeCodeSha256": "64eedee00adbf02ab6f1e60c673a5a7fe1650de8a5697081657e82c31f48e9dc",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-require-toggle-inside-transition.md",
+      "englishPath": "docs/content/rules/reference/vue-require-toggle-inside-transition.md",
+      "id": "vue/require-toggle-inside-transition",
+      "originalJapaneseSha256": "ec710a01bd67cc56f68ab926b044d0e4cd1122fceb7b53b84c5513c91eff8e32",
+      "originalEnglishSha256": "72436b270f7d61a9693d288d3868c47840d400e51b5f373ac985a9972413945a",
+      "wholeCodeSha256": "6a13cfe6b9b5236c6871d571889886a9b5083999f9b4f9ed1f911c3a9c525a0c",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-require-v-for-key.md",
+      "englishPath": "docs/content/rules/reference/vue-require-v-for-key.md",
+      "id": "vue/require-v-for-key",
+      "originalJapaneseSha256": "1b054bc95954c738bc51e5027cc178a007f54bb4c15131d130c22117215adfe3",
+      "originalEnglishSha256": "8db56972ecbc1d6bf43259d9e006d4cbd4d18b0b261d9b22351e00fdec5f7cdf",
+      "wholeCodeSha256": "06a8a491f71cb6e0b02dc59e76d98f35a9d50fe2783566053e0e16948a7e4901",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-scoped-event-names.md",
+      "englishPath": "docs/content/rules/reference/vue-scoped-event-names.md",
+      "id": "vue/scoped-event-names",
+      "originalJapaneseSha256": "9ebe07259b35350caa7728bcb7c69eb96edfe3863512317c0b7d8b99cc5b7670",
+      "originalEnglishSha256": "c0ccb3463ca83f1157e58116841d743b139dbeacba120c05cc7cbfea7cf487bf",
+      "wholeCodeSha256": "1de72c86b4ca6361399ba78f65c71e45a5d80dc2174725fd3e1e5e7ad27d06b8",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-sfc-element-order.md",
+      "englishPath": "docs/content/rules/reference/vue-sfc-element-order.md",
+      "id": "vue/sfc-element-order",
+      "originalJapaneseSha256": "6edb61524cf88a3956e5df03e3176c19ee16e8bcabd30d7335160347ce33b30b",
+      "originalEnglishSha256": "f17a646c07173b3b0e3ad1c456e315aeed4f9e2bbbb2fb1f24fc6d1cac59d3c3",
+      "wholeCodeSha256": "9542d0030ae1f99e63ddd8f737c1736e3969a085a514d9b8bc2ccf1162cb8b7d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-single-style-block.md",
+      "englishPath": "docs/content/rules/reference/vue-single-style-block.md",
+      "id": "vue/single-style-block",
+      "originalJapaneseSha256": "eccafe43cd53ebb8f8bc9b786da59dcb0865edd80e0a0deea46b8b06d02519f1",
+      "originalEnglishSha256": "4d797c83e6e39fe15b4baf0b10ee1046bdbb053e1f8f32a4b41e4da2074e7a36",
+      "wholeCodeSha256": "5a300c341e330f8e9a6e0c4faef8d08a41ddadf978f57f08a39dcbbe75eb01a8",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-slot-name-casing.md",
+      "englishPath": "docs/content/rules/reference/vue-slot-name-casing.md",
+      "id": "vue/slot-name-casing",
+      "originalJapaneseSha256": "cb5e1dccea3577b0fb8b5af265df4e73d0b25fab299534cfc0b2fda2b7691748",
+      "originalEnglishSha256": "89347c57d7984e97052294f99157257e0b64e67259c472a0f3f43c3a3180dcdd",
+      "wholeCodeSha256": "0b5826b5140a66d73148671ae88265569c4a1968fbd1a3b96f4b26f546637c87",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-this-in-template.md",
+      "englishPath": "docs/content/rules/reference/vue-this-in-template.md",
+      "id": "vue/this-in-template",
+      "originalJapaneseSha256": "cd9d803db9db4ed9639695f1a565def65b598b7d200f1d39c2645e7ce541b43f",
+      "originalEnglishSha256": "03dde116946eac8830f686da805ae76dc9b3f503c28c70a464297710745009fe",
+      "wholeCodeSha256": "fd9c318780f54dbf17f19571e60e655a9a262e20a946cc79cc5aae23a5322390",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-use-unique-element-ids.md",
+      "englishPath": "docs/content/rules/reference/vue-use-unique-element-ids.md",
+      "id": "vue/use-unique-element-ids",
+      "originalJapaneseSha256": "c181a02638555f380dbe2a5be75b5aec6c5ed5ce413bfb4f1b48d78513f66690",
+      "originalEnglishSha256": "d4ae64252b4aa8566f13bdffbd4662c09b52b2d54775b542663edea79986fe6f",
+      "wholeCodeSha256": "e0414e36c568679e564745832d038e7218fa68ce1b40bbd0a4dd7b080577882b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-use-v-on-exact.md",
+      "englishPath": "docs/content/rules/reference/vue-use-v-on-exact.md",
+      "id": "vue/use-v-on-exact",
+      "originalJapaneseSha256": "2066745fe541eb83003522981994bf7b71f62d10d09db654c1c7c6593f13eaf5",
+      "originalEnglishSha256": "ccd1a20d86c7d09175fa5abc7c05fb74efcf0d2b9113372d99a58db0001f822c",
+      "wholeCodeSha256": "0dbc8b752226de3afec5a2038dda933ade815216bd9bcceb9c9112b70d5eef49",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-v-bind-style.md",
+      "englishPath": "docs/content/rules/reference/vue-v-bind-style.md",
+      "id": "vue/v-bind-style",
+      "originalJapaneseSha256": "b9c19985a6a646ee867a7f39322e93150d843564696f1625cc422a80b2a27f85",
+      "originalEnglishSha256": "68cdc59f82db42341033fc45a9cb0c7efa897124a074f0706103df12be5badc8",
+      "wholeCodeSha256": "dd202a7f7ee4f5ea77cc1e075f1488e49b0c37bd2b360c580d799241fd3cad08",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-v-on-event-hyphenation.md",
+      "englishPath": "docs/content/rules/reference/vue-v-on-event-hyphenation.md",
+      "id": "vue/v-on-event-hyphenation",
+      "originalJapaneseSha256": "544151988949f48a7c803039bd30da8091cb416b73078439c8043f594877d510",
+      "originalEnglishSha256": "ae4053c76b531be8b00acad2865380bed8877ae63107fa25fcd689aa7a6ad396",
+      "wholeCodeSha256": "425da8f5b1a9ad57f320b491212553f7c5af0b5786e19039e9664c3f894a34ff",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-v-on-handler-style.md",
+      "englishPath": "docs/content/rules/reference/vue-v-on-handler-style.md",
+      "id": "vue/v-on-handler-style",
+      "originalJapaneseSha256": "0c13c2136d6ade375b951f17d30562d75a7d99756f422d532daf485e83c8742d",
+      "originalEnglishSha256": "54dfc345f26b674805432a78a1014209d6aebb12005a4573cc61f6c533eaecfb",
+      "wholeCodeSha256": "ad0fc87c2da180fd955ed4fd9cea1f75dccd2ec51fc815d371e209b7aad4629d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-v-on-style.md",
+      "englishPath": "docs/content/rules/reference/vue-v-on-style.md",
+      "id": "vue/v-on-style",
+      "originalJapaneseSha256": "c79ddaf56112fdf173e0ad9a4febefc38ba0fa497ee2591ab706fe42a0a98dff",
+      "originalEnglishSha256": "3b79adeab9157cd6ccf13f46c27e9325c871ff612f0be037b9715200029b1793",
+      "wholeCodeSha256": "5bb6ae267d41ae06bfe10fb9552909f75ffb4441efcc7e21728ab1cc571d8dbf",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-v-slot-style.md",
+      "englishPath": "docs/content/rules/reference/vue-v-slot-style.md",
+      "id": "vue/v-slot-style",
+      "originalJapaneseSha256": "a78269d199478b57a0069b214753f5cbcd788310f11040dad62c9a7021f4aee8",
+      "originalEnglishSha256": "6ccf34887af2b62dd8a8879660c2f2de58dec0f41b47f90818163c66380ef258",
+      "wholeCodeSha256": "32a2db4f4f8d4be152068e448bb8e6329042af8330fa39f424dad6cf12ac64dd",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-attribute-name.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-attribute-name.md",
+      "id": "vue/valid-attribute-name",
+      "originalJapaneseSha256": "c3e423e6ca8a7e14aec4b9ec674b284ab97b64607f7b872a311fbfa74e79e833",
+      "originalEnglishSha256": "23b933e99dcf6d2ea3c78e37b7b502ee3726122f51a670a41382fd670019d203",
+      "wholeCodeSha256": "7b402ee62332a8e115e509ae4b15e6c499d1fd170c7cb9b1b868ca3a307acabe",
+      "supportFacts": [
+        "悪い例での診断: `parser/template`"
+      ]
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-template-root.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-template-root.md",
+      "id": "vue/valid-template-root",
+      "originalJapaneseSha256": "45f4c48e44a0a1215e4de17b012d2fac611dfe68ff623a9d5b57565b492e26d5",
+      "originalEnglishSha256": "fe2d68983f72dade453de4f59ef72297cf9905f033888b3a1725c47c0328186f",
+      "wholeCodeSha256": "a616d1a2fdd9ae66397a00ff18b8e6a49c24a73d15582d55000159f921add849",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-bind.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-bind.md",
+      "id": "vue/valid-v-bind",
+      "originalJapaneseSha256": "87c528b4e07dd830648700613cb774783f3f89e0041cbd3bf65cca8bd1d79ac1",
+      "originalEnglishSha256": "6d2c9281477063645a128ecec14f459e628eca09278570022c48b648d6a2a1c6",
+      "wholeCodeSha256": "9d72b4db4a10a8ebc476c92b0cf0bcb1c75953a28858096b6aa111b25d441ebb",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-cloak.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-cloak.md",
+      "id": "vue/valid-v-cloak",
+      "originalJapaneseSha256": "28c783fb6b35c4990e3ea364a2962b0f5197d5af02a4f4791938e299df4f6881",
+      "originalEnglishSha256": "1069798cc834d8ccc4fe88a445d1f1143f67b9ec2b7878788a5be13d02387c1e",
+      "wholeCodeSha256": "78d36a3000d3a7fc5d1c596dd7b39106d51795e9d3a584a4af0127535dcb8210",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-else.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-else.md",
+      "id": "vue/valid-v-else",
+      "originalJapaneseSha256": "b3b2bc31b281a67741031fb151a4faa6be290b216dae8085f8a6bf9fab61720c",
+      "originalEnglishSha256": "93894c79cc6ee48d2a8a50df775c009580490c12a151bdcdaa6e998282cfd9d5",
+      "wholeCodeSha256": "f7fbab6c6872804757c240832e003263870107e90f7bef02b88ebe6fdeff8c72",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-for.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-for.md",
+      "id": "vue/valid-v-for",
+      "originalJapaneseSha256": "9f4490500a0d111c3202e5f414eeaf45bf4001db59039e536a35e2ccff32ba63",
+      "originalEnglishSha256": "a6d7025bd383c3cd99ebe901da25560abbbbed74a2170499d1df7911cc96ab7d",
+      "wholeCodeSha256": "a74666c97025064c92352b9dae6e7c25ded8acb78e1d7278a415a3828da967cf",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-html.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-html.md",
+      "id": "vue/valid-v-html",
+      "originalJapaneseSha256": "e78d1c518305b1adb51c93c38cc0b28a8fbb52909c9258b12a83ebcdb6d8fecd",
+      "originalEnglishSha256": "060785fd0f681e3f2ee22a3382394145a74affb66364c4c031ebbb52cde320b9",
+      "wholeCodeSha256": "2327a955ed0b76bc4f35f596d8e37913935540b1a26686051eaa0849efb70e66",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-if.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-if.md",
+      "id": "vue/valid-v-if",
+      "originalJapaneseSha256": "2f4ca822aa45506a12485ee2bb709017a864bdd8e7114b913a5b4e0cb27c7d2b",
+      "originalEnglishSha256": "f3ca1dc3ddccd9fe8640033d7b58b4cfca09f2b0569e5ef23d3564659d0fe148",
+      "wholeCodeSha256": "e43a7eb5b6c7d0e2aa824ba2bea64b4ebdd979c3d780c9a44451e9796679cf7d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-memo.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-memo.md",
+      "id": "vue/valid-v-memo",
+      "originalJapaneseSha256": "c41092e0a025198710648f031ef1136be7dfca7ab8fbd4779bfa87a834d7c61b",
+      "originalEnglishSha256": "04babc360ea51abf292efc6bcc02d33c899d59ae653b0ef1ea296caf92b53b58",
+      "wholeCodeSha256": "fce35c404af4db1a9d8d570e5a29832043d0dc34fb41d8358ff7b78af59c6058",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-model.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-model.md",
+      "id": "vue/valid-v-model",
+      "originalJapaneseSha256": "2d4e50119b79319a5e7ce3e2b41b80890c3c06cbe38b26566419b8d935fdd965",
+      "originalEnglishSha256": "a500be06e1080b20526b1afe545c0cac23391b42eccfecf968b8351aedad8f24",
+      "wholeCodeSha256": "2ab855a32180c022dcb1eefbaedc642b00810ca7b4e3f59e8f22080e190fcdd2",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-on.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-on.md",
+      "id": "vue/valid-v-on",
+      "originalJapaneseSha256": "03e899dd65c4f78596e99973f0a096da90a593e67d4300c7e8c8255c4a23f1f2",
+      "originalEnglishSha256": "3574b654d478f27e3ef4b169d80100e256b12129241476506c8cb74cdab43114",
+      "wholeCodeSha256": "8a7125c4b8dc6a026e704039ff59dbd7bc271ac95722cd5c3af6ddd5991003c7",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-once.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-once.md",
+      "id": "vue/valid-v-once",
+      "originalJapaneseSha256": "276f8890a9dfb70c1f0fc98f774e6277bfe7b1290dc52e483517bb40044c1e4b",
+      "originalEnglishSha256": "b107a137d3881dc3df60c474f42d5ac9191c7cd2079ad3eb86a45ba5c8e3f15c",
+      "wholeCodeSha256": "a4d43046fa182ba58558cf8c02fa5659a16e12e39daef003c6529b6377864d2a",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-show.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-show.md",
+      "id": "vue/valid-v-show",
+      "originalJapaneseSha256": "00c58612390f794f7dc91f5344e21d7d74bdf180d720f8bc9d57a00d19beda23",
+      "originalEnglishSha256": "488f44ac7cc82b88527f6c2d7341b14f7e9f246f57e8f8863cbb55e728ae77c7",
+      "wholeCodeSha256": "842b44ab6c92681c7d574d95850afe153191caf240943e89a6b9e4c2170a8d8d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-slot.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-slot.md",
+      "id": "vue/valid-v-slot",
+      "originalJapaneseSha256": "99198780c423b6737def9e0cac488d96045f74d1befdebbd8a3c8eb16e195032",
+      "originalEnglishSha256": "c1aa78bb38a02028be6e81381c15d8c9bc2a3cac2b49fd637c9fdc8085ce9ce4",
+      "wholeCodeSha256": "ef1d097fdff2e7ce3461719fdadc3bc1d96cf2a1106dc4d075b51f12b8b3b8b7",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-valid-v-text.md",
+      "englishPath": "docs/content/rules/reference/vue-valid-v-text.md",
+      "id": "vue/valid-v-text",
+      "originalJapaneseSha256": "14b6e3d53eda9cf2e0d5da09fef1633675191f5bd5f78819f30afd89d4316dab",
+      "originalEnglishSha256": "3df5985c7f0948e2f907c16b406713e230c0fef9d4fcd3335141e074faa3561c",
+      "wholeCodeSha256": "161bd8ada3ea73d446dfba5c112d0a2a1de1b143b6c490015a6ea8182f1d257c",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-warn-custom-block.md",
+      "englishPath": "docs/content/rules/reference/vue-warn-custom-block.md",
+      "id": "vue/warn-custom-block",
+      "originalJapaneseSha256": "3986812eb1f6091769b4c182423b6fc78bcf48f329bbfd4e7be28614bd08dc3d",
+      "originalEnglishSha256": "cda1d4ffb00b983a40657f189a2814939a2cefffe68adf757488fa8a6415289c",
+      "wholeCodeSha256": "0d92b5926b80eaaf71830f948fdf6d58e0b3d342e729a4001baab829be58ab03",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/reference/vue-warn-custom-directive.md",
+      "englishPath": "docs/content/rules/reference/vue-warn-custom-directive.md",
+      "id": "vue/warn-custom-directive",
+      "originalJapaneseSha256": "3f0839c87f4ff7ee26683de8953ec4669075cd60ece4ab4eddebe900dad1afb0",
+      "originalEnglishSha256": "9f6daca6c35db3e24a2790a39913a1c021488a307c4b1bec283181ca9e909685",
+      "wholeCodeSha256": "6ec91e7f122de4df9807c3cb059b02578d2527cb4579af0b9a8e29fbefcfd70a",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/ecosystem-vue-router-extra-param.md",
+      "englishPath": "docs/content/rules/project/ecosystem-vue-router-extra-param.md",
+      "id": "ecosystem/vue-router-extra-param",
+      "originalJapaneseSha256": "71a1c60714b750daca3604380c077c1783fc3f059e906db332e48518ac702e47",
+      "originalEnglishSha256": "c9fce18aafaff0ca8886b60c44bbbfa437793bd98bf3ee93300cd9e6a4f8403d",
+      "wholeCodeSha256": "8d6c9b85a3d4036768fb52496098756eb7a34622abfb6d4043194d8c09c1cdda",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/ecosystem-vue-router-missing-param.md",
+      "englishPath": "docs/content/rules/project/ecosystem-vue-router-missing-param.md",
+      "id": "ecosystem/vue-router-missing-param",
+      "originalJapaneseSha256": "ef5cce826f3412c1a682b36fce4e7b98418aff0f3526e3508ae2f1e1d804062a",
+      "originalEnglishSha256": "8915b1c3b43ce2f1c58846fbd635a2eabcf5cd853d648ac76b5036bb22318a07",
+      "wholeCodeSha256": "8b24b7750790d4bb3a568d6d13c1835c647988248f5d8b076db31d0d06cb981d",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/ecosystem-vue-router-param-type.md",
+      "englishPath": "docs/content/rules/project/ecosystem-vue-router-param-type.md",
+      "id": "ecosystem/vue-router-param-type",
+      "originalJapaneseSha256": "93fe8eef5da37b805db984ec92578c4c33be30ea5487cb47342011e55b941774",
+      "originalEnglishSha256": "3445ca194cfb1d0b0006822577f266f72041954cd2f4d9cfc3272d5c49645ff5",
+      "wholeCodeSha256": "daa486309fa8a7700dad7542d671659603558b87f788e8fac5f78a58a5bef25c",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/ecosystem-vue-router-unknown-route.md",
+      "englishPath": "docs/content/rules/project/ecosystem-vue-router-unknown-route.md",
+      "id": "ecosystem/vue-router-unknown-route",
+      "originalJapaneseSha256": "30b32b256325a3842ce02b91dc73baa0c14e9de9a5e190a7210b3c166afc45ac",
+      "originalEnglishSha256": "76520f614e27456c5b4befa72ac61d93f335b460728aef0c159df33dc89b1539",
+      "wholeCodeSha256": "5a641255edc0bc7daf7ef8838892691a36af440be4ae3d3d525976923d1c64e6",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/html-cross-component-nesting.md",
+      "englishPath": "docs/content/rules/project/html-cross-component-nesting.md",
+      "id": "html/cross-component-nesting",
+      "originalJapaneseSha256": "665138471823bcc026dfa094eab6d41aec547517d24dad495a414dccaf7d7db9",
+      "originalEnglishSha256": "b701e1d8b9611967ec173aa10ea234f55e4a3ef9d8837a549461dfa95925637c",
+      "wholeCodeSha256": "4ab36e7ed8bf319f332341c07925bcac462bccb04591343c8b3c29b3a3927f21",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-array-mutation.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-array-mutation.md",
+      "id": "vize:croquis/cf/array-mutation",
+      "originalJapaneseSha256": "df2289aa1d77a97218226bac38efc7ab8eb35e17412dc0f610d57101b05d082e",
+      "originalEnglishSha256": "0687e565a826e873a4c6ce6f068134652cb958f19f84bd6c19c330687376ff8d",
+      "wholeCodeSha256": "b6d682fc32b30c3f2815d5be7f6213c24e89aeb99fd38d9951632a1507d617f1",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-async-boundary.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-async-boundary.md",
+      "id": "vize:croquis/cf/async-boundary",
+      "originalJapaneseSha256": "8a7f07f9d6d7e0716407fe168ceb4718c0b2f792d16ed0ae863cb57584c4e36e",
+      "originalEnglishSha256": "6e7e2fb68c96d853fff93220301e2f3a54168133ddd1fbdf1a5a837fd2fc6d63",
+      "wholeCodeSha256": "f1e2c12622ac2477e5944e3976247371ebdc4a9b1faa9b3eba30d1aef89490be",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-async-no-suspense.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-async-no-suspense.md",
+      "id": "vize:croquis/cf/async-no-suspense",
+      "originalJapaneseSha256": "c27e1c8235913cfad1240ae57411a37efcde93de5dba997cc003ee9c41c6ee2f",
+      "originalEnglishSha256": "8f6988d124aa408d30f105f5cffea90debb4e6517b8c44ac47fe5d3ba3694ee9",
+      "wholeCodeSha256": "cd5ac597b3212cb66f9f3843e4e92f5640c949bc5ad9c847b8e0bdf629246357",
+      "supportFacts": [
+        "Current support: `no-source-async-fact`"
+      ]
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-browser-api-ssr.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-browser-api-ssr.md",
+      "id": "vize:croquis/cf/browser-api-ssr",
+      "originalJapaneseSha256": "68d8e04ade80adb659a268a4b64ff03de0a51a2d467fd80b98c1d2feb3ed7df6",
+      "originalEnglishSha256": "98ed9a5e2b90729f0c7576d14875650b6cfbeec7e22dd6aae9049bdfab05dde9",
+      "wholeCodeSha256": "f779be4e73e1643baaeb7e1f5bf71ccc0da1eb2860bb9e26429d8fc63714aaca",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-circular-dep.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-circular-dep.md",
+      "id": "vize:croquis/cf/circular-dep",
+      "originalJapaneseSha256": "ead7ec9e258610fb23c42d15a5fbf63f423b1bd72fc296a3660c7fd3262af720",
+      "originalEnglishSha256": "ad0b373a00b3a46513c3055d393b6c25acff9937bfd4a347cec32738b34e4711",
+      "wholeCodeSha256": "9db0b418bdc3daa2b8b5bacb9c8bc8e345d32a7827c6798850635809fb7c4f1e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-circular-reactive-dependency.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-circular-reactive-dependency.md",
+      "id": "vize:croquis/cf/circular-reactive-dependency",
+      "originalJapaneseSha256": "4d1febceb3e0221acc3a2a79098f8d05b55df721c37d09abece05aaa670e4200",
+      "originalEnglishSha256": "a748f4cf4fd569af84960c3588e8082e5a17d6ba1a79b177a54fa2928631f6d2",
+      "wholeCodeSha256": "164e3d3f7a9d8c7d1c41db03b8cc925afb8e53c348a0eb52f8fae1331f401b96",
+      "supportFacts": [
+        "Example qualification: `illustrative-source-pair`"
+      ]
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-closure-captures-reactive.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-closure-captures-reactive.md",
+      "id": "vize:croquis/cf/closure-captures-reactive",
+      "originalJapaneseSha256": "9d944047c09089ec8980d118eb99f75a8e655e62d76070c37e3ea4550abf1ebf",
+      "originalEnglishSha256": "3cbcbfe48cd573b9ef0c0d334df8f6bc1eca8cacafef57380f40d5ee2eb61ad3",
+      "wholeCodeSha256": "a0c72f52af1af63966087ae59f627480705126b75233e7a7269788553be4ce4e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-composable-outside-setup.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-composable-outside-setup.md",
+      "id": "vize:croquis/cf/composable-outside-setup",
+      "originalJapaneseSha256": "ac57fec1d284409c073acd84b328311e4d439f3f6445f6aef6366d25e4aee0a3",
+      "originalEnglishSha256": "02daa518e9e3740269e3bf3ec6f2789e1baf8fbefa4c13f12af4c99deb28fd99",
+      "wholeCodeSha256": "3014b669c3c0832d82efaee2178bc51a1ab3b8ee125f5c219fa5403950d54b3e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-computed-side-effects.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-computed-side-effects.md",
+      "id": "vize:croquis/cf/computed-side-effects",
+      "originalJapaneseSha256": "72392e9d31f2aa16e2120152569056541797d3c8df098ebf867415736c0b22aa",
+      "originalEnglishSha256": "34e0130aaef70277d00acfa3aad80faed3f7f136c8871d92bbe1f342ab19052a",
+      "wholeCodeSha256": "54c02bdb27f2a1282ea2d0165d6f7a17f59f077392efdb3f8a704a4aa6872487",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-deep-import.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-deep-import.md",
+      "id": "vize:croquis/cf/deep-import",
+      "originalJapaneseSha256": "33c5ed65f508865c3903390d5f9e991a55bb4fa046cfa3ec2fae70b9c45f9b22",
+      "originalEnglishSha256": "e0f0e9364d9914e55fc439d17335234049249819274bd6be6adaaaca649104a6",
+      "wholeCodeSha256": "c7bf80354e56ecbce540ce8d46755ee26d96661cd0ba22c9e842c675cdb53c6e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-destructuring-breaks-reactivity.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-destructuring-breaks-reactivity.md",
+      "id": "vize:croquis/cf/destructuring-breaks-reactivity",
+      "originalJapaneseSha256": "17a92c9213c0ea11b85dac4a80f5f0a3967d6786a5d09bf8b8805f59a3a3f52e",
+      "originalEnglishSha256": "fe3576e9a6ed1b3e2b351430e0de30cf00dcb2a44cfbbb66d63affc29a5e6f93",
+      "wholeCodeSha256": "46a7690d99c6eefb9a1d5f4a708863fd0dfba0380fe9427391db2c2200ac7182",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-di-outside-setup.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-di-outside-setup.md",
+      "id": "vize:croquis/cf/di-outside-setup",
+      "originalJapaneseSha256": "0301e1da1d72cc7b5664c0ee470e5de66b0a649320bc17901a2e3a823e9d3f7c",
+      "originalEnglishSha256": "ae253c07330761576846b8d7d1f322f599c370e9ca059f97dd41cf59963c87a3",
+      "wholeCodeSha256": "628ada57506436225abe3707ec0fbbaf527cd4b21ae8827ef07b4e81a0ba6b22",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-dom-access-without-next-tick.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-dom-access-without-next-tick.md",
+      "id": "vize:croquis/cf/dom-access-without-next-tick",
+      "originalJapaneseSha256": "f32c42cf3af53d56d96ffd4d10271066199c0ad93e2392bcdff16de50715c50b",
+      "originalEnglishSha256": "e5d0c46adca51d13fb1329e7e3a150a86c2dfda72b1ba60473173bef6ba5e2de",
+      "wholeCodeSha256": "5eb36c1e2c377e981c47eea83368e695ba3d6835f26ede720169a130d877e6e4",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-duplicate-id.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-duplicate-id.md",
+      "id": "vize:croquis/cf/duplicate-id",
+      "originalJapaneseSha256": "5c1f3fc6f741749fb7fec07280c3b6a4f8ebd0ed8745aad49cd86ab28511838a",
+      "originalEnglishSha256": "89b933bb664157f0b5f472be44c36426e72b2064e31a6fee07596a773a9422cf",
+      "wholeCodeSha256": "f459f71cedcc4acd2abae3a433429b96590bbfe60f742a49221b83cd5c383127",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-event-listener-leak.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-event-listener-leak.md",
+      "id": "vize:croquis/cf/event-listener-leak",
+      "originalJapaneseSha256": "6bbc8543359b6a8a4c18a664bb0f3170c564c3cb730c42778daf44644dae58f2",
+      "originalEnglishSha256": "84344e1d7acbc3986d1fe7046476fc0dc75b3b14ef99e1f913b4ca603df41622",
+      "wholeCodeSha256": "304c1fb30681a9de1f5e27f95e7f127c4f3a2354eb6ccc87280aaf03658bf37f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-event-modifier.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-event-modifier.md",
+      "id": "vize:croquis/cf/event-modifier",
+      "originalJapaneseSha256": "087e350ea965ab79f17e689bd28d60b22582cba157381572ea62928e9cedbdb7",
+      "originalEnglishSha256": "da727ec3a55258298013f495688d04d7202f82bb8e6989d0f9391c5c1e160148",
+      "wholeCodeSha256": "1352136e449dea3bd80a651fd1a85a32d27e43ee4d0c146dbd09e5cd27ecfb86",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-hydration-risk.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-hydration-risk.md",
+      "id": "vize:croquis/cf/hydration-risk",
+      "originalJapaneseSha256": "871cd896928a232ea232b6d2c93e5b8a757cc2f02c999903b03b26f3e94dcd0d",
+      "originalEnglishSha256": "e0c836950aad37354cee10f9d664df02d597e0abad5388552e3304ac2b52fa5f",
+      "wholeCodeSha256": "e5a9aa322c60bd849222b2f55849adf9d7265863d974833faf70d63dcf2f3f8b",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-inherit-attrs-unused.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-inherit-attrs-unused.md",
+      "id": "vize:croquis/cf/inherit-attrs-unused",
+      "originalJapaneseSha256": "c7e502e7902342077cf6ab598f6a22e1ee096394564886129dbbc20761e4d75d",
+      "originalEnglishSha256": "ef8ca41cd5fe1d6133a2cdca685b1ab07eaaa706b4a29137f6f1ebdd984079c3",
+      "wholeCodeSha256": "928f7f8a3b80c0a16001313b65eff7494357af7c0d20f7503140c816a9701d02",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-inject-without-symbol.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-inject-without-symbol.md",
+      "id": "vize:croquis/cf/inject-without-symbol",
+      "originalJapaneseSha256": "896d84a19082698b35d49c07242da47b7a96f298cc1aae199516c637ff1db451",
+      "originalEnglishSha256": "a5c6841606bf53da4681d1fc8810407552110c1fc4d3583a9cfa69301046d317",
+      "wholeCodeSha256": "53f8958b37b3af6b699bf05c85db5e4751ea6b51cbad6ff0e5cf7cdba465b7be",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-injected-async-mutation-race.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-injected-async-mutation-race.md",
+      "id": "vize:croquis/cf/injected-async-mutation-race",
+      "originalJapaneseSha256": "c7e47e15bb7be61db13cc2f7877d7f6120a13b7f98472013e345f1cc055360fa",
+      "originalEnglishSha256": "fdd21163c52edeefd19c8f05492d13477ea547d357b65046deea224e2f7a416e",
+      "wholeCodeSha256": "800f9e48fb6efeb7e4786f932de4a2db76a6957fcb590dd743898290beb9d7f8",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-lifecycle-outside-setup.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-lifecycle-outside-setup.md",
+      "id": "vize:croquis/cf/lifecycle-outside-setup",
+      "originalJapaneseSha256": "1012dc23947a6724bb7ae202ee7ac2f5f1c2bb2197f22efd11410b099868d3fb",
+      "originalEnglishSha256": "939e6e8d98de00e92e4019a30518c150b52f027924b67d0677c49140bf50df1d",
+      "wholeCodeSha256": "a16348706cbb39effb7c4f3b0c558b7f71eca5df41a189ad7f97bc1677f0fea9",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-lifecycle-without-cleanup.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-lifecycle-without-cleanup.md",
+      "id": "vize:croquis/cf/lifecycle-without-cleanup",
+      "originalJapaneseSha256": "7f58696b2a55945316a73b7ebfef29dca6c7ac5dd212db0856401d84e80f9a47",
+      "originalEnglishSha256": "cfaac8905e24e2be7724e75ded61fe92f3f24db150455e36859b99391e201c55",
+      "wholeCodeSha256": "6354b17b4d70a490c0591fbd8127ffd27809f16576cf78db4f959c8b67e41d39",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-missing-required-prop.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-missing-required-prop.md",
+      "id": "vize:croquis/cf/missing-required-prop",
+      "originalJapaneseSha256": "1484ca2b5b8e13a23b14a36ec1775d4338d32c8c9dd6c7dc1864432c5df8d386",
+      "originalEnglishSha256": "86be10e266ed6af640d58f96c5ebe8722f338c651ace38c290b7c8f7540112f7",
+      "wholeCodeSha256": "406236040111977d5c2d6336d41263cf2070bc88a4014c56b5b290ce72cea148",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-missing-suspense.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-missing-suspense.md",
+      "id": "vize:croquis/cf/missing-suspense",
+      "originalJapaneseSha256": "8d21ce8420ffa6531cafa7ea8df491b674bb335bb759d3eecf4e6bae2f4f3177",
+      "originalEnglishSha256": "76edb8ae139651d5e42e68c0abd784ce4e0d0e54f92f840429c6be75fc176c37",
+      "wholeCodeSha256": "9cf532979a6d6dcd1a187e283cd0069c2dee741874030a74574484fdf86fe432",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-module-scope-reactive.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-module-scope-reactive.md",
+      "id": "vize:croquis/cf/module-scope-reactive",
+      "originalJapaneseSha256": "53cf9860c002750a571cfa773b89d4dee98e2adbebc9480eb9a9cc416af089d8",
+      "originalEnglishSha256": "b6290e9d4aacc5ea5bc9834bb1fab4198f4446f649d816748aabb490f6187f72",
+      "wholeCodeSha256": "c713688fac336a91d8a406b80b91eb3d43335ba4cbc4792c3da939eedb709bf7",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-multi-root-attrs.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-multi-root-attrs.md",
+      "id": "vize:croquis/cf/multi-root-attrs",
+      "originalJapaneseSha256": "7202cc4c97328a445ecd727232397b25d3d156d2cc4557366aba54e8781d3867",
+      "originalEnglishSha256": "205b18e82884b3126b1092160b193c726146013197484db628640220ae9725b0",
+      "wholeCodeSha256": "6856ba687242a8e3475b6115f3b398e2aecfbc6147bcbf7944732e937a462bd3",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-mutated-after-escape.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-mutated-after-escape.md",
+      "id": "vize:croquis/cf/mutated-after-escape",
+      "originalJapaneseSha256": "11706314edb04787cb76d4e8cd8821352164e9a8cea9ec525559c4dbee0d10df",
+      "originalEnglishSha256": "fb931fea5900803de7bebce723b37566afe35324e2b7a826396f7bf46734c25b",
+      "wholeCodeSha256": "afdfa961063eb6ec5255eae8872745da4eba1e9116914fe5baf141efec5fe364",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-non-reactive-provide.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-non-reactive-provide.md",
+      "id": "vize:croquis/cf/non-reactive-provide",
+      "originalJapaneseSha256": "c57c783aa42c2517d9bd1f81c58d724a3596ba1b2222dd687ef254a7dfab9cb1",
+      "originalEnglishSha256": "a430ff27fd62b668bda60d0d958fad3c11111be5a0fbd43a3d3b2217ca37f620",
+      "wholeCodeSha256": "ca55733572dfdd8873e01aeddc8e98a17f6e5eced5fc650a5cd6417f6f318d14",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-non-unique-id.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-non-unique-id.md",
+      "id": "vize:croquis/cf/non-unique-id",
+      "originalJapaneseSha256": "de0b391ba005c0045f5bb97557f9cb80e9dbff82b57570a1aa8f548c423a956a",
+      "originalEnglishSha256": "9d4b877ea6d4a92ede08940360179cdfef320de76cb5339d4b976111b4cd5199",
+      "wholeCodeSha256": "243481ddefe79bcf1171f10bca0bdd88f3e9bd08b1bfd09f4666fd040319b03c",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-object-identity-comparison.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-object-identity-comparison.md",
+      "id": "vize:croquis/cf/object-identity-comparison",
+      "originalJapaneseSha256": "7998638780f236077733ef5fba3f81b6668a94d1ff6109ae698faaf5c17a1e52",
+      "originalEnglishSha256": "1b32ea81a039a17217afc32e11f9b4e3c87002b9a3b254348b2a8154ea5ea684",
+      "wholeCodeSha256": "ebe5fcdb9b844d5636fb347b058b27f19403d9d0c038b1a5251bffb72199c613",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-pinia-getter.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-pinia-getter.md",
+      "id": "vize:croquis/cf/pinia-getter",
+      "originalJapaneseSha256": "888f6723f79ba9dd819486249c4b7900c8d5cbdf5f5c4eac39e22d87c9cd9265",
+      "originalEnglishSha256": "a5fd90ad14a10b287c0687460447a47de23afc4205800797a3749b6eb1bdf1e4",
+      "wholeCodeSha256": "8b8ed04cf2d331628aa9cc8da6780e9393c97d3bb3376067f92515bdab917c6c",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-prop-type-mismatch.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-prop-type-mismatch.md",
+      "id": "vize:croquis/cf/prop-type-mismatch",
+      "originalJapaneseSha256": "c0b4785c8126fead6c22da899787801f0dc0d0df4ce5df82c146fce64481374a",
+      "originalEnglishSha256": "b13cf3d8fbd9cf8724a01dfb074feb4a201f72a132452dc80d52b0fe33f618e3",
+      "wholeCodeSha256": "c3fa189eb9bfcffa31c667bf7d04916492d3755206213a11f29f7780aebc80de",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-provide-inject-type.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-provide-inject-type.md",
+      "id": "vize:croquis/cf/provide-inject-type",
+      "originalJapaneseSha256": "965cf61312e3863b12edbbc356aa7fba3ddbf751b1b152e9887cf741148584d3",
+      "originalEnglishSha256": "8c9774189cc5aaf4948230d014be6021b62cf25e0f2c74f887949e3ecf631c8e",
+      "wholeCodeSha256": "ea77c400a840e0f8ab9aef5ad9a85eea94fa6b049e79340f6de8893c06da2b05",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-provide-without-symbol.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-provide-without-symbol.md",
+      "id": "vize:croquis/cf/provide-without-symbol",
+      "originalJapaneseSha256": "1483b2cf603126934f5a10314083e4b75581ad5ce225919abb3b5607b5eb206a",
+      "originalEnglishSha256": "449bc247020c9d303f032abfffe2fa49eb42831777442db63244b1266dcaf66c",
+      "wholeCodeSha256": "cbcfcbb5bdad0190c7e27f694284be6249dfdf30bb6e0e4d822e5e7f6787795f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-reactive-export.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-reactive-export.md",
+      "id": "vize:croquis/cf/reactive-export",
+      "originalJapaneseSha256": "7954bb0c90e71b418ac5395fc8fa5f60aa8f3c23bb28e45e9fce56821642f4dc",
+      "originalEnglishSha256": "26e21da143a2e0cfadffa70d2fa8e7cbb5bbe26ba13f56ec92414088a20f30a5",
+      "wholeCodeSha256": "08b324e2633d67423a6748d803545ff44d8ce743a40da8ed6f398e6ae9214172",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-reactivity-outside-setup.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-reactivity-outside-setup.md",
+      "id": "vize:croquis/cf/reactivity-outside-setup",
+      "originalJapaneseSha256": "587e6b0f197e59648dbe9a66cbd7757c321016fefabab4b10e58446655175cd0",
+      "originalEnglishSha256": "a1e88ea744bd53e95990fb5de156a7b3c19cc7abe26379d77db6331466b08989",
+      "wholeCodeSha256": "93411ccb02fa767577af32f64ca934aa2274eef1374f386c25d88ea8a85c1deb",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-reassignment-breaks-reactivity.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-reassignment-breaks-reactivity.md",
+      "id": "vize:croquis/cf/reassignment-breaks-reactivity",
+      "originalJapaneseSha256": "d83e961056313b385e3d15a70b96bdd0d8c831726ba6c3f4f54c8d24bc97cc42",
+      "originalEnglishSha256": "b7158896058d79e0e790d4c6fce3e5df218a75c42c43bc4f96e29627added5f3",
+      "wholeCodeSha256": "266856c6cd9ac386aa1811533f75925e5b01c1f3b2cfbe0543259dd16acc9984",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-reference-escapes-scope.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-reference-escapes-scope.md",
+      "id": "vize:croquis/cf/reference-escapes-scope",
+      "originalJapaneseSha256": "2af56a9ef6d0ce3cf0e15d8ad118a12acef9b5522a681b03786ab98ce3afefa4",
+      "originalEnglishSha256": "c9ee8f685165d491bb3bcccda11671d7c7479cb45897f9791d453a9c8009dbfa",
+      "wholeCodeSha256": "6ea4594ef9aad1b1696536d8b8d554582e7bfec4ef00f7f693a87a80f4250b98",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-setup-context-violation.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-setup-context-violation.md",
+      "id": "vize:croquis/cf/setup-context-violation",
+      "originalJapaneseSha256": "c8690c8c360473a0d6d92dd80871a4a8bfc1e239e39f649c06128a08753b130b",
+      "originalEnglishSha256": "38783f55e051acb760e8ec66111e75b7564a9d6bae04fcec06ecc2e664e55f3f",
+      "wholeCodeSha256": "86a0168d9b72199a6e286ff6bd5a0de995262489466b1a4582f3f3d78f0f79c3",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-shallow-deep-access.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-shallow-deep-access.md",
+      "id": "vize:croquis/cf/shallow-deep-access",
+      "originalJapaneseSha256": "a61f6db027089ff8aaa2e8f7d8ee50a6c51238931fca32aefcec12ef1407f3f6",
+      "originalEnglishSha256": "4de62b5742f0c3375a42a66c92fac5d17572436cfa1924761384e4b43626bb7a",
+      "wholeCodeSha256": "9ecd5d4f3e0500f89a030abe4135fbc5a00f875a5391f41ff6e445b87744772f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-spread-breaks-reactivity.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-spread-breaks-reactivity.md",
+      "id": "vize:croquis/cf/spread-breaks-reactivity",
+      "originalJapaneseSha256": "ba9fed8075b26a7f4e4628e4a571808b294d50a8ac26c56c4aafb10bbbbc6cb5",
+      "originalEnglishSha256": "7d334672ac8b5429a7da14fd51dd86c6593a429ef7eccbf35fe33362d6c6edcc",
+      "wholeCodeSha256": "5f99ce85ef6265bb4efc1e24659c18d09bd0408129aaa3ab9409f8eda5f836da",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-suspense-no-fallback.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-suspense-no-fallback.md",
+      "id": "vize:croquis/cf/suspense-no-fallback",
+      "originalJapaneseSha256": "a4b56a9387d7fa778ad45f279d64517637b6e36cdc464e2efea6efb8d9a9650b",
+      "originalEnglishSha256": "b31ee92512b304d66f0dc9676f09042423df9374b625e63ab2c7abca6020281f",
+      "wholeCodeSha256": "34b063c6c54c074e983ad32708e435f70d324e9c05f5f1796ce6b61b7264e0de",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-template-ref-timing.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-template-ref-timing.md",
+      "id": "vize:croquis/cf/template-ref-timing",
+      "originalJapaneseSha256": "5030b396b8d96cdfe27fd96a2eccf6e114b11491c6a9f87aac169b542dd6d872",
+      "originalEnglishSha256": "4edb5386c81f39d9fa6f665ff3c356d82f049f59edccefa8ad1aa483a5d55d25",
+      "wholeCodeSha256": "a3e7000d6b44a8ae24d7c9d7e96981cfd9345cf40b889d94e90e49ccb047f689",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-toraw-mutation.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-toraw-mutation.md",
+      "id": "vize:croquis/cf/toraw-mutation",
+      "originalJapaneseSha256": "949f229aef3419ada606f3140afd5cc02766b3aef752c06c5053fe45c8ce1557",
+      "originalEnglishSha256": "1271814549e2b936a6adf1c7a945fe57e52dde442a590a767fe60083b5562a4d",
+      "wholeCodeSha256": "c41df8b49782121950dd6eef509f04c889c237340c6aa651478f63cac1e1e807",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-uncaught-error.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-uncaught-error.md",
+      "id": "vize:croquis/cf/uncaught-error",
+      "originalJapaneseSha256": "278c9a31ff15f96ed094c36664e9ca8fa0ff634616f180a7cb64a78601032d4e",
+      "originalEnglishSha256": "955175b8b0f09528ccf50607531012e10f377bfe4b2effd38fe621ff0b5cddea",
+      "wholeCodeSha256": "2e4eb08da3a48e1427f7eb1bfccca2f14586b1db9209d030a40b955b63d9914e",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-undeclared-emit.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-undeclared-emit.md",
+      "id": "vize:croquis/cf/undeclared-emit",
+      "originalJapaneseSha256": "18c4331b881c8bdddef868f0d4e4e1dea91238a84c992453e673f4abfbf5eb9b",
+      "originalEnglishSha256": "de4e921d57b8080a62f7d364c0fb1befd61dd4aebe4e50a87b634a7711e295fd",
+      "wholeCodeSha256": "f6d8ae7acbb7ce1a7634305beee49894b9ef11270811935de0823eac47816a9a",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-undeclared-prop.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-undeclared-prop.md",
+      "id": "vize:croquis/cf/undeclared-prop",
+      "originalJapaneseSha256": "f5304c93c7e61acf95aa95b8c4701593c28c3ed44e624dd6e196376ed620eb26",
+      "originalEnglishSha256": "c9f053c01c1ed81adc2ac5d8aa76c2c33bec1cd6ea00ee6219f0391bea327a56",
+      "wholeCodeSha256": "8515ae106ec430009400c34af0c77afbe67292535fadc1799b0be69b64685845",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-undefined-slot.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-undefined-slot.md",
+      "id": "vize:croquis/cf/undefined-slot",
+      "originalJapaneseSha256": "4e6b22791f68e2e3b999a9bf57ea41157367cadb7b11af8ae3c96374978588e9",
+      "originalEnglishSha256": "95c995d82d1fdd6b8882892c19780f637f78e433f6c81f131ab69ab179f27cab",
+      "wholeCodeSha256": "dba9c51ef068ce0254140aacc7f69a641f8b7ce60fc491487611f616549d3a89",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-unhandled-event.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-unhandled-event.md",
+      "id": "vize:croquis/cf/unhandled-event",
+      "originalJapaneseSha256": "9d198a8734a67ac4d91bbeaff39fba2ec1d7ccc96696468534e281a619d2c813",
+      "originalEnglishSha256": "fb9989896217571a962f9bb9f4fbce8ebe7d0aa683d5845c430634607ae41042",
+      "wholeCodeSha256": "c9fd39a5cf7d89f05bb5820788d76a1445cd95c85dbbc2592a5f3618efbf4009",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-unmatched-inject.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-unmatched-inject.md",
+      "id": "vize:croquis/cf/unmatched-inject",
+      "originalJapaneseSha256": "f98909f5ae97a6e163d9d4e9d4a233a75ee9a3be8423e3f4440d9d9a52c61af3",
+      "originalEnglishSha256": "1bbd4243383f861d9ba23f82117c1f4dfbb283383925505577f7ba77a85d0dd1",
+      "wholeCodeSha256": "5d5a19b1e487c9f171b0da87e9c6b1e03fc4601ca9bf55ff65639cbae4e31ae1",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-unmatched-listener.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-unmatched-listener.md",
+      "id": "vize:croquis/cf/unmatched-listener",
+      "originalJapaneseSha256": "606c6c9d8d6895e3b7f2adb0759b52317196a70fb1d7718d3983519dba763c7c",
+      "originalEnglishSha256": "dd40d625d9c8931d2ecc06e8d421e9ae04d3bf56ab0db55a95865a4c68c7fce2",
+      "wholeCodeSha256": "08418d04de9b9ee5015eccd6cbb34e36dc18edd79c4674ef3a410d5cf1f9665c",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-unregistered-component.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-unregistered-component.md",
+      "id": "vize:croquis/cf/unregistered-component",
+      "originalJapaneseSha256": "fb6cc7993a444399abca76053382e3788ebc859f918bb56b83e5dddc1ae7def6",
+      "originalEnglishSha256": "74a6c96f352e0240b81a643466f82dae83a06bdf996d522321490e5fb8c5f670",
+      "wholeCodeSha256": "0bf64b09c23a3935ace51c823a0b8e21da364a19a104a3de14e5b07378fe3a94",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-unresolved-import.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-unresolved-import.md",
+      "id": "vize:croquis/cf/unresolved-import",
+      "originalJapaneseSha256": "45561ba19c250da9a1c4c5f2185563479acf9f1024f2d4d61f6eaa2370404118",
+      "originalEnglishSha256": "657582309e1d2bbdb494669b71f13dd134d1ef960f74af32254a64341ecdc22c",
+      "wholeCodeSha256": "717541e340d62a47eda48b156cb387c0ef39d5ee65fd57e18362eac5d4113c58",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-unused-attrs.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-unused-attrs.md",
+      "id": "vize:croquis/cf/unused-attrs",
+      "originalJapaneseSha256": "89f310f28729854d6dbe4e1497f95391e4e0e3a1cb2a3335491b3a43fe3a5805",
+      "originalEnglishSha256": "e1bb3f8a4b9c48514228a7b20e1340b4b314542b2b41b3badf37e5fe3a3f5cd0",
+      "wholeCodeSha256": "6d67a616b79bdf9c1387eef152928231ed22d5ea440d95a3b593423313ba70a3",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-unused-emit.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-unused-emit.md",
+      "id": "vize:croquis/cf/unused-emit",
+      "originalJapaneseSha256": "e32651b1e8888356fa78bab84c195491d42732385855fa9cd8f2f2e90fb68883",
+      "originalEnglishSha256": "848e78ef05df3feeb6d878097e7769718be0f213d47fd94eb4f1a84eef6e36be",
+      "wholeCodeSha256": "0e2ee720fc16f570c68a3cafdcefbec872d91529886d8a04700362fbf2064f1f",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-unused-provide.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-unused-provide.md",
+      "id": "vize:croquis/cf/unused-provide",
+      "originalJapaneseSha256": "bb334a29b0a741f6bf84aac9b4801172e677cbb1479ac744032fd04bf67fd544",
+      "originalEnglishSha256": "12269abab0dedf4bb19ae23551bc7bfdad948689cac6eb31a6566d93b3696d9c",
+      "wholeCodeSha256": "903ebb7973a746623fd518137af8625e2a1791a4c32f6bccbf19dc4dfd18aefd",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-value-extraction-breaks-reactivity.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-value-extraction-breaks-reactivity.md",
+      "id": "vize:croquis/cf/value-extraction-breaks-reactivity",
+      "originalJapaneseSha256": "6ecbd7b8fecef4a6196fafaa07e1c86d4702a55273eee8578c8154cf2c62c27e",
+      "originalEnglishSha256": "e6aadca96737c5d3c91b59202a2161cc7727afc9915b4c30e35bc24a519a0b29",
+      "wholeCodeSha256": "1fa5af6d30e6339e7e2906cb3fec4362d9e2095042298c980395521b89eae46a",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-watch-can-be-computed.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-watch-can-be-computed.md",
+      "id": "vize:croquis/cf/watch-can-be-computed",
+      "originalJapaneseSha256": "5d0b63e86c151485e724673c2a7d761d9792d61647c95b4a810c9931fe6eda3a",
+      "originalEnglishSha256": "545920c43dddefac49286d21124b443f80739390c7a4e1ccd457caf179eec1c2",
+      "wholeCodeSha256": "60510a4675e72a98c7d2d9fdf24108a419cc9bde4a39d5148678f242fd12bfc4",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-watcheffect-async.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-watcheffect-async.md",
+      "id": "vize:croquis/cf/watcheffect-async",
+      "originalJapaneseSha256": "cc71e6be48ecc2177ea13e2be5358634fe890e4778d3ce095ef8a91552f272a0",
+      "originalEnglishSha256": "978ee664df569c20a466747f9d8b17d0a5bc526424b7ca0a4b93b322612a734e",
+      "wholeCodeSha256": "308a900aea51fb474caa2f9f78f3bbbe2a36ae93dc8808cf55de2d6dc99887a8",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vize-croquis-cf-watcher-outside-setup.md",
+      "englishPath": "docs/content/rules/project/vize-croquis-cf-watcher-outside-setup.md",
+      "id": "vize:croquis/cf/watcher-outside-setup",
+      "originalJapaneseSha256": "9e437ed34156d6a7f84ced335c9beaab0de0f9b91c04969c1e471df818a85242",
+      "originalEnglishSha256": "d2f0d3e17ae0041ce996ed6c666a8787c71c5cf2ccbffebf2ae9cd1e2c44b695",
+      "wholeCodeSha256": "d0c365a5ad056a3739efd4782ca26bb753217742363206b1dfaa18cb65f07f56",
+      "supportFacts": []
+    },
+    {
+      "path": "docs/content/ja/rules/project/vue-cross-file-attrs-fallthrough.md",
+      "englishPath": "docs/content/rules/project/vue-cross-file-attrs-fallthrough.md",
+      "id": "vue/cross-file-attrs-fallthrough",
+      "originalJapaneseSha256": "439e9478a642f1bbed6082fc646add44914736a65d2a72acaf9a9b3a8c5cb297",
+      "originalEnglishSha256": "dc20d2342ad227313cb63a06cc5eb1c92b4a39cb9159e88bf2b30a8970121215",
+      "wholeCodeSha256": "259db4ac3e1f1941e8bc5b34d692e69c280cbdc3ee40c0061e3e6e193fa6ba6c",
+      "supportFacts": []
+    }
+  ]
+}

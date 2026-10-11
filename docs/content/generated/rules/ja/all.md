@@ -4,11 +4,11 @@ title: 全 lint ルール
 
 # 全 lint ルール
 
-現在のソース カタログにある 251 項目の一覧です。このページに、目的・適用範囲・設定・悪い例・良い例と理由をまとめています。未対応の範囲も各例の前に明記しています。
+現在のソースカタログにある 251 項目の一覧です。このページに、目的・適用範囲・設定・悪い例・良い例と理由をまとめています。未対応の範囲も各例の前に明記しています。
 
 Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lint.vize.rules` に指定します。`vp run lint` で Vize と Oxlint の lint を実行します。
 
-既定の重大度は実装の値です。プロジェクトでは `off` / `warn` / `error` に変更できます。Options は [ルール オプション](./options.md)、複数ファイルの検査は [Cross-file ルール](./cross-file.md) を参照してください。
+既定の重大度は実装で定められた値です。プロジェクトでは `off` / `warn` / `error` に変更できます。オプションは[ルール オプション](./options.md)、複数ファイルの検査は[ファイル間ルール](./cross-file.md)を参照してください。
 
 プリセットが `_none_` のルールは明示的な有効化または追加の設定が必要です。
 
@@ -20,10 +20,10 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | [`petite-vue/no-unsupported-directive`](#petite-vue-no-unsupported-directive) | [悪い例](#petite-vue-no-unsupported-directive-bad) · [良い例](#petite-vue-no-unsupported-directive-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/no_unsupported_directive.rs#L43) | petite-vue が対応しないディレクティブを検出します。 | Essential |
 | [`petite-vue/valid-v-effect`](#petite-vue-valid-v-effect) | [悪い例](#petite-vue-valid-v-effect-bad) · [良い例](#petite-vue-valid-v-effect-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_effect.rs#L35) | v-effect に空でない式を指定します。 | Essential |
-| [`petite-vue/valid-v-scope`](#petite-vue-valid-v-scope) | [悪い例](#petite-vue-valid-v-scope-bad) · [良い例](#petite-vue-valid-v-scope-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_scope.rs#L46) | v-scope の値にオブジェクトリテラルを指定します。 | Essential |
+| [`petite-vue/valid-v-scope`](#petite-vue-valid-v-scope) | [悪い例](#petite-vue-valid-v-scope-bad) · [良い例](#petite-vue-valid-v-scope-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_scope.rs#L46) | v-scope に値を指定する場合は、オブジェクトリテラルにします。 | Essential |
 | [`vue/multi-word-component-names`](#vue-multi-word-component-names) | [悪い例](#vue-multi-word-component-names-bad) · [良い例](#vue-multi-word-component-names-good) | `error` | `essential`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L34) | コンポーネント名を複数の単語で構成します。 | Essential |
 | [`vue/no-child-content`](#vue-no-child-content) | [悪い例](#vue-no-child-content-bad) · [良い例](#vue-no-child-content-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_child_content.rs#L30) | v-html / v-text と子コンテンツを同時に指定する箇所を検出します。 | Essential |
-| [`vue/no-deprecated-filter`](#vue-no-deprecated-filter) | [悪い例](#vue-no-deprecated-filter-bad) · [良い例](#vue-no-deprecated-filter-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L53) | Vue 2 の pipe による filter 構文を検出します。 | Essential |
+| [`vue/no-deprecated-filter`](#vue-no-deprecated-filter) | [悪い例](#vue-no-deprecated-filter-bad) · [良い例](#vue-no-deprecated-filter-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L53) | Vue 2 のパイプによるフィルター構文を検出します。 | Essential |
 | [`vue/no-deprecated-functional-template`](#vue-no-deprecated-functional-template) | [悪い例](#vue-no-deprecated-functional-template-bad) · [良い例](#vue-no-deprecated-functional-template-good) | `error` | `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs#L57) | SFC の template で削除済みの functional 属性を検出します。 | Essential |
 | [`vue/no-deprecated-html-element-is`](#vue-no-deprecated-html-element-is) | [悪い例](#vue-no-deprecated-html-element-is-bad) · [良い例](#vue-no-deprecated-html-element-is-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs#L39) | 通常の HTML 要素で旧形式の is を使う箇所を検出します。 | Essential |
 | [`vue/no-deprecated-inline-template`](#vue-no-deprecated-inline-template) | [悪い例](#vue-no-deprecated-inline-template-bad) · [良い例](#vue-no-deprecated-inline-template-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20) | 削除済みの inline-template 属性を検出します。 | Essential |
@@ -31,9 +31,9 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vue/no-deprecated-scope-attribute`](#vue-no-deprecated-scope-attribute) | [悪い例](#vue-no-deprecated-scope-attribute-bad) · [良い例](#vue-no-deprecated-scope-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38) | template の削除済み scope 属性を検出します。 | Essential |
 | [`vue/no-deprecated-slot-attribute`](#vue-no-deprecated-slot-attribute) | [悪い例](#vue-no-deprecated-slot-attribute-bad) · [良い例](#vue-no-deprecated-slot-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) | 削除済みの slot 属性を検出します。 | Essential |
 | [`vue/no-deprecated-slot-scope-attribute`](#vue-no-deprecated-slot-scope-attribute) | [悪い例](#vue-no-deprecated-slot-scope-attribute-bad) · [良い例](#vue-no-deprecated-slot-scope-attribute-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs#L33) | 削除済みの slot-scope 属性を検出します。 | Essential |
-| [`vue/no-deprecated-v-bind-sync`](#vue-no-deprecated-v-bind-sync) | [悪い例](#vue-no-deprecated-v-bind-sync-bad) · [良い例](#vue-no-deprecated-v-bind-sync-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) | 削除済みの v-bind の .sync modifier を検出します。 | Essential |
-| [`vue/no-deprecated-v-on-native-modifier`](#vue-no-deprecated-v-on-native-modifier) | [悪い例](#vue-no-deprecated-v-on-native-modifier-bad) · [良い例](#vue-no-deprecated-v-on-native-modifier-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) | 削除済みの v-on の .native modifier を検出します。 | Essential |
-| [`vue/no-deprecated-v-on-number-modifiers`](#vue-no-deprecated-v-on-number-modifiers) | [悪い例](#vue-no-deprecated-v-on-number-modifiers-bad) · [良い例](#vue-no-deprecated-v-on-number-modifiers-good) | `error` | `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs#L43) | v-on の削除済み数値 keyCode modifier を検出します。 | Essential |
+| [`vue/no-deprecated-v-bind-sync`](#vue-no-deprecated-v-bind-sync) | [悪い例](#vue-no-deprecated-v-bind-sync-bad) · [良い例](#vue-no-deprecated-v-bind-sync-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) | 削除済みの v-bind の .sync 修飾子を検出します。 | Essential |
+| [`vue/no-deprecated-v-on-native-modifier`](#vue-no-deprecated-v-on-native-modifier) | [悪い例](#vue-no-deprecated-v-on-native-modifier-bad) · [良い例](#vue-no-deprecated-v-on-native-modifier-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) | 削除済みの v-on の .native 修飾子を検出します。 | Essential |
+| [`vue/no-deprecated-v-on-number-modifiers`](#vue-no-deprecated-v-on-number-modifiers) | [悪い例](#vue-no-deprecated-v-on-number-modifiers-bad) · [良い例](#vue-no-deprecated-v-on-number-modifiers-good) | `error` | `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs#L43) | v-on の削除済みの数値 keyCode 修飾子を検出します。 | Essential |
 | [`vue/no-dupe-v-else-if`](#vue-no-dupe-v-else-if) | [悪い例](#vue-no-dupe-v-else-if-bad) · [良い例](#vue-no-dupe-v-else-if-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs#L34) | v-if / v-else-if の条件重複を検出します。 | Essential |
 | [`vue/no-duplicate-attributes`](#vue-no-duplicate-attributes) | [悪い例](#vue-no-duplicate-attributes-bad) · [良い例](#vue-no-duplicate-attributes-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L31) | 同じ要素の属性重複を検出します。 | Essential |
 | [`vue/no-multiple-template-root`](#vue-no-multiple-template-root) | [悪い例](#vue-no-multiple-template-root-bad) · [良い例](#vue-no-multiple-template-root-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L27) | 単一ルートを要求するテンプレートで複数ルートを検出します。 | Essential |
@@ -46,28 +46,28 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vue/no-use-v-if-with-v-for`](#vue-no-use-v-if-with-v-for) | [悪い例](#vue-no-use-v-if-with-v-for-bad) · [良い例](#vue-no-use-v-if-with-v-for-good) | `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35) | 同じ要素での v-if と v-for の併用を検出します。 | Essential |
 | [`vue/no-useless-template-attributes`](#vue-no-useless-template-attributes) | [悪い例](#vue-no-useless-template-attributes-bad) · [良い例](#vue-no-useless-template-attributes-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_useless_template_attributes.rs#L32) | template 要素の効果がない属性を検出します。 | Essential |
 | [`vue/no-v-for-template-key-on-child`](#vue-no-v-for-template-key-on-child) | [悪い例](#vue-no-v-for-template-key-on-child-bad) · [良い例](#vue-no-v-for-template-key-on-child-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs#L30) | template v-for の key を子ではなく template に指定します。 | Essential |
-| [`vue/no-v-html`](#vue-no-v-html) | [悪い例](#vue-no-v-html-bad) · [良い例](#vue-no-v-html-good) | `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_html.rs#L51) | 未処理の HTML を表示する v-html の XSS リスクを検出します。 | Essential |
+| [`vue/no-v-html`](#vue-no-v-html) | [悪い例](#vue-no-v-html-bad) · [良い例](#vue-no-v-html-good) | `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_html.rs#L51) | XSS を防ぐため、v-html の使用に警告します。 | Essential |
 | [`vue/no-v-text-v-html-on-component`](#vue-no-v-text-v-html-on-component) | [悪い例](#vue-no-v-text-v-html-on-component-bad) · [良い例](#vue-no-v-text-v-html-on-component-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs#L33) | コンポーネントでの v-text / v-html を検出します。 | Essential |
 | [`vue/permitted-contents`](#vue-permitted-contents) | [悪い例](#vue-permitted-contents-bad) · [良い例](#vue-permitted-contents-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/permitted_contents.rs#L56) | HTML の要素ごとのコンテンツモデルを検査します。 | Essential |
 | [`vue/require-component-is`](#vue-require-component-is) | [悪い例](#vue-require-component-is-bad) · [良い例](#vue-require-component-is-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_component_is.rs#L27) | 動的 component 要素に :is を指定します。 | Essential |
 | [`vue/require-toggle-inside-transition`](#vue-require-toggle-inside-transition) | [悪い例](#vue-require-toggle-inside-transition-bad) · [良い例](#vue-require-toggle-inside-transition-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_toggle_inside_transition.rs#L48) | transition の子要素に表示を切り替える条件を指定します。 | Essential |
 | [`vue/require-v-for-key`](#vue-require-v-for-key) | [悪い例](#vue-require-v-for-key-bad) · [良い例](#vue-require-v-for-key-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L35) | v-for に安定した :key を指定します。 | Essential |
-| [`vue/use-v-on-exact`](#vue-use-v-on-exact) | [悪い例](#vue-use-v-on-exact-bad) · [良い例](#vue-use-v-on-exact-good) | `warning` | `essential`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L28) | modifier 付きのイベント操作と競合する handler に .exact を指定します。 | Essential |
+| [`vue/use-v-on-exact`](#vue-use-v-on-exact) | [悪い例](#vue-use-v-on-exact-bad) · [良い例](#vue-use-v-on-exact-good) | `warning` | `essential`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L28) | 修飾子付きのイベント操作と競合するハンドラーに .exact を指定します。 | Essential |
 | [`vue/valid-attribute-name`](#vue-valid-attribute-name) | [悪い例](#vue-valid-attribute-name-bad) · [良い例](#vue-valid-attribute-name-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_attribute_name.rs#L27) | 有効な属性名を指定します。 | Essential |
-| [`vue/valid-template-root`](#vue-valid-template-root) | [悪い例](#vue-valid-template-root-bad) · [良い例](#vue-valid-template-root-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82) | Vue 3 の fragment に対応する有効なテンプレートルートを検査します。 | Essential |
-| [`vue/valid-v-bind`](#vue-valid-v-bind) | [悪い例](#vue-valid-v-bind-bad) · [良い例](#vue-valid-v-bind-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30) | v-bind の引数・値・modifier を検査します。 | Essential |
-| [`vue/valid-v-cloak`](#vue-valid-v-cloak) | [悪い例](#vue-valid-v-cloak-bad) · [良い例](#vue-valid-v-cloak-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27) | v-cloak の引数・値・modifier を検査します。 | Essential |
+| [`vue/valid-template-root`](#vue-valid-template-root) | [悪い例](#vue-valid-template-root-bad) · [良い例](#vue-valid-template-root-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82) | Vue 3 のフラグメントに対応する有効なテンプレートルートを検査します。 | Essential |
+| [`vue/valid-v-bind`](#vue-valid-v-bind) | [悪い例](#vue-valid-v-bind-bad) · [良い例](#vue-valid-v-bind-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30) | v-bind の引数・値・修飾子を検査します。 | Essential |
+| [`vue/valid-v-cloak`](#vue-valid-v-cloak) | [悪い例](#vue-valid-v-cloak-bad) · [良い例](#vue-valid-v-cloak-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27) | v-cloak の引数・値・修飾子を検査します。 | Essential |
 | [`vue/valid-v-else`](#vue-valid-v-else) | [悪い例](#vue-valid-v-else-bad) · [良い例](#vue-valid-v-else-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L32) | v-else の位置・引数・値を検査します。 | Essential |
 | [`vue/valid-v-for`](#vue-valid-v-for) | [悪い例](#vue-valid-v-for-bad) · [良い例](#vue-valid-v-for-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L31) | v-for の式と変数宣言を検査します。 | Essential |
-| [`vue/valid-v-html`](#vue-valid-v-html) | [悪い例](#vue-valid-v-html-bad) · [良い例](#vue-valid-v-html-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) | v-html の値・引数・modifier を検査します。 | Essential |
+| [`vue/valid-v-html`](#vue-valid-v-html) | [悪い例](#vue-valid-v-html-bad) · [良い例](#vue-valid-v-html-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) | v-html の値・引数・修飾子を検査します。 | Essential |
 | [`vue/valid-v-if`](#vue-valid-v-if) | [悪い例](#vue-valid-v-if-bad) · [良い例](#vue-valid-v-if-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_if.rs#L29) | v-if に有効な条件式を指定します。 | Essential |
 | [`vue/valid-v-memo`](#vue-valid-v-memo) | [悪い例](#vue-valid-v-memo-bad) · [良い例](#vue-valid-v-memo-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_memo.rs#L27) | v-memo の値を配列の式にします。 | Essential |
-| [`vue/valid-v-model`](#vue-valid-v-model) | [悪い例](#vue-valid-v-model-bad) · [良い例](#vue-valid-v-model-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36) | v-model の値・引数・modifier を検査します。 | Essential |
-| [`vue/valid-v-on`](#vue-valid-v-on) | [悪い例](#vue-valid-v-on-bad) · [良い例](#vue-valid-v-on-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) | v-on のイベント名・式・modifier を検査します。 | Essential |
-| [`vue/valid-v-once`](#vue-valid-v-once) | [悪い例](#vue-valid-v-once-bad) · [良い例](#vue-valid-v-once-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) | v-once の引数・値・modifier を検査します。 | Essential |
+| [`vue/valid-v-model`](#vue-valid-v-model) | [悪い例](#vue-valid-v-model-bad) · [良い例](#vue-valid-v-model-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36) | v-model の値・引数・修飾子を検査します。 | Essential |
+| [`vue/valid-v-on`](#vue-valid-v-on) | [悪い例](#vue-valid-v-on-bad) · [良い例](#vue-valid-v-on-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) | v-on のイベント名・式・修飾子を検査します。 | Essential |
+| [`vue/valid-v-once`](#vue-valid-v-once) | [悪い例](#vue-valid-v-once-bad) · [良い例](#vue-valid-v-once-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) | v-once の引数・値・修飾子を検査します。 | Essential |
 | [`vue/valid-v-show`](#vue-valid-v-show) | [悪い例](#vue-valid-v-show-bad) · [良い例](#vue-valid-v-show-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_show.rs#L28) | v-show に有効な条件式を指定します。 | Essential |
-| [`vue/valid-v-slot`](#vue-valid-v-slot) | [悪い例](#vue-valid-v-slot-bad) · [良い例](#vue-valid-v-slot-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) | v-slot の適用先・宣言・modifier を検査します。 | Essential |
-| [`vue/valid-v-text`](#vue-valid-v-text) | [悪い例](#vue-valid-v-text-bad) · [良い例](#vue-valid-v-text-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) | v-text の値・引数・modifier を検査します。 | Essential |
+| [`vue/valid-v-slot`](#vue-valid-v-slot) | [悪い例](#vue-valid-v-slot-bad) · [良い例](#vue-valid-v-slot-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) | v-slot の適用先・宣言・修飾子を検査します。 | Essential |
+| [`vue/valid-v-text`](#vue-valid-v-text) | [悪い例](#vue-valid-v-text-bad) · [良い例](#vue-valid-v-text-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) | v-text の値・引数・修飾子を検査します。 | Essential |
 | [`vue/attribute-hyphenation`](#vue-attribute-hyphenation) | [悪い例](#vue-attribute-hyphenation-bad) · [良い例](#vue-attribute-hyphenation-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | あり | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L35) | コンポーネントの prop 属性名を設定した形式に揃えます。 | Strongly Recommended |
 | [`vue/component-definition-name-casing`](#vue-component-definition-name-casing) | [悪い例](#vue-component-definition-name-casing-bad) · [良い例](#vue-component-definition-name-casing-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L36) | コンポーネント定義名を PascalCase または kebab-case に揃えます。 | Strongly Recommended |
 | [`vue/html-quotes`](#vue-html-quotes) | [悪い例](#vue-html-quotes-bad) · [良い例](#vue-html-quotes-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/html_quotes.rs#L53) | HTML 属性値の引用符を揃えます。 | Strongly Recommended |
@@ -88,8 +88,8 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vue/html-button-has-type`](#vue-html-button-has-type) | [悪い例](#vue-html-button-has-type-bad) · [良い例](#vue-html-button-has-type-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_button_has_type.rs#L39) | button に有効な type を明示します。 | Recommended |
 | [`vue/max-template-complexity`](#vue-max-template-complexity) | [悪い例](#vue-max-template-complexity-bad) · [良い例](#vue-max-template-complexity-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/max_template_complexity.rs#L56) | コンポーネント自身のテンプレートの複雑度を制限します。 | Recommended |
 | [`vue/no-array-index-key`](#vue-no-array-index-key) | [悪い例](#vue-no-array-index-key-bad) · [良い例](#vue-no-array-index-key-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs#L32) | v-for の配列インデックスをそのまま key に使う箇所を検出します。 | Recommended |
-| [`vue/no-bare-strings-in-template`](#vue-no-bare-strings-in-template) | [悪い例](#vue-no-bare-strings-in-template-bad) · [良い例](#vue-no-bare-strings-in-template-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47) | 国際化すべきテンプレートの直接指定テキストを検出します。 | Recommended |
-| [`vue/no-boolean-attr-value`](#vue-no-boolean-attr-value) | [悪い例](#vue-no-boolean-attr-value-bad) · [良い例](#vue-no-boolean-attr-value-good) | `warning` | `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L36) | HTML の boolean 属性に不要な値を指定した箇所を検出します。 | Recommended |
+| [`vue/no-bare-strings-in-template`](#vue-no-bare-strings-in-template) | [悪い例](#vue-no-bare-strings-in-template-bad) · [良い例](#vue-no-bare-strings-in-template-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47) | テンプレートに直接書かれた、国際化の対象となるテキストを検出します。 | Recommended |
+| [`vue/no-boolean-attr-value`](#vue-no-boolean-attr-value) | [悪い例](#vue-no-boolean-attr-value-bad) · [良い例](#vue-no-boolean-attr-value-good) | `warning` | `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L36) | HTML の真偽属性に不要な値を指定した箇所を検出します。 | Recommended |
 | [`vue/no-empty-component-block`](#vue-no-empty-component-block) | [悪い例](#vue-no-empty-component-block-bad) · [良い例](#vue-no-empty-component-block-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs#L42) | 空の SFC ブロックを検出します。 | Recommended |
 | [`vue/no-inline-style`](#vue-no-inline-style) | [悪い例](#vue-no-inline-style-bad) · [良い例](#vue-no-inline-style-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_inline_style.rs#L33) | インラインの style 属性を検出します。 | Recommended |
 | [`vue/no-invalid-html-attribute`](#vue-no-invalid-html-attribute) | [悪い例](#vue-no-invalid-html-attribute-bad) · [良い例](#vue-no-invalid-html-attribute-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs#L12) | 静的 HTML 属性の無効な値を検出します。現在は rel が対象です。 | Recommended |
@@ -97,12 +97,12 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vue/no-multiple-objects-in-class`](#vue-no-multiple-objects-in-class) | [悪い例](#vue-no-multiple-objects-in-class-bad) · [良い例](#vue-no-multiple-objects-in-class-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_multiple_objects_in_class.rs#L33) | :class 配列内の複数のオブジェクト指定をまとめます。 | Recommended |
 | [`vue/no-negated-v-if-condition`](#vue-no-negated-v-if-condition) | [悪い例](#vue-no-negated-v-if-condition-bad) · [良い例](#vue-no-negated-v-if-condition-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs#L37) | v-else がある条件分岐の否定条件を反転して読みやすくします。 | Recommended |
 | [`vue/no-non-component-keep-alive-child`](#vue-no-non-component-keep-alive-child) | [悪い例](#vue-no-non-component-keep-alive-child-bad) · [良い例](#vue-no-non-component-keep-alive-child-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L14) | KeepAlive の直下に通常の HTML 要素を置く箇所を検出します。 | Recommended |
-| [`vue/no-preprocessor-lang`](#vue-no-preprocessor-lang) | [悪い例](#vue-no-preprocessor-lang-bad) · [良い例](#vue-no-preprocessor-lang-good) | `warning` | `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) | CSS preprocessor より標準の CSS を使う方針を適用します。 | Recommended |
+| [`vue/no-preprocessor-lang`](#vue-no-preprocessor-lang) | [悪い例](#vue-no-preprocessor-lang-bad) · [良い例](#vue-no-preprocessor-lang-good) | `warning` | `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) | CSS プリプロセッサーより標準の CSS を使う方針を示します。 | Recommended |
 | [`vue/no-root-v-if`](#vue-no-root-v-if) | [悪い例](#vue-no-root-v-if-bad) · [良い例](#vue-no-root-v-if-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_root_v_if.rs#L40) | テンプレートの単一ルートに v-if を指定する箇所を検出します。 | Recommended |
-| [`vue/no-script-non-standard-lang`](#vue-no-script-non-standard-lang) | [悪い例](#vue-no-script-non-standard-lang-bad) · [良い例](#vue-no-script-non-standard-lang-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_script_non_standard_lang.rs#L44) | script の非標準 lang 指定を検出します。 | Recommended |
+| [`vue/no-script-non-standard-lang`](#vue-no-script-non-standard-lang) | [悪い例](#vue-no-script-non-standard-lang-bad) · [良い例](#vue-no-script-non-standard-lang-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_script_non_standard_lang.rs#L44) | script の非標準の lang 指定を避ける方針を示します。 | Recommended |
 | [`vue/no-src-attribute`](#vue-no-src-attribute) | [悪い例](#vue-no-src-attribute-bad) · [良い例](#vue-no-src-attribute-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_src_attribute.rs#L16) | SFC ブロックの外部 src 指定を検出します。 | Recommended |
 | [`vue/no-static-inline-styles`](#vue-no-static-inline-styles) | [悪い例](#vue-no-static-inline-styles-bad) · [良い例](#vue-no-static-inline-styles-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_static_inline_styles.rs#L15) | 静的なインライン style 属性を検出します。 | Recommended |
-| [`vue/no-template-lang`](#vue-no-template-lang) | [悪い例](#vue-no-template-lang-bad) · [良い例](#vue-no-template-lang-good) | `warning` | `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) | template の lang 指定を検出します。 | Recommended |
+| [`vue/no-template-lang`](#vue-no-template-lang) | [悪い例](#vue-no-template-lang-bad) · [良い例](#vue-no-template-lang-good) | `warning` | `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) | template の lang 指定を避ける方針を示します。 | Recommended |
 | [`vue/no-template-target-blank`](#vue-no-template-target-blank) | [悪い例](#vue-no-template-target-blank-bad) · [良い例](#vue-no-template-target-blank-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_target_blank.rs#L33) | target=_blank の外部リンクに適切な rel を指定します。 | Recommended |
 | [`vue/no-undefined-refs`](#vue-no-undefined-refs) | [悪い例](#vue-no-undefined-refs-bad) · [良い例](#vue-no-undefined-refs-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_undefined_refs.rs#L14) | テンプレート内の未定義変数参照を検出します。 | Recommended |
 | [`vue/no-unsafe-url`](#vue-no-unsafe-url) | [悪い例](#vue-no-unsafe-url-bad) · [良い例](#vue-no-unsafe-url-good) | `warning` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsafe_url.rs#L55) | 危険なスキームになり得る URL 属性やバインディングを検出します。 | Recommended |
@@ -114,23 +114,23 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vue/no-useless-v-bind`](#vue-no-useless-v-bind) | [悪い例](#vue-no-useless-v-bind-bad) · [良い例](#vue-no-useless-v-bind-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs#L29) | 文字列リテラルだけの不要な v-bind を検出します。 | Recommended |
 | [`vue/no-v-text`](#vue-no-v-text) | [悪い例](#vue-no-v-text-bad) · [良い例](#vue-no-v-text-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs#L31) | v-text の代わりに mustache を使う方針を適用します。 | Recommended |
 | [`vue/prefer-props-shorthand`](#vue-prefer-props-shorthand) | [悪い例](#vue-prefer-props-shorthand-bad) · [良い例](#vue-prefer-props-shorthand-good) | `warning` | `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs#L39) | Vue 3.4 の同名 prop バインディングの省略形を使います。 | Recommended |
-| [`vue/prefer-true-attribute-shorthand`](#vue-prefer-true-attribute-shorthand) | [悪い例](#vue-prefer-true-attribute-shorthand-bad) · [良い例](#vue-prefer-true-attribute-shorthand-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L38) | true を指定するバインディングを boolean 属性の省略形にします。 | Recommended |
+| [`vue/prefer-true-attribute-shorthand`](#vue-prefer-true-attribute-shorthand) | [悪い例](#vue-prefer-true-attribute-shorthand-bad) · [良い例](#vue-prefer-true-attribute-shorthand-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L38) | true を指定するバインディングを真偽属性の省略形にします。 | Recommended |
 | [`vue/require-component-registration`](#vue-require-component-registration) | [悪い例](#vue-require-component-registration-bad) · [良い例](#vue-require-component-registration-good) | `warning` | `opinionated` | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L56) | 使用するコンポーネントを import または登録します。 | Recommended |
 | [`vue/require-scoped-style`](#vue-require-scoped-style) | [悪い例](#vue-require-scoped-style-bad) · [良い例](#vue-require-scoped-style-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_scoped_style.rs#L49) | style に scoped を指定する方針を適用します。 | Recommended |
 | [`vue/scoped-event-names`](#vue-scoped-event-names) | [悪い例](#vue-scoped-event-names-bad) · [良い例](#vue-scoped-event-names-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs#L30) | イベント名を context:event の形式に揃えます。 | Recommended |
 | [`vue/sfc-element-order`](#vue-sfc-element-order) | [悪い例](#vue-sfc-element-order-bad) · [良い例](#vue-sfc-element-order-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/sfc_element_order.rs#L50) | SFC のトップレベルブロックを設定した順に並べます。 | Recommended |
 | [`vue/single-style-block`](#vue-single-style-block) | [悪い例](#vue-single-style-block-bad) · [良い例](#vue-single-style-block-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/single_style_block.rs#L41) | SFC の style を一つのブロックにまとめます。 | Recommended |
-| [`vue/slot-name-casing`](#vue-slot-name-casing) | [悪い例](#vue-slot-name-casing-bad) · [良い例](#vue-slot-name-casing-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L34) | 名前付き slot を kebab-case に揃えます。 | Recommended |
+| [`vue/slot-name-casing`](#vue-slot-name-casing) | [悪い例](#vue-slot-name-casing-bad) · [良い例](#vue-slot-name-casing-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L34) | 名前付きスロットを kebab-case に揃えます。 | Recommended |
 | [`vue/this-in-template`](#vue-this-in-template) | [悪い例](#vue-this-in-template-bad) · [良い例](#vue-this-in-template-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs#L33) | テンプレートで不要な this. 参照を検出します。 | Recommended |
 | [`vue/v-on-event-hyphenation`](#vue-v-on-event-hyphenation) | [悪い例](#vue-v-on-event-hyphenation-bad) · [良い例](#vue-v-on-event-hyphenation-good) | `warning` | `nuxt`, `opinionated` | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L35) | コンポーネントのカスタムイベント名を設定した形式に揃えます。 | Recommended |
-| [`vue/v-on-handler-style`](#vue-v-on-handler-style) | [悪い例](#vue-v-on-handler-style-bad) · [良い例](#vue-v-on-handler-style-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33) | イベント handler の参照・関数形式を揃えます。 | Recommended |
+| [`vue/v-on-handler-style`](#vue-v-on-handler-style) | [悪い例](#vue-v-on-handler-style-bad) · [良い例](#vue-v-on-handler-style-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33) | イベントハンドラーの書き方を参照または関数の形式に揃えます。 | Recommended |
 | [`vue/warn-custom-block`](#vue-warn-custom-block) | [悪い例](#vue-warn-custom-block-bad) · [良い例](#vue-warn-custom-block-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs#L50) | SFC のカスタムブロックを検出します。 | Recommended |
 | [`vue/warn-custom-directive`](#vue-warn-custom-directive) | [悪い例](#vue-warn-custom-directive-bad) · [良い例](#vue-warn-custom-directive-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs#L44) | 登録が必要なカスタムディレクティブを検出します。 | Recommended |
 | [`a11y/alt-text`](#a11y-alt-text) | [悪い例](#a11y-alt-text-bad) · [良い例](#a11y-alt-text-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/alt_text.rs#L33) | 画像などのメディアに代替テキストを用意します。 | Accessibility |
 | [`a11y/anchor-has-content`](#a11y-anchor-has-content) | [悪い例](#a11y-anchor-has-content-bad) · [良い例](#a11y-anchor-has-content-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L16) | リンクに支援技術で読める内容を用意します。 | Accessibility |
 | [`a11y/anchor-is-valid`](#a11y-anchor-is-valid) | [悪い例](#a11y-anchor-is-valid-bad) · [良い例](#a11y-anchor-is-valid-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_is_valid.rs#L30) | リンクの href に有効な移動先を指定します。 | Accessibility |
 | [`a11y/aria-props`](#a11y-aria-props) | [悪い例](#a11y-aria-props-bad) · [良い例](#a11y-aria-props-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_props.rs#L18) | 存在しない ARIA 属性を検出します。 | Accessibility |
-| [`a11y/aria-role`](#a11y-aria-role) | [悪い例](#a11y-aria-role-bad) · [良い例](#a11y-aria-role-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_role.rs#L21) | 有効で抽象的ではない ARIA role を指定します。 | Accessibility |
+| [`a11y/aria-role`](#a11y-aria-role) | [悪い例](#a11y-aria-role-bad) · [良い例](#a11y-aria-role-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_role.rs#L21) | 抽象ロールを除く、有効な ARIA role を指定します。 | Accessibility |
 | [`a11y/aria-unsupported-elements`](#a11y-aria-unsupported-elements) | [悪い例](#a11y-aria-unsupported-elements-bad) · [良い例](#a11y-aria-unsupported-elements-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs#L18) | ARIA 属性を使用できない要素への指定を検出します。 | Accessibility |
 | [`a11y/click-events-have-key-events`](#a11y-click-events-have-key-events) | [悪い例](#a11y-click-events-have-key-events-bad) · [良い例](#a11y-click-events-have-key-events-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L17) | クリックで操作する要素にキーボード操作も用意します。 | Accessibility |
 | [`a11y/form-control-has-label`](#a11y-form-control-has-label) | [悪い例](#a11y-form-control-has-label-bad) · [良い例](#a11y-form-control-has-label-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/form_control_has_label.rs#L19) | フォーム部品に関連付けられたラベルを用意します。 | Accessibility |
@@ -144,19 +144,19 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`a11y/media-has-caption`](#a11y-media-has-caption) | [悪い例](#a11y-media-has-caption-bad) · [良い例](#a11y-media-has-caption-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/media_has_caption.rs#L30) | 音声・動画に字幕を用意します。 | Accessibility |
 | [`a11y/mouse-events-have-key-events`](#a11y-mouse-events-have-key-events) | [悪い例](#a11y-mouse-events-have-key-events-bad) · [良い例](#a11y-mouse-events-have-key-events-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs#L30) | マウス操作と対応する focus / blur 操作を用意します。 | Accessibility |
 | [`a11y/no-access-key`](#a11y-no-access-key) | [悪い例](#a11y-no-access-key-bad) · [良い例](#a11y-no-access-key-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L19) | 環境のショートカットと衝突し得る accesskey を検出します。 | Accessibility |
-| [`a11y/no-aria-hidden-on-focusable`](#a11y-no-aria-hidden-on-focusable) | [悪い例](#a11y-no-aria-hidden-on-focusable-bad) · [良い例](#a11y-no-aria-hidden-on-focusable-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19) | フォーカス可能な要素を aria-hidden で隠した指定を検出します。 | Accessibility |
+| [`a11y/no-aria-hidden-on-focusable`](#a11y-no-aria-hidden-on-focusable) | [悪い例](#a11y-no-aria-hidden-on-focusable-bad) · [良い例](#a11y-no-aria-hidden-on-focusable-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19) | フォーカス可能な要素を aria-hidden で支援技術から隠す指定を検出します。 | Accessibility |
 | [`a11y/no-autofocus`](#a11y-no-autofocus) | [悪い例](#a11y-no-autofocus-bad) · [良い例](#a11y-no-autofocus-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_autofocus.rs#L19) | 意図せずフォーカスを移動させる autofocus を検出します。 | Accessibility |
 | [`a11y/no-distracting-elements`](#a11y-no-distracting-elements) | [悪い例](#a11y-no-distracting-elements-bad) · [良い例](#a11y-no-distracting-elements-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_distracting_elements.rs#L16) | marquee や blink などの注意をそらす要素を検出します。 | Accessibility |
 | [`a11y/no-i-for-icon`](#a11y-no-i-for-icon) | [悪い例](#a11y-no-i-for-icon-bad) · [良い例](#a11y-no-i-for-icon-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_i_for_icon.rs#L35) | アイコン用の i 要素を検出し、意味に合う要素を勧めます。 | Accessibility |
 | [`a11y/no-redundant-roles`](#a11y-no-redundant-roles) | [悪い例](#a11y-no-redundant-roles-bad) · [良い例](#a11y-no-redundant-roles-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_redundant_roles/report.rs#L31) | 要素本来の意味と重複する ARIA role を検出します。 | Accessibility |
 | [`a11y/no-refer-to-non-existent-id`](#a11y-no-refer-to-non-existent-id) | [悪い例](#a11y-no-refer-to-non-existent-id-bad) · [良い例](#a11y-no-refer-to-non-existent-id-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L37) | 文書内に存在しない ID への参照を検出します。 | Accessibility |
-| [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [悪い例](#a11y-no-role-presentation-on-focusable-bad) · [良い例](#a11y-no-role-presentation-on-focusable-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_role_presentation_on_focusable.rs#L19) | フォーカス可能な要素の意味を presentation で消した指定を検出します。 | Accessibility |
+| [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [悪い例](#a11y-no-role-presentation-on-focusable-bad) · [良い例](#a11y-no-role-presentation-on-focusable-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_role_presentation_on_focusable.rs#L19) | フォーカス可能な要素への role="presentation" または role="none" の指定を検出します。 | Accessibility |
 | [`a11y/no-static-element-interactions`](#a11y-no-static-element-interactions) | [悪い例](#a11y-no-static-element-interactions-bad) · [良い例](#a11y-no-static-element-interactions-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L31) | 操作部品ではない要素へのイベント指定を検出します。 | Accessibility |
 | [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [悪い例](#a11y-placeholder-label-option-bad) · [良い例](#a11y-placeholder-label-option-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) | select のプレースホルダー option に disabled または hidden を指定します。 | Accessibility |
 | [`a11y/role-has-required-aria-props`](#a11y-role-has-required-aria-props) | [悪い例](#a11y-role-has-required-aria-props-bad) · [良い例](#a11y-role-has-required-aria-props-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs#L30) | ARIA role が必要とする属性を指定します。 | Accessibility |
 | [`a11y/tabindex-no-positive`](#a11y-tabindex-no-positive) | [悪い例](#a11y-tabindex-no-positive-bad) · [良い例](#a11y-tabindex-no-positive-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs#L16) | 通常のフォーカス順序を変える正の tabindex を検出します。 | Accessibility |
 | [`a11y/use-list`](#a11y-use-list) | [悪い例](#a11y-use-list-bad) · [良い例](#a11y-use-list-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/use_list.rs#L36) | 箇条書きに見えるテキストをリスト要素で表現します。 | Accessibility |
-| [`vue/use-unique-element-ids`](#vue-use-unique-element-ids) | [悪い例](#vue-use-unique-element-ids-bad) · [良い例](#vue-use-unique-element-ids-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs#L52) | 静的 ID の代わりに useId() で再利用可能な ID を生成します。 | Accessibility |
+| [`vue/use-unique-element-ids`](#vue-use-unique-element-ids) | [悪い例](#vue-use-unique-element-ids-bad) · [良い例](#vue-use-unique-element-ids-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs#L52) | 静的 ID の代わりに useId() で一意な ID を生成します。 | Accessibility |
 | [`html/deprecated-attr`](#html-deprecated-attr) | [悪い例](#html-deprecated-attr-bad) · [良い例](#html-deprecated-attr-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_attr.rs#L32) | 非推奨の HTML 属性を検出します。 | HTML Conformance |
 | [`html/deprecated-element`](#html-deprecated-element) | [悪い例](#html-deprecated-element-bad) · [良い例](#html-deprecated-element-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_element.rs#L33) | 非推奨の HTML 要素を検出します。 | HTML Conformance |
 | [`html/id-duplication`](#html-id-duplication) | [悪い例](#html-id-duplication-bad) · [良い例](#html-id-duplication-good) | `error` | `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/id_duplication.rs#L36) | 同じテンプレート内の ID 重複を検出します。 | HTML Conformance |
@@ -167,7 +167,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`html/no-empty-palpable-content`](#html-no-empty-palpable-content) | [悪い例](#html-no-empty-palpable-content-bad) · [良い例](#html-no-empty-palpable-content-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32) | 可視コンテンツを期待する要素が空の場合に検出します。 | HTML Conformance |
 | [`html/require-datetime`](#html-require-datetime) | [悪い例](#html-require-datetime-bad) · [良い例](#html-require-datetime-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/require_datetime.rs#L34) | time 要素に機械可読の datetime を指定します。 | HTML Conformance |
 | [`type/no-floating-promises`](#type-no-floating-promises) | [悪い例](#type-no-floating-promises-bad) · [良い例](#type-no-floating-promises-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs#L13) | 処理しないまま放置された Promise を検出します。 | Type Aware |
-| [`type/no-reactivity-loss`](#type-no-reactivity-loss) | [悪い例](#type-no-reactivity-loss-bad) · [良い例](#type-no-reactivity-loss-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12) | 代入や呼び出しによって反応性を失うスナップショットを検出します。 | Type Aware |
+| [`type/no-reactivity-loss`](#type-no-reactivity-loss) | [悪い例](#type-no-reactivity-loss-bad) · [良い例](#type-no-reactivity-loss-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12) | リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。 | Type Aware |
 | [`type/no-unsafe-template-binding`](#type-no-unsafe-template-binding) | [悪い例](#type-no-unsafe-template-binding-bad) · [良い例](#type-no-unsafe-template-binding-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs#L12) | テンプレートで安全でない型の値を使用する箇所を検出します。 | Type Aware |
 | [`type/require-typed-emits`](#type-require-typed-emits) | [悪い例](#type-require-typed-emits-bad) · [良い例](#type-require-typed-emits-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54) | defineEmits に型定義を指定します。 | Type Aware |
 | [`type/require-typed-props`](#type-require-typed-props) | [悪い例](#type-require-typed-props-bad) · [良い例](#type-require-typed-props-good) | `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) | defineProps に型定義を指定します。 | Type Aware |
@@ -176,9 +176,9 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`script/no-next-tick`](#script-no-next-tick) | [悪い例](#script-no-next-tick-bad) · [良い例](#script-no-next-tick-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_next_tick.rs#L40) | Vapor 向けコンポーネントの nextTick() 使用を検出します。 | Vapor |
 | [`script/no-options-api`](#script-no-options-api) | [悪い例](#script-no-options-api-bad) · [良い例](#script-no-options-api-good) | `error` | `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_options_api.rs#L43) | Vapor で Options API を使用する箇所を検出します。 | Vapor |
 | [`vapor/no-inline-template`](#vapor-no-inline-template) | [悪い例](#vapor-no-inline-template-bad) · [良い例](#vapor-no-inline-template-good) | `error` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs#L31) | Vapor で削除済みの inline-template 属性を検出します。 | Vapor |
-| [`vapor/no-vue-lifecycle-events`](#vapor-no-vue-lifecycle-events) | [悪い例](#vapor-no-vue-lifecycle-events-bad) · [良い例](#vapor-no-vue-lifecycle-events-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs#L34) | Vapor が対応しない要素の @vue:* lifecycle event を検出します。 | Vapor |
+| [`vapor/no-vue-lifecycle-events`](#vapor-no-vue-lifecycle-events) | [悪い例](#vapor-no-vue-lifecycle-events-bad) · [良い例](#vapor-no-vue-lifecycle-events-good) | `error` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs#L34) | Vapor では未対応の、要素ごとに指定する @vue:* ライフサイクルイベントを検出します。 | Vapor |
 | [`vapor/prefer-static-class`](#vapor-prefer-static-class) | [悪い例](#vapor-prefer-static-class-bad) · [良い例](#vapor-prefer-static-class-good) | `warning` | `nuxt`, `opinionated` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L31) | 文字列リテラルの :class を静的 class に置き換えます。 | Vapor |
-| [`vapor/require-vapor-attribute`](#vapor-require-vapor-attribute) | [悪い例](#vapor-require-vapor-attribute-bad) · [良い例](#vapor-require-vapor-attribute-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs#L17) | Vapor 向けの script setup に vapor 属性を付ける方針を適用します。 | Vapor |
+| [`vapor/require-vapor-attribute`](#vapor-require-vapor-attribute) | [悪い例](#vapor-require-vapor-attribute-bad) · [良い例](#vapor-require-vapor-attribute-good) | `warning` | `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs#L17) | Vapor 向けの script setup に vapor 属性を付ける規約を示します。 | Vapor |
 | [`ecosystem/nuxt-prefer-nuxt-link`](#ecosystem-nuxt-prefer-nuxt-link) | [悪い例](#ecosystem-nuxt-prefer-nuxt-link-bad) · [良い例](#ecosystem-nuxt-prefer-nuxt-link-good) | `warning` | `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs#L14) | Nuxt の内部リンクに NuxtLink を使います。 | Ecosystem |
 | [`ecosystem/pinia-prefer-store-to-refs`](#ecosystem-pinia-prefer-store-to-refs) | [悪い例](#ecosystem-pinia-prefer-store-to-refs-bad) · [良い例](#ecosystem-pinia-prefer-store-to-refs-good) | `warning` | `ecosystem` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs#L20) | Pinia store の分割代入に storeToRefs() を使います。 | Ecosystem |
 | [`ecosystem/router-link-require-to`](#ecosystem-router-link-require-to) | [悪い例](#ecosystem-router-link-require-to-bad) · [良い例](#ecosystem-router-link-require-to-good) | `error` | `ecosystem` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L14) | RouterLink / NuxtLink に to を指定します。 | Ecosystem |
@@ -199,7 +199,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`css/prefer-slotted`](#css-prefer-slotted) | [悪い例](#css-prefer-slotted-bad) · [良い例](#css-prefer-slotted-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34) | slot や子コンポーネントに対する scoped CSS のセレクターを検査します。 | CSS |
 | [`css/require-font-display`](#css-require-font-display) | [悪い例](#css-require-font-display-bad) · [良い例](#css-require-font-display-good) | `warning` | `opinionated`, `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13) | @font-face に font-display を指定します。 | CSS |
 | [`musea/no-empty-variant`](#musea-no-empty-variant) | [悪い例](#musea-no-empty-variant-bad) · [良い例](#musea-no-empty-variant-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/no_empty_variant.rs#L8) | 内容のない variant ブロックを検出します。 | Musea |
-| [`musea/prefer-design-tokens`](#musea-prefer-design-tokens) | [悪い例](#musea-prefer-design-tokens-bad) · [良い例](#musea-prefer-design-tokens-good) | `warning` | _none_ | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32) | 登録した design token に一致する直接指定値を CSS 変数で表現します。 | Musea |
+| [`musea/prefer-design-tokens`](#musea-prefer-design-tokens) | [悪い例](#musea-prefer-design-tokens-bad) · [良い例](#musea-prefer-design-tokens-good) | `warning` | _none_ | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32) | 登録したデザイントークンの値に一致する CSS の直接指定値を、対応する CSS 変数で表現します。 | Musea |
 | [`musea/require-component`](#musea-require-component) | [悪い例](#musea-require-component-bad) · [良い例](#musea-require-component-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_component.rs#L11) | art ブロックに対象の component を指定します。 | Musea |
 | [`musea/require-title`](#musea-require-title) | [悪い例](#musea-require-title-bad) · [良い例](#musea-require-title-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31) | art ブロックに title を指定します。 | Musea |
 | [`musea/unique-variant-names`](#musea-unique-variant-names) | [悪い例](#musea-unique-variant-names-bad) · [良い例](#musea-unique-variant-names-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10) | 同じ Art ファイル内の variant 名を一意にします。 | Musea |
@@ -210,7 +210,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`script/define-macros-order`](#script-define-macros-order) | [悪い例](#script-define-macros-order-bad) · [良い例](#script-define-macros-order-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) | script setup のコンパイラーマクロを一定の順に宣言します。 | Script |
 | [`script/define-props-declaration`](#script-define-props-declaration) | [悪い例](#script-define-props-declaration-bad) · [良い例](#script-define-props-declaration-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_declaration.rs#L40) | defineProps を型による宣言形式に揃えます。 | Script |
 | [`script/define-props-destructuring`](#script-define-props-destructuring) | [悪い例](#script-define-props-destructuring-bad) · [良い例](#script-define-props-destructuring-good) | `warning` | _none_ | なし | [`ruleOptions`](./options.md) | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29) | defineProps の分割代入スタイルを指定した方針に揃えます。 | Script |
-| [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [悪い例](#script-no-arrow-functions-in-watch-bad) · [良い例](#script-no-arrow-functions-in-watch-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) | Options API の watch に this を持たないアロー関数を使う箇所を検出します。 | Script |
+| [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [悪い例](#script-no-arrow-functions-in-watch-bad) · [良い例](#script-no-arrow-functions-in-watch-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) | Options API の watch ハンドラーにアロー関数を使う箇所を検出します。 | Script |
 | [`script/no-async-in-computed`](#script-no-async-in-computed) | [悪い例](#script-no-async-in-computed-bad) · [良い例](#script-no-async-in-computed-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_async_in_computed.rs#L46) | computed の getter で非同期関数を使う箇所を検出します。 | Script |
 | [`script/no-boolean-default`](#script-no-boolean-default) | [悪い例](#script-no-boolean-default-bad) · [良い例](#script-no-boolean-default-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) | Boolean prop の冗長な default を検出します。 | Script |
 | [`script/no-deep-destructure-in-props`](#script-no-deep-destructure-in-props) | [悪い例](#script-no-deep-destructure-in-props-bad) · [良い例](#script-no-deep-destructure-in-props-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) | defineProps の深い分割代入を検出します。 | Script |
@@ -227,7 +227,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`script/no-internal-imports`](#script-no-internal-imports) | [悪い例](#script-no-internal-imports-bad) · [良い例](#script-no-internal-imports-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) | Vue 内部モジュールからの import を検出します。 | Script |
 | [`script/no-multiple-slot-args`](#script-no-multiple-slot-args) | [悪い例](#script-no-multiple-slot-args-bad) · [良い例](#script-no-multiple-slot-args-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_multiple_slot_args.rs#L61) | scoped slot 関数に複数の引数を渡す箇所を検出します。 | Script |
 | [`script/no-potential-component-option-typo`](#script-no-potential-component-option-typo) | [悪い例](#script-no-potential-component-option-typo-bad) · [良い例](#script-no-potential-component-option-typo-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19) | Options API のオプション名の入力ミスを検出します。 | Script |
-| [`script/no-reactive-destructure`](#script-no-reactive-destructure) | [悪い例](#script-no-reactive-destructure-bad) · [良い例](#script-no-reactive-destructure-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43) | reactive オブジェクトの反応性を失う分割代入を検出します。 | Script |
+| [`script/no-reactive-destructure`](#script-no-reactive-destructure) | [悪い例](#script-no-reactive-destructure-bad) · [良い例](#script-no-reactive-destructure-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43) | reactive オブジェクトを分割代入し、リアクティビティを失う箇所を検出します。 | Script |
 | [`script/no-ref-as-operand`](#script-no-ref-as-operand) | [悪い例](#script-no-ref-as-operand-bad) · [良い例](#script-no-ref-as-operand-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_ref_as_operand.rs#L41) | ref を演算の値として使う際に .value を参照します。 | Script |
 | [`script/no-required-prop-with-default`](#script-no-required-prop-with-default) | [悪い例](#script-no-required-prop-with-default-bad) · [良い例](#script-no-required-prop-with-default-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) | required: true と default を同時に持つ prop を検出します。 | Script |
 | [`script/no-reserved-identifiers`](#script-no-reserved-identifiers) | [悪い例](#script-no-reserved-identifiers-bad) · [良い例](#script-no-reserved-identifiers-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_identifiers.rs#L49) | Vue コンパイラーが予約した識別子の宣言を検出します。 | Script |
@@ -257,7 +257,7 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`script/require-prop-types`](#script-require-prop-types) | [悪い例](#script-require-prop-types-bad) · [良い例](#script-require-prop-types-good) | `error` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) | 各 prop の型を宣言します。 | Script |
 | [`script/require-symbol-provide`](#script-require-symbol-provide) | [悪い例](#script-require-symbol-provide-bad) · [良い例](#script-require-symbol-provide-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_symbol_provide.rs#L39) | provide / inject のキーに衝突しにくい Symbol を使います。 | Script |
 | [`script/require-typed-object-prop`](#script-require-typed-object-prop) | [悪い例](#script-require-typed-object-prop-bad) · [良い例](#script-require-typed-object-prop-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs#L63) | Object / Array の prop に具体的な型を指定します。 | Script |
-| [`script/require-typed-ref`](#script-require-typed-ref) | [悪い例](#script-require-typed-ref-bad) · [良い例](#script-require-typed-ref-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_typed_ref.rs#L55) | 空・null・undefined で初期化する ref() に型引数を指定します。 | Script |
+| [`script/require-typed-ref`](#script-require-typed-ref) | [悪い例](#script-require-typed-ref-bad) · [良い例](#script-require-typed-ref-good) | `warning` | _none_ | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_typed_ref.rs#L55) | 引数なし、null、undefined で呼び出す ref() に型引数を指定します。 | Script |
 | [`script/require-valid-default-prop`](#script-require-valid-default-prop) | [悪い例](#script-require-valid-default-prop-bad) · [良い例](#script-require-valid-default-prop-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs#L68) | prop の default を宣言した型に合う値にします。 | Script |
 | [`script/return-in-computed-property`](#script-return-in-computed-property) | [悪い例](#script-return-in-computed-property-bad) · [良い例](#script-return-in-computed-property-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/return_in_computed_property.rs#L31) | computed の getter に値を返す return を用意します。 | Script |
 | [`script/return-in-emits-validator`](#script-return-in-emits-validator) | [悪い例](#script-return-in-emits-validator-bad) · [良い例](#script-return-in-emits-validator-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) | Options API の emits validator に戻り値を用意します。 | Script |
@@ -265,14 +265,16 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`script/valid-define-options`](#script-valid-define-options) | [悪い例](#script-valid-define-options-bad) · [良い例](#script-valid-define-options-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_options.rs#L41) | defineOptions の引数と使用回数を検査します。 | Script |
 | [`script/valid-define-props`](#script-valid-define-props) | [悪い例](#script-valid-define-props-bad) · [良い例](#script-valid-define-props-good) | `error` | `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_props.rs#L44) | defineProps の重複や型と実行時引数の併用を検出します。 | Script |
 | [`script/valid-next-tick`](#script-valid-next-tick) | [悪い例](#script-valid-next-tick-bad) · [良い例](#script-valid-next-tick-good) | `warning` | `happy-path`, `ecosystem`, `nuxt`, `opinionated` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_next_tick.rs#L55) | nextTick() の完了を await、then、または callback で扱います。 | Script |
-| [`nuxt/no-nuxt-config-test-key`](#nuxt-no-nuxt-config-test-key) | [悪い例](#nuxt-no-nuxt-config-test-key-bad) · [良い例](#nuxt-no-nuxt-config-test-key-good) | `error` | `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_nuxt_config_test_key.rs#L16) | Nuxt が自動判定する test 環境の手動設定を検出します。 | Nuxt |
+| [`nuxt/no-nuxt-config-test-key`](#nuxt-no-nuxt-config-test-key) | [悪い例](#nuxt-no-nuxt-config-test-key-bad) · [良い例](#nuxt-no-nuxt-config-test-key-good) | `error` | `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_nuxt_config_test_key.rs#L16) | Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出します。 | Nuxt |
 | [`nuxt/no-page-meta-runtime-values`](#nuxt-no-page-meta-runtime-values) | [悪い例](#nuxt-no-page-meta-runtime-values-bad) · [良い例](#nuxt-no-page-meta-runtime-values-good) | `error` | `nuxt` | なし | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_page_meta_runtime_values.rs#L25) | definePageMeta の即時評価部分で実行時コンテキストを使う箇所を検出します。 | Nuxt |
 | [`nuxt/nuxt-config-keys-order`](#nuxt-nuxt-config-keys-order) | [悪い例](#nuxt-nuxt-config-keys-order-bad) · [良い例](#nuxt-nuxt-config-keys-order-good) | `error` | `nuxt` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/nuxt_config_keys_order.rs#L24) | Nuxt 設定のプロパティを推奨順に並べます。 | Nuxt |
 | [`nuxt/prefer-import-meta`](#nuxt-prefer-import-meta) | [悪い例](#nuxt-prefer-import-meta-bad) · [良い例](#nuxt-prefer-import-meta-good) | `error` | `nuxt` | あり | なし | [source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_meta.rs#L18) | Nuxt の環境フラグを process.* から import.meta.* に置き換えます。 | Nuxt |
 
-## プロジェクト ルールと analyzer 契約 (66)
+<span id="プロジェクト-ルールと-analyzer-契約-66"></span>
 
-以下は上の 251 件の単一ファイル カタログに加わる項目です。コンポーネントやプロジェクトの文脈、または追跡する graph の例を示します。CLI、実験的な library の生成元、生成元のない契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。
+## プロジェクトのルールと解析器の診断契約 (66)
+
+以下の項目は、上の 251 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。
 
 | ルール / コード | 例 | 現在の対応 |
 | --- | --- | --- |
@@ -284,10 +286,10 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vue/cross-file-attrs-fallthrough`](#vue-cross-file-attrs-fallthrough) | [悪い例](#vue-cross-file-attrs-fallthrough-bad) · [良い例](#vue-cross-file-attrs-fallthrough-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/array-mutation`](#vize-croquis-cf-array-mutation) | [悪い例](#vize-croquis-cf-array-mutation-bad) · [良い例](#vize-croquis-cf-array-mutation-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/async-boundary`](#vize-croquis-cf-async-boundary) | [悪い例](#vize-croquis-cf-async-boundary-bad) · [良い例](#vize-croquis-cf-async-boundary-good) | CLI のプロジェクト検査 |
-| [`vize:croquis/cf/async-no-suspense`](#vize-croquis-cf-async-no-suspense) | [悪い例](#vize-croquis-cf-async-no-suspense-bad) · [良い例](#vize-croquis-cf-async-no-suspense-good) | library の生成元あり。必要な source 情報が未対応 |
+| [`vize:croquis/cf/async-no-suspense`](#vize-croquis-cf-async-no-suspense) | [悪い例](#vize-croquis-cf-async-no-suspense-bad) · [良い例](#vize-croquis-cf-async-no-suspense-good) | ライブラリーの生成元あり。必要なソース情報が未対応 |
 | [`vize:croquis/cf/browser-api-ssr`](#vize-croquis-cf-browser-api-ssr) | [悪い例](#vize-croquis-cf-browser-api-ssr-bad) · [良い例](#vize-croquis-cf-browser-api-ssr-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/circular-dep`](#vize-croquis-cf-circular-dep) | [悪い例](#vize-croquis-cf-circular-dep-bad) · [良い例](#vize-croquis-cf-circular-dep-good) | 契約のみ。生成元なし |
-| [`vize:croquis/cf/circular-reactive-dependency`](#vize-croquis-cf-circular-reactive-dependency) | [悪い例](#vize-croquis-cf-circular-reactive-dependency-bad) · [良い例](#vize-croquis-cf-circular-reactive-dependency-good) | CLI: 追跡 graph の例 |
+| [`vize:croquis/cf/circular-reactive-dependency`](#vize-croquis-cf-circular-reactive-dependency) | [悪い例](#vize-croquis-cf-circular-reactive-dependency-bad) · [良い例](#vize-croquis-cf-circular-reactive-dependency-good) | CLI: 参照を追跡するグラフの例 |
 | [`vize:croquis/cf/closure-captures-reactive`](#vize-croquis-cf-closure-captures-reactive) | [悪い例](#vize-croquis-cf-closure-captures-reactive-bad) · [良い例](#vize-croquis-cf-closure-captures-reactive-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/composable-outside-setup`](#vize-croquis-cf-composable-outside-setup) | [悪い例](#vize-croquis-cf-composable-outside-setup-bad) · [良い例](#vize-croquis-cf-composable-outside-setup-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/computed-side-effects`](#vize-croquis-cf-computed-side-effects) | [悪い例](#vize-croquis-cf-computed-side-effects-bad) · [良い例](#vize-croquis-cf-computed-side-effects-good) | 契約のみ。生成元なし |
@@ -297,46 +299,46 @@ Vite+ では `@vizejs/vite-plugin/vite-plus` の `defineConfig` を使い、`lin
 | [`vize:croquis/cf/dom-access-without-next-tick`](#vize-croquis-cf-dom-access-without-next-tick) | [悪い例](#vize-croquis-cf-dom-access-without-next-tick-bad) · [良い例](#vize-croquis-cf-dom-access-without-next-tick-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/duplicate-id`](#vize-croquis-cf-duplicate-id) | [悪い例](#vize-croquis-cf-duplicate-id-bad) · [良い例](#vize-croquis-cf-duplicate-id-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/event-listener-leak`](#vize-croquis-cf-event-listener-leak) | [悪い例](#vize-croquis-cf-event-listener-leak-bad) · [良い例](#vize-croquis-cf-event-listener-leak-good) | 契約のみ。生成元なし |
-| [`vize:croquis/cf/event-modifier`](#vize-croquis-cf-event-modifier) | [悪い例](#vize-croquis-cf-event-modifier-bad) · [良い例](#vize-croquis-cf-event-modifier-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/event-modifier`](#vize-croquis-cf-event-modifier) | [悪い例](#vize-croquis-cf-event-modifier-bad) · [良い例](#vize-croquis-cf-event-modifier-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
 | [`vize:croquis/cf/hydration-risk`](#vize-croquis-cf-hydration-risk) | [悪い例](#vize-croquis-cf-hydration-risk-bad) · [良い例](#vize-croquis-cf-hydration-risk-good) | CLI のプロジェクト検査 |
-| [`vize:croquis/cf/inherit-attrs-unused`](#vize-croquis-cf-inherit-attrs-unused) | [悪い例](#vize-croquis-cf-inherit-attrs-unused-bad) · [良い例](#vize-croquis-cf-inherit-attrs-unused-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/inherit-attrs-unused`](#vize-croquis-cf-inherit-attrs-unused) | [悪い例](#vize-croquis-cf-inherit-attrs-unused-bad) · [良い例](#vize-croquis-cf-inherit-attrs-unused-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
 | [`vize:croquis/cf/inject-without-symbol`](#vize-croquis-cf-inject-without-symbol) | [悪い例](#vize-croquis-cf-inject-without-symbol-bad) · [良い例](#vize-croquis-cf-inject-without-symbol-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/injected-async-mutation-race`](#vize-croquis-cf-injected-async-mutation-race) | [悪い例](#vize-croquis-cf-injected-async-mutation-race-bad) · [良い例](#vize-croquis-cf-injected-async-mutation-race-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/lifecycle-outside-setup`](#vize-croquis-cf-lifecycle-outside-setup) | [悪い例](#vize-croquis-cf-lifecycle-outside-setup-bad) · [良い例](#vize-croquis-cf-lifecycle-outside-setup-good) | 契約のみ。生成元なし |
-| [`vize:croquis/cf/lifecycle-without-cleanup`](#vize-croquis-cf-lifecycle-without-cleanup) | [悪い例](#vize-croquis-cf-lifecycle-without-cleanup-bad) · [良い例](#vize-croquis-cf-lifecycle-without-cleanup-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
-| [`vize:croquis/cf/missing-required-prop`](#vize-croquis-cf-missing-required-prop) | [悪い例](#vize-croquis-cf-missing-required-prop-bad) · [良い例](#vize-croquis-cf-missing-required-prop-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/lifecycle-without-cleanup`](#vize-croquis-cf-lifecycle-without-cleanup) | [悪い例](#vize-croquis-cf-lifecycle-without-cleanup-bad) · [良い例](#vize-croquis-cf-lifecycle-without-cleanup-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/missing-required-prop`](#vize-croquis-cf-missing-required-prop) | [悪い例](#vize-croquis-cf-missing-required-prop-bad) · [良い例](#vize-croquis-cf-missing-required-prop-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
 | [`vize:croquis/cf/missing-suspense`](#vize-croquis-cf-missing-suspense) | [悪い例](#vize-croquis-cf-missing-suspense-bad) · [良い例](#vize-croquis-cf-missing-suspense-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/module-scope-reactive`](#vize-croquis-cf-module-scope-reactive) | [悪い例](#vize-croquis-cf-module-scope-reactive-bad) · [良い例](#vize-croquis-cf-module-scope-reactive-good) | 契約のみ。生成元なし |
-| [`vize:croquis/cf/multi-root-attrs`](#vize-croquis-cf-multi-root-attrs) | [悪い例](#vize-croquis-cf-multi-root-attrs-bad) · [良い例](#vize-croquis-cf-multi-root-attrs-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/multi-root-attrs`](#vize-croquis-cf-multi-root-attrs) | [悪い例](#vize-croquis-cf-multi-root-attrs-bad) · [良い例](#vize-croquis-cf-multi-root-attrs-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
 | [`vize:croquis/cf/mutated-after-escape`](#vize-croquis-cf-mutated-after-escape) | [悪い例](#vize-croquis-cf-mutated-after-escape-bad) · [良い例](#vize-croquis-cf-mutated-after-escape-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/non-reactive-provide`](#vize-croquis-cf-non-reactive-provide) | [悪い例](#vize-croquis-cf-non-reactive-provide-bad) · [良い例](#vize-croquis-cf-non-reactive-provide-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/non-unique-id`](#vize-croquis-cf-non-unique-id) | [悪い例](#vize-croquis-cf-non-unique-id-bad) · [良い例](#vize-croquis-cf-non-unique-id-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/object-identity-comparison`](#vize-croquis-cf-object-identity-comparison) | [悪い例](#vize-croquis-cf-object-identity-comparison-bad) · [良い例](#vize-croquis-cf-object-identity-comparison-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/pinia-getter`](#vize-croquis-cf-pinia-getter) | [悪い例](#vize-croquis-cf-pinia-getter-bad) · [良い例](#vize-croquis-cf-pinia-getter-good) | 契約のみ。生成元なし |
-| [`vize:croquis/cf/prop-type-mismatch`](#vize-croquis-cf-prop-type-mismatch) | [悪い例](#vize-croquis-cf-prop-type-mismatch-bad) · [良い例](#vize-croquis-cf-prop-type-mismatch-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/prop-type-mismatch`](#vize-croquis-cf-prop-type-mismatch) | [悪い例](#vize-croquis-cf-prop-type-mismatch-bad) · [良い例](#vize-croquis-cf-prop-type-mismatch-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
 | [`vize:croquis/cf/provide-inject-type`](#vize-croquis-cf-provide-inject-type) | [悪い例](#vize-croquis-cf-provide-inject-type-bad) · [良い例](#vize-croquis-cf-provide-inject-type-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/provide-without-symbol`](#vize-croquis-cf-provide-without-symbol) | [悪い例](#vize-croquis-cf-provide-without-symbol-bad) · [良い例](#vize-croquis-cf-provide-without-symbol-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/reactive-export`](#vize-croquis-cf-reactive-export) | [悪い例](#vize-croquis-cf-reactive-export-bad) · [良い例](#vize-croquis-cf-reactive-export-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/reactivity-outside-setup`](#vize-croquis-cf-reactivity-outside-setup) | [悪い例](#vize-croquis-cf-reactivity-outside-setup-bad) · [良い例](#vize-croquis-cf-reactivity-outside-setup-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/reassignment-breaks-reactivity`](#vize-croquis-cf-reassignment-breaks-reactivity) | [悪い例](#vize-croquis-cf-reassignment-breaks-reactivity-bad) · [良い例](#vize-croquis-cf-reassignment-breaks-reactivity-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/reference-escapes-scope`](#vize-croquis-cf-reference-escapes-scope) | [悪い例](#vize-croquis-cf-reference-escapes-scope-bad) · [良い例](#vize-croquis-cf-reference-escapes-scope-good) | 契約のみ。生成元なし |
-| [`vize:croquis/cf/setup-context-violation`](#vize-croquis-cf-setup-context-violation) | [悪い例](#vize-croquis-cf-setup-context-violation-bad) · [良い例](#vize-croquis-cf-setup-context-violation-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/setup-context-violation`](#vize-croquis-cf-setup-context-violation) | [悪い例](#vize-croquis-cf-setup-context-violation-bad) · [良い例](#vize-croquis-cf-setup-context-violation-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
 | [`vize:croquis/cf/shallow-deep-access`](#vize-croquis-cf-shallow-deep-access) | [悪い例](#vize-croquis-cf-shallow-deep-access-bad) · [良い例](#vize-croquis-cf-shallow-deep-access-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/spread-breaks-reactivity`](#vize-croquis-cf-spread-breaks-reactivity) | [悪い例](#vize-croquis-cf-spread-breaks-reactivity-bad) · [良い例](#vize-croquis-cf-spread-breaks-reactivity-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/suspense-no-fallback`](#vize-croquis-cf-suspense-no-fallback) | [悪い例](#vize-croquis-cf-suspense-no-fallback-bad) · [良い例](#vize-croquis-cf-suspense-no-fallback-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/template-ref-timing`](#vize-croquis-cf-template-ref-timing) | [悪い例](#vize-croquis-cf-template-ref-timing-bad) · [良い例](#vize-croquis-cf-template-ref-timing-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/toraw-mutation`](#vize-croquis-cf-toraw-mutation) | [悪い例](#vize-croquis-cf-toraw-mutation-bad) · [良い例](#vize-croquis-cf-toraw-mutation-good) | 契約のみ。生成元なし |
 | [`vize:croquis/cf/uncaught-error`](#vize-croquis-cf-uncaught-error) | [悪い例](#vize-croquis-cf-uncaught-error-bad) · [良い例](#vize-croquis-cf-uncaught-error-good) | CLI のプロジェクト検査 |
-| [`vize:croquis/cf/undeclared-emit`](#vize-croquis-cf-undeclared-emit) | [悪い例](#vize-croquis-cf-undeclared-emit-bad) · [良い例](#vize-croquis-cf-undeclared-emit-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
-| [`vize:croquis/cf/undeclared-prop`](#vize-croquis-cf-undeclared-prop) | [悪い例](#vize-croquis-cf-undeclared-prop-bad) · [良い例](#vize-croquis-cf-undeclared-prop-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/undeclared-emit`](#vize-croquis-cf-undeclared-emit) | [悪い例](#vize-croquis-cf-undeclared-emit-bad) · [良い例](#vize-croquis-cf-undeclared-emit-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/undeclared-prop`](#vize-croquis-cf-undeclared-prop) | [悪い例](#vize-croquis-cf-undeclared-prop-bad) · [良い例](#vize-croquis-cf-undeclared-prop-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
 | [`vize:croquis/cf/undefined-slot`](#vize-croquis-cf-undefined-slot) | [悪い例](#vize-croquis-cf-undefined-slot-bad) · [良い例](#vize-croquis-cf-undefined-slot-good) | 契約のみ。生成元なし |
-| [`vize:croquis/cf/unhandled-event`](#vize-croquis-cf-unhandled-event) | [悪い例](#vize-croquis-cf-unhandled-event-bad) · [良い例](#vize-croquis-cf-unhandled-event-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/unhandled-event`](#vize-croquis-cf-unhandled-event) | [悪い例](#vize-croquis-cf-unhandled-event-bad) · [良い例](#vize-croquis-cf-unhandled-event-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
 | [`vize:croquis/cf/unmatched-inject`](#vize-croquis-cf-unmatched-inject) | [悪い例](#vize-croquis-cf-unmatched-inject-bad) · [良い例](#vize-croquis-cf-unmatched-inject-good) | CLI のプロジェクト検査 |
-| [`vize:croquis/cf/unmatched-listener`](#vize-croquis-cf-unmatched-listener) | [悪い例](#vize-croquis-cf-unmatched-listener-bad) · [良い例](#vize-croquis-cf-unmatched-listener-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
-| [`vize:croquis/cf/unregistered-component`](#vize-croquis-cf-unregistered-component) | [悪い例](#vize-croquis-cf-unregistered-component-bad) · [良い例](#vize-croquis-cf-unregistered-component-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
-| [`vize:croquis/cf/unresolved-import`](#vize-croquis-cf-unresolved-import) | [悪い例](#vize-croquis-cf-unresolved-import-bad) · [良い例](#vize-croquis-cf-unresolved-import-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
-| [`vize:croquis/cf/unused-attrs`](#vize-croquis-cf-unused-attrs) | [悪い例](#vize-croquis-cf-unused-attrs-bad) · [良い例](#vize-croquis-cf-unused-attrs-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
-| [`vize:croquis/cf/unused-emit`](#vize-croquis-cf-unused-emit) | [悪い例](#vize-croquis-cf-unused-emit-bad) · [良い例](#vize-croquis-cf-unused-emit-good) | 実験的な library の生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/unmatched-listener`](#vize-croquis-cf-unmatched-listener) | [悪い例](#vize-croquis-cf-unmatched-listener-bad) · [良い例](#vize-croquis-cf-unmatched-listener-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/unregistered-component`](#vize-croquis-cf-unregistered-component) | [悪い例](#vize-croquis-cf-unregistered-component-bad) · [良い例](#vize-croquis-cf-unregistered-component-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/unresolved-import`](#vize-croquis-cf-unresolved-import) | [悪い例](#vize-croquis-cf-unresolved-import-bad) · [良い例](#vize-croquis-cf-unresolved-import-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/unused-attrs`](#vize-croquis-cf-unused-attrs) | [悪い例](#vize-croquis-cf-unused-attrs-bad) · [良い例](#vize-croquis-cf-unused-attrs-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
+| [`vize:croquis/cf/unused-emit`](#vize-croquis-cf-unused-emit) | [悪い例](#vize-croquis-cf-unused-emit-bad) · [良い例](#vize-croquis-cf-unused-emit-good) | 実験的なライブラリーの生成元。CLI の個別コードでは未生成 |
 | [`vize:croquis/cf/unused-provide`](#vize-croquis-cf-unused-provide) | [悪い例](#vize-croquis-cf-unused-provide-bad) · [良い例](#vize-croquis-cf-unused-provide-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/value-extraction-breaks-reactivity`](#vize-croquis-cf-value-extraction-breaks-reactivity) | [悪い例](#vize-croquis-cf-value-extraction-breaks-reactivity-bad) · [良い例](#vize-croquis-cf-value-extraction-breaks-reactivity-good) | CLI のプロジェクト検査 |
 | [`vize:croquis/cf/watch-can-be-computed`](#vize-croquis-cf-watch-can-be-computed) | [悪い例](#vize-croquis-cf-watch-can-be-computed-bad) · [良い例](#vize-croquis-cf-watch-can-be-computed-good) | 契約のみ。生成元なし |
@@ -409,7 +411,7 @@ vp run lint
 </body></html>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/no_unsupported_directive.rs#L43) · [全ルール](all.md)
 
@@ -477,13 +479,13 @@ vp run lint
 </body></html>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_effect.rs#L35) · [全ルール](all.md)
 
 ### `petite-vue/valid-v-scope`
 
-v-scope の値にオブジェクトリテラルを指定します。
+v-scope に値を指定する場合は、オブジェクトリテラルにします。
 
 [悪い例](#petite-vue-valid-v-scope-bad) · [良い例](#petite-vue-valid-v-scope-good)
 
@@ -548,7 +550,7 @@ vp run lint
 </body></html>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_scope.rs#L46) · [全ルール](all.md)
 
@@ -561,7 +563,7 @@ vp run lint
 既定の重大度: `error`  
 プリセット: `essential`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 検出対象はファイル名です。同じコンポーネントのファイル名を変更します。子要素のタグ名は対象ではありません。
@@ -603,7 +605,7 @@ Item.vue は一つの語だけのコンポーネント名です。
 
 **良い**
 
-同じテンプレートの名前を、複数の語を持つ TodoItem.vue にします。
+同じコンポーネントのファイル名を、複数の単語からなる TodoItem.vue に変更します。
 
 `TodoItem.vue`
 
@@ -611,7 +613,7 @@ Item.vue は一つの語だけのコンポーネント名です。
 <template><p>Item</p></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L34) · [全ルール](all.md)
 
@@ -624,7 +626,7 @@ v-html / v-text と子コンテンツを同時に指定する箇所を検出し�
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -652,7 +654,7 @@ vp run lint
 
 **悪い**
 
-v-text が p の内容を置き換えるため、中に書いた fallback の文字を表示できません。
+v-text が p の内容を置き換えるため、中に書いたフォールバック用のテキストは表示されません。
 
 ```vue annotate="remove:2"
 <template>
@@ -664,7 +666,7 @@ v-text が p の内容を置き換えるため、中に書いた fallback の文
 
 **良い**
 
-子の文字を取り除き、p の内容を v-text だけで指定します。
+子のテキストを取り除き、p の内容を v-text だけで指定します。
 
 ```vue annotate="add:2"
 <template>
@@ -672,20 +674,20 @@ v-text が p の内容を置き換えるため、中に書いた fallback の文
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_child_content.rs#L30) · [全ルール](all.md)
 
 ### `vue/no-deprecated-filter`
 
-Vue 2 の pipe による filter 構文を検出します。
+Vue 2 のパイプによるフィルター構文を検出します。
 
 [悪い例](#vue-no-deprecated-filter-bad) · [良い例](#vue-no-deprecated-filter-good)
 
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -713,7 +715,7 @@ vp run lint
 
 **悪い**
 
-capitalize を適用するために、廃止された filter のパイプ構文を使っています。
+capitalize を適用するために、廃止されたフィルターのパイプ構文を使っています。
 
 ```vue annotate="remove:2"
 <template>
@@ -733,7 +735,7 @@ capitalize を適用するために、廃止された filter のパイプ構文�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L53) · [全ルール](all.md)
 
@@ -746,7 +748,7 @@ SFC の template で削除済みの functional 属性を検出します。
 既定の重大度: `error`  
 プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -774,7 +776,7 @@ vp run lint
 
 **悪い**
 
-SFC の template に廃止された functional を指定し、旧来の props の参照を使っています。
+SFC の template に廃止された functional を指定し、旧来の props 経由の参照を使っています。
 
 ```vue annotate="remove:1,2"
 <template functional>
@@ -794,7 +796,7 @@ functional を取り除き、コンポーネントの msg を直接参照しま�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs#L57) · [全ルール](all.md)
 
@@ -807,7 +809,7 @@ functional を取り除き、コンポーネントの msg を直接参照しま�
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -856,7 +858,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_html_element_is.rs#L39) · [全ルール](all.md)
 
@@ -869,7 +871,7 @@ vp run lint
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -917,7 +919,7 @@ inline-template を取り除き、同じ内容を通常の形で渡します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_inline_template.rs#L20) · [全ルール](all.md)
 
@@ -930,7 +932,7 @@ router-link の削除済み tag prop を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -958,7 +960,7 @@ vp run lint
 
 **悪い**
 
-RouterLink の廃止された tag で button を指定しています。
+RouterLink の廃止された tag prop で button を指定しています。
 
 ```vue annotate="remove:2"
 <template>
@@ -970,7 +972,7 @@ RouterLink の廃止された tag で button を指定しています。
 
 **良い**
 
-slot から navigate を受け取り、明示的に記述した button で実行します。
+スロットから navigate を受け取り、明示的に記述した button のクリック時に呼び出します。
 
 ```vue annotate="add:2,3,4"
 <template>
@@ -980,7 +982,7 @@ slot から navigate を受け取り、明示的に記述した button で実行
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs#L37) · [全ルール](all.md)
 
@@ -993,7 +995,7 @@ template の削除済み scope 属性を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1021,7 +1023,7 @@ vp run lint
 
 **悪い**
 
-slot の template に、廃止された scope で props を宣言しています。
+スロットの template に、廃止された scope で props を宣言しています。
 
 ```vue annotate="remove:2"
 <template>
@@ -1033,7 +1035,7 @@ slot の template に、廃止された scope で props を宣言しています
 
 **良い**
 
-現在の default slot のディレクティブで、同じ props を受け取ります。
+現在のデフォルトスロットのディレクティブで、同じ props を受け取ります。
 
 ```vue annotate="add:2"
 <template>
@@ -1041,7 +1043,7 @@ slot の template に、廃止された scope で props を宣言しています
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_scope_attribute.rs#L38) · [全ルール](all.md)
 
@@ -1054,7 +1056,7 @@ slot の template に、廃止された scope で props を宣言しています
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1082,7 +1084,7 @@ vp run lint
 
 **悪い**
 
-旧来の slot 属性で header の slot を選んでいます。
+旧来の slot 属性で header のスロットを選んでいます。
 
 ```vue annotate="remove:3,4"
 <template>
@@ -1097,7 +1099,7 @@ vp run lint
 
 **良い**
 
-現在の v-slot:header で header の slot を指定します。
+現在の v-slot:header で header のスロットを指定します。
 
 ```vue annotate="add:3"
 <template>
@@ -1107,7 +1109,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_attribute.rs#L39) · [全ルール](all.md)
 
@@ -1120,7 +1122,7 @@ vp run lint
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1148,7 +1150,7 @@ vp run lint
 
 **悪い**
 
-廃止された slot-scope で slot の props を受け取っています。
+廃止された slot-scope でスロットの props を受け取っています。
 
 ```vue annotate="remove:2"
 <template>
@@ -1168,20 +1170,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_slot_scope_attribute.rs#L33) · [全ルール](all.md)
 
 ### `vue/no-deprecated-v-bind-sync`
 
-削除済みの v-bind の .sync modifier を検出します。
+削除済みの v-bind の .sync 修飾子を検出します。
 
 [悪い例](#vue-no-deprecated-v-bind-sync-bad) · [良い例](#vue-no-deprecated-v-bind-sync-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1232,20 +1234,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_bind_sync.rs#L42) · [全ルール](all.md)
 
 ### `vue/no-deprecated-v-on-native-modifier`
 
-削除済みの v-on の .native modifier を検出します。
+削除済みの v-on の .native 修飾子を検出します。
 
 [悪い例](#vue-no-deprecated-v-on-native-modifier-bad) · [良い例](#vue-no-deprecated-v-on-native-modifier-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1287,7 +1289,7 @@ vp run lint
 
 **良い**
 
-.native を取り除き、.stop などの他の modifier は残します。
+.native を取り除き、.stop などの他の修飾子は残します。
 
 ```vue annotate="add:2,3"
 <template>
@@ -1296,20 +1298,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_native_modifier.rs#L43) · [全ルール](all.md)
 
 ### `vue/no-deprecated-v-on-number-modifiers`
 
-v-on の削除済み数値 keyCode modifier を検出します。
+v-on の削除済みの数値 keyCode 修飾子を検出します。
 
 [悪い例](#vue-no-deprecated-v-on-number-modifiers-bad) · [良い例](#vue-no-deprecated-v-on-number-modifiers-good)
 
 既定の重大度: `error`  
 プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1351,7 +1353,7 @@ vp run lint
 
 **良い**
 
-キーの名前を使い、enter と esc の modifier に変更します。
+キーの名前を使い、enter と esc の修飾子に変更します。
 
 ```vue annotate="add:2,3"
 <template>
@@ -1360,7 +1362,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_v_on_number_modifiers.rs#L43) · [全ルール](all.md)
 
@@ -1373,7 +1375,7 @@ v-if / v-else-if の条件重複を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1423,7 +1425,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_dupe_v_else_if.rs#L34) · [全ルール](all.md)
 
@@ -1436,7 +1438,7 @@ vp run lint
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1484,7 +1486,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_duplicate_attributes.rs#L31) · [全ルール](all.md)
 
@@ -1497,7 +1499,7 @@ vp run lint
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 単一ルートを要求する場合に有効にします。通常の Vue 3 は複数ルートを許可します。
@@ -1540,7 +1542,7 @@ vp run lint
 
 **良い**
 
-section で囲み、ルートを一つにします。単一ルートの契約が必要な場合にだけ有効にする規約です。
+section で囲み、ルートを一つにします。単一ルートを前提とする場合にだけ有効にする規約です。
 
 ```vue annotate="add:2"
 <template>
@@ -1548,7 +1550,7 @@ section で囲み、ルートを一つにします。単一ルートの契約が
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multiple_template_root.rs#L27) · [全ルール](all.md)
 
@@ -1561,7 +1563,7 @@ section で囲み、ルートを一つにします。単一ルートの契約が
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -1616,7 +1618,7 @@ function increment() {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_mutating_props.rs#L42) · [全ルール](all.md)
 
@@ -1629,7 +1631,7 @@ function increment() {
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1671,7 +1673,7 @@ export default {
 
 **良い**
 
-標準の button と重複しない、アプリの AppButton の名前を指定します。
+標準の button と重複しない、アプリのコンポーネント名 AppButton を指定します。
 
 ```vue annotate="add:1,2,4,5,6,7,8,9"
 <script setup lang="ts">
@@ -1685,7 +1687,7 @@ defineOptions({ name: "AppButton" });
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_reserved_component_names.rs#L45) · [全ルール](all.md)
 
@@ -1698,7 +1700,7 @@ v-for 用ではない template の key 指定を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1738,7 +1740,7 @@ vp run lint
 
 **良い**
 
-template の v-for に key を付け、繰り返す各 fragment を識別します。
+template の v-for に key を付け、繰り返す各フラグメントを識別します。
 
 ```vue annotate="add:2"
 <template>
@@ -1746,7 +1748,7 @@ template の v-for に key を付け、繰り返す各 fragment を識別しま�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_key.rs#L31) · [全ルール](all.md)
 
@@ -1759,7 +1761,7 @@ textarea 内の mustache を検出し、v-model の使用を勧めます。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1787,7 +1789,7 @@ vp run lint
 
 **悪い**
 
-textarea の値をバインドせず、子の補間に message を記述しています。
+textarea の値をバインドせず、要素内のテキスト補間に message を記述しています。
 
 ```vue annotate="remove:2"
 <template>
@@ -1799,7 +1801,7 @@ textarea の値をバインドせず、子の補間に message を記述して�
 
 **良い**
 
-v-model で、編集する textarea の値と message を関連付けます。
+v-model で、編集可能な textarea の値と message を関連付けます。
 
 ```vue annotate="add:2"
 <template>
@@ -1807,7 +1809,7 @@ v-model で、編集する textarea の値と message を関連付けます。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_textarea_mustache.rs#L26) · [全ルール](all.md)
 
@@ -1820,7 +1822,7 @@ v-model で、編集する textarea の値と message を関連付けます。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1876,7 +1878,7 @@ import UserAvatar from "./UserAvatar.vue";
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_components.rs#L46) · [全ルール](all.md)
 
@@ -1889,7 +1891,7 @@ v-for / v-slot に宣言しているのに使わない変数を検出します�
 既定の重大度: `warning`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1917,7 +1919,7 @@ vp run lint
 
 **悪い**
 
-ループで使わない index と、slot で使わない foo を宣言しています。
+ループで使わない index と、スロットで使わない foo を宣言しています。
 
 ```vue annotate="remove:2,3,4"
 <template>
@@ -1932,7 +1934,7 @@ vp run lint
 
 **良い**
 
-index を参照するか、意図して使わない _index にし、slot は data を表示します。index の key は使用の例であり、項目の安定した識別子として推奨するものではありません。
+index を参照するか、未使用を意図する _index という名前にし、スロットでは data を表示します。index の key は使用例であり、項目の安定した識別子として推奨するものではありません。
 
 ```vue annotate="add:2,3,4,5"
 <template>
@@ -1944,7 +1946,7 @@ index を参照するか、意図して使わない _index にし、slot は dat
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_vars.rs#L48) · [全ルール](all.md)
 
@@ -1957,7 +1959,7 @@ index を参照するか、意図して使わない _index にし、slot は dat
 既定の重大度: `warning`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1999,7 +2001,7 @@ vp run lint
 
 **良い**
 
-computed で表示する項目を先に絞り込み、テンプレートはその配列を繰り返します。
+computed で表示する項目を先に絞り込み、テンプレートではその配列の各項目を繰り返し描画します。
 
 ```vue annotate="add:1,2,3,4,6"
 <script setup lang="ts">
@@ -2013,7 +2015,7 @@ const visibleItems = computed(() => items.filter((item) => item.visible));
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_if_with_v_for.rs#L35) · [全ルール](all.md)
 
@@ -2026,7 +2028,7 @@ template 要素の効果がない属性を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2054,7 +2056,7 @@ vp run lint
 
 **悪い**
 
-条件付きの template に class を指定していますが、この構造用の wrapper は DOM 要素を表示しません。
+条件付きの template に class を指定していますが、この構造用のラッパーは DOM 要素を描画しません。
 
 ```vue annotate="remove:2"
 <template>
@@ -2074,7 +2076,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_useless_template_attributes.rs#L32) · [全ルール](all.md)
 
@@ -2087,7 +2089,7 @@ template v-for の key を子ではなく template に指定します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2127,7 +2129,7 @@ vp run lint
 
 **良い**
 
-template の v-for に key を移し、繰り返す fragment 全体を識別します。
+template の v-for に key を移し、繰り返すフラグメント全体を識別します。
 
 ```vue annotate="add:2"
 <template>
@@ -2135,20 +2137,20 @@ template の v-for に key を移し、繰り返す fragment 全体を識別し�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs#L30) · [全ルール](all.md)
 
 ### `vue/no-v-html`
 
-未処理の HTML を表示する v-html の XSS リスクを検出します。
+XSS を防ぐため、v-html の使用に警告します。
 
 [悪い例](#vue-no-v-html-bad) · [良い例](#vue-no-v-html-good)
 
 既定の重大度: `warning`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2188,7 +2190,7 @@ v-html で content を通常の文字ではなく HTML として扱っていま�
 
 **良い**
 
-mustache の補間で、HTML を挿入せず content をエスケープした文字として表示します。
+mustache の補間で、HTML を挿入せず content をエスケープしたテキストとして表示します。
 
 ```vue annotate="add:2"
 <template>
@@ -2196,7 +2198,7 @@ mustache の補間で、HTML を挿入せず content をエスケープした文
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_html.rs#L51) · [全ルール](all.md)
 
@@ -2209,7 +2211,7 @@ mustache の補間で、HTML を挿入せず content をエスケープした文
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2250,7 +2252,7 @@ vp run lint
 
 **良い**
 
-標準の HTML 要素にはディレクティブを使えます。MyComponent には default slot から内容を渡します。
+標準の HTML 要素にはディレクティブを使えます。MyComponent にはデフォルトスロットから内容を渡します。
 
 ```vue annotate="add:2,3,4"
 <template>
@@ -2260,7 +2262,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_text_v_html_on_component.rs#L33) · [全ルール](all.md)
 
@@ -2273,7 +2275,7 @@ HTML の要素ごとのコンテンツモデルを検査します。
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2316,7 +2318,7 @@ p にブロックを入れ、tbody を省略し、操作要素を入れ子にす
 
 **良い**
 
-p はインラインの内容、table は tbody、ul は li を使います。独自の MyItem は既知の標準の ul の子として検査されません。
+p はインラインの内容、table は tbody、ul は li を使います。独自コンポーネントの MyItem は、ul の子となる既知の HTML 要素としては検査されません。
 
 ```vue annotate="add:2,3,4"
 <template>
@@ -2326,7 +2328,7 @@ p はインラインの内容、table は tbody、ul は li を使います。�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/permitted_contents.rs#L56) · [全ルール](all.md)
 
@@ -2339,7 +2341,7 @@ p はインラインの内容、table は tbody、ul は li を使います。�
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2387,7 +2389,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_component_is.rs#L27) · [全ルール](all.md)
 
@@ -2400,7 +2402,7 @@ transition の子要素に表示を切り替える条件を指定します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2452,7 +2454,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_toggle_inside_transition.rs#L48) · [全ルール](all.md)
 
@@ -2465,7 +2467,7 @@ v-for に安定した :key を指定します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2513,20 +2515,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_v_for_key.rs#L35) · [全ルール](all.md)
 
 ### `vue/use-v-on-exact`
 
-modifier 付きのイベント操作と競合する handler に .exact を指定します。
+修飾子付きのイベント操作と競合するハンドラーに .exact を指定します。
 
 [悪い例](#vue-use-v-on-exact-bad) · [良い例](#vue-use-v-on-exact-good)
 
 既定の重大度: `warning`  
 プリセット: `essential`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2554,7 +2556,7 @@ vp run lint
 
 **悪い**
 
-通常の click handler も Ctrl-click で動くため、別の `.ctrl` handler と重複します。
+通常の click ハンドラーも Ctrl キーを押しながらのクリックで動くため、別の `.ctrl` ハンドラーと重複します。
 
 ```vue annotate="remove:2"
 <template>
@@ -2568,7 +2570,7 @@ vp run lint
 
 **良い**
 
-`.exact` で通常の handler を修飾キーのない click に限定し、Ctrl 専用の handler と分けます。
+`.exact` で通常のハンドラーを修飾キーのない click に限定し、Ctrl 専用のハンドラーと分けます。
 
 ```vue annotate="add:2,3,4,5,6"
 <template>
@@ -2582,7 +2584,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L28) · [全ルール](all.md)
 
@@ -2595,7 +2597,7 @@ vp run lint
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 悪い例での診断: `parser/template`
@@ -2627,7 +2629,7 @@ vp run lint
 
 **悪い**
 
-`my"attr` の引用符で属性名が壊れています。この例の診断は `parser/template` で、別のルール診断の生成を約束するものではありません。
+`my"attr` の引用符で属性名が壊れています。この例の診断は `parser/template` で、別のルール診断が出ることを示すものではありません。
 
 ```vue annotate="remove:2"
 <template>
@@ -2639,7 +2641,7 @@ vp run lint
 
 **良い**
 
-`my-attr` は正しい属性名で、テンプレート parser が属性と値を読み取れます。
+`my-attr` は正しい属性名で、テンプレートパーサーが属性と値を読み取れます。
 
 ```vue annotate="add:2"
 <template>
@@ -2647,20 +2649,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_attribute_name.rs#L27) · [全ルール](all.md)
 
 ### `vue/valid-template-root`
 
-Vue 3 の fragment に対応する有効なテンプレートルートを検査します。
+Vue 3 のフラグメントに対応する有効なテンプレートルートを検査します。
 
 [悪い例](#vue-valid-template-root-bad) · [良い例](#vue-valid-template-root-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2688,7 +2690,7 @@ vp run lint
 
 **悪い**
 
-描画上の役割を与える directive がない通常の `<template>` を、テンプレートのルートに置いています。
+描画上の役割を与えるディレクティブがない通常の `<template>` を、テンプレートのルートに置いています。
 
 ```vue annotate="remove:2"
 <template>
@@ -2700,7 +2702,7 @@ vp run lint
 
 **良い**
 
-描画される `<div>` をルートにします。Vue 3 の fragment 全般を一つのルートに制限する例ではありません。
+描画される `<div>` をルートにします。Vue 3 のフラグメント全般を一つのルートに制限する例ではありません。
 
 ```vue annotate="add:2"
 <template>
@@ -2708,20 +2710,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_template_root.rs#L82) · [全ルール](all.md)
 
 ### `vue/valid-v-bind`
 
-v-bind の引数・値・modifier を検査します。
+v-bind の引数・値・修飾子を検査します。
 
 [悪い例](#vue-valid-v-bind-bad) · [良い例](#vue-valid-v-bind-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2749,7 +2751,7 @@ vp run lint
 
 **悪い**
 
-引数のない `v-bind` に object 式がなく、空の引数形式には属性名がありません。
+引数のない `v-bind` にオブジェクト式がなく、空の引数形式には属性名がありません。
 
 ```vue annotate="remove:2,3"
 <template>
@@ -2762,7 +2764,7 @@ vp run lint
 
 **良い**
 
-属性と式を指定するか object を binding します。Vue 3.4 以降では `:loading` の同名省略形も使えます。
+属性と式を指定するか、オブジェクトをバインドします。Vue 3.4 以降では `:loading` の同名省略形も使えます。
 
 ```vue annotate="add:2,3,4"
 <template>
@@ -2772,20 +2774,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_bind.rs#L30) · [全ルール](all.md)
 
 ### `vue/valid-v-cloak`
 
-v-cloak の引数・値・modifier を検査します。
+v-cloak の引数・値・修飾子を検査します。
 
 [悪い例](#vue-valid-v-cloak-bad) · [良い例](#vue-valid-v-cloak-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2827,7 +2829,7 @@ vp run lint
 
 **良い**
 
-値のない `v-cloak` を使います。mount 後に Vue が属性を除くまで CSS で非表示にできます。
+値のない `v-cloak` を使います。マウント後に Vue が属性を除くまで CSS で非表示にできます。
 
 ```vue annotate="add:2"
 <template>
@@ -2835,7 +2837,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_cloak.rs#L27) · [全ルール](all.md)
 
@@ -2847,8 +2849,8 @@ v-else の位置・引数・値を検査します。
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2899,7 +2901,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_else.rs#L32) · [全ルール](all.md)
 
@@ -2912,7 +2914,7 @@ v-for の式と変数宣言を検査します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2963,20 +2965,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_for.rs#L31) · [全ルール](all.md)
 
 ### `vue/valid-v-html`
 
-v-html の値・引数・modifier を検査します。
+v-html の値・引数・修飾子を検査します。
 
 [悪い例](#vue-valid-v-html-bad) · [良い例](#vue-valid-v-html-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3018,7 +3020,7 @@ vp run lint
 
 **良い**
 
-`v-html="html"` で正しい式を渡します。構文が正しくても HTML の無害化や未信頼の内容の安全性は保証されません。
+`v-html="html"` で正しい式を渡します。構文が正しくても HTML の無害化や信頼できない内容の安全性は保証されません。
 
 ```vue annotate="add:2"
 <template>
@@ -3026,7 +3028,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) · [全ルール](all.md)
 
@@ -3039,7 +3041,7 @@ v-if に有効な条件式を指定します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3067,7 +3069,7 @@ vp run lint
 
 **悪い**
 
-条件式がないか、同じノードに `v-if` と else directive を併記しています。
+条件式がないか、同じノードに `v-if` と else 分岐のディレクティブを併記しています。
 
 ```vue annotate="remove:2,3,4"
 <template>
@@ -3081,7 +3083,7 @@ vp run lint
 
 **良い**
 
-`ready` や `count > 0` の式を各 `v-if` に指定し、競合する else directive を除きます。
+`ready` や `count > 0` の式を各 `v-if` に指定し、競合する else 分岐のディレクティブを除きます。
 
 ```vue annotate="add:2,3"
 <template>
@@ -3090,7 +3092,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_if.rs#L29) · [全ルール](all.md)
 
@@ -3103,7 +3105,7 @@ v-memo の値を配列の式にします。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3151,20 +3153,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_memo.rs#L27) · [全ルール](all.md)
 
 ### `vue/valid-v-model`
 
-v-model の値・引数・modifier を検査します。
+v-model の値・引数・修飾子を検査します。
 
 [悪い例](#vue-valid-v-model-bad) · [良い例](#vue-valid-v-model-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3192,7 +3194,7 @@ vp run lint
 
 **悪い**
 
-ネイティブの `<div>` は `v-model` のフォーム要素ではなく、値のない input の directive には書き込み先の式がありません。
+ネイティブの `<div>` にはフォーム要素として `v-model` を使えません。また、input に値なしで指定したディレクティブには、書き込み先の式がありません。
 
 ```vue annotate="remove:2,3"
 <template>
@@ -3205,7 +3207,7 @@ vp run lint
 
 **良い**
 
-input、select、textarea、カスタム コンポーネントを例の書き込み可能な変数に binding します。
+input、select、textarea、カスタムコンポーネントを例の書き込み可能な変数にバインドします。
 
 ```vue annotate="add:2,3,4,5"
 <template>
@@ -3216,20 +3218,20 @@ input、select、textarea、カスタム コンポーネントを例の書き込
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36) · [全ルール](all.md)
 
 ### `vue/valid-v-on`
 
-v-on のイベント名・式・modifier を検査します。
+v-on のイベント名・式・修飾子を検査します。
 
 [悪い例](#vue-valid-v-on-bad) · [良い例](#vue-valid-v-on-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3257,7 +3259,7 @@ vp run lint
 
 **悪い**
 
-イベント引数または必要な handler / object 式がありません。
+イベント引数または必要なハンドラー・オブジェクト式がありません。
 
 ```vue annotate="remove:2,3,4"
 <template>
@@ -3271,7 +3273,7 @@ vp run lint
 
 **良い**
 
-イベントと handler を指定するか、引数なしの `v-on` に listener object を渡します。
+イベントとハンドラーを指定するか、引数なしの `v-on` にリスナーのオブジェクトを渡します。
 
 ```vue annotate="add:2,3"
 <template>
@@ -3280,20 +3282,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_on.rs#L30) · [全ルール](all.md)
 
 ### `vue/valid-v-once`
 
-v-once の引数・値・modifier を検査します。
+v-once の引数・値・修飾子を検査します。
 
 [悪い例](#vue-valid-v-once-bad) · [良い例](#vue-valid-v-once-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3343,7 +3345,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_once.rs#L27) · [全ルール](all.md)
 
@@ -3356,7 +3358,7 @@ v-show に有効な条件式を指定します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3406,20 +3408,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_show.rs#L28) · [全ルール](all.md)
 
 ### `vue/valid-v-slot`
 
-v-slot の適用先・宣言・modifier を検査します。
+v-slot の適用先・宣言・修飾子を検査します。
 
 [悪い例](#vue-valid-v-slot-bad) · [良い例](#vue-valid-v-slot-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -3447,7 +3449,7 @@ vp run lint
 
 **悪い**
 
-ネイティブの `<div>` に slot directive を付けるか、他の default / 名前付き slot 宣言と競合させています。
+ネイティブの `<div>` にスロットのディレクティブを付けるか、他のデフォルトスロットや名前付きスロットの宣言と競合させています。
 
 ```vue annotate="remove:2,3,4"
 <template>
@@ -3461,7 +3463,7 @@ vp run lint
 
 **良い**
 
-default slot はコンポーネント上、名前付き slot は子の `<template #header>` に宣言します。
+デフォルトスロットはコンポーネント上、名前付きスロットは子の `<template #header>` に宣言します。
 
 ```vue annotate="add:2,3,4,5"
 <template>
@@ -3472,20 +3474,20 @@ default slot はコンポーネント上、名前付き slot は子の `<templat
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_slot.rs#L29) · [全ルール](all.md)
 
 ### `vue/valid-v-text`
 
-v-text の値・引数・modifier を検査します。
+v-text の値・引数・修飾子を検査します。
 
 [悪い例](#vue-valid-v-text-bad) · [良い例](#vue-valid-v-text-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3535,7 +3537,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_text.rs#L27) · [全ルール](all.md)
 
@@ -3547,8 +3549,8 @@ vp run lint
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -3588,7 +3590,7 @@ vp run lint
 
 **良い**
 
-first-name に変更し、ハイフンで区切る既定の属性名の方針に合わせます。
+first-name に変更し、設定されたハイフン区切りの属性名の方針に合わせます。
 
 ```vue annotate="add:2"
 <template>
@@ -3596,7 +3598,7 @@ first-name に変更し、ハイフンで区切る既定の属性名の方針に
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_hyphenation.rs#L35) · [全ルール](all.md)
 
@@ -3609,7 +3611,7 @@ first-name に変更し、ハイフンで区切る既定の属性名の方針に
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 対象はファイル名です。PascalCase と kebab-case は許可され、混在する形式は検出されます。
@@ -3659,7 +3661,7 @@ vp run lint
 <template><p>Content</p></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/component_definition_name_casing.rs#L36) · [全ルール](all.md)
 
@@ -3671,8 +3673,8 @@ HTML 属性値の引用符を揃えます。
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3723,7 +3725,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/html_quotes.rs#L53) · [全ルール](all.md)
 
@@ -3735,8 +3737,8 @@ vp run lint
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -3764,7 +3766,7 @@ vp run lint
 
 **悪い**
 
-空のコンポーネントを閉じタグの組で書き、img と br に既定の自己終了の表記を使っていません。
+空のコンポーネントを開始タグと終了タグの組で書き、img と br に設定された自己終了タグの表記を使っていません。
 
 ```vue annotate="remove:2,3,4"
 <template>
@@ -3778,7 +3780,7 @@ vp run lint
 
 **良い**
 
-コンポーネントと void 要素を自己終了にします。内容がある div は閉じタグを残します。
+コンポーネントと void 要素を自己終了タグで書きます。内容がある div は終了タグを残します。
 
 ```vue annotate="add:2,3,4,5,6,7"
 <template>
@@ -3791,7 +3793,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L30) · [全ルール](all.md)
 
@@ -3803,8 +3805,8 @@ mustache 内の空白を揃えます。
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3846,7 +3848,7 @@ vp run lint
 
 **良い**
 
-式と mustache の開始・終了の両方の区切りに空白を入れます。
+式と mustache の開始・終了の区切りの間に、それぞれ空白を入れます。
 
 ```vue annotate="add:2,3,4"
 <template>
@@ -3856,7 +3858,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/mustache_interpolation_spacing.rs#L35) · [全ルール](all.md)
 
@@ -3868,8 +3870,8 @@ vp run lint
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3919,7 +3921,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_multi_spaces.rs#L26) · [全ルール](all.md)
 
@@ -3932,7 +3934,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 現在の検査は入れ子になった v-for の変数を比較します。script 内の名前と同じという理由だけで単独の v-for を検出するものではありません。
@@ -3982,7 +3984,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_shadow.rs#L34) · [全ルール](all.md)
 
@@ -3995,7 +3997,7 @@ defineProps に宣言しているのに使わない prop を検出します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4052,7 +4054,7 @@ defineProps<{ title: string; description: string }>();
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unused_properties.rs#L94) · [全ルール](all.md)
 
@@ -4065,7 +4067,7 @@ defineProps<{ title: string; description: string }>();
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 宣言した props の名前を検査します。子に渡す属性名の表記を検査するルールではありません。
@@ -4117,7 +4119,7 @@ defineProps<{ userName: string }>();
 <template><p>{{ userName }}</p></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/prop_name_casing.rs#L50) · [全ルール](all.md)
 
@@ -4129,8 +4131,8 @@ v-bind の表記形式を揃えます。
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4170,7 +4172,7 @@ vp run lint
 
 **良い**
 
-同じ式を `:class` にします。値の型ではなく directive の書き方を検査するルールです。
+同じ式を `:class` にします。値の型ではなくディレクティブの書き方を検査するルールです。
 
 ```vue annotate="add:2"
 <template>
@@ -4178,7 +4180,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_bind_style.rs#L30) · [全ルール](all.md)
 
@@ -4190,8 +4192,8 @@ v-on の表記形式を揃えます。
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4231,7 +4233,7 @@ vp run lint
 
 **良い**
 
-handler を変えずに `@click` の省略形を使います。
+ハンドラーを変えずに `@click` の省略形を使います。
 
 ```vue annotate="add:2"
 <template>
@@ -4239,7 +4241,7 @@ handler を変えずに `@click` の省略形を使います。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_on_style.rs#L28) · [全ルール](all.md)
 
@@ -4251,8 +4253,8 @@ v-slot の表記形式を揃えます。
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4295,7 +4297,7 @@ vp run lint
 
 **良い**
 
-コンポーネントの default slot は `v-slot`、template の名前付き slot は `#header` にします。
+コンポーネントのデフォルトスロットは `v-slot`、template の名前付きスロットは `#header` にします。
 
 ```vue annotate="add:2,4"
 <template>
@@ -4306,7 +4308,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/v_slot_style.rs#L41) · [全ルール](all.md)
 
@@ -4319,7 +4321,7 @@ SSR で実行されるコードのブラウザー専用グローバル参照を�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4359,7 +4361,7 @@ const width = window.innerWidth;
 
 **良い**
 
-初期の幅をサーバーでも扱える ref の値にし、ブラウザー API の参照を SSR の setup ではなくクライアントで実行する `onMounted` に移します。
+幅を ref(0) で初期化し、ブラウザー API の参照をクライアントで実行される `onMounted` に移します。これにより、SSR の setup ではブラウザー API を参照しません。
 
 ```vue annotate="add:2,3,4,5,6"
 <script setup lang="ts">
@@ -4371,7 +4373,7 @@ onMounted(() => {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_browser_globals_in_ssr.rs#L158) · [全ルール](all.md)
 
@@ -4384,7 +4386,7 @@ onMounted(() => {
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4436,7 +4438,7 @@ const seed = useState("seed", () => "stable");
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ssr/no_hydration_mismatch.rs#L122) · [全ルール](all.md)
 
@@ -4449,7 +4451,7 @@ const seed = useState("seed", () => "stable");
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4490,7 +4492,7 @@ vp run lint
 
 **良い**
 
-情報のある画像には説明、装飾には空の alt、動的な画像には説明のバインディングを指定します。
+情報を伝える画像には内容を説明する alt テキスト、装飾画像には空の alt を指定します。動的な画像には説明をバインドします。
 
 ```vue annotate="add:2,3,4,5,6,7,8,9"
 <template>
@@ -4505,7 +4507,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/a11y_img_alt.rs#L33) · [全ルール](all.md)
 
@@ -4518,7 +4520,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4546,7 +4548,7 @@ vp run lint
 
 **悪い**
 
-構造を決める v-if と通常の id 属性より前に、イベントを指定しています。
+構造を決める v-if と通常の id 属性より前に、イベントハンドラーを指定しています。
 
 ```vue annotate="remove:2"
 <template>
@@ -4558,7 +4560,7 @@ vp run lint
 
 **良い**
 
-v-if、id、イベントの順に並べ、ルールの順序に合わせます。
+v-if、id、イベントハンドラーの順に並べ、ルールの順序に合わせます。
 
 ```vue annotate="add:2"
 <template>
@@ -4566,7 +4568,7 @@ v-if、id、イベントの順に並べ、ルールの順序に合わせます�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/attribute_order.rs#L36) · [全ルール](all.md)
 
@@ -4578,8 +4580,8 @@ v-if、id、イベントの順に並べ、ルールの順序に合わせます�
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -4636,7 +4638,7 @@ import MyComponent from "./MyComponent.vue";
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/component_name_in_template_casing.rs#L31) · [全ルール](all.md)
 
@@ -4649,7 +4651,7 @@ button に有効な type を明示します。
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4701,7 +4703,7 @@ button、submit、reset を明示します。バインドする type は動的�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_button_has_type.rs#L39) · [全ルール](all.md)
 
@@ -4714,10 +4716,10 @@ button、submit、reset を明示します。バインドする type は動的�
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-悪い例は cyclomatic complexity 13、cognitive complexity 25 で、閾値 11 と 16 を超えます。コンポーネント単位で計測し、対象はインライン HTML テンプレートです。
+悪い例のサイクロマティック複雑度は 13、認知的複雑度は 25 で、閾値 11 と 16 を超えます。コンポーネント単位で計測し、対象はインライン HTML テンプレートです。
 
 例の二つの値の計算内訳は[複雑度の計算とコンポーネントの境界](../guide/cross-file-complexity.md)を参照してください。
 
@@ -4746,7 +4748,7 @@ vp run lint
 
 **悪い**
 
-親が記述する分岐、ループ、slot の内容、式の条件で 13 と 25 になり、既定の閾値 11 と 16 を超えています。
+親のテンプレートに記述した分岐、ループ、スロットの内容、式内の条件分岐により、サイクロマティック複雑度が 13、認知的複雑度が 25 となり、既定の閾値 11 と 16 を超えています。
 
 ```vue annotate="remove:1,2,3,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
 <script setup lang="ts">
@@ -4775,7 +4777,7 @@ defineProps<{ rows: Row[] }>();
 
 **良い**
 
-描画を RowList に分け、親には v-if を一つ残します。親自身の値は 2 と 1 になります。
+描画を RowList に分け、親には v-if を一つ残します。親自身のサイクロマティック複雑度は 2、認知的複雑度は 1 になります。
 
 ```vue annotate="add:2"
 <template>
@@ -4783,7 +4785,7 @@ defineProps<{ rows: Row[] }>();
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/max_template_complexity.rs#L56) · [全ルール](all.md)
 
@@ -4796,7 +4798,7 @@ v-for の配列インデックスをそのまま key に使う箇所を検出し
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4824,7 +4826,7 @@ vp run lint
 
 **悪い**
 
-現在の配列の位置を key に使い、並び替えで項目の識別子が変わります。
+配列内の現在の位置を key に使っているため、並び替えると同じ項目に割り当てる key が変わります。
 
 ```vue annotate="remove:2"
 <template>
@@ -4836,7 +4838,7 @@ vp run lint
 
 **良い**
 
-item.id を key に使い、位置が変わっても項目の識別子を維持します。
+item.id を key に使い、位置が変わっても同じ項目に同じ key を割り当てます。
 
 ```vue annotate="add:2"
 <template>
@@ -4844,20 +4846,20 @@ item.id を key に使い、位置が変わっても項目の識別子を維持�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_array_index_key.rs#L32) · [全ルール](all.md)
 
 ### `vue/no-bare-strings-in-template`
 
-国際化すべきテンプレートの直接指定テキストを検出します。
+テンプレートに直接書かれた、国際化の対象となるテキストを検出します。
 
 [悪い例](#vue-no-bare-strings-in-template-bad) · [良い例](#vue-no-bare-strings-in-template-good)
 
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4885,7 +4887,7 @@ vp run lint
 
 **悪い**
 
-表示する文字や名前を指定する属性に、翻訳を通さない文字列を直接書いています。
+表示するテキストや利用者向けの説明を指定する属性に、翻訳されない文字列を直接書いています。
 
 ```vue annotate="remove:2,3,4,5"
 <template>
@@ -4912,20 +4914,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_bare_strings_in_template.rs#L47) · [全ルール](all.md)
 
 ### `vue/no-boolean-attr-value`
 
-HTML の boolean 属性に不要な値を指定した箇所を検出します。
+HTML の真偽属性に不要な値を指定した箇所を検出します。
 
 [悪い例](#vue-no-boolean-attr-value-bad) · [良い例](#vue-no-boolean-attr-value-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4953,7 +4955,7 @@ vp run lint
 
 **悪い**
 
-boolean の disabled と checked に、不要な文字列の値を指定しています。
+真偽属性の disabled と checked に、不要な文字列の値を指定しています。
 
 ```vue annotate="remove:2,3,4"
 <template>
@@ -4967,7 +4969,7 @@ boolean の disabled と checked に、不要な文字列の値を指定して�
 
 **良い**
 
-値を付けず、boolean 属性があることだけで同じ状態を表します。
+値を付けず、真偽属性があることだけで同じ状態を表します。
 
 ```vue annotate="add:2,3,4"
 <template>
@@ -4977,7 +4979,7 @@ boolean の disabled と checked に、不要な文字列の値を指定して�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L36) · [全ルール](all.md)
 
@@ -4990,7 +4992,7 @@ boolean の disabled と checked に、不要な文字列の値を指定して�
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5049,7 +5051,7 @@ const message = "Hello";
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_empty_component_block.rs#L42) · [全ルール](all.md)
 
@@ -5062,7 +5064,7 @@ const message = "Hello";
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5112,7 +5114,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_inline_style.rs#L33) · [全ルール](all.md)
 
@@ -5125,7 +5127,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5153,7 +5155,7 @@ vp run lint
 
 **悪い**
 
-a の rel に、stylesheet の link 要素向けの stylesheet を指定しています。
+a の rel に、スタイルシートを参照する link 要素用の stylesheet を指定しています。
 
 ```vue annotate="remove:2"
 <template>
@@ -5173,7 +5175,7 @@ a の rel に、ヘルプへの参照を表す help を指定します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_invalid_html_attribute.rs#L12) · [全ルール](all.md)
 
@@ -5186,7 +5188,7 @@ a の rel に、ヘルプへの参照を表す help を指定します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5214,7 +5216,7 @@ vp run lint
 
 **悪い**
 
-内側の template に、構造や slot を指定する役割がありません。
+内側の template には、構造を指定するディレクティブやスロットとしての役割がありません。
 
 ```vue annotate="remove:2"
 <template>
@@ -5234,7 +5236,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_lone_template.rs#L32) · [全ルール](all.md)
 
@@ -5247,7 +5249,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5275,7 +5277,7 @@ vp run lint
 
 **悪い**
 
-class の配列に、まとめられる object literal を二つ直接指定しています。
+class の配列に、まとめられるオブジェクトリテラルを二つ直接指定しています。
 
 ```vue annotate="remove:2,3"
 <template>
@@ -5288,7 +5290,7 @@ class の配列に、まとめられる object literal を二つ直接指定し�
 
 **良い**
 
-条件を一つの object にまとめます。object 一つと文字列の組、literal ではない要素の配列は許可されます。
+条件を一つのオブジェクトにまとめます。オブジェクト一つと文字列の組み合わせや、リテラル以外の要素を持つ配列も許可されます。
 
 ```vue annotate="add:2,3,4"
 <template>
@@ -5298,7 +5300,7 @@ class の配列に、まとめられる object literal を二つ直接指定し�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_multiple_objects_in_class.rs#L33) · [全ルール](all.md)
 
@@ -5311,7 +5313,7 @@ v-else がある条件分岐の否定条件を反転して読みやすくしま�
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5352,7 +5354,7 @@ v-else と対になる v-if を、否定した条件で始めています。
 
 **良い**
 
-先に正の ok の条件を使います。条件を反転する際は分岐の内容も入れ替えます。単独の否定の v-if や !== の比較は許可されます。
+先に否定していない ok の条件を使います。条件を反転する際は分岐の内容も入れ替えます。単独の否定の v-if や !== の比較は許可されます。
 
 ```vue annotate="add:2,3,4,6,7"
 <template>
@@ -5366,7 +5368,7 @@ v-else と対になる v-if を、否定した条件で始めています。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_negated_v_if_condition.rs#L37) · [全ルール](all.md)
 
@@ -5379,7 +5381,7 @@ KeepAlive の直下に通常の HTML 要素を置く箇所を検出します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5423,7 +5425,7 @@ KeepAlive の条件付きの子が UserCard ではなく、標準の div にな�
 
 **良い**
 
-最初の例は UserCard を条件付きの子にします。v-show の wrapper はこの条件付きの子の検査の対象外を示す例で、標準要素がキャッシュされるという意味ではありません。
+最初の例は UserCard を条件付きの子にします。v-show のラッパー要素はこの条件付きの子の検査の対象外を示す例で、標準要素がキャッシュされるという意味ではありません。
 
 ```vue annotate="add:3,4,5,6"
 <template>
@@ -5438,27 +5440,27 @@ KeepAlive の条件付きの子が UserCard ではなく、標準の div にな�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_non_component_keep_alive_child.rs#L14) · [全ルール](all.md)
 
 ### `vue/no-preprocessor-lang`
 
-CSS preprocessor より標準の CSS を使う方針を適用します。
+CSS プリプロセッサーより標準の CSS を使う方針を示します。
 
 [悪い例](#vue-no-preprocessor-lang-bad) · [良い例](#vue-no-preprocessor-lang-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: SFC lint では未対応  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 現在の対応: `no-sfc-finding`
 
-このカタログ項目は現在の SFC lint では固有の検出を生成しません。悪い例・良い例は意図した規約の説明で、実行すると検出される例ではありません。ID を設定しても未対応の SFC 検査は追加されません。
+このカタログ項目は現在の SFC lint では固有の診断を出しません。悪い例・良い例は意図した規約の説明であり、実行時にこのルールの診断が出る例ではありません。ID を設定しても未対応の SFC 検査は追加されません。
 
-**設定できる ID（現在の SFC 検出なし）**
+**設定できる ID（現在の SFC lint では診断されません）**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -5483,7 +5485,7 @@ vp run lint
 
 **悪い**
 
-style の lang に SCSS を指定しています。preprocessor を使わない規約の例で、現在の SFC 検査はこのルールを生成しません。
+style の lang に SCSS を指定しています。プリプロセッサーを使わない規約の例で、現在の SFC 検査ではこのルール固有の診断は出ません。
 
 ```vue annotate="remove:2"
 <template><p>Notice</p></template>
@@ -5496,7 +5498,7 @@ style の lang に SCSS を指定しています。preprocessor を使わない�
 
 **良い**
 
-同じ CSS から preprocessor の lang を取り除きます。規約の修正例で、現在の実行結果の診断の違いを示すものではありません。
+同じ CSS からプリプロセッサーの lang を取り除きます。規約の修正例で、現在の SFC 検査で診断の有無に差が出る例ではありません。
 
 ```vue annotate="add:2"
 <template><p>Notice</p></template>
@@ -5505,7 +5507,7 @@ style の lang に SCSS を指定しています。preprocessor を使わない�
 </style>
 ```
 
-良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
+良い例は意図する規約を示します。現在の SFC lint では、悪い例・良い例のどちらからもこのルール固有の診断は出ません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_preprocessor_lang.rs#L22) · [全ルール](all.md)
 
@@ -5518,7 +5520,7 @@ style の lang に SCSS を指定しています。preprocessor を使わない�
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5568,27 +5570,27 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_root_v_if.rs#L40) · [全ルール](all.md)
 
 ### `vue/no-script-non-standard-lang`
 
-script の非標準 lang 指定を検出します。
+script の非標準の lang 指定を避ける方針を示します。
 
 [悪い例](#vue-no-script-non-standard-lang-bad) · [良い例](#vue-no-script-non-standard-lang-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: SFC lint では未対応  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 現在の対応: `no-sfc-finding`
 
-このカタログ項目は現在の SFC lint では固有の検出を生成しません。悪い例・良い例は意図した規約の説明で、実行すると検出される例ではありません。ID を設定しても未対応の SFC 検査は追加されません。
+このカタログ項目は現在の SFC lint では固有の診断を出しません。悪い例・良い例は意図した規約の説明であり、実行時にこのルールの診断が出る例ではありません。ID を設定しても未対応の SFC 検査は追加されません。
 
-**設定できる ID（現在の SFC 検出なし）**
+**設定できる ID（現在の SFC lint では診断されません）**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -5613,7 +5615,7 @@ vp run lint
 
 **悪い**
 
-lang=coffee で CoffeeScript の構文を使っています。現在の SFC 検査はこの言語に対して、このカタログのルールを生成しません。
+lang=coffee で CoffeeScript の構文を使っています。現在の SFC 検査では、この言語に対してこのルール固有の診断は出ません。
 
 ```vue annotate="remove:1,2"
 <script lang="coffee">
@@ -5635,7 +5637,7 @@ const count = 0;
 <template><p>Notice</p></template>
 ```
 
-良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
+良い例は意図する規約を示します。現在の SFC lint では、悪い例・良い例のどちらからもこのルール固有の診断は出ません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_script_non_standard_lang.rs#L44) · [全ルール](all.md)
 
@@ -5648,7 +5650,7 @@ SFC ブロックの外部 src 指定を検出します。
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5706,7 +5708,7 @@ p {
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_src_attribute.rs#L16) · [全ルール](all.md)
 
@@ -5719,7 +5721,7 @@ p {
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5766,27 +5768,27 @@ notice のクラスと scoped の CSS に、変化しない色を移します。
 <style scoped>.notice { color: red; }</style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_static_inline_styles.rs#L15) · [全ルール](all.md)
 
 ### `vue/no-template-lang`
 
-template の lang 指定を検出します。
+template の lang 指定を避ける方針を示します。
 
 [悪い例](#vue-no-template-lang-bad) · [良い例](#vue-no-template-lang-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: SFC lint では未対応  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 現在の対応: `no-sfc-finding`
 
-このカタログ項目は現在の SFC lint では固有の検出を生成しません。悪い例・良い例は意図した規約の説明で、実行すると検出される例ではありません。ID を設定しても未対応の SFC 検査は追加されません。
+このカタログ項目は現在の SFC lint では固有の診断を出しません。悪い例・良い例は意図した規約の説明であり、実行時にこのルールの診断が出る例ではありません。ID を設定しても未対応の SFC 検査は追加されません。
 
-**設定できる ID（現在の SFC 検出なし）**
+**設定できる ID（現在の SFC lint では診断されません）**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -5811,7 +5813,7 @@ vp run lint
 
 **悪い**
 
-template の lang に Pug を指定しています。HTML のみを使う規約の例で、現在の SFC 検査はこの ID を検出しません。
+template の lang に Pug を指定しています。HTML のみを使う規約の例で、現在の SFC 検査ではこの ID の診断は出ません。
 
 ```vue annotate="remove:1,2"
 <template lang="pug">
@@ -5823,7 +5825,7 @@ p Notice
 
 **良い**
 
-lang を取り除き、通常の HTML の p を直接記述します。規約の例で、現在の SFC の診断を約束するものではありません。
+lang を取り除き、通常の HTML の p を直接記述します。規約の例で、現在の SFC 検査で診断が出ることを示すものではありません。
 
 ```vue annotate="add:1,2"
 <template>
@@ -5831,7 +5833,7 @@ lang を取り除き、通常の HTML の p を直接記述します。規約の
 </template>
 ```
 
-良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
+良い例は意図する規約を示します。現在の SFC lint では、悪い例・良い例のどちらからもこのルール固有の診断は出ません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs#L38) · [全ルール](all.md)
 
@@ -5844,7 +5846,7 @@ target=_blank の外部リンクに適切な rel を指定します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5892,7 +5894,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_template_target_blank.rs#L33) · [全ルール](all.md)
 
@@ -5905,7 +5907,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5951,7 +5953,7 @@ script setup で宣言済みの message を補間で参照し、未定義の名�
 <template>{{ message }}</template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_undefined_refs.rs#L14) · [全ルール](all.md)
 
@@ -5964,7 +5966,7 @@ script setup で宣言済みの message を補間で参照し、未定義の名�
 既定の重大度: `warning`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -5992,7 +5994,7 @@ vp run lint
 
 **悪い**
 
-a の移動先に、実行可能な javascript: のスキームを使っています。
+a の移動先に、JavaScript を実行する javascript: スキームを使っています。
 
 ```vue annotate="remove:2"
 <template>
@@ -6004,7 +6006,7 @@ a の移動先に、実行可能な javascript: のスキームを使ってい�
 
 **良い**
 
-実行可能な URL を除き、通常のローカルの移動先 /next に変更します。
+移動先を、通常のローカルの移動先 /next に変更します。
 
 ```vue annotate="add:2"
 <template>
@@ -6012,7 +6014,7 @@ a の移動先に、実行可能な javascript: のスキームを使ってい�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsafe_url.rs#L55) · [全ルール](all.md)
 
@@ -6025,7 +6027,7 @@ iframe に sandbox 属性を指定します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6074,7 +6076,7 @@ sandbox で制限し、script が必要な場合にだけ allow-scripts を明�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsandboxed_iframe.rs#L32) · [全ルール](all.md)
 
@@ -6087,7 +6089,7 @@ sandbox で制限し、script が必要な場合にだけ allow-scripts を明�
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6138,7 +6140,7 @@ const inputEl = ref(null)
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_unused_refs.rs#L60) · [全ルール](all.md)
 
@@ -6151,7 +6153,7 @@ script setup に宣言しているのに読み取らない変数を検出しま�
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6197,7 +6199,7 @@ script setup で宣言した message を p の補間で参照し、未使用の�
 <template><p>{{ message }}</p></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/facts/unused_setup_bindings.rs#L19) · [全ルール](all.md)
 
@@ -6210,7 +6212,7 @@ script setup で宣言した message を p の補間で参照し、未使用の�
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6260,7 +6262,7 @@ template に v-else を分け、その子の p に v-for を指定します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_use_v_else_with_v_for.rs#L19) · [全ルール](all.md)
 
@@ -6273,7 +6275,7 @@ template に v-else を分け、その子の p に v-for を指定します。
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6315,7 +6317,7 @@ vp run lint
 
 **良い**
 
-固定の文字は直接書きます。変数、値を埋め込む template string、区切りの空白の補間は残します。
+固定のテキストは直接書きます。変数、値を埋め込むテンプレート文字列、区切りの空白の補間は残します。
 
 ```vue annotate="add:2,3,4,5"
 <template>
@@ -6326,7 +6328,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_mustaches.rs#L37) · [全ルール](all.md)
 
@@ -6339,7 +6341,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6367,7 +6369,7 @@ vp run lint
 
 **悪い**
 
-foo に固定の文字列か、補間がない template string をバインドしています。
+foo に固定の文字列か、補間がないテンプレート文字列をバインドしています。
 
 ```vue annotate="remove:2,3"
 <template>
@@ -6390,7 +6392,7 @@ foo に固定の文字列か、補間がない template string をバインド�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_useless_v_bind.rs#L29) · [全ルール](all.md)
 
@@ -6403,7 +6405,7 @@ v-text の代わりに mustache を使う方針を適用します。
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6443,7 +6445,7 @@ vp run lint
 
 **良い**
 
-同じ文字のバインディングを、要素の内容の mustache で指定します。
+同じテキストのバインディングを、要素内の mustache に記述します。
 
 ```vue annotate="add:2"
 <template>
@@ -6451,7 +6453,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_v_text.rs#L31) · [全ルール](all.md)
 
@@ -6463,8 +6465,8 @@ Vue 3.4 の同名 prop バインディングの省略形を使います。
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6519,20 +6521,20 @@ Vue 3.4 以降の同名の省略形で式を省きます。bar のように別�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_props_shorthand.rs#L39) · [全ルール](all.md)
 
 ### `vue/prefer-true-attribute-shorthand`
 
-true を指定するバインディングを boolean 属性の省略形にします。
+true を指定するバインディングを真偽属性の省略形にします。
 
 [悪い例](#vue-prefer-true-attribute-shorthand-bad) · [良い例](#vue-prefer-true-attribute-shorthand-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6560,7 +6562,7 @@ vp run lint
 
 **悪い**
 
-標準の boolean 属性 disabled に、固定の true をバインドしています。
+標準の真偽属性 disabled に、固定の true をバインドしています。
 
 ```vue annotate="remove:2"
 <template>
@@ -6572,7 +6574,7 @@ vp run lint
 
 **良い**
 
-標準の boolean 属性は省略形にします。false のバインディングやコンポーネントの prop は値を残します。
+標準の真偽属性は省略形にします。false のバインディングやコンポーネントの prop は値を残します。
 
 ```vue annotate="add:2,3,4,5"
 <template>
@@ -6583,7 +6585,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/prefer_true_attribute_shorthand.rs#L38) · [全ルール](all.md)
 
@@ -6596,10 +6598,10 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
-application plugin や Musea previewSetup が登録する component 名を明示します。PascalCase と kebab-case を許可し、正規表現は解釈しません。option だけではルールは有効になりません。後の設定は list 全体を置き換え、空 list は継承した名前を消します。
+アプリケーションのプラグインや Musea の previewSetup が登録するコンポーネント名を明示します。PascalCase と kebab-case を許可し、正規表現は解釈しません。オプションだけではルールは有効になりません。後の設定は一覧全体を置き換え、空の一覧は継承した名前を消します。
 
 **設定（Vite+）**
 
@@ -6634,7 +6636,7 @@ vp run lint
 
 **悪い**
 
-`MissingWidget` は登録されておらず、設定したグローバル コンポーネント一覧にもありません。
+`MissingWidget` は登録されておらず、設定したグローバルコンポーネント一覧にもありません。
 
 ```vue annotate="remove:2"
 <template>
@@ -6646,7 +6648,7 @@ vp run lint
 
 **良い**
 
-`MyButton` は例の `globals` に含まれます。既知のグローバル登録を検査対象から除く設定で、import や登録そのものは行いません。
+`MyButton` は例の `globals` に含まれます。既知のグローバルコンポーネントを検査対象から除く設定で、import や登録そのものは行いません。
 
 ```vue annotate="add:2"
 <template>
@@ -6654,7 +6656,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/require_component_registration.rs#L56) · [全ルール](all.md)
 
@@ -6667,7 +6669,7 @@ style に scoped を指定する方針を適用します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6709,7 +6711,7 @@ vp run lint
 
 **良い**
 
-同じセレクタと宣言に `scoped` を付け、Vue のコンポーネント スコープを適用します。
+`scoped` を style に付け、同じセレクタと宣言に Vue のコンポーネントスコープを適用します。
 
 ```vue annotate="add:1"
 <style scoped>
@@ -6719,7 +6721,7 @@ vp run lint
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/require_scoped_style.rs#L49) · [全ルール](all.md)
 
@@ -6732,7 +6734,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6788,7 +6790,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/scoped_event_names.rs#L30) · [全ルール](all.md)
 
@@ -6801,7 +6803,7 @@ SFC のトップレベルブロックを設定した順に並べます。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -6864,7 +6866,7 @@ p {
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/sfc_element_order.rs#L50) · [全ルール](all.md)
 
@@ -6877,7 +6879,7 @@ SFC の style を一つのブロックにまとめます。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6938,20 +6940,20 @@ panel と title の scoped スタイルを二つの style ブロックに分け�
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/single_style_block.rs#L41) · [全ルール](all.md)
 
 ### `vue/slot-name-casing`
 
-名前付き slot を kebab-case に揃えます。
+名前付きスロットを kebab-case に揃えます。
 
 [悪い例](#vue-slot-name-casing-bad) · [良い例](#vue-slot-name-casing-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -6991,7 +6993,7 @@ vp run lint
 
 **良い**
 
-`#my-slot` を kebab-case にします。受け取る slot の名前も合わせます。
+`#my-slot` を kebab-case にします。対応するスロットの出口の名前も合わせます。
 
 ```vue annotate="add:2"
 <template>
@@ -6999,7 +7001,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/slot_name_casing.rs#L34) · [全ルール](all.md)
 
@@ -7012,7 +7014,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7040,7 +7042,7 @@ vp run lint
 
 **悪い**
 
-テンプレートで直接使える binding を `this.message`、`this.className`、`this.handleClick` と明示的に参照しています。
+テンプレートで直接使えるバインディングを `this.message`、`this.className`、`this.handleClick` と明示的に参照しています。
 
 ```vue annotate="remove:2,3,4"
 <template>
@@ -7065,7 +7067,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/this_in_template.rs#L33) · [全ルール](all.md)
 
@@ -7078,7 +7080,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -7106,7 +7108,7 @@ vp run lint
 
 **悪い**
 
-カスタム コンポーネントの listener がハイフン区切りではなく `@myEvent` です。
+カスタムコンポーネントのリスナーがハイフン区切りではなく `@myEvent` です。
 
 ```vue annotate="remove:2,3"
 <template>
@@ -7119,7 +7121,7 @@ vp run lint
 
 **良い**
 
-`@my-event` に変更します。例のネイティブ要素の listener と動的なイベント引数はこの検査の対象外です。
+`@my-event` に変更します。例のネイティブ要素のリスナーと動的なイベント引数はこの検査の対象外です。
 
 ```vue annotate="add:2,3,4"
 <template>
@@ -7129,20 +7131,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_event_hyphenation.rs#L35) · [全ルール](all.md)
 
 ### `vue/v-on-handler-style`
 
-イベント handler の参照・関数形式を揃えます。
+イベントハンドラーの書き方を参照または関数の形式に揃えます。
 
 [悪い例](#vue-v-on-handler-style-bad) · [良い例](#vue-v-on-handler-style-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7184,7 +7186,7 @@ vp run lint
 
 **良い**
 
-handler の参照を使うか、インライン処理が必要なら arrow / function 式で関数の境界を明示します。
+handler などの関数への参照を使うか、インライン処理が必要ならアロー関数や function 式で関数の境界を明示します。
 
 ```vue annotate="add:2,3,4,5"
 <template>
@@ -7195,7 +7197,7 @@ handler の参照を使うか、インライン処理が必要なら arrow / fun
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L33) · [全ルール](all.md)
 
@@ -7208,7 +7210,7 @@ SFC のカスタムブロックを検出します。
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7236,7 +7238,7 @@ vp run lint
 
 **悪い**
 
-SFC に `<i18n>` のカスタム ブロックがあり、通常の template / script / style 処理とは別の連携が必要です。
+SFC に `<i18n>` のカスタムブロックがあり、通常の template / script / style 処理とは別の連携が必要です。
 
 ```vue annotate="remove:1,2,3,4"
 <i18n>
@@ -7252,7 +7254,7 @@ SFC に `<i18n>` のカスタム ブロックがあり、通常の template / sc
 
 **良い**
 
-標準の template と script setup を使います。この任意の移植性警告は、カスタム ブロック全般が Vue で無効という意味ではありません。
+標準の template と script setup を使います。移植性に関するこの任意の警告は、カスタムブロック全般が Vue で無効という意味ではありません。
 
 ```vue annotate="add:4,5,6,7"
 <template>
@@ -7264,7 +7266,7 @@ const hello = "Hello";
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_block.rs#L50) · [全ルール](all.md)
 
@@ -7277,7 +7279,7 @@ const hello = "Hello";
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7305,7 +7307,7 @@ vp run lint
 
 **悪い**
 
-`v-focus`、`v-mask`、`v-click-outside` はプロジェクト固有の directive 実装を必要とし、この任意の規約で警告されます。
+`v-focus`、`v-mask`、`v-click-outside` はプロジェクト固有のディレクティブの実装を必要とし、この任意の規約で警告されます。
 
 ```vue annotate="remove:2,3,4"
 <template>
@@ -7319,7 +7321,7 @@ vp run lint
 
 **良い**
 
-組み込みの `v-if`、`v-model`、`v-on` を使います。規約を無効にすれば、正しく登録した custom directive は有効な Vue として使えます。
+組み込みの `v-if`、`v-model`、`v-on` を使います。規約を無効にすれば、正しく登録したカスタムディレクティブは有効な Vue として使えます。
 
 ```vue annotate="add:2,3,4"
 <template>
@@ -7329,7 +7331,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/warn_custom_directive.rs#L44) · [全ルール](all.md)
 
@@ -7342,7 +7344,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7382,7 +7384,7 @@ vp run lint
 
 **良い**
 
-`alt="Submit search"` を追加し、検索を送信する操作の名前を指定します。
+`alt="Submit search"` を追加し、検索を送信する操作を説明する名前を支援技術に伝えます。
 
 ```vue annotate="add:2"
 <template>
@@ -7390,7 +7392,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/alt_text.rs#L33) · [全ルール](all.md)
 
@@ -7403,7 +7405,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7451,7 +7453,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L16) · [全ルール](all.md)
 
@@ -7464,7 +7466,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7514,7 +7516,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_is_valid.rs#L30) · [全ルール](all.md)
 
@@ -7527,7 +7529,7 @@ vp run lint
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7555,7 +7557,7 @@ vp run lint
 
 **悪い**
 
-`aria-lable` は綴りが誤っており、対応する ARIA 属性ではありません。
+`aria-lable` は綴りが誤っており、有効な ARIA 属性ではありません。
 
 ```vue annotate="remove:2"
 <template>
@@ -7575,20 +7577,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_props.rs#L18) · [全ルール](all.md)
 
 ### `a11y/aria-role`
 
-有効で抽象的ではない ARIA role を指定します。
+抽象ロールを除く、有効な ARIA role を指定します。
 
 [悪い例](#a11y-aria-role-bad) · [良い例](#a11y-aria-role-good)
 
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7636,7 +7638,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_role.rs#L21) · [全ルール](all.md)
 
@@ -7649,7 +7651,7 @@ ARIA 属性を使用できない要素への指定を検出します。
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7697,7 +7699,7 @@ ARIA 属性だけを取り除き、文字コードの宣言は維持します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs#L18) · [全ルール](all.md)
 
@@ -7710,7 +7712,7 @@ ARIA 属性だけを取り除き、文字コードの宣言は維持します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 対話的な役割を持たない通常要素が対象です。button や対話的な ARIA role を持つ要素はこの検出の対象外です。
@@ -7760,7 +7762,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L17) · [全ルール](all.md)
 
@@ -7773,7 +7775,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7824,7 +7826,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/form_control_has_label.rs#L19) · [全ルール](all.md)
 
@@ -7837,7 +7839,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7865,7 +7867,7 @@ vp run lint
 
 **悪い**
 
-`h2` の見出しレベルはありますが、見出しの内容が空です。
+`h2` でレベル 2 の見出しを宣言していますが、見出しの内容が空です。
 
 ```vue annotate="remove:2"
 <template>
@@ -7885,7 +7887,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L17) · [全ルール](all.md)
 
@@ -7898,7 +7900,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -7948,7 +7950,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/heading_levels.rs#L34) · [全ルール](all.md)
 
@@ -7961,7 +7963,7 @@ iframe に内容を説明する title を指定します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8009,7 +8011,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/iframe_has_title.rs#L15) · [全ルール](all.md)
 
@@ -8022,7 +8024,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8050,7 +8052,7 @@ vp run lint
 
 **悪い**
 
-アバター画像に `alt` 属性がなく、画像の代替テキストを確認できません。
+アバター画像に `alt` 属性がなく、代替テキストが指定されていません。
 
 ```vue annotate="remove:2"
 <template>
@@ -8070,7 +8072,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/img_alt.rs#L16) · [全ルール](all.md)
 
@@ -8083,7 +8085,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8131,7 +8133,7 @@ span に button の role と click handler を付けても、キーボードで�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L31) · [全ルール](all.md)
 
@@ -8144,7 +8146,7 @@ label を対象のフォーム部品と関連付けます。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8194,7 +8196,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L27) · [全ルール](all.md)
 
@@ -8207,7 +8209,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8257,7 +8259,7 @@ Dashboard を main として残し、Settings を名前付きの nav に変更�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/landmark_roles.rs#L44) · [全ルール](all.md)
 
@@ -8270,7 +8272,7 @@ Dashboard を main として残し、Settings を名前付きの nav に変更�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8320,7 +8322,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/media_has_caption.rs#L30) · [全ルール](all.md)
 
@@ -8333,7 +8335,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8389,7 +8391,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs#L30) · [全ルール](all.md)
 
@@ -8402,7 +8404,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8450,20 +8452,20 @@ accesskey を取り除き、通常の Save ボタンは残します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L19) · [全ルール](all.md)
 
 ### `a11y/no-aria-hidden-on-focusable`
 
-フォーカス可能な要素を aria-hidden で隠した指定を検出します。
+フォーカス可能な要素を aria-hidden で支援技術から隠す指定を検出します。
 
 [悪い例](#a11y-no-aria-hidden-on-focusable-bad) · [良い例](#a11y-no-aria-hidden-on-focusable-good)
 
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8503,7 +8505,7 @@ vp run lint
 
 **良い**
 
-ボタンを隠さず、Close の aria-label を指定します。
+aria-hidden を取り除いてボタンを支援技術から参照できる状態にし、aria-label に Close を指定します。
 
 ```vue annotate="add:2"
 <template>
@@ -8511,7 +8513,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19) · [全ルール](all.md)
 
@@ -8524,7 +8526,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8572,7 +8574,7 @@ autofocus を取り除き、検索欄はそのまま残します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_autofocus.rs#L19) · [全ルール](all.md)
 
@@ -8585,7 +8587,7 @@ marquee や blink などの注意をそらす要素を検出します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8633,7 +8635,7 @@ marquee を使って文字を自動的に動かしています。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_distracting_elements.rs#L16) · [全ルール](all.md)
 
@@ -8646,7 +8648,7 @@ marquee を使って文字を自動的に動かしています。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8674,7 +8676,7 @@ vp run lint
 
 **悪い**
 
-アイコンを i で表示しており、アイコンだけの操作を説明する文字がありません。
+アイコンの表示に i 要素を使っています。i が持つテキスト上の意味は、アイコンだけのボタンが行う操作を説明するものではありません。
 
 ```vue annotate="remove:3"
 <template>
@@ -8688,7 +8690,7 @@ vp run lint
 
 **良い**
 
-装飾の span でアイコンを隠し、別の `Delete item` の文字で操作を説明します。
+装飾用の span に aria-hidden を指定してアイコンを支援技術から隠し、別の `Delete item` の文字でボタンの操作を説明します。
 
 ```vue annotate="add:3,4"
 <template>
@@ -8699,7 +8701,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_i_for_icon.rs#L35) · [全ルール](all.md)
 
@@ -8711,8 +8713,8 @@ vp run lint
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8760,7 +8762,7 @@ button は元から button の役割を持つため、同じ role を重複し�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_redundant_roles/report.rs#L31) · [全ルール](all.md)
 
@@ -8773,7 +8775,7 @@ button は元から button の役割を持つため、同じ role を重複し�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8822,20 +8824,20 @@ aria-labelledby が save-label を参照していますが、その ID の要素
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L37) · [全ルール](all.md)
 
 ### `a11y/no-role-presentation-on-focusable`
 
-フォーカス可能な要素の意味を presentation で消した指定を検出します。
+フォーカス可能な要素への role="presentation" または role="none" の指定を検出します。
 
 [悪い例](#a11y-no-role-presentation-on-focusable-bad) · [良い例](#a11y-no-role-presentation-on-focusable-good)
 
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8863,7 +8865,7 @@ vp run lint
 
 **悪い**
 
-focus できる Billing のリンクに role=presentation を指定し、操作可能なリンクの役割と矛盾させています。ブラウザはこの presentation の指定を無視する必要があります。
+フォーカスできる Billing のリンクに role="presentation" を指定しています。リンク本来の操作可能な役割と矛盾するため、ブラウザーはこの presentation の指定を無視する必要があります。
 
 ```vue annotate="remove:2"
 <template>
@@ -8883,7 +8885,7 @@ focus できる Billing のリンクに role=presentation を指定し、操作�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_role_presentation_on_focusable.rs#L19) · [全ルール](all.md)
 
@@ -8896,7 +8898,7 @@ focus できる Billing のリンクに role=presentation を指定し、操作�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -8944,7 +8946,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L31) · [全ルール](all.md)
 
@@ -8957,7 +8959,7 @@ select のプレースホルダー option に disabled または hidden を指�
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9000,7 +9002,7 @@ vp run lint
 
 **良い**
 
-disabled を追加し、案内を Japan の選択肢と区別します。
+disabled を追加して案内の option を選択できなくし、選択可能な Japan の option と区別します。
 
 ```vue annotate="add:3"
 <template>
@@ -9011,7 +9013,7 @@ disabled を追加し、案内を Japan の選択肢と区別します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [全ルール](all.md)
 
@@ -9024,7 +9026,7 @@ ARIA role が必要とする属性を指定します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9072,7 +9074,7 @@ checkbox の role に、選択状態を示す aria-checked がありません。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs#L30) · [全ルール](all.md)
 
@@ -9085,7 +9087,7 @@ checkbox の role に、選択状態を示す aria-checked がありません。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9133,7 +9135,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs#L16) · [全ルール](all.md)
 
@@ -9146,7 +9148,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9198,20 +9200,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/use_list.rs#L36) · [全ルール](all.md)
 
 ### `vue/use-unique-element-ids`
 
-静的 ID の代わりに useId() で再利用可能な ID を生成します。
+静的 ID の代わりに useId() で一意な ID を生成します。
 
 [悪い例](#vue-use-unique-element-ids-bad) · [良い例](#vue-use-unique-element-ids-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9252,7 +9254,7 @@ vp run lint
 
 **良い**
 
-`useId()` の `emailId` を label の `for` と input の `id` の両方に binding します。
+`useId()` の `emailId` を label の `for` と input の `id` の両方にバインドします。
 
 ```vue annotate="add:1,2,3,4,5,6,8,9"
 <script setup>
@@ -9267,7 +9269,7 @@ const emailId = useId();
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs#L52) · [全ルール](all.md)
 
@@ -9280,7 +9282,7 @@ const emailId = useId();
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9308,7 +9310,7 @@ vp run lint
 
 **悪い**
 
-p に見た目を指定する旧来の align 属性を使っています。
+文字の配置を指定するために、非推奨の align 属性を p 要素に使っています。
 
 ```vue annotate="remove:1,2,3"
 <template>
@@ -9327,7 +9329,7 @@ p に見た目を指定する旧来の align 属性を使っています。
 <style scoped>.notice { text-align: center; }</style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_attr.rs#L32) · [全ルール](all.md)
 
@@ -9340,7 +9342,7 @@ p に見た目を指定する旧来の align 属性を使っています。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9368,7 +9370,7 @@ vp run lint
 
 **悪い**
 
-旧来の見た目のための center 要素を使っています。
+中央揃えのために、非推奨の center 要素を使っています。
 
 ```vue annotate="remove:2"
 <template>
@@ -9388,7 +9390,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_element.rs#L33) · [全ルール](all.md)
 
@@ -9401,7 +9403,7 @@ vp run lint
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9429,7 +9431,7 @@ vp run lint
 
 **悪い**
 
-入力欄と説明の p が同じ email の ID を使い、label の参照先が重複しています。
+入力欄と説明の p が同じ id="email" を使っているため、label の参照先が一意に定まりません。
 
 ```vue annotate="remove:3,4"
 <template>
@@ -9453,7 +9455,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/id_duplication.rs#L36) · [全ルール](all.md)
 
@@ -9466,7 +9468,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9515,7 +9517,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_consecutive_br.rs#L30) · [全ルール](all.md)
 
@@ -9528,7 +9530,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9569,7 +9571,7 @@ vp run lint
 
 **良い**
 
-静的な style では color と background を分けます。動的な style バインディングはこの静的属性の検査の対象外です。
+静的な style 属性には color と background をそれぞれ一度だけ指定し、同じプロパティの重複を避けます。動的な style バインディングはこの静的属性の検査の対象外です。
 
 ```vue annotate="add:2,3"
 <template>
@@ -9578,7 +9580,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_dupe_style_properties.rs#L37) · [全ルール](all.md)
 
@@ -9591,7 +9593,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9639,7 +9641,7 @@ btn は一回だけ残し、別の primary と合わせて指定します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_duplicate_class.rs#L32) · [全ルール](all.md)
 
@@ -9652,7 +9654,7 @@ dl 内の dt の名前重複を検出します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9709,7 +9711,7 @@ API の dt を一つにし、その後に二つの dd を並べます。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_duplicate_dt.rs#L41) · [全ルール](all.md)
 
@@ -9722,7 +9724,7 @@ API の dt を一つにし、その後に二つの dd を並べます。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -9774,7 +9776,7 @@ p は文字、li は補間で内容を入れ、空の td には aria-label で�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32) · [全ルール](all.md)
 
@@ -9787,7 +9789,7 @@ time 要素に機械可読の datetime を指定します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -9815,7 +9817,7 @@ vp run lint
 
 **悪い**
 
-time に人が読む日付だけがあり、機械が読む datetime がありません。
+time 要素には表示用の日付だけがあり、機械可読の datetime 属性がありません。
 
 ```vue annotate="remove:2"
 <template>
@@ -9827,7 +9829,7 @@ time に人が読む日付だけがあり、機械が読む datetime があり�
 
 **良い**
 
-`datetime="2026-05-13"` に対応する日付を指定します。
+表示した日付に対応する機械可読の日付を、`datetime="2026-05-13"` として指定します。
 
 ```vue annotate="add:2"
 <template>
@@ -9835,7 +9837,7 @@ time に人が読む日付だけがあり、機械が読む datetime があり�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/require_datetime.rs#L34) · [全ルール](all.md)
 
@@ -9851,7 +9853,7 @@ time に人が読む日付だけがあり、機械が読む datetime があり�
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -9892,7 +9894,7 @@ save();
 
 **良い**
 
-`void save()` で実行結果を意図的に捨てる指定をし、このルールの条件を満たします。結果を破棄する明示的な印であり、rejection を処理するものではありません。
+`void save()` で Promise の完了を待たずに結果を破棄する意図を明示し、このルールの条件を満たします。この指定は Promise の拒否を処理するものではありません。
 
 ```vue annotate="add:3"
 <script setup lang="ts">
@@ -9901,13 +9903,13 @@ void save();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs#L13) · [全ルール](all.md)
 
 ### `type/no-reactivity-loss`
 
-代入や呼び出しによって反応性を失うスナップショットを検出します。
+リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。
 
 [悪い例](#type-no-reactivity-loss-bad) · [良い例](#type-no-reactivity-loss-good)
 
@@ -9917,7 +9919,7 @@ void save();
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -9969,7 +9971,7 @@ const count = toRef(state, "count");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12) · [全ルール](all.md)
 
@@ -9985,7 +9987,7 @@ const count = toRef(state, "count");
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -10013,7 +10015,7 @@ vp run lint
 
 **悪い**
 
-補間する `value` の型を明示的に `any` とし、チェッカーがテンプレートの binding を安全な具体的な型として確認できません。
+補間する `value` の型を明示的に `any` としているため、型チェッカーはテンプレートに結び付ける値を、安全な具体的な型として検査できません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -10035,7 +10037,7 @@ const value: string = "Hello";
 <template><p>{{ value }}</p></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs#L12) · [全ルール](all.md)
 
@@ -10051,7 +10053,7 @@ defineEmits に型定義を指定します。
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -10079,7 +10081,7 @@ vp run lint
 
 **悪い**
 
-配列だけの `defineEmits(["save"])` はイベント名を宣言するだけで、型付きの payload 契約がありません。
+配列だけの `defineEmits(["save"])` はイベント名を宣言するだけで、ペイロードの型が宣言されていません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -10091,7 +10093,7 @@ defineEmits(["save"]);
 
 **良い**
 
-`defineEmits<{ save: [] }>()` で空の payload タプルを持つ型付きの `save` イベントを宣言し、payload の引数を受け取らないことを明示します。
+`defineEmits<{ save: [] }>()` で、ペイロードを空のタプル型として宣言します。これにより、`save` イベントがペイロードの引数を受け取らないことを明示します。
 
 ```vue annotate="add:2"
 <script setup lang="ts">
@@ -10099,7 +10101,7 @@ defineEmits<{ save: [] }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54) · [全ルール](all.md)
 
@@ -10115,7 +10117,7 @@ defineProps に型定義を指定します。
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -10163,7 +10165,7 @@ defineProps<{ title: string }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) · [全ルール](all.md)
 
@@ -10179,9 +10181,9 @@ script とテンプレートの条件式で安全な真偽判定を使います�
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
-typeAware とルールを明示的に有効にします。既定では null を含み得る数値は許可されず、通常の数値は許可されます。
+typeAware とこのルールを明示的に有効にします。既定では null または undefined を含み得る数値は許可されず、どちらも含まない数値は許可されます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -10209,7 +10211,7 @@ vp run lint
 
 **悪い**
 
-`if (count)` が nullable な数値の truthiness に依存し、明示的な真偽値の検査を使っていません。ゼロと未指定も同じ偽として扱います。
+`if (count)` は、undefined を含み得る数値をそのまま真偽判定に使い、明示的な真偽値の比較をしていません。数値のゼロと値の未指定を、どちらも偽として扱ってしまいます。
 
 ```vue annotate="remove:3"
 <script setup lang="ts">
@@ -10222,7 +10224,7 @@ if (count) console.log(count);
 
 **良い**
 
-`count !== undefined && count > 0` で存在と正の値を別々に検査し、省略可能な値を絞り込んだうえで明示的な真偽値の条件を作ります。
+`count !== undefined && count > 0` で、値が undefined でないことと正の数であることを別々に検査します。省略可能な値を絞り込んでから、真偽値を返す条件式で判定します。
 
 ```vue annotate="add:3"
 <script setup lang="ts">
@@ -10231,7 +10233,7 @@ if (count !== undefined && count > 0) console.log(count);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/strict_boolean_expressions.rs#L7) · [全ルール](all.md)
 
@@ -10294,7 +10296,7 @@ const appConfig = inject("app-config");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_get_current_instance.rs#L38) · [全ルール](all.md)
 
@@ -10359,7 +10361,7 @@ onMounted(() => { input.value?.focus(); });
 <template><input ref="input"></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_next_tick.rs#L40) · [全ルール](all.md)
 
@@ -10424,7 +10426,7 @@ const count = ref(0);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_options_api.rs#L43) · [全ルール](all.md)
 
@@ -10437,7 +10439,7 @@ Vapor で削除済みの inline-template 属性を検出します。
 既定の重大度: `error`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -10491,20 +10493,20 @@ LegacyCard の内部のマークアップに inline-template を使っていま�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs#L31) · [全ルール](all.md)
 
 ### `vapor/no-vue-lifecycle-events`
 
-Vapor が対応しない要素の @vue:* lifecycle event を検出します。
+Vapor では未対応の、要素ごとに指定する @vue:* ライフサイクルイベントを検出します。
 
 [悪い例](#vapor-no-vue-lifecycle-events-bad) · [良い例](#vapor-no-vue-lifecycle-events-good)
 
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -10560,7 +10562,7 @@ onMounted(() => {
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs#L34) · [全ルール](all.md)
 
@@ -10572,8 +10574,8 @@ onMounted(() => {
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -10621,27 +10623,27 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L31) · [全ルール](all.md)
 
 ### `vapor/require-vapor-attribute`
 
-Vapor 向けの script setup に vapor 属性を付ける方針を適用します。
+Vapor 向けの script setup に vapor 属性を付ける規約を示します。
 
 [悪い例](#vapor-require-vapor-attribute-bad) · [良い例](#vapor-require-vapor-attribute-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: SFC lint では未対応  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 現在の対応: `no-sfc-finding`
 
 このルールは callback が空の placeholder です。vapor 属性は Vapor でのコンパイルを選択するものですが、現在の linter は属性がないことをこの ID では検出しません。
 
-**設定できる ID（現在の SFC 検出なし）**
+**設定できる ID（現在の SFC lint では診断されません）**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -10688,7 +10690,7 @@ const count = 0;
 <template><p>{{ count }}</p></template>
 ```
 
-良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
+良い例は意図する規約を示します。現在の SFC lint では、悪い例・良い例のどちらからもこのルール固有の診断は出ません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs#L17) · [全ルール](all.md)
 
@@ -10701,7 +10703,7 @@ Nuxt の内部リンクに NuxtLink を使います。
 既定の重大度: `warning`  
 プリセット: `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -10749,7 +10751,7 @@ Nuxt の内部ページへの移動に通常の a を使っています。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs#L14) · [全ルール](all.md)
 
@@ -10762,7 +10764,7 @@ Pinia store の分割代入に storeToRefs() を使います。
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -10790,7 +10792,7 @@ vp run lint
 
 **悪い**
 
-store から name を直接分割代入し、リアクティブな store の読み取りから値を切り離しています。
+store から name を直接分割代入しているため、取り出した値は store の変更に追従しません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -10802,7 +10804,7 @@ const { name } = useUserStore();
 
 **良い**
 
-store は保持し、storeToRefs で name のリアクティブな参照を取り出します。
+store を変数に保持し、storeToRefs で name を store の状態に追従する ref として取り出します。
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
@@ -10811,7 +10813,7 @@ const { name } = storeToRefs(store);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs#L20) · [全ルール](all.md)
 
@@ -10824,10 +10826,10 @@ RouterLink / NuxtLink に to を指定します。
 既定の重大度: `error`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-SFC の単一ルートにあるリンクは、親から属性を継承できるため対象外になる場合があります。この例は明示的な遷移先が必要な内部のリンクです。
+SFC の単一ルート要素がリンクである場合、親から属性を継承できるため対象外になることがあります。この例は別の要素の内側にあるリンクで、明示的な遷移先が必要です。
 
 **設定（Vite+）**
 
@@ -10854,7 +10856,7 @@ vp run lint
 
 **悪い**
 
-nav の内側の RouterLink に to がなく、ルートの属性継承にも頼れません。
+nav の子要素である RouterLink に to がなく、SFC のルート要素を通じた属性の継承も利用できません。
 
 ```vue annotate="remove:2"
 <template>
@@ -10866,7 +10868,7 @@ nav の内側の RouterLink に to がなく、ルートの属性継承にも頼
 
 **良い**
 
-内部のリンクに `to="/settings"` で移動先を明示します。
+nav の内側にあるリンクに `to="/settings"` で移動先を明示します。
 
 ```vue annotate="add:2"
 <template>
@@ -10874,7 +10876,7 @@ nav の内側の RouterLink に to がなく、ルートの属性継承にも頼
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L14) · [全ルール](all.md)
 
@@ -10887,7 +10889,7 @@ Void Vue の Link に href を指定します。
 既定の重大度: `error`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -10943,7 +10945,7 @@ import { Link } from "@void/vue";
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_require_href.rs#L13) · [全ルール](all.md)
 
@@ -10956,7 +10958,7 @@ Void Vue の Link に有効な静的 method を指定します。
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -11012,7 +11014,7 @@ import { Link } from "@void/vue";
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_valid_method.rs#L14) · [全ルール](all.md)
 
@@ -11025,7 +11027,7 @@ SFC 内の翻訳データに存在しない静的キーを検出します。
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -11077,7 +11079,7 @@ vp run lint
 </i18n>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs#L17) · [全ルール](all.md)
 
@@ -11090,7 +11092,7 @@ RouterLink の文字列パスを名前付きルートの指定に置き換えま
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -11130,7 +11132,7 @@ RouterLink の移動先をルート名ではなく、文字列のパスで指定
 
 **良い**
 
-バインドする route のオブジェクトに settings の name を指定します。
+to にバインドするルートオブジェクトの name を settings にし、ルート名で移動先を指定します。
 
 ```vue annotate="add:2"
 <template>
@@ -11138,7 +11140,7 @@ RouterLink の移動先をルート名ではなく、文字列のパスで指定
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/vue_router_prefer_named_link.rs#L15) · [全ルール](all.md)
 
@@ -11151,7 +11153,7 @@ Vue Router のプログラムによる移動に名前付きルートを使いま
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -11179,7 +11181,7 @@ vp run lint
 
 **悪い**
 
-router.push に、現在の URL 表記に結び付く文字列のパスを渡しています。
+router.push に移動先のパスを文字列で渡し、URL の具体的なパスに依存しています。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -11199,7 +11201,7 @@ router.push({ name: "settings" });
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_router_prefer_named_push.rs#L19) · [全ルール](all.md)
 
@@ -11212,7 +11214,7 @@ wrapper.html() 全体の snapshot に依存するテストを検出します。
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -11260,7 +11262,7 @@ expect(wrapper.text()).toContain("Saved");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_test_utils_no_html_snapshot.rs#L15) · [全ルール](all.md)
 
@@ -11301,7 +11303,7 @@ vp run lint
 
 **悪い**
 
-ローカルの p を `.message` の CSS で非表示にし、テンプレートに表示条件を指定していません。
+このコンポーネントの p 要素を `.message` の CSS で非表示にし、テンプレートには表示条件を指定していません。
 
 ```vue annotate="remove:2,4,5,6,7,8,9"
 <template>
@@ -11327,7 +11329,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27) · [全ルール](all.md)
 
@@ -11368,7 +11370,7 @@ vp run lint
 
 **悪い**
 
-button の余白と色に数値や 16 進の色を直接指定しています。
+`.button` のスタイルで、余白の数値と 16 進数の色を宣言に直接指定しています。
 
 ```vue annotate="remove:3,4"
 <style scoped>
@@ -11394,7 +11396,7 @@ button の余白と色に数値や 16 進の色を直接指定しています。
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L30) · [全ルール](all.md)
 
@@ -11459,7 +11461,7 @@ vp run lint
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19) · [全ルール](all.md)
 
@@ -11524,7 +11526,7 @@ important を使わず、カスタムプロパティから色を参照します�
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L14) · [全ルール](all.md)
 
@@ -11587,7 +11589,7 @@ vp run lint
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_utility_classes.rs#L37) · [全ルール](all.md)
 
@@ -11650,7 +11652,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_v_bind_performance.rs#L20) · [全ルール](all.md)
 
@@ -11715,7 +11717,7 @@ margin-inline-start を使い、インライン方向の開始側に余白を指
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15) · [全ルール](all.md)
 
@@ -11756,7 +11758,7 @@ vp run lint
 
 **悪い**
 
-平らなルールの `.card .title` に、親のセレクターを含めて指定しています。
+ルールをネストせず、子孫セレクター `.card .title` に親のセレクターも含めて指定しています。
 
 ```vue annotate="remove:2"
 <style scoped>
@@ -11768,7 +11770,7 @@ vp run lint
 
 **良い**
 
-`.card` の中に `.title` を入れ、親子のスタイルを一緒に管理します。
+`.title` のルールを `.card` の中にネストし、親子のスタイルの関係を一か所にまとめます。
 
 ```vue annotate="add:2"
 <style scoped>
@@ -11776,7 +11778,7 @@ vp run lint
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_nested_selectors.rs#L14) · [全ルール](all.md)
 
@@ -11817,7 +11819,7 @@ vp run lint
 
 **悪い**
 
-scoped の CSS で、渡された要素ではなく slot の出口を対象にしています。
+scoped の CSS で、スロットに渡された要素ではなく、スロットの挿入位置を表す slot を対象にしています。
 
 ```vue annotate="remove:2"
 <style scoped>
@@ -11829,7 +11831,7 @@ slot { color: red; }
 
 **良い**
 
-:slotted(.label) を使い、slot から渡される label の要素を対象にします。
+:slotted(.label) を使い、スロットに渡された .label クラスを持つ要素を対象にします。
 
 ```vue annotate="add:2"
 <style scoped>
@@ -11837,7 +11839,7 @@ slot { color: red; }
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34) · [全ルール](all.md)
 
@@ -11893,7 +11895,7 @@ font-face にフォントの参照先はありますが、font-display の方針
 
 **良い**
 
-font-display: swap を追加し、フォールバックからフォントを表示する方針を指定します。
+font-display: swap を追加し、代替フォントで表示した後、読み込まれたフォントへ切り替える方針を指定します。
 
 ```vue annotate="add:5"
 <style>
@@ -11905,7 +11907,7 @@ font-display: swap を追加し、フォールバックからフォントを表�
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13) · [全ルール](all.md)
 
@@ -11946,7 +11948,7 @@ vp run lint
 
 **悪い**
 
-primary の名前がある variant が空で、プレビューする内容がありません。
+name を primary にしているものの、variant の中身が空で、プレビューする内容がありません。
 
 ```vue annotate="remove:2"
 <art title="Button" component="./Button.vue">
@@ -11958,7 +11960,7 @@ primary の名前がある variant が空で、プレビューする内容があ
 
 **良い**
 
-variant の中に primary の Button と Save の内容を入れます。
+variant の中に tone="primary" の Button を置き、Save を表示します。
 
 ```vue annotate="add:2,3,4"
 <art title="Button" component="./Button.vue">
@@ -11968,13 +11970,13 @@ variant の中に primary の Button と Save の内容を入れます。
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/no_empty_variant.rs#L8) · [全ルール](all.md)
 
 ### `musea/prefer-design-tokens`
 
-登録した design token に一致する直接指定値を CSS 変数で表現します。
+登録したデザイントークンの値に一致する CSS の直接指定値を、対応する CSS 変数で表現します。
 
 [悪い例](#musea-prefer-design-tokens-bad) · [良い例](#musea-prefer-design-tokens-good)
 
@@ -12041,7 +12043,7 @@ art の例で、設定した primary のデザイントークンではなく、�
 
 **良い**
 
-この例で設定する --color-primary のトークンを参照します。
+この例の設定に登録された --color-primary のトークンを参照します。
 
 `Button.art.vue`
 
@@ -12056,7 +12058,7 @@ art の例で、設定した primary のデザイントークンではなく、�
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32) · [全ルール](all.md)
 
@@ -12121,7 +12123,7 @@ defineArt("./Button.vue", { title: "Button" });
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_component.rs#L11) · [全ルール](all.md)
 
@@ -12174,7 +12176,7 @@ art に Button.vue の指定はありますが、title がありません。
 
 **良い**
 
-defineArt のオプションに Button の title を指定します。
+defineArt のオプションで title を Button にし、art ブロックのタイトルを指定します。
 
 ```vue annotate="add:1,2,3,4,5"
 <script setup>
@@ -12186,7 +12188,7 @@ defineArt("./Button.vue", { title: "Button" });
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31) · [全ルール](all.md)
 
@@ -12249,7 +12251,7 @@ primary と secondary の別々の名前を指定します。
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10) · [全ルール](all.md)
 
@@ -12310,7 +12312,7 @@ variant に primary の name を指定します。
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8) · [全ルール](all.md)
 
@@ -12323,7 +12325,7 @@ variant に primary の name を指定します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -12375,7 +12377,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44) · [全ルール](all.md)
 
@@ -12388,7 +12390,7 @@ emit するカスタムイベント名を指定した形式に揃えます。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -12438,7 +12440,7 @@ emit('myEvent')
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61) · [全ルール](all.md)
 
@@ -12451,7 +12453,7 @@ defineEmits を型による宣言形式に揃えます。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -12501,7 +12503,7 @@ emit("change", 1);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_emits_declaration.rs#L39) · [全ルール](all.md)
 
@@ -12514,7 +12516,7 @@ script setup のコンパイラーマクロを一定の順に宣言します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -12568,7 +12570,7 @@ defineSlots<{ default(props: {}): any }>()
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) · [全ルール](all.md)
 
@@ -12581,7 +12583,7 @@ defineProps を型による宣言形式に揃えます。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -12631,7 +12633,7 @@ console.log(props.title);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_declaration.rs#L40) · [全ルール](all.md)
 
@@ -12644,7 +12646,7 @@ defineProps の分割代入スタイルを指定した方針に揃えます。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -12692,20 +12694,20 @@ const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29) · [全ルール](all.md)
 
 ### `script/no-arrow-functions-in-watch`
 
-Options API の watch に this を持たないアロー関数を使う箇所を検出します。
+Options API の watch ハンドラーにアロー関数を使う箇所を検出します。
 
 [悪い例](#script-no-arrow-functions-in-watch-bad) · [良い例](#script-no-arrow-functions-in-watch-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -12755,7 +12757,7 @@ export default {
 
 **良い**
 
-両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントに束縛できるようにします。オブジェクト形式の `deep: true` オプションも維持できます。
+両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントインスタンスに束縛できるようにします。オブジェクト形式では `deep: true` オプションも指定できます。
 
 ```vue annotate="add:4,8,9"
 <script lang="ts">
@@ -12773,7 +12775,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) · [全ルール](all.md)
 
@@ -12786,7 +12788,7 @@ computed の getter で非同期関数を使う箇所を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -12848,7 +12850,7 @@ watch(query, async (value, _oldValue, onCleanup) => {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_async_in_computed.rs#L46) · [全ルール](all.md)
 
@@ -12861,7 +12863,7 @@ Boolean prop の冗長な default を検出します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -12889,7 +12891,7 @@ vp run lint
 
 **悪い**
 
-`disabled` と `checked` は、単独の型が `Boolean` である prop に `default` を指定しています。明示的な `false` もこのルールの対象です。
+`disabled` と `checked` は、型に `Boolean` コンストラクターだけを指定した prop に `default` を付けています。明示的な `false` もこのルールの対象です。
 
 ```vue annotate="remove:4,5,6"
 <script lang="ts">
@@ -12925,7 +12927,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) · [全ルール](all.md)
 
@@ -12938,7 +12940,7 @@ defineProps の深い分割代入を検出します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -12966,7 +12968,7 @@ vp run lint
 
 **悪い**
 
-代入パターンが `user` の内部まで進んで `name` を取り出し、既定で許される浅い props 分割代入の深さを超えています。
+props の `user` からさらに `name` を分割代入で取り出し、既定で許される浅い分割代入の深さを超えています。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -12988,7 +12990,7 @@ const userName = computed(() => props.user.name);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [全ルール](all.md)
 
@@ -13001,7 +13003,7 @@ Vue 3 で関数にすべき data オプションのオブジェクト指定を�
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13058,7 +13060,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) · [全ルール](all.md)
 
@@ -13070,8 +13072,8 @@ Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 の hook に置き換�
 
 既定の重大度: `error`  
 プリセット: _none_  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13111,7 +13113,7 @@ export default { beforeDestroy() { clearTimeout(this.timer); } };
 
 **良い**
 
-フック名を `beforeUnmount` に変え、後片付けの本体を Vue 3 のライフサイクル名で保ちます。
+タイマーの後片付けの処理をそのまま残し、フック名を Vue 3 の `beforeUnmount` に変更します。
 
 ```vue annotate="add:2"
 <script lang="ts">
@@ -13119,7 +13121,7 @@ export default { beforeUnmount() { clearTimeout(this.timer); } };
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17) · [全ルール](all.md)
 
@@ -13132,7 +13134,7 @@ Vue 3 で $attrs に統合された $listeners を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13160,7 +13162,7 @@ vp run lint
 
 **悪い**
 
-メンバー参照と引数の裸の参照がいずれも `$listeners` を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。
+`this.$listeners` と `ctx.$listeners` のメンバー参照、および引数に直接渡した `$listeners` が、削除された API を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。
 
 ```vue annotate="remove:2,3,4"
 <script setup lang="ts">
@@ -13174,7 +13176,7 @@ emit('input', $listeners)
 
 **良い**
 
-参照を `this.$attrs` と setup コンテキストの `ctx.attrs` に移し、削除されたリスナー API を置き換えます。例の参照元は、それぞれのコンポーネントコンテキストで用意されている必要があります。
+参照を `this.$attrs` と setup コンテキストの `ctx.attrs` に置き換え、削除されたリスナー API の使用をなくします。この例は、それぞれの参照元を使えるコンポーネントの文脈を前提にしています。
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
@@ -13183,7 +13185,7 @@ const forwarded = ctx.attrs
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [全ルール](all.md)
 
@@ -13196,7 +13198,7 @@ Vue 3 で $slots に統合された $scopedSlots を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13224,7 +13226,7 @@ vp run lint
 
 **悪い**
 
-`this.$scopedSlots`、`ctx.$scopedSlots`、裸の `$scopedSlots` 参照が、Vue 3 で削除された Vue 2 の scoped slot API を使っています。
+`this.$scopedSlots`、`ctx.$scopedSlots`、`this` や `ctx` を付けずに参照した `$scopedSlots` が、Vue 3 で削除された Vue 2 のスコープ付きスロット API を使っています。
 
 ```vue annotate="remove:2,3,4"
 <script setup lang="ts">
@@ -13248,7 +13250,7 @@ render($slots.default)
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) · [全ルール](all.md)
 
@@ -13261,7 +13263,7 @@ Vue 3 で削除された $on / $off / $once を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13318,7 +13320,7 @@ emitter.on('event', handler)
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) · [全ルール](all.md)
 
@@ -13331,7 +13333,7 @@ prop の default / validator 内で使えなくなった this を検出します
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13359,7 +13361,7 @@ vp run lint
 
 **悪い**
 
-prop の既定値関数と validator が `this` を参照していますが、Vue 3 ではこれらの関数からコンポーネントインスタンスに依存できません。
+prop の既定値関数とバリデーターが `this` を参照していますが、Vue 3 ではこれらの関数の `this` からコンポーネントインスタンスを参照できません。
 
 ```vue annotate="remove:6,7,8,13,14"
 <script lang="ts">
@@ -13411,7 +13413,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) · [全ルール](all.md)
 
@@ -13424,7 +13426,7 @@ Options API の props / data / computed などのキー重複を検出します�
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13452,7 +13454,7 @@ vp run lint
 
 **悪い**
 
-`foo` が props と data の両方に、`bar` が computed と methods の両方に宣言され、コンポーネントインスタンス上の同じキーを取り合っています。
+`foo` が props と data の両方に、`bar` が computed と methods の両方に宣言され、コンポーネントインスタンス上で同じキーの宣言が衝突しています。
 
 ```vue annotate="remove:5,8,9,10,11"
 <script lang="ts">
@@ -13491,7 +13493,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L52) · [全ルール](all.md)
 
@@ -13504,7 +13506,7 @@ fallthrough 属性を同じコンポーネントで二重に適用する箇所�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13532,7 +13534,7 @@ vp run lint
 
 **悪い**
 
-明示的な `inheritAttrs: true` が Vue の既定動作を繰り返しています。このルールは、ルートの `$attrs` 展開が例にない場合もこの冗長なリテラルを報告します。
+Vue の既定で有効な属性継承を、`inheritAttrs: true` であらためて指定しています。このルールは、ルート要素に `$attrs` を展開するコードがない場合も、この冗長な指定を報告します。
 
 ```vue annotate="remove:2,3"
 <script lang="ts">
@@ -13554,7 +13556,7 @@ export default {}                      // default inheritance, unstated
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L73) · [全ルール](all.md)
 
@@ -13567,7 +13569,7 @@ script setup 内の export 文を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13615,7 +13617,7 @@ const count = 1;
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) · [全ルール](all.md)
 
@@ -13628,7 +13630,7 @@ const count = 1;
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13679,7 +13681,7 @@ const emit = defineEmits<{ save: [id: number] }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_import_compiler_macros.rs#L39) · [全ルール](all.md)
 
@@ -13692,7 +13694,7 @@ Vue 内部モジュールからの import を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13741,7 +13743,7 @@ import { ref, computed } from 'vue'
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) · [全ルール](all.md)
 
@@ -13754,7 +13756,7 @@ scoped slot 関数に複数の引数を渡す箇所を検出します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13782,7 +13784,7 @@ vp run lint
 
 **悪い**
 
-slot 呼び出しが複数の位置引数、または個数不明の引数展開を渡しています。Vue の slot は位置引数の列ではなく、一つの props オブジェクトを受け取ります。
+スロットの呼び出しで、複数の位置引数や、個数不明の引数をスプレッド構文で渡しています。Vue のスロットは位置引数の列ではなく、一つの props オブジェクトを受け取ります。
 
 ```vue annotate="remove:2,3,4,5,6"
 <script setup lang="ts">
@@ -13798,7 +13800,7 @@ slots.default(...args)
 
 **良い**
 
-`{ foo, bar }` でデータを一つの引数にまとめます。`slotProps` を渡す呼び出しと引数を省いた呼び出しも、対応する slot 呼び出し形式に収まります。
+`{ foo, bar }` でデータを一つの引数にまとめます。`slotProps` を渡す呼び出しと引数を省いた呼び出しも、このルールが許可するスロットの呼び出し方です。
 
 ```vue annotate="add:2,3,4"
 <script setup lang="ts">
@@ -13808,7 +13810,7 @@ slots.default()
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_multiple_slot_args.rs#L61) · [全ルール](all.md)
 
@@ -13821,7 +13823,7 @@ Options API のオプション名の入力ミスを検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13869,20 +13871,20 @@ export default { methods: { save() {} } };
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19) · [全ルール](all.md)
 
 ### `script/no-reactive-destructure`
 
-reactive オブジェクトの反応性を失う分割代入を検出します。
+reactive オブジェクトを分割代入し、リアクティビティを失う箇所を検出します。
 
 [悪い例](#script-no-reactive-destructure-bad) · [良い例](#script-no-reactive-destructure-good)
 
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13934,7 +13936,7 @@ const { count, name } = toRefs(state);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43) · [全ルール](all.md)
 
@@ -13947,7 +13949,7 @@ ref を演算の値として使う際に .value を参照します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -13999,7 +14001,7 @@ const next = count.value + 1;
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_ref_as_operand.rs#L41) · [全ルール](all.md)
 
@@ -14012,7 +14014,7 @@ required: true と default を同時に持つ prop を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14060,7 +14062,7 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [全ルール](all.md)
 
@@ -14073,7 +14075,7 @@ Vue コンパイラーが予約した識別子の宣言を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14125,7 +14127,7 @@ const componentData = {};
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_identifiers.rs#L49) · [全ルール](all.md)
 
@@ -14138,7 +14140,7 @@ Options API のキーに Vue の予約名を使う箇所を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14186,7 +14188,7 @@ export default { data() { return { elementLabel: "custom" }; } };
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L32) · [全ルール](all.md)
 
@@ -14199,7 +14201,7 @@ prop 宣言に Vue の予約名を使う箇所を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14261,7 +14263,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53) · [全ルール](all.md)
 
@@ -14274,7 +14276,7 @@ export default {
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -14329,7 +14331,7 @@ viewStorage.write('view.scroll', String(window.scrollY))
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_globals.rs#L57) · [全ルール](all.md)
 
@@ -14342,7 +14344,7 @@ viewStorage.write('view.scroll', String(window.scrollY))
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 この例では window.localStorage を禁止しています。既定の禁止リストはなく、有効にするだけでは検出されません。
@@ -14402,7 +14404,7 @@ const token = authStorage.read("token");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_members.rs#L53) · [全ルール](all.md)
 
@@ -14415,7 +14417,7 @@ Options API の computed getter 内の副作用を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14443,7 +14445,7 @@ vp run lint
 
 **悪い**
 
-`doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらも値を導出すべき getter が元の状態を変更しています。
+`doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらのゲッターも、値を計算する元の状態を変更してしまっています。
 
 ```vue annotate="remove:8,9,12"
 <script lang="ts">
@@ -14488,7 +14490,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L70) · [全ルール](all.md)
 
@@ -14501,7 +14503,7 @@ export default {
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14576,7 +14578,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs#L63) · [全ルール](all.md)
 
@@ -14589,7 +14591,7 @@ setup / render 内で毎回コンポーネントを定義する箇所を検出�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14640,7 +14642,7 @@ export default { setup() { return { Child }; } };
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) · [全ルール](all.md)
 
@@ -14653,7 +14655,7 @@ export default { setup() { return { Child }; } };
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14704,7 +14706,7 @@ emit('change')
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs#L74) · [全ルール](all.md)
 
@@ -14717,7 +14719,7 @@ Options API の computed プロパティをメソッドとして呼ぶ箇所を�
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14765,7 +14767,7 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) · [全ルール](all.md)
 
@@ -14778,7 +14780,7 @@ Vue 3.5 以降の props 分割代入の既定値を勧めます。
 既定の重大度: `warning`  
 プリセット: `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14826,7 +14828,7 @@ const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string 
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) · [全ルール](all.md)
 
@@ -14839,7 +14841,7 @@ const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string 
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 派生値だけを代入する watcher が対象です。ユーザーが編集するコピーや別の副作用を持つ処理は対象外です。
@@ -14894,7 +14896,7 @@ const doubled = computed(() => count.value * 2);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) · [全ルール](all.md)
 
@@ -14907,7 +14909,7 @@ name / inheritAttrs だけの通常 script を defineOptions() にまとめま�
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -14947,7 +14949,7 @@ export default { name: 'MyComponent', inheritAttrs: false }
 
 **良い**
 
-例の `data()` が実際の Options API の処理を持つため、オプションだけの script を対象とする慎重な提案の範囲外になります。この Good は許可される例外を示します。直接移行する場合は `<script setup>` 内で `defineOptions({ name: 'MyComponent', inheritAttrs: false })` を使います。
+`data()` が Options API の処理を含むため、オプションの宣言だけを持つ script を対象とする、このルールの提案の範囲外です。この良い例は、通常の script を残せる例外を示しています。悪い例を直接移行する場合は `<script setup>` 内で `defineOptions({ name: 'MyComponent', inheritAttrs: false })` を使います。
 
 ```vue annotate="add:2,3,4,5,6"
 <script lang="ts">
@@ -14959,7 +14961,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) · [全ルール](all.md)
 
@@ -14971,8 +14973,8 @@ export default {
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15021,7 +15023,7 @@ import { ref, h } from 'vue'
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [全ルール](all.md)
 
@@ -15034,7 +15036,7 @@ import { ref, h } from 'vue'
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15062,7 +15064,7 @@ vp run lint
 
 **悪い**
 
-状態を `reactive` で作り、この意見を持つルールが推奨する ref を使っていません。これはスタイルの推奨を示す例であり、reactive オブジェクト自体が不正という意味ではありません。
+状態を `reactive` で作っており、ref を優先するこのルールの方針に合っていません。これはスタイルの推奨を示す例であり、reactive オブジェクト自体が不正という意味ではありません。
 
 ```vue annotate="remove:2,3,4,5,6"
 <script setup lang="ts">
@@ -15095,7 +15097,7 @@ const userAge = ref(20)
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs#L44) · [全ルール](all.md)
 
@@ -15108,7 +15110,7 @@ setup の context.attrs を useAttrs() に置き換えます。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15157,7 +15159,7 @@ export default { setup() { const attrs = useAttrs(); console.log(attrs.class); }
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_attrs.rs#L44) · [全ルール](all.md)
 
@@ -15170,7 +15172,7 @@ export default { setup() { const attrs = useAttrs(); console.log(attrs.class); }
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15198,7 +15200,7 @@ vp run lint
 
 **悪い**
 
-`id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で変わり得ます。ID の名前を持つこの変数が、ルールの認識する生成箇所です。
+`id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で異なる可能性があります。この例では、`id` という変数名から ID の生成箇所だと判定されます。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -15221,7 +15223,7 @@ const id = useId();
 <template><label :for="id">Name</label><input :id="id" /></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) · [全ルール](all.md)
 
@@ -15234,7 +15236,7 @@ setup の context.slots を useSlots() に置き換えます。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15277,7 +15279,7 @@ export default defineComponent({
 
 **良い**
 
-setup 内で `useSlots()` から slot を取得し、コンテキスト引数を使わずに render 関数と default slot の任意の呼び出しを保ちます。
+setup 内で `useSlots()` からスロットを取得します。コンテキスト引数を使わず、レンダー関数と、デフォルトスロットが存在する場合だけ呼び出す処理を保ちます。
 
 ```vue annotate="add:2,4,5,6,7"
 <script lang="ts">
@@ -15291,7 +15293,7 @@ export default defineComponent({
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_slots.rs#L44) · [全ルール](all.md)
 
@@ -15304,7 +15306,7 @@ export default defineComponent({
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15364,7 +15366,7 @@ const error = ref(null)
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75) · [全ルール](all.md)
 
@@ -15377,7 +15379,7 @@ const error = ref(null)
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15437,7 +15439,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L58) · [全ルール](all.md)
 
@@ -15450,7 +15452,7 @@ emit するイベントを defineEmits または emits に宣言します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15500,7 +15502,7 @@ emit("save");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L61) · [全ルール](all.md)
 
@@ -15513,7 +15515,7 @@ useSlots() で使う slot を defineSlots の型で宣言します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15541,7 +15543,7 @@ vp run lint
 
 **悪い**
 
-型付きの `defineProps<{ id: number }>()` により TypeScript の構文があることが分かりますが、setup が `defineSlots` の宣言なしに `useSlots()` を使い、参照する slot の明示的な契約がありません。
+型付きの `defineProps<{ id: number }>()` から、この例が TypeScript の構文を使っていることが分かります。しかし setup では `defineSlots` を宣言せずに `useSlots()` を使っており、利用するスロットの型が明示されていません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -15563,7 +15565,7 @@ const slots = useSlots()
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) · [全ルール](all.md)
 
@@ -15576,7 +15578,7 @@ const slots = useSlots()
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15636,7 +15638,7 @@ function greet(name: string): string {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) · [全ルール](all.md)
 
@@ -15649,7 +15651,7 @@ prop の type に文字列ではなくコンストラクターを指定します
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15710,7 +15712,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L59) · [全ルール](all.md)
 
@@ -15723,7 +15725,7 @@ export default {
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15751,7 +15753,7 @@ vp run lint
 
 **悪い**
 
-配列の要素は `status` という名前だけを宣言し、`null` の値と空の descriptor にも実行時の prop 型がありません。
+配列の要素は `status` という名前だけを宣言しています。値を `null` にした prop と、空の設定オブジェクトを指定した prop にも、実行時の型宣言がありません。
 
 ```vue annotate="remove:3,4,5,6,8,9"
 <script lang="ts">
@@ -15772,7 +15774,7 @@ export default {
 
 **良い**
 
-`status: String` で省略形式のコンストラクターを指定し、`other` の descriptor に `type: Number` を付けます。両方の props が型の宣言を持つようになります。
+`status: String` でコンストラクターを直接指定し、`other` の設定オブジェクトに `type: Number` を付けます。両方の props に型が宣言されます。
 
 ```vue annotate="add:4,5"
 <script lang="ts">
@@ -15785,7 +15787,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) · [全ルール](all.md)
 
@@ -15798,7 +15800,7 @@ provide / inject のキーに衝突しにくい Symbol を使います。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15858,7 +15860,7 @@ const user = inject(UserKey)
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_symbol_provide.rs#L39) · [全ルール](all.md)
 
@@ -15871,7 +15873,7 @@ Object / Array の prop に具体的な型を指定します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15899,7 +15901,7 @@ vp run lint
 
 **悪い**
 
-裸の `Object` と `Array` は広い実行時の分類しか表さず、`user` や `items` の要素の形を明示する静的な型がありません。
+`Object` と `Array` コンストラクターだけでは、実行時にオブジェクトか配列かを示すにとどまり、`user` の構造や `items` の要素の型を表す具体的な静的型がありません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -15924,20 +15926,20 @@ const props = defineProps({
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs#L63) · [全ルール](all.md)
 
 ### `script/require-typed-ref`
 
-空・null・undefined で初期化する ref() に型引数を指定します。
+引数なし、null、undefined で呼び出す ref() に型引数を指定します。
 
 [悪い例](#script-require-typed-ref-bad) · [良い例](#script-require-typed-ref-good)
 
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -15993,7 +15995,7 @@ const c = ref(0)          // inferred Ref<number>
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_typed_ref.rs#L55) · [全ルール](all.md)
 
@@ -16006,7 +16008,7 @@ prop の default を宣言した型に合う値にします。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -16069,7 +16071,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs#L68) · [全ルール](all.md)
 
@@ -16082,7 +16084,7 @@ computed の getter に値を返す return を用意します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -16123,7 +16125,7 @@ const total = computed(() => { 1 + 2; });
 
 **良い**
 
-`return 1 + 2` で式を getter の戻り値にします。このルールは式文だけでなく、getter 自身の値を返す return を確認します。
+`return 1 + 2` で計算結果をゲッターの戻り値にします。式文があるだけでは、このルールの条件を満たしません。ゲッター本体に、値を返す return が必要です。
 
 ```vue annotate="add:3"
 <script setup lang="ts">
@@ -16132,7 +16134,7 @@ const total = computed(() => { return 1 + 2; });
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/return_in_computed_property.rs#L31) · [全ルール](all.md)
 
@@ -16145,10 +16147,10 @@ Options API の emits validator に戻り値を用意します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-現在の SFC フィルターが対象とする block-body arrow を使います。validator 本体には method shorthand の処理もありますが、現在の SFC prefilter はその形を確実には実行しません。
+この例では、現在の SFC フィルターが対象にする、関数本体を波括弧で囲んだアロー関数を使います。バリデーター自体はメソッドの省略記法にも対応していますが、現在の SFC 事前フィルターでは、その形式の検査が確実に呼び出されません。
 
 **設定（Vite+）**
 
@@ -16175,7 +16177,7 @@ vp run lint
 
 **悪い**
 
-`submit` の validator が payload をログ出力するだけで検査結果を返さず、ブロックの結果が undefined になります。
+`submit` のバリデーターがペイロードをログ出力するだけで検査結果を返さず、関数の戻り値が undefined になります。
 
 ```vue annotate="remove:2"
 <script lang="ts">
@@ -16187,7 +16189,7 @@ export default { emits: { submit: (payload: unknown) => { console.log(payload); 
 
 **良い**
 
-`return payload != null` を追加し、値を返さず終了する代わりに payload の真偽値の検査結果を返します。
+`return payload != null` を追加し、ペイロードが null でも undefined でもないかを検査した結果を、真偽値で返します。
 
 ```vue annotate="add:2"
 <script lang="ts">
@@ -16195,7 +16197,7 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) · [全ルール](all.md)
 
@@ -16208,7 +16210,7 @@ defineEmits の重複や型と実行時引数の併用を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -16256,7 +16258,7 @@ defineEmits<{ save: [] }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_emits.rs#L45) · [全ルール](all.md)
 
@@ -16269,7 +16271,7 @@ defineOptions の引数と使用回数を検査します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -16320,7 +16322,7 @@ defineOptions({ name: 'Foo', inheritAttrs: false })
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_options.rs#L41) · [全ルール](all.md)
 
@@ -16333,7 +16335,7 @@ defineProps の重複や型と実行時引数の併用を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -16381,7 +16383,7 @@ defineProps<{ title: string }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_props.rs#L44) · [全ルール](all.md)
 
@@ -16394,7 +16396,7 @@ nextTick() の完了を await、then、または callback で扱います。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -16444,13 +16446,13 @@ await nextTick();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_next_tick.rs#L55) · [全ルール](all.md)
 
 ### `nuxt/no-nuxt-config-test-key`
 
-Nuxt が自動判定する test 環境の手動設定を検出します。
+Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出します。
 
 [悪い例](#nuxt-no-nuxt-config-test-key-bad) · [良い例](#nuxt-no-nuxt-config-test-key-good)
 
@@ -16505,7 +16507,7 @@ export default defineNuxtConfig({ test: true });
 export default defineNuxtConfig({});
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_nuxt_config_test_key.rs#L16) · [全ルール](all.md)
 
@@ -16518,7 +16520,7 @@ definePageMeta の即時評価部分で実行時コンテキストを使う箇�
 既定の重大度: `error`  
 プリセット: `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -16546,7 +16548,7 @@ vp run lint
 
 **悪い**
 
-`definePageMeta` のオブジェクトを作る際に `useRoute()` を即座に評価しています。メタデータはマクロによって setup の実行時コンテキストの外へ巻き上げられます。
+`definePageMeta` のオブジェクトを作る際に `useRoute()` を即座に評価しています。メタデータはマクロによって setup の実行時コンテキストの外に移されます。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -16558,7 +16560,7 @@ definePageMeta({ title: useRoute() });
 
 **良い**
 
-`validate` にコールバックを渡し、`useRoute().params.id` の評価をその実行時まで遅らせます。このルールは関数本体内の遅延評価と、メタデータの即時評価を区別します。
+`validate` にコールバックを渡し、`useRoute().params.id` の評価をコールバックが呼び出されるまで遅らせます。このルールは関数本体内の遅延評価と、メタデータの即時評価を区別します。
 
 ```vue annotate="add:2"
 <script setup lang="ts">
@@ -16566,7 +16568,7 @@ definePageMeta({ validate: () => Boolean(useRoute().params.id) });
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_page_meta_runtime_values.rs#L25) · [全ルール](all.md)
 
@@ -16578,7 +16580,7 @@ Nuxt 設定のプロパティを推奨順に並べます。
 
 既定の重大度: `error`  
 プリセット: `nuxt`  
-自動修正: 対応する検出で利用可能  
+自動修正: 対応している診断で利用できます  
 適用範囲: Nuxt 設定ファイル（nuxt.config.ts）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
@@ -16627,7 +16629,7 @@ export default defineNuxtConfig({ ssr: true, modules: [] });
 export default defineNuxtConfig({ modules: [], ssr: true });
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/nuxt_config_keys_order.rs#L24) · [全ルール](all.md)
 
@@ -16639,8 +16641,8 @@ Nuxt の環境フラグを process.* から import.meta.* に置き換えます�
 
 既定の重大度: `error`  
 プリセット: `nuxt`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -16688,7 +16690,7 @@ if (import.meta.client) console.log("browser");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_meta.rs#L18) · [全ルール](all.md)
 
@@ -16704,7 +16706,7 @@ if (import.meta.client) console.log("browser");
 オプション: crossFile と重大度（off/warn/error）  
 自動修正: なし
 
-アプリの createApp(...).use(router) から登録済み router に到達できる構成が必要です。未確定または動的な定義では未知の名前と断定しません。省略パラメーターは現在のルートの値を継承する場合があるため warning です。
+アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -16724,7 +16726,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `index.html`
 
@@ -16796,7 +16798,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
@@ -16809,7 +16811,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 オプション: crossFile と重大度（off/warn/error）  
 自動修正: なし
 
-アプリの createApp(...).use(router) から登録済み router に到達できる構成が必要です。未確定または動的な定義では未知の名前と断定しません。省略パラメーターは現在のルートの値を継承する場合があるため warning です。
+アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -16829,7 +16831,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `index.html`
 
@@ -16871,7 +16873,7 @@ export const router = createRouter({
 
 **悪い**
 
-`user-post` の path は `userId` と `postId` ですが、宣言にない `tab` も path parameter として渡しています。
+`user-post` のパスで宣言されているパラメーターは `userId` と `postId` ですが、遷移時に、宣言されていない `tab` もパスパラメーターとして渡しています。
 
 `src/UserPost.vue`
 
@@ -16901,7 +16903,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
@@ -16914,7 +16916,7 @@ postId は繰り返しパラメーターではないため配列を渡せませ�
 オプション: crossFile と重大度（off/warn/error）  
 自動修正: なし
 
-アプリの createApp(...).use(router) から登録済み router に到達できる構成が必要です。未確定または動的な定義では未知の名前と断定しません。省略パラメーターは現在のルートの値を継承する場合があるため warning です。
+アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -16934,7 +16936,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `index.html`
 
@@ -16993,7 +16995,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: ["2"] } });
 
 **良い**
 
-繰り返し指定ではない `postId` の segment に、一つの値 `"2"` を渡します。
+繰り返し指定を許さないパスの `postId` 部分に、配列ではなく一つの値 `"2"` を渡します。
 
 `src/UserPost.vue`
 
@@ -17006,7 +17008,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
@@ -17019,7 +17021,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 オプション: crossFile と重大度（off/warn/error）  
 自動修正: なし
 
-アプリの createApp(...).use(router) から登録済み router に到達できる構成が必要です。未確定または動的な定義では未知の名前と断定しません。省略パラメーターは現在のルートの値を継承する場合があるため warning です。
+アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -17039,7 +17041,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `index.html`
 
@@ -17098,7 +17100,7 @@ router.push({ name: "user-post", params: { userId: "1" } });
 
 **良い**
 
-`userId` と `postId` を両方明示し、現在の route の parameter に依存しない navigation にします。
+`userId` と `postId` を両方明示し、現在のルートのパラメーター値に依存せず遷移できるようにします。
 
 `src/UserPost.vue`
 
@@ -17111,7 +17113,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
@@ -17142,7 +17144,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -17163,7 +17165,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-親の `<p>` 内に、ルートが `<div>` の子を合成し、paragraph と block の不正な入れ子を作ります。
+親の `<p>` の内側に、ルートが `<div>` の子コンポーネントを合成しています。その結果、段落の中にブロック要素が入り、HTML の入れ子が不正になります。
 
 `App.vue`
 
@@ -17184,7 +17186,7 @@ import Child from "./Child.vue";
 
 **良い**
 
-子の block 要素を含められる `<section>` を使い、子は変更しません。
+子のブロック要素を含められる `<section>` を親のコンテナーに使います。子コンポーネントは変更しません。
 
 `App.vue`
 
@@ -17201,7 +17203,7 @@ import Child from "./Child.vue";
 <template><div>Block content</div></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
@@ -17232,7 +17234,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -17291,13 +17293,13 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
 ### `vize:croquis/cf/array-mutation`
 
-配列を添字で変更していますが、reactive な配列はそれを追跡しません。
+現在の生成元がないこの契約では、旧 Vue 2.7 の配列のインデックス代入を例にしています。Vue 2 は直接のインデックス代入による更新を通知しませんが、Vue 3 はその代入を追跡します。悪い例・良い例は Vue 2 の修正を示すもので、Vue 3 の不具合を示す例ではありません。
 
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -17310,7 +17312,7 @@ import Child from "./Child.vue";
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -17375,7 +17377,7 @@ export function replaceFirst(items: string[], next: string): void {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -17408,7 +17410,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -17439,7 +17441,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 
 **悪い**
 
-watcher に無効化時の cleanup がなく、古い query の遅い結果が新しい結果を上書きできます。
+ウォッチャーに無効化時のクリーンアップ処理がないため、古い検索への応答が新しい検索への応答より遅く届き、`result` を上書きする可能性があります。
 
 `SearchPage.vue`
 
@@ -17479,7 +17481,7 @@ watch(
 
 **良い**
 
-await より前に cleanup を登録し、旧 request を abort して `active` を無効化します。有効な応答だけを代入します。
+`await` より前にクリーンアップ処理を登録します。以前のリクエストを中止して `active` を無効にし、まだ有効なリクエストの応答だけを代入します。
 
 `SearchPage.vue`
 
@@ -17524,7 +17526,7 @@ watch(
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -17541,15 +17543,15 @@ async コンポーネントが Suspense 境界なしで描画されています�
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 Current support: `no-source-async-fact`
 
-生成元は macros.is_async() を読みますが、現在のソース解析は top-level await を script-setup の scope に記録します。そのため以下の完全な悪い例・良い例では、現在の CLI は async-no-suspense を検出しません。Suspense の使い方を説明する例で、必要な macro 情報を渡す処理は今後の実装課題です。
+生成元は `macros.is_async()` を読みますが、現在のソース解析はトップレベルの `await` を script setup のスコープに記録します。そのため、以下の完全な悪い例・良い例のどちらからも、現在の CLI は `async-no-suspense` を生成しません。これは Suspense の使い方を説明する例であり、必要なマクロ情報を渡す処理は今後の実装課題です。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -17570,7 +17572,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-子に top-level await があり、親に `<Suspense>` がありません。現在のソース解析には、このコードの生成に必要な macro 情報が渡されません。
+子にトップレベルの `await` がありますが、親には `<Suspense>` の境界がありません。現在のソース解析は、この診断コードの生成に必要なマクロ情報を渡しません。
 
 `App.vue`
 
@@ -17594,7 +17596,7 @@ const greeting = await Promise.resolve("Hello");
 
 **良い**
 
-同じ async な子を `<Suspense>` と loading fallback で包みます。規約の例であり、現在の検査は両方のソースでこのコードを生成しません。
+親は同じ非同期の子を `<Suspense>` で包み、読み込み中の代替表示を用意します。これは使い方を示す例であり、現在の検査は悪い例・良い例のどちらからもこの診断コードを生成しません。
 
 `App.vue`
 
@@ -17614,7 +17616,7 @@ const greeting = await Promise.resolve("Hello");
 <template><p>{{ greeting }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -17649,7 +17651,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -17685,7 +17687,7 @@ const width = window.innerWidth;
 
 **良い**
 
-server で安全な値の ref を作り、client mount 後の `onMounted` 内で `window` を読みます。
+サーバーでも安全に使える初期値で ref を作り、クライアントでのマウント後に実行される `onMounted` 内で `window` を読みます。
 
 `App.vue`
 
@@ -17698,7 +17700,7 @@ onMounted(() => { width.value = window.innerWidth; });
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -17721,7 +17723,7 @@ onMounted(() => { width.value = window.innerWidth; });
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -17806,7 +17808,7 @@ export const bLabel = 'B' + aPrefix;
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -17843,7 +17845,7 @@ Example qualification: `illustrative-source-pair`
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -17930,7 +17932,7 @@ Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -17951,7 +17953,7 @@ Tracked flows: A -> B
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -18021,7 +18023,7 @@ export function makeReader(count: Ref<number>): () => number {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -18042,7 +18044,7 @@ composable が `setup` の外で呼ばれています。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -18110,7 +18112,7 @@ export function useTitle() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -18129,7 +18131,7 @@ computed の getter が状態を書いたり、他の副作用を起こしてい
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -18206,7 +18208,7 @@ export function useDouble() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -18227,7 +18229,7 @@ import の連鎖がプロジェクトの許す深さより深くなっていま�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -18299,7 +18301,7 @@ export { label } from './value';
 
 **悪い**
 
-entry が単純な値を `level-one`、`level-two`、`level-three` 経由で読み、浅い公開境界を望むプロジェクトに不要な深い import の列を作っています。
+`entry.ts` が単純な値を `level-one`、`level-two`、`level-three` 経由で参照しています。公開部分への参照を短い経路に保ちたいプロジェクトでは、不要に深い import の連鎖になります。
 
 `entry.ts`
 
@@ -18321,7 +18323,7 @@ export { label } from './public-api';
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -18354,7 +18356,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -18405,7 +18407,7 @@ const { item } = props;
 
 **良い**
 
-`toRef(props, "item")` で `props` の property への接続を維持します。
+`toRef(props, "item")` を使い、`props` のプロパティとのつながりを保ちます。
 
 `UserPage.vue`
 
@@ -18433,7 +18435,7 @@ const item = toRef(props, "item");
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -18460,7 +18462,7 @@ const item = toRef(props, "item");
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -18556,7 +18558,7 @@ provideTheme();
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -18575,7 +18577,7 @@ Vue が更新を反映する前に DOM を読んでいます。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -18659,7 +18661,7 @@ async function increment() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -18692,7 +18694,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -18751,7 +18753,7 @@ import ShippingAddress from "./ShippingAddress.vue";
 
 **良い**
 
-各コンポーネントの `useId()` を label と input の両方に binding し、固定 ID の重複をなくします。
+各コンポーネントが `useId()` を呼び、その戻り値を label の `for` と input の `id` にバインドします。ラベルと入力欄の対応を保ちながら、固定 ID の重複をなくします。
 
 `CheckoutForm.vue`
 
@@ -18797,7 +18799,7 @@ const postalCodeId = useId();
 </template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -18818,7 +18820,7 @@ const postalCodeId = useId();
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -18875,7 +18877,7 @@ export function useWidth() {
 
 **良い**
 
-`onUnmounted` でマウント時に登録した同じ `resize` 関数を削除し、そのインスタンスの外部リスナーの寿命を終えます。
+`onUnmounted` で、マウント時に登録したものと同一の `resize` 関数を使ってリスナーを解除します。これで、そのインスタンスに属する外部リスナーの有効期間が終わります。
 
 `use-width.ts`
 
@@ -18891,7 +18893,7 @@ export function useWidth() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -18906,11 +18908,11 @@ emit が対応しない修飾子を、イベントリスナーが使っていま
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -18931,7 +18933,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-`.stop` を子のカスタム `save` イベントに付けていますが、その payload が DOM Event とは限りません。
+子のカスタムイベント `save` に `.stop` を付け、ネイティブイベントの伝播を止めるメソッドがあることを前提にしています。しかし、このイベントで渡される値が DOM Event とは限りません。
 
 `App.vue`
 
@@ -18956,7 +18958,7 @@ emit("save");
 
 **良い**
 
-カスタム イベントの listener から `.stop` を除きます。必要なら実際の DOM listener で伝播を制御します。
+カスタムイベントのリスナーから `.stop` を取り除きます。ネイティブイベントの伝播を止める必要がある場合は、実際の DOM 要素に付けたリスナーで制御します。
 
 `App.vue`
 
@@ -18977,7 +18979,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -19012,7 +19014,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -19081,7 +19083,7 @@ const count = toRef(props, "count");
 <template><p>{{ count }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -19100,11 +19102,11 @@ const count = toRef(props, "count");
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -19169,7 +19171,7 @@ defineOptions({ inheritAttrs: false });
 <template><main v-bind="$attrs">Content</main></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -19204,7 +19206,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -19233,7 +19235,7 @@ export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 
 **悪い**
 
-使用側が型付き symbol ではなく文字列 key `"theme"` を inject しています。
+使用側は型の付いていない文字列キー `"theme"` を inject しており、提供側と共有するシンボルの同一性を利用していません。
 
 `ThemeProvider.vue`
 
@@ -19295,7 +19297,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -19330,7 +19332,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -19371,7 +19373,7 @@ const store = inject(StoreKey)!;
 
 **悪い**
 
-`CountLoader.vue` が await の結果を、`CountSummary.vue` と共有する inject 済み store に直接書き込み、古い処理が両方に作用できます。
+`CountLoader.vue` が非同期処理の結果を、`CountSummary.vue` と共有する inject 済みのストアへ直接書き込みます。そのため、古い処理の結果が両方の使用側に影響する可能性があります。
 
 `keys/store.ts`
 
@@ -19425,7 +19427,7 @@ watch(query, async (value) => {
 
 **良い**
 
-loader は無効化した処理を中止し、有効な結果だけ emit します。store の変更は提供側の `applyLoadedCount` が担当します。
+`CountLoader.vue` は無効化された処理を中止し、まだ有効な処理の結果だけを emit します。ストアの変更は、提供側の `applyLoadedCount` が担当します。
 
 `keys/store.ts`
 
@@ -19487,7 +19489,7 @@ watch(query, async (value, _oldValue, onCleanup) => {
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -19508,7 +19510,7 @@ watch(query, async (value, _oldValue, onCleanup) => {
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -19588,7 +19590,7 @@ installTitle();
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -19603,11 +19605,11 @@ installTitle();
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -19628,7 +19630,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-mount 時に window の resize listener を登録しますが、unmount 時に同じ callback を解除しません。
+マウント時に window の resize リスナーを登録しますが、アンマウント時に同じコールバックを解除していません。
 
 `App.vue`
 
@@ -19659,7 +19661,7 @@ onUnmounted(() => { window.removeEventListener("resize", resize); });
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -19676,11 +19678,11 @@ onUnmounted(() => { window.removeEventListener("resize", resize); });
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -19745,7 +19747,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -19766,7 +19768,7 @@ async な依存が Suspense 境界の外で使われています。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -19838,7 +19840,7 @@ import AsyncCard from './AsyncCard.vue';
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -19859,7 +19861,7 @@ reactive な状態がモジュールスコープで作られ、すべての呼�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -19938,7 +19940,7 @@ export function createCounter() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -19953,11 +19955,11 @@ export function createCounter() {
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -20016,7 +20018,7 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -20039,7 +20041,7 @@ reactive オブジェクトが、所有者から漏れた後に変更されて�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -20123,7 +20125,7 @@ export function publishProfile(): void {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -20156,7 +20158,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -20177,7 +20179,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-`ThemeProvider.vue` が通常の object を provide しており、field を変更しても inject 側の Vue の reactive な依存になりません。
+`ThemeProvider.vue` が通常のオブジェクトを provide しています。そのフィールドを変更しても、inject 側が追跡できる Vue のリアクティブな依存関係にはなりません。
 
 `keys/theme.ts`
 
@@ -20253,7 +20255,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -20288,7 +20290,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -20343,7 +20345,7 @@ const results = [{ id: "first", title: "First result" }, { id: "second", title: 
 </template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -20353,7 +20355,7 @@ const results = [{ id: "first", title: "First result" }, { id: "second", title: 
 
 ### `vize:croquis/cf/object-identity-comparison`
 
-reactive オブジェクトを同一性で比較していますが、unwrap のたびに同一性は変わります。
+元のオブジェクトとそのリアクティブな Proxy は別の同一性を持ち、`toRaw()` は元のオブジェクトを返します。この契約の例は、レコードとして同じものかを判定するために安定した ID を比較する方法を示します。
 
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -20366,7 +20368,7 @@ ID がレコードを一意に識別することを前提とします。同じ�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -20439,7 +20441,7 @@ const sameRecord = proxy.id === raw.id;
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -20447,7 +20449,7 @@ const sameRecord = proxy.id === raw.id;
 
 ### `vize:croquis/cf/pinia-getter`
 
-Pinia の getter を `storeToRefs` なしで読んでおり、reactive のままになりません。
+この契約の例では、setup で Pinia の getter から現在のプリミティブ値をコピーし、更新に追従しないスナップショットを作っています。追跡される計算やテンプレートで getter を直接読む場合はリアクティビティを保てます。この例では `storeToRefs()` を使って値を取り出します。
 
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -20460,7 +20462,7 @@ Pinia のインストールを前提とし、main.ts がマウント前に plugi
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -20535,7 +20537,7 @@ const { doubled } = storeToRefs(store);
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -20550,11 +20552,11 @@ const { doubled } = storeToRefs(store);
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -20619,7 +20621,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -20656,7 +20658,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -20704,7 +20706,7 @@ const title = inject<number>("title");
 
 **良い**
 
-使用側を `inject<string>` に合わせます。この生成元は推論されたリテラル型ではなく明示的な注釈を比較するため、`as string` を残します。
+使用側の型注釈を `inject<string>` にし、提供側の注釈と一致させます。この生成元は推論されたリテラル型ではなく明示的な注釈を比較するため、`as string` を残します。
 
 `App.vue`
 
@@ -20727,7 +20729,7 @@ const title = inject<string>("title");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -20762,7 +20764,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -20815,7 +20817,7 @@ const theme = inject("theme");
 
 **良い**
 
-型付きの `ThemeKey` symbol を一つ export し、provide と inject の両方で同じ値を import します。同じ説明の symbol を別々に作っても接続できません。
+型付きのシンボル `ThemeKey` を一つだけ export し、provide 側と inject 側で同じ値を import します。説明文字列が同じでも、別々に作ったシンボルでは両者を結び付けられません。
 
 `ThemeProvider.vue`
 
@@ -20857,7 +20859,7 @@ export interface Theme {
 export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -20880,7 +20882,7 @@ reactive な状態がモジュールから export されています。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -20904,7 +20906,7 @@ createApp(App).mount('#app');
 
 **悪い**
 
-モジュールが初期化済みのリアクティブなオブジェクトを一つだけ公開し、すべての import 元が同じ count を受け取ります。リクエスト間でモジュールを共有する SSR では、この例のインスタンスやリクエストごとの分離を保てません。
+モジュールが初期化済みのリアクティブなオブジェクトを一つだけ公開するため、それを import する側はすべて同じ count を受け取ります。リクエスト間でモジュールを共有する SSR では、この例で必要とする、インスタンスやリクエストごとの状態の分離を保てません。
 
 `state.ts`
 
@@ -20955,7 +20957,7 @@ const state = createState();
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -20976,7 +20978,7 @@ Vue では component setup の外でも ref・reactive・computed を使えま�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21043,7 +21045,7 @@ export function useCounter() { return { count, doubled }; }
 
 **良い**
 
-各コンポーネントの setup 呼び出しの中で、`useCounter` が ref と computed を同期的に作り、各 widget に個別の状態と追跡される導出を与えます。
+各コンポーネントの setup から同期的に `useCounter` を呼び、その中で ref と computed を作ります。これにより、各カウンターがそれぞれの状態と、依存を追跡する計算結果を持ちます。
 
 `use-counter.ts`
 
@@ -21057,7 +21059,7 @@ export function useCounter() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -21090,7 +21092,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21173,7 +21175,7 @@ const user = toRef(props, "user");
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -21196,7 +21198,7 @@ ref を composable から返したり、スコープをまたいで共有した�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21270,7 +21272,7 @@ remember(count.value);
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -21278,18 +21280,18 @@ remember(count.value);
 
 ### `vize:croquis/cf/setup-context-violation`
 
-Vue が許さない使い方で setup コンテキストを使っています。
+実験的な解析器の例では、インスタンスごとの setup ではなく通常の script のモジュールスコープに `ref(0)` を置いています。Vue ではこのようなリアクティブな状態を作れますが、この例ではインスタンスごとに count を持つことを前提とします。CLI はこの個別の診断コードを生成しません。
 
 既定の重大度: context-dependent  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21310,7 +21312,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-`ref(0)` を通常の script の module scope に作り、この analyzer が扱うインスタンスごとの setup 文脈から外しています。
+通常の script ブロックのモジュールスコープで `ref(0)` を作っており、この解析器の例で想定する、インスタンスごとの setup コンテキストには含まれません。
 
 `App.vue`
 
@@ -21339,7 +21341,7 @@ const count = ref(0);
 <template><p>{{ count }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -21360,7 +21362,7 @@ const count = ref(0);
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21422,7 +21424,7 @@ export function makeProfile() { return reactive({ user: { name: 'Ada' } }); }
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -21455,7 +21457,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21534,7 +21536,7 @@ const user = toRef(props, "user");
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -21557,7 +21559,7 @@ fallback のない Suspense は有効な Vue の構文です。ローディン�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21630,7 +21632,7 @@ import AsyncCard from './AsyncCard.vue';
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -21649,7 +21651,7 @@ import AsyncCard from './AsyncCard.vue';
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21680,7 +21682,7 @@ export function focusInput(input: HTMLInputElement | null): void { input?.focus(
 
 **悪い**
 
-マウント前の setup でテンプレート ref を読み、値が null のままです。任意の focus 呼び出しは何もフォーカスしません。
+マウント前の setup でテンプレート ref を読み取るため、その値はまだ null です。`input?.focus()` はオプショナルチェーンによって呼び出しが省略され、入力欄にフォーカスしません。
 
 `App.vue`
 
@@ -21720,7 +21722,7 @@ onMounted(() => { focusInput(input.value); });
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -21739,7 +21741,7 @@ onMounted(() => { focusInput(input.value); });
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21777,7 +21779,7 @@ const profile = makeProfile();
 
 **悪い**
 
-`rename` が raw の対象を取り出して `raw.name` に代入し、表示中の名前を通知する Proxy の setter を通していません。
+`rename` は Proxy の元のオブジェクトを取り出し、`raw.name` に代入しています。そのため、表示中の名前の変更を通知する Proxy の setter を通りません。
 
 `profile.ts`
 
@@ -21808,7 +21810,7 @@ export function rename(profile: { name: string }): void {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -21843,7 +21845,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21888,7 +21890,7 @@ const input = "{";
 
 **良い**
 
-親で子のエラーを受ける `onErrorCaptured` を登録します。`false` は伝播を止めます。実際の画面では復旧用の UI も用意します。
+親で子のエラーを受ける `onErrorCaptured` を登録します。`false` を返すと伝播が止まります。実際に使うエラー境界では、復旧に役立つ UI も用意してください。
 
 `App.vue`
 
@@ -21910,7 +21912,7 @@ const input = "{";
 <template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -21927,11 +21929,11 @@ const input = "{";
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -21998,7 +22000,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -22015,11 +22017,11 @@ emit("save");
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -22084,7 +22086,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -22105,7 +22107,7 @@ const props = defineProps<{ title: string }>();
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -22176,7 +22178,7 @@ import Card from './Card.vue';
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -22191,11 +22193,11 @@ import Card from './Card.vue';
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -22216,7 +22218,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-`Child.vue` が `save` を emit しますが、直接の wrapper が受け取りません。コンポーネントのイベントは wrapper を自動的に通り抜けません。
+`Child.vue` が `save` を emit しますが、直接の親である `Wrapper.vue` はそのイベントを購読していません。コンポーネントのイベントは、ラッパーを越えて自動的に親へ伝播しません。
 
 `App.vue`
 
@@ -22250,7 +22252,7 @@ emit("save");
 
 **良い**
 
-`Wrapper.vue` が直接の子に `save` listener を付けます。空の callback はこの検査での受信を示すもので、保存処理全体ではありません。
+`Wrapper.vue` が直接の子に `save` のリスナーを付けます。空のコールバックは、このルールでイベントを受け取る例を示すためのもので、保存処理の実装全体ではありません。
 
 `App.vue`
 
@@ -22280,7 +22282,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -22315,7 +22317,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -22336,7 +22338,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-`ThemeLabel.vue` が `ThemeKey` を inject しますが、到達する祖先 `App.vue` に同じ key の provide がありません。
+`ThemeLabel.vue` は `ThemeKey` を inject しますが、解析対象の構成で祖先にあたる `App.vue` は同じキーを provide していません。
 
 `keys/theme.ts`
 
@@ -22377,7 +22379,7 @@ const theme = inject(ThemeKey);
 
 **良い**
 
-`App.vue` で同じ export 済み `ThemeKey` を使って reactive な theme を provide し、使用する子孫を描画します。
+`App.vue` は、公開された同じ `ThemeKey` を使ってリアクティブなテーマを provide してから、その値を inject する子孫を描画します。
 
 `keys/theme.ts`
 
@@ -22419,7 +22421,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -22436,11 +22438,11 @@ const theme = inject(ThemeKey);
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -22461,7 +22463,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-親は `save` を待ちますが、解決した子の宣言は `cancel` だけです。
+親は `save` のリスナーを登録していますが、解決済みの子コンポーネントが宣言するイベントは `cancel` だけです。
 
 `App.vue`
 
@@ -22506,7 +22508,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -22523,11 +22525,11 @@ emit("save");
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -22566,7 +22568,7 @@ createApp(Root).mount("#app");
 
 **良い**
 
-親の script setup で `Child` を import し、テンプレートから binding を解決できる形にします。
+親の script setup で `Child` を import し、テンプレートがそのコンポーネントの識別子を解決できるようにします。
 
 `App.vue`
 
@@ -22583,7 +22585,7 @@ import Child from "./Child.vue";
 <template><p>Child</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -22600,11 +22602,11 @@ import がモジュールへ解決できません。
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -22663,7 +22665,7 @@ import Child from "./Child.vue";
 <template><p>Child</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -22680,11 +22682,11 @@ import Child from "./Child.vue";
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -22743,7 +22745,7 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -22760,11 +22762,11 @@ import Child from "./Child.vue";
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -22830,7 +22832,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -22865,7 +22867,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -22925,7 +22927,7 @@ provide(ThemeKey, theme);
 
 **良い**
 
-dashboard が `ThemeLabel.vue` を描画し、祖先と同一の `ThemeKey` を inject します。
+`Dashboard.vue` が `ThemeLabel.vue` を描画するようにし、`ThemeLabel.vue` で祖先が使うものと同一の `ThemeKey` を inject します。
 
 `App.vue`
 
@@ -22967,7 +22969,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -23002,7 +23004,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -23053,7 +23055,7 @@ const itemSnapshot = item;
 
 **良い**
 
-`computed` 内で `item` を読み、reactive props destructuring の変換で評価ごとに追跡できる形にします。
+`computed` 内で `item` を読み取ります。Vue がリアクティブな props の分割代入を変換することで、評価のたびにその依存を追跡できるようにします。
 
 `UserPage.vue`
 
@@ -23081,7 +23083,7 @@ const itemView = computed(() => item);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -23104,7 +23106,7 @@ const itemView = computed(() => item);
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -23175,7 +23177,7 @@ export function useDouble() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -23183,7 +23185,7 @@ export function useDouble() {
 
 ### `vize:croquis/cf/watcheffect-async`
 
-`watchEffect` が async タスクを始め、前回の実行を片付けられません。
+この例の非同期の `watchEffect` には、無効化時のクリーンアップや古い応答を防ぐ処理がありません。Vue の `watchEffect` はクリーンアップを扱えます。良い例では `watch` で監視対象を明示し、無効化された処理を中止します。
 
 既定の重大度: error  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -23208,7 +23210,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -23276,7 +23278,7 @@ watchEffect(async () => {
 
 **良い**
 
-`watch(() => props.query, ...)` で source を明示し、request の cleanup と無効化後の応答を除く条件を付けます。
+`watch(() => props.query, ...)` で監視対象を明示し、リクエストのクリーンアップ処理を登録します。無効化されたリクエストの古い応答は反映しません。
 
 `SearchPage.vue`
 
@@ -23321,7 +23323,7 @@ watch(
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -23340,11 +23342,11 @@ watch(
 
 この公開診断コードには現在の生成元がありません。悪い例・良い例はリスクと修正の説明です。このコードを検出させる設定は現在ありません。
 
-所有側が stop 関数を保持して呼んだり、アプリケーション全体の寿命を意図したりする場合、モジュール直下の watcher は有効です。この例はコンポーネントが寿命を持つことを前提とし、この契約には現在の生成元がありません。
+所有側が停止関数を保持して呼び出す場合や、アプリケーション全体で動かし続けることを意図する場合、モジュール直下のウォッチャーは有効です。この例ではウォッチャーの有効期間をコンポーネントの生存期間に結び付けることを前提としています。この契約には現在の生成元がありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -23427,7 +23429,7 @@ export function useObserver() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

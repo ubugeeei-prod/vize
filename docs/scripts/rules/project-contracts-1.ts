@@ -49,7 +49,7 @@ export const contract1Examples: Record<string, ContractExample> = {
     },
     goodExplanation: {
       en: "`onUnmounted` removes the exact same `resize` function registered at mount, ending that instance’s external listener lifetime.",
-      ja: "`onUnmounted` でマウント時に登録した同じ `resize` 関数を削除し、そのインスタンスの外部リスナーの寿命を終えます。",
+      ja: "`onUnmounted` で、マウント時に登録したものと同一の `resize` 関数を使ってリスナーを解除します。これで、そのインスタンスに属する外部リスナーの有効期間が終わります。",
     },
   },
   "lifecycle-outside-setup": {

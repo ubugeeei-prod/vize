@@ -1,0 +1,197 @@
+{
+  "originalSourceSha": "6f1fb62906ba5c0b74c885d8290fc2a49cfa2415",
+  "cases": [
+    {
+      "case": "other-09",
+      "route": "/ja/rules/accessibility",
+      "rule": "a11y/no-i-for-icon",
+      "section": "good",
+      "before": "装飾の span でアイコンを隠し、別の `Delete item` の文字で操作を説明します。",
+      "after": "装飾用の span に aria-hidden を指定してアイコンを支援技術から隠し、別の `Delete item` の文字でボタンの操作を説明します。"
+    },
+    {
+      "case": "other-10",
+      "route": "/ja/rules/accessibility",
+      "rule": "a11y/no-role-presentation-on-focusable",
+      "section": "purpose",
+      "before": "フォーカス可能な要素の意味を presentation で消した指定を検出します。",
+      "after": "フォーカス可能な要素への role=\"presentation\" または role=\"none\" の指定を検出します。"
+    },
+    {
+      "case": "other-18",
+      "route": "/ja/rules/musea-and-css",
+      "rule": "css/prefer-slotted",
+      "section": "good",
+      "before": ":slotted(.label) を使い、slot から渡される label の要素を対象にします。",
+      "after": ":slotted(.label) を使い、スロットに渡された .label クラスを持つ要素を対象にします。"
+    },
+    {
+      "case": "other-38",
+      "route": "/ja/rules/ecosystem",
+      "rule": "nuxt/no-nuxt-config-test-key",
+      "section": "purpose",
+      "before": "Nuxt が自動判定する test 環境の手動設定を検出します。",
+      "after": "Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出します。"
+    },
+    {
+      "case": "other-41",
+      "route": "/ja/rules/petite-vue",
+      "rule": "petite-vue/valid-v-scope",
+      "section": "purpose",
+      "before": "v-scope の値にオブジェクトリテラルを指定します。",
+      "after": "v-scope に値を指定する場合は、オブジェクトリテラルにします。"
+    },
+    {
+      "case": "other-44",
+      "route": "/ja/rules/vapor",
+      "rule": "vapor/require-vapor-attribute",
+      "section": "purpose",
+      "before": "Vapor 向けの script setup に vapor 属性を付ける方針を適用します。",
+      "after": "Vapor 向けの script setup に vapor 属性を付ける規約を示します。"
+    },
+    {
+      "case": "ST01",
+      "route": "/ja/rules/type-and-script",
+      "rule": "script/no-arrow-functions-in-watch",
+      "section": "purpose",
+      "before": "Options API の watch に this を持たないアロー関数を使う箇所を検出します。",
+      "after": "Options API の watch ハンドラーにアロー関数を使う箇所を検出します。"
+    },
+    {
+      "case": "ST05",
+      "route": "/ja/rules/type-and-script",
+      "rule": "script/no-arrow-functions-in-watch",
+      "section": "good",
+      "before": "両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントに束縛できるようにします。オブジェクト形式の `deep: true` オプションも維持できます。",
+      "after": "両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントインスタンスに束縛できるようにします。オブジェクト形式では `deep: true` オプションも指定できます。"
+    },
+    {
+      "case": "ST21",
+      "route": "/ja/rules/type-and-script",
+      "rule": "script/prefer-use-slots",
+      "section": "good",
+      "before": "setup 内で `useSlots()` から slot を取得し、コンテキスト引数を使わずに render 関数と default slot の任意の呼び出しを保ちます。",
+      "after": "setup 内で `useSlots()` からスロットを取得します。コンテキスト引数を使わず、レンダー関数と、デフォルトスロットが存在する場合だけ呼び出す処理を保ちます。"
+    },
+    {
+      "case": "ST29",
+      "route": "/ja/rules/type-and-script",
+      "rule": "type/no-floating-promises",
+      "section": "good",
+      "before": "`void save()` で実行結果を意図的に捨てる指定をし、このルールの条件を満たします。結果を破棄する明示的な印であり、rejection を処理するものではありません。",
+      "after": "`void save()` で Promise の完了を待たずに結果を破棄する意図を明示し、このルールの条件を満たします。この指定は Promise の拒否を処理するものではありません。"
+    },
+    {
+      "case": "P03",
+      "route": "/ja/rules/cross-file",
+      "rule": "vize:croquis/cf/unused-provide",
+      "section": "good",
+      "before": "dashboard が `ThemeLabel.vue` を描画し、祖先と同一の `ThemeKey` を inject します。",
+      "after": "`Dashboard.vue` が `ThemeLabel.vue` を描画するようにし、`ThemeLabel.vue` で祖先が使うものと同一の `ThemeKey` を inject します。"
+    },
+    {
+      "case": "P07",
+      "route": "/ja/rules/cross-file",
+      "rule": "vize:croquis/cf/duplicate-id",
+      "section": "good",
+      "before": "各コンポーネントの `useId()` を label と input の両方に binding し、固定 ID の重複をなくします。",
+      "after": "各コンポーネントが `useId()` を呼び、その戻り値を label の `for` と input の `id` にバインドします。ラベルと入力欄の対応を保ちながら、固定 ID の重複をなくします。"
+    },
+    {
+      "case": "P21",
+      "route": "/ja/rules/cross-file",
+      "rule": "vize:croquis/cf/event-modifier",
+      "section": "bad",
+      "before": "`.stop` を子のカスタム `save` イベントに付けていますが、その payload が DOM Event とは限りません。",
+      "after": "子のカスタムイベント `save` に `.stop` を付け、ネイティブイベントの伝播を止めるメソッドがあることを前提にしています。しかし、このイベントで渡される値が DOM Event とは限りません。"
+    },
+    {
+      "case": "P37",
+      "route": "/ja/rules/cross-file",
+      "rule": "vize:croquis/cf/template-ref-timing",
+      "section": "bad",
+      "before": "マウント前の setup でテンプレート ref を読み、値が null のままです。任意の focus 呼び出しは何もフォーカスしません。",
+      "after": "マウント前の setup でテンプレート ref を読み取るため、その値はまだ null です。`input?.focus()` はオプショナルチェーンによって呼び出しが省略され、入力欄にフォーカスしません。"
+    },
+    {
+      "case": "V15",
+      "route": "/ja/rules/vue",
+      "rule": "vue/multi-word-component-names",
+      "section": "good",
+      "before": "同じテンプレートの名前を、複数の語を持つ TodoItem.vue にします。",
+      "after": "同じコンポーネントのファイル名を、複数の単語からなる TodoItem.vue に変更します。"
+    },
+    {
+      "case": "V16",
+      "route": "/ja/rules/vue",
+      "rule": "vue/no-negated-v-if-condition",
+      "section": "good",
+      "before": "先に正の ok の条件を使います。条件を反転する際は分岐の内容も入れ替えます。単独の否定の v-if や !== の比較は許可されます。",
+      "after": "先に否定していない ok の条件を使います。条件を反転する際は分岐の内容も入れ替えます。単独の否定の v-if や !== の比較は許可されます。"
+    },
+    {
+      "case": "V17",
+      "route": "/ja/rules/vue",
+      "rule": "vue/require-scoped-style",
+      "section": "good",
+      "before": "同じセレクタと宣言に `scoped` を付け、Vue のコンポーネント スコープを適用します。",
+      "after": "`scoped` を style に付け、同じセレクタと宣言に Vue のコンポーネントスコープを適用します。"
+    },
+    {
+      "case": "V18",
+      "route": "/ja/rules/vue",
+      "rule": "vue/use-unique-element-ids",
+      "section": "purpose",
+      "before": "静的 ID の代わりに useId() で再利用可能な ID を生成します。",
+      "after": "静的 ID の代わりに useId() で一意な ID を生成します。"
+    },
+    {
+      "case": "V19",
+      "route": "/ja/rules/vue",
+      "rule": "vue/no-preprocessor-lang",
+      "section": "bad",
+      "before": "style の lang に SCSS を指定しています。preprocessor を使わない規約の例で、現在の SFC 検査はこのルールを生成しません。",
+      "after": "style の lang に SCSS を指定しています。プリプロセッサーを使わない規約の例で、現在の SFC 検査ではこのルール固有の診断は出ません。"
+    },
+    {
+      "case": "B01",
+      "route": "/ja/rules/cross-file",
+      "rule": "vize:croquis/cf/array-mutation",
+      "section": "purpose",
+      "before": "配列を添字で変更していますが、reactive な配列はそれを追跡しません。",
+      "after": "現在の生成元がないこの契約では、旧 Vue 2.7 の配列のインデックス代入を例にしています。Vue 2 は直接のインデックス代入による更新を通知しませんが、Vue 3 はその代入を追跡します。悪い例・良い例は Vue 2 の修正を示すもので、Vue 3 の不具合を示す例ではありません。"
+    },
+    {
+      "case": "B02",
+      "route": "/ja/rules/cross-file",
+      "rule": "vize:croquis/cf/pinia-getter",
+      "section": "purpose",
+      "before": "Pinia の getter を `storeToRefs` なしで読んでおり、reactive のままになりません。",
+      "after": "この契約の例では、setup で Pinia の getter から現在のプリミティブ値をコピーし、更新に追従しないスナップショットを作っています。追跡される計算やテンプレートで getter を直接読む場合はリアクティビティを保てます。この例では `storeToRefs()` を使って値を取り出します。"
+    },
+    {
+      "case": "B03",
+      "route": "/ja/rules/cross-file",
+      "rule": "vize:croquis/cf/setup-context-violation",
+      "section": "purpose",
+      "before": "Vue が許さない使い方で setup コンテキストを使っています。",
+      "after": "実験的な解析器の例では、インスタンスごとの setup ではなく通常の script のモジュールスコープに `ref(0)` を置いています。Vue ではこのようなリアクティブな状態を作れますが、この例ではインスタンスごとに count を持つことを前提とします。CLI はこの個別の診断コードを生成しません。"
+    },
+    {
+      "case": "B04",
+      "route": "/ja/rules/cross-file",
+      "rule": "vize:croquis/cf/object-identity-comparison",
+      "section": "purpose",
+      "before": "reactive オブジェクトを同一性で比較していますが、unwrap のたびに同一性は変わります。",
+      "after": "元のオブジェクトとそのリアクティブな Proxy は別の同一性を持ち、`toRaw()` は元のオブジェクトを返します。この契約の例は、レコードとして同じものかを判定するために安定した ID を比較する方法を示します。"
+    },
+    {
+      "case": "B05",
+      "route": "/ja/rules/cross-file",
+      "rule": "vize:croquis/cf/watcheffect-async",
+      "section": "purpose",
+      "before": "`watchEffect` が async タスクを始め、前回の実行を片付けられません。",
+      "after": "この例の非同期の `watchEffect` には、無効化時のクリーンアップや古い応答を防ぐ処理がありません。Vue の `watchEffect` はクリーンアップを扱えます。良い例では `watch` で監視対象を明示し、無効化された処理を中止します。"
+    }
+  ]
+}

@@ -14,9 +14,9 @@ script とテンプレートの条件式で安全な真偽判定を使います�
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: [型付きオプションと既定値](../options.md)を参照してください。
 
-typeAware とルールを明示的に有効にします。既定では null を含み得る数値は許可されず、通常の数値は許可されます。
+typeAware とこのルールを明示的に有効にします。既定では null または undefined を含み得る数値は許可されず、どちらも含まない数値は許可されます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 ## 設定（Vite+）
 
@@ -42,7 +42,7 @@ vp run lint
 
 ## 悪い
 
-`if (count)` が nullable な数値の truthiness に依存し、明示的な真偽値の検査を使っていません。ゼロと未指定も同じ偽として扱います。
+`if (count)` は、undefined を含み得る数値をそのまま真偽判定に使い、明示的な真偽値の比較をしていません。数値のゼロと値の未指定を、どちらも偽として扱ってしまいます。
 
 ```vue
 <script setup lang="ts">
@@ -53,7 +53,7 @@ if (count) console.log(count);
 
 ## 良い
 
-`count !== undefined && count > 0` で存在と正の値を別々に検査し、省略可能な値を絞り込んだうえで明示的な真偽値の条件を作ります。
+`count !== undefined && count > 0` で、値が undefined でないことと正の数であることを別々に検査します。省略可能な値を絞り込んでから、真偽値を返す条件式で判定します。
 
 ```vue
 <script setup lang="ts">
@@ -62,6 +62,6 @@ if (count !== undefined && count > 0) console.log(count);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/strict_boolean_expressions.rs#L7) · [全ルール](../all.md)

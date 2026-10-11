@@ -4,14 +4,14 @@ title: "vue/no-deprecated-filter"
 
 # `vue/no-deprecated-filter`
 
-Vue 2 の pipe による filter 構文を検出します。
+Vue 2 のパイプによるフィルター構文を検出します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-capitalize を適用するために、廃止された filter のパイプ構文を使っています。
+capitalize を適用するために、廃止されたフィルターのパイプ構文を使っています。
 
 ```vue
 <template>
@@ -55,6 +55,6 @@ capitalize を適用するために、廃止された filter のパイプ構文�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_filter.rs#L53) · [全ルール](../all.md)

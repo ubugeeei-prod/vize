@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -68,7 +68,7 @@ const store = inject(StoreKey)!;
 
 ## 悪い
 
-`CountLoader.vue` が await の結果を、`CountSummary.vue` と共有する inject 済み store に直接書き込み、古い処理が両方に作用できます。
+`CountLoader.vue` が非同期処理の結果を、`CountSummary.vue` と共有する inject 済みのストアへ直接書き込みます。そのため、古い処理の結果が両方の使用側に影響する可能性があります。
 
 `keys/store.ts`
 
@@ -120,7 +120,7 @@ watch(query, async (value) => {
 
 ## 良い
 
-loader は無効化した処理を中止し、有効な結果だけ emit します。store の変更は提供側の `applyLoadedCount` が担当します。
+`CountLoader.vue` は無効化された処理を中止し、まだ有効な処理の結果だけを emit します。ストアの変更は、提供側の `applyLoadedCount` が担当します。
 
 `keys/store.ts`
 
@@ -182,7 +182,7 @@ watch(query, async (value, _oldValue, onCleanup) => {
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

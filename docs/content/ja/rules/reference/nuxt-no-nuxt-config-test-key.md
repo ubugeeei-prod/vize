@@ -4,7 +4,7 @@ title: "nuxt/no-nuxt-config-test-key"
 
 # `nuxt/no-nuxt-config-test-key`
 
-Nuxt が自動判定する test 環境の手動設定を検出します。
+Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
@@ -55,6 +55,6 @@ export default defineNuxtConfig({ test: true });
 export default defineNuxtConfig({});
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_nuxt_config_test_key.rs#L16) · [全ルール](../all.md)

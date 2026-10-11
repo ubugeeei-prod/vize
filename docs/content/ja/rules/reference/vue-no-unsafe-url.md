@@ -11,7 +11,7 @@ title: "vue/no-unsafe-url"
 既定の重大度: `warning`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-a の移動先に、実行可能な javascript: のスキームを使っています。
+a の移動先に、JavaScript を実行する javascript: スキームを使っています。
 
 ```vue
 <template>
@@ -47,7 +47,7 @@ a の移動先に、実行可能な javascript: のスキームを使ってい�
 
 ## 良い
 
-実行可能な URL を除き、通常のローカルの移動先 /next に変更します。
+移動先を、通常のローカルの移動先 /next に変更します。
 
 ```vue
 <template>
@@ -55,6 +55,6 @@ a の移動先に、実行可能な javascript: のスキームを使ってい�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_unsafe_url.rs#L55) · [全ルール](../all.md)

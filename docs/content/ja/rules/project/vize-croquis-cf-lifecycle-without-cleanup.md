@@ -11,11 +11,11 @@ title: "vize:croquis/cf/lifecycle-without-cleanup"
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -34,7 +34,7 @@ createApp(Root).mount("#app");
 
 ## 悪い
 
-mount 時に window の resize listener を登録しますが、unmount 時に同じ callback を解除しません。
+マウント時に window の resize リスナーを登録しますが、アンマウント時に同じコールバックを解除していません。
 
 `App.vue`
 
@@ -63,7 +63,7 @@ onUnmounted(() => { window.removeEventListener("resize", resize); });
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

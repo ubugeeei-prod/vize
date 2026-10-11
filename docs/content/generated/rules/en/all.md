@@ -17297,7 +17297,7 @@ The Good files demonstrate the change described above; other diagnostics can sti
 
 ### `vize:croquis/cf/array-mutation`
 
-An array is mutated by index, which a reactive array does not track.
+This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect.
 
 Default severity: Not emitted  
 Applies to: Analyzed component graph and the supported facts described below  
@@ -20353,7 +20353,7 @@ The Good files demonstrate the change described above; other diagnostics can sti
 
 ### `vize:croquis/cf/object-identity-comparison`
 
-A reactive object is compared by identity, which changes across unwraps.
+A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object. This contract illustrates comparing stable record IDs when record identity is intended.
 
 Default severity: Not emitted  
 Applies to: Analyzed component graph and the supported facts described below  
@@ -20447,7 +20447,7 @@ The Good files demonstrate the change described above; other diagnostics can sti
 
 ### `vize:croquis/cf/pinia-getter`
 
-A Pinia getter is read without `storeToRefs`, so it will not stay reactive.
+This contract illustrates copying a Pinia getter's current primitive value during setup, leaving a snapshot that no longer follows updates. Direct getter reads within a tracked computation or template remain reactive; storeToRefs() is the extraction repair shown here.
 
 Default severity: Not emitted  
 Applies to: Analyzed component graph and the supported facts described below  
@@ -21278,7 +21278,7 @@ The Good files demonstrate the change described above; other diagnostics can sti
 
 ### `vize:croquis/cf/setup-context-violation`
 
-Setup context is used in a way Vue does not allow.
+This experimental analyzer scenario places ref(0) at normal script module scope rather than per-instance setup. Vue permits this reactive state; the example requires each component instance to own its own count. The CLI does not emit this individual code.
 
 Default severity: context-dependent  
 Applies to: Analyzed component graph and the supported facts described below  
@@ -23183,7 +23183,7 @@ The Good files demonstrate the change described above; other diagnostics can sti
 
 ### `vize:croquis/cf/watcheffect-async`
 
-`watchEffect` starts an async task and cannot clean up the previous run.
+The async watchEffect shown here has no invalidation cleanup or stale-response guard. Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work.
 
 Default severity: error  
 Applies to: Analyzed component graph and the supported facts described below  

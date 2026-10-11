@@ -4,14 +4,14 @@ title: "script/no-arrow-functions-in-watch"
 
 # `script/no-arrow-functions-in-watch`
 
-Options API の watch に this を持たないアロー関数を使う箇所を検出します。
+Options API の watch ハンドラーにアロー関数を使う箇所を検出します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -57,7 +57,7 @@ export default {
 
 ## 良い
 
-両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントに束縛できるようにします。オブジェクト形式の `deep: true` オプションも維持できます。
+両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントインスタンスに束縛できるようにします。オブジェクト形式では `deep: true` オプションも指定できます。
 
 ```vue
 <script lang="ts">
@@ -75,6 +75,6 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) · [全ルール](../all.md)

@@ -11,7 +11,7 @@ HTML の要素ごとのコンテンツモデルを検査します。
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -50,7 +50,7 @@ p にブロックを入れ、tbody を省略し、操作要素を入れ子にす
 
 ## 良い
 
-p はインラインの内容、table は tbody、ul は li を使います。独自の MyItem は既知の標準の ul の子として検査されません。
+p はインラインの内容、table は tbody、ul は li を使います。独自コンポーネントの MyItem は、ul の子となる既知の HTML 要素としては検査されません。
 
 ```vue
 <template>
@@ -60,6 +60,6 @@ p はインラインの内容、table は tbody、ul は li を使います。�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/permitted_contents.rs#L56) · [全ルール](../all.md)

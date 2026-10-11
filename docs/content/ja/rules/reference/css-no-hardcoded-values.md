@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-button の余白と色に数値や 16 進の色を直接指定しています。
+`.button` のスタイルで、余白の数値と 16 進数の色を宣言に直接指定しています。
 
 ```vue
 <style scoped>
@@ -61,6 +61,6 @@ button の余白と色に数値や 16 進の色を直接指定しています。
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L30) · [全ルール](../all.md)

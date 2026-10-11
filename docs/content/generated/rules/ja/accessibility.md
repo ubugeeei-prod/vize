@@ -4,7 +4,7 @@ title: "アクセシビリティ ルール"
 
 # アクセシビリティ ルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
 
 | ルール | 例 | 目的 |
@@ -13,7 +13,7 @@ title: "アクセシビリティ ルール"
 | [`a11y/anchor-has-content`](#a11y-anchor-has-content) | [悪い](#a11y-anchor-has-content-bad) · [良い](#a11y-anchor-has-content-good) | リンクに支援技術で読める内容を用意します。 |
 | [`a11y/anchor-is-valid`](#a11y-anchor-is-valid) | [悪い](#a11y-anchor-is-valid-bad) · [良い](#a11y-anchor-is-valid-good) | リンクの href に有効な移動先を指定します。 |
 | [`a11y/aria-props`](#a11y-aria-props) | [悪い](#a11y-aria-props-bad) · [良い](#a11y-aria-props-good) | 存在しない ARIA 属性を検出します。 |
-| [`a11y/aria-role`](#a11y-aria-role) | [悪い](#a11y-aria-role-bad) · [良い](#a11y-aria-role-good) | 有効で抽象的ではない ARIA role を指定します。 |
+| [`a11y/aria-role`](#a11y-aria-role) | [悪い](#a11y-aria-role-bad) · [良い](#a11y-aria-role-good) | 抽象ロールを除く、有効な ARIA role を指定します。 |
 | [`a11y/aria-unsupported-elements`](#a11y-aria-unsupported-elements) | [悪い](#a11y-aria-unsupported-elements-bad) · [良い](#a11y-aria-unsupported-elements-good) | ARIA 属性を使用できない要素への指定を検出します。 |
 | [`a11y/click-events-have-key-events`](#a11y-click-events-have-key-events) | [悪い](#a11y-click-events-have-key-events-bad) · [良い](#a11y-click-events-have-key-events-good) | クリックで操作する要素にキーボード操作も用意します。 |
 | [`a11y/form-control-has-label`](#a11y-form-control-has-label) | [悪い](#a11y-form-control-has-label-bad) · [良い](#a11y-form-control-has-label-good) | フォーム部品に関連付けられたラベルを用意します。 |
@@ -27,19 +27,19 @@ title: "アクセシビリティ ルール"
 | [`a11y/media-has-caption`](#a11y-media-has-caption) | [悪い](#a11y-media-has-caption-bad) · [良い](#a11y-media-has-caption-good) | 音声・動画に字幕を用意します。 |
 | [`a11y/mouse-events-have-key-events`](#a11y-mouse-events-have-key-events) | [悪い](#a11y-mouse-events-have-key-events-bad) · [良い](#a11y-mouse-events-have-key-events-good) | マウス操作と対応する focus / blur 操作を用意します。 |
 | [`a11y/no-access-key`](#a11y-no-access-key) | [悪い](#a11y-no-access-key-bad) · [良い](#a11y-no-access-key-good) | 環境のショートカットと衝突し得る accesskey を検出します。 |
-| [`a11y/no-aria-hidden-on-focusable`](#a11y-no-aria-hidden-on-focusable) | [悪い](#a11y-no-aria-hidden-on-focusable-bad) · [良い](#a11y-no-aria-hidden-on-focusable-good) | フォーカス可能な要素を aria-hidden で隠した指定を検出します。 |
+| [`a11y/no-aria-hidden-on-focusable`](#a11y-no-aria-hidden-on-focusable) | [悪い](#a11y-no-aria-hidden-on-focusable-bad) · [良い](#a11y-no-aria-hidden-on-focusable-good) | フォーカス可能な要素を aria-hidden で支援技術から隠す指定を検出します。 |
 | [`a11y/no-autofocus`](#a11y-no-autofocus) | [悪い](#a11y-no-autofocus-bad) · [良い](#a11y-no-autofocus-good) | 意図せずフォーカスを移動させる autofocus を検出します。 |
 | [`a11y/no-distracting-elements`](#a11y-no-distracting-elements) | [悪い](#a11y-no-distracting-elements-bad) · [良い](#a11y-no-distracting-elements-good) | marquee や blink などの注意をそらす要素を検出します。 |
 | [`a11y/no-i-for-icon`](#a11y-no-i-for-icon) | [悪い](#a11y-no-i-for-icon-bad) · [良い](#a11y-no-i-for-icon-good) | アイコン用の i 要素を検出し、意味に合う要素を勧めます。 |
 | [`a11y/no-redundant-roles`](#a11y-no-redundant-roles) | [悪い](#a11y-no-redundant-roles-bad) · [良い](#a11y-no-redundant-roles-good) | 要素本来の意味と重複する ARIA role を検出します。 |
 | [`a11y/no-refer-to-non-existent-id`](#a11y-no-refer-to-non-existent-id) | [悪い](#a11y-no-refer-to-non-existent-id-bad) · [良い](#a11y-no-refer-to-non-existent-id-good) | 文書内に存在しない ID への参照を検出します。 |
-| [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [悪い](#a11y-no-role-presentation-on-focusable-bad) · [良い](#a11y-no-role-presentation-on-focusable-good) | フォーカス可能な要素の意味を presentation で消した指定を検出します。 |
+| [`a11y/no-role-presentation-on-focusable`](#a11y-no-role-presentation-on-focusable) | [悪い](#a11y-no-role-presentation-on-focusable-bad) · [良い](#a11y-no-role-presentation-on-focusable-good) | フォーカス可能な要素への role="presentation" または role="none" の指定を検出します。 |
 | [`a11y/no-static-element-interactions`](#a11y-no-static-element-interactions) | [悪い](#a11y-no-static-element-interactions-bad) · [良い](#a11y-no-static-element-interactions-good) | 操作部品ではない要素へのイベント指定を検出します。 |
 | [`a11y/placeholder-label-option`](#a11y-placeholder-label-option) | [悪い](#a11y-placeholder-label-option-bad) · [良い](#a11y-placeholder-label-option-good) | select のプレースホルダー option に disabled または hidden を指定します。 |
 | [`a11y/role-has-required-aria-props`](#a11y-role-has-required-aria-props) | [悪い](#a11y-role-has-required-aria-props-bad) · [良い](#a11y-role-has-required-aria-props-good) | ARIA role が必要とする属性を指定します。 |
 | [`a11y/tabindex-no-positive`](#a11y-tabindex-no-positive) | [悪い](#a11y-tabindex-no-positive-bad) · [良い](#a11y-tabindex-no-positive-good) | 通常のフォーカス順序を変える正の tabindex を検出します。 |
 | [`a11y/use-list`](#a11y-use-list) | [悪い](#a11y-use-list-bad) · [良い](#a11y-use-list-good) | 箇条書きに見えるテキストをリスト要素で表現します。 |
-| [`vue/use-unique-element-ids`](#vue-use-unique-element-ids) | [悪い](#vue-use-unique-element-ids-bad) · [良い](#vue-use-unique-element-ids-good) | 静的 ID の代わりに useId() で再利用可能な ID を生成します。 |
+| [`vue/use-unique-element-ids`](#vue-use-unique-element-ids) | [悪い](#vue-use-unique-element-ids-bad) · [良い](#vue-use-unique-element-ids-good) | 静的 ID の代わりに useId() で一意な ID を生成します。 |
 
 [全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
@@ -52,7 +52,7 @@ title: "アクセシビリティ ルール"
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -92,7 +92,7 @@ vp run lint
 
 **良い**
 
-`alt="Submit search"` を追加し、検索を送信する操作の名前を指定します。
+`alt="Submit search"` を追加し、検索を送信する操作を説明する名前を支援技術に伝えます。
 
 ```vue annotate="add:2"
 <template>
@@ -100,7 +100,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/alt_text.rs#L33) · [全ルール](all.md)
 
@@ -113,7 +113,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -161,7 +161,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L16) · [全ルール](all.md)
 
@@ -174,7 +174,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -224,7 +224,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_is_valid.rs#L30) · [全ルール](all.md)
 
@@ -237,7 +237,7 @@ vp run lint
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -265,7 +265,7 @@ vp run lint
 
 **悪い**
 
-`aria-lable` は綴りが誤っており、対応する ARIA 属性ではありません。
+`aria-lable` は綴りが誤っており、有効な ARIA 属性ではありません。
 
 ```vue annotate="remove:2"
 <template>
@@ -285,20 +285,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_props.rs#L18) · [全ルール](all.md)
 
 ### `a11y/aria-role`
 
-有効で抽象的ではない ARIA role を指定します。
+抽象ロールを除く、有効な ARIA role を指定します。
 
 [悪い例](#a11y-aria-role-bad) · [良い例](#a11y-aria-role-good)
 
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -346,7 +346,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_role.rs#L21) · [全ルール](all.md)
 
@@ -359,7 +359,7 @@ ARIA 属性を使用できない要素への指定を検出します。
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -407,7 +407,7 @@ ARIA 属性だけを取り除き、文字コードの宣言は維持します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/aria_unsupported_elements.rs#L18) · [全ルール](all.md)
 
@@ -420,7 +420,7 @@ ARIA 属性だけを取り除き、文字コードの宣言は維持します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 対話的な役割を持たない通常要素が対象です。button や対話的な ARIA role を持つ要素はこの検出の対象外です。
@@ -470,7 +470,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/click_events_have_key_events.rs#L17) · [全ルール](all.md)
 
@@ -483,7 +483,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -534,7 +534,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/form_control_has_label.rs#L19) · [全ルール](all.md)
 
@@ -547,7 +547,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -575,7 +575,7 @@ vp run lint
 
 **悪い**
 
-`h2` の見出しレベルはありますが、見出しの内容が空です。
+`h2` でレベル 2 の見出しを宣言していますが、見出しの内容が空です。
 
 ```vue annotate="remove:2"
 <template>
@@ -595,7 +595,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L17) · [全ルール](all.md)
 
@@ -608,7 +608,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -658,7 +658,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/heading_levels.rs#L34) · [全ルール](all.md)
 
@@ -671,7 +671,7 @@ iframe に内容を説明する title を指定します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -719,7 +719,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/iframe_has_title.rs#L15) · [全ルール](all.md)
 
@@ -732,7 +732,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -760,7 +760,7 @@ vp run lint
 
 **悪い**
 
-アバター画像に `alt` 属性がなく、画像の代替テキストを確認できません。
+アバター画像に `alt` 属性がなく、代替テキストが指定されていません。
 
 ```vue annotate="remove:2"
 <template>
@@ -780,7 +780,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/img_alt.rs#L16) · [全ルール](all.md)
 
@@ -793,7 +793,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -841,7 +841,7 @@ span に button の role と click handler を付けても、キーボードで�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/interactive_supports_focus.rs#L31) · [全ルール](all.md)
 
@@ -854,7 +854,7 @@ label を対象のフォーム部品と関連付けます。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -904,7 +904,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/label_has_for.rs#L27) · [全ルール](all.md)
 
@@ -917,7 +917,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -967,7 +967,7 @@ Dashboard を main として残し、Settings を名前付きの nav に変更�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/landmark_roles.rs#L44) · [全ルール](all.md)
 
@@ -980,7 +980,7 @@ Dashboard を main として残し、Settings を名前付きの nav に変更�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1030,7 +1030,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/media_has_caption.rs#L30) · [全ルール](all.md)
 
@@ -1043,7 +1043,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1099,7 +1099,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/mouse_events_have_key_events.rs#L30) · [全ルール](all.md)
 
@@ -1112,7 +1112,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1160,20 +1160,20 @@ accesskey を取り除き、通常の Save ボタンは残します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_access_key.rs#L19) · [全ルール](all.md)
 
 ### `a11y/no-aria-hidden-on-focusable`
 
-フォーカス可能な要素を aria-hidden で隠した指定を検出します。
+フォーカス可能な要素を aria-hidden で支援技術から隠す指定を検出します。
 
 [悪い例](#a11y-no-aria-hidden-on-focusable-bad) · [良い例](#a11y-no-aria-hidden-on-focusable-good)
 
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1213,7 +1213,7 @@ vp run lint
 
 **良い**
 
-ボタンを隠さず、Close の aria-label を指定します。
+aria-hidden を取り除いてボタンを支援技術から参照できる状態にし、aria-label に Close を指定します。
 
 ```vue annotate="add:2"
 <template>
@@ -1221,7 +1221,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_aria_hidden_on_focusable.rs#L19) · [全ルール](all.md)
 
@@ -1234,7 +1234,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1282,7 +1282,7 @@ autofocus を取り除き、検索欄はそのまま残します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_autofocus.rs#L19) · [全ルール](all.md)
 
@@ -1295,7 +1295,7 @@ marquee や blink などの注意をそらす要素を検出します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1343,7 +1343,7 @@ marquee を使って文字を自動的に動かしています。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_distracting_elements.rs#L16) · [全ルール](all.md)
 
@@ -1356,7 +1356,7 @@ marquee を使って文字を自動的に動かしています。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1384,7 +1384,7 @@ vp run lint
 
 **悪い**
 
-アイコンを i で表示しており、アイコンだけの操作を説明する文字がありません。
+アイコンの表示に i 要素を使っています。i が持つテキスト上の意味は、アイコンだけのボタンが行う操作を説明するものではありません。
 
 ```vue annotate="remove:3"
 <template>
@@ -1398,7 +1398,7 @@ vp run lint
 
 **良い**
 
-装飾の span でアイコンを隠し、別の `Delete item` の文字で操作を説明します。
+装飾用の span に aria-hidden を指定してアイコンを支援技術から隠し、別の `Delete item` の文字でボタンの操作を説明します。
 
 ```vue annotate="add:3,4"
 <template>
@@ -1409,7 +1409,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_i_for_icon.rs#L35) · [全ルール](all.md)
 
@@ -1421,8 +1421,8 @@ vp run lint
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1470,7 +1470,7 @@ button は元から button の役割を持つため、同じ role を重複し�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_redundant_roles/report.rs#L31) · [全ルール](all.md)
 
@@ -1483,7 +1483,7 @@ button は元から button の役割を持つため、同じ role を重複し�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1532,20 +1532,20 @@ aria-labelledby が save-label を参照していますが、その ID の要素
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_refer_to_non_existent_id.rs#L37) · [全ルール](all.md)
 
 ### `a11y/no-role-presentation-on-focusable`
 
-フォーカス可能な要素の意味を presentation で消した指定を検出します。
+フォーカス可能な要素への role="presentation" または role="none" の指定を検出します。
 
 [悪い例](#a11y-no-role-presentation-on-focusable-bad) · [良い例](#a11y-no-role-presentation-on-focusable-good)
 
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1573,7 +1573,7 @@ vp run lint
 
 **悪い**
 
-focus できる Billing のリンクに role=presentation を指定し、操作可能なリンクの役割と矛盾させています。ブラウザはこの presentation の指定を無視する必要があります。
+フォーカスできる Billing のリンクに role="presentation" を指定しています。リンク本来の操作可能な役割と矛盾するため、ブラウザーはこの presentation の指定を無視する必要があります。
 
 ```vue annotate="remove:2"
 <template>
@@ -1593,7 +1593,7 @@ focus できる Billing のリンクに role=presentation を指定し、操作�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_role_presentation_on_focusable.rs#L19) · [全ルール](all.md)
 
@@ -1606,7 +1606,7 @@ focus できる Billing のリンクに role=presentation を指定し、操作�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1654,7 +1654,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/no_static_element_interactions.rs#L31) · [全ルール](all.md)
 
@@ -1667,7 +1667,7 @@ select のプレースホルダー option に disabled または hidden を指�
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1710,7 +1710,7 @@ vp run lint
 
 **良い**
 
-disabled を追加し、案内を Japan の選択肢と区別します。
+disabled を追加して案内の option を選択できなくし、選択可能な Japan の option と区別します。
 
 ```vue annotate="add:3"
 <template>
@@ -1721,7 +1721,7 @@ disabled を追加し、案内を Japan の選択肢と区別します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/placeholder_label_option.rs#L36) · [全ルール](all.md)
 
@@ -1734,7 +1734,7 @@ ARIA role が必要とする属性を指定します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1782,7 +1782,7 @@ checkbox の role に、選択状態を示す aria-checked がありません。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_has_required_aria_props.rs#L30) · [全ルール](all.md)
 
@@ -1795,7 +1795,7 @@ checkbox の role に、選択状態を示す aria-checked がありません。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1843,7 +1843,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/tabindex_no_positive.rs#L16) · [全ルール](all.md)
 
@@ -1856,7 +1856,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1908,20 +1908,20 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/a11y/use_list.rs#L36) · [全ルール](all.md)
 
 ### `vue/use-unique-element-ids`
 
-静的 ID の代わりに useId() で再利用可能な ID を生成します。
+静的 ID の代わりに useId() で一意な ID を生成します。
 
 [悪い例](#vue-use-unique-element-ids-bad) · [良い例](#vue-use-unique-element-ids-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1962,7 +1962,7 @@ vp run lint
 
 **良い**
 
-`useId()` の `emailId` を label の `for` と input の `id` の両方に binding します。
+`useId()` の `emailId` を label の `for` と input の `id` の両方にバインドします。
 
 ```vue annotate="add:1,2,3,4,5,6,8,9"
 <script setup>
@@ -1977,6 +1977,6 @@ const emailId = useId();
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_unique_element_ids.rs#L52) · [全ルール](all.md)

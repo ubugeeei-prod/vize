@@ -10,8 +10,8 @@ title: "script/prefer-import-from-vue"
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -56,6 +56,6 @@ import { ref, h } from 'vue'
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [全ルール](../all.md)

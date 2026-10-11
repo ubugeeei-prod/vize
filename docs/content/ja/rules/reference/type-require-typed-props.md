@@ -14,7 +14,7 @@ defineProps に型定義を指定します。
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 ## 設定（Vite+）
 
@@ -58,6 +58,6 @@ defineProps<{ title: string }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) · [全ルール](../all.md)

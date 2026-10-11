@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -48,7 +48,7 @@ createApp(Root).mount("#app");
 
 ## 悪い
 
-`ThemeLabel.vue` が `ThemeKey` を inject しますが、到達する祖先 `App.vue` に同じ key の provide がありません。
+`ThemeLabel.vue` は `ThemeKey` を inject しますが、解析対象の構成で祖先にあたる `App.vue` は同じキーを provide していません。
 
 `keys/theme.ts`
 
@@ -87,7 +87,7 @@ const theme = inject(ThemeKey);
 
 ## 良い
 
-`App.vue` で同じ export 済み `ThemeKey` を使って reactive な theme を provide し、使用する子孫を描画します。
+`App.vue` は、公開された同じ `ThemeKey` を使ってリアクティブなテーマを provide してから、その値を inject する子孫を描画します。
 
 `keys/theme.ts`
 
@@ -129,7 +129,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-平らなルールの `.card .title` に、親のセレクターを含めて指定しています。
+ルールをネストせず、子孫セレクター `.card .title` に親のセレクターも含めて指定しています。
 
 ```vue
 <style scoped>
@@ -47,7 +47,7 @@ vp run lint
 
 ## 良い
 
-`.card` の中に `.title` を入れ、親子のスタイルを一緒に管理します。
+`.title` のルールを `.card` の中にネストし、親子のスタイルの関係を一か所にまとめます。
 
 ```vue
 <style scoped>
@@ -55,6 +55,6 @@ vp run lint
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_nested_selectors.rs#L14) · [全ルール](../all.md)

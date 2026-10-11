@@ -4,14 +4,14 @@ title: "vue/valid-v-model"
 
 # `vue/valid-v-model`
 
-v-model の値・引数・modifier を検査します。
+v-model の値・引数・修飾子を検査します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-ネイティブの `<div>` は `v-model` のフォーム要素ではなく、値のない input の directive には書き込み先の式がありません。
+ネイティブの `<div>` にはフォーム要素として `v-model` を使えません。また、input に値なしで指定したディレクティブには、書き込み先の式がありません。
 
 ```vue
 <template>
@@ -48,7 +48,7 @@ vp run lint
 
 ## 良い
 
-input、select、textarea、カスタム コンポーネントを例の書き込み可能な変数に binding します。
+input、select、textarea、カスタムコンポーネントを例の書き込み可能な変数にバインドします。
 
 ```vue
 <template>
@@ -59,6 +59,6 @@ input、select、textarea、カスタム コンポーネントを例の書き込
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_model.rs#L36) · [全ルール](../all.md)

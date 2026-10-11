@@ -19,7 +19,7 @@ export const contract3Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "`rename` obtains the raw target and writes `raw.name`, bypassing the proxy setter that would notify the displayed reactive name.",
-      ja: "`rename` が raw の対象を取り出して `raw.name` に代入し、表示中の名前を通知する Proxy の setter を通していません。",
+      ja: "`rename` は Proxy の元のオブジェクトを取り出し、`raw.name` に代入しています。そのため、表示中の名前の変更を通知する Proxy の setter を通りません。",
     },
     goodExplanation: {
       en: "Writing `profile.name` through the passed reactive proxy preserves the same rename while notifying its dependents.",
@@ -111,7 +111,7 @@ export const contract3Examples: Record<string, ContractExample> = {
     },
     note: {
       en: "Module-scope watchers are valid when their owner keeps and calls a stop handle or intentionally gives them application lifetime. This example requires component-owned lifetimes; the contract has no current producer.",
-      ja: "所有側が stop 関数を保持して呼んだり、アプリケーション全体の寿命を意図したりする場合、モジュール直下の watcher は有効です。この例はコンポーネントが寿命を持つことを前提とし、この契約には現在の生成元がありません。",
+      ja: "所有側が停止関数を保持して呼び出す場合や、アプリケーション全体で動かし続けることを意図する場合、モジュール直下のウォッチャーは有効です。この例ではウォッチャーの有効期間をコンポーネントの生存期間に結び付けることを前提としています。この契約には現在の生成元がありません。",
     },
   },
 };

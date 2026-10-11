@@ -4,7 +4,7 @@ title: "vize:croquis/cf/setup-context-violation"
 
 # `vize:croquis/cf/setup-context-violation`
 
-Setup context is used in a way Vue does not allow.
+This experimental analyzer scenario places ref(0) at normal script module scope rather than per-instance setup. Vue permits this reactive state; the example requires each component instance to own its own count. The CLI does not emit this individual code.
 
 Default severity: context-dependent  
 Applies to: Analyzed component graph and the supported facts described below  

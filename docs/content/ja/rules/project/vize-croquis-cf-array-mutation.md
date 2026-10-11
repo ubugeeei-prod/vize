@@ -4,7 +4,7 @@ title: "vize:croquis/cf/array-mutation"
 
 # `vize:croquis/cf/array-mutation`
 
-配列を添字で変更していますが、reactive な配列はそれを追跡しません。
+現在の生成元がないこの契約では、旧 Vue 2.7 の配列のインデックス代入を例にしています。Vue 2 は直接のインデックス代入による更新を通知しませんが、Vue 3 はその代入を追跡します。悪い例・良い例は Vue 2 の修正を示すもので、Vue 3 の不具合を示す例ではありません。
 
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -17,7 +17,7 @@ title: "vize:croquis/cf/array-mutation"
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -78,7 +78,7 @@ export function replaceFirst(items: string[], next: string): void {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

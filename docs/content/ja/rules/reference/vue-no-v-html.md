@@ -4,14 +4,14 @@ title: "vue/no-v-html"
 
 # `vue/no-v-html`
 
-未処理の HTML を表示する v-html の XSS リスクを検出します。
+XSS を防ぐため、v-html の使用に警告します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `warning`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -47,7 +47,7 @@ v-html で content を通常の文字ではなく HTML として扱っていま�
 
 ## 良い
 
-mustache の補間で、HTML を挿入せず content をエスケープした文字として表示します。
+mustache の補間で、HTML を挿入せず content をエスケープしたテキストとして表示します。
 
 ```vue
 <template>
@@ -55,6 +55,6 @@ mustache の補間で、HTML を挿入せず content をエスケープした文
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_html.rs#L51) · [全ルール](../all.md)

@@ -11,7 +11,7 @@ router-link の削除済み tag prop を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-RouterLink の廃止された tag で button を指定しています。
+RouterLink の廃止された tag prop で button を指定しています。
 
 ```vue
 <template>
@@ -47,7 +47,7 @@ RouterLink の廃止された tag で button を指定しています。
 
 ## 良い
 
-slot から navigate を受け取り、明示的に記述した button で実行します。
+スロットから navigate を受け取り、明示的に記述した button のクリック時に呼び出します。
 
 ```vue
 <template>
@@ -57,6 +57,6 @@ slot から navigate を受け取り、明示的に記述した button で実行
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_router_link_tag_prop.rs#L37) · [全ルール](../all.md)

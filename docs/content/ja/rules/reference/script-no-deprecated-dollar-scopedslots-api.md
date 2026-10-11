@@ -11,7 +11,7 @@ Vue 3 で $slots に統合された $scopedSlots を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-`this.$scopedSlots`、`ctx.$scopedSlots`、裸の `$scopedSlots` 参照が、Vue 3 で削除された Vue 2 の scoped slot API を使っています。
+`this.$scopedSlots`、`ctx.$scopedSlots`、`this` や `ctx` を付けずに参照した `$scopedSlots` が、Vue 3 で削除された Vue 2 のスコープ付きスロット API を使っています。
 
 ```vue
 <script setup lang="ts">
@@ -59,6 +59,6 @@ render($slots.default)
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) · [全ルール](../all.md)

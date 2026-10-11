@@ -4,7 +4,7 @@ title: "HTML ルール"
 
 # HTML ルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
 
 | ルール | 例 | 目的 |
@@ -30,7 +30,7 @@ title: "HTML ルール"
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -58,7 +58,7 @@ vp run lint
 
 **悪い**
 
-p に見た目を指定する旧来の align 属性を使っています。
+文字の配置を指定するために、非推奨の align 属性を p 要素に使っています。
 
 ```vue annotate="remove:1,2,3"
 <template>
@@ -77,7 +77,7 @@ p に見た目を指定する旧来の align 属性を使っています。
 <style scoped>.notice { text-align: center; }</style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_attr.rs#L32) · [全ルール](all.md)
 
@@ -90,7 +90,7 @@ p に見た目を指定する旧来の align 属性を使っています。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -118,7 +118,7 @@ vp run lint
 
 **悪い**
 
-旧来の見た目のための center 要素を使っています。
+中央揃えのために、非推奨の center 要素を使っています。
 
 ```vue annotate="remove:2"
 <template>
@@ -138,7 +138,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/deprecated_element.rs#L33) · [全ルール](all.md)
 
@@ -151,7 +151,7 @@ vp run lint
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -179,7 +179,7 @@ vp run lint
 
 **悪い**
 
-入力欄と説明の p が同じ email の ID を使い、label の参照先が重複しています。
+入力欄と説明の p が同じ id="email" を使っているため、label の参照先が一意に定まりません。
 
 ```vue annotate="remove:3,4"
 <template>
@@ -203,7 +203,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/id_duplication.rs#L36) · [全ルール](all.md)
 
@@ -216,7 +216,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -265,7 +265,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_consecutive_br.rs#L30) · [全ルール](all.md)
 
@@ -278,7 +278,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -319,7 +319,7 @@ vp run lint
 
 **良い**
 
-静的な style では color と background を分けます。動的な style バインディングはこの静的属性の検査の対象外です。
+静的な style 属性には color と background をそれぞれ一度だけ指定し、同じプロパティの重複を避けます。動的な style バインディングはこの静的属性の検査の対象外です。
 
 ```vue annotate="add:2,3"
 <template>
@@ -328,7 +328,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_dupe_style_properties.rs#L37) · [全ルール](all.md)
 
@@ -341,7 +341,7 @@ vp run lint
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -389,7 +389,7 @@ btn は一回だけ残し、別の primary と合わせて指定します。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/html/no_duplicate_class.rs#L32) · [全ルール](all.md)
 
@@ -402,7 +402,7 @@ dl 内の dt の名前重複を検出します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -459,7 +459,7 @@ API の dt を一つにし、その後に二つの dd を並べます。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_duplicate_dt.rs#L41) · [全ルール](all.md)
 
@@ -472,7 +472,7 @@ API の dt を一つにし、その後に二つの dd を並べます。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -524,7 +524,7 @@ p は文字、li は補間で内容を入れ、空の td には aria-label で�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/no_empty_palpable_content.rs#L32) · [全ルール](all.md)
 
@@ -537,7 +537,7 @@ time 要素に機械可読の datetime を指定します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -565,7 +565,7 @@ vp run lint
 
 **悪い**
 
-time に人が読む日付だけがあり、機械が読む datetime がありません。
+time 要素には表示用の日付だけがあり、機械可読の datetime 属性がありません。
 
 ```vue annotate="remove:2"
 <template>
@@ -577,7 +577,7 @@ time に人が読む日付だけがあり、機械が読む datetime があり�
 
 **良い**
 
-`datetime="2026-05-13"` に対応する日付を指定します。
+表示した日付に対応する機械可読の日付を、`datetime="2026-05-13"` として指定します。
 
 ```vue annotate="add:2"
 <template>
@@ -585,6 +585,6 @@ time に人が読む日付だけがあり、機械が読む datetime があり�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/html/require_datetime.rs#L34) · [全ルール](all.md)

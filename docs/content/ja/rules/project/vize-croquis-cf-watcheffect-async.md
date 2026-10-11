@@ -4,7 +4,7 @@ title: "vize:croquis/cf/watcheffect-async"
 
 # `vize:croquis/cf/watcheffect-async`
 
-`watchEffect` が async タスクを始め、前回の実行を片付けられません。
+この例の非同期の `watchEffect` には、無効化時のクリーンアップや古い応答を防ぐ処理がありません。Vue の `watchEffect` はクリーンアップを扱えます。良い例では `watch` で監視対象を明示し、無効化された処理を中止します。
 
 既定の重大度: error  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -93,7 +93,7 @@ watchEffect(async () => {
 
 ## 良い
 
-`watch(() => props.query, ...)` で source を明示し、request の cleanup と無効化後の応答を除く条件を付けます。
+`watch(() => props.query, ...)` で監視対象を明示し、リクエストのクリーンアップ処理を登録します。無効化されたリクエストの古い応答は反映しません。
 
 `SearchPage.vue`
 
@@ -138,7 +138,7 @@ watch(
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

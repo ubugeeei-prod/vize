@@ -4,9 +4,9 @@ title: "ファイル間ルール"
 
 # ファイル間ルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
-全 66 のプロジェクトの例について、共通ファイルと完全な悪い例・良い例をこのページにまとめています。共通ファイルは両方で使用します。60 の analyzer コードの対応範囲は、CLI の 19 コード（18 の検証済みソースの例と、保持された参照構成を示す 1 つの具体例）、CLI が個別には生成しない実験的な Rust analyzer の 16 コード、現在の生成元がない 25 の契約です。ID を設定しても未対応の生成元は有効になりません。
+全 66 件のプロジェクトの例について、共通ファイルと、省略のない悪い例・良い例をこのページにまとめています。共通ファイルは両方で使用します。解析器の 60 件の診断コードには、CLI の 19 件（検証済みのソース例 18 件と、参照関係を保持したリアクティブなグラフを含む説明用プロジェクト 1 件）、CLI が個別には生成しない実験的な Rust 解析器の 16 件、現在は診断を生成する処理のない契約 25 件があります。ID を設定しても、未対応の診断処理は有効になりません。
 
 公開 CLI では `vize lint --cross-file` で同じ処理を使用できます。表示される `vize:croquis/cf/*` コードは、`lint.vize.rules` では `croquis/cf/*` と設定します（`vize:` を省略）。information/hint の診断は CLI では warning になります。関連箇所は生成元と利用側の関係を説明します。
 
@@ -20,9 +20,9 @@ title: "ファイル間ルール"
 | [`ecosystem/vue-router-param-type`](#ecosystem-vue-router-param-type) | [悪い](#ecosystem-vue-router-param-type-bad) · [良い](#ecosystem-vue-router-param-type-good) | postId は繰り返しパラメーターではないため配列を渡せません。 | プロジェクト固有の lint ID |
 | [`ecosystem/vue-router-unknown-route`](#ecosystem-vue-router-unknown-route) | [悪い](#ecosystem-vue-router-unknown-route-bad) · [良い](#ecosystem-vue-router-unknown-route-good) | 登録済み router に存在しない名前です。 | プロジェクト固有の lint ID |
 | [`html/cross-component-nesting`](#html-cross-component-nesting) | [悪い](#html-cross-component-nesting-bad) · [良い](#html-cross-component-nesting-good) | import した子コンポーネントの要素を合成して HTML の入れ子を検査します。 | プロジェクト固有の lint ID |
-| [`vize:croquis/cf/array-mutation`](#vize-croquis-cf-array-mutation) | [悪い](#vize-croquis-cf-array-mutation-bad) · [良い](#vize-croquis-cf-array-mutation-good) | 配列を添字で変更していますが、reactive な配列はそれを追跡しません。 | 契約（現在の生成元なし） |
+| [`vize:croquis/cf/array-mutation`](#vize-croquis-cf-array-mutation) | [悪い](#vize-croquis-cf-array-mutation-bad) · [良い](#vize-croquis-cf-array-mutation-good) | 現在の生成元がないこの契約では、旧 Vue 2.7 の配列のインデックス代入を例にしています。Vue 2 は直接のインデックス代入による更新を通知しませんが、Vue 3 はその代入を追跡します。悪い例・良い例は Vue 2 の修正を示すもので、Vue 3 の不具合を示す例ではありません。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/async-boundary`](#vize-croquis-cf-async-boundary) | [悪い](#vize-croquis-cf-async-boundary-bad) · [良い](#vize-croquis-cf-async-boundary-good) | reactive な状態が async 境界を越え、古い値が見えることがあります。 | CLI |
-| [`vize:croquis/cf/async-no-suspense`](#vize-croquis-cf-async-no-suspense) | [悪い](#vize-croquis-cf-async-no-suspense-bad) · [良い](#vize-croquis-cf-async-no-suspense-good) | async コンポーネントが Suspense 境界なしで描画されています。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
+| [`vize:croquis/cf/async-no-suspense`](#vize-croquis-cf-async-no-suspense) | [悪い](#vize-croquis-cf-async-no-suspense-bad) · [良い](#vize-croquis-cf-async-no-suspense-good) | async コンポーネントが Suspense 境界なしで描画されています。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
 | [`vize:croquis/cf/browser-api-ssr`](#vize-croquis-cf-browser-api-ssr) | [悪い](#vize-croquis-cf-browser-api-ssr-bad) · [良い](#vize-croquis-cf-browser-api-ssr-good) | サーバーでも描画され得る場所で、ブラウザ専用 API を使っています。 | CLI |
 | [`vize:croquis/cf/circular-dep`](#vize-croquis-cf-circular-dep) | [悪い](#vize-croquis-cf-circular-dep-bad) · [良い](#vize-croquis-cf-circular-dep-good) | コンポーネントの import が循環しています。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/circular-reactive-dependency`](#vize-croquis-cf-circular-reactive-dependency) | [悪い](#vize-croquis-cf-circular-reactive-dependency-bad) · [良い](#vize-croquis-cf-circular-reactive-dependency-good) | reactive な計算が互いに循環して依存しています。 | CLI |
@@ -35,50 +35,50 @@ title: "ファイル間ルール"
 | [`vize:croquis/cf/dom-access-without-next-tick`](#vize-croquis-cf-dom-access-without-next-tick) | [悪い](#vize-croquis-cf-dom-access-without-next-tick-bad) · [良い](#vize-croquis-cf-dom-access-without-next-tick-good) | Vue が更新を反映する前に DOM を読んでいます。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/duplicate-id`](#vize-croquis-cf-duplicate-id) | [悪い](#vize-croquis-cf-duplicate-id-bad) · [良い](#vize-croquis-cf-duplicate-id-good) | 同じ要素 id が複数のコンポーネントで使われています。 | CLI |
 | [`vize:croquis/cf/event-listener-leak`](#vize-croquis-cf-event-listener-leak) | [悪い](#vize-croquis-cf-event-listener-leak-bad) · [良い](#vize-croquis-cf-event-listener-leak-good) | イベントリスナーが登録されたまま、解除されていません。 | 契約（現在の生成元なし） |
-| [`vize:croquis/cf/event-modifier`](#vize-croquis-cf-event-modifier) | [悪い](#vize-croquis-cf-event-modifier-bad) · [良い](#vize-croquis-cf-event-modifier-good) | emit が対応しない修飾子を、イベントリスナーが使っています。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
+| [`vize:croquis/cf/event-modifier`](#vize-croquis-cf-event-modifier) | [悪い](#vize-croquis-cf-event-modifier-bad) · [良い](#vize-croquis-cf-event-modifier-good) | emit が対応しない修飾子を、イベントリスナーが使っています。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
 | [`vize:croquis/cf/hydration-risk`](#vize-croquis-cf-hydration-risk) | [悪い](#vize-croquis-cf-hydration-risk-bad) · [良い](#vize-croquis-cf-hydration-risk-good) | このコードはprop を ref にコピーする操作など、複数のリアクティビティ検出をまとめています。ファイル間検査がすべての Date.now() 式を検出するという意味ではありません。 | CLI |
-| [`vize:croquis/cf/inherit-attrs-unused`](#vize-croquis-cf-inherit-attrs-unused) | [悪い](#vize-croquis-cf-inherit-attrs-unused-bad) · [良い](#vize-croquis-cf-inherit-attrs-unused-good) | `inheritAttrs: false` が設定されているのに、属性が読まれていません。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
+| [`vize:croquis/cf/inherit-attrs-unused`](#vize-croquis-cf-inherit-attrs-unused) | [悪い](#vize-croquis-cf-inherit-attrs-unused-bad) · [良い](#vize-croquis-cf-inherit-attrs-unused-good) | `inheritAttrs: false` が設定されているのに、属性が読まれていません。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
 | [`vize:croquis/cf/inject-without-symbol`](#vize-croquis-cf-inject-without-symbol) | [悪い](#vize-croquis-cf-inject-without-symbol-bad) · [良い](#vize-croquis-cf-inject-without-symbol-good) | `inject` が `InjectionKey` のシンボルではなく素のキーを使っています。 | CLI |
 | [`vize:croquis/cf/injected-async-mutation-race`](#vize-croquis-cf-injected-async-mutation-race) | [悪い](#vize-croquis-cf-injected-async-mutation-race-bad) · [良い](#vize-croquis-cf-injected-async-mutation-race-good) | inject した値が、競合し得る async タスクから変更されています。 | CLI |
 | [`vize:croquis/cf/lifecycle-outside-setup`](#vize-croquis-cf-lifecycle-outside-setup) | [悪い](#vize-croquis-cf-lifecycle-outside-setup-bad) · [良い](#vize-croquis-cf-lifecycle-outside-setup-good) | ライフサイクルフックが `setup` の外で登録されています。 | 契約（現在の生成元なし） |
-| [`vize:croquis/cf/lifecycle-without-cleanup`](#vize-croquis-cf-lifecycle-without-cleanup) | [悪い](#vize-croquis-cf-lifecycle-without-cleanup-bad) · [良い](#vize-croquis-cf-lifecycle-without-cleanup-good) | ライフサイクルフックが後片付けなしで処理を始めています。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
-| [`vize:croquis/cf/missing-required-prop`](#vize-croquis-cf-missing-required-prop) | [悪い](#vize-croquis-cf-missing-required-prop-bad) · [良い](#vize-croquis-cf-missing-required-prop-good) | 必須 prop が渡されていません。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
+| [`vize:croquis/cf/lifecycle-without-cleanup`](#vize-croquis-cf-lifecycle-without-cleanup) | [悪い](#vize-croquis-cf-lifecycle-without-cleanup-bad) · [良い](#vize-croquis-cf-lifecycle-without-cleanup-good) | ライフサイクルフックが後片付けなしで処理を始めています。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
+| [`vize:croquis/cf/missing-required-prop`](#vize-croquis-cf-missing-required-prop) | [悪い](#vize-croquis-cf-missing-required-prop-bad) · [良い](#vize-croquis-cf-missing-required-prop-good) | 必須 prop が渡されていません。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
 | [`vize:croquis/cf/missing-suspense`](#vize-croquis-cf-missing-suspense) | [悪い](#vize-croquis-cf-missing-suspense-bad) · [良い](#vize-croquis-cf-missing-suspense-good) | async な依存が Suspense 境界の外で使われています。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/module-scope-reactive`](#vize-croquis-cf-module-scope-reactive) | [悪い](#vize-croquis-cf-module-scope-reactive-bad) · [良い](#vize-croquis-cf-module-scope-reactive-good) | reactive な状態がモジュールスコープで作られ、すべての呼び出し元で共有されます。 | 契約（現在の生成元なし） |
-| [`vize:croquis/cf/multi-root-attrs`](#vize-croquis-cf-multi-root-attrs) | [悪い](#vize-croquis-cf-multi-root-attrs-bad) · [良い](#vize-croquis-cf-multi-root-attrs-good) | 複数ルートのコンポーネントが属性を受け取りますが、付ける場所がありません。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
+| [`vize:croquis/cf/multi-root-attrs`](#vize-croquis-cf-multi-root-attrs) | [悪い](#vize-croquis-cf-multi-root-attrs-bad) · [良い](#vize-croquis-cf-multi-root-attrs-good) | 複数ルートのコンポーネントが属性を受け取りますが、付ける場所がありません。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
 | [`vize:croquis/cf/mutated-after-escape`](#vize-croquis-cf-mutated-after-escape) | [悪い](#vize-croquis-cf-mutated-after-escape-bad) · [良い](#vize-croquis-cf-mutated-after-escape-good) | reactive オブジェクトが、所有者から漏れた後に変更されています。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/non-reactive-provide`](#vize-croquis-cf-non-reactive-provide) | [悪い](#vize-croquis-cf-non-reactive-provide-bad) · [良い](#vize-croquis-cf-non-reactive-provide-good) | provide した値が reactive ではないため、子孫は更新を観測できません。 | CLI |
 | [`vize:croquis/cf/non-unique-id`](#vize-croquis-cf-non-unique-id) | [悪い](#vize-croquis-cf-non-unique-id-bad) · [良い](#vize-croquis-cf-non-unique-id-good) | ループ内の要素 id が項目ごとに一意ではありません。 | CLI |
-| [`vize:croquis/cf/object-identity-comparison`](#vize-croquis-cf-object-identity-comparison) | [悪い](#vize-croquis-cf-object-identity-comparison-bad) · [良い](#vize-croquis-cf-object-identity-comparison-good) | reactive オブジェクトを同一性で比較していますが、unwrap のたびに同一性は変わります。 | 契約（現在の生成元なし） |
-| [`vize:croquis/cf/pinia-getter`](#vize-croquis-cf-pinia-getter) | [悪い](#vize-croquis-cf-pinia-getter-bad) · [良い](#vize-croquis-cf-pinia-getter-good) | Pinia の getter を `storeToRefs` なしで読んでおり、reactive のままになりません。 | 契約（現在の生成元なし） |
-| [`vize:croquis/cf/prop-type-mismatch`](#vize-croquis-cf-prop-type-mismatch) | [悪い](#vize-croquis-cf-prop-type-mismatch-bad) · [良い](#vize-croquis-cf-prop-type-mismatch-good) | 渡した prop の値が、宣言された型と一致しません。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
+| [`vize:croquis/cf/object-identity-comparison`](#vize-croquis-cf-object-identity-comparison) | [悪い](#vize-croquis-cf-object-identity-comparison-bad) · [良い](#vize-croquis-cf-object-identity-comparison-good) | 元のオブジェクトとそのリアクティブな Proxy は別の同一性を持ち、`toRaw()` は元のオブジェクトを返します。この契約の例は、レコードとして同じものかを判定するために安定した ID を比較する方法を示します。 | 契約（現在の生成元なし） |
+| [`vize:croquis/cf/pinia-getter`](#vize-croquis-cf-pinia-getter) | [悪い](#vize-croquis-cf-pinia-getter-bad) · [良い](#vize-croquis-cf-pinia-getter-good) | この契約の例では、setup で Pinia の getter から現在のプリミティブ値をコピーし、更新に追従しないスナップショットを作っています。追跡される計算やテンプレートで getter を直接読む場合はリアクティビティを保てます。この例では `storeToRefs()` を使って値を取り出します。 | 契約（現在の生成元なし） |
+| [`vize:croquis/cf/prop-type-mismatch`](#vize-croquis-cf-prop-type-mismatch) | [悪い](#vize-croquis-cf-prop-type-mismatch-bad) · [良い](#vize-croquis-cf-prop-type-mismatch-good) | 渡した prop の値が、宣言された型と一致しません。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
 | [`vize:croquis/cf/provide-inject-type`](#vize-croquis-cf-provide-inject-type) | [悪い](#vize-croquis-cf-provide-inject-type-bad) · [良い](#vize-croquis-cf-provide-inject-type-good) | provide した値と inject の型が一致しません。 | CLI |
 | [`vize:croquis/cf/provide-without-symbol`](#vize-croquis-cf-provide-without-symbol) | [悪い](#vize-croquis-cf-provide-without-symbol-bad) · [良い](#vize-croquis-cf-provide-without-symbol-good) | `provide` が `InjectionKey` のシンボルではなく素のキーを使っています。 | CLI |
 | [`vize:croquis/cf/reactive-export`](#vize-croquis-cf-reactive-export) | [悪い](#vize-croquis-cf-reactive-export-bad) · [良い](#vize-croquis-cf-reactive-export-good) | reactive な状態がモジュールから export されています。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/reactivity-outside-setup`](#vize-croquis-cf-reactivity-outside-setup) | [悪い](#vize-croquis-cf-reactivity-outside-setup-bad) · [良い](#vize-croquis-cf-reactivity-outside-setup-good) | reactive API が `setup` の外で呼ばれています。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/reassignment-breaks-reactivity`](#vize-croquis-cf-reassignment-breaks-reactivity) | [悪い](#vize-croquis-cf-reassignment-breaks-reactivity-bad) · [良い](#vize-croquis-cf-reassignment-breaks-reactivity-good) | reactive な束縛を再代入すると、ただの値に置き換わります。 | CLI |
 | [`vize:croquis/cf/reference-escapes-scope`](#vize-croquis-cf-reference-escapes-scope) | [悪い](#vize-croquis-cf-reference-escapes-scope-bad) · [良い](#vize-croquis-cf-reference-escapes-scope-good) | reactive な参照が、寿命を持つスコープの外へ漏れています。 | 契約（現在の生成元なし） |
-| [`vize:croquis/cf/setup-context-violation`](#vize-croquis-cf-setup-context-violation) | [悪い](#vize-croquis-cf-setup-context-violation-bad) · [良い](#vize-croquis-cf-setup-context-violation-good) | Vue が許さない使い方で setup コンテキストを使っています。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
+| [`vize:croquis/cf/setup-context-violation`](#vize-croquis-cf-setup-context-violation) | [悪い](#vize-croquis-cf-setup-context-violation-bad) · [良い](#vize-croquis-cf-setup-context-violation-good) | 実験的な解析器の例では、インスタンスごとの setup ではなく通常の script のモジュールスコープに `ref(0)` を置いています。Vue ではこのようなリアクティブな状態を作れますが、この例ではインスタンスごとに count を持つことを前提とします。CLI はこの個別の診断コードを生成しません。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
 | [`vize:croquis/cf/shallow-deep-access`](#vize-croquis-cf-shallow-deep-access) | [悪い](#vize-croquis-cf-shallow-deep-access-bad) · [良い](#vize-croquis-cf-shallow-deep-access-good) | `shallowReactive` または `shallowRef` の深いプロパティを、追跡されるものとして読んでいます。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/spread-breaks-reactivity`](#vize-croquis-cf-spread-breaks-reactivity) | [悪い](#vize-croquis-cf-spread-breaks-reactivity-bad) · [良い](#vize-croquis-cf-spread-breaks-reactivity-good) | reactive オブジェクトのスプレッドは値をコピーし、追跡を失います。 | CLI |
 | [`vize:croquis/cf/suspense-no-fallback`](#vize-croquis-cf-suspense-no-fallback) | [悪い](#vize-croquis-cf-suspense-no-fallback-bad) · [良い](#vize-croquis-cf-suspense-no-fallback-good) | `<Suspense>` に fallback がありません。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/template-ref-timing`](#vize-croquis-cf-template-ref-timing) | [悪い](#vize-croquis-cf-template-ref-timing-bad) · [良い](#vize-croquis-cf-template-ref-timing-good) | テンプレート ref が、コンポーネントのマウント前に読まれています。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/toraw-mutation`](#vize-croquis-cf-toraw-mutation) | [悪い](#vize-croquis-cf-toraw-mutation-bad) · [良い](#vize-croquis-cf-toraw-mutation-good) | `toRaw` した生のオブジェクトを変更しています。 | 契約（現在の生成元なし） |
 | [`vize:croquis/cf/uncaught-error`](#vize-croquis-cf-uncaught-error) | [悪い](#vize-croquis-cf-uncaught-error-bad) · [良い](#vize-croquis-cf-uncaught-error-good) | コンポーネントが例外を投げても、受け止めるエラー境界がありません。 | CLI |
-| [`vize:croquis/cf/undeclared-emit`](#vize-croquis-cf-undeclared-emit) | [悪い](#vize-croquis-cf-undeclared-emit-bad) · [良い](#vize-croquis-cf-undeclared-emit-good) | 宣言されていないイベントを emit しています。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
-| [`vize:croquis/cf/undeclared-prop`](#vize-croquis-cf-undeclared-prop) | [悪い](#vize-croquis-cf-undeclared-prop-bad) · [良い](#vize-croquis-cf-undeclared-prop-good) | 親が、子が宣言していない prop を渡しています。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
+| [`vize:croquis/cf/undeclared-emit`](#vize-croquis-cf-undeclared-emit) | [悪い](#vize-croquis-cf-undeclared-emit-bad) · [良い](#vize-croquis-cf-undeclared-emit-good) | 宣言されていないイベントを emit しています。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
+| [`vize:croquis/cf/undeclared-prop`](#vize-croquis-cf-undeclared-prop) | [悪い](#vize-croquis-cf-undeclared-prop-bad) · [良い](#vize-croquis-cf-undeclared-prop-good) | 親が、子が宣言していない prop を渡しています。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
 | [`vize:croquis/cf/undefined-slot`](#vize-croquis-cf-undefined-slot) | [悪い](#vize-croquis-cf-undefined-slot-bad) · [良い](#vize-croquis-cf-undefined-slot-good) | 親が、子が公開していないスロットを埋めています。 | 契約（現在の生成元なし） |
-| [`vize:croquis/cf/unhandled-event`](#vize-croquis-cf-unhandled-event) | [悪い](#vize-croquis-cf-unhandled-event-bad) · [良い](#vize-croquis-cf-unhandled-event-good) | 子が emit したイベントを、どの親も処理していません。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
+| [`vize:croquis/cf/unhandled-event`](#vize-croquis-cf-unhandled-event) | [悪い](#vize-croquis-cf-unhandled-event-bad) · [良い](#vize-croquis-cf-unhandled-event-good) | 子が emit したイベントを、どの親も処理していません。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
 | [`vize:croquis/cf/unmatched-inject`](#vize-croquis-cf-unmatched-inject) | [悪い](#vize-croquis-cf-unmatched-inject-bad) · [良い](#vize-croquis-cf-unmatched-inject-good) | `inject` が、どの祖先も provide していないキーを指定しています。 | CLI |
-| [`vize:croquis/cf/unmatched-listener`](#vize-croquis-cf-unmatched-listener) | [悪い](#vize-croquis-cf-unmatched-listener-bad) · [良い](#vize-croquis-cf-unmatched-listener-good) | 親が、子が emit しないイベントを購読しています。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
-| [`vize:croquis/cf/unregistered-component`](#vize-croquis-cf-unregistered-component) | [悪い](#vize-croquis-cf-unregistered-component-bad) · [良い](#vize-croquis-cf-unregistered-component-good) | テンプレートが、登録も import もされていないコンポーネントを使っています。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
-| [`vize:croquis/cf/unresolved-import`](#vize-croquis-cf-unresolved-import) | [悪い](#vize-croquis-cf-unresolved-import-bad) · [良い](#vize-croquis-cf-unresolved-import-good) | import がモジュールへ解決できません。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
-| [`vize:croquis/cf/unused-attrs`](#vize-croquis-cf-unused-attrs) | [悪い](#vize-croquis-cf-unused-attrs-bad) · [良い](#vize-croquis-cf-unused-attrs-good) | 複数ルートのコンポーネントに渡した fallthrough 属性が使われていません。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
-| [`vize:croquis/cf/unused-emit`](#vize-croquis-cf-unused-emit) | [悪い](#vize-croquis-cf-unused-emit-bad) · [良い](#vize-croquis-cf-unused-emit-good) | 宣言した emit が一度も使われていません。 | 実験的な Rust analyzer（CLI の個別コードではありません） |
+| [`vize:croquis/cf/unmatched-listener`](#vize-croquis-cf-unmatched-listener) | [悪い](#vize-croquis-cf-unmatched-listener-bad) · [良い](#vize-croquis-cf-unmatched-listener-good) | 親が、子が emit しないイベントを購読しています。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
+| [`vize:croquis/cf/unregistered-component`](#vize-croquis-cf-unregistered-component) | [悪い](#vize-croquis-cf-unregistered-component-bad) · [良い](#vize-croquis-cf-unregistered-component-good) | テンプレートが、登録も import もされていないコンポーネントを使っています。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
+| [`vize:croquis/cf/unresolved-import`](#vize-croquis-cf-unresolved-import) | [悪い](#vize-croquis-cf-unresolved-import-bad) · [良い](#vize-croquis-cf-unresolved-import-good) | import がモジュールへ解決できません。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
+| [`vize:croquis/cf/unused-attrs`](#vize-croquis-cf-unused-attrs) | [悪い](#vize-croquis-cf-unused-attrs-bad) · [良い](#vize-croquis-cf-unused-attrs-good) | 複数ルートのコンポーネントに渡した fallthrough 属性が使われていません。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
+| [`vize:croquis/cf/unused-emit`](#vize-croquis-cf-unused-emit) | [悪い](#vize-croquis-cf-unused-emit-bad) · [良い](#vize-croquis-cf-unused-emit-good) | 宣言した emit が一度も使われていません。 | 実験的な Rust 解析器（CLI の個別コードではありません） |
 | [`vize:croquis/cf/unused-provide`](#vize-croquis-cf-unused-provide) | [悪い](#vize-croquis-cf-unused-provide-bad) · [良い](#vize-croquis-cf-unused-provide-good) | provide したキーが一度も inject されていません。 | CLI |
 | [`vize:croquis/cf/value-extraction-breaks-reactivity`](#vize-croquis-cf-value-extraction-breaks-reactivity) | [悪い](#vize-croquis-cf-value-extraction-breaks-reactivity-bad) · [良い](#vize-croquis-cf-value-extraction-breaks-reactivity-good) | reactive な値をローカルへ取り出すと、その後の更新が失われます。 | CLI |
 | [`vize:croquis/cf/watch-can-be-computed`](#vize-croquis-cf-watch-can-be-computed) | [悪い](#vize-croquis-cf-watch-can-be-computed-bad) · [良い](#vize-croquis-cf-watch-can-be-computed-good) | ウォッチャが値を状態へ写しているだけで、computed にできます。 | 契約（現在の生成元なし） |
-| [`vize:croquis/cf/watcheffect-async`](#vize-croquis-cf-watcheffect-async) | [悪い](#vize-croquis-cf-watcheffect-async-bad) · [良い](#vize-croquis-cf-watcheffect-async-good) | `watchEffect` が async タスクを始め、前回の実行を片付けられません。 | CLI |
+| [`vize:croquis/cf/watcheffect-async`](#vize-croquis-cf-watcheffect-async) | [悪い](#vize-croquis-cf-watcheffect-async-bad) · [良い](#vize-croquis-cf-watcheffect-async-good) | この例の非同期の `watchEffect` には、無効化時のクリーンアップや古い応答を防ぐ処理がありません。Vue の `watchEffect` はクリーンアップを扱えます。良い例では `watch` で監視対象を明示し、無効化された処理を中止します。 | CLI |
 | [`vize:croquis/cf/watcher-outside-setup`](#vize-croquis-cf-watcher-outside-setup) | [悪い](#vize-croquis-cf-watcher-outside-setup-bad) · [良い](#vize-croquis-cf-watcher-outside-setup-good) | `watch` または `watchEffect` が `setup` の外で呼ばれています。 | 契約（現在の生成元なし） |
 | [`vue/cross-file-attrs-fallthrough`](#vue-cross-file-attrs-fallthrough) | [悪い](#vue-cross-file-attrs-fallthrough-bad) · [良い](#vue-cross-file-attrs-fallthrough-good) | 属性を渡す親と、属性を自動継承できず $attrs も使っていない子コンポーネントの関係を検査します。 | プロジェクト固有の lint ID |
 
@@ -93,7 +93,7 @@ title: "ファイル間ルール"
 オプション: crossFile と重大度（off/warn/error）  
 自動修正: なし
 
-アプリの createApp(...).use(router) から登録済み router に到達できる構成が必要です。未確定または動的な定義では未知の名前と断定しません。省略パラメーターは現在のルートの値を継承する場合があるため warning です。
+アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -113,7 +113,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `index.html`
 
@@ -155,7 +155,7 @@ export const router = createRouter({
 
 **悪い**
 
-`user-post` の path は `userId` と `postId` ですが、宣言にない `tab` も path parameter として渡しています。
+`user-post` のパスで宣言されているパラメーターは `userId` と `postId` ですが、遷移時に、宣言されていない `tab` もパスパラメーターとして渡しています。
 
 `src/UserPost.vue`
 
@@ -185,7 +185,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
@@ -198,7 +198,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 オプション: crossFile と重大度（off/warn/error）  
 自動修正: なし
 
-アプリの createApp(...).use(router) から登録済み router に到達できる構成が必要です。未確定または動的な定義では未知の名前と断定しません。省略パラメーターは現在のルートの値を継承する場合があるため warning です。
+アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -218,7 +218,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `index.html`
 
@@ -277,7 +277,7 @@ router.push({ name: "user-post", params: { userId: "1" } });
 
 **良い**
 
-`userId` と `postId` を両方明示し、現在の route の parameter に依存しない navigation にします。
+`userId` と `postId` を両方明示し、現在のルートのパラメーター値に依存せず遷移できるようにします。
 
 `src/UserPost.vue`
 
@@ -290,7 +290,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
@@ -303,7 +303,7 @@ postId は繰り返しパラメーターではないため配列を渡せませ�
 オプション: crossFile と重大度（off/warn/error）  
 自動修正: なし
 
-アプリの createApp(...).use(router) から登録済み router に到達できる構成が必要です。未確定または動的な定義では未知の名前と断定しません。省略パラメーターは現在のルートの値を継承する場合があるため warning です。
+アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -323,7 +323,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `index.html`
 
@@ -382,7 +382,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: ["2"] } });
 
 **良い**
 
-繰り返し指定ではない `postId` の segment に、一つの値 `"2"` を渡します。
+繰り返し指定を許さないパスの `postId` 部分に、配列ではなく一つの値 `"2"` を渡します。
 
 `src/UserPost.vue`
 
@@ -395,7 +395,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
@@ -408,7 +408,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 オプション: crossFile と重大度（off/warn/error）  
 自動修正: なし
 
-アプリの createApp(...).use(router) から登録済み router に到達できる構成が必要です。未確定または動的な定義では未知の名前と断定しません。省略パラメーターは現在のルートの値を継承する場合があるため warning です。
+アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -428,7 +428,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `index.html`
 
@@ -500,7 +500,7 @@ router.push({ name: "user-post", params: { userId: "1", postId: "2" } });
 <template><p>Post</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
@@ -531,7 +531,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -552,7 +552,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-親の `<p>` 内に、ルートが `<div>` の子を合成し、paragraph と block の不正な入れ子を作ります。
+親の `<p>` の内側に、ルートが `<div>` の子コンポーネントを合成しています。その結果、段落の中にブロック要素が入り、HTML の入れ子が不正になります。
 
 `App.vue`
 
@@ -573,7 +573,7 @@ import Child from "./Child.vue";
 
 **良い**
 
-子の block 要素を含められる `<section>` を使い、子は変更しません。
+子のブロック要素を含められる `<section>` を親のコンテナーに使います。子コンポーネントは変更しません。
 
 `App.vue`
 
@@ -590,13 +590,13 @@ import Child from "./Child.vue";
 <template><div>Block content</div></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)
 
 ### `vize:croquis/cf/array-mutation`
 
-配列を添字で変更していますが、reactive な配列はそれを追跡しません。
+現在の生成元がないこの契約では、旧 Vue 2.7 の配列のインデックス代入を例にしています。Vue 2 は直接のインデックス代入による更新を通知しませんが、Vue 3 はその代入を追跡します。悪い例・良い例は Vue 2 の修正を示すもので、Vue 3 の不具合を示す例ではありません。
 
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -609,7 +609,7 @@ import Child from "./Child.vue";
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -674,7 +674,7 @@ export function replaceFirst(items: string[], next: string): void {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -707,7 +707,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -738,7 +738,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 
 **悪い**
 
-watcher に無効化時の cleanup がなく、古い query の遅い結果が新しい結果を上書きできます。
+ウォッチャーに無効化時のクリーンアップ処理がないため、古い検索への応答が新しい検索への応答より遅く届き、`result` を上書きする可能性があります。
 
 `SearchPage.vue`
 
@@ -778,7 +778,7 @@ watch(
 
 **良い**
 
-await より前に cleanup を登録し、旧 request を abort して `active` を無効化します。有効な応答だけを代入します。
+`await` より前にクリーンアップ処理を登録します。以前のリクエストを中止して `active` を無効にし、まだ有効なリクエストの応答だけを代入します。
 
 `SearchPage.vue`
 
@@ -823,7 +823,7 @@ watch(
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -840,15 +840,15 @@ async コンポーネントが Suspense 境界なしで描画されています�
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 Current support: `no-source-async-fact`
 
-生成元は macros.is_async() を読みますが、現在のソース解析は top-level await を script-setup の scope に記録します。そのため以下の完全な悪い例・良い例では、現在の CLI は async-no-suspense を検出しません。Suspense の使い方を説明する例で、必要な macro 情報を渡す処理は今後の実装課題です。
+生成元は `macros.is_async()` を読みますが、現在のソース解析はトップレベルの `await` を script setup のスコープに記録します。そのため、以下の完全な悪い例・良い例のどちらからも、現在の CLI は `async-no-suspense` を生成しません。これは Suspense の使い方を説明する例であり、必要なマクロ情報を渡す処理は今後の実装課題です。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -869,7 +869,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-子に top-level await があり、親に `<Suspense>` がありません。現在のソース解析には、このコードの生成に必要な macro 情報が渡されません。
+子にトップレベルの `await` がありますが、親には `<Suspense>` の境界がありません。現在のソース解析は、この診断コードの生成に必要なマクロ情報を渡しません。
 
 `App.vue`
 
@@ -893,7 +893,7 @@ const greeting = await Promise.resolve("Hello");
 
 **良い**
 
-同じ async な子を `<Suspense>` と loading fallback で包みます。規約の例であり、現在の検査は両方のソースでこのコードを生成しません。
+親は同じ非同期の子を `<Suspense>` で包み、読み込み中の代替表示を用意します。これは使い方を示す例であり、現在の検査は悪い例・良い例のどちらからもこの診断コードを生成しません。
 
 `App.vue`
 
@@ -913,7 +913,7 @@ const greeting = await Promise.resolve("Hello");
 <template><p>{{ greeting }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -948,7 +948,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -984,7 +984,7 @@ const width = window.innerWidth;
 
 **良い**
 
-server で安全な値の ref を作り、client mount 後の `onMounted` 内で `window` を読みます。
+サーバーでも安全に使える初期値で ref を作り、クライアントでのマウント後に実行される `onMounted` 内で `window` を読みます。
 
 `App.vue`
 
@@ -997,7 +997,7 @@ onMounted(() => { width.value = window.innerWidth; });
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -1020,7 +1020,7 @@ onMounted(() => { width.value = window.innerWidth; });
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -1105,7 +1105,7 @@ export const bLabel = 'B' + aPrefix;
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -1142,7 +1142,7 @@ Example qualification: `illustrative-source-pair`
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -1229,7 +1229,7 @@ Tracked references: A = provider source; B = consumer reference
 Tracked flows: A -> B
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -1250,7 +1250,7 @@ Tracked flows: A -> B
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -1320,7 +1320,7 @@ export function makeReader(count: Ref<number>): () => number {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -1341,7 +1341,7 @@ composable が `setup` の外で呼ばれています。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -1409,7 +1409,7 @@ export function useTitle() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -1428,7 +1428,7 @@ computed の getter が状態を書いたり、他の副作用を起こしてい
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -1505,7 +1505,7 @@ export function useDouble() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -1526,7 +1526,7 @@ import の連鎖がプロジェクトの許す深さより深くなっていま�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -1598,7 +1598,7 @@ export { label } from './value';
 
 **悪い**
 
-entry が単純な値を `level-one`、`level-two`、`level-three` 経由で読み、浅い公開境界を望むプロジェクトに不要な深い import の列を作っています。
+`entry.ts` が単純な値を `level-one`、`level-two`、`level-three` 経由で参照しています。公開部分への参照を短い経路に保ちたいプロジェクトでは、不要に深い import の連鎖になります。
 
 `entry.ts`
 
@@ -1620,7 +1620,7 @@ export { label } from './public-api';
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -1653,7 +1653,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -1704,7 +1704,7 @@ const { item } = props;
 
 **良い**
 
-`toRef(props, "item")` で `props` の property への接続を維持します。
+`toRef(props, "item")` を使い、`props` のプロパティとのつながりを保ちます。
 
 `UserPage.vue`
 
@@ -1732,7 +1732,7 @@ const item = toRef(props, "item");
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -1759,7 +1759,7 @@ const item = toRef(props, "item");
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -1855,7 +1855,7 @@ provideTheme();
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -1874,7 +1874,7 @@ Vue が更新を反映する前に DOM を読んでいます。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -1958,7 +1958,7 @@ async function increment() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -1991,7 +1991,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -2050,7 +2050,7 @@ import ShippingAddress from "./ShippingAddress.vue";
 
 **良い**
 
-各コンポーネントの `useId()` を label と input の両方に binding し、固定 ID の重複をなくします。
+各コンポーネントが `useId()` を呼び、その戻り値を label の `for` と input の `id` にバインドします。ラベルと入力欄の対応を保ちながら、固定 ID の重複をなくします。
 
 `CheckoutForm.vue`
 
@@ -2096,7 +2096,7 @@ const postalCodeId = useId();
 </template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -2117,7 +2117,7 @@ const postalCodeId = useId();
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -2174,7 +2174,7 @@ export function useWidth() {
 
 **良い**
 
-`onUnmounted` でマウント時に登録した同じ `resize` 関数を削除し、そのインスタンスの外部リスナーの寿命を終えます。
+`onUnmounted` で、マウント時に登録したものと同一の `resize` 関数を使ってリスナーを解除します。これで、そのインスタンスに属する外部リスナーの有効期間が終わります。
 
 `use-width.ts`
 
@@ -2190,7 +2190,7 @@ export function useWidth() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -2205,11 +2205,11 @@ emit が対応しない修飾子を、イベントリスナーが使っていま
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -2230,7 +2230,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-`.stop` を子のカスタム `save` イベントに付けていますが、その payload が DOM Event とは限りません。
+子のカスタムイベント `save` に `.stop` を付け、ネイティブイベントの伝播を止めるメソッドがあることを前提にしています。しかし、このイベントで渡される値が DOM Event とは限りません。
 
 `App.vue`
 
@@ -2255,7 +2255,7 @@ emit("save");
 
 **良い**
 
-カスタム イベントの listener から `.stop` を除きます。必要なら実際の DOM listener で伝播を制御します。
+カスタムイベントのリスナーから `.stop` を取り除きます。ネイティブイベントの伝播を止める必要がある場合は、実際の DOM 要素に付けたリスナーで制御します。
 
 `App.vue`
 
@@ -2276,7 +2276,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -2311,7 +2311,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -2380,7 +2380,7 @@ const count = toRef(props, "count");
 <template><p>{{ count }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -2399,11 +2399,11 @@ const count = toRef(props, "count");
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -2468,7 +2468,7 @@ defineOptions({ inheritAttrs: false });
 <template><main v-bind="$attrs">Content</main></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -2503,7 +2503,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -2532,7 +2532,7 @@ export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 
 **悪い**
 
-使用側が型付き symbol ではなく文字列 key `"theme"` を inject しています。
+使用側は型の付いていない文字列キー `"theme"` を inject しており、提供側と共有するシンボルの同一性を利用していません。
 
 `ThemeProvider.vue`
 
@@ -2594,7 +2594,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -2629,7 +2629,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -2670,7 +2670,7 @@ const store = inject(StoreKey)!;
 
 **悪い**
 
-`CountLoader.vue` が await の結果を、`CountSummary.vue` と共有する inject 済み store に直接書き込み、古い処理が両方に作用できます。
+`CountLoader.vue` が非同期処理の結果を、`CountSummary.vue` と共有する inject 済みのストアへ直接書き込みます。そのため、古い処理の結果が両方の使用側に影響する可能性があります。
 
 `keys/store.ts`
 
@@ -2724,7 +2724,7 @@ watch(query, async (value) => {
 
 **良い**
 
-loader は無効化した処理を中止し、有効な結果だけ emit します。store の変更は提供側の `applyLoadedCount` が担当します。
+`CountLoader.vue` は無効化された処理を中止し、まだ有効な処理の結果だけを emit します。ストアの変更は、提供側の `applyLoadedCount` が担当します。
 
 `keys/store.ts`
 
@@ -2786,7 +2786,7 @@ watch(query, async (value, _oldValue, onCleanup) => {
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -2807,7 +2807,7 @@ watch(query, async (value, _oldValue, onCleanup) => {
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -2887,7 +2887,7 @@ installTitle();
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -2902,11 +2902,11 @@ installTitle();
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -2927,7 +2927,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-mount 時に window の resize listener を登録しますが、unmount 時に同じ callback を解除しません。
+マウント時に window の resize リスナーを登録しますが、アンマウント時に同じコールバックを解除していません。
 
 `App.vue`
 
@@ -2958,7 +2958,7 @@ onUnmounted(() => { window.removeEventListener("resize", resize); });
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -2975,11 +2975,11 @@ onUnmounted(() => { window.removeEventListener("resize", resize); });
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -3044,7 +3044,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -3065,7 +3065,7 @@ async な依存が Suspense 境界の外で使われています。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -3137,7 +3137,7 @@ import AsyncCard from './AsyncCard.vue';
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -3158,7 +3158,7 @@ reactive な状態がモジュールスコープで作られ、すべての呼�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -3237,7 +3237,7 @@ export function createCounter() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -3252,11 +3252,11 @@ export function createCounter() {
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -3315,7 +3315,7 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -3338,7 +3338,7 @@ reactive オブジェクトが、所有者から漏れた後に変更されて�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -3422,7 +3422,7 @@ export function publishProfile(): void {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -3455,7 +3455,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -3476,7 +3476,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-`ThemeProvider.vue` が通常の object を provide しており、field を変更しても inject 側の Vue の reactive な依存になりません。
+`ThemeProvider.vue` が通常のオブジェクトを provide しています。そのフィールドを変更しても、inject 側が追跡できる Vue のリアクティブな依存関係にはなりません。
 
 `keys/theme.ts`
 
@@ -3552,7 +3552,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -3587,7 +3587,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -3642,7 +3642,7 @@ const results = [{ id: "first", title: "First result" }, { id: "second", title: 
 </template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -3652,7 +3652,7 @@ const results = [{ id: "first", title: "First result" }, { id: "second", title: 
 
 ### `vize:croquis/cf/object-identity-comparison`
 
-reactive オブジェクトを同一性で比較していますが、unwrap のたびに同一性は変わります。
+元のオブジェクトとそのリアクティブな Proxy は別の同一性を持ち、`toRaw()` は元のオブジェクトを返します。この契約の例は、レコードとして同じものかを判定するために安定した ID を比較する方法を示します。
 
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -3665,7 +3665,7 @@ ID がレコードを一意に識別することを前提とします。同じ�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -3738,7 +3738,7 @@ const sameRecord = proxy.id === raw.id;
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -3746,7 +3746,7 @@ const sameRecord = proxy.id === raw.id;
 
 ### `vize:croquis/cf/pinia-getter`
 
-Pinia の getter を `storeToRefs` なしで読んでおり、reactive のままになりません。
+この契約の例では、setup で Pinia の getter から現在のプリミティブ値をコピーし、更新に追従しないスナップショットを作っています。追跡される計算やテンプレートで getter を直接読む場合はリアクティビティを保てます。この例では `storeToRefs()` を使って値を取り出します。
 
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -3759,7 +3759,7 @@ Pinia のインストールを前提とし、main.ts がマウント前に plugi
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -3834,7 +3834,7 @@ const { doubled } = storeToRefs(store);
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -3849,11 +3849,11 @@ const { doubled } = storeToRefs(store);
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -3918,7 +3918,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -3955,7 +3955,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4003,7 +4003,7 @@ const title = inject<number>("title");
 
 **良い**
 
-使用側を `inject<string>` に合わせます。この生成元は推論されたリテラル型ではなく明示的な注釈を比較するため、`as string` を残します。
+使用側の型注釈を `inject<string>` にし、提供側の注釈と一致させます。この生成元は推論されたリテラル型ではなく明示的な注釈を比較するため、`as string` を残します。
 
 `App.vue`
 
@@ -4026,7 +4026,7 @@ const title = inject<string>("title");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -4061,7 +4061,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4114,7 +4114,7 @@ const theme = inject("theme");
 
 **良い**
 
-型付きの `ThemeKey` symbol を一つ export し、provide と inject の両方で同じ値を import します。同じ説明の symbol を別々に作っても接続できません。
+型付きのシンボル `ThemeKey` を一つだけ export し、provide 側と inject 側で同じ値を import します。説明文字列が同じでも、別々に作ったシンボルでは両者を結び付けられません。
 
 `ThemeProvider.vue`
 
@@ -4156,7 +4156,7 @@ export interface Theme {
 export const ThemeKey: InjectionKey<Ref<Theme>> = Symbol("theme");
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -4179,7 +4179,7 @@ reactive な状態がモジュールから export されています。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4203,7 +4203,7 @@ createApp(App).mount('#app');
 
 **悪い**
 
-モジュールが初期化済みのリアクティブなオブジェクトを一つだけ公開し、すべての import 元が同じ count を受け取ります。リクエスト間でモジュールを共有する SSR では、この例のインスタンスやリクエストごとの分離を保てません。
+モジュールが初期化済みのリアクティブなオブジェクトを一つだけ公開するため、それを import する側はすべて同じ count を受け取ります。リクエスト間でモジュールを共有する SSR では、この例で必要とする、インスタンスやリクエストごとの状態の分離を保てません。
 
 `state.ts`
 
@@ -4254,7 +4254,7 @@ const state = createState();
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -4275,7 +4275,7 @@ Vue では component setup の外でも ref・reactive・computed を使えま�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4342,7 +4342,7 @@ export function useCounter() { return { count, doubled }; }
 
 **良い**
 
-各コンポーネントの setup 呼び出しの中で、`useCounter` が ref と computed を同期的に作り、各 widget に個別の状態と追跡される導出を与えます。
+各コンポーネントの setup から同期的に `useCounter` を呼び、その中で ref と computed を作ります。これにより、各カウンターがそれぞれの状態と、依存を追跡する計算結果を持ちます。
 
 `use-counter.ts`
 
@@ -4356,7 +4356,7 @@ export function useCounter() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -4389,7 +4389,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4472,7 +4472,7 @@ const user = toRef(props, "user");
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -4495,7 +4495,7 @@ ref を composable から返したり、スコープをまたいで共有した�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4569,7 +4569,7 @@ remember(count.value);
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -4577,18 +4577,18 @@ remember(count.value);
 
 ### `vize:croquis/cf/setup-context-violation`
 
-Vue が許さない使い方で setup コンテキストを使っています。
+実験的な解析器の例では、インスタンスごとの setup ではなく通常の script のモジュールスコープに `ref(0)` を置いています。Vue ではこのようなリアクティブな状態を作れますが、この例ではインスタンスごとに count を持つことを前提とします。CLI はこの個別の診断コードを生成しません。
 
 既定の重大度: context-dependent  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4609,7 +4609,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-`ref(0)` を通常の script の module scope に作り、この analyzer が扱うインスタンスごとの setup 文脈から外しています。
+通常の script ブロックのモジュールスコープで `ref(0)` を作っており、この解析器の例で想定する、インスタンスごとの setup コンテキストには含まれません。
 
 `App.vue`
 
@@ -4638,7 +4638,7 @@ const count = ref(0);
 <template><p>{{ count }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -4659,7 +4659,7 @@ const count = ref(0);
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4721,7 +4721,7 @@ export function makeProfile() { return reactive({ user: { name: 'Ada' } }); }
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -4754,7 +4754,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4833,7 +4833,7 @@ const user = toRef(props, "user");
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -4856,7 +4856,7 @@ fallback のない Suspense は有効な Vue の構文です。ローディン�
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4929,7 +4929,7 @@ import AsyncCard from './AsyncCard.vue';
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -4948,7 +4948,7 @@ import AsyncCard from './AsyncCard.vue';
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -4979,7 +4979,7 @@ export function focusInput(input: HTMLInputElement | null): void { input?.focus(
 
 **悪い**
 
-マウント前の setup でテンプレート ref を読み、値が null のままです。任意の focus 呼び出しは何もフォーカスしません。
+マウント前の setup でテンプレート ref を読み取るため、その値はまだ null です。`input?.focus()` はオプショナルチェーンによって呼び出しが省略され、入力欄にフォーカスしません。
 
 `App.vue`
 
@@ -5019,7 +5019,7 @@ onMounted(() => { focusInput(input.value); });
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5038,7 +5038,7 @@ onMounted(() => { focusInput(input.value); });
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -5076,7 +5076,7 @@ const profile = makeProfile();
 
 **悪い**
 
-`rename` が raw の対象を取り出して `raw.name` に代入し、表示中の名前を通知する Proxy の setter を通していません。
+`rename` は Proxy の元のオブジェクトを取り出し、`raw.name` に代入しています。そのため、表示中の名前の変更を通知する Proxy の setter を通りません。
 
 `profile.ts`
 
@@ -5107,7 +5107,7 @@ export function rename(profile: { name: string }): void {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5142,7 +5142,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -5187,7 +5187,7 @@ const input = "{";
 
 **良い**
 
-親で子のエラーを受ける `onErrorCaptured` を登録します。`false` は伝播を止めます。実際の画面では復旧用の UI も用意します。
+親で子のエラーを受ける `onErrorCaptured` を登録します。`false` を返すと伝播が止まります。実際に使うエラー境界では、復旧に役立つ UI も用意してください。
 
 `App.vue`
 
@@ -5209,7 +5209,7 @@ const input = "{";
 <template><button @click="JSON.parse(input)">Parse</button></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5226,11 +5226,11 @@ const input = "{";
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -5297,7 +5297,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5314,11 +5314,11 @@ emit("save");
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -5383,7 +5383,7 @@ const props = defineProps<{ title: string }>();
 <template><p>{{ props.title }}</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5404,7 +5404,7 @@ const props = defineProps<{ title: string }>();
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -5475,7 +5475,7 @@ import Card from './Card.vue';
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5490,11 +5490,11 @@ import Card from './Card.vue';
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -5515,7 +5515,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-`Child.vue` が `save` を emit しますが、直接の wrapper が受け取りません。コンポーネントのイベントは wrapper を自動的に通り抜けません。
+`Child.vue` が `save` を emit しますが、直接の親である `Wrapper.vue` はそのイベントを購読していません。コンポーネントのイベントは、ラッパーを越えて自動的に親へ伝播しません。
 
 `App.vue`
 
@@ -5549,7 +5549,7 @@ emit("save");
 
 **良い**
 
-`Wrapper.vue` が直接の子に `save` listener を付けます。空の callback はこの検査での受信を示すもので、保存処理全体ではありません。
+`Wrapper.vue` が直接の子に `save` のリスナーを付けます。空のコールバックは、このルールでイベントを受け取る例を示すためのもので、保存処理の実装全体ではありません。
 
 `App.vue`
 
@@ -5579,7 +5579,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5614,7 +5614,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -5635,7 +5635,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-`ThemeLabel.vue` が `ThemeKey` を inject しますが、到達する祖先 `App.vue` に同じ key の provide がありません。
+`ThemeLabel.vue` は `ThemeKey` を inject しますが、解析対象の構成で祖先にあたる `App.vue` は同じキーを provide していません。
 
 `keys/theme.ts`
 
@@ -5676,7 +5676,7 @@ const theme = inject(ThemeKey);
 
 **良い**
 
-`App.vue` で同じ export 済み `ThemeKey` を使って reactive な theme を provide し、使用する子孫を描画します。
+`App.vue` は、公開された同じ `ThemeKey` を使ってリアクティブなテーマを provide してから、その値を inject する子孫を描画します。
 
 `keys/theme.ts`
 
@@ -5718,7 +5718,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5735,11 +5735,11 @@ const theme = inject(ThemeKey);
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -5760,7 +5760,7 @@ createApp(Root).mount("#app");
 
 **悪い**
 
-親は `save` を待ちますが、解決した子の宣言は `cancel` だけです。
+親は `save` のリスナーを登録していますが、解決済みの子コンポーネントが宣言するイベントは `cancel` だけです。
 
 `App.vue`
 
@@ -5805,7 +5805,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5822,11 +5822,11 @@ emit("save");
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -5865,7 +5865,7 @@ createApp(Root).mount("#app");
 
 **良い**
 
-親の script setup で `Child` を import し、テンプレートから binding を解決できる形にします。
+親の script setup で `Child` を import し、テンプレートがそのコンポーネントの識別子を解決できるようにします。
 
 `App.vue`
 
@@ -5882,7 +5882,7 @@ import Child from "./Child.vue";
 <template><p>Child</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5899,11 +5899,11 @@ import がモジュールへ解決できません。
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -5962,7 +5962,7 @@ import Child from "./Child.vue";
 <template><p>Child</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -5979,11 +5979,11 @@ import Child from "./Child.vue";
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -6042,7 +6042,7 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -6059,11 +6059,11 @@ import Child from "./Child.vue";
 自動修正: なし。関連ファイルを確認して修正してください  
 オプション: コード固有のオプションはありません。対応済みの CLI 検出は重大度を変更できます
 
-実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。
+実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -6129,7 +6129,7 @@ emit("save");
 <template><p>Content</p></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -6164,7 +6164,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -6224,7 +6224,7 @@ provide(ThemeKey, theme);
 
 **良い**
 
-dashboard が `ThemeLabel.vue` を描画し、祖先と同一の `ThemeKey` を inject します。
+`Dashboard.vue` が `ThemeLabel.vue` を描画するようにし、`ThemeLabel.vue` で祖先が使うものと同一の `ThemeKey` を inject します。
 
 `App.vue`
 
@@ -6266,7 +6266,7 @@ const theme = inject(ThemeKey);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -6301,7 +6301,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -6352,7 +6352,7 @@ const itemSnapshot = item;
 
 **良い**
 
-`computed` 内で `item` を読み、reactive props destructuring の変換で評価ごとに追跡できる形にします。
+`computed` 内で `item` を読み取ります。Vue がリアクティブな props の分割代入を変換することで、評価のたびにその依存を追跡できるようにします。
 
 `UserPage.vue`
 
@@ -6380,7 +6380,7 @@ const itemView = computed(() => item);
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -6403,7 +6403,7 @@ const itemView = computed(() => item);
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -6474,7 +6474,7 @@ export function useDouble() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -6482,7 +6482,7 @@ export function useDouble() {
 
 ### `vize:croquis/cf/watcheffect-async`
 
-`watchEffect` が async タスクを始め、前回の実行を片付けられません。
+この例の非同期の `watchEffect` には、無効化時のクリーンアップや古い応答を防ぐ処理がありません。Vue の `watchEffect` はクリーンアップを扱えます。良い例では `watch` で監視対象を明示し、無効化された処理を中止します。
 
 既定の重大度: error  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -6507,7 +6507,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -6575,7 +6575,7 @@ watchEffect(async () => {
 
 **良い**
 
-`watch(() => props.query, ...)` で source を明示し、request の cleanup と無効化後の応答を除く条件を付けます。
+`watch(() => props.query, ...)` で監視対象を明示し、リクエストのクリーンアップ処理を登録します。無効化されたリクエストの古い応答は反映しません。
 
 `SearchPage.vue`
 
@@ -6620,7 +6620,7 @@ watch(
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -6639,11 +6639,11 @@ watch(
 
 この公開診断コードには現在の生成元がありません。悪い例・良い例はリスクと修正の説明です。このコードを検出させる設定は現在ありません。
 
-所有側が stop 関数を保持して呼んだり、アプリケーション全体の寿命を意図したりする場合、モジュール直下の watcher は有効です。この例はコンポーネントが寿命を持つことを前提とし、この契約には現在の生成元がありません。
+所有側が停止関数を保持して呼び出す場合や、アプリケーション全体で動かし続けることを意図する場合、モジュール直下のウォッチャーは有効です。この例ではウォッチャーの有効期間をコンポーネントの生存期間に結び付けることを前提としています。この契約には現在の生成元がありません。
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -6726,7 +6726,7 @@ export function useObserver() {
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 
@@ -6759,7 +6759,7 @@ vp run lint
 
 **共通のプロジェクト ファイル**
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -6818,6 +6818,6 @@ import Child from "./Child.vue";
 <template><main v-bind="$attrs">Content</main><aside>Help</aside></template>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [ファイル間ルール一覧](cross-file.md)

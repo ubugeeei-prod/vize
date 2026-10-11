@@ -12,7 +12,7 @@ const noSfcFinding = {
   availability: "no-sfc-finding",
   note: "This catalog entry does not currently emit its rule-specific finding through SFC lint. The Bad/Good pair describes the intended convention, not an executable finding. Enabling the ID does not supply the missing SFC check.",
   noteJa:
-    "このカタログ項目は現在の SFC lint では固有の検出を生成しません。悪い例・良い例は意図した規約の説明で、実行すると検出される例ではありません。ID を設定しても未対応の SFC 検査は追加されません。",
+    "このカタログ項目は現在の SFC lint では固有の診断を出しません。悪い例・良い例は意図した規約の説明であり、実行時にこのルールの診断が出る例ではありません。ID を設定しても未対応の SFC 検査は追加されません。",
 };
 export const runtimeOverrides: Record<string, RuleExample> = {
   "vue/require-component-registration": pair(
@@ -23,7 +23,7 @@ export const runtimeOverrides: Record<string, RuleExample> = {
       ruleOptions: { globals: ["MyButton", "MyIcon"] },
       note: "List explicit component names supplied by application plugins or Musea previewSetup. PascalCase and kebab-case spellings are accepted; regular expressions are not interpreted. Options do not enable the rule. Later layers replace the list; an empty list clears inherited names.",
       noteJa:
-        "application plugin や Musea previewSetup が登録する component 名を明示します。PascalCase と kebab-case を許可し、正規表現は解釈しません。option だけではルールは有効になりません。後の設定は list 全体を置き換え、空 list は継承した名前を消します。",
+        "アプリケーションのプラグインや Musea の previewSetup が登録するコンポーネント名を明示します。PascalCase と kebab-case を許可し、正規表現は解釈しません。オプションだけではルールは有効になりません。後の設定は一覧全体を置き換え、空の一覧は継承した名前を消します。",
     },
   ),
   "a11y/click-events-have-key-events": pair(
@@ -48,7 +48,7 @@ export const runtimeOverrides: Record<string, RuleExample> = {
     {
       note: "A single SFC root link may inherit its target from parent attributes. This example uses a nested link, whose target must be explicit.",
       noteJa:
-        "SFC の単一ルートにあるリンクは、親から属性を継承できるため対象外になる場合があります。この例は明示的な遷移先が必要な内部のリンクです。",
+        "SFC の単一ルート要素がリンクである場合、親から属性を継承できるため対象外になることがあります。この例は別の要素の内側にあるリンクで、明示的な遷移先が必要です。",
     },
   ),
   "html/deprecated-attr": pair(
@@ -76,7 +76,7 @@ export const runtimeOverrides: Record<string, RuleExample> = {
     {
       note: "Use a block-body arrow for the currently supported SFC filter. The underlying validator also handles method shorthand, but the current SFC prefilter does not reliably dispatch that shape.",
       noteJa:
-        "現在の SFC フィルターが対象とする block-body arrow を使います。validator 本体には method shorthand の処理もありますが、現在の SFC prefilter はその形を確実には実行しません。",
+        "この例では、現在の SFC フィルターが対象にする、関数本体を波括弧で囲んだアロー関数を使います。バリデーター自体はメソッドの省略記法にも対応していますが、現在の SFC 事前フィルターでは、その形式の検査が確実に呼び出されません。",
     },
   ),
   "vue/no-template-shadow": pair(

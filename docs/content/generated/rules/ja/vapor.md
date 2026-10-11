@@ -4,7 +4,7 @@ title: "Vapor ルール"
 
 # Vapor ルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
 
 | ルール | 例 | 目的 |
@@ -13,9 +13,9 @@ title: "Vapor ルール"
 | [`script/no-next-tick`](#script-no-next-tick) | [悪い](#script-no-next-tick-bad) · [良い](#script-no-next-tick-good) | Vapor 向けコンポーネントの nextTick() 使用を検出します。 |
 | [`script/no-options-api`](#script-no-options-api) | [悪い](#script-no-options-api-bad) · [良い](#script-no-options-api-good) | Vapor で Options API を使用する箇所を検出します。 |
 | [`vapor/no-inline-template`](#vapor-no-inline-template) | [悪い](#vapor-no-inline-template-bad) · [良い](#vapor-no-inline-template-good) | Vapor で削除済みの inline-template 属性を検出します。 |
-| [`vapor/no-vue-lifecycle-events`](#vapor-no-vue-lifecycle-events) | [悪い](#vapor-no-vue-lifecycle-events-bad) · [良い](#vapor-no-vue-lifecycle-events-good) | Vapor が対応しない要素の @vue:* lifecycle event を検出します。 |
+| [`vapor/no-vue-lifecycle-events`](#vapor-no-vue-lifecycle-events) | [悪い](#vapor-no-vue-lifecycle-events-bad) · [良い](#vapor-no-vue-lifecycle-events-good) | Vapor では未対応の、要素ごとに指定する @vue:* ライフサイクルイベントを検出します。 |
 | [`vapor/prefer-static-class`](#vapor-prefer-static-class) | [悪い](#vapor-prefer-static-class-bad) · [良い](#vapor-prefer-static-class-good) | 文字列リテラルの :class を静的 class に置き換えます。 |
-| [`vapor/require-vapor-attribute`](#vapor-require-vapor-attribute) | [悪い](#vapor-require-vapor-attribute-bad) · [良い](#vapor-require-vapor-attribute-good) | Vapor 向けの script setup に vapor 属性を付ける方針を適用します。 |
+| [`vapor/require-vapor-attribute`](#vapor-require-vapor-attribute) | [悪い](#vapor-require-vapor-attribute-bad) · [良い](#vapor-require-vapor-attribute-good) | Vapor 向けの script setup に vapor 属性を付ける規約を示します。 |
 
 [全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
@@ -78,7 +78,7 @@ const appConfig = inject("app-config");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_get_current_instance.rs#L38) · [全ルール](all.md)
 
@@ -143,7 +143,7 @@ onMounted(() => { input.value?.focus(); });
 <template><input ref="input"></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_next_tick.rs#L40) · [全ルール](all.md)
 
@@ -208,7 +208,7 @@ const count = ref(0);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_options_api.rs#L43) · [全ルール](all.md)
 
@@ -221,7 +221,7 @@ Vapor で削除済みの inline-template 属性を検出します。
 既定の重大度: `error`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -275,20 +275,20 @@ LegacyCard の内部のマークアップに inline-template を使っていま�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs#L31) · [全ルール](all.md)
 
 ### `vapor/no-vue-lifecycle-events`
 
-Vapor が対応しない要素の @vue:* lifecycle event を検出します。
+Vapor では未対応の、要素ごとに指定する @vue:* ライフサイクルイベントを検出します。
 
 [悪い例](#vapor-no-vue-lifecycle-events-bad) · [良い例](#vapor-no-vue-lifecycle-events-good)
 
 既定の重大度: `error`  
 プリセット: `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -344,7 +344,7 @@ onMounted(() => {
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vapor/no_vue_lifecycle_events.rs#L34) · [全ルール](all.md)
 
@@ -356,8 +356,8 @@ onMounted(() => {
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -405,27 +405,27 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/prefer_static_class.rs#L31) · [全ルール](all.md)
 
 ### `vapor/require-vapor-attribute`
 
-Vapor 向けの script setup に vapor 属性を付ける方針を適用します。
+Vapor 向けの script setup に vapor 属性を付ける規約を示します。
 
 [悪い例](#vapor-require-vapor-attribute-bad) · [良い例](#vapor-require-vapor-attribute-good)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
 自動修正: SFC lint では未対応  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 現在の対応: `no-sfc-finding`
 
 このルールは callback が空の placeholder です。vapor 属性は Vapor でのコンパイルを選択するものですが、現在の linter は属性がないことをこの ID では検出しません。
 
-**設定できる ID（現在の SFC 検出なし）**
+**設定できる ID（現在の SFC lint では診断されません）**
 
 ```ts
 import { defineConfig } from "@vizejs/vite-plugin/vite-plus";
@@ -472,6 +472,6 @@ const count = 0;
 <template><p>{{ count }}</p></template>
 ```
 
-良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。
+良い例は意図する規約を示します。現在の SFC lint では、悪い例・良い例のどちらからもこのルール固有の診断は出ません。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/require_vapor_attribute.rs#L17) · [全ルール](all.md)

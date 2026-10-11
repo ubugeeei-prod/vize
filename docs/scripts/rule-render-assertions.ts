@@ -8,6 +8,7 @@ import { verifyRenderedVueRulePackets } from "./vue-rule-render-assertions.ts";
 import { verifyRenderedCategoryPackets } from "./category-rule-render-assertions.ts";
 import { categoryFiles } from "./rules/catalogue-routes.ts";
 import { catalogueSubgroups } from "./rules/catalogue-subgroups.ts";
+import { verifyJapaneseRuleEditorial } from "./ja-rule-editorial-render-assertions.ts";
 
 export const ruleRenderRoutes = [
   "/rules/all",
@@ -16,14 +17,16 @@ export const ruleRenderRoutes = [
   "/rules/cross-file",
   "/rules/reference/script-define-props-destructuring",
   "/rules/reference/a11y-form-control-has-label",
+  "/rules/reference/vue-no-preprocessor-lang",
   "/rules/project/vize-croquis-cf-array-mutation",
   "/rules/project/vize-croquis-cf-circular-reactive-dependency",
 ];
 const root = resolve(import.meta.dirname, "../..");
 
 export async function verifyRenderedRulePackets(page: Page, route: string) {
+  const japaneseEditorial = await verifyJapaneseRuleEditorial(page, route);
   if (/^\/(?:ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/vue$/.test(route))
-    return verifyRenderedVueRulePackets(page, route);
+    return { ...(await verifyRenderedVueRulePackets(page, route)), japaneseEditorial };
   const category = route.match(/^\/(ja\/|zh-CN\/|pt-BR\/|fr\/)?rules\/([^/]+)$/);
   if (
     category &&
@@ -32,7 +35,7 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
       (category[1] && category[1] !== "ja/" && category[2] === "all") ||
       (!category[1] && category[2] in catalogueSubgroups))
   )
-    return verifyRenderedCategoryPackets(page, route);
+    return { ...(await verifyRenderedCategoryPackets(page, route)), japaneseEditorial };
   if (!/^\/(?:ja\/)?rules\/all$/.test(route)) return null;
   const ja = route.startsWith("/ja/");
   const locale = ja ? "ja/" : "";
@@ -154,5 +157,11 @@ export async function verifyRenderedRulePackets(page: Page, route: string) {
       });
     }
   }
-  return { locale: locale || "en", pages: receipts.length, receipts, indentation };
+  return {
+    locale: locale || "en",
+    pages: receipts.length,
+    receipts,
+    indentation,
+    japaneseEditorial,
+  };
 }

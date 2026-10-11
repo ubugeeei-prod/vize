@@ -11,7 +11,7 @@ title: "script/prefer-use-id"
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-`id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で変わり得ます。ID の名前を持つこの変数が、ルールの認識する生成箇所です。
+`id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で異なる可能性があります。この例では、`id` という変数名から ID の生成箇所だと判定されます。
 
 ```vue
 <script setup lang="ts">
@@ -58,6 +58,6 @@ const id = useId();
 <template><label :for="id">Name</label><input :id="id" /></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) · [全ルール](../all.md)

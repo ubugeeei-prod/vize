@@ -4,7 +4,7 @@ title: "vize:croquis/cf/object-identity-comparison"
 
 # `vize:croquis/cf/object-identity-comparison`
 
-A reactive object is compared by identity, which changes across unwraps.
+A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object. This contract illustrates comparing stable record IDs when record identity is intended.
 
 Default severity: Not emitted  
 Applies to: Analyzed component graph and the supported facts described below  

@@ -57,7 +57,7 @@ export function generateRulePages({
       `# ${ja ? "全 lint ルール" : "All lint rules"}`,
       "",
       ja
-        ? `現在のソース カタログにある ${rules.length} 項目の一覧です。このページに、目的・適用範囲・設定・悪い例・良い例と理由をまとめています。未対応の範囲も各例の前に明記しています。`
+        ? `現在のソースカタログにある ${rules.length} 項目の一覧です。このページに、目的・適用範囲・設定・悪い例・良い例と理由をまとめています。未対応の範囲も各例の前に明記しています。`
         : `All ${rules.length} source catalog entries with purpose, scope, configuration, and Bad/Good examples on this page. Each example explains the finding and repair, with current support gaps stated explicitly.`,
       "",
       ja
@@ -65,7 +65,7 @@ export function generateRulePages({
         : "With Vite+, import `defineConfig` from `@vizejs/vite-plugin/vite-plus`, configure `lint.vize.rules`, and run `vp run lint` for Vize and Oxlint diagnostics.",
       "",
       ja
-        ? "既定の重大度は実装の値です。プロジェクトでは `off` / `warn` / `error` に変更できます。Options は [ルール オプション](./options.md)、複数ファイルの検査は [Cross-file ルール](./cross-file.md) を参照してください。"
+        ? "既定の重大度は実装で定められた値です。プロジェクトでは `off` / `warn` / `error` に変更できます。オプションは[ルール オプション](./options.md)、複数ファイルの検査は[ファイル間ルール](./cross-file.md)を参照してください。"
         : "Severity is the implementation default; override it with `off`, `warn`, or `error`. See [Rule Options](./options.md) for rule-option support and [Cross-file rules](./cross-file.md) for project-graph findings.",
       "",
       ja
@@ -152,7 +152,7 @@ function detail(rule: RuleMetadata, example: RuleExample, ja: boolean) {
     "",
     `${label("Default severity", "既定の重大度")}: \`${rule.defaultSeverity}\`  `,
     `${label("Presets", "プリセット")}: ${presets(rule.presets)}  `,
-    `${label("Automatic fix", "自動修正")}: ${example.availability ? label("Not implemented for SFC lint", "SFC lint では未対応") : rule.fixable ? label("Available for supported findings", "対応する検出で利用可能") : label("None; review the suggested change", "なし。修正内容を確認してください")}  `,
+    `${label("Automatic fix", "自動修正")}: ${example.availability ? label("Not implemented for SFC lint", "SFC lint では未対応") : rule.fixable ? label("Available for supported findings", "対応している診断で利用できます") : label("None; review the suggested change", "なし。修正内容を確認してください")}  `,
     `${label("Applies to", "適用範囲")}: ${scope}  `,
     `${label("Options", "オプション")}: ${options}`,
     "",
@@ -175,12 +175,14 @@ function detail(rule: RuleMetadata, example: RuleExample, ja: boolean) {
     lines.push(
       label(
         "Type-aware checks use the native Corsa runtime and the TypeScript project. `typeAware` alone does not enable an opt-in rule.",
-        "型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。",
+        "型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。",
       ),
       "",
     );
+  if (ja && example.availability)
+    lines.push('<span id="設定できる-id-現在の-sfc-検出なし"></span>', "");
   lines.push(
-    `## ${example.availability ? label("Configured ID (currently no SFC finding)", "設定できる ID（現在の SFC 検出なし）") : label("Configuration (Vite+)", "設定（Vite+）")}`,
+    `## ${example.availability ? label("Configured ID (currently no SFC finding)", "設定できる ID（現在の SFC lint では診断されません）") : label("Configuration (Vite+)", "設定（Vite+）")}`,
     "",
     "```ts",
     'import { defineConfig } from "@vizejs/vite-plugin/vite-plus";',
@@ -215,11 +217,11 @@ function detail(rule: RuleMetadata, example: RuleExample, ja: boolean) {
     example.availability
       ? label(
           "Good illustrates the intended convention; the current SFC path emits neither side's rule-specific finding.",
-          "良い例は意図する規約を示します。現在の SFC の処理は、どちらの例でもこのルール固有の診断を生成しません。",
+          "良い例は意図する規約を示します。現在の SFC lint では、悪い例・良い例のどちらからもこのルール固有の診断は出ません。",
         )
       : label(
           "Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.",
-          "良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。",
+          "良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。",
         ),
     "",
     `[${label("Implementation", "実装")}](https://github.com/ubugeeei-prod/vize/blob/main/${rule.implementationPath}#L${rule.implementationLine}) · [${label("All rules", "全ルール")}](../all.md)`,
@@ -255,10 +257,10 @@ function scopeLabel(rule: RuleMetadata, example: RuleExample, ja: boolean) {
       : "Vapor-oriented script checks; explicit enablement also applies the restriction to ordinary scripts";
   if (rule.metaType === "ScriptRuleMeta")
     return ja
-      ? "Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。"
+      ? "Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。"
       : "JS/TS scripts in Vue SFCs; examples show the relevant Options API or script setup form";
   return ja
-    ? "Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。"
+    ? "Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。"
     : "Vue SFC templates and blocks, with script context where the rule requires it";
 }
 

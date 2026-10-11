@@ -62,7 +62,12 @@ export function annotateReference(reference: string, project = false) {
 
 /** The native heading owns its existing fragment; Bad/Good retain explicit fragments. */
 export function nativeInlineReference(reference: string, id: string, project = false) {
-  return inlineReference(annotateReference(reference, project), id).replace(
+  // This bookmark belongs to each standalone reference, never to the combined catalogue.
+  const withoutStandaloneAlias = reference.replace(
+    '<span id="設定できる-id-現在の-sfc-検出なし"></span>\n\n',
+    "",
+  );
+  return inlineReference(annotateReference(withoutStandaloneAlias, project), id).replace(
     /^<span id="[^"\n]+"><\/span>\n\n/,
     "",
   );

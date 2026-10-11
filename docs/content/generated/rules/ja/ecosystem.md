@@ -4,7 +4,7 @@ title: "エコシステム ルール"
 
 # エコシステム ルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
 
 | ルール | 例 | 目的 |
@@ -18,7 +18,7 @@ title: "エコシステム ルール"
 | [`ecosystem/vue-router-prefer-named-link`](#ecosystem-vue-router-prefer-named-link) | [悪い](#ecosystem-vue-router-prefer-named-link-bad) · [良い](#ecosystem-vue-router-prefer-named-link-good) | RouterLink の文字列パスを名前付きルートの指定に置き換えます。 |
 | [`ecosystem/vue-router-prefer-named-push`](#ecosystem-vue-router-prefer-named-push) | [悪い](#ecosystem-vue-router-prefer-named-push-bad) · [良い](#ecosystem-vue-router-prefer-named-push-good) | Vue Router のプログラムによる移動に名前付きルートを使います。 |
 | [`ecosystem/vue-test-utils-no-html-snapshot`](#ecosystem-vue-test-utils-no-html-snapshot) | [悪い](#ecosystem-vue-test-utils-no-html-snapshot-bad) · [良い](#ecosystem-vue-test-utils-no-html-snapshot-good) | wrapper.html() 全体の snapshot に依存するテストを検出します。 |
-| [`nuxt/no-nuxt-config-test-key`](#nuxt-no-nuxt-config-test-key) | [悪い](#nuxt-no-nuxt-config-test-key-bad) · [良い](#nuxt-no-nuxt-config-test-key-good) | Nuxt が自動判定する test 環境の手動設定を検出します。 |
+| [`nuxt/no-nuxt-config-test-key`](#nuxt-no-nuxt-config-test-key) | [悪い](#nuxt-no-nuxt-config-test-key-bad) · [良い](#nuxt-no-nuxt-config-test-key-good) | Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出します。 |
 | [`nuxt/no-page-meta-runtime-values`](#nuxt-no-page-meta-runtime-values) | [悪い](#nuxt-no-page-meta-runtime-values-bad) · [良い](#nuxt-no-page-meta-runtime-values-good) | definePageMeta の即時評価部分で実行時コンテキストを使う箇所を検出します。 |
 | [`nuxt/nuxt-config-keys-order`](#nuxt-nuxt-config-keys-order) | [悪い](#nuxt-nuxt-config-keys-order-bad) · [良い](#nuxt-nuxt-config-keys-order-good) | Nuxt 設定のプロパティを推奨順に並べます。 |
 | [`nuxt/prefer-import-meta`](#nuxt-prefer-import-meta) | [悪い](#nuxt-prefer-import-meta-bad) · [良い](#nuxt-prefer-import-meta-good) | Nuxt の環境フラグを process.* から import.meta.* に置き換えます。 |
@@ -34,7 +34,7 @@ Nuxt の内部リンクに NuxtLink を使います。
 既定の重大度: `warning`  
 プリセット: `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -82,7 +82,7 @@ Nuxt の内部ページへの移動に通常の a を使っています。
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/nuxt_prefer_nuxt_link.rs#L14) · [全ルール](all.md)
 
@@ -95,7 +95,7 @@ Pinia store の分割代入に storeToRefs() を使います。
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -123,7 +123,7 @@ vp run lint
 
 **悪い**
 
-store から name を直接分割代入し、リアクティブな store の読み取りから値を切り離しています。
+store から name を直接分割代入しているため、取り出した値は store の変更に追従しません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -135,7 +135,7 @@ const { name } = useUserStore();
 
 **良い**
 
-store は保持し、storeToRefs で name のリアクティブな参照を取り出します。
+store を変数に保持し、storeToRefs で name を store の状態に追従する ref として取り出します。
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
@@ -144,7 +144,7 @@ const { name } = storeToRefs(store);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/pinia_prefer_store_to_refs.rs#L20) · [全ルール](all.md)
 
@@ -157,10 +157,10 @@ RouterLink / NuxtLink に to を指定します。
 既定の重大度: `error`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-SFC の単一ルートにあるリンクは、親から属性を継承できるため対象外になる場合があります。この例は明示的な遷移先が必要な内部のリンクです。
+SFC の単一ルート要素がリンクである場合、親から属性を継承できるため対象外になることがあります。この例は別の要素の内側にあるリンクで、明示的な遷移先が必要です。
 
 **設定（Vite+）**
 
@@ -187,7 +187,7 @@ vp run lint
 
 **悪い**
 
-nav の内側の RouterLink に to がなく、ルートの属性継承にも頼れません。
+nav の子要素である RouterLink に to がなく、SFC のルート要素を通じた属性の継承も利用できません。
 
 ```vue annotate="remove:2"
 <template>
@@ -199,7 +199,7 @@ nav の内側の RouterLink に to がなく、ルートの属性継承にも頼
 
 **良い**
 
-内部のリンクに `to="/settings"` で移動先を明示します。
+nav の内側にあるリンクに `to="/settings"` で移動先を明示します。
 
 ```vue annotate="add:2"
 <template>
@@ -207,7 +207,7 @@ nav の内側の RouterLink に to がなく、ルートの属性継承にも頼
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L14) · [全ルール](all.md)
 
@@ -220,7 +220,7 @@ Void Vue の Link に href を指定します。
 既定の重大度: `error`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -276,7 +276,7 @@ import { Link } from "@void/vue";
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_require_href.rs#L13) · [全ルール](all.md)
 
@@ -289,7 +289,7 @@ Void Vue の Link に有効な静的 method を指定します。
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -345,7 +345,7 @@ import { Link } from "@void/vue";
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_valid_method.rs#L14) · [全ルール](all.md)
 
@@ -358,7 +358,7 @@ SFC 内の翻訳データに存在しない静的キーを検出します。
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -410,7 +410,7 @@ vp run lint
 </i18n>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/i18n_no_missing_key.rs#L17) · [全ルール](all.md)
 
@@ -423,7 +423,7 @@ RouterLink の文字列パスを名前付きルートの指定に置き換えま
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -463,7 +463,7 @@ RouterLink の移動先をルート名ではなく、文字列のパスで指定
 
 **良い**
 
-バインドする route のオブジェクトに settings の name を指定します。
+to にバインドするルートオブジェクトの name を settings にし、ルート名で移動先を指定します。
 
 ```vue annotate="add:2"
 <template>
@@ -471,7 +471,7 @@ RouterLink の移動先をルート名ではなく、文字列のパスで指定
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/vue_router_prefer_named_link.rs#L15) · [全ルール](all.md)
 
@@ -484,7 +484,7 @@ Vue Router のプログラムによる移動に名前付きルートを使いま
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -512,7 +512,7 @@ vp run lint
 
 **悪い**
 
-router.push に、現在の URL 表記に結び付く文字列のパスを渡しています。
+router.push に移動先のパスを文字列で渡し、URL の具体的なパスに依存しています。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -532,7 +532,7 @@ router.push({ name: "settings" });
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_router_prefer_named_push.rs#L19) · [全ルール](all.md)
 
@@ -545,7 +545,7 @@ wrapper.html() 全体の snapshot に依存するテストを検出します。
 既定の重大度: `warning`  
 プリセット: `ecosystem`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -593,13 +593,13 @@ expect(wrapper.text()).toContain("Saved");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/vue_test_utils_no_html_snapshot.rs#L15) · [全ルール](all.md)
 
 ### `nuxt/no-nuxt-config-test-key`
 
-Nuxt が自動判定する test 環境の手動設定を検出します。
+Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出します。
 
 [悪い例](#nuxt-no-nuxt-config-test-key-bad) · [良い例](#nuxt-no-nuxt-config-test-key-good)
 
@@ -654,7 +654,7 @@ export default defineNuxtConfig({ test: true });
 export default defineNuxtConfig({});
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_nuxt_config_test_key.rs#L16) · [全ルール](all.md)
 
@@ -667,7 +667,7 @@ definePageMeta の即時評価部分で実行時コンテキストを使う箇�
 既定の重大度: `error`  
 プリセット: `nuxt`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -695,7 +695,7 @@ vp run lint
 
 **悪い**
 
-`definePageMeta` のオブジェクトを作る際に `useRoute()` を即座に評価しています。メタデータはマクロによって setup の実行時コンテキストの外へ巻き上げられます。
+`definePageMeta` のオブジェクトを作る際に `useRoute()` を即座に評価しています。メタデータはマクロによって setup の実行時コンテキストの外に移されます。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -707,7 +707,7 @@ definePageMeta({ title: useRoute() });
 
 **良い**
 
-`validate` にコールバックを渡し、`useRoute().params.id` の評価をその実行時まで遅らせます。このルールは関数本体内の遅延評価と、メタデータの即時評価を区別します。
+`validate` にコールバックを渡し、`useRoute().params.id` の評価をコールバックが呼び出されるまで遅らせます。このルールは関数本体内の遅延評価と、メタデータの即時評価を区別します。
 
 ```vue annotate="add:2"
 <script setup lang="ts">
@@ -715,7 +715,7 @@ definePageMeta({ validate: () => Boolean(useRoute().params.id) });
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_page_meta_runtime_values.rs#L25) · [全ルール](all.md)
 
@@ -727,7 +727,7 @@ Nuxt 設定のプロパティを推奨順に並べます。
 
 既定の重大度: `error`  
 プリセット: `nuxt`  
-自動修正: 対応する検出で利用可能  
+自動修正: 対応している診断で利用できます  
 適用範囲: Nuxt 設定ファイル（nuxt.config.ts）  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
@@ -776,7 +776,7 @@ export default defineNuxtConfig({ ssr: true, modules: [] });
 export default defineNuxtConfig({ modules: [], ssr: true });
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/nuxt_config_keys_order.rs#L24) · [全ルール](all.md)
 
@@ -788,8 +788,8 @@ Nuxt の環境フラグを process.* から import.meta.* に置き換えます�
 
 既定の重大度: `error`  
 プリセット: `nuxt`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -837,6 +837,6 @@ if (import.meta.client) console.log("browser");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_meta.rs#L18) · [全ルール](all.md)

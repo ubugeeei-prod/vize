@@ -11,7 +11,7 @@ SFC の template で削除済みの functional 属性を検出します。
 既定の重大度: `error`  
 プリセット: `ecosystem`, `essential`, `happy-path`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-SFC の template に廃止された functional を指定し、旧来の props の参照を使っています。
+SFC の template に廃止された functional を指定し、旧来の props 経由の参照を使っています。
 
 ```vue
 <template functional>
@@ -55,6 +55,6 @@ functional を取り除き、コンポーネントの msg を直接参照しま�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_deprecated_functional_template.rs#L57) · [全ルール](../all.md)

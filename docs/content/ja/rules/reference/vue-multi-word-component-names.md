@@ -11,7 +11,7 @@ title: "vue/multi-word-component-names"
 既定の重大度: `error`  
 プリセット: `essential`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 検出対象はファイル名です。同じコンポーネントのファイル名を変更します。子要素のタグ名は対象ではありません。
@@ -49,7 +49,7 @@ Item.vue は一つの語だけのコンポーネント名です。
 
 ## 良い
 
-同じテンプレートの名前を、複数の語を持つ TodoItem.vue にします。
+同じコンポーネントのファイル名を、複数の単語からなる TodoItem.vue に変更します。
 
 `TodoItem.vue`
 
@@ -57,6 +57,6 @@ Item.vue は一つの語だけのコンポーネント名です。
 <template><p>Item</p></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/multi_word_component_names.rs#L34) · [全ルール](../all.md)

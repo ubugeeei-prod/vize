@@ -37,7 +37,7 @@ export function migrationPage(root: string, ruleNames: ReadonlySet<string>, ja: 
     "",
     label(
       "Remove only the overlapping Vue rule after checking the linked Bad/Good examples. Run `vp run lint`; if an existing package script occupies that task name, the generated task is `vp run vize:lint`. Explicit task configuration takes precedence.",
-      "リンク先の悪い例・良い例を確認してから、重複する Vue ルールだけを取り除きます。`vp run lint` で検査します。既存の package script と名前が衝突する場合は `vp run vize:lint` です。明示した task 設定が優先されます。",
+      "リンク先の悪い例・良い例を確認してから、重複する Vue ルールだけを取り除きます。`vp run lint` で検査します。既存のパッケージスクリプトと名前が衝突する場合は `vp run vize:lint` です。明示したタスクの設定が優先されます。",
     ),
     "",
     label(
@@ -47,10 +47,13 @@ export function migrationPage(root: string, ruleNames: ReadonlySet<string>, ja: 
     "",
     label(
       "For option conversion, see [Rule Options](./options.md) and [props destructuring modes](./reference/script-define-props-destructuring.md). Unsupported rows must stay with an existing checker until a supported replacement is verified.",
-      "オプションの変換は [ルール オプション](./options.md)と [props 分割代入](./reference/script-define-props-destructuring.md)を参照してください。未実装の行は対応する検査が確認できるまで既存の checker に残します。",
+      "オプションの変換は[ルール オプション](./options.md)と [props 分割代入](./reference/script-define-props-destructuring.md)を参照してください。未実装の行は、対応する代替の検査が確認できるまで、既存のチェッカーで検査を続けます。",
     ),
     "",
-    "| ESLint ID | Vize ID / reference | Status |",
+    label(
+      "| ESLint ID | Vize ID / reference | Status |",
+      "| ESLint ID | Vize ID / リファレンス | 対応状況 |",
+    ),
     "| --- | --- | --- |",
   ];
   for (const [name, entry] of entries) {
@@ -72,7 +75,7 @@ export function migrationPage(root: string, ruleNames: ReadonlySet<string>, ja: 
   }
   lines.push(
     "",
-    `[${label("Committed mapping and capture identity", "対応記録と capture の出典")}](https://github.com/ubugeeei-prod/vize/blob/main/tests/_fixtures/patina-eslint-vue-rule-map.json)`,
+    `[${label("Committed mapping and capture identity", "対応記録と取得データの出典")}](https://github.com/ubugeeei-prod/vize/blob/main/tests/_fixtures/patina-eslint-vue-rule-map.json)`,
     "",
   );
   return lines.join("\n");

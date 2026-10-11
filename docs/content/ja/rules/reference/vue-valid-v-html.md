@@ -4,14 +4,14 @@ title: "vue/valid-v-html"
 
 # `vue/valid-v-html`
 
-v-html の値・引数・modifier を検査します。
+v-html の値・引数・修飾子を検査します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `nuxt`, `ecosystem`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -49,7 +49,7 @@ vp run lint
 
 ## 良い
 
-`v-html="html"` で正しい式を渡します。構文が正しくても HTML の無害化や未信頼の内容の安全性は保証されません。
+`v-html="html"` で正しい式を渡します。構文が正しくても HTML の無害化や信頼できない内容の安全性は保証されません。
 
 ```vue
 <template>
@@ -57,6 +57,6 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/valid_v_html.rs#L28) · [全ルール](../all.md)

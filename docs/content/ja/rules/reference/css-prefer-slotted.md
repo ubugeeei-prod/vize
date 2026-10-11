@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-scoped の CSS で、渡された要素ではなく slot の出口を対象にしています。
+scoped の CSS で、スロットに渡された要素ではなく、スロットの挿入位置を表す slot を対象にしています。
 
 ```vue
 <style scoped>
@@ -47,7 +47,7 @@ slot { color: red; }
 
 ## 良い
 
-:slotted(.label) を使い、slot から渡される label の要素を対象にします。
+:slotted(.label) を使い、スロットに渡された .label クラスを持つ要素を対象にします。
 
 ```vue
 <style scoped>
@@ -55,6 +55,6 @@ slot { color: red; }
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34) · [全ルール](../all.md)

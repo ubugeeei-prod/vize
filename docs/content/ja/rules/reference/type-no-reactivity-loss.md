@@ -4,7 +4,7 @@ title: "type/no-reactivity-loss"
 
 # `type/no-reactivity-loss`
 
-代入や呼び出しによって反応性を失うスナップショットを検出します。
+リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
@@ -14,7 +14,7 @@ title: "type/no-reactivity-loss"
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 ## 設定（Vite+）
 
@@ -62,6 +62,6 @@ const count = toRef(state, "count");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12) · [全ルール](../all.md)

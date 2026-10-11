@@ -64,7 +64,7 @@ export const scopedOverrides: Record<string, RuleExample> = {
       typeAware: true,
       note: "Enable typeAware and this rule explicitly. The default disallows nullable numbers, while non-null numbers are allowed.",
       noteJa:
-        "typeAware とルールを明示的に有効にします。既定では null を含み得る数値は許可されず、通常の数値は許可されます。",
+        "typeAware とこのルールを明示的に有効にします。既定では null または undefined を含み得る数値は許可されず、どちらも含まない数値は許可されます。",
     },
   ),
   "type/no-reactivity-loss": pair(
@@ -141,7 +141,7 @@ export const scopedOverrides: Record<string, RuleExample> = {
     {
       note: "Bad has cyclomatic complexity 13 and cognitive complexity 25 (limits: 11 and 16). Each component is measured separately; only inline HTML templates are supported.",
       noteJa:
-        "悪い例は cyclomatic complexity 13、cognitive complexity 25 で、閾値 11 と 16 を超えます。コンポーネント単位で計測し、対象はインライン HTML テンプレートです。",
+        "悪い例のサイクロマティック複雑度は 13、認知的複雑度は 25 で、閾値 11 と 16 を超えます。コンポーネント単位で計測し、対象はインライン HTML テンプレートです。",
     },
   ),
 };

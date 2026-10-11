@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-primary の名前がある variant が空で、プレビューする内容がありません。
+name を primary にしているものの、variant の中身が空で、プレビューする内容がありません。
 
 ```vue
 <art title="Button" component="./Button.vue">
@@ -47,7 +47,7 @@ primary の名前がある variant が空で、プレビューする内容があ
 
 ## 良い
 
-variant の中に primary の Button と Save の内容を入れます。
+variant の中に tone="primary" の Button を置き、Save を表示します。
 
 ```vue
 <art title="Button" component="./Button.vue">
@@ -57,6 +57,6 @@ variant の中に primary の Button と Save の内容を入れます。
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/no_empty_variant.rs#L8) · [全ルール](../all.md)

@@ -6,7 +6,7 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "The image submit control supplies only its image URL; it has no `alt` text describing the action.",
     '`alt="Submit search"` gives the image control an accessible name that describes submitting the search.',
     "画像の送信ボタンには URL しかなく、操作を説明する `alt` がありません。",
-    '`alt="Submit search"` を追加し、検索を送信する操作の名前を指定します。',
+    '`alt="Submit search"` を追加し、検索を送信する操作を説明する名前を支援技術に伝えます。',
   ],
   [
     "a11y/anchor-has-content",
@@ -26,7 +26,7 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "a11y/aria-props",
     "`aria-lable` is misspelled and is not a supported ARIA attribute.",
     "The supported `aria-label` attribute supplies the button name.",
-    "`aria-lable` は綴りが誤っており、対応する ARIA 属性ではありません。",
+    "`aria-lable` は綴りが誤っており、有効な ARIA 属性ではありません。",
     "正しい `aria-label` に変更してボタンの名前を指定します。",
   ],
   [
@@ -61,7 +61,7 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "a11y/heading-has-content",
     "The `h2` contributes a heading level but has no heading content.",
     "`Billing settings` supplies the content of the existing level-two heading.",
-    "`h2` の見出しレベルはありますが、見出しの内容が空です。",
+    "`h2` でレベル 2 の見出しを宣言していますが、見出しの内容が空です。",
     "同じ `h2` に `Billing settings` の内容を入れます。",
   ],
   [
@@ -82,7 +82,7 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "a11y/img-alt",
     "The avatar image is missing its `alt` attribute.",
     '`alt="User avatar"` supplies a text alternative for the avatar.',
-    "アバター画像に `alt` 属性がなく、画像の代替テキストを確認できません。",
+    "アバター画像に `alt` 属性がなく、代替テキストが指定されていません。",
     '`alt="User avatar"` で画像の代わりとなる文字を指定します。',
   ],
   [
@@ -132,7 +132,7 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     'The focusable Close button is hidden from the accessibility tree with `aria-hidden="true"`.',
     "The button remains exposed and receives a `Close` label instead of being hidden.",
     'フォーカスできる Close ボタンを `aria-hidden="true"` でアクセシビリティ ツリーから隠しています。',
-    "ボタンを隠さず、Close の aria-label を指定します。",
+    "aria-hidden を取り除いてボタンを支援技術から参照できる状態にし、aria-label に Close を指定します。",
   ],
   [
     "a11y/no-autofocus",
@@ -152,8 +152,8 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "a11y/no-i-for-icon",
     "The icon is rendered through `i`, whose text semantics do not describe an icon-only action.",
     "A decorative span hides the icon glyph, while the separate `Delete item` text names the button action.",
-    "アイコンを i で表示しており、アイコンだけの操作を説明する文字がありません。",
-    "装飾の span でアイコンを隠し、別の `Delete item` の文字で操作を説明します。",
+    "アイコンの表示に i 要素を使っています。i が持つテキスト上の意味は、アイコンだけのボタンが行う操作を説明するものではありません。",
+    "装飾用の span に aria-hidden を指定してアイコンを支援技術から隠し、別の `Delete item` の文字でボタンの操作を説明します。",
   ],
   [
     "a11y/no-redundant-roles",
@@ -173,7 +173,7 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "a11y/no-role-presentation-on-focusable",
     "The focusable billing link requests role=presentation, which conflicts with its interactive link role; browsers must ignore that presentation request.",
     "Remove the conflicting presentation request and rely on the native link role and billing destination.",
-    "focus できる Billing のリンクに role=presentation を指定し、操作可能なリンクの役割と矛盾させています。ブラウザはこの presentation の指定を無視する必要があります。",
+    'フォーカスできる Billing のリンクに role="presentation" を指定しています。リンク本来の操作可能な役割と矛盾するため、ブラウザーはこの presentation の指定を無視する必要があります。',
     "矛盾する presentation の指定を除き、Billing への標準のリンクの役割を使います。",
   ],
   [
@@ -188,7 +188,7 @@ export const accessibilityExplanations: readonly ExplanationRecord[] = [
     "The empty-value prompt remains selectable as if it were a country value.",
     "Adding `disabled` distinguishes the prompt from the selectable Japan option.",
     "空の値を持つ案内の option が、国の選択肢と同じように選択できる状態です。",
-    "disabled を追加し、案内を Japan の選択肢と区別します。",
+    "disabled を追加して案内の option を選択できなくし、選択可能な Japan の option と区別します。",
   ],
   [
     "a11y/role-has-required-aria-props",

@@ -50,7 +50,7 @@ export const contract2Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "The module exports one initialized reactive object, so every importer receives the same count. In an SSR module shared between requests, this defeats the example’s per-instance/request state isolation.",
-      ja: "モジュールが初期化済みのリアクティブなオブジェクトを一つだけ公開し、すべての import 元が同じ count を受け取ります。リクエスト間でモジュールを共有する SSR では、この例のインスタンスやリクエストごとの分離を保てません。",
+      ja: "モジュールが初期化済みのリアクティブなオブジェクトを一つだけ公開するため、それを import する側はすべて同じ count を受け取ります。リクエスト間でモジュールを共有する SSR では、この例で必要とする、インスタンスやリクエストごとの状態の分離を保てません。",
     },
     goodExplanation: {
       en: "The module exports a factory, and App invokes it inside setup. Each instance obtains a fresh reactive count rather than the exported singleton.",
@@ -86,7 +86,7 @@ export const contract2Examples: Record<string, ContractExample> = {
     },
     goodExplanation: {
       en: "`useCounter` creates the ref and computed synchronously inside each component setup call, giving each widget its own state and tracked derivation.",
-      ja: "各コンポーネントの setup 呼び出しの中で、`useCounter` が ref と computed を同期的に作り、各 widget に個別の状態と追跡される導出を与えます。",
+      ja: "各コンポーネントの setup から同期的に `useCounter` を呼び、その中で ref と computed を作ります。これにより、各カウンターがそれぞれの状態と、依存を追跡する計算結果を持ちます。",
     },
     note: {
       en: "Vue permits ref/reactive/computed outside component setup. The risk here is unwanted ownership/sharing under an explicit instance-isolation policy, not API illegality. This contract has no current producer.",
@@ -198,7 +198,7 @@ export const contract2Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "Setup reads the template ref before mounting, when its value is still null. The optional focus call therefore performs no focus action.",
-      ja: "マウント前の setup でテンプレート ref を読み、値が null のままです。任意の focus 呼び出しは何もフォーカスしません。",
+      ja: "マウント前の setup でテンプレート ref を読み取るため、その値はまだ null です。`input?.focus()` はオプショナルチェーンによって呼び出しが省略され、入力欄にフォーカスしません。",
     },
     goodExplanation: {
       en: "`onMounted` defers the read until Vue has assigned the input element to the template ref, allowing the focus helper to act on it.",

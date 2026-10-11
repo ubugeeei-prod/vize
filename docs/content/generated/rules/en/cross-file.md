@@ -20,7 +20,7 @@ The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `v
 | [`ecosystem/vue-router-param-type`](#ecosystem-vue-router-param-type) | [Bad](#ecosystem-vue-router-param-type-bad) · [Good](#ecosystem-vue-router-param-type-good) | postId is not repeatable, so an array is invalid. | Project-specific lint ID |
 | [`ecosystem/vue-router-unknown-route`](#ecosystem-vue-router-unknown-route) | [Bad](#ecosystem-vue-router-unknown-route-bad) · [Good](#ecosystem-vue-router-unknown-route-good) | The name is absent from the complete installed router. | Project-specific lint ID |
 | [`html/cross-component-nesting`](#html-cross-component-nesting) | [Bad](#html-cross-component-nesting-bad) · [Good](#html-cross-component-nesting-good) | Check actual HTML nesting after imported components are composed. | Project-specific lint ID |
-| [`vize:croquis/cf/array-mutation`](#vize-croquis-cf-array-mutation) | [Bad](#vize-croquis-cf-array-mutation-bad) · [Good](#vize-croquis-cf-array-mutation-good) | An array is mutated by index, which a reactive array does not track. | Contract; no current producer |
+| [`vize:croquis/cf/array-mutation`](#vize-croquis-cf-array-mutation) | [Bad](#vize-croquis-cf-array-mutation-bad) · [Good](#vize-croquis-cf-array-mutation-good) | This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect. | Contract; no current producer |
 | [`vize:croquis/cf/async-boundary`](#vize-croquis-cf-async-boundary) | [Bad](#vize-croquis-cf-async-boundary-bad) · [Good](#vize-croquis-cf-async-boundary-good) | Reactive state crosses an async boundary and can be observed stale. | CLI |
 | [`vize:croquis/cf/async-no-suspense`](#vize-croquis-cf-async-no-suspense) | [Bad](#vize-croquis-cf-async-no-suspense-bad) · [Good](#vize-croquis-cf-async-no-suspense-good) | An async component is rendered without a Suspense boundary. | Experimental Rust analyzer; not an individual CLI code |
 | [`vize:croquis/cf/browser-api-ssr`](#vize-croquis-cf-browser-api-ssr) | [Bad](#vize-croquis-cf-browser-api-ssr-bad) · [Good](#vize-croquis-cf-browser-api-ssr-good) | A browser-only API is used where the component can render on the server. | CLI |
@@ -49,8 +49,8 @@ The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `v
 | [`vize:croquis/cf/mutated-after-escape`](#vize-croquis-cf-mutated-after-escape) | [Bad](#vize-croquis-cf-mutated-after-escape-bad) · [Good](#vize-croquis-cf-mutated-after-escape-good) | A reactive object is mutated after it has escaped its owner. | Contract; no current producer |
 | [`vize:croquis/cf/non-reactive-provide`](#vize-croquis-cf-non-reactive-provide) | [Bad](#vize-croquis-cf-non-reactive-provide-bad) · [Good](#vize-croquis-cf-non-reactive-provide-good) | A provided value is not reactive, so descendants will not see updates. | CLI |
 | [`vize:croquis/cf/non-unique-id`](#vize-croquis-cf-non-unique-id) | [Bad](#vize-croquis-cf-non-unique-id-bad) · [Good](#vize-croquis-cf-non-unique-id-good) | An element id inside a loop is not unique per item. | CLI |
-| [`vize:croquis/cf/object-identity-comparison`](#vize-croquis-cf-object-identity-comparison) | [Bad](#vize-croquis-cf-object-identity-comparison-bad) · [Good](#vize-croquis-cf-object-identity-comparison-good) | A reactive object is compared by identity, which changes across unwraps. | Contract; no current producer |
-| [`vize:croquis/cf/pinia-getter`](#vize-croquis-cf-pinia-getter) | [Bad](#vize-croquis-cf-pinia-getter-bad) · [Good](#vize-croquis-cf-pinia-getter-good) | A Pinia getter is read without `storeToRefs`, so it will not stay reactive. | Contract; no current producer |
+| [`vize:croquis/cf/object-identity-comparison`](#vize-croquis-cf-object-identity-comparison) | [Bad](#vize-croquis-cf-object-identity-comparison-bad) · [Good](#vize-croquis-cf-object-identity-comparison-good) | A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object. This contract illustrates comparing stable record IDs when record identity is intended. | Contract; no current producer |
+| [`vize:croquis/cf/pinia-getter`](#vize-croquis-cf-pinia-getter) | [Bad](#vize-croquis-cf-pinia-getter-bad) · [Good](#vize-croquis-cf-pinia-getter-good) | This contract illustrates copying a Pinia getter's current primitive value during setup, leaving a snapshot that no longer follows updates. Direct getter reads within a tracked computation or template remain reactive; storeToRefs() is the extraction repair shown here. | Contract; no current producer |
 | [`vize:croquis/cf/prop-type-mismatch`](#vize-croquis-cf-prop-type-mismatch) | [Bad](#vize-croquis-cf-prop-type-mismatch-bad) · [Good](#vize-croquis-cf-prop-type-mismatch-good) | A passed prop value does not match the declared type. | Experimental Rust analyzer; not an individual CLI code |
 | [`vize:croquis/cf/provide-inject-type`](#vize-croquis-cf-provide-inject-type) | [Bad](#vize-croquis-cf-provide-inject-type-bad) · [Good](#vize-croquis-cf-provide-inject-type-good) | A provided value and its inject do not have the same type. | CLI |
 | [`vize:croquis/cf/provide-without-symbol`](#vize-croquis-cf-provide-without-symbol) | [Bad](#vize-croquis-cf-provide-without-symbol-bad) · [Good](#vize-croquis-cf-provide-without-symbol-good) | `provide` uses a plain key instead of an `InjectionKey` symbol. | CLI |
@@ -58,7 +58,7 @@ The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `v
 | [`vize:croquis/cf/reactivity-outside-setup`](#vize-croquis-cf-reactivity-outside-setup) | [Bad](#vize-croquis-cf-reactivity-outside-setup-bad) · [Good](#vize-croquis-cf-reactivity-outside-setup-good) | A reactive API is called outside `setup`. | Contract; no current producer |
 | [`vize:croquis/cf/reassignment-breaks-reactivity`](#vize-croquis-cf-reassignment-breaks-reactivity) | [Bad](#vize-croquis-cf-reassignment-breaks-reactivity-bad) · [Good](#vize-croquis-cf-reassignment-breaks-reactivity-good) | Reassigning a reactive binding replaces it with a plain value. | CLI |
 | [`vize:croquis/cf/reference-escapes-scope`](#vize-croquis-cf-reference-escapes-scope) | [Bad](#vize-croquis-cf-reference-escapes-scope-bad) · [Good](#vize-croquis-cf-reference-escapes-scope-good) | A reactive reference escapes the scope that owns its lifetime. | Contract; no current producer |
-| [`vize:croquis/cf/setup-context-violation`](#vize-croquis-cf-setup-context-violation) | [Bad](#vize-croquis-cf-setup-context-violation-bad) · [Good](#vize-croquis-cf-setup-context-violation-good) | Setup context is used in a way Vue does not allow. | Experimental Rust analyzer; not an individual CLI code |
+| [`vize:croquis/cf/setup-context-violation`](#vize-croquis-cf-setup-context-violation) | [Bad](#vize-croquis-cf-setup-context-violation-bad) · [Good](#vize-croquis-cf-setup-context-violation-good) | This experimental analyzer scenario places ref(0) at normal script module scope rather than per-instance setup. Vue permits this reactive state; the example requires each component instance to own its own count. The CLI does not emit this individual code. | Experimental Rust analyzer; not an individual CLI code |
 | [`vize:croquis/cf/shallow-deep-access`](#vize-croquis-cf-shallow-deep-access) | [Bad](#vize-croquis-cf-shallow-deep-access-bad) · [Good](#vize-croquis-cf-shallow-deep-access-good) | A deep property of a `shallowReactive` or `shallowRef` value is read as if it were tracked. | Contract; no current producer |
 | [`vize:croquis/cf/spread-breaks-reactivity`](#vize-croquis-cf-spread-breaks-reactivity) | [Bad](#vize-croquis-cf-spread-breaks-reactivity-bad) · [Good](#vize-croquis-cf-spread-breaks-reactivity-good) | Spreading a reactive object copies its values and drops the tracking. | CLI |
 | [`vize:croquis/cf/suspense-no-fallback`](#vize-croquis-cf-suspense-no-fallback) | [Bad](#vize-croquis-cf-suspense-no-fallback-bad) · [Good](#vize-croquis-cf-suspense-no-fallback-good) | `<Suspense>` has no fallback content. | Contract; no current producer |
@@ -78,7 +78,7 @@ The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `v
 | [`vize:croquis/cf/unused-provide`](#vize-croquis-cf-unused-provide) | [Bad](#vize-croquis-cf-unused-provide-bad) · [Good](#vize-croquis-cf-unused-provide-good) | A provided key is never injected. | CLI |
 | [`vize:croquis/cf/value-extraction-breaks-reactivity`](#vize-croquis-cf-value-extraction-breaks-reactivity) | [Bad](#vize-croquis-cf-value-extraction-breaks-reactivity-bad) · [Good](#vize-croquis-cf-value-extraction-breaks-reactivity-good) | Reading a reactive value out into a local drops later updates. | CLI |
 | [`vize:croquis/cf/watch-can-be-computed`](#vize-croquis-cf-watch-can-be-computed) | [Bad](#vize-croquis-cf-watch-can-be-computed-bad) · [Good](#vize-croquis-cf-watch-can-be-computed-good) | A watcher only copies a value into state and can be a computed. | Contract; no current producer |
-| [`vize:croquis/cf/watcheffect-async`](#vize-croquis-cf-watcheffect-async) | [Bad](#vize-croquis-cf-watcheffect-async-bad) · [Good](#vize-croquis-cf-watcheffect-async-good) | `watchEffect` starts an async task and cannot clean up the previous run. | CLI |
+| [`vize:croquis/cf/watcheffect-async`](#vize-croquis-cf-watcheffect-async) | [Bad](#vize-croquis-cf-watcheffect-async-bad) · [Good](#vize-croquis-cf-watcheffect-async-good) | The async watchEffect shown here has no invalidation cleanup or stale-response guard. Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work. | CLI |
 | [`vize:croquis/cf/watcher-outside-setup`](#vize-croquis-cf-watcher-outside-setup) | [Bad](#vize-croquis-cf-watcher-outside-setup-bad) · [Good](#vize-croquis-cf-watcher-outside-setup-good) | `watch` or `watchEffect` is called outside `setup`. | Contract; no current producer |
 | [`vue/cross-file-attrs-fallthrough`](#vue-cross-file-attrs-fallthrough) | [Bad](#vue-cross-file-attrs-fallthrough-bad) · [Good](#vue-cross-file-attrs-fallthrough-good) | A parent passes attributes to a resolved child whose root cannot inherit them and does not explicitly use $attrs. | Project-specific lint ID |
 
@@ -596,7 +596,7 @@ The Good files demonstrate the change described above; other diagnostics can sti
 
 ### `vize:croquis/cf/array-mutation`
 
-An array is mutated by index, which a reactive array does not track.
+This producer-free contract uses a historical Vue 2.7 array-index assignment scenario. Vue 2 does not notify updates for direct index assignment; Vue 3 tracks such assignments. The Bad/Good files illustrate the Vue 2 repair, not a Vue 3 defect.
 
 Default severity: Not emitted  
 Applies to: Analyzed component graph and the supported facts described below  
@@ -3652,7 +3652,7 @@ The Good files demonstrate the change described above; other diagnostics can sti
 
 ### `vize:croquis/cf/object-identity-comparison`
 
-A reactive object is compared by identity, which changes across unwraps.
+A raw object and its reactive proxy have distinct object identities, and toRaw() returns the original object. This contract illustrates comparing stable record IDs when record identity is intended.
 
 Default severity: Not emitted  
 Applies to: Analyzed component graph and the supported facts described below  
@@ -3746,7 +3746,7 @@ The Good files demonstrate the change described above; other diagnostics can sti
 
 ### `vize:croquis/cf/pinia-getter`
 
-A Pinia getter is read without `storeToRefs`, so it will not stay reactive.
+This contract illustrates copying a Pinia getter's current primitive value during setup, leaving a snapshot that no longer follows updates. Direct getter reads within a tracked computation or template remain reactive; storeToRefs() is the extraction repair shown here.
 
 Default severity: Not emitted  
 Applies to: Analyzed component graph and the supported facts described below  
@@ -4577,7 +4577,7 @@ The Good files demonstrate the change described above; other diagnostics can sti
 
 ### `vize:croquis/cf/setup-context-violation`
 
-Setup context is used in a way Vue does not allow.
+This experimental analyzer scenario places ref(0) at normal script module scope rather than per-instance setup. Vue permits this reactive state; the example requires each component instance to own its own count. The CLI does not emit this individual code.
 
 Default severity: context-dependent  
 Applies to: Analyzed component graph and the supported facts described below  
@@ -6482,7 +6482,7 @@ The Good files demonstrate the change described above; other diagnostics can sti
 
 ### `vize:croquis/cf/watcheffect-async`
 
-`watchEffect` starts an async task and cannot clean up the previous run.
+The async watchEffect shown here has no invalidation cleanup or stale-response guard. Vue supports cleanup for watchEffect; the Good example uses an explicit watch source and cancels invalidated work.
 
 Default severity: error  
 Applies to: Analyzed component graph and the supported facts described below  

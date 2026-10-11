@@ -11,7 +11,7 @@ Options API の computed getter 内の副作用を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-`doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらも値を導出すべき getter が元の状態を変更しています。
+`doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらのゲッターも、値を計算する元の状態を変更してしまっています。
 
 ```vue
 <script lang="ts">
@@ -80,6 +80,6 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L70) · [全ルール](../all.md)

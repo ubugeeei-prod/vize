@@ -4,7 +4,7 @@ title: "Musea と CSS のルール"
 
 # Musea と CSS のルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
 
 | ルール | 例 | 目的 |
@@ -20,7 +20,7 @@ title: "Musea と CSS のルール"
 | [`css/prefer-slotted`](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-slotted) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-slotted-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-prefer-slotted-good) | slot や子コンポーネントに対する scoped CSS のセレクターを検査します。 |
 | [`css/require-font-display`](https://vizejs.dev/ja/rules/musea-and-css.html#css-require-font-display) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#css-require-font-display-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#css-require-font-display-good) | @font-face に font-display を指定します。 |
 | [`musea/no-empty-variant`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-no-empty-variant) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-no-empty-variant-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-no-empty-variant-good) | 内容のない variant ブロックを検出します。 |
-| [`musea/prefer-design-tokens`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-prefer-design-tokens) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-prefer-design-tokens-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-prefer-design-tokens-good) | 登録した design token に一致する直接指定値を CSS 変数で表現します。 |
+| [`musea/prefer-design-tokens`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-prefer-design-tokens) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-prefer-design-tokens-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-prefer-design-tokens-good) | 登録したデザイントークンの値に一致する CSS の直接指定値を、対応する CSS 変数で表現します。 |
 | [`musea/require-component`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-component) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-component-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-component-good) | art ブロックに対象の component を指定します。 |
 | [`musea/require-title`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-title) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-title-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-require-title-good) | art ブロックに title を指定します。 |
 | [`musea/unique-variant-names`](https://vizejs.dev/ja/rules/musea-and-css.html#musea-unique-variant-names) | [悪い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-unique-variant-names-bad) · [良い](https://vizejs.dev/ja/rules/musea-and-css.html#musea-unique-variant-names-good) | 同じ Art ファイル内の variant 名を一意にします。 |

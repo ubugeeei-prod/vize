@@ -4,7 +4,7 @@ title: "musea/prefer-design-tokens"
 
 # `musea/prefer-design-tokens`
 
-登録した design token に一致する直接指定値を CSS 変数で表現します。
+登録したデザイントークンの値に一致する CSS の直接指定値を、対応する CSS 変数で表現します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
@@ -67,7 +67,7 @@ art の例で、設定した primary のデザイントークンではなく、�
 
 ## 良い
 
-この例で設定する --color-primary のトークンを参照します。
+この例の設定に登録された --color-primary のトークンを参照します。
 
 `Button.art.vue`
 
@@ -82,6 +82,6 @@ art の例で、設定した primary のデザイントークンではなく、�
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32) · [全ルール](../all.md)

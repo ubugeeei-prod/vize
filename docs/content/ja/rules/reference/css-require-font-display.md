@@ -50,7 +50,7 @@ font-face にフォントの参照先はありますが、font-display の方針
 
 ## 良い
 
-font-display: swap を追加し、フォールバックからフォントを表示する方針を指定します。
+font-display: swap を追加し、代替フォントで表示した後、読み込まれたフォントへ切り替える方針を指定します。
 
 ```vue
 <style>
@@ -62,6 +62,6 @@ font-display: swap を追加し、フォールバックからフォントを表�
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13) · [全ルール](../all.md)

@@ -39,11 +39,11 @@ interface Reference {
 }
 const intro = {
   en: "Every rule on this page includes its purpose, prerequisites, configuration, and complete Bad/Good examples. Highlighted lines show the changes; copied code keeps the complete source. Each packet states its current support limits.",
-  ja: "このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。",
+  ja: "このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。",
 };
 const crossIntro = {
   en: "All 66 project packets include shared files and complete Bad/Good examples here. Apply shared files to both sides. The 60 analyzer codes retain their actual boundaries: 19 CLI codes (18 qualified source pairs and one illustrative project with its retained reactive graph), 16 experimental Rust analyzer codes not emitted individually by that CLI pass, and 25 contracts without a current producer. Configuring an ID does not enable an unavailable producer.",
-  ja: "全 66 のプロジェクトの例について、共通ファイルと完全な悪い例・良い例をこのページにまとめています。共通ファイルは両方で使用します。60 の analyzer コードの対応範囲は、CLI の 19 コード（18 の検証済みソースの例と、保持された参照構成を示す 1 つの具体例）、CLI が個別には生成しない実験的な Rust analyzer の 16 コード、現在の生成元がない 25 の契約です。ID を設定しても未対応の生成元は有効になりません。",
+  ja: "全 66 件のプロジェクトの例について、共通ファイルと、省略のない悪い例・良い例をこのページにまとめています。共通ファイルは両方で使用します。解析器の 60 件の診断コードには、CLI の 19 件（検証済みのソース例 18 件と、参照関係を保持したリアクティブなグラフを含む説明用プロジェクト 1 件）、CLI が個別には生成しない実験的な Rust 解析器の 16 件、現在は診断を生成する処理のない契約 25 件があります。ID を設定しても、未対応の診断処理は有効になりません。",
 };
 const cliInstructions = {
   en: "The public CLI exposes the same pass with `vize lint --cross-file`. Displayed `vize:croquis/cf/*` codes use `croquis/cf/*` in `lint.vize.rules` (omit `vize:`). Information/hint diagnostics become CLI warnings. Related locations explain the source/consumer relationship.",
@@ -57,7 +57,7 @@ const supportLabels = {
 };
 const japaneseSupportLabels = {
   cli: "CLI",
-  library: "実験的な Rust analyzer（CLI の個別コードではありません）",
+  library: "実験的な Rust 解析器（CLI の個別コードではありません）",
   contract: "契約（現在の生成元なし）",
   project: "プロジェクト固有の lint ID",
 };

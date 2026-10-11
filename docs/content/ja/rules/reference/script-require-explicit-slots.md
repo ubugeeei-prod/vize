@@ -11,7 +11,7 @@ useSlots() で使う slot を defineSlots の型で宣言します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-型付きの `defineProps<{ id: number }>()` により TypeScript の構文があることが分かりますが、setup が `defineSlots` の宣言なしに `useSlots()` を使い、参照する slot の明示的な契約がありません。
+型付きの `defineProps<{ id: number }>()` から、この例が TypeScript の構文を使っていることが分かります。しかし setup では `defineSlots` を宣言せずに `useSlots()` を使っており、利用するスロットの型が明示されていません。
 
 ```vue
 <script setup lang="ts">
@@ -57,6 +57,6 @@ const slots = useSlots()
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) · [全ルール](../all.md)

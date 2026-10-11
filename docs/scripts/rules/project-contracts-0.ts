@@ -165,7 +165,7 @@ export const contract0Examples: Record<string, ContractExample> = {
     },
     badExplanation: {
       en: "The entry routes a simple value through `level-one`, `level-two`, and `level-three`, creating an unnecessarily deep import chain for a project that wants a shallow public boundary.",
-      ja: "entry が単純な値を `level-one`、`level-two`、`level-three` 経由で読み、浅い公開境界を望むプロジェクトに不要な深い import の列を作っています。",
+      ja: "`entry.ts` が単純な値を `level-one`、`level-two`、`level-three` 経由で参照しています。公開部分への参照を短い経路に保ちたいプロジェクトでは、不要に深い import の連鎖になります。",
     },
     goodExplanation: {
       en: "The entry uses `public-api.ts`, which re-exports the value directly. The consumer keeps the same imported name while the chain becomes shorter.",

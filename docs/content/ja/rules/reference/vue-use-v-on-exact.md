@@ -4,14 +4,14 @@ title: "vue/use-v-on-exact"
 
 # `vue/use-v-on-exact`
 
-modifier 付きのイベント操作と競合する handler に .exact を指定します。
+修飾子付きのイベント操作と競合するハンドラーに .exact を指定します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `warning`  
 プリセット: `essential`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-通常の click handler も Ctrl-click で動くため、別の `.ctrl` handler と重複します。
+通常の click ハンドラーも Ctrl キーを押しながらのクリックで動くため、別の `.ctrl` ハンドラーと重複します。
 
 ```vue
 <template>
@@ -49,7 +49,7 @@ vp run lint
 
 ## 良い
 
-`.exact` で通常の handler を修飾キーのない click に限定し、Ctrl 専用の handler と分けます。
+`.exact` で通常のハンドラーを修飾キーのない click に限定し、Ctrl 専用のハンドラーと分けます。
 
 ```vue
 <template>
@@ -63,6 +63,6 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/use_v_on_exact.rs#L28) · [全ルール](../all.md)

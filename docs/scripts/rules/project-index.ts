@@ -11,11 +11,12 @@ export function projectIndex(root: string, ja: boolean, inline = false) {
   ];
   return [
     "",
-    `## ${label("Project rules and analyzer contracts", "プロジェクト ルールと analyzer 契約")} (${entries.length})`,
+    ...(ja ? ['<span id="プロジェクト-ルールと-analyzer-契約-66"></span>', ""] : []),
+    `## ${label("Project rules and analyzer contracts", "プロジェクトのルールと解析器の診断契約")} (${entries.length})`,
     "",
     label(
       "These project entries supplement the 251 single-file catalog entries above. Each example includes its component/project context or an explicit tracked-graph scenario. CLI, experimental library producers, and contracts without a producer have different support boundaries; see the [cross-file overview](./cross-file.md).",
-      "以下は上の 251 件の単一ファイル カタログに加わる項目です。コンポーネントやプロジェクトの文脈、または追跡する graph の例を示します。CLI、実験的な library の生成元、生成元のない契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。",
+      "以下の項目は、上の 251 件の単一ファイルのルールを補足します。それぞれの例には、コンポーネントやプロジェクトの構成、または参照を追跡するグラフの具体的な条件が含まれます。CLI の検査、実験的なライブラリーの生成元、生成元のない診断契約では対応範囲が異なります。[ファイル間検査の概要](./cross-file.md)を確認してください。",
     ),
     "",
     `| ${label("Rule / code", "ルール / コード")} | ${label("Examples", "例")} | ${label("Current support", "現在の対応")} |`,
@@ -26,17 +27,17 @@ export function projectIndex(root: string, ja: boolean, inline = false) {
       const support =
         status === "cli"
           ? id.endsWith("circular-reactive-dependency")
-            ? label("CLI: tracked-graph scenario", "CLI: 追跡 graph の例")
+            ? label("CLI: tracked-graph scenario", "CLI: 参照を追跡するグラフの例")
             : label("CLI project pass", "CLI のプロジェクト検査")
           : status === "library"
             ? id.endsWith("async-no-suspense")
               ? label(
                   "Library producer; required source fact missing",
-                  "library の生成元あり。必要な source 情報が未対応",
+                  "ライブラリーの生成元あり。必要なソース情報が未対応",
                 )
               : label(
                   "Experimental library producer; not this CLI code",
-                  "実験的な library の生成元。CLI の個別コードでは未生成",
+                  "実験的なライブラリーの生成元。CLI の個別コードでは未生成",
                 )
             : label("Contract only; no producer", "契約のみ。生成元なし");
       return `| [\`${id}\`](${path}) | ${exampleLinks(inline ? "" : path, ja, inline ? slug : undefined)} | ${support} |`;

@@ -11,7 +11,7 @@ Object / Array の prop に具体的な型を指定します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-裸の `Object` と `Array` は広い実行時の分類しか表さず、`user` や `items` の要素の形を明示する静的な型がありません。
+`Object` と `Array` コンストラクターだけでは、実行時にオブジェクトか配列かを示すにとどまり、`user` の構造や `items` の要素の型を表す具体的な静的型がありません。
 
 ```vue
 <script setup lang="ts">
@@ -60,6 +60,6 @@ const props = defineProps({
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs#L63) · [全ルール](../all.md)

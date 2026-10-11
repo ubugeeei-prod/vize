@@ -11,8 +11,8 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
     "nuxt/no-page-meta-runtime-values",
     "`useRoute()` is evaluated immediately while building the `definePageMeta` object, although the macro hoists that metadata outside the setup runtime context.",
     "`validate` receives a callback, so its `useRoute().params.id` access is deferred until the callback runs. The rule distinguishes deferred function bodies from eager metadata values.",
-    "`definePageMeta` のオブジェクトを作る際に `useRoute()` を即座に評価しています。メタデータはマクロによって setup の実行時コンテキストの外へ巻き上げられます。",
-    "`validate` にコールバックを渡し、`useRoute().params.id` の評価をその実行時まで遅らせます。このルールは関数本体内の遅延評価と、メタデータの即時評価を区別します。",
+    "`definePageMeta` のオブジェクトを作る際に `useRoute()` を即座に評価しています。メタデータはマクロによって setup の実行時コンテキストの外に移されます。",
+    "`validate` にコールバックを渡し、`useRoute().params.id` の評価をコールバックが呼び出されるまで遅らせます。このルールは関数本体内の遅延評価と、メタデータの即時評価を区別します。",
   ],
   [
     "nuxt/nuxt-config-keys-order",
@@ -96,7 +96,7 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
     "The Options API watcher `value` and the nested `other.handler` are arrow functions. An arrow captures its surrounding `this` rather than receiving the component instance.",
     "Both handlers become ordinary methods, allowing Vue to bind `this` to the component. The `deep: true` watcher option remains compatible with the object form.",
     "Options API の watcher `value` と `other.handler` がアロー関数です。アロー関数の `this` は外側から引き継がれ、コンポーネントインスタンスとして束縛されません。",
-    "両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントに束縛できるようにします。オブジェクト形式の `deep: true` オプションも維持できます。",
+    "両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントインスタンスに束縛できるようにします。オブジェクト形式では `deep: true` オプションも指定できます。",
   ],
   [
     "script/no-async-in-computed",
@@ -109,14 +109,14 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
     "script/no-boolean-default",
     "Both `disabled` and `checked` declare a `default` on a prop whose sole constructor is `Boolean`; the rule rejects even an explicit `false` default.",
     "The Boolean-only props omit `default`, using Vue’s implicit false value. The `[Boolean, String]` union and the Number prop illustrate that this check is limited to the sole `Boolean` constructor.",
-    "`disabled` と `checked` は、単独の型が `Boolean` である prop に `default` を指定しています。明示的な `false` もこのルールの対象です。",
+    "`disabled` と `checked` は、型に `Boolean` コンストラクターだけを指定した prop に `default` を付けています。明示的な `false` もこのルールの対象です。",
     "Boolean のみの props では `default` を省き、Vue の暗黙の false を使います。`[Boolean, String]` の共用型と Number の prop は、この検査が単独の `Boolean` コンストラクターに限られることを示します。",
   ],
   [
     "script/no-deep-destructure-in-props",
     "The binding pattern descends through `user` to destructure `name`, exceeding the default shallow props-destructuring depth.",
     "The props object remains intact, and a computed getter reads `props.user.name`. The nested access stays explicit without a deeply nested binding pattern.",
-    "代入パターンが `user` の内部まで進んで `name` を取り出し、既定で許される浅い props 分割代入の深さを超えています。",
+    "props の `user` からさらに `name` を分割代入で取り出し、既定で許される浅い分割代入の深さを超えています。",
     "props オブジェクトを保ち、computed の getter で `props.user.name` を参照します。深い代入パターンを使わず、入れ子の参照を明示します。",
   ],
   [
@@ -131,13 +131,13 @@ export const scriptType0Explanations: readonly ExplanationRecord[] = [
     "`beforeDestroy` is the removed Vue 2 lifecycle option used for the timer cleanup.",
     "Renaming the hook to `beforeUnmount` preserves the cleanup body under its Vue 3 lifecycle name.",
     "タイマーの後片付けに、Vue 3 で削除された Vue 2 のライフサイクルオプション `beforeDestroy` を使っています。",
-    "フック名を `beforeUnmount` に変え、後片付けの本体を Vue 3 のライフサイクル名で保ちます。",
+    "タイマーの後片付けの処理をそのまま残し、フック名を Vue 3 の `beforeUnmount` に変更します。",
   ],
   [
     "script/no-deprecated-dollar-listeners-api",
     "The member reads and the bare argument reference all use `$listeners`, which Vue 3 removed after merging listeners into attributes.",
     "The reads move to `this.$attrs` and setup-context `ctx.attrs`. These replace the removed listener surface; the illustrated receivers must exist in the surrounding component context.",
-    "メンバー参照と引数の裸の参照がいずれも `$listeners` を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。",
-    "参照を `this.$attrs` と setup コンテキストの `ctx.attrs` に移し、削除されたリスナー API を置き換えます。例の参照元は、それぞれのコンポーネントコンテキストで用意されている必要があります。",
+    "`this.$listeners` と `ctx.$listeners` のメンバー参照、および引数に直接渡した `$listeners` が、削除された API を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。",
+    "参照を `this.$attrs` と setup コンテキストの `ctx.attrs` に置き換え、削除されたリスナー API の使用をなくします。この例は、それぞれの参照元を使えるコンポーネントの文脈を前提にしています。",
   ],
 ];

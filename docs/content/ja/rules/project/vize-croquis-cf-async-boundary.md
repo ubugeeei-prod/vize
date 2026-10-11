@@ -29,7 +29,7 @@ vp run lint
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -58,7 +58,7 @@ export async function load(query: string, options?: { signal?: AbortSignal }): P
 
 ## 悪い
 
-watcher に無効化時の cleanup がなく、古い query の遅い結果が新しい結果を上書きできます。
+ウォッチャーに無効化時のクリーンアップ処理がないため、古い検索への応答が新しい検索への応答より遅く届き、`result` を上書きする可能性があります。
 
 `SearchPage.vue`
 
@@ -96,7 +96,7 @@ watch(
 
 ## 良い
 
-await より前に cleanup を登録し、旧 request を abort して `active` を無効化します。有効な応答だけを代入します。
+`await` より前にクリーンアップ処理を登録します。以前のリクエストを中止して `active` を無効にし、まだ有効なリクエストの応答だけを代入します。
 
 `SearchPage.vue`
 
@@ -141,7 +141,7 @@ watch(
 </script>
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

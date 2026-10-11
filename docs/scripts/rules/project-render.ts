@@ -14,6 +14,7 @@ import { extra, composed } from "./cross-extra.ts";
 import { crossMetadata, explanation } from "./project-metadata.ts";
 import { routerExamples } from "./router-project.ts";
 import { projectExplanations } from "./project-explanations.ts";
+import { qualifiedProjectPurpose } from "./project-purposes.ts";
 import { contractExamples } from "./project-contracts.ts";
 import { reactiveCycleExample } from "./reactive-cycle-project.ts";
 const examples: Record<string, ProjectExample> = {
@@ -75,6 +76,7 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
   const { code, name, status, severity, producer } = rule;
   const label = (en: string, jp: string) => (ja ? jp : en);
   const info = explanation(root, code, ja);
+  info.purpose = qualifiedProjectPurpose(name, info.purpose, ja);
   if (name === "hydration-risk")
     info.purpose = label(
       "This code groups several reactivity findings, including a prop copied into a ref. It does not imply that every Date.now() expression is detected by the cross-file pass.",
@@ -104,7 +106,7 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
           : "The experimental Rust CrossFileAnalyzer has a producer for this code. The CLI pass does not emit this individual code; configuring its ID does not enable that Rust pass. These scenarios describe the analyzer's supported graph/facts, not a Vite+ promise.",
         status === "contract"
           ? "この公開診断コードには現在の生成元がありません。悪い例・良い例はリスクと修正の説明です。このコードを検出させる設定は現在ありません。"
-          : "実験的な Rust CrossFileAnalyzer にはこのコードの生成元があります。CLI はこの個別コードを生成しません。ID を設定しても Rust 側の検査は有効になりません。例は analyzer の対象となる構成や情報を示し、Vite+ での検出を約束するものではありません。",
+          : "実験的な Rust CrossFileAnalyzer には、この診断コードの生成元があります。CLI の検査はこの個別コードを生成せず、ID を設定しても Rust 側の検査は有効になりません。以下の例は解析器が対応するグラフ構造や情報を説明するもので、Vite+ での検出を保証するものではありません。",
       ),
       "",
     );
@@ -114,7 +116,7 @@ function crossDetail(root: string, rule: CrossRuleMetadata, ja: boolean) {
       "",
       label(
         "The boundary producer reads macros.is_async(), but source parsing currently records top-level await on the script-setup scope instead. The complete Bad/Good source pair below therefore produces no async-no-suspense finding through the current CLI. It explains the Suspense convention; supplying the missing macro fact is implementation follow-up work.",
-        "生成元は macros.is_async() を読みますが、現在のソース解析は top-level await を script-setup の scope に記録します。そのため以下の完全な悪い例・良い例では、現在の CLI は async-no-suspense を検出しません。Suspense の使い方を説明する例で、必要な macro 情報を渡す処理は今後の実装課題です。",
+        "生成元は `macros.is_async()` を読みますが、現在のソース解析はトップレベルの `await` を script setup のスコープに記録します。そのため、以下の完全な悪い例・良い例のどちらからも、現在の CLI は `async-no-suspense` を生成しません。これは Suspense の使い方を説明する例であり、必要なマクロ情報を渡す処理は今後の実装課題です。",
       ),
       "",
     );
@@ -197,7 +199,7 @@ function projectDetail(id: string, example: ProjectRuleExample, ja: boolean, sev
       ? [
           label(
             "The complete installed router must be reachable from the application's createApp(...).use(router). Unknown/dynamic route tables do not prove unknown-name findings. Missing params are warnings because navigation may inherit a value from the current route.",
-            "アプリの createApp(...).use(router) から登録済み router に到達できる構成が必要です。未確定または動的な定義では未知の名前と断定しません。省略パラメーターは現在のルートの値を継承する場合があるため warning です。",
+            "アプリの `createApp(...).use(router)` から、ルート定義がそろった登録済みのルーターに到達できる構成が必要です。未確定または動的なルート定義だけでは、名前が未登録だと断定できません。パラメーターを省略しても現在のルートから値を継承する場合があるため、省略についての診断は warning です。",
           ),
           "",
         ]
@@ -216,7 +218,7 @@ function fixture(example: ProjectExample, ja: boolean) {
     "",
     label(
       "Use these unchanged files in both Bad and Good. Install the imported packages in the project: Vue, plus vue-router or Pinia where shown. Follow any version-specific support note. The entry root makes the component relationship explicit.",
-      "以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。",
+      "以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。",
     ),
     "",
   ];
@@ -247,7 +249,7 @@ function fixture(example: ProjectExample, ja: boolean) {
   lines.push(
     label(
       "The Good files demonstrate the change described above; other diagnostics can still apply to the complete project.",
-      "良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。",
+      "良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。",
     ),
     "",
   );

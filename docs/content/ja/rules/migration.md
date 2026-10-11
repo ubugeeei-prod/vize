@@ -17,13 +17,13 @@ Vite+ の設定では Vize のルールを `lint.vize.rules` に指定します�
  });
 ```
 
-リンク先の悪い例・良い例を確認してから、重複する Vue ルールだけを取り除きます。`vp run lint` で検査します。既存の package script と名前が衝突する場合は `vp run vize:lint` です。明示した task 設定が優先されます。
+リンク先の悪い例・良い例を確認してから、重複する Vue ルールだけを取り除きます。`vp run lint` で検査します。既存のパッケージスクリプトと名前が衝突する場合は `vp run vize:lint` です。明示したタスクの設定が優先されます。
 
 `vue/component-definition-name-casing` には意図的な適用範囲の差があります。Vize は SFC のファイル名を検査し、ESLint はコンポーネントの定義名を検査します。この差を以下にも残しています。
 
-オプションの変換は [ルール オプション](./options.md)と [props 分割代入](./reference/script-define-props-destructuring.md)を参照してください。未実装の行は対応する検査が確認できるまで既存の checker に残します。
+オプションの変換は[ルール オプション](./options.md)と [props 分割代入](./reference/script-define-props-destructuring.md)を参照してください。未実装の行は、対応する代替の検査が確認できるまで、既存のチェッカーで検査を続けます。
 
-| ESLint ID | Vize ID / reference | Status |
+| ESLint ID | Vize ID / リファレンス | 対応状況 |
 | --- | --- | --- |
 | `vue/array-bracket-newline` | — | 未実装 |
 | `vue/array-bracket-spacing` | — | 未実装 |
@@ -278,4 +278,4 @@ Vite+ の設定では Vize のルールを `lint.vize.rules` に指定します�
 | `vue/valid-v-slot` | [`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | 対応付け |
 | `vue/valid-v-text` | [`vue/valid-v-text`](./reference/vue-valid-v-text.md) | 対応付け |
 
-[対応記録と capture の出典](https://github.com/ubugeeei-prod/vize/blob/main/tests/_fixtures/patina-eslint-vue-rule-map.json)
+[対応記録と取得データの出典](https://github.com/ubugeeei-prod/vize/blob/main/tests/_fixtures/patina-eslint-vue-rule-map.json)

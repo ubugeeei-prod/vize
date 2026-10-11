@@ -4,14 +4,14 @@ title: "petite-vue ルール"
 
 # petite-vue ルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
 
 | ルール | 例 | 目的 |
 | --- | --- | --- |
 | [`petite-vue/no-unsupported-directive`](#petite-vue-no-unsupported-directive) | [悪い](#petite-vue-no-unsupported-directive-bad) · [良い](#petite-vue-no-unsupported-directive-good) | petite-vue が対応しないディレクティブを検出します。 |
 | [`petite-vue/valid-v-effect`](#petite-vue-valid-v-effect) | [悪い](#petite-vue-valid-v-effect-bad) · [良い](#petite-vue-valid-v-effect-good) | v-effect に空でない式を指定します。 |
-| [`petite-vue/valid-v-scope`](#petite-vue-valid-v-scope) | [悪い](#petite-vue-valid-v-scope-bad) · [良い](#petite-vue-valid-v-scope-good) | v-scope の値にオブジェクトリテラルを指定します。 |
+| [`petite-vue/valid-v-scope`](#petite-vue-valid-v-scope) | [悪い](#petite-vue-valid-v-scope-bad) · [良い](#petite-vue-valid-v-scope-good) | v-scope に値を指定する場合は、オブジェクトリテラルにします。 |
 
 [全ルール](./all.md) · [ルール オプション](./options.md) · [ESLint 移行対応表](./migration.md) · [プロジェクトの検査](./cross-file.md) · [子への属性の継承](./project/vue-cross-file-attrs-fallthrough.md)
 
@@ -79,7 +79,7 @@ vp run lint
 </body></html>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/no_unsupported_directive.rs#L43) · [全ルール](all.md)
 
@@ -147,13 +147,13 @@ vp run lint
 </body></html>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_effect.rs#L35) · [全ルール](all.md)
 
 ### `petite-vue/valid-v-scope`
 
-v-scope の値にオブジェクトリテラルを指定します。
+v-scope に値を指定する場合は、オブジェクトリテラルにします。
 
 [悪い例](#petite-vue-valid-v-scope-bad) · [良い例](#petite-vue-valid-v-scope-good)
 
@@ -218,6 +218,6 @@ vp run lint
 </body></html>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/petite_vue/valid_v_scope.rs#L46) · [全ルール](all.md)

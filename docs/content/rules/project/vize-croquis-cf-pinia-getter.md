@@ -4,7 +4,7 @@ title: "vize:croquis/cf/pinia-getter"
 
 # `vize:croquis/cf/pinia-getter`
 
-A Pinia getter is read without `storeToRefs`, so it will not stay reactive.
+This contract illustrates copying a Pinia getter's current primitive value during setup, leaving a snapshot that no longer follows updates. Direct getter reads within a tracked computation or template remain reactive; storeToRefs() is the extraction repair shown here.
 
 Default severity: Not emitted  
 Applies to: Analyzed component graph and the supported facts described below  

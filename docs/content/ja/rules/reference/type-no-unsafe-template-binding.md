@@ -14,7 +14,7 @@ title: "type/no-unsafe-template-binding"
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 ## 設定（Vite+）
 
@@ -40,7 +40,7 @@ vp run lint
 
 ## 悪い
 
-補間する `value` の型を明示的に `any` とし、チェッカーがテンプレートの binding を安全な具体的な型として確認できません。
+補間する `value` の型を明示的に `any` としているため、型チェッカーはテンプレートに結び付ける値を、安全な具体的な型として検査できません。
 
 ```vue
 <script setup lang="ts">
@@ -60,6 +60,6 @@ const value: string = "Hello";
 <template><p>{{ value }}</p></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs#L12) · [全ルール](../all.md)

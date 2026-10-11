@@ -4,7 +4,7 @@ title: "エコシステム ルール"
 
 # エコシステム ルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
 
 | ルール | 例 | 目的 |
@@ -18,7 +18,7 @@ title: "エコシステム ルール"
 | [`ecosystem/vue-router-prefer-named-link`](https://vizejs.dev/ja/rules/ecosystem.html#ecosystem-vue-router-prefer-named-link) | [悪い](https://vizejs.dev/ja/rules/ecosystem.html#ecosystem-vue-router-prefer-named-link-bad) · [良い](https://vizejs.dev/ja/rules/ecosystem.html#ecosystem-vue-router-prefer-named-link-good) | RouterLink の文字列パスを名前付きルートの指定に置き換えます。 |
 | [`ecosystem/vue-router-prefer-named-push`](https://vizejs.dev/ja/rules/ecosystem.html#ecosystem-vue-router-prefer-named-push) | [悪い](https://vizejs.dev/ja/rules/ecosystem.html#ecosystem-vue-router-prefer-named-push-bad) · [良い](https://vizejs.dev/ja/rules/ecosystem.html#ecosystem-vue-router-prefer-named-push-good) | Vue Router のプログラムによる移動に名前付きルートを使います。 |
 | [`ecosystem/vue-test-utils-no-html-snapshot`](https://vizejs.dev/ja/rules/ecosystem.html#ecosystem-vue-test-utils-no-html-snapshot) | [悪い](https://vizejs.dev/ja/rules/ecosystem.html#ecosystem-vue-test-utils-no-html-snapshot-bad) · [良い](https://vizejs.dev/ja/rules/ecosystem.html#ecosystem-vue-test-utils-no-html-snapshot-good) | wrapper.html() 全体の snapshot に依存するテストを検出します。 |
-| [`nuxt/no-nuxt-config-test-key`](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-no-nuxt-config-test-key) | [悪い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-no-nuxt-config-test-key-bad) · [良い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-no-nuxt-config-test-key-good) | Nuxt が自動判定する test 環境の手動設定を検出します。 |
+| [`nuxt/no-nuxt-config-test-key`](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-no-nuxt-config-test-key) | [悪い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-no-nuxt-config-test-key-bad) · [良い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-no-nuxt-config-test-key-good) | Nuxt 設定の test キーに旧形式の真偽値を指定する箇所を検出します。 |
 | [`nuxt/no-page-meta-runtime-values`](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-no-page-meta-runtime-values) | [悪い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-no-page-meta-runtime-values-bad) · [良い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-no-page-meta-runtime-values-good) | definePageMeta の即時評価部分で実行時コンテキストを使う箇所を検出します。 |
 | [`nuxt/nuxt-config-keys-order`](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-nuxt-config-keys-order) | [悪い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-nuxt-config-keys-order-bad) · [良い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-nuxt-config-keys-order-good) | Nuxt 設定のプロパティを推奨順に並べます。 |
 | [`nuxt/prefer-import-meta`](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-prefer-import-meta) | [悪い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-prefer-import-meta-bad) · [良い](https://vizejs.dev/ja/rules/ecosystem.html#nuxt-prefer-import-meta-good) | Nuxt の環境フラグを process.* から import.meta.* に置き換えます。 |

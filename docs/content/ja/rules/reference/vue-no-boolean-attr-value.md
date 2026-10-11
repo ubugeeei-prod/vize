@@ -4,14 +4,14 @@ title: "vue/no-boolean-attr-value"
 
 # `vue/no-boolean-attr-value`
 
-HTML の boolean 属性に不要な値を指定した箇所を検出します。
+HTML の真偽属性に不要な値を指定した箇所を検出します。
 
 [悪い例](#悪い) · [良い例](#良い)
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-boolean の disabled と checked に、不要な文字列の値を指定しています。
+真偽属性の disabled と checked に、不要な文字列の値を指定しています。
 
 ```vue
 <template>
@@ -49,7 +49,7 @@ boolean の disabled と checked に、不要な文字列の値を指定して�
 
 ## 良い
 
-値を付けず、boolean 属性があることだけで同じ状態を表します。
+値を付けず、真偽属性があることだけで同じ状態を表します。
 
 ```vue
 <template>
@@ -59,6 +59,6 @@ boolean の disabled と checked に、不要な文字列の値を指定して�
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/no_boolean_attr_value.rs#L36) · [全ルール](../all.md)

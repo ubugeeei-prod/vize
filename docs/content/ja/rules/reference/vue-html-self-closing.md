@@ -10,8 +10,8 @@ title: "vue/html-self-closing"
 
 既定の重大度: `warning`  
 プリセット: `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC のテンプレート・ブロック。必要な script の文脈も例に含めています。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。  
 オプション: [型付きオプションと既定値](../options.md)を参照してください。
 
 ## 設定（Vite+）
@@ -37,7 +37,7 @@ vp run lint
 
 ## 悪い
 
-空のコンポーネントを閉じタグの組で書き、img と br に既定の自己終了の表記を使っていません。
+空のコンポーネントを開始タグと終了タグの組で書き、img と br に設定された自己終了タグの表記を使っていません。
 
 ```vue
 <template>
@@ -49,7 +49,7 @@ vp run lint
 
 ## 良い
 
-コンポーネントと void 要素を自己終了にします。内容がある div は閉じタグを残します。
+コンポーネントと void 要素を自己終了タグで書きます。内容がある div は終了タグを残します。
 
 ```vue
 <template>
@@ -62,6 +62,6 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/html_self_closing.rs#L30) · [全ルール](../all.md)

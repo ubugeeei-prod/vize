@@ -11,7 +11,7 @@ export const scriptType2Explanations: readonly ExplanationRecord[] = [
     "script/no-side-effects-in-computed-properties",
     "`doubled` assigns to `this.count`, and `reversed` mutates `this.items` through `reverse()`. Both getters modify the state they are supposed to derive from.",
     "`doubled` returns the multiplication without assignment. `reversed` copies the array before reversing it, so the original component state is unchanged by the getter.",
-    "`doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらも値を導出すべき getter が元の状態を変更しています。",
+    "`doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらのゲッターも、値を計算する元の状態を変更してしまっています。",
     "`doubled` は代入せず乗算結果を返します。`reversed` は配列をコピーしてから反転し、getter が元のコンポーネント状態を変更しないようにします。",
   ],
   [
@@ -61,7 +61,7 @@ export const scriptType2Explanations: readonly ExplanationRecord[] = [
     "The plain script’s only meaningful statement exports an object containing just `name` and `inheritAttrs`; these options can be expressed by `defineOptions`.",
     "The shown `data()` method makes the script carry real Options API logic, so it falls outside this rule’s conservative options-only suggestion. This Good demonstrates an allowed exception; the direct migration would put `defineOptions({ name: 'MyComponent', inheritAttrs: false })` in `<script setup>`.",
     "通常の script の処理が `name` と `inheritAttrs` だけを持つオブジェクトの export に限られ、`defineOptions` で表せるオプションだけを宣言しています。",
-    "例の `data()` が実際の Options API の処理を持つため、オプションだけの script を対象とする慎重な提案の範囲外になります。この Good は許可される例外を示します。直接移行する場合は `<script setup>` 内で `defineOptions({ name: 'MyComponent', inheritAttrs: false })` を使います。",
+    "`data()` が Options API の処理を含むため、オプションの宣言だけを持つ script を対象とする、このルールの提案の範囲外です。この良い例は、通常の script を残せる例外を示しています。悪い例を直接移行する場合は `<script setup>` 内で `defineOptions({ name: 'MyComponent', inheritAttrs: false })` を使います。",
   ],
   [
     "script/prefer-import-from-vue",
@@ -74,7 +74,7 @@ export const scriptType2Explanations: readonly ExplanationRecord[] = [
     "script/prefer-ref-over-reactive",
     "The state is created with `reactive`, contrary to this opinionated rule’s preference for refs. The example illustrates a style preference, not an inherently invalid reactive object.",
     "The examples create both scalar and object state with `ref`; related fields may also be split into separate refs. This satisfies the preferred state-construction form.",
-    "状態を `reactive` で作り、この意見を持つルールが推奨する ref を使っていません。これはスタイルの推奨を示す例であり、reactive オブジェクト自体が不正という意味ではありません。",
+    "状態を `reactive` で作っており、ref を優先するこのルールの方針に合っていません。これはスタイルの推奨を示す例であり、reactive オブジェクト自体が不正という意味ではありません。",
     "スカラーとオブジェクトの状態をどちらも `ref` で作ります。関連するフィールドを個別の ref に分ける例も含め、推奨する状態の作成形式にそろえます。",
   ],
   [
@@ -88,7 +88,7 @@ export const scriptType2Explanations: readonly ExplanationRecord[] = [
     "script/prefer-use-id",
     "`id` contains `Math.random()`, so the generated input/label identifier can differ between server and client rendering. Its ID-named binding is the rule’s recognized generation context.",
     "Vue 3.5+ `useId()` generates the identifier, and both `:for` and `:id` continue reading the same binding instead of independently generating random values.",
-    "`id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で変わり得ます。ID の名前を持つこの変数が、ルールの認識する生成箇所です。",
+    "`id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で異なる可能性があります。この例では、`id` という変数名から ID の生成箇所だと判定されます。",
     "Vue 3.5 以降の `useId()` で識別子を作り、`:for` と `:id` は同じ変数を参照し続けます。ランダムな値の生成を取り除きます。",
   ],
   [
@@ -96,7 +96,7 @@ export const scriptType2Explanations: readonly ExplanationRecord[] = [
     "`setup` destructures `slots` from its context argument, the access form this rule prefers to replace.",
     "`useSlots()` retrieves the slots inside setup, preserving the render function and its optional default-slot call without a context parameter.",
     "`setup` がコンテキスト引数から `slots` を分割代入で取り出しており、このルールが置換を推奨する参照形式です。",
-    "setup 内で `useSlots()` から slot を取得し、コンテキスト引数を使わずに render 関数と default slot の任意の呼び出しを保ちます。",
+    "setup 内で `useSlots()` からスロットを取得します。コンテキスト引数を使わず、レンダー関数と、デフォルトスロットが存在する場合だけ呼び出す処理を保ちます。",
   ],
   [
     "script/prefer-use-template-ref",
@@ -123,7 +123,7 @@ export const scriptType2Explanations: readonly ExplanationRecord[] = [
     "script/require-explicit-slots",
     "The typed `defineProps<{ id: number }>()` establishes TypeScript syntax, but setup uses `useSlots()` without a `defineSlots` declaration. The rule therefore finds consumed slots without an explicit slot contract.",
     "`defineSlots` declares a `default` slot whose props include `msg: string`; `useSlots()` now appears alongside an explicit typed slot contract.",
-    "型付きの `defineProps<{ id: number }>()` により TypeScript の構文があることが分かりますが、setup が `defineSlots` の宣言なしに `useSlots()` を使い、参照する slot の明示的な契約がありません。",
+    "型付きの `defineProps<{ id: number }>()` から、この例が TypeScript の構文を使っていることが分かります。しかし setup では `defineSlots` を宣言せずに `useSlots()` を使っており、利用するスロットの型が明示されていません。",
     "`defineSlots` で `msg: string` を props に持つ `default` slot を宣言し、`useSlots()` と明示的な型付き slot 契約を併記します。",
   ],
   [

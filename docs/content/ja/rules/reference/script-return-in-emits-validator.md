@@ -11,10 +11,10 @@ Options API の emits validator に戻り値を用意します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-現在の SFC フィルターが対象とする block-body arrow を使います。validator 本体には method shorthand の処理もありますが、現在の SFC prefilter はその形を確実には実行しません。
+この例では、現在の SFC フィルターが対象にする、関数本体を波括弧で囲んだアロー関数を使います。バリデーター自体はメソッドの省略記法にも対応していますが、現在の SFC 事前フィルターでは、その形式の検査が確実に呼び出されません。
 
 ## 設定（Vite+）
 
@@ -39,7 +39,7 @@ vp run lint
 
 ## 悪い
 
-`submit` の validator が payload をログ出力するだけで検査結果を返さず、ブロックの結果が undefined になります。
+`submit` のバリデーターがペイロードをログ出力するだけで検査結果を返さず、関数の戻り値が undefined になります。
 
 ```vue
 <script lang="ts">
@@ -49,7 +49,7 @@ export default { emits: { submit: (payload: unknown) => { console.log(payload); 
 
 ## 良い
 
-`return payload != null` を追加し、値を返さず終了する代わりに payload の真偽値の検査結果を返します。
+`return payload != null` を追加し、ペイロードが null でも undefined でもないかを検査した結果を、真偽値で返します。
 
 ```vue
 <script lang="ts">
@@ -57,6 +57,6 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) · [全ルール](../all.md)

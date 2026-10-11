@@ -4,7 +4,7 @@ title: "型と script のルール"
 
 # 型と script のルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
 
 | ルール | 例 | 目的 |
@@ -15,7 +15,7 @@ title: "型と script のルール"
 | [`script/define-macros-order`](#script-define-macros-order) | [悪い](#script-define-macros-order-bad) · [良い](#script-define-macros-order-good) | script setup のコンパイラーマクロを一定の順に宣言します。 |
 | [`script/define-props-declaration`](#script-define-props-declaration) | [悪い](#script-define-props-declaration-bad) · [良い](#script-define-props-declaration-good) | defineProps を型による宣言形式に揃えます。 |
 | [`script/define-props-destructuring`](#script-define-props-destructuring) | [悪い](#script-define-props-destructuring-bad) · [良い](#script-define-props-destructuring-good) | defineProps の分割代入スタイルを指定した方針に揃えます。 |
-| [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [悪い](#script-no-arrow-functions-in-watch-bad) · [良い](#script-no-arrow-functions-in-watch-good) | Options API の watch に this を持たないアロー関数を使う箇所を検出します。 |
+| [`script/no-arrow-functions-in-watch`](#script-no-arrow-functions-in-watch) | [悪い](#script-no-arrow-functions-in-watch-bad) · [良い](#script-no-arrow-functions-in-watch-good) | Options API の watch ハンドラーにアロー関数を使う箇所を検出します。 |
 | [`script/no-async-in-computed`](#script-no-async-in-computed) | [悪い](#script-no-async-in-computed-bad) · [良い](#script-no-async-in-computed-good) | computed の getter で非同期関数を使う箇所を検出します。 |
 | [`script/no-boolean-default`](#script-no-boolean-default) | [悪い](#script-no-boolean-default-bad) · [良い](#script-no-boolean-default-good) | Boolean prop の冗長な default を検出します。 |
 | [`script/no-deep-destructure-in-props`](#script-no-deep-destructure-in-props) | [悪い](#script-no-deep-destructure-in-props-bad) · [良い](#script-no-deep-destructure-in-props-good) | defineProps の深い分割代入を検出します。 |
@@ -35,7 +35,7 @@ title: "型と script のルール"
 | [`script/no-next-tick`](#script-no-next-tick) | [悪い](#script-no-next-tick-bad) · [良い](#script-no-next-tick-good) | Vapor 向けコンポーネントの nextTick() 使用を検出します。 |
 | [`script/no-options-api`](#script-no-options-api) | [悪い](#script-no-options-api-bad) · [良い](#script-no-options-api-good) | Vapor で Options API を使用する箇所を検出します。 |
 | [`script/no-potential-component-option-typo`](#script-no-potential-component-option-typo) | [悪い](#script-no-potential-component-option-typo-bad) · [良い](#script-no-potential-component-option-typo-good) | Options API のオプション名の入力ミスを検出します。 |
-| [`script/no-reactive-destructure`](#script-no-reactive-destructure) | [悪い](#script-no-reactive-destructure-bad) · [良い](#script-no-reactive-destructure-good) | reactive オブジェクトの反応性を失う分割代入を検出します。 |
+| [`script/no-reactive-destructure`](#script-no-reactive-destructure) | [悪い](#script-no-reactive-destructure-bad) · [良い](#script-no-reactive-destructure-good) | reactive オブジェクトを分割代入し、リアクティビティを失う箇所を検出します。 |
 | [`script/no-ref-as-operand`](#script-no-ref-as-operand) | [悪い](#script-no-ref-as-operand-bad) · [良い](#script-no-ref-as-operand-good) | ref を演算の値として使う際に .value を参照します。 |
 | [`script/no-required-prop-with-default`](#script-no-required-prop-with-default) | [悪い](#script-no-required-prop-with-default-bad) · [良い](#script-no-required-prop-with-default-good) | required: true と default を同時に持つ prop を検出します。 |
 | [`script/no-reserved-identifiers`](#script-no-reserved-identifiers) | [悪い](#script-no-reserved-identifiers-bad) · [良い](#script-no-reserved-identifiers-good) | Vue コンパイラーが予約した識別子の宣言を検出します。 |
@@ -65,7 +65,7 @@ title: "型と script のルール"
 | [`script/require-prop-types`](#script-require-prop-types) | [悪い](#script-require-prop-types-bad) · [良い](#script-require-prop-types-good) | 各 prop の型を宣言します。 |
 | [`script/require-symbol-provide`](#script-require-symbol-provide) | [悪い](#script-require-symbol-provide-bad) · [良い](#script-require-symbol-provide-good) | provide / inject のキーに衝突しにくい Symbol を使います。 |
 | [`script/require-typed-object-prop`](#script-require-typed-object-prop) | [悪い](#script-require-typed-object-prop-bad) · [良い](#script-require-typed-object-prop-good) | Object / Array の prop に具体的な型を指定します。 |
-| [`script/require-typed-ref`](#script-require-typed-ref) | [悪い](#script-require-typed-ref-bad) · [良い](#script-require-typed-ref-good) | 空・null・undefined で初期化する ref() に型引数を指定します。 |
+| [`script/require-typed-ref`](#script-require-typed-ref) | [悪い](#script-require-typed-ref-bad) · [良い](#script-require-typed-ref-good) | 引数なし、null、undefined で呼び出す ref() に型引数を指定します。 |
 | [`script/require-valid-default-prop`](#script-require-valid-default-prop) | [悪い](#script-require-valid-default-prop-bad) · [良い](#script-require-valid-default-prop-good) | prop の default を宣言した型に合う値にします。 |
 | [`script/return-in-computed-property`](#script-return-in-computed-property) | [悪い](#script-return-in-computed-property-bad) · [良い](#script-return-in-computed-property-good) | computed の getter に値を返す return を用意します。 |
 | [`script/return-in-emits-validator`](#script-return-in-emits-validator) | [悪い](#script-return-in-emits-validator-bad) · [良い](#script-return-in-emits-validator-good) | Options API の emits validator に戻り値を用意します。 |
@@ -74,7 +74,7 @@ title: "型と script のルール"
 | [`script/valid-define-props`](#script-valid-define-props) | [悪い](#script-valid-define-props-bad) · [良い](#script-valid-define-props-good) | defineProps の重複や型と実行時引数の併用を検出します。 |
 | [`script/valid-next-tick`](#script-valid-next-tick) | [悪い](#script-valid-next-tick-bad) · [良い](#script-valid-next-tick-good) | nextTick() の完了を await、then、または callback で扱います。 |
 | [`type/no-floating-promises`](#type-no-floating-promises) | [悪い](#type-no-floating-promises-bad) · [良い](#type-no-floating-promises-good) | 処理しないまま放置された Promise を検出します。 |
-| [`type/no-reactivity-loss`](#type-no-reactivity-loss) | [悪い](#type-no-reactivity-loss-bad) · [良い](#type-no-reactivity-loss-good) | 代入や呼び出しによって反応性を失うスナップショットを検出します。 |
+| [`type/no-reactivity-loss`](#type-no-reactivity-loss) | [悪い](#type-no-reactivity-loss-bad) · [良い](#type-no-reactivity-loss-good) | リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。 |
 | [`type/no-unsafe-template-binding`](#type-no-unsafe-template-binding) | [悪い](#type-no-unsafe-template-binding-bad) · [良い](#type-no-unsafe-template-binding-good) | テンプレートで安全でない型の値を使用する箇所を検出します。 |
 | [`type/require-typed-emits`](#type-require-typed-emits) | [悪い](#type-require-typed-emits-bad) · [良い](#type-require-typed-emits-good) | defineEmits に型定義を指定します。 |
 | [`type/require-typed-props`](#type-require-typed-props) | [悪い](#type-require-typed-props-bad) · [良い](#type-require-typed-props-good) | defineProps に型定義を指定します。 |
@@ -91,7 +91,7 @@ title: "型と script のルール"
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -143,7 +143,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/component_options_name_casing.rs#L44) · [全ルール](all.md)
 
@@ -156,7 +156,7 @@ emit するカスタムイベント名を指定した形式に揃えます。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -206,7 +206,7 @@ emit('myEvent')
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/custom_event_name_casing.rs#L61) · [全ルール](all.md)
 
@@ -219,7 +219,7 @@ defineEmits を型による宣言形式に揃えます。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -269,7 +269,7 @@ emit("change", 1);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_emits_declaration.rs#L39) · [全ルール](all.md)
 
@@ -282,7 +282,7 @@ script setup のコンパイラーマクロを一定の順に宣言します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -336,7 +336,7 @@ defineSlots<{ default(props: {}): any }>()
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_macros_order.rs#L46) · [全ルール](all.md)
 
@@ -349,7 +349,7 @@ defineProps を型による宣言形式に揃えます。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -399,7 +399,7 @@ console.log(props.title);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_declaration.rs#L40) · [全ルール](all.md)
 
@@ -412,7 +412,7 @@ defineProps の分割代入スタイルを指定した方針に揃えます。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -460,20 +460,20 @@ const { foo, bar = 'default' } = defineProps<{ foo: string; bar?: string }>()
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/define_props_destructuring.rs#L29) · [全ルール](all.md)
 
 ### `script/no-arrow-functions-in-watch`
 
-Options API の watch に this を持たないアロー関数を使う箇所を検出します。
+Options API の watch ハンドラーにアロー関数を使う箇所を検出します。
 
 [悪い例](#script-no-arrow-functions-in-watch-bad) · [良い例](#script-no-arrow-functions-in-watch-good)
 
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -523,7 +523,7 @@ export default {
 
 **良い**
 
-両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントに束縛できるようにします。オブジェクト形式の `deep: true` オプションも維持できます。
+両ハンドラーを通常のメソッドに変え、Vue が `this` をコンポーネントインスタンスに束縛できるようにします。オブジェクト形式では `deep: true` オプションも指定できます。
 
 ```vue annotate="add:4,8,9"
 <script lang="ts">
@@ -541,7 +541,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_arrow_functions_in_watch.rs#L59) · [全ルール](all.md)
 
@@ -554,7 +554,7 @@ computed の getter で非同期関数を使う箇所を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -616,7 +616,7 @@ watch(query, async (value, _oldValue, onCleanup) => {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_async_in_computed.rs#L46) · [全ルール](all.md)
 
@@ -629,7 +629,7 @@ Boolean prop の冗長な default を検出します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -657,7 +657,7 @@ vp run lint
 
 **悪い**
 
-`disabled` と `checked` は、単独の型が `Boolean` である prop に `default` を指定しています。明示的な `false` もこのルールの対象です。
+`disabled` と `checked` は、型に `Boolean` コンストラクターだけを指定した prop に `default` を付けています。明示的な `false` もこのルールの対象です。
 
 ```vue annotate="remove:4,5,6"
 <script lang="ts">
@@ -693,7 +693,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_boolean_default.rs#L54) · [全ルール](all.md)
 
@@ -706,7 +706,7 @@ defineProps の深い分割代入を検出します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -734,7 +734,7 @@ vp run lint
 
 **悪い**
 
-代入パターンが `user` の内部まで進んで `name` を取り出し、既定で許される浅い props 分割代入の深さを超えています。
+props の `user` からさらに `name` を分割代入で取り出し、既定で許される浅い分割代入の深さを超えています。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -756,7 +756,7 @@ const userName = computed(() => props.user.name);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deep_destructure_in_props.rs#L37) · [全ルール](all.md)
 
@@ -769,7 +769,7 @@ Vue 3 で関数にすべき data オプションのオブジェクト指定を�
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -826,7 +826,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_data_object_declaration.rs#L48) · [全ルール](all.md)
 
@@ -838,8 +838,8 @@ Vue 2 の destroyed / beforeDestroy を検出し、Vue 3 の hook に置き換�
 
 既定の重大度: `error`  
 プリセット: _none_  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -879,7 +879,7 @@ export default { beforeDestroy() { clearTimeout(this.timer); } };
 
 **良い**
 
-フック名を `beforeUnmount` に変え、後片付けの本体を Vue 3 のライフサイクル名で保ちます。
+タイマーの後片付けの処理をそのまま残し、フック名を Vue 3 の `beforeUnmount` に変更します。
 
 ```vue annotate="add:2"
 <script lang="ts">
@@ -887,7 +887,7 @@ export default { beforeUnmount() { clearTimeout(this.timer); } };
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_destroyed_lifecycle.rs#L17) · [全ルール](all.md)
 
@@ -900,7 +900,7 @@ Vue 3 で $attrs に統合された $listeners を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -928,7 +928,7 @@ vp run lint
 
 **悪い**
 
-メンバー参照と引数の裸の参照がいずれも `$listeners` を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。
+`this.$listeners` と `ctx.$listeners` のメンバー参照、および引数に直接渡した `$listeners` が、削除された API を使っています。Vue 3 ではリスナーが属性に統合され、この API は削除されました。
 
 ```vue annotate="remove:2,3,4"
 <script setup lang="ts">
@@ -942,7 +942,7 @@ emit('input', $listeners)
 
 **良い**
 
-参照を `this.$attrs` と setup コンテキストの `ctx.attrs` に移し、削除されたリスナー API を置き換えます。例の参照元は、それぞれのコンポーネントコンテキストで用意されている必要があります。
+参照を `this.$attrs` と setup コンテキストの `ctx.attrs` に置き換え、削除されたリスナー API の使用をなくします。この例は、それぞれの参照元を使えるコンポーネントの文脈を前提にしています。
 
 ```vue annotate="add:2,3"
 <script setup lang="ts">
@@ -951,7 +951,7 @@ const forwarded = ctx.attrs
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_listeners_api.rs#L40) · [全ルール](all.md)
 
@@ -964,7 +964,7 @@ Vue 3 で $slots に統合された $scopedSlots を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -992,7 +992,7 @@ vp run lint
 
 **悪い**
 
-`this.$scopedSlots`、`ctx.$scopedSlots`、裸の `$scopedSlots` 参照が、Vue 3 で削除された Vue 2 の scoped slot API を使っています。
+`this.$scopedSlots`、`ctx.$scopedSlots`、`this` や `ctx` を付けずに参照した `$scopedSlots` が、Vue 3 で削除された Vue 2 のスコープ付きスロット API を使っています。
 
 ```vue annotate="remove:2,3,4"
 <script setup lang="ts">
@@ -1016,7 +1016,7 @@ render($slots.default)
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_dollar_scopedslots_api.rs#L44) · [全ルール](all.md)
 
@@ -1029,7 +1029,7 @@ Vue 3 で削除された $on / $off / $once を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1086,7 +1086,7 @@ emitter.on('event', handler)
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_events_api.rs#L42) · [全ルール](all.md)
 
@@ -1099,7 +1099,7 @@ prop の default / validator 内で使えなくなった this を検出します
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1127,7 +1127,7 @@ vp run lint
 
 **悪い**
 
-prop の既定値関数と validator が `this` を参照していますが、Vue 3 ではこれらの関数からコンポーネントインスタンスに依存できません。
+prop の既定値関数とバリデーターが `this` を参照していますが、Vue 3 ではこれらの関数の `this` からコンポーネントインスタンスを参照できません。
 
 ```vue annotate="remove:6,7,8,13,14"
 <script lang="ts">
@@ -1179,7 +1179,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_deprecated_props_default_this.rs#L71) · [全ルール](all.md)
 
@@ -1192,7 +1192,7 @@ Options API の props / data / computed などのキー重複を検出します�
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1220,7 +1220,7 @@ vp run lint
 
 **悪い**
 
-`foo` が props と data の両方に、`bar` が computed と methods の両方に宣言され、コンポーネントインスタンス上の同じキーを取り合っています。
+`foo` が props と data の両方に、`bar` が computed と methods の両方に宣言され、コンポーネントインスタンス上で同じキーの宣言が衝突しています。
 
 ```vue annotate="remove:5,8,9,10,11"
 <script lang="ts">
@@ -1259,7 +1259,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_dupe_keys.rs#L52) · [全ルール](all.md)
 
@@ -1272,7 +1272,7 @@ fallthrough 属性を同じコンポーネントで二重に適用する箇所�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1300,7 +1300,7 @@ vp run lint
 
 **悪い**
 
-明示的な `inheritAttrs: true` が Vue の既定動作を繰り返しています。このルールは、ルートの `$attrs` 展開が例にない場合もこの冗長なリテラルを報告します。
+Vue の既定で有効な属性継承を、`inheritAttrs: true` であらためて指定しています。このルールは、ルート要素に `$attrs` を展開するコードがない場合も、この冗長な指定を報告します。
 
 ```vue annotate="remove:2,3"
 <script lang="ts">
@@ -1322,7 +1322,7 @@ export default {}                      // default inheritance, unstated
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_duplicate_attr_inheritance.rs#L73) · [全ルール](all.md)
 
@@ -1335,7 +1335,7 @@ script setup 内の export 文を検出します。
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1383,7 +1383,7 @@ const count = 1;
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_export_in_script_setup.rs#L49) · [全ルール](all.md)
 
@@ -1446,7 +1446,7 @@ const appConfig = inject("app-config");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_get_current_instance.rs#L38) · [全ルール](all.md)
 
@@ -1459,7 +1459,7 @@ const appConfig = inject("app-config");
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1510,7 +1510,7 @@ const emit = defineEmits<{ save: [id: number] }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_import_compiler_macros.rs#L39) · [全ルール](all.md)
 
@@ -1523,7 +1523,7 @@ Vue 内部モジュールからの import を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1572,7 +1572,7 @@ import { ref, computed } from 'vue'
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_internal_imports.rs#L28) · [全ルール](all.md)
 
@@ -1585,7 +1585,7 @@ scoped slot 関数に複数の引数を渡す箇所を検出します。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1613,7 +1613,7 @@ vp run lint
 
 **悪い**
 
-slot 呼び出しが複数の位置引数、または個数不明の引数展開を渡しています。Vue の slot は位置引数の列ではなく、一つの props オブジェクトを受け取ります。
+スロットの呼び出しで、複数の位置引数や、個数不明の引数をスプレッド構文で渡しています。Vue のスロットは位置引数の列ではなく、一つの props オブジェクトを受け取ります。
 
 ```vue annotate="remove:2,3,4,5,6"
 <script setup lang="ts">
@@ -1629,7 +1629,7 @@ slots.default(...args)
 
 **良い**
 
-`{ foo, bar }` でデータを一つの引数にまとめます。`slotProps` を渡す呼び出しと引数を省いた呼び出しも、対応する slot 呼び出し形式に収まります。
+`{ foo, bar }` でデータを一つの引数にまとめます。`slotProps` を渡す呼び出しと引数を省いた呼び出しも、このルールが許可するスロットの呼び出し方です。
 
 ```vue annotate="add:2,3,4"
 <script setup lang="ts">
@@ -1639,7 +1639,7 @@ slots.default()
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_multiple_slot_args.rs#L61) · [全ルール](all.md)
 
@@ -1704,7 +1704,7 @@ onMounted(() => { input.value?.focus(); });
 <template><input ref="input"></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_next_tick.rs#L40) · [全ルール](all.md)
 
@@ -1769,7 +1769,7 @@ const count = ref(0);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_options_api.rs#L43) · [全ルール](all.md)
 
@@ -1782,7 +1782,7 @@ Options API のオプション名の入力ミスを検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1830,20 +1830,20 @@ export default { methods: { save() {} } };
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_potential_component_option_typo.rs#L19) · [全ルール](all.md)
 
 ### `script/no-reactive-destructure`
 
-reactive オブジェクトの反応性を失う分割代入を検出します。
+reactive オブジェクトを分割代入し、リアクティビティを失う箇所を検出します。
 
 [悪い例](#script-no-reactive-destructure-bad) · [良い例](#script-no-reactive-destructure-good)
 
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1895,7 +1895,7 @@ const { count, name } = toRefs(state);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reactive_destructure.rs#L43) · [全ルール](all.md)
 
@@ -1908,7 +1908,7 @@ ref を演算の値として使う際に .value を参照します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -1960,7 +1960,7 @@ const next = count.value + 1;
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_ref_as_operand.rs#L41) · [全ルール](all.md)
 
@@ -1973,7 +1973,7 @@ required: true と default を同時に持つ prop を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2021,7 +2021,7 @@ export default { props: { title: { type: String, default: "Untitled" } } };
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs#L29) · [全ルール](all.md)
 
@@ -2034,7 +2034,7 @@ Vue コンパイラーが予約した識別子の宣言を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2086,7 +2086,7 @@ const componentData = {};
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_identifiers.rs#L49) · [全ルール](all.md)
 
@@ -2099,7 +2099,7 @@ Options API のキーに Vue の予約名を使う箇所を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2147,7 +2147,7 @@ export default { data() { return { elementLabel: "custom" }; } };
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L32) · [全ルール](all.md)
 
@@ -2160,7 +2160,7 @@ prop 宣言に Vue の予約名を使う箇所を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2222,7 +2222,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_reserved_props.rs#L53) · [全ルール](all.md)
 
@@ -2235,7 +2235,7 @@ export default {
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 **設定（Vite+）**
@@ -2290,7 +2290,7 @@ viewStorage.write('view.scroll', String(window.scrollY))
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_globals.rs#L57) · [全ルール](all.md)
 
@@ -2303,7 +2303,7 @@ viewStorage.write('view.scroll', String(window.scrollY))
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
 この例では window.localStorage を禁止しています。既定の禁止リストはなく、有効にするだけでは検出されません。
@@ -2363,7 +2363,7 @@ const token = authStorage.read("token");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_restricted_members.rs#L53) · [全ルール](all.md)
 
@@ -2376,7 +2376,7 @@ Options API の computed getter 内の副作用を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2404,7 +2404,7 @@ vp run lint
 
 **悪い**
 
-`doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらも値を導出すべき getter が元の状態を変更しています。
+`doubled` が `this.count` に代入し、`reversed` が `reverse()` で `this.items` を変更しています。どちらのゲッターも、値を計算する元の状態を変更してしまっています。
 
 ```vue annotate="remove:8,9,12"
 <script lang="ts">
@@ -2449,7 +2449,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_side_effects_in_computed.rs#L70) · [全ルール](all.md)
 
@@ -2462,7 +2462,7 @@ export default {
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2537,7 +2537,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_top_level_ref_in_script.rs#L63) · [全ルール](all.md)
 
@@ -2550,7 +2550,7 @@ setup / render 内で毎回コンポーネントを定義する箇所を検出�
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2601,7 +2601,7 @@ export default { setup() { return { Child }; } };
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_unstable_nested_components.rs#L19) · [全ルール](all.md)
 
@@ -2614,7 +2614,7 @@ export default { setup() { return { Child }; } };
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2665,7 +2665,7 @@ emit('change')
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/no_unused_emit_declarations.rs#L74) · [全ルール](all.md)
 
@@ -2678,7 +2678,7 @@ Options API の computed プロパティをメソッドとして呼ぶ箇所を�
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2726,7 +2726,7 @@ export default { computed: { total() { return 3; } }, methods: { log() { console
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_use_computed_property_like_method.rs#L44) · [全ルール](all.md)
 
@@ -2739,7 +2739,7 @@ Vue 3.5 以降の props 分割代入の既定値を勧めます。
 既定の重大度: `warning`  
 プリセット: `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2787,7 +2787,7 @@ const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string 
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_with_defaults.rs#L41) · [全ルール](all.md)
 
@@ -2800,7 +2800,7 @@ const { count = 0, name = "Ada" } = defineProps<{ count?: number; name?: string 
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 派生値だけを代入する watcher が対象です。ユーザーが編集するコピーや別の副作用を持つ処理は対象外です。
@@ -2855,7 +2855,7 @@ const doubled = computed(() => count.value * 2);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_computed.rs#L41) · [全ルール](all.md)
 
@@ -2868,7 +2868,7 @@ name / inheritAttrs だけの通常 script を defineOptions() にまとめま�
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2908,7 +2908,7 @@ export default { name: 'MyComponent', inheritAttrs: false }
 
 **良い**
 
-例の `data()` が実際の Options API の処理を持つため、オプションだけの script を対象とする慎重な提案の範囲外になります。この Good は許可される例外を示します。直接移行する場合は `<script setup>` 内で `defineOptions({ name: 'MyComponent', inheritAttrs: false })` を使います。
+`data()` が Options API の処理を含むため、オプションの宣言だけを持つ script を対象とする、このルールの提案の範囲外です。この良い例は、通常の script を残せる例外を示しています。悪い例を直接移行する場合は `<script setup>` 内で `defineOptions({ name: 'MyComponent', inheritAttrs: false })` を使います。
 
 ```vue annotate="add:2,3,4,5,6"
 <script lang="ts">
@@ -2920,7 +2920,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_define_options.rs#L52) · [全ルール](all.md)
 
@@ -2932,8 +2932,8 @@ export default {
 
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
-自動修正: 対応する検出で利用可能  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+自動修正: 対応している診断で利用できます  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -2982,7 +2982,7 @@ import { ref, h } from 'vue'
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_import_from_vue.rs#L32) · [全ルール](all.md)
 
@@ -2995,7 +2995,7 @@ import { ref, h } from 'vue'
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3023,7 +3023,7 @@ vp run lint
 
 **悪い**
 
-状態を `reactive` で作り、この意見を持つルールが推奨する ref を使っていません。これはスタイルの推奨を示す例であり、reactive オブジェクト自体が不正という意味ではありません。
+状態を `reactive` で作っており、ref を優先するこのルールの方針に合っていません。これはスタイルの推奨を示す例であり、reactive オブジェクト自体が不正という意味ではありません。
 
 ```vue annotate="remove:2,3,4,5,6"
 <script setup lang="ts">
@@ -3056,7 +3056,7 @@ const userAge = ref(20)
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_ref_over_reactive.rs#L44) · [全ルール](all.md)
 
@@ -3069,7 +3069,7 @@ setup の context.attrs を useAttrs() に置き換えます。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3118,7 +3118,7 @@ export default { setup() { const attrs = useAttrs(); console.log(attrs.class); }
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_attrs.rs#L44) · [全ルール](all.md)
 
@@ -3131,7 +3131,7 @@ export default { setup() { const attrs = useAttrs(); console.log(attrs.class); }
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3159,7 +3159,7 @@ vp run lint
 
 **悪い**
 
-`id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で変わり得ます。ID の名前を持つこの変数が、ルールの認識する生成箇所です。
+`id` に `Math.random()` の値が含まれ、input と label の識別子がサーバーとクライアントの描画で異なる可能性があります。この例では、`id` という変数名から ID の生成箇所だと判定されます。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -3182,7 +3182,7 @@ const id = useId();
 <template><label :for="id">Name</label><input :id="id" /></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_id.rs#L48) · [全ルール](all.md)
 
@@ -3195,7 +3195,7 @@ setup の context.slots を useSlots() に置き換えます。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3238,7 +3238,7 @@ export default defineComponent({
 
 **良い**
 
-setup 内で `useSlots()` から slot を取得し、コンテキスト引数を使わずに render 関数と default slot の任意の呼び出しを保ちます。
+setup 内で `useSlots()` からスロットを取得します。コンテキスト引数を使わず、レンダー関数と、デフォルトスロットが存在する場合だけ呼び出す処理を保ちます。
 
 ```vue annotate="add:2,4,5,6,7"
 <script lang="ts">
@@ -3252,7 +3252,7 @@ export default defineComponent({
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_slots.rs#L44) · [全ルール](all.md)
 
@@ -3265,7 +3265,7 @@ export default defineComponent({
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3325,7 +3325,7 @@ const error = ref(null)
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/prefer_use_template_ref.rs#L75) · [全ルール](all.md)
 
@@ -3338,7 +3338,7 @@ const error = ref(null)
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3398,7 +3398,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_default_prop.rs#L58) · [全ルール](all.md)
 
@@ -3411,7 +3411,7 @@ emit するイベントを defineEmits または emits に宣言します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3461,7 +3461,7 @@ emit("save");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_explicit_emits.rs#L61) · [全ルール](all.md)
 
@@ -3474,7 +3474,7 @@ useSlots() で使う slot を defineSlots の型で宣言します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3502,7 +3502,7 @@ vp run lint
 
 **悪い**
 
-型付きの `defineProps<{ id: number }>()` により TypeScript の構文があることが分かりますが、setup が `defineSlots` の宣言なしに `useSlots()` を使い、参照する slot の明示的な契約がありません。
+型付きの `defineProps<{ id: number }>()` から、この例が TypeScript の構文を使っていることが分かります。しかし setup では `defineSlots` を宣言せずに `useSlots()` を使っており、利用するスロットの型が明示されていません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -3524,7 +3524,7 @@ const slots = useSlots()
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_explicit_slots.rs#L92) · [全ルール](all.md)
 
@@ -3537,7 +3537,7 @@ const slots = useSlots()
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3597,7 +3597,7 @@ function greet(name: string): string {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_function_return_type.rs#L49) · [全ルール](all.md)
 
@@ -3610,7 +3610,7 @@ prop の type に文字列ではなくコンストラクターを指定します
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3671,7 +3671,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_prop_type_constructor.rs#L59) · [全ルール](all.md)
 
@@ -3684,7 +3684,7 @@ export default {
 既定の重大度: `error`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3712,7 +3712,7 @@ vp run lint
 
 **悪い**
 
-配列の要素は `status` という名前だけを宣言し、`null` の値と空の descriptor にも実行時の prop 型がありません。
+配列の要素は `status` という名前だけを宣言しています。値を `null` にした prop と、空の設定オブジェクトを指定した prop にも、実行時の型宣言がありません。
 
 ```vue annotate="remove:3,4,5,6,8,9"
 <script lang="ts">
@@ -3733,7 +3733,7 @@ export default {
 
 **良い**
 
-`status: String` で省略形式のコンストラクターを指定し、`other` の descriptor に `type: Number` を付けます。両方の props が型の宣言を持つようになります。
+`status: String` でコンストラクターを直接指定し、`other` の設定オブジェクトに `type: Number` を付けます。両方の props に型が宣言されます。
 
 ```vue annotate="add:4,5"
 <script lang="ts">
@@ -3746,7 +3746,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_prop_types.rs#L58) · [全ルール](all.md)
 
@@ -3759,7 +3759,7 @@ provide / inject のキーに衝突しにくい Symbol を使います。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3819,7 +3819,7 @@ const user = inject(UserKey)
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_symbol_provide.rs#L39) · [全ルール](all.md)
 
@@ -3832,7 +3832,7 @@ Object / Array の prop に具体的な型を指定します。
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3860,7 +3860,7 @@ vp run lint
 
 **悪い**
 
-裸の `Object` と `Array` は広い実行時の分類しか表さず、`user` や `items` の要素の形を明示する静的な型がありません。
+`Object` と `Array` コンストラクターだけでは、実行時にオブジェクトか配列かを示すにとどまり、`user` の構造や `items` の要素の型を表す具体的な静的型がありません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -3885,20 +3885,20 @@ const props = defineProps({
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_typed_object_prop.rs#L63) · [全ルール](all.md)
 
 ### `script/require-typed-ref`
 
-空・null・undefined で初期化する ref() に型引数を指定します。
+引数なし、null、undefined で呼び出す ref() に型引数を指定します。
 
 [悪い例](#script-require-typed-ref-bad) · [良い例](#script-require-typed-ref-good)
 
 既定の重大度: `warning`  
 プリセット: _none_  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -3954,7 +3954,7 @@ const c = ref(0)          // inferred Ref<number>
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/require_typed_ref.rs#L55) · [全ルール](all.md)
 
@@ -3967,7 +3967,7 @@ prop の default を宣言した型に合う値にします。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4030,7 +4030,7 @@ export default {
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/require_valid_default_prop.rs#L68) · [全ルール](all.md)
 
@@ -4043,7 +4043,7 @@ computed の getter に値を返す return を用意します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4084,7 +4084,7 @@ const total = computed(() => { 1 + 2; });
 
 **良い**
 
-`return 1 + 2` で式を getter の戻り値にします。このルールは式文だけでなく、getter 自身の値を返す return を確認します。
+`return 1 + 2` で計算結果をゲッターの戻り値にします。式文があるだけでは、このルールの条件を満たしません。ゲッター本体に、値を返す return が必要です。
 
 ```vue annotate="add:3"
 <script setup lang="ts">
@@ -4093,7 +4093,7 @@ const total = computed(() => { return 1 + 2; });
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/return_in_computed_property.rs#L31) · [全ルール](all.md)
 
@@ -4106,10 +4106,10 @@ Options API の emits validator に戻り値を用意します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-現在の SFC フィルターが対象とする block-body arrow を使います。validator 本体には method shorthand の処理もありますが、現在の SFC prefilter はその形を確実には実行しません。
+この例では、現在の SFC フィルターが対象にする、関数本体を波括弧で囲んだアロー関数を使います。バリデーター自体はメソッドの省略記法にも対応していますが、現在の SFC 事前フィルターでは、その形式の検査が確実に呼び出されません。
 
 **設定（Vite+）**
 
@@ -4136,7 +4136,7 @@ vp run lint
 
 **悪い**
 
-`submit` の validator が payload をログ出力するだけで検査結果を返さず、ブロックの結果が undefined になります。
+`submit` のバリデーターがペイロードをログ出力するだけで検査結果を返さず、関数の戻り値が undefined になります。
 
 ```vue annotate="remove:2"
 <script lang="ts">
@@ -4148,7 +4148,7 @@ export default { emits: { submit: (payload: unknown) => { console.log(payload); 
 
 **良い**
 
-`return payload != null` を追加し、値を返さず終了する代わりに payload の真偽値の検査結果を返します。
+`return payload != null` を追加し、ペイロードが null でも undefined でもないかを検査した結果を、真偽値で返します。
 
 ```vue annotate="add:2"
 <script lang="ts">
@@ -4156,7 +4156,7 @@ export default { emits: { submit: (payload: unknown) => { return payload != null
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/props_emits/return_in_emits_validator.rs#L59) · [全ルール](all.md)
 
@@ -4169,7 +4169,7 @@ defineEmits の重複や型と実行時引数の併用を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4217,7 +4217,7 @@ defineEmits<{ save: [] }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_emits.rs#L45) · [全ルール](all.md)
 
@@ -4230,7 +4230,7 @@ defineOptions の引数と使用回数を検査します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4281,7 +4281,7 @@ defineOptions({ name: 'Foo', inheritAttrs: false })
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_options.rs#L41) · [全ルール](all.md)
 
@@ -4294,7 +4294,7 @@ defineProps の重複や型と実行時引数の併用を検出します。
 既定の重大度: `error`  
 プリセット: `essential`, `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4342,7 +4342,7 @@ defineProps<{ title: string }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_define_props.rs#L44) · [全ルール](all.md)
 
@@ -4355,7 +4355,7 @@ nextTick() の完了を await、then、または callback で扱います。
 既定の重大度: `warning`  
 プリセット: `happy-path`, `ecosystem`, `nuxt`, `opinionated`  
 自動修正: なし。修正内容を確認してください  
-適用範囲: Vue SFC の JS / TS script。Options API または script setup の対象は例を参照してください。  
+適用範囲: Vue SFC の JavaScript / TypeScript の script ブロック。対象となる Options API または script setup の形式は例を参照してください。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
 **設定（Vite+）**
@@ -4405,7 +4405,7 @@ await nextTick();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/valid_next_tick.rs#L55) · [全ルール](all.md)
 
@@ -4421,7 +4421,7 @@ await nextTick();
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -4462,7 +4462,7 @@ save();
 
 **良い**
 
-`void save()` で実行結果を意図的に捨てる指定をし、このルールの条件を満たします。結果を破棄する明示的な印であり、rejection を処理するものではありません。
+`void save()` で Promise の完了を待たずに結果を破棄する意図を明示し、このルールの条件を満たします。この指定は Promise の拒否を処理するものではありません。
 
 ```vue annotate="add:3"
 <script setup lang="ts">
@@ -4471,13 +4471,13 @@ void save();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_floating_promises.rs#L13) · [全ルール](all.md)
 
 ### `type/no-reactivity-loss`
 
-代入や呼び出しによって反応性を失うスナップショットを検出します。
+リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。
 
 [悪い例](#type-no-reactivity-loss-bad) · [良い例](#type-no-reactivity-loss-good)
 
@@ -4487,7 +4487,7 @@ void save();
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -4539,7 +4539,7 @@ const count = toRef(state, "count");
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_reactivity_loss.rs#L12) · [全ルール](all.md)
 
@@ -4555,7 +4555,7 @@ const count = toRef(state, "count");
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -4583,7 +4583,7 @@ vp run lint
 
 **悪い**
 
-補間する `value` の型を明示的に `any` とし、チェッカーがテンプレートの binding を安全な具体的な型として確認できません。
+補間する `value` の型を明示的に `any` としているため、型チェッカーはテンプレートに結び付ける値を、安全な具体的な型として検査できません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -4605,7 +4605,7 @@ const value: string = "Hello";
 <template><p>{{ value }}</p></template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unsafe_template_binding.rs#L12) · [全ルール](all.md)
 
@@ -4621,7 +4621,7 @@ defineEmits に型定義を指定します。
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -4649,7 +4649,7 @@ vp run lint
 
 **悪い**
 
-配列だけの `defineEmits(["save"])` はイベント名を宣言するだけで、型付きの payload 契約がありません。
+配列だけの `defineEmits(["save"])` はイベント名を宣言するだけで、ペイロードの型が宣言されていません。
 
 ```vue annotate="remove:2"
 <script setup lang="ts">
@@ -4661,7 +4661,7 @@ defineEmits(["save"]);
 
 **良い**
 
-`defineEmits<{ save: [] }>()` で空の payload タプルを持つ型付きの `save` イベントを宣言し、payload の引数を受け取らないことを明示します。
+`defineEmits<{ save: [] }>()` で、ペイロードを空のタプル型として宣言します。これにより、`save` イベントがペイロードの引数を受け取らないことを明示します。
 
 ```vue annotate="add:2"
 <script setup lang="ts">
@@ -4669,7 +4669,7 @@ defineEmits<{ save: [] }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_emits.rs#L54) · [全ルール](all.md)
 
@@ -4685,7 +4685,7 @@ defineProps に型定義を指定します。
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: ルール固有のオプションはありません。重大度とプリセットは設定できます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -4733,7 +4733,7 @@ defineProps<{ title: string }>();
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/require_typed_props.rs#L57) · [全ルール](all.md)
 
@@ -4749,9 +4749,9 @@ script とテンプレートの条件式で安全な真偽判定を使います�
 適用範囲: Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。  
 オプション: [型付きオプションと既定値](options.md)を参照してください。
 
-typeAware とルールを明示的に有効にします。既定では null を含み得る数値は許可されず、通常の数値は許可されます。
+typeAware とこのルールを明示的に有効にします。既定では null または undefined を含み得る数値は許可されず、どちらも含まない数値は許可されます。
 
-型を使う検査には Corsa と TypeScript プロジェクトが必要です。typeAware だけでは opt-in ルールは有効になりません。
+型情報を使う検査には、ネイティブの Corsa ランタイムと TypeScript プロジェクトが必要です。typeAware を有効にするだけでは、個別に有効化する必要があるルールは有効になりません。
 
 **設定（Vite+）**
 
@@ -4779,7 +4779,7 @@ vp run lint
 
 **悪い**
 
-`if (count)` が nullable な数値の truthiness に依存し、明示的な真偽値の検査を使っていません。ゼロと未指定も同じ偽として扱います。
+`if (count)` は、undefined を含み得る数値をそのまま真偽判定に使い、明示的な真偽値の比較をしていません。数値のゼロと値の未指定を、どちらも偽として扱ってしまいます。
 
 ```vue annotate="remove:3"
 <script setup lang="ts">
@@ -4792,7 +4792,7 @@ if (count) console.log(count);
 
 **良い**
 
-`count !== undefined && count > 0` で存在と正の値を別々に検査し、省略可能な値を絞り込んだうえで明示的な真偽値の条件を作ります。
+`count !== undefined && count > 0` で、値が undefined でないことと正の数であることを別々に検査します。省略可能な値を絞り込んでから、真偽値を返す条件式で判定します。
 
 ```vue annotate="add:3"
 <script setup lang="ts">
@@ -4801,6 +4801,6 @@ if (count !== undefined && count > 0) console.log(count);
 </script>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/type_aware/strict_boolean_expressions.rs#L7) · [全ルール](all.md)

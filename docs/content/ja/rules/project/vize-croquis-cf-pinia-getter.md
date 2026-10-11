@@ -4,7 +4,7 @@ title: "vize:croquis/cf/pinia-getter"
 
 # `vize:croquis/cf/pinia-getter`
 
-Pinia の getter を `storeToRefs` なしで読んでおり、reactive のままになりません。
+この契約の例では、setup で Pinia の getter から現在のプリミティブ値をコピーし、更新に追従しないスナップショットを作っています。追跡される計算やテンプレートで getter を直接読む場合はリアクティビティを保てます。この例では `storeToRefs()` を使って値を取り出します。
 
 既定の重大度: 現在は生成されません  
 適用範囲: 解析対象のコンポーネント構成と、下記に示す対応済みの情報  
@@ -17,7 +17,7 @@ Pinia のインストールを前提とし、main.ts がマウント前に plugi
 
 ## 共通のプロジェクト ファイル
 
-以下のファイルは悪い例・良い例で共通です。import する Vue と、例で使う場合は vue-router / Pinia をインストールしてください。バージョン固有の注意がある場合は、その前提に合わせてください。エントリー ファイルでコンポーネントの関係を明確にしています。
+以下のファイルは、悪い例・良い例の両方で変更せずに使います。プロジェクトには Vue をインストールし、例で import している場合は vue-router や Pinia もインストールしてください。バージョン固有の対応条件がある場合は、その注意に従ってください。エントリーファイルによって、コンポーネント間の関係を明示しています。
 
 `main.ts`
 
@@ -88,7 +88,7 @@ const { doubled } = storeToRefs(store);
 
 ```
 
-良い例のファイルは上で説明した変更を示します。プロジェクトには別の検出が残る場合があります。
+良い例のファイルは、上で説明した変更を示すものです。プロジェクト全体には、別の診断が適用される場合があります。
 
 [公開の説明](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/explain/snapshots/ja.txt)
 

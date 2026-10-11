@@ -4,7 +4,7 @@ title: "Musea と CSS のルール"
 
 # Musea と CSS のルール
 
-このページに、各ルールの目的・前提・設定・完全な悪い例と良い例をまとめています。変更箇所は行の色で示し、コピーしたコードには完全なソースを保持します。各例に現在の対応範囲も明記しています。
+このページに、各ルールの目的・前提・設定と、省略のない悪い例・良い例をまとめています。変更箇所は行の色で示します。コードをコピーすると、ソースコード全体を取得できます。各例に現在の対応範囲も明記しています。
 
 
 | ルール | 例 | 目的 |
@@ -20,7 +20,7 @@ title: "Musea と CSS のルール"
 | [`css/prefer-slotted`](#css-prefer-slotted) | [悪い](#css-prefer-slotted-bad) · [良い](#css-prefer-slotted-good) | slot や子コンポーネントに対する scoped CSS のセレクターを検査します。 |
 | [`css/require-font-display`](#css-require-font-display) | [悪い](#css-require-font-display-bad) · [良い](#css-require-font-display-good) | @font-face に font-display を指定します。 |
 | [`musea/no-empty-variant`](#musea-no-empty-variant) | [悪い](#musea-no-empty-variant-bad) · [良い](#musea-no-empty-variant-good) | 内容のない variant ブロックを検出します。 |
-| [`musea/prefer-design-tokens`](#musea-prefer-design-tokens) | [悪い](#musea-prefer-design-tokens-bad) · [良い](#musea-prefer-design-tokens-good) | 登録した design token に一致する直接指定値を CSS 変数で表現します。 |
+| [`musea/prefer-design-tokens`](#musea-prefer-design-tokens) | [悪い](#musea-prefer-design-tokens-bad) · [良い](#musea-prefer-design-tokens-good) | 登録したデザイントークンの値に一致する CSS の直接指定値を、対応する CSS 変数で表現します。 |
 | [`musea/require-component`](#musea-require-component) | [悪い](#musea-require-component-bad) · [良い](#musea-require-component-good) | art ブロックに対象の component を指定します。 |
 | [`musea/require-title`](#musea-require-title) | [悪い](#musea-require-title-bad) · [良い](#musea-require-title-good) | art ブロックに title を指定します。 |
 | [`musea/unique-variant-names`](#musea-unique-variant-names) | [悪い](#musea-unique-variant-names-bad) · [良い](#musea-unique-variant-names-good) | 同じ Art ファイル内の variant 名を一意にします。 |
@@ -65,7 +65,7 @@ vp run lint
 
 **悪い**
 
-ローカルの p を `.message` の CSS で非表示にし、テンプレートに表示条件を指定していません。
+このコンポーネントの p 要素を `.message` の CSS で非表示にし、テンプレートには表示条件を指定していません。
 
 ```vue annotate="remove:2,4,5,6,7,8,9"
 <template>
@@ -91,7 +91,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_display_none.rs#L27) · [全ルール](all.md)
 
@@ -132,7 +132,7 @@ vp run lint
 
 **悪い**
 
-button の余白と色に数値や 16 進の色を直接指定しています。
+`.button` のスタイルで、余白の数値と 16 進数の色を宣言に直接指定しています。
 
 ```vue annotate="remove:3,4"
 <style scoped>
@@ -158,7 +158,7 @@ button の余白と色に数値や 16 進の色を直接指定しています。
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_hardcoded_values.rs#L30) · [全ルール](all.md)
 
@@ -223,7 +223,7 @@ vp run lint
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19) · [全ルール](all.md)
 
@@ -288,7 +288,7 @@ important を使わず、カスタムプロパティから色を参照します�
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L14) · [全ルール](all.md)
 
@@ -351,7 +351,7 @@ vp run lint
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_utility_classes.rs#L37) · [全ルール](all.md)
 
@@ -414,7 +414,7 @@ vp run lint
 </template>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_v_bind_performance.rs#L20) · [全ルール](all.md)
 
@@ -479,7 +479,7 @@ margin-inline-start を使い、インライン方向の開始側に余白を指
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15) · [全ルール](all.md)
 
@@ -520,7 +520,7 @@ vp run lint
 
 **悪い**
 
-平らなルールの `.card .title` に、親のセレクターを含めて指定しています。
+ルールをネストせず、子孫セレクター `.card .title` に親のセレクターも含めて指定しています。
 
 ```vue annotate="remove:2"
 <style scoped>
@@ -532,7 +532,7 @@ vp run lint
 
 **良い**
 
-`.card` の中に `.title` を入れ、親子のスタイルを一緒に管理します。
+`.title` のルールを `.card` の中にネストし、親子のスタイルの関係を一か所にまとめます。
 
 ```vue annotate="add:2"
 <style scoped>
@@ -540,7 +540,7 @@ vp run lint
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_nested_selectors.rs#L14) · [全ルール](all.md)
 
@@ -581,7 +581,7 @@ vp run lint
 
 **悪い**
 
-scoped の CSS で、渡された要素ではなく slot の出口を対象にしています。
+scoped の CSS で、スロットに渡された要素ではなく、スロットの挿入位置を表す slot を対象にしています。
 
 ```vue annotate="remove:2"
 <style scoped>
@@ -593,7 +593,7 @@ slot { color: red; }
 
 **良い**
 
-:slotted(.label) を使い、slot から渡される label の要素を対象にします。
+:slotted(.label) を使い、スロットに渡された .label クラスを持つ要素を対象にします。
 
 ```vue annotate="add:2"
 <style scoped>
@@ -601,7 +601,7 @@ slot { color: red; }
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_slotted.rs#L34) · [全ルール](all.md)
 
@@ -657,7 +657,7 @@ font-face にフォントの参照先はありますが、font-display の方針
 
 **良い**
 
-font-display: swap を追加し、フォールバックからフォントを表示する方針を指定します。
+font-display: swap を追加し、代替フォントで表示した後、読み込まれたフォントへ切り替える方針を指定します。
 
 ```vue annotate="add:5"
 <style>
@@ -669,7 +669,7 @@ font-display: swap を追加し、フォールバックからフォントを表�
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13) · [全ルール](all.md)
 
@@ -710,7 +710,7 @@ vp run lint
 
 **悪い**
 
-primary の名前がある variant が空で、プレビューする内容がありません。
+name を primary にしているものの、variant の中身が空で、プレビューする内容がありません。
 
 ```vue annotate="remove:2"
 <art title="Button" component="./Button.vue">
@@ -722,7 +722,7 @@ primary の名前がある variant が空で、プレビューする内容があ
 
 **良い**
 
-variant の中に primary の Button と Save の内容を入れます。
+variant の中に tone="primary" の Button を置き、Save を表示します。
 
 ```vue annotate="add:2,3,4"
 <art title="Button" component="./Button.vue">
@@ -732,13 +732,13 @@ variant の中に primary の Button と Save の内容を入れます。
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/no_empty_variant.rs#L8) · [全ルール](all.md)
 
 ### `musea/prefer-design-tokens`
 
-登録した design token に一致する直接指定値を CSS 変数で表現します。
+登録したデザイントークンの値に一致する CSS の直接指定値を、対応する CSS 変数で表現します。
 
 [悪い例](#musea-prefer-design-tokens-bad) · [良い例](#musea-prefer-design-tokens-good)
 
@@ -805,7 +805,7 @@ art の例で、設定した primary のデザイントークンではなく、�
 
 **良い**
 
-この例で設定する --color-primary のトークンを参照します。
+この例の設定に登録された --color-primary のトークンを参照します。
 
 `Button.art.vue`
 
@@ -820,7 +820,7 @@ art の例で、設定した primary のデザイントークンではなく、�
 </style>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/prefer_design_tokens.rs#L32) · [全ルール](all.md)
 
@@ -885,7 +885,7 @@ defineArt("./Button.vue", { title: "Button" });
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_component.rs#L11) · [全ルール](all.md)
 
@@ -938,7 +938,7 @@ art に Button.vue の指定はありますが、title がありません。
 
 **良い**
 
-defineArt のオプションに Button の title を指定します。
+defineArt のオプションで title を Button にし、art ブロックのタイトルを指定します。
 
 ```vue annotate="add:1,2,3,4,5"
 <script setup>
@@ -950,7 +950,7 @@ defineArt("./Button.vue", { title: "Button" });
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31) · [全ルール](all.md)
 
@@ -1013,7 +1013,7 @@ primary と secondary の別々の名前を指定します。
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/unique_variant_names.rs#L10) · [全ルール](all.md)
 
@@ -1074,6 +1074,6 @@ variant に primary の name を指定します。
 </art>
 ```
 
-良い例は上記の設定でこのルールの検出を避ける例です。他のルールでは検出される場合があります。
+良い例は上記の設定でこのルールの診断が出ない例です。他のルールの診断は出る場合があります。
 
 [実装](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/valid_variant.rs#L8) · [全ルール](all.md)
