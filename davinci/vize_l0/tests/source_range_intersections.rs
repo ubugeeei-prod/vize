@@ -58,7 +58,8 @@ fn point_and_saturated_source_ranges_do_not_gain_byte_membership() {
     ] {
         assert!(empty.is_empty());
         assert_eq!(empty.len(), 0);
-        assert!(!empty.contains(empty.start));
+        let start_membership = empty.contains(empty.start);
+        assert!(!start_membership);
         assert!(!empty.intersects(&enclosing));
         assert!(!enclosing.intersects(&empty));
         assert_eq!(empty.intersection(&enclosing), None);

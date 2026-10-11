@@ -27,6 +27,12 @@ Serde derive, so this is a narrow before-fix reproduction, not repository
 qualification. Fresh exact-head Actions and actual protected merge remain
 required before delivery.
 
+First source Check `38142399359` rejected the numeric-range `contains()` call
+inside an assertion under the existing conservative partial-output lint. Keep
+the same complete Boolean observation in a named local before its assertion.
+Do not change the lint or its allowlist; all fixture bytes and production
+behavior remain exact. The successor requires fresh complete Actions.
+
 This independent foundation leaf adds no provider, pipeline stage, product
 route or host dependency. It changes no benchmark input or numeric ceiling.
 Whole #6834, #6826 and #6100 remain open; host isolation, native product parity
