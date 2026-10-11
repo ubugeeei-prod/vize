@@ -1,0 +1,113 @@
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { authenticate, consumerPaths, githubReader, optionsFrom, sha256 } from "./custody.mjs";
+import { acquireDistribution, assertLoadedBinary } from "./distribution.mjs";
+import { loadFixtures } from "./fixtures.mjs";
+import { observe } from "./observe.mjs";
+import { originalContracts, originalObservers, originalScenarios } from "./contracts.mjs";
+
+const checkout = fs.realpathSync(fileURLToPath(new URL("../../../../", import.meta.url)));
+const options = optionsFrom(process.env);
+assert.equal(process.platform, "linux", "actual hosted GNU consumer required");
+assert.equal(process.arch, "x64");
+assert.equal(process.env.GITHUB_REPOSITORY, "ubugeeei-prod/vize");
+assert.equal(process.env.GITHUB_REF, "refs/heads/main", "reviewed main observer required");
+assert.match(process.env.GITHUB_WORKFLOW_SHA ?? "", /^[0-9a-f]{40}$/);
+const driver = spawnSync("git", ["rev-parse", "HEAD"], { cwd: checkout, encoding: "utf8" });
+assert.equal(driver.status, 0);
+assert.equal(driver.stdout.trim(), process.env.GITHUB_WORKFLOW_SHA);
+const { consumer, output } = consumerPaths(process.env, checkout);
+fs.mkdirSync(consumer, { mode: 0o700 });
+fs.mkdirSync(output, { mode: 0o700 });
+const receipt = {
+  schema: "vize.released-typed-defaults-acceptance",
+  version: 1,
+  options,
+  observer: {
+    source: driver.stdout.trim(),
+    run: process.env.GITHUB_RUN_ID,
+    attempt: process.env.GITHUB_RUN_ATTEMPT,
+  },
+  consumer: { root: consumer, platform: process.platform, architecture: process.arch },
+  startedAt: new Date().toISOString(),
+  success: false,
+};
+const persist = () =>
+  fs.writeFileSync(path.join(output, "receipt.json"), `${JSON.stringify(receipt, null, 2)}\n`);
+try {
+  persist();
+  const json = githubReader(output);
+  const official = await authenticate(options, json);
+  receipt.official = official;
+  persist();
+  const fixtures = await loadFixtures(
+    options.head,
+    path.join(consumer, "source-fixtures"),
+    json,
+    official.commit.tree.sha,
+  );
+  fixtures.vectors = originalScenarios(fixtures);
+  receipt.originalContracts = originalContracts;
+  receipt.originalObservers = originalObservers;
+  receipt.sourceAuthorities = fixtures.authorities;
+  receipt.corpora = {
+    typed: fixtures.typed,
+    first: fixtures.first,
+    second: fixtures.second,
+    projection: fixtures.projection,
+  };
+  persist();
+  const distribution = await acquireDistribution(official.release, options.tag, consumer);
+  receipt.distribution = distribution;
+  persist();
+  const version = spawnSync(distribution.member.binary, ["--version"], {
+    cwd: consumer,
+    encoding: "utf8",
+    timeout: 60_000,
+  });
+  receipt.versionObservation = {
+    status: version.status,
+    signal: version.signal,
+    stdout: version.stdout,
+    stderr: version.stderr,
+    error: version.error ? String(version.error) : null,
+  };
+  persist();
+  assert.equal(version.error, undefined);
+  assert.equal(version.signal, null);
+  assert.equal(version.status, 0);
+  assert.equal(version.stderr, "");
+  assert.equal(version.stdout, `vize ${options.tag.slice(1)}\n`);
+  receipt.observations = observe(fixtures, distribution, consumer, output);
+  const final = await authenticate(options, json);
+  assert.equal(final.releaseRun.run_attempt, official.releaseRun.run_attempt);
+  assert.equal(final.release.id, official.release.id);
+  assert.deepEqual(
+    final.release.assets,
+    official.release.assets,
+    "official assets changed during public observation",
+  );
+  assertLoadedBinary(distribution.member.binary, distribution.member, consumer, true);
+  receipt.completedAt = new Date().toISOString();
+  receipt.success = true;
+  receipt.evidence =
+    "56 original typed-default and 224 original compatibility whole CLI packets; no full ecosystem Matrix acceptance";
+  persist();
+  console.log(
+    JSON.stringify({
+      success: true,
+      typed: 56,
+      compatibility: 224,
+      head: options.head,
+      binarySha256: distribution.member.sha256,
+      receiptSha256: sha256(fs.readFileSync(path.join(output, "receipt.json"))),
+    }),
+  );
+} catch (error) {
+  receipt.failure = { name: error.name, message: error.message };
+  persist();
+  throw error;
+}
