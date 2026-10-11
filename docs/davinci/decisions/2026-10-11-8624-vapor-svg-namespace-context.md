@@ -31,6 +31,18 @@ The provider must be the actually loaded `.node` binding inside this checkout's
 Actions must successfully build that artifact before the existing browser test.
 Focused compiler controls exercise both the default and retained lowering paths.
 
+Exact b2286bc source Check 38151692953 successfully built the fresh NAPI artifact
+but failed before any browser case: a static native import was bundled into
+Vite's temporary config, redirecting relative binding resolution. Require the
+original absolute entry through `createRequire`; keep the actual binding
+identity, checkout and digest assertions. The same source also exposed one
+canonical DOM and SSR divergence on vue-data-ui's SVG title children: the
+generic L1 projection still used stateless RCDATA recording while Armature now
+retained those children. The [complete failed SSR emissions and startup packet](./fixtures/vapor-svg-namespace-8624/source-failures-b228.json)
+preserve both failures with exact job identities and raw-log digests. Keep all
+canonical corpus comparisons active and repair the producer; these failures
+grant no source or publication qualification.
+
 The focused SVG `title` compiler control exposed a separate tokenizer defect:
 the HTML RCDATA mode escaped its child markup. Resolve only an opening `title`
 from each parser owner's existing live parent scope, after the name callback.

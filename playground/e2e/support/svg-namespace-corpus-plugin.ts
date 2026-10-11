@@ -6,11 +6,16 @@ import { createRequire } from "node:module";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite-plus";
-import native from "../../../npm/native/index.js";
 
 const prefix = "virtual:vize-svg-namespace-8624/";
 const root = new URL("../../../tests/_fixtures/differential/compiler/", import.meta.url);
 const fromUi = createRequire(new URL("../../../npm/ui/package.json", import.meta.url));
+// Keep native resolution relative to its original entry, never Vite's bundled config.
+const nativeEntry = new URL("../../../npm/native/index.js", import.meta.url);
+const fromNative = createRequire(nativeEntry);
+const native = fromNative(
+  fileURLToPath(nativeEntry),
+) as typeof import("../../../npm/native/index.js");
 const fromVue = createRequire(fromUi.resolve("vue-vapor-runtime/package.json"));
 const compiler = fromVue("@vue/compiler-sfc");
 const runtime = fromUi.resolve("vue-vapor-runtime/dist/vue.runtime-with-vapor.esm-browser.js");
@@ -48,7 +53,6 @@ export function svgNamespaceCorpusPlugin(): Plugin {
       const controls = JSON.parse(readFileSync(new URL(pack.reference.path, root), "utf8"));
       assert.equal(controls.length, 1);
       if (name === "controls") {
-        const fromNative = createRequire(new URL("../../../npm/native/index.js", import.meta.url));
         const bindings = Object.values(fromNative.cache).filter(
           (module) =>
             module?.filename.endsWith(".node") && module.exports.compileSfc === native.compileSfc,
