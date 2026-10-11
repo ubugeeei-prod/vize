@@ -41,11 +41,18 @@ const { mode, system, state, stored } = useColorMode<"contrast">({
 
 <style scoped>
 .mode-card {
+  --guide-sample-light-background: #ffffff;
+  --guide-sample-light-foreground: #182833;
+  --guide-sample-dark-background: #182833;
+  --guide-sample-dark-foreground: #fff9ee;
+  --guide-sample-contrast-background: #000000;
+  --guide-sample-contrast-foreground: #fff37c;
+
   border: 1px solid currentColor;
   border-radius: 8px;
   padding: 12px;
-  background: #ffffff;
-  color: #182833;
+  background: var(--guide-sample-light-background);
+  color: var(--guide-sample-light-foreground);
 
   & h3 {
     margin-top: 0;
@@ -53,14 +60,14 @@ const { mode, system, state, stored } = useColorMode<"contrast">({
 }
 :global(html[data-guide-mode="dark"]) {
   & .mode-card {
-    background: #182833;
-    color: #fff9ee;
+    background: var(--guide-sample-dark-background);
+    color: var(--guide-sample-dark-foreground);
   }
 }
 :global(html[data-guide-mode="contrast"]) {
   & .mode-card {
-    background: #000000;
-    color: #fff37c;
+    background: var(--guide-sample-contrast-background);
+    color: var(--guide-sample-contrast-foreground);
   }
 }
 </style>

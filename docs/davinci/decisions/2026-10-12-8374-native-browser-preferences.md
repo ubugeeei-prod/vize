@@ -36,6 +36,14 @@ ancestor because the sample stays white in Dark mode. Retain that actual
 computed-color assertion and its failure evidence. Nest the scoped sample rule
 inside its global HTML attribute selector, then require fresh complete capture;
 do not change the provider, expected color, or browser deadline.
+The first exact-head source Check (`38154719811`, job `114515215730`) then
+rejects three literal color declarations under `css/no-hardcoded-values`.
+Retain the completed job log and the unchanged opinionated preset. Define
+named sample palette variables and reference the same exact color values,
+then obtain fresh complete native capture and source/Docs qualification.
+The unchanged computed-color gate also rejects circular custom-property
+initializers during local preparation; keep literal palette initializers and
+variable references in separate declarations.
 
 All thirty-two complete source packets must match the displayed code and
 compiled iframe hashes. Retain complete initial/repeated native capture,
