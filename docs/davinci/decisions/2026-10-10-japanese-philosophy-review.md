@@ -23,3 +23,11 @@ protected Stack delivery and deployed proof remain required; the site-wide
 Japanese editorial issue remains open.
 
 After the first three native Japanese Stack layers actually merged, rebase this remaining child once onto the genuinely refreshed WASM parent. Preserve every reviewed source/example and incoming record byte; the owned philosophy clause already occupies a separate existing canonical paragraph. Fresh exact-head Actions and Docs are required, with earlier qualification retained only as history.
+
+On 2026-10-11, replay this original layer over the genuine actual-main WASM
+parent. Re-read the complete Japanese philosophy page with the current English
+source and public crate roles. All original reader, test and fixture bytes stay
+unchanged, including the historical measured example, twelve roles, pipeline,
+Vue 2/2.7/webpack boundaries and original bookmarks. Retain all incoming
+canonical decisions. Fresh exact-head source Actions and full Docs are required
+before Ready; site-wide review and public reading acceptance remain unfinished.
