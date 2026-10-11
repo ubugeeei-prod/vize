@@ -55,3 +55,15 @@ correction, not new editorial or deployment qualification; the successor
 still requires fresh exact Actions and actual bounded/full browser execution.
 
 After the first three native Japanese Stack layers actually merged, rebase this remaining child once onto the genuinely refreshed philosophy parent. Move only the owned canonical review/font clause to the existing product-tracking paragraph, preserving every incoming record and the complete observed packet, helper, glyph assertions, negative controls, reviewed articles and original custody. Fresh exact-head Actions and Docs are required; earlier qualification remains historical.
+
+On 2026-10-11, replay the four original article/font commits over the genuine
+actual-main philosophy parent. Keep all four complete reviewed reader inputs,
+original article/custody assertions, fixtures and the narrow font helper exact.
+Main has moved per-page font verification to `navigation-render-page.ts`: apply
+the original complete-packet error and gate call at that active owner, preserving
+typed packet validation, positive glyph assertions, all regular CJK behavior and
+every historical negative control. Keep the current coordinator unchanged and
+add a regression against orphaned font-helper wiring. Fresh source Actions and
+full Docs remain required before Ready. The companion
+[delivery ledger](./2026-10-11-japanese-editorial-stack-delivery.md) records
+original source custody and the unfinished site-wide/public acceptance.

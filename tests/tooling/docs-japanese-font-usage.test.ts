@@ -44,3 +44,18 @@ void test("Japanese font acceptance rejects missing, wrong, custom and unused fo
     "non-CJK glyphs cannot credit an unused CJK font",
   );
 });
+
+void test("the current page renderer uses the font gate and retains typed complete packet evidence", () => {
+  const source = readFileSync(
+    new URL("../../docs/scripts/navigation-render-page.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /import \{ usesInstalledCjkFont \} from "\.\/japanese-font-usage\.ts"/);
+  assert.match(source, /usesInstalledCjkFont\(japaneseFonts\)/);
+  assert.match(
+    source,
+    /Array\.isArray\(fontPacket\.fonts\)[\s\S]*?fontPacket\.fonts\.every\(isFontUsage\)/,
+  );
+  assert.match(source, /japaneseFonts\.some\(\(font\) => font\.glyphCount > 0\)/);
+  assert.match(source, /JSON\.stringify\(fontPacket\)/);
+});
