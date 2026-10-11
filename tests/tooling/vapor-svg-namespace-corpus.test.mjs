@@ -56,8 +56,8 @@ void test("SVG title parser controls register the complete native and Armature c
     .trimEnd()
     .split("\n")
     .map((row) => row.split("\t"));
-  assert.equal(controls.length, 11);
-  assert.equal(new Set(controls.map(([name]) => name)).size, 11);
+  assert.equal(controls.length, 12);
+  assert.equal(new Set(controls.map(([name]) => name)).size, 12);
   for (const fields of controls) assert.equal(fields.length, 3);
   assert.deepEqual(entry.runtime.rustTargets, [
     "davinci/vize_l1/tests/native_svg_title.rs",

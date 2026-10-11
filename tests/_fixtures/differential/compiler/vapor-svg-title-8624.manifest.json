@@ -11,14 +11,14 @@
         "files": [
           {
             "path": "vapor-svg-title-8624.tsv",
-            "sha256": "a99f3eaaa0e9cae077a587dc3d2dc6a922209477147cb43d4fc2bdb06bdbb0bf"
+            "sha256": "34b19ba8c4363dc8d2989ce59c7acf39d89ab8375c4e54ed84d04b56de6a0162"
           }
         ]
       },
       "reference": {
         "path": "vapor-svg-title-8624.tsv",
-        "sha256": "a99f3eaaa0e9cae077a587dc3d2dc6a922209477147cb43d4fc2bdb06bdbb0bf",
-        "source": "eleven independently authored complete ordered element/text streams; native parser additionally asserts lossless fidelity"
+        "sha256": "34b19ba8c4363dc8d2989ce59c7acf39d89ab8375c4e54ed84d04b56de6a0162",
+        "source": "twelve independently authored complete ordered element/text/interpolation streams; native component and generic projection additionally assert lossless fidelity"
       },
       "runtime": {
         "rustTargets": [
@@ -26,7 +26,7 @@
           "crates/vize_armature/src/parser/svg_title_tests.rs"
         ],
         "phase": "parser-source-controls",
-        "caseCount": 11,
+        "caseCount": 12,
         "nativeHandled": 0,
         "publicationQualification": false
       }

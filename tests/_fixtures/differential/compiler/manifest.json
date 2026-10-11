@@ -101,7 +101,7 @@
     },
     {
       "path": "vapor-svg-title-8624.manifest.json",
-      "sha256": "93668e54e09ae5d03af28e4d6154f8e54e47e5b7361c7e17a28942331603a338",
+      "sha256": "58ffa04961106339bfdf1ac3f76a7cdf2b16623c682fdb26e4c2a0844a3a80c6",
       "adapter": "compiler-rust-whole-source-parser-v1",
       "workflow": ".github/workflows/check.yml"
     }

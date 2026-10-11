@@ -19,6 +19,7 @@ fn observe(children: &[SurfaceChild<'_>], values: &mut Vec<String>) {
                 values.push(format!("-{name}"));
             }
             SurfaceChild::Text(node) => values.push(format!("={}", node.text)),
+            SurfaceChild::Interpolation(node) => values.push(format!("?{}", node.content.text)),
             _ => panic!("unexpected authored parser structure"),
         }
     }
@@ -43,7 +44,64 @@ fn native_svg_title_children_preserve_complete_html_rcdata_controls() {
         let mut actual = Vec::new();
         observe(&parsed.tree.children, &mut actual);
         assert_eq!(actual, expected, "{name}: entire ordered structure");
+        let (tree, errors) = vize_l1::parse(&allocator, source);
+        assert!(errors.is_empty(), "{name}: generic parse errors");
+        assert_eq!(check_fidelity(&tree), Ok(()), "{name}: generic fidelity");
+        let mut projected = Vec::new();
+        observe(&tree.children, &mut projected);
+        assert_eq!(projected, expected, "{name}: complete generic projection");
         count += 1;
     }
-    assert_eq!(count, 11, "all authored controls execute");
+    assert_eq!(count, 12, "all authored controls execute");
+}
+
+#[test]
+fn generic_projection_retains_neutral_heads_entities_comments_and_errors() {
+    let cases = [
+        (
+            "<div v-pre v-pre.foo :[keys['a.b']]=\"value\">{{ one }}<span>{{ two }}</span></div>",
+            false,
+            vec!["+div", "? one ", "+span", "? two ", "-span", "-div"],
+        ),
+        (
+            "<div data-x='&NotEqualTilde;'>&NotEqualTilde;{{ value }}</div>",
+            false,
+            vec!["+div", "=&NotEqualTilde;", "? value ", "-div"],
+        ),
+        (
+            "<div // retained comment\n :[key]=\"value\">{{ value }}</div>",
+            true,
+            vec!["+div", "? value ", "-div"],
+        ),
+    ];
+    for (source, in_tag_comments, expected) in cases {
+        let allocator = Allocator::new();
+        let (tree, errors) = vize_l1::parse_with_options(
+            &allocator,
+            source,
+            vize_l1::SurfaceParseOptions {
+                experimental_in_tag_comments: in_tag_comments,
+            },
+        );
+        assert!(errors.is_empty(), "{source}: {errors:?}");
+        assert_eq!(check_fidelity(&tree), Ok(()), "{source}");
+        let mut actual = Vec::new();
+        observe(&tree.children, &mut actual);
+        assert_eq!(actual, expected, "complete neutral source structure");
+        let div = match &tree.children[0] {
+            SurfaceChild::Element(div) => div,
+            _ => panic!("authored div"),
+        };
+        assert!(!div.open.is_verbatim(), "generic heads never enable v-pre");
+    }
+    let source = "<div :[broken>{{ value }}</div>";
+    let allocator = Allocator::new();
+    let (tree, errors) = vize_l1::parse(&allocator, source);
+    assert_eq!(check_fidelity(&tree), Ok(()));
+    assert_eq!(errors.len(), 1);
+    assert_eq!(
+        errors[0].code,
+        vize_l0::ErrorCode::MissingDynamicDirectiveArgumentEnd
+    );
+    assert_eq!(errors[0].offset, 13);
 }

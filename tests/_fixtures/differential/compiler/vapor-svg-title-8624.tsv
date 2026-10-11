@@ -9,3 +9,4 @@ mathml-unchanged	<math><title><b>old</b></title></math>	+math|+title|=<b>old</b>
 similar-tag	<svg><titlex><a>plain</a></titlex></svg>	+svg|+titlex|+a|=plain|-a|-titlex|-svg
 desc-html-title	<svg><desc><title><b>literal</b></title></desc></svg>	+svg|+desc|+title|=<b>literal</b>|-title|-desc|-svg
 title-nested-svg	<svg><title><svg><title><a>inner</a></title></svg></title></svg>	+svg|+title|+svg|+title|+a|=inner|-a|-title|-svg|-title|-svg
+conditional-title	<svg><path><title v-if="!isTooltip || !mutableConfig.showTooltip">{{country.name}}<template v-if="typeof country.value === 'number'">:{{country.value}}</template></title></path></svg>	+svg|+path|+title|?country.name|+template|=:|?country.value|-template|-title|-path|-svg

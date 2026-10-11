@@ -163,6 +163,26 @@ fn trace(source: &str, open: &[u8], close: &[u8], switches: Switches, repeat: bo
 }
 
 #[test]
+fn stateless_svg_title_callbacks_keep_the_complete_raw_stream() {
+    let actual = trace(
+        "<svg><title><a>x</a></title></svg>",
+        b"{{",
+        b"}}",
+        Switches::default(),
+        false,
+    );
+    assert_eq!(
+        actual.split("mode-polls:").next().unwrap(),
+        concat!(
+            "on_open_tag_name:(1, 4);on_open_tag_end:4;",
+            "on_open_tag_name:(6, 11);on_open_tag_end:11;",
+            "on_text:(12, 20);on_close_tag:22..27;",
+            "on_close_tag:30..33;on_end:();"
+        )
+    );
+}
+
+#[test]
 fn fixture_callbacks_and_utf8_cuts_keep_the_frozen_machine_contract() {
     let mut cases = oracle(include_bytes!(concat!(
         env!("CARGO_MANIFEST_DIR"),

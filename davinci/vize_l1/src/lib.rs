@@ -12,11 +12,13 @@
 //! (`render(tree) == source`, the SwiftSyntax import recorded in
 //! `docs/davinci/prior-art-toolchains.md`).
 //!
-//! The tree is emitted by the tokenizer now owned in [`markup::lex::compat`]:
-//! its event stream drives construction without a private re-scan. Armature
-//! re-exports the same implementation for its existing parser, so the
-//! product parser path remains unchanged while L1's ownership is established.
-//! The generic profile lexer still needs parity work under #6835.
+//! The tree is emitted by the shared native profile lexer. The generic parse
+//! entry reuses the Vue namespace owner with a neutral syntax policy: its
+//! existing no-`v-pre` behavior remains distinct from native dialect admission.
+//! This entry now uses the owner's arena-backed ancestry frames; the lexer
+//! remains one pass without an added pipeline stage or serialization.
+//! Its event stream drives construction without a private re-scan. Armature's
+//! published callback facade delegates to the same lexer state machine.
 //!
 //! # The hole policy (single, documented — L1→L2 consumers read this)
 //!

@@ -7,7 +7,7 @@
 
 use super::parse;
 use vize_l0::Allocator;
-use vize_relief::TemplateChildNode;
+use vize_relief::{ExpressionNode, TemplateChildNode};
 
 fn observe(children: &[TemplateChildNode<'_>], values: &mut Vec<String>) {
     for child in children {
@@ -18,6 +18,12 @@ fn observe(children: &[TemplateChildNode<'_>], values: &mut Vec<String>) {
                 values.push(format!("-{}", node.tag));
             }
             TemplateChildNode::Text(node) => values.push(format!("={}", node.content)),
+            TemplateChildNode::Interpolation(node) => match &node.content {
+                ExpressionNode::Simple(expression) => {
+                    values.push(format!("?{}", expression.content))
+                }
+                _ => panic!("unexpected compound authored interpolation"),
+            },
             _ => panic!("unexpected authored parser structure"),
         }
     }
@@ -42,5 +48,5 @@ fn svg_title_children_preserve_complete_html_rcdata_controls() {
         assert_eq!(actual, expected, "{name}: entire ordered structure");
         count += 1;
     }
-    assert_eq!(count, 11, "all authored controls execute");
+    assert_eq!(count, 12, "all authored controls execute");
 }
