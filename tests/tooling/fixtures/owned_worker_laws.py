@@ -322,8 +322,8 @@ class PrivacyAndRunnerLaws(unittest.TestCase):
                 self.assertEqual(actual, status)
                 calls = [json.loads(line) for line in count.read_text().splitlines()]
                 self.assertEqual(len(calls), 1)
-                self.assertEqual(calls[0]["argv"], command[3:])
-                self.assertEqual(calls[0]["env"], dict(os.environ))
+                self.assertTrue(calls[0]["argv"] == command[3:], "Original private argument vector changed")
+                self.assertTrue(calls[0]["env"] == dict(os.environ), "Original private environment changed")
                 self.assertEqual(calls[0]["cwd"], str(Path.cwd().resolve()))
                 receipt = json.loads((output / "public/outcome.json").read_text())
                 self.assertEqual(receipt["originalReturnCode"], status)

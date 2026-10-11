@@ -96,7 +96,7 @@ def live_controls(output, environment, receipt):
     controls = subprocess.run([sys.executable, str(output / "owned_worker_live_laws.py"), str(output)], env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=120)
     if controls.returncode != 0:
         raise ValueError("Actual debugger lifecycle controls failed")
-    receipt["liveControls"] = "original status, fault pass and cancellation/reaping passed"
+    receipt["liveControls"] = "original status/SIGINT, fault pass and cancellation/reaping passed"
 
 
 def controls_only(output):

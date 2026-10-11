@@ -70,7 +70,11 @@ def cleanup_interrupt(pending_signal):
         sender = int(gdb.parse_and_eval("$_siginfo._sifields._kill.si_pid"))
         uid = int(gdb.parse_and_eval("$_siginfo._sifields._kill.si_uid"))
         # Linux SI_USER/SI_TKILL from this actual GDB process, never a caller PID.
-        return number == signal.SIGINT and code in [0, -6] and sender == os.getpid() and uid == os.getuid()
+        match = number == signal.SIGINT and code in [0, -6] and sender == os.getpid() and uid == os.getuid()
+        publish({"status": "unavailable", "gap": "InterruptOriginObserved",
+                 "diagnosticInterruptOriginMatch": match, "signalCode": code,
+                 "senderPid": sender, "senderUid": uid, "actualDebuggerPid": os.getpid()})
+        return match
     except Exception as error:
         publish({"status": "unavailable", "gap": "InterruptOrigin" + type(error).__name__})
         return False

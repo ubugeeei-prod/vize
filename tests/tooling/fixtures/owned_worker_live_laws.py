@@ -47,7 +47,7 @@ def run_case(root, stage, directory, mode):
 void test('owned diagnostic control',async()=>{const directory=process.cwd()+'/../../../control-current';
 writeFileSync(directory+'/actual-worker-private.json',JSON.stringify({argv:readFileSync('/proc/self/cmdline','utf8').split('\\0').slice(0,-1),testWorker:process.env.NODE_TEST_CONTEXT==='child-v8'}),{flag:'wx',mode:0o600});
 const watcher=watch(directory);await new Promise(resolve=>{watcher.on('change',()=>{if(existsSync(directory+'/release'))resolve();});writeFileSync(directory+'/ready','ready');});
-watcher.close();if(readFileSync(directory+'/release','utf8')==='fault')process.kill(process.pid,'SIGSEGV');});
+watcher.close();const mode=readFileSync(directory+'/release','utf8');if(mode==='fault')process.kill(process.pid,'SIGSEGV');if(mode==='interrupt')process.kill(process.pid,'SIGINT');});
 """
     source.write_text(body)
     checked(["git", "add", TARGET], root)
@@ -96,7 +96,8 @@ watcher.close();if(readFileSync(directory+'/release','utf8')==='fault')process.k
             if worker.tracer() != 0: raise ValueError("Debugger remained attached after cancellation")
             (controls / "release").write_text("normal")
         else:
-            (controls / "release").write_text("fault" if mode == "fault" else "normal")
+            if mode == "original-interrupt": (stage / "gdb-private/detach-requested").write_text("")
+            (controls / "release").write_text("interrupt" if mode == "original-interrupt" else "fault" if mode == "fault" else "normal")
             def exited():
                 drain_packets(packets, debugger, worker, leader, profile, root, stage, receipt)
                 return debugger.poll() is not None
@@ -104,7 +105,7 @@ watcher.close();if(readFileSync(directory+'/release','utf8')==='fault')process.k
             close_gdb(debugger, reader, receipt)
             drain_packets(packets, debugger, worker, leader, profile, root, stage, receipt)
         status = child.wait(timeout=5)
-        if status != (1 if mode == "fault" else 0):
+        if status != (1 if mode in ["fault", "original-interrupt"] else 0):
             raise ValueError("Live control original runner status changed")
         statuses = [packet["status"] for packet in receipt.get("gdbPackets", [])]
         if ("SIGSEGV" in statuses) != (mode == "fault"):
@@ -114,6 +115,8 @@ watcher.close();if(readFileSync(directory+'/release','utf8')==='fault')process.k
             raise ValueError("Live control debugger was not actually reaped")
         if mode == "fault" and receipt.get("faultProviderCustodyGap"):
             raise ValueError("Live fault provider bodies changed or were not bound before capture")
+        if mode == "original-interrupt" and not any(packet.get("diagnosticInterruptOriginMatch") is False for packet in receipt.get("gdbPackets", [])):
+            raise ValueError("Genuine worker SIGINT was not distinguished from GDB during cancellation")
         receipt["originalReturnCode"] = status
         receipt["debuggerActuallyReaped"] = True
     finally:
@@ -143,7 +146,7 @@ def main():
             checked(["git", "init", "-q"], root)
             checked(["git", "add", "package.json", PACKAGE + "/package.json", PACKAGE + "/tsconfig.json"], root)
             checked(["git", "-c", "user.name=Law", "-c", "user.email=law@example.invalid", "commit", "-qm", "test: controlled source"], root)
-            for mode in ["normal", "cancel", "fault"]:
+            for mode in ["normal", "cancel", "fault", "original-interrupt"]:
                 stage = controls / mode; stage.mkdir(mode=0o700)
                 for name in FILES: shutil.copyfile(output / name, stage / name)
                 run_case(root, stage, stage, mode)

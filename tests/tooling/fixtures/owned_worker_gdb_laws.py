@@ -52,6 +52,7 @@ class FakeGDB:
         return self.selected
     def parse_and_eval(self, expression):
         if expression == "$pc": return 0x123
+        if self.mode == "missing-siginfo": raise ValueError("private siginfo expression")
         return {"$_siginfo.si_signo": signal.SIGINT, "$_siginfo.si_code": -6,
                 "$_siginfo._sifields._kill.si_pid": os.getpid() + (1 if self.mode == "original-interrupt" else 0),
                 "$_siginfo._sifields._kill.si_uid": os.getuid()}[expression]
@@ -67,7 +68,7 @@ class FakeGDB:
                 self.events.exited.emit(types.SimpleNamespace(exit_code=0 if self.mode == "normal" else None))
                 self.inferior.pid = 0
             else:
-                self.events.stop.emit(SignalEvent("SIGINT" if self.mode in ["interrupt", "original-interrupt"] else "SIGTERM" if self.mode == "other-signal" else "SIGSEGV"))
+                self.events.stop.emit(SignalEvent("SIGINT" if self.mode in ["interrupt", "original-interrupt", "missing-siginfo"] else "SIGTERM" if self.mode == "other-signal" else "SIGSEGV"))
         elif command.startswith("signal "):
             self.events.exited.emit(types.SimpleNamespace(exit_code=None))
             self.inferior.pid = 0
@@ -160,6 +161,13 @@ class GDBLaws(unittest.TestCase):
             self.assertEqual("signal SIGINT" in adapter.commands, not discard)
             if discard:
                 self.assertLess(adapter.commands.index("queue-signal 0"), adapter.commands.index("detach"))
+
+    def test_missing_siginfo_is_partial_and_does_not_guess_cleanup_signal_origin(self):
+        adapter, packets, signals, closed = self.run_fixture("missing-siginfo", cleanup_marker=True)
+        self.assertNotIn("queue-signal 0", adapter.commands)
+        self.assertIn("signal SIGINT", adapter.commands)
+        self.assertTrue(any(packet.get("gap") == "InterruptOriginValueError" for packet in packets))
+        self.assertNotIn("private siginfo expression", json.dumps(packets))
 
 
 if __name__ == "__main__":

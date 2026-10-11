@@ -73,7 +73,8 @@ Discard a queued debugger cleanup SIGINT only with its owned cancellation
 marker and Linux siginfo proving this actual GDB sender PID/UID and signal code;
 preserve an original worker SIGINT even when cancellation is also requested.
 Before touching the original worker, opted-in Linux controls exercise normal
-exit, fault pass and cancellation/reaping against an authored temporary Git
+exit, fault pass, cancellation/reaping and genuine worker SIGINT under a
+cancellation marker against an authored temporary Git
 fixture and the actual installed Node/tsx/GDB. Only this toy fixture disables
 core output; the original runner's resource limits remain unchanged. Failed
 controls disable attachment while retaining the original runner once.
