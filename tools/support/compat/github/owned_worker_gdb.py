@@ -61,6 +61,21 @@ def fault_text():
             "registers": registers, "libraries": gdb.execute("info sharedlibrary", to_string=True)}
 
 
+def cleanup_interrupt(pending_signal):
+    if pending_signal != "SIGINT" or not Path(__file__).with_name("detach-requested").exists():
+        return False
+    try:
+        number = int(gdb.parse_and_eval("$_siginfo.si_signo"))
+        code = int(gdb.parse_and_eval("$_siginfo.si_code"))
+        sender = int(gdb.parse_and_eval("$_siginfo._sifields._kill.si_pid"))
+        uid = int(gdb.parse_and_eval("$_siginfo._sifields._kill.si_uid"))
+        # Linux SI_USER/SI_TKILL from this actual GDB process, never a caller PID.
+        return number == signal.SIGINT and code in [0, -6] and sender == os.getpid() and uid == os.getuid()
+    except Exception as error:
+        publish({"status": "unavailable", "gap": "InterruptOrigin" + type(error).__name__})
+        return False
+
+
 def run(config):
     attached = False
     pending_signal = None
@@ -119,9 +134,13 @@ def run(config):
         publish({"status": "unavailable", "gap": type(error).__name__})
     finally:
         if attached:
-            diagnostic_interrupt = pending_signal == "SIGINT" and Path(__file__).with_name("detach-requested").exists()
+            diagnostic_interrupt = cleanup_interrupt(pending_signal)
             if diagnostic_interrupt:
                 publish({"status": "unavailable", "gap": "DiagnosticCleanupInterrupt"})
+                try:
+                    gdb.execute("queue-signal 0", to_string=True)
+                except Exception as error:
+                    publish({"status": "unavailable", "gap": "DiscardDiagnosticSignal" + type(error).__name__})
             if pending_signal and not diagnostic_interrupt and pending_signal.startswith("SIG") and hasattr(signal, pending_signal):
                 try:
                     # A diagnostic exception must not consume the original fault.

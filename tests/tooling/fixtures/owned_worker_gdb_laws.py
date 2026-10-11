@@ -2,6 +2,7 @@
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import signal
 import sys
@@ -50,7 +51,10 @@ class FakeGDB:
     def selected_thread(self):
         return self.selected
     def parse_and_eval(self, expression):
-        return 0x123
+        if expression == "$pc": return 0x123
+        return {"$_siginfo.si_signo": signal.SIGINT, "$_siginfo.si_code": -6,
+                "$_siginfo._sifields._kill.si_pid": os.getpid() + (1 if self.mode == "original-interrupt" else 0),
+                "$_siginfo._sifields._kill.si_uid": os.getuid()}[expression]
     def execute(self, command, to_string=False):
         self.commands.append(command)
         if command.startswith("attach "):
@@ -63,7 +67,7 @@ class FakeGDB:
                 self.events.exited.emit(types.SimpleNamespace(exit_code=0 if self.mode == "normal" else None))
                 self.inferior.pid = 0
             else:
-                self.events.stop.emit(SignalEvent("SIGTERM" if self.mode == "other-signal" else "SIGSEGV"))
+                self.events.stop.emit(SignalEvent("SIGINT" if self.mode in ["interrupt", "original-interrupt"] else "SIGTERM" if self.mode == "other-signal" else "SIGSEGV"))
         elif command.startswith("signal "):
             self.events.exited.emit(types.SimpleNamespace(exit_code=None))
             self.inferior.pid = 0
@@ -78,7 +82,7 @@ class FakeGDB:
 
 
 class GDBLaws(unittest.TestCase):
-    def run_fixture(self, mode, match=True, birth=True, ack="captured\n"):
+    def run_fixture(self, mode, match=True, birth=True, ack="captured\n", cleanup_marker=False):
         adapter = FakeGDB(mode)
         with patch.dict(sys.modules, {"gdb": adapter}):
             spec = importlib.util.spec_from_file_location("owned_worker_gdb_law", helpers / "owned_worker_gdb.py")
@@ -87,7 +91,7 @@ class GDBLaws(unittest.TestCase):
         actor = {"pid": 123, "startTicks": "456", "uid": 789, "executable": "/owned/node", "state": "T"}
         config = {"worker": {"actor": actor}, "leader": {"pid": 100}, "profile": {}, "root": "/owned"}
         signals, closed = [], []
-        with patch.object(module, "state", return_value=actor if birth else dict(actor, startTicks="recycled")), patch.object(module, "select", return_value={"actor": actor} if match else None), patch.object(module.os, "pidfd_open", return_value=77, create=True), patch.object(module.os, "close", side_effect=closed.append), patch.object(module.signal, "pidfd_send_signal", side_effect=lambda fd, sig: signals.append((fd, sig)), create=True), patch.object(module.sys, "stdin", io.StringIO(ack)):
+        with patch.object(module, "state", return_value=actor if birth else dict(actor, startTicks="recycled")), patch.object(module, "select", return_value={"actor": actor} if match else None), patch.object(module.os, "pidfd_open", return_value=77, create=True), patch.object(module.os, "close", side_effect=closed.append), patch.object(module.signal, "pidfd_send_signal", side_effect=lambda fd, sig: signals.append((fd, sig)), create=True), patch.object(module.sys, "stdin", io.StringIO(ack)), patch.object(module.Path, "exists", return_value=cleanup_marker):
             try:
                 module.run(config)
             except KeyboardInterrupt:
@@ -147,6 +151,15 @@ class GDBLaws(unittest.TestCase):
         adapter, packets, signals, closed = self.run_fixture("normal")
         self.assertEqual([packet["status"] for packet in packets], ["attached", "exited"])
         self.assertEqual(adapter.commands.count("continue"), 1)
+
+    def test_only_proven_diagnostic_interrupt_is_discarded_before_detach(self):
+        for cleanup_marker, original in [(False, False), (True, False), (True, True)]:
+            adapter, packets, signals, closed = self.run_fixture("original-interrupt" if original else "interrupt", cleanup_marker=cleanup_marker)
+            discard = cleanup_marker and not original
+            self.assertEqual("queue-signal 0" in adapter.commands, discard)
+            self.assertEqual("signal SIGINT" in adapter.commands, not discard)
+            if discard:
+                self.assertLess(adapter.commands.index("queue-signal 0"), adapter.commands.index("detach"))
 
 
 if __name__ == "__main__":

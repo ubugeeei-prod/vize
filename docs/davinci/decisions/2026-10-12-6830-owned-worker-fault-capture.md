@@ -69,6 +69,9 @@ Use a small privileged supervisor to own and reap the actual GDB child, rather
 than terminating only its sudo monitor. Verify actual tracer PID zero before
 resuming the worker. Parent death, interruption and bounded forced debugger
 cleanup produce explicit receipts; failed or forced cleanup is partial evidence.
+Discard a queued debugger cleanup SIGINT only with its owned cancellation
+marker and Linux siginfo proving this actual GDB sender PID/UID and signal code;
+preserve an original worker SIGINT even when cancellation is also requested.
 Before touching the original worker, opted-in Linux controls exercise normal
 exit, fault pass and cancellation/reaping against an authored temporary Git
 fixture and the actual installed Node/tsx/GDB. Only this toy fixture disables
