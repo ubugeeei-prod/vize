@@ -82,6 +82,32 @@ All original392, setup357 and reserved443 vectors and their original
 206 distinct fixture authorities remain unchanged. No budget, historical
 failure, source pin or existing oracle is relaxed.
 
+## Exact first-source custody
+
+Initial source `029b7facb57d56e0c94780a4bc1f0820ceef996b` builds successfully
+on [Check38183136962](https://github.com/ubugeeei-prod/vize/actions/runs/38183136962).
+Its complete79 CLI packets pass unchanged, with compiled source
+`1b20ab16662301832717cbfd072d9e1bfe9c12ff` and native binary digest
+`4e83d4ac1889f5840aa6010ed793bcffc8f579fd11dffff7ebd8efaa889acaea`.
+The raw79 packets and both complete failing tooling logs are retained under
+`source-custody/`, with compressed/raw hashes in `initial-qualification.json`.
+This grants no overall source-green or successor qualification.
+
+The original reserved API order law correctly refuses the changed whole
+`script_rules.rs` body; its sibling carrier would also differ. Its immutable
+prior custody fixture, original full law and all frozen vectors remain readable
+and unchanged. A finite successor admits only those two carrier paths, requires
+the complete twelve-file runtime production family, authenticates every whole
+before/after archive and preserves the exact original rule iterator and ordinary
+AST dispatch body. All other original source pins keep their original check.
+Every source/archive/authority mutation and mixed family refuses admission.
+
+The five added source-comment lines shift the rule implementation location;
+the rule-reference generator correctly refuses the stale implementation links.
+Regenerate only those links through the eleven affected reference/index outputs,
+retaining all examples, aliases and other rule bodies. No generator or reference
+oracle is relaxed. Fresh repaired exact-head Actions remain required.
+
 ## Remaining work
 
 - The twelve supplemental ownership/syntax controls are frozen before execution.
