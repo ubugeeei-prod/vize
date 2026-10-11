@@ -3,9 +3,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { apiRoot, gitBlob, sha256 } from "./custody.mjs";
+import { returnDirectory, returnObserver } from "./return_prefilter.mjs";
 
 export const typedDirectory = "tests/_fixtures/differential/lint/typed-prop-default-prefilter-8564";
 export const originals = {
+  [`${returnDirectory}/cases.json`]:
+    "52d3515ca7673895b0817c92ffc72f1136de43ae908dbe140906cd1c9c71d16b",
+  "tests/tooling/lint-return-prefilter.test.mjs": returnObserver,
   [`${typedDirectory}/cases.json`]:
     "b9e78a4082b0e2250afc8b652d0dabdcdb50bc506ec63ae2d15df236607c632d",
   "tests/_fixtures/lint-default-correctness/cases.json":
@@ -54,6 +58,7 @@ export async function loadFixtures(head, destination, json, treeSha) {
   const source = new Map();
   for (const [name, hash] of Object.entries(originals)) source.set(name, await read(name, hash));
   const typed = JSON.parse(source.get(`${typedDirectory}/cases.json`).toString("utf8"));
+  const returns = JSON.parse(source.get(`${returnDirectory}/cases.json`).toString("utf8"));
   const first = JSON.parse(
     source.get("tests/_fixtures/lint-default-correctness/cases.json").toString("utf8"),
   );
@@ -64,6 +69,11 @@ export async function loadFixtures(head, destination, json, treeSha) {
     source.get("tests/_fixtures/n8n-cli-adoption.json").toString("utf8"),
   );
   assert.equal(typed.cases.length, 8);
+  assert.equal(returns.cases.length, 16);
+  assert.deepEqual(returns.rules, [
+    "script/return-in-computed-property",
+    "script/return-in-emits-validator",
+  ]);
   assert.deepEqual(
     typed.cases.filter((entry) => entry.diagnostics.length).map((entry) => entry.id),
     ["original-vaul", "with-defaults", "destructure-alias", "unicode-crlf"],
@@ -72,8 +82,10 @@ export async function loadFixtures(head, destination, json, treeSha) {
   assert.equal(second.cases.length, 12);
   assert.equal(Object.keys(projection.linter.rules).length, 51);
   assert.equal(projection.linter.rules[typed.rule], undefined);
+  for (const rule of returns.rules) assert.equal(projection.linter.rules[rule], undefined);
   for (const [directory, corpus] of [
     [typedDirectory, typed],
+    [returnDirectory, returns],
     ["tests/_fixtures/lint-default-correctness", first],
     ["tests/_fixtures/lint-default-migrations", second],
   ]) {
@@ -92,5 +104,5 @@ export async function loadFixtures(head, destination, json, treeSha) {
       .href
   );
   helper.loadCorpus(destination);
-  return { typed, first, second, projection, wholeJson: helper.wholeJson, authorities };
+  return { typed, returns, first, second, projection, wholeJson: helper.wholeJson, authorities };
 }
