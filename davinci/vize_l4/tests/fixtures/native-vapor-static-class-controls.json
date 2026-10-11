@@ -36,8 +36,8 @@
     {
       "id": "outer-ecmascript-trim",
       "source": "<template><span class=\"&#xfeff;&#xa0;ready&#x85;busy&#xfeff;\">x</span></template>",
-      "expectedTemplateHtml": "<span class=\"readybusy\">x</span>",
-      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"readybusy\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+      "expectedTemplateHtml": "<span class=\"ready…busy\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"ready…busy\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
     },
     {
       "id": "interior-nonhtml-spaces",
@@ -104,7 +104,7 @@
     {
       "id": "class-nul",
       "source": "<template><span class=\"a\u0000b\">x</span></template>",
-      "requiredRefusal": "AttributeSemantics"
+      "requiredRefusal": "UnsupportedChild"
     },
     {
       "id": "ordinary-cr",
@@ -114,22 +114,22 @@
     {
       "id": "duplicate-class",
       "source": "<template><span class=\"x\" class=\"y\">x</span></template>",
-      "requiredRefusal": "DuplicateAttribute"
+      "requiredRefusal": "UnsupportedChild"
     },
     {
       "id": "style",
       "source": "<template><span class=\"x\" style=\"color:red\">x</span></template>",
-      "requiredRefusal": "AttributeSemantics"
+      "requiredRefusal": "UnsupportedChild"
     },
     {
       "id": "mixed-dynamic-class",
       "source": "<template><span class=\"x\" :class=\"1\">x</span></template>",
-      "requiredRefusal": "original lower binding refusal"
+      "requiredRefusal": "UnsupportedChild"
     },
     {
       "id": "dynamic-class",
       "source": "<template><span :class=\"1\">x</span></template>",
-      "requiredRefusal": "original lower binding refusal"
+      "requiredRefusal": "UnsupportedChild"
     }
   ]
 }

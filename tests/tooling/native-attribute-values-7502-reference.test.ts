@@ -268,6 +268,7 @@ test("historical source and command substitutions fail before evidence can grant
     scriptless: null,
     vapor: null,
     stages: null,
+    classBefore: null,
     failure: null,
   };
   for (const mutate of [
@@ -295,6 +296,7 @@ test("historical source and command substitutions fail before evidence can grant
     "selected-owner-build",
     "selected-template-build",
     "selected-for-class-build",
+    "vapor-class-policy-build",
   ].map((step, index) => ({
     step,
     executable: commands[index][0],

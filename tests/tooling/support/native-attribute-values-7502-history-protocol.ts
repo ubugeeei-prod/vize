@@ -17,6 +17,7 @@ import {
   stageTests7502,
   validateStageHistory7502,
 } from "./native-attribute-values-7502-stage-history.ts";
+import { validateClassHistory7502 } from "./native-attribute-values-7502-class-history.ts";
 import { root7502 } from "./native-attribute-values-7502-source.ts";
 
 export const historySteps7502 = [
@@ -92,6 +93,7 @@ export function validateHistory7502(receipt: any, current: any, directory: strin
     "scriptless",
     "vapor",
     "stages",
+    "classBefore",
     "failure",
   ]);
   assert.equal(receipt.schema, "vize.native-attribute-values-7502.history");
@@ -235,6 +237,7 @@ export function validateHistory7502(receipt: any, current: any, directory: strin
   validateScriptlessHistory7502(receipt.scriptless, history);
   validateVaporHistory7502(receipt.vapor, history);
   validateStageHistory7502(receipt.stages);
+  validateClassHistory7502(receipt.classBefore, directory);
   assert.equal(qualification.captureSha256, receipt.captureSha256);
   assert.equal(qualification.envelopesSha256, receipt.envelopesSha256);
 }

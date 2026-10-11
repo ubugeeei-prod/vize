@@ -8,9 +8,9 @@ import {
   validateStageHistory7502,
 } from "./support/native-attribute-values-7502-stage-history.ts";
 
-test("all three original class stage targets remain mandatory exact-source Cargo commands", () => {
+test("all four original class stage targets remain mandatory exact-source Cargo commands", () => {
   const commands = historyCommands7502("/baseline", "/history");
-  assert.equal(commands.length, 12);
+  assert.equal(commands.length, 13);
   assert.deepEqual(commands.slice(9), [
     [
       "cargo",
@@ -53,6 +53,22 @@ test("all three original class stage targets remain mandatory exact-source Cargo
         "vize_atelier_sfc",
         "--lib",
         "native_selected_setup::tests::original_for::refusal::constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_policies",
+        "--",
+        "--exact",
+        "--nocapture",
+      ],
+    ],
+    [
+      "cargo",
+      [
+        "test",
+        "--locked",
+        "--profile",
+        "ci",
+        "-p",
+        "vize_l3",
+        "--lib",
+        "decision::vapor::tests::actual_whitespace_headers_tags_and_dynamic_ops_refuse_before_output",
         "--",
         "--exact",
         "--nocapture",

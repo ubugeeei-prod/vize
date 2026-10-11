@@ -25,9 +25,9 @@ Current L3 requires that same class input to succeed and keeps all six other
 negative inputs and assertions. The original 12 complete Vapor modules/maps
 and the full original File/value custody for `<span class="x">x</span>` remain.
 
-## Qualification
+## Qualification history and current gate
 
-The V3 fixture is deliberately null and unreviewed. Source-built complete 84
+At first hosted head `dee6d6e5`, the V3 fixture was deliberately null and unreviewed. Source-built complete 84
 outcomes, all repeated whole envelopes, pinned historical execution, independent
 map/link decoding, real official development/production modules/maps, and whole
 runtime observations must be reviewed before freezing it. Missing proof fails;
@@ -47,3 +47,51 @@ No local compiler or runtime has executed this source yet. Actions must supply
 fresh full checks, the unchanged separate 104 instruction population, native
 capture and protected-queue qualification. No instruction ceiling or allocation
 claim changes. This completes neither Vapor SSR nor the broader compiler issues.
+
+## First hosted supplemental correction
+
+Source head `dee6d6e5` genuinely failed two supplemental assertions. The authored
+numeric `&#x85;` expectation was U+0085, but the unchanged L1 HTML numeric entity
+provider maps 0x85 to U+2026. The original literal-U+0085 normalization unit law
+remains unchanged. Only that row's independently specified expected HTML/code is
+corrected; all 16 sources, IDs and order remain exact.
+
+Literal NUL, style and duplicate class already refuse at the original L2
+`UnsupportedChild` boundary. The supplemental test had incorrectly required
+reaching L3. All five existing lower-negative inputs now require that precise
+kind and authored whole template span; ordinary literal CR retains its exact L3
+error. The independent original L3 duplicate law is unchanged. All six source
+inputs remain exact, with no successful L3 claim for a refused owner. The original incorrect fixture and whole failed log are retained
+in the source peer and hosted history. No product/provider, V3 packet, original
+archive, population or budget changes accompany this correction.
+
+## Reviewed whole packet and named L3 successor
+
+The complete first hosted 84-outcome packet has SHA-256
+`3bc80c4ee1e41fbea94e3af42dbe72b88f0641172c0d9a2992e4cabab57710a4`.
+Its PR projection `805f8a4f` has exactly source head `dee6d6e5`'s whole tree.
+Independent file-only review confirmed every 82 unaffected V2 rows, all 78
+unaffected V1 rows, whole 336-envelope repeats, all native links and current /
+historical official maps, eight complete runtime stdout/repeat packets, and all
+13 actual pinned historical commands. Original known wrong rc.9 clients remain
+unchanged. The two executable artifact bodies were not locally expanded or
+reviewed; their declared image hashes receive no new body qualification.
+
+V3 now freezes that entire capture, with only reversible outer JSON indentation.
+No code, raw map, link, observation, authored source or custody value is rewritten.
+The prior null fixture and actual Rust 101 / judge 1 refusal remain historical
+failures. This review supplies no supplemental component runtime credit and no
+qualification transfer to the corrective source.
+
+The first source also failed the delivered V2 L3 class-refusal unit. Its exact
+authored source, DOM/SSR assertions and whole original File/value custody remain;
+current Vapor now requires successful static-class eligibility. The unchanged
+old unit is additionally executed on signed `77ed369860b19a44f2716dfad9d537d968fba018`,
+with its whole original test-source hash, exact old test name, isolated Cargo
+target and three complete raw process receipts. All original 13 pinned-815
+processes remain separately mandatory and unchanged. The source-only stage
+command law is corrected from its stale 12 / three count to the actual existing
+13 / four commands, retaining every original command and the exact fourth unit.
+Fresh source/full/native, supplemental real runtime, separate 104 instruction
+and protected-queue checks remain required. No cap, provider or production
+behavior beyond the named static-class transition changes.

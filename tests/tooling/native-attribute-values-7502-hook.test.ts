@@ -46,6 +46,7 @@ test("genuine value producers, consumers, writers and capture dependencies quali
     "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/original_inputs.json",
     "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output.json",
     "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v2.json",
+    "crates/vize_atelier_sfc/tests/fixtures/native_attribute_values_7502/reviewed_output_v3.json",
     "tests/tooling/native-attribute-values-7502-reference.test.ts",
     "tests/tooling/native-attribute-values-7502-hook.test.ts",
     "tests/tooling/support/native-attribute-values-7502-runtime.ts",

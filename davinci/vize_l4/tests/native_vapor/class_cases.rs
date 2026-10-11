@@ -1,6 +1,7 @@
 //! Authored whole class module controls; runtime authority remains separately hosted.
 use serde_json::{Value, json};
 use vize_l0::{Allocator, Span};
+use vize_l2::lang::js::{NativeTemplateIssue, NativeTemplateIssueKind};
 use vize_l3::decision::vapor::{VaporUnsupported, build_native_vapor_file_decisions};
 use vize_l4::{
     targets::vapor::{VaporErrorKind, emit_template},
@@ -107,32 +108,45 @@ fn static_class_never_authorizes_nul_ordinary_cr_style_duplicates_or_dynamic_hea
         let mut owner = vize_l2::lang::js::NativeTemplateOwner::new(selected)
             .map_err(|_| "owner")
             .unwrap();
-        let mut refused = false;
+        let mut refusal = None;
         {
             let mut walk = owner.begin().unwrap();
             let selected = walk.selected();
             for child in selected.children() {
-                if walk.child(child).is_err() {
-                    refused = true;
+                if let Err(issue) = walk.child(child) {
+                    refusal = Some(issue);
                     break;
                 }
             }
-            if !refused {
+            if refusal.is_none() {
                 walk.complete().unwrap();
             }
         }
         let owner = owner.finish();
-        if ["mixed-dynamic-class", "dynamic-class"].contains(&row["id"].as_str().unwrap()) {
-            assert!(refused, "{}", row["id"]);
+        if row["requiredRefusal"] == "UnsupportedChild" {
+            // Independently authored single-template input coordinates, not an
+            // error-derived span or a successful L3 admission for refused L2.
+            assert!(source.starts_with("<template>") && source.ends_with("</template>"));
+            let span = Span::new(10, u32::try_from(source.len()).unwrap() - 11);
+            assert_eq!(owner.selected().component().block().span(), span);
+            assert_eq!(
+                refusal,
+                Some(NativeTemplateIssue {
+                    span,
+                    kind: NativeTemplateIssueKind::UnsupportedChild,
+                }),
+                "{}",
+                row["id"]
+            );
             assert!(owner.view().is_err());
             continue;
         }
-        assert!(!refused, "{}", row["id"]);
+        assert_eq!(refusal, None, "{}", row["id"]);
         let analysis = build_native_vapor_file_decisions(owner.view().unwrap()).unwrap();
-        let expected = if row["id"] == "duplicate-class" {
-            VaporUnsupported::DuplicateAttribute
-        } else {
-            VaporUnsupported::AttributeSemantics
+        let expected = match row["requiredRefusal"].as_str().unwrap() {
+            "DuplicateAttribute" => VaporUnsupported::DuplicateAttribute,
+            "AttributeSemantics" => VaporUnsupported::AttributeSemantics,
+            unexpected => panic!("unauthored negative boundary: {unexpected}"),
         };
         assert_eq!(
             emit_template::<Recorded>(&analysis).unwrap_err().kind,

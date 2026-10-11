@@ -25,6 +25,11 @@ import {
   type StageHistory7502,
 } from "./native-attribute-values-7502-stage-history.ts";
 
+import {
+  hostedClassHistory7502,
+  type ClassHistory7502,
+} from "./native-attribute-values-7502-class-history.ts";
+
 import { validateHistory7502 } from "./native-attribute-values-7502-history-protocol.ts";
 export {
   historyCommands7502,
@@ -54,6 +59,7 @@ export function hostedHistory7502(directory: string) {
     scriptless: null,
     vapor: null as VaporHistory7502 | null,
     stages: null as StageHistory7502 | null,
+    classBefore: null as ClassHistory7502 | null,
     failure: null,
   };
   const save = () =>
@@ -68,6 +74,7 @@ export function hostedHistory7502(directory: string) {
     argv: string[],
     cwd: string,
     env: NodeJS.ProcessEnv = process.env,
+    attempts: any[] = frame.attempts,
   ) => {
     const actual = spawnSync(executable, argv, {
       cwd,
@@ -81,7 +88,7 @@ export function hostedHistory7502(directory: string) {
         path.join(evidence, `history-${step}.${stream}`),
         actual[stream] ?? Buffer.alloc(0),
       );
-    frame.attempts.push({ step, executable, argv, cwd, ...raw });
+    attempts.push({ step, executable, argv, cwd, ...raw });
     save();
     return raw;
   };
@@ -245,6 +252,7 @@ export function hostedHistory7502(directory: string) {
       frame.currentSource,
       "current source drift during historical qualification",
     );
+    frame.classBefore = hostedClassHistory7502(frame, evidence, run);
     frame.state = "qualified";
     save();
     validateHistory7502(frame, source7502(), evidence);
