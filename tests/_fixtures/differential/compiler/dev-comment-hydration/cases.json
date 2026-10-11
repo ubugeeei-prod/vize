@@ -12,6 +12,10 @@
       "sha256": "194e4f5e662dfa7537a6041527d71996ea9f184e41a90ae2cfe7a56929914fab"
     },
     {
+      "path": "inline-slot.vue.txt",
+      "sha256": "50496c33f51cd68469042898ceb4596980e27699dfc5acafe06771ad25a7fda5"
+    },
+    {
       "path": "leading.template.txt",
       "sha256": "ec0b12fc94a15063db5b62b2020c19593edf82e1115ca9f454cf72c34a60fdc5"
     },

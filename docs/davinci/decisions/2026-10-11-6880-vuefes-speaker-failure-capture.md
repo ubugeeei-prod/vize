@@ -76,6 +76,15 @@ similar-looking comments, and execute complete native development DOM/SSR
 modules through real Vue hydration. They check the original SSR pairs,
 hydrated pairs, retained ordinary comments and hydration warnings across
 all eight eslint/oxlint pragmas and ordinary-comment controls.
+An additional complete SFC checks an annotation between inline text and
+interpolation inside a component slot against exact SSR HTML and real
+hydration. Both runtime tests retain their source, complete compiler
+modules and runtime observations in the required test artifacts.
+
+The normal checks also validate the observer guard through `node:vm`
+without implied-eval warnings. The canonical consumer inventory includes
+the new DOM regression's L0 import; regenerate it with the existing
+producer rather than excluding the test from source checks.
 
 Remaining acceptance: qualify the composed exact source head with normal
 Actions and the entire unchanged 38-case VueFes matrix before queue

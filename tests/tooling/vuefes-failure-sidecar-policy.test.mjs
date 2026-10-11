@@ -3,6 +3,7 @@ import fs from "node:fs";
 import { createHash } from "node:crypto";
 import { createRequire } from "node:module";
 import { test } from "node:test";
+import { runInNewContext } from "node:vm";
 
 const root = new URL("../../", import.meta.url);
 const read = (file) => fs.readFileSync(new URL(file, root), "utf8");
@@ -132,11 +133,11 @@ void test("both observed dev failures retain isolated packets across the origina
       calls(node.consequent, "createVuefesFailureSidecar").length > 0,
   );
   assert.equal(observerGuard.length, 1);
-  const selects = new Function(
-    "mode",
-    "route",
-    `return ${current.slice(observerGuard[0].test.start, observerGuard[0].test.end)}`,
-  );
+  const selects = (mode, route) =>
+    runInNewContext(current.slice(observerGuard[0].test.start, observerGuard[0].test.end), {
+      mode,
+      route,
+    });
   const selected = ["dev", "preview"].flatMap((mode) =>
     originalRoutes.filter((name) => selects(mode, { name })).map((name) => `${mode}-${name}`),
   );
@@ -146,12 +147,8 @@ void test("both observed dev failures retain isolated packets across the origina
   const output = calls(currentAst, "createVuefesFailureSidecar")[0].arguments[1].properties.find(
     (property) => property.key?.name === "outputDir",
   ).value;
-  const outputFor = new Function(
-    "path",
-    "__dirname",
-    "route",
-    `return ${current.slice(output.start, output.end)}`,
-  );
+  const outputFor = (path, __dirname, route) =>
+    runInNewContext(current.slice(output.start, output.end), { path, __dirname, route });
   const resolve = { resolve: (...segments) => segments.join("/") };
   assert.equal(
     outputFor(resolve, "original-directory", { name: "home" }),
