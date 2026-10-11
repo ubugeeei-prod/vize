@@ -10,7 +10,7 @@ const root = fileURLToPath(new URL("../../", import.meta.url));
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), "utf8");
 const workflow = parse(read(".github/workflows/rust-archive-transport-benchmark.yml"));
 const producer = parse(read(".github/actions/measure-rust-archive-window/action.yml"));
-const consumer = parse(read(".github/actions/verify-rust-archive-window/action.yml"));
+const consumer = { runs: { steps: workflow.jobs.consumer.steps.slice(1) } };
 
 void test("Rust transport remains a manual experiment with two fresh arms and all four partitions", () => {
   assert.deepEqual(workflow.on, { workflow_dispatch: null, workflow_call: null });
