@@ -164,7 +164,7 @@ compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/l3/text/tests.rs	3	cart
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/l3/text/tests.rs	3	l1	L1	stage	vize_l1	preferred	2
 compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/l3/text/tests.rs	3	l1_to_l2	L1->L2	stage	vize_l1_to_l2	preferred	2
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower.rs	13	carton	Carton host/compatibility	old	vize_carton	legacy	3
-compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/lower.rs	222	carton	Carton host/compatibility	old	vize_carton	legacy	1
+compiler	Compiler	test/dev	crates/vize_atelier_vapor/src/lower.rs	223	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/context.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/control.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/lower/directive.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	2
@@ -234,6 +234,7 @@ compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_static_attribute_en
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_static_style.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_static_style.rs	11	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_static_style.rs	11	raw_oxc	raw OXC	raw	oxc_parser	raw	1
+compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_svg.rs	5	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_template_children.rs	11	carton	Carton host/compatibility	old	vize_carton	legacy	1
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_valueless_attr.rs	10	carton	Carton host/compatibility	old	vize_carton	legacy	2
 compiler	Compiler	source	crates/vize_atelier_vapor/src/tests_valueless_attr.rs	10	raw_oxc	raw OXC	raw	oxc_allocator	raw	1
