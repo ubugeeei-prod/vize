@@ -74,6 +74,33 @@ source and the single original successor. It is not candidate execution credit.
 The source parent and previous full directive parser are retained in the
 authority manifest for review.
 
+### Initial complete-route observation
+
+Source `d20d205ee3252ab9067882db881539c68f057973`, Check `38156254146`,
+failed both API and CLI at the unchanged style-before-script negative control:
+its target finding was correct, but the initial route oracle omitted two
+existing default SFC warnings. Complete 134 CLI process packets and both full
+job logs remain immutable in `initial-source-failure.json`; the original 24
+target-only vectors and production bytes remain exact.
+
+The successor declares those complete companion diagnostics from the unchanged
+`require-scoped-style` and `sfc-element-order` producers and descriptor spans.
+The existing Essential registry excludes them; Ecosystem extends HappyPath.
+The immutable n8n configuration separately sets SFC order to error and the
+script/template/style order. That route retains its existing one error and
+configured help, including when the reserved-key rule is absent. The API
+observer now supplies these existing severity/order options instead of only
+projecting rule names. No production rule, preset or configuration changes.
+
+All 168 complete authenticated v0.443.0 before packets match the authored
+successor routes. The initial broad-warning Essential assumption and the next
+omitted-n8n-error attempt retain their whole 136/140 packets, vectors and
+helpers in separate archives. Current default/recommended/ecosystem vectors
+contain 14 findings, Essential 12, explicit-off two warnings, incremental zero,
+and n8n one configured order error. Current 169 candidate execution, inherited
+suites, protected checks and public inclusion still require new qualification;
+none of these old failures or public-before proofs supplies successor credit.
+
 Deliver as a native Stack descendant of the prefix correction. A ready parent
 prefix enters the protected queue independently of this unfinished descendant.
 After actual parent merge, retarget/rebase onto fresh main and requalify the

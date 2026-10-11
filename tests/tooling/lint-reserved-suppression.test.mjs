@@ -11,6 +11,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 await test("registered reserved-key suppression preserves whole CLI packets and source boundaries", () => {
   const fixture = path.join(root, "tests/_fixtures/differential/lint/reserved-suppression-8090");
   const corpus = JSON.parse(fs.readFileSync(path.join(fixture, "cases.json")));
+  const successors = JSON.parse(
+    fs.readFileSync(path.join(fixture, "default-route-successors.json")),
+  );
   const projection = JSON.parse(
     fs.readFileSync(path.join(root, "tests/_fixtures/n8n-cli-adoption.json")),
   );
@@ -37,6 +40,13 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
     "original-prefix-successors.json",
     "original-suppression-oracle.json",
     "source-authority.json",
+    "default-route-successors.json",
+    "default-route-public-before.json",
+    "observe-default-route-before.mjs",
+    "default-route-authority.json",
+    "initial-source-failure.json",
+    "initial-default-route-before.json.gz",
+    "second-default-route-before.json.gz",
     "../reserved-prefix-8090/original-vue-select-src-components-select.vue.fixture",
   ];
   const custody = () => [
@@ -71,27 +81,33 @@ await test("registered reserved-key suppression preserves whole CLI packets and 
     evidence.build = { expected: build, receipt };
     persist();
     validateBuildReceipt(receipt, build);
-    const scenarios = corpus.cases.flatMap((entry) => [
-      ...[null, "recommended", "essential", "ecosystem"].map((preset) => ({
-        entry,
-        preset,
-        config: null,
-        findings: entry.diagnostics,
-      })),
-      { entry, preset: "incremental", config: null, findings: [] },
-      {
-        entry,
-        preset: null,
-        config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
-        findings: [],
-      },
-      {
-        entry,
-        preset: null,
-        config: JSON.stringify({ linter: projection.linter }) + "\n",
-        findings: [],
-      },
-    ]);
+    const scenarios = corpus.cases.flatMap((entry, index) => {
+      const successor = successors.cases[index];
+      assert.equal(successor.id, entry.id);
+      assert.equal(successor.sourceSha256, entry.sourceSha256);
+      return [
+        ...[null, "recommended", "essential", "ecosystem"].map((preset) => ({
+          entry,
+          preset,
+          config: null,
+          findings:
+            preset === "essential" ? successor.essentialDiagnostics : successor.defaultDiagnostics,
+        })),
+        { entry, preset: "incremental", config: null, findings: successor.incrementalDiagnostics },
+        {
+          entry,
+          preset: null,
+          config: JSON.stringify({ linter: { rules: { [corpus.rule]: "off" } } }) + "\n",
+          findings: successor.offDiagnostics,
+        },
+        {
+          entry,
+          preset: null,
+          config: JSON.stringify({ linter: projection.linter }) + "\n",
+          findings: successor.projectionDiagnostics,
+        },
+      ];
+    });
     scenarios.push({
       entry: original,
       preset: null,
