@@ -166,7 +166,9 @@ void test("public absence source and copied fixtures select the existing audited
   for (const input of [
     "tools/support/release/retirement_absence.ts",
     "tools/support/release/retirement_evidence.ts",
+    "tools/support/release/retirement_transport.ts",
     "tests/tooling/support/release-retirement-absence-fixtures.ts",
+    "tests/tooling/support/release-retirement-transport-law.ts",
     "tests/tooling/support/release-retirement-marketplace-fixtures.ts",
   ]) {
     assert.ok(selected(input).includes(contract), input);

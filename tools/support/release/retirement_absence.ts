@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { derivePublicationPlan, type PublicationPlan } from "./public_acceptance/plan.ts";
 import { marketplaceQuery, marketplaceQueryUrl, readMarketplace } from "./marketplace_query.ts";
+import { retirementReader } from "./retirement_transport.ts";
 
 import {
   absenceEvidence,
@@ -118,8 +119,9 @@ async function observe(
   target: Target,
   fetchImpl: typeof globalThis.fetch,
 ): Promise<AbsenceObservation> {
+  const read = retirementReader(target, fetchImpl);
   if (target.channel === "marketplace") {
-    const { extension: _extension, ...observation } = await readMarketplace(target.name, fetchImpl);
+    const { extension: _extension, ...observation } = await readMarketplace(target.name, read);
     return {
       ...target,
       ...observation,
@@ -138,7 +140,7 @@ async function observe(
     return await Promise.race([
       timeout,
       (async () => {
-        const response = await fetchImpl(target.url, {
+        const response = await read(target.url, {
           method: "GET",
           credentials: "omit",
           redirect: "manual",

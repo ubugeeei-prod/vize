@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { retirementAbsenceLaw } from "../support/release-retirement-absence-fixtures.ts";
+import { retirementTransportLaw } from "../support/release-retirement-transport-law.ts";
 import { publicArchiveReceiptLaw } from "../support/release-public-archive-receipt-law.ts";
 import {
   independentPublicObservationLaw,
@@ -32,6 +33,10 @@ import {
 } from "../support/release-public-acceptance-fixtures.ts";
 
 test("retirement refuses incomplete or ambiguous public absence", retirementAbsenceLaw);
+test(
+  "retirement transport retries are bounded and preserve absence refusals",
+  retirementTransportLaw,
+);
 test(
   "public browser observation requires completed prerequisites, preserving a strict seal",
   independentPublicObservationLaw,
