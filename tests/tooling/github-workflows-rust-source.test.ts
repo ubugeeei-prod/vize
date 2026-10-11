@@ -81,7 +81,10 @@ test("PR and merge-group source checks are included in the required report", () 
   }
   assert.deepEqual(sourceWorkflow.jobs?.["pr-rust-source"]?.needs, "pr-source-plan");
   assert.deepEqual(sourceWorkflow.jobs?.["pr-js-packages"]?.needs, "pr-source-plan");
-  assert.deepEqual(sourceWorkflow.jobs?.["pr-tooling-scripts"]?.needs, "pr-source-plan");
+  assert.deepEqual(sourceWorkflow.jobs?.["pr-tooling-scripts"]?.needs, [
+    "pr-source-plan",
+    "pr-source-cli",
+  ]);
   assert.deepEqual(sourceWorkflow.jobs?.["pr-playground-test"]?.needs, "pr-source-plan");
   const commands = (job: string) =>
     (sourceWorkflow.jobs?.[job]?.steps ?? [])
@@ -128,6 +131,7 @@ test("PR and merge-group source checks are included in the required report", () 
     ...SOURCE_PR_JOBS,
     "wit-contracts",
     "canonical-corpus",
+    "pr-source-cli",
   ]);
   assert.match(commands("source-report"), /canonical-corpus-selection\.mjs/);
 });

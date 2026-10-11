@@ -8,6 +8,7 @@ runs:
       env:
         VIZE_NATIVE_VAPOR_CAPTURE: ${{ runner.temp }}/native-vapor-modules.json
         VIZE_NATIVE_VAPOR_RUNTIME_CAPTURE: ${{ runner.temp }}/native-vapor-runtime.json
+        VIZE_NATIVE_VAPOR_CLASS_RUNTIME_CAPTURE: ${{ runner.temp }}/native-vapor-class-runtime
         VIZE_NATIVE_VAPOR_SFC_CAPTURE: ${{ runner.temp }}/native-vapor-sfc-modules.json
         VIZE_NATIVE_VAPOR_SFC_RUNTIME_CAPTURE: ${{ runner.temp }}/native-vapor-sfc-runtime.json
         VIZE_NATIVE_VAPOR_PRIMARY_LIFECYCLE_CAPTURE: ${{ runner.temp }}/native-vapor-primary-lifecycle.json
@@ -20,6 +21,10 @@ runs:
         test -s "$VIZE_NATIVE_VAPOR_CAPTURE"
         vp node --test tests/tooling/native-vapor-reference.test.mjs
         test -s "$VIZE_NATIVE_VAPOR_RUNTIME_CAPTURE"
+        test -s "$VIZE_NATIVE_VAPOR_CAPTURE.class-cases.json"
+        vp node --test tests/tooling/native-vapor-static-class-reference.test.mjs
+        test -s "$VIZE_NATIVE_VAPOR_CLASS_RUNTIME_CAPTURE.development.stdout"
+        test -s "$VIZE_NATIVE_VAPOR_CLASS_RUNTIME_CAPTURE.production.stdout"
         cargo test --locked --profile ci -p vize_atelier_sfc --test native_vapor_sfc
         test -s "$VIZE_NATIVE_VAPOR_SFC_CAPTURE"
         vp node --test tests/tooling/native-vapor-sfc-reference.test.mjs
@@ -38,6 +43,8 @@ runs:
         path: |
           ${{ runner.temp }}/native-vapor-modules.json
           ${{ runner.temp }}/native-vapor-modules.json.class-successor.json
+          ${{ runner.temp }}/native-vapor-modules.json.class-cases.json
+          ${{ runner.temp }}/native-vapor-class-runtime.*
           ${{ runner.temp }}/native-vapor-runtime.json
           ${{ runner.temp }}/native-vapor-sfc-modules.json
           ${{ runner.temp }}/native-vapor-sfc-runtime.json

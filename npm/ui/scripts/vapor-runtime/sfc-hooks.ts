@@ -3,8 +3,8 @@
  *
  * `.vue` imports are compiled on the fly with `@vizejs/native` for the
  * requested lane (VDOM SSR or Vapor), `.css` side-effect imports become
- * empty modules, and — for the Vapor lane — the bare `vue` specifier is
- * redirected to the Vue 3.6 runtime-with-vapor build so components, their
+ * empty modules. Supported SSR uses rc.11's Node Vue/server-renderer entries;
+ * Vapor redirects the bare `vue` specifier to its runtime-with-vapor build so components, their
  * composables, and the fixtures all share one Vapor-capable runtime.
  */
 import { createHash } from "node:crypto";
@@ -17,6 +17,15 @@ import { compileSfc } from "@vizejs/native";
 /** Renderer lane compiled by {@link registerSfcHooks}. */
 export type SfcLane = "ssr" | "vapor";
 
+/** Keep the original Vue 3.5/rc.9 comparison available independently. */
+export function runtimeTrack(): "reference" | "supported" {
+  const track = process.env.VIZE_UI_VAPOR_RUNTIME ?? "supported";
+  if (track !== "reference" && track !== "supported") {
+    throw new Error("VIZE_UI_VAPOR_RUNTIME must be reference or supported");
+  }
+  return track;
+}
+
 /** Compilation failures collected while modules load. */
 export const compileFailures: string[] = [];
 
@@ -25,7 +34,9 @@ const require = createRequire(import.meta.url);
 /** Absolute URL of the Vue 3.6 runtime-with-vapor browser build. */
 export function vaporVueUrl(): string {
   return pathToFileURL(
-    require.resolve("vue-vapor-runtime/dist/vue.runtime-with-vapor.esm-browser.js"),
+    require.resolve(
+      `${runtimeTrack() === "reference" ? "vue-vapor-runtime" : "vue-vapor-runtime-supported"}/dist/vue.runtime-with-vapor.esm-browser.js`,
+    ),
   ).href;
 }
 
@@ -37,7 +48,9 @@ export function vaporVueUrl(): string {
  * Vize codegen difference, while one that fails with both is a runtime gap.
  */
 function compileWithVue(source: string, filename: string): string {
-  const compiler = require("vue-vapor-runtime/compiler-sfc") as typeof import("vue/compiler-sfc");
+  const compiler = require(
+    `${runtimeTrack() === "reference" ? "vue-vapor-runtime" : "vue-vapor-runtime-supported"}/compiler-sfc`,
+  ) as typeof import("vue/compiler-sfc");
   const { descriptor, errors } = compiler.parse(source, { filename });
   if (errors.length > 0) compileFailures.push(`${filename} [vue]\n${errors.join("\n")}`);
   const scoped = descriptor.styles.some((style) => style.scoped);
@@ -54,10 +67,33 @@ function compileWithVue(source: string, filename: string): string {
 
 /** Install the `.vue` / `.css` (and, for Vapor, `vue`) module hooks. */
 export function registerSfcHooks(lane: SfcLane): void {
-  const vueUrl = lane === "vapor" ? vaporVueUrl() : undefined;
+  const supported = runtimeTrack() === "supported";
+  const vueUrl =
+    lane === "vapor"
+      ? vaporVueUrl()
+      : supported
+        ? pathToFileURL(require.resolve("vue-vapor-runtime-supported/dist/vue.cjs.js")).href
+        : undefined;
+  // Route both server specifiers to the declared implementation. Routing them
+  // to Vue's wrapper would redirect its internal @vue/server-renderer require
+  // back to the wrapper itself.
+  const supportedRequire = createRequire(
+    require.resolve("vue-vapor-runtime-supported/package.json"),
+  );
+  const serverRequire = createRequire(supportedRequire.resolve("vue/server-renderer"));
+  const serverUrl =
+    lane === "ssr" && supported
+      ? pathToFileURL(serverRequire.resolve("@vue/server-renderer")).href
+      : undefined;
   registerHooks({
     resolve(specifier, context, nextResolve) {
       if (vueUrl !== undefined && specifier === "vue") return { url: vueUrl, shortCircuit: true };
+      if (
+        serverUrl !== undefined &&
+        (specifier === "vue/server-renderer" || specifier === "@vue/server-renderer")
+      ) {
+        return { url: serverUrl, shortCircuit: true };
+      }
       return nextResolve(specifier, context);
     },
     load(url, context, nextLoad) {

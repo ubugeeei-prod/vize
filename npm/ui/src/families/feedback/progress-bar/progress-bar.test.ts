@@ -247,3 +247,54 @@ test("does not enter the tab order or create a live region by default", async ()
   assert.ok((await handle.tab()) === null);
   handle.unmount();
 });
+
+test("updates finite wide and collapsed ranges through ARIA, CSS, slots, and expose", async () => {
+  const handle = mountInteraction(ProgressBar, {
+    props: {
+      ariaLabel: "Finite progress",
+      min: -Number.MAX_VALUE,
+      max: Number.MAX_VALUE,
+      value: 0,
+    },
+    slots: {
+      default: (state: ProgressBarSlotState) => `${state.percent}:${state.ratio}:${state.invalid}`,
+    },
+  });
+  const exposed = handle.exposes<ProgressBarExpose>();
+  const progress = handle.getByRole("progressbar", { name: "Finite progress" });
+  try {
+    for (const [min, max, value, percent, ratio, invalid, complete] of [
+      [-Number.MAX_VALUE, Number.MAX_VALUE, 0, 50, 0.5, false, false],
+      [-Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, 100, 1, false, true],
+      [Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE, 0, 0, true, true],
+      [-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE, 0, 0, true, true],
+    ] as const) {
+      await handle.wrapper.setProps({ min, max, value });
+      assert.equal(progress.getAttribute("aria-valuemin"), String(min));
+      assert.equal(progress.getAttribute("aria-valuemax"), String(max));
+      assert.equal(progress.getAttribute("aria-valuenow"), String(value));
+      assert.equal(progress.getAttribute("data-percent"), String(percent));
+      assert.equal(progress.getAttribute("data-invalid"), invalid ? "true" : null);
+      assert.equal(progress.getAttribute("data-complete"), String(complete));
+      assert.equal(
+        progress.style.getPropertyValue("--vize-ui-progress-bar-percent"),
+        `${percent}%`,
+      );
+      assert.equal(progress.style.getPropertyValue("--vize-ui-progress-bar-ratio"), String(ratio));
+      assert.equal(exposed.percent, percent);
+      assert.equal(exposed.ratio, ratio);
+      assert.equal(exposed.invalid, invalid);
+      assert.equal(exposed.complete, complete);
+      assert.equal(progress.textContent, `${percent}:${ratio}:${invalid}`);
+    }
+    await handle.wrapper.setProps({ value: null });
+    assert.equal(progress.hasAttribute("aria-valuenow"), false);
+    assert.equal(progress.hasAttribute("data-percent"), false);
+    assert.equal(progress.getAttribute("data-state"), "indeterminate");
+    assert.equal(progress.style.getPropertyValue("--vize-ui-progress-bar-percent"), "0%");
+    assert.equal(exposed.percent, null);
+    assert.equal(exposed.ratio, null);
+  } finally {
+    handle.unmount();
+  }
+});

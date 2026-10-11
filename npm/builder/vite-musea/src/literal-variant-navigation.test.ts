@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { waitForFirstCurrentVariant } from "./literal-variant-navigation.ts";
+import { runInNewContext } from "node:vm";
+import {
+  observeVariantNavigation,
+  waitForFirstCurrentVariant,
+} from "./literal-variant-navigation.ts";
 
 // This timer-free contract control is separate from the real native browser tests.
 class ControlledNavigation {
@@ -103,4 +107,36 @@ void test("FIRST-target preserves deadline refusal without setting a new timeout
   state.refuse(error);
   await assert.rejects(waiting, (actual) => actual === error);
   assert.deepEqual(state.waitArguments, [[]]);
+});
+
+void test("serialized navigation collector reaches its input without outer transform helpers", async () => {
+  let serialized = "";
+  await observeVariantNavigation(
+    {
+      locator() {
+        return {
+          evaluateAll(callback: (items: Element[]) => unknown) {
+            serialized = callback.toString();
+            return Promise.resolve({});
+          },
+        };
+      },
+    } as unknown as Parameters<typeof observeVariantNavigation>[0],
+    [],
+    { phase: "serialized-entry-control" },
+  );
+  assert.notEqual(serialized, "");
+  // Stop at the first authored input operation, before any DOM globals are read.
+  // Real browser packets are checked separately; no browser globals are fabricated.
+  const invoke = runInNewContext(`(${serialized})`) as (items: unknown) => unknown;
+  const reachedInput = new Error("reached the actual input operation");
+  assert.throws(
+    () =>
+      invoke({
+        slice() {
+          throw reachedInput;
+        },
+      }),
+    (actual) => actual === reachedInput,
+  );
 });

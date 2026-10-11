@@ -1,14 +1,12 @@
-//! Exact original static class succeeds through L3 but remains refused by Vapor L4.
+//! Exact original static class succeeds through the original owning Vapor path.
 use serde_json::{Value, json};
 use vize_l0::{Span, id::NodeId};
 use vize_l1::markup::NativeAttributeValue;
 use vize_l2::file::FileArtifact;
 use vize_l2::{file::NativeFileAttributeValueState, lang::js::NativeTemplateFile, op::Op};
-use vize_l3::decision::vapor::{
-    VaporRejection, VaporUnsupported, build_native_vapor_file_decisions,
-};
+use vize_l3::decision::vapor::build_native_vapor_file_decisions;
 use vize_l4::{
-    targets::vapor::{VaporError, VaporErrorKind, emit_template},
+    targets::vapor::emit_template,
     write::{NoLinks, Recorded},
 };
 
@@ -74,25 +72,40 @@ pub(crate) fn assert_current(owner: &NativeTemplateFile<'_>, source: &str) {
     assert_eq!(vapor.roots()[0].node(), NodeId::FIRST);
     assert_eq!(vapor.roots()[0].span(), Span::new(10, 34));
     assert_eq!(vapor.parts(&vapor.roots()[0]).unwrap().len(), 3);
-    assert_eq!(
-        vapor.unsupported(),
-        [VaporRejection {
-            node: NodeId::FIRST,
-            span: Span::new(16, 25),
-            reason: VaporUnsupported::AttributeSemantics
-        }]
-    );
-    let error = VaporError {
-        node: Some(NodeId::FIRST),
-        span: Span::new(16, 25),
-        kind: VaporErrorKind::Unsupported(VaporUnsupported::AttributeSemantics),
-    };
-    assert_eq!(emit_template::<Recorded>(&analysis).unwrap_err(), error);
-    assert_eq!(emit_template::<NoLinks>(&analysis).unwrap_err(), error);
+    assert_eq!(vapor.unsupported(), []);
+    let recorded = emit_template::<Recorded>(&analysis).unwrap();
+    let plain = emit_template::<NoLinks>(&analysis).unwrap();
+    let expected = "import { template as _template } from \"vue\"\n\
+const t0 = _template(\"<span class=\\\"x\\\">x</span>\", 3)\n\n\
+export function render(_ctx) {\n  const n0 = t0()\n  return n0\n}";
+    assert_eq!(recorded.text.as_str(), expected);
+    assert_eq!(plain.text.as_str(), expected);
+    assert_eq!(recorded.helpers, plain.helpers);
+    assert!(plain.links == NoLinks);
+    let document = recorded.into_document();
+    let anchors = [
+        (expected.find("<span").unwrap(), 10),
+        (expected.find("class=").unwrap(), 16),
+        (expected.find(">x</span>").unwrap() + 1, 26),
+        (expected.find("</span>").unwrap(), 34),
+    ];
+    assert_eq!(document.links().len(), anchors.len());
+    for (link, (generated, authored)) in document.links().iter().zip(anchors) {
+        assert_eq!(
+            link.generated,
+            Span::new(generated as u32, generated as u32)
+        );
+        assert_eq!(link.authored, Span::new(authored, authored));
+    }
+    let map_text = document.source_map("NativeVapor.vue", source);
+    let map: Value = serde_json::from_str(&map_text).unwrap();
+    assert_eq!(map["sourcesContent"], json!([source]));
     if let Ok(path) = std::env::var("VIZE_NATIVE_VAPOR_CAPTURE") {
         std::fs::write(format!("{path}.class-successor.json"), serde_json::to_vec_pretty(&serde_json::json!({
             "source":source,"file":file_observation(file,source),"tables":format!("{:#?}",analysis.tables()),
-            "value":value_observation(value,source),"vapor":format!("{vapor:#?}"),"error":format!("{error:#?}")
+            "value":value_observation(value,source),"vapor":format!("{vapor:#?}"),
+            "code":document.as_str(),"mapText":map_text,"map":map,
+            "links":document.links().iter().map(|link|json!({"generated":span(link.generated),"authored":span(link.authored)})).collect::<Vec<_>>()
         })).unwrap()).unwrap();
     }
 }

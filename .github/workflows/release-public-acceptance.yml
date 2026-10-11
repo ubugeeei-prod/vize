@@ -29,7 +29,7 @@ jobs:
         shell: bash
         run: |
           test "$DISPATCH_REF" = refs/heads/main
-          for key in NODE_OPTIONS VIZE_PREFER_WORKSPACE_BINDING NAPI_RS_NATIVE_LIBRARY_PATH NAPI_RS_FORCE_WASI VIZE_ALLOW_NATIVE_VERSION_MISMATCH CORSA_PATH CORSA_EXECUTABLE TSGO_PATH TSGO_EXECUTABLE VIZE_PUBLIC_NATIVE_CUSTODY VIZE_OXLINT_NATIVE_CUSTODY; do
+          for key in NODE_OPTIONS VIZE_PREFER_WORKSPACE_BINDING NAPI_RS_NATIVE_LIBRARY_PATH NAPI_RS_FORCE_WASI VIZE_ALLOW_NATIVE_VERSION_MISMATCH CORSA_PATH CORSA_EXECUTABLE TSGO_PATH TSGO_EXECUTABLE VIZE_PUBLIC_NATIVE_CUSTODY VIZE_OXLINT_NATIVE_CUSTODY VIZE_CORSA_DEV_PATHS CARGO_BIN_EXE_vize SOURCE_SHA VIZE_TEST_REQUIRE_TSGO VIZE_TEST_DISABLE_TSGO VIZE_TEST_FIX_HISTORY_CAPTURE_DIR VIZE_INLAY_HINT_CAPTURE VIZE_LSP_PASSIVE_EVIDENCE RUSTC_WRAPPER RUSTC_WORKSPACE_WRAPPER RUSTFLAGS CARGO_ENCODED_RUSTFLAGS CARGO_BUILD_RUSTC RUSTC RUSTUP_TOOLCHAIN; do
             if [ -n "${!key:-}" ]; then
               echo "::error::Runtime override must be absent: $key"
               exit 1
@@ -61,6 +61,15 @@ jobs:
         working-directory: ${{ env.PUBLIC_CONSUMER }}
         shell: bash
         run: node native.ts "$PUBLIC_VERSION" "$PUBLIC_OUTPUT/native.json" 2>&1 | tee "$PUBLIC_OUTPUT/native.log"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        id: lsp_rust
+        if: ${{ !cancelled() && steps.prepare.outcome == 'success' && steps.install.outcome == 'success' }}
+        with: { toolchain: "${{ env.PUBLIC_LSP_TOOLCHAIN }}" }
+      - name: Replay original 32 transactions with the installed public CLI
+        id: lsp
+        if: ${{ !cancelled() && steps.guard.outcome == 'success' && steps.prepare.outcome == 'success' && steps.install.outcome == 'success' && steps.lsp_rust.outcome == 'success' }}
+        shell: bash
+        run: node tools/support/release/public_acceptance/lsp.ts 2>&1 | tee "$PUBLIC_OUTPUT/lsp.log"
       - name: Replay public Musea gallery and globals
         id: browser
         if: >-
@@ -106,7 +115,7 @@ jobs:
           fi
           exit "${vrt_status:-0}"
       - name: Seal installed public acceptance
-        if: ${{ success() && steps.native.outcome == 'success' && steps.browser.outcome == 'success' }}
+        if: ${{ success() && steps.native.outcome == 'success' && steps.browser.outcome == 'success' && steps.lsp.outcome == 'success' }}
         shell: bash
         run: node tools/support/release/public_acceptance/accept.ts finish 2>&1 | tee "$PUBLIC_OUTPUT/finish.log"
       - name: Retain actual public observations

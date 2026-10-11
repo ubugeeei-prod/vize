@@ -1,0 +1,135 @@
+{
+  "schema": "vize.native-vapor-static-class.controls",
+  "version": 1,
+  "authority": "authored whole literal HTML and canonical native ABI; original pinned rc.9 modules remain independent",
+  "positive": [
+    {
+      "id": "canonical",
+      "source": "<template><span class=\"ready active\">x</span></template>",
+      "expectedTemplateHtml": "<span class=\"ready active\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"ready active\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "bare",
+      "source": "<template><span class>x</span></template>",
+      "expectedTemplateHtml": "<span class=\"\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "empty",
+      "source": "<template><span class=\"\">x</span></template>",
+      "expectedTemplateHtml": "<span class=\"\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "html-whitespace",
+      "source": "<template><span class=\" \tready\n active\r busy\f done \">x</span></template>",
+      "expectedTemplateHtml": "<span class=\"ready active busy done\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"ready active busy done\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "encoded-whitespace",
+      "source": "<template><span class=\"&#x20;ready&#9; active&#10;busy&#13;done&#12;\">x</span></template>",
+      "expectedTemplateHtml": "<span class=\"ready active busy done\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"ready active busy done\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "outer-ecmascript-trim",
+      "source": "<template><span class=\"&#xfeff;&#xa0;ready&#x85;busy&#xfeff;\">x</span></template>",
+      "expectedTemplateHtml": "<span class=\"ready…busy\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"ready…busy\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "interior-nonhtml-spaces",
+      "source": "<template><span class=\"ready&#xa0;busy&#xfeff;next&#x200b;last&#xb;v\">x</span></template>",
+      "expectedTemplateHtml": "<span class=\"ready busy﻿next​last\u000bv\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"ready busy﻿next​last\u000bv\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "once-decoded-amp",
+      "source": "<template><div class=\"a&amp;amp;b\">x</div></template>",
+      "expectedTemplateHtml": "<div class=\"a&amp;amp;b\">x</div>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<div class=\\\"a&amp;amp;b\\\">x</div>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "once-decoded-markup",
+      "source": "<template><span class=\"&amp;lt;&amp;gt;\">x</span></template>",
+      "expectedTemplateHtml": "<span class=\"&amp;lt;&amp;gt;\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"&amp;lt;&amp;gt;\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "quotes-backslash-unicode",
+      "source": "<template><span class=\"&quot;&apos;\\雪🌸\">x</span></template>",
+      "expectedTemplateHtml": "<span class=\"&quot;'\\雪🌸\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"&quot;'\\\\雪🌸\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "escaped-html",
+      "source": "<template><span class=\"a&quot;&lt;&amp;b\">x</span></template>",
+      "expectedTemplateHtml": "<span class=\"a&quot;&lt;&amp;b\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"a&quot;&lt;&amp;b\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "nested",
+      "source": "<template><div><span class=\" a  b \">x</span></div></template>",
+      "expectedTemplateHtml": "<div><span class=\"a b\">x</span></div>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<div><span class=\\\"a b\\\">x</span></div>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "multiple-roots",
+      "source": "<template><span class=\" a \">x</span><div class=\" b \">y</div></template>",
+      "expectedTemplateHtml": "<span class=\"a\">x</span><div class=\"b\">y</div>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span class=\\\"a\\\">x</span>\", 2)\nconst t1 = _template(\"<div class=\\\"b\\\">y</div>\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const n1 = t1()\n  return [n0, n1]\n}"
+    },
+    {
+      "id": "void",
+      "source": "<template><img class=\" ready \"></template>",
+      "expectedTemplateHtml": "<img class=\"ready\">",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<img class=\\\"ready\\\">\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    },
+    {
+      "id": "comment-root",
+      "source": "<template><!--head--><section class=\" ready \">x</section><!--tail--></template>",
+      "expectedTemplateHtml": "<!--head--><section class=\"ready\">x</section><!--tail-->",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<!--head-->\", 2)\nconst t1 = _template(\"<section class=\\\"ready\\\">x</section>\", 3)\nconst t2 = _template(\"<!--tail-->\", 2)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  const n1 = t1()\n  const n2 = t2()\n  return [n0, n1, n2]\n}"
+    },
+    {
+      "id": "normal-plus-class",
+      "source": "<template><span title=\"a\t b\" class=\" ready\t active \">x</span></template>",
+      "expectedTemplateHtml": "<span title=\"a\t b\" class=\"ready active\">x</span>",
+      "expectedCode": "import { template as _template } from \"vue\"\nconst t0 = _template(\"<span title=\\\"a\\t b\\\" class=\\\"ready active\\\">x</span>\", 3)\n\nexport function render(_ctx) {\n  const n0 = t0()\n  return n0\n}"
+    }
+  ],
+  "negative": [
+    {
+      "id": "class-nul",
+      "source": "<template><span class=\"a\u0000b\">x</span></template>",
+      "requiredRefusal": "UnsupportedChild"
+    },
+    {
+      "id": "ordinary-cr",
+      "source": "<template><span title=\"a\r b\" class=\"x\">x</span></template>",
+      "requiredRefusal": "AttributeSemantics"
+    },
+    {
+      "id": "duplicate-class",
+      "source": "<template><span class=\"x\" class=\"y\">x</span></template>",
+      "requiredRefusal": "UnsupportedChild"
+    },
+    {
+      "id": "style",
+      "source": "<template><span class=\"x\" style=\"color:red\">x</span></template>",
+      "requiredRefusal": "UnsupportedChild"
+    },
+    {
+      "id": "mixed-dynamic-class",
+      "source": "<template><span class=\"x\" :class=\"1\">x</span></template>",
+      "requiredRefusal": "UnsupportedChild"
+    },
+    {
+      "id": "dynamic-class",
+      "source": "<template><span :class=\"1\">x</span></template>",
+      "requiredRefusal": "UnsupportedChild"
+    }
+  ]
+}

@@ -109,3 +109,26 @@ runtime-conformance, renderer, type, size, or tree-shaking gate. The legacy
 | `track`     | Structural track.                    | always                 |
 | `indicator` | Filled or indeterminate indicator.   | always                 |
 | `value`     | Visible value text container.        | when value text exists |
+
+## Finite numeric limits
+
+Determinate percentages and ratios remain finite when two finite bounds have a
+difference larger than `Number.MAX_VALUE`. A signed range from
+`-Number.MAX_VALUE` to `Number.MAX_VALUE` reports 0% at the minimum, 50% at zero,
+and 100% at the maximum. Only an overflowing difference uses half-scaled
+arithmetic; ordinary normalization and CSS tokens keep their existing values.
+
+Invalid upper bounds still repair to `min + 100`. When floating-point precision
+rounds that addition back to `min`, the authored finite bounds remain intact.
+This narrow invalid case reports `ratio=0`, `percent=0`, and `invalid=true`.
+Completion retains its existing definition: a determinate value at the
+normalized maximum is complete, including this invalid collapsed range.
+Indeterminate values remain `null`, omit `aria-valuenow` and `data-percent`, and
+use zero-valued ratio/percentage CSS hooks.
+
+[WAI-ARIA permits equal minimum and maximum bounds](https://www.w3.org/TR/wai-aria-1.2/#aria-valuemax).
+The pure range tests, mounted prop-update test, isolated SSR requests, and
+`progress-bar-wide-range`, `progress-bar-wide-endpoint`,
+`progress-bar-collapsed-positive`, and `progress-bar-collapsed-negative` runtime
+fixtures cover these limits. Existing CSS, exports, budgets, and known-failure
+ledger remain unchanged.

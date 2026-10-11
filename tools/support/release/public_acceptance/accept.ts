@@ -20,8 +20,12 @@ import { verifyPublication } from "./registry.ts";
 import { materializeVrtInputs, vrtHarness } from "./vrt_fixtures.ts";
 import { assertVrtCustody } from "./vrt_artifacts.ts";
 import { materializeLiteralVrtInputs } from "./vrt_literal.ts";
+import { prepareLspSource } from "./lsp_source.ts";
+import { archiveValidatorSha256, assertInstalledLsp } from "./lsp.ts";
+import { rejectLspOverrides } from "./lsp_assets.ts";
 
 rejectOverrides();
+rejectLspOverrides();
 const source = publicInputs(process.env);
 assert.equal(process.env.GITHUB_REPOSITORY, "ubugeeei-prod/vize");
 assert.equal(process.env.GITHUB_REF, "refs/heads/main", "dispatch reviewed protected main only");
@@ -74,6 +78,8 @@ if (process.argv[2] === "prepare") {
   const consumer = mkdtempSync(path.join(temporary, "vize-public-consumer-"));
   assert.ok(!consumer.startsWith(root + path.sep));
   const version = plan.version;
+  const lsp = prepareLspSource(root, source.head, consumer, output);
+  assert.equal(lsp.metadata.package.version, version);
   const dependencies = Object.fromEntries(
     [
       "vize",
@@ -92,6 +98,7 @@ if (process.argv[2] === "prepare") {
         type: "module",
         dependencies: {
           ...dependencies,
+          [lsp.metadata.provider.name]: lsp.metadata.provider.version,
           vite: "8.0.0",
           vue: "3.5.35",
           "vue-router": "4.5.1",
@@ -172,6 +179,8 @@ export default function publicSetup(app, context) {
     source,
     consumer,
     version,
+    lsp,
+    archiveValidatorSha256: archiveValidatorSha256(),
     fixtures,
     vrtInputs,
     trustedInputs,
@@ -184,7 +193,7 @@ export default function publicSetup(app, context) {
   assert.ok(!/[\r\n]/u.test(consumer));
   appendFileSync(
     process.env.GITHUB_ENV!,
-    `PUBLIC_CONSUMER=${consumer}\nPUBLIC_VERSION=${version}\n`,
+    `PUBLIC_CONSUMER=${consumer}\nPUBLIC_VERSION=${version}\nPUBLIC_LSP_TOOLCHAIN=${lsp.metadata.toolchain}\n`,
   );
   console.log(JSON.stringify({ source, consumer, version, status: "prepared-public-observation" }));
 } else if (process.argv[2] === "finish") {
@@ -208,6 +217,7 @@ export default function publicSetup(app, context) {
   const native = load("native.json"),
     musea = load("musea.json"),
     vrt = load("vrt.json");
+  const lsp = assertInstalledLsp(output);
   for (const receipt of [native, musea, vrt]) {
     assert.equal(receipt.version, preparation.version);
     assert.equal(receipt.success, true);
@@ -240,10 +250,11 @@ export default function publicSetup(app, context) {
     native,
     musea,
     vrt,
+    lsp,
     lockSha256: digest(lock),
     success: true,
     scope:
-      "Postpublication exact public npm native/Musea/VRT cases and mandatory planned channel observations. Optional Open VSX is recorded separately. No cryptographic signature claim.",
+      "Postpublication exact public native/Musea/VRT and original 32 owned event-rename contexts, plus mandatory planned channels. Stock-host null remains a separate limitation. Optional Open VSX is recorded separately. No cryptographic signature claim.",
   });
   console.log(JSON.stringify({ source, version: preparation.version, success: true }));
 } else {

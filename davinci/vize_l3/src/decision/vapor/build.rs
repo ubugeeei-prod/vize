@@ -163,15 +163,19 @@ impl<'facts, 'owner, 'arena> VaporBuilder<'facts, 'owner, 'arena> {
         for (slot, attribute) in element.attributes.iter().enumerate() {
             crate::decision::attribute_value::observe(original_values, node, element, slot);
             let name = attribute.name;
-            let generic = matches!(name, "id" | "title" | "role" | "dir" | "lang")
+            let generic = matches!(name, "class" | "id" | "title" | "role" | "dir" | "lang")
                 || (name.starts_with("data-") || name.starts_with("aria-")) && name.len() > 5;
             if !generic
                 || !name
                     .bytes()
                     .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
-                || attribute
-                    .value
-                    .is_some_and(|value| value.contains(['\0', '\r']))
+                || attribute.value.is_some_and(|value| {
+                    if name == "class" {
+                        value.contains('\0')
+                    } else {
+                        value.contains(['\0', '\r'])
+                    }
+                })
             {
                 self.reject(node, attribute.span, VaporUnsupported::AttributeSemantics);
             }

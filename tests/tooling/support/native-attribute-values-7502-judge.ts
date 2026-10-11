@@ -46,7 +46,7 @@ export function judge7502(env = process.env) {
   assert.equal(paths.history, path.join(paths.directory, "history-receipt.json"));
   const frame: any = {
     schema: "vize.native-attribute-values-7502.qualification",
-    version: 2,
+    version: 3,
     acceptance: "unreviewed",
     nativeAccepted: 0,
     source: null,

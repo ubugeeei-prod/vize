@@ -168,7 +168,7 @@ test("VRT runs independently after completed original probes while the original 
     success = true,
   ) => {
     const steps = Object.fromEntries(
-      ids.map((id) => [id, { outcome: overrides[id] ?? "success" }]),
+      [...ids, "lsp"].map((id) => [id, { outcome: overrides[id] ?? "success" }]),
     );
     return runInNewContext(
       condition.slice(3, -2),
@@ -189,4 +189,6 @@ test("VRT runs independently after completed original probes while the original 
   );
   assert.equal(evaluate(seal.if), true);
   assert.equal(evaluate(seal.if, { vrt: "failure" }, false, false), false);
+  for (const outcome of ["failure", "skipped", "cancelled"])
+    assert.equal(evaluate(seal.if, { lsp: outcome }), false);
 });

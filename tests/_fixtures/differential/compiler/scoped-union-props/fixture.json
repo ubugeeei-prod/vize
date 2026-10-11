@@ -1,0 +1,39 @@
+{
+  "issue": 6100,
+  "compilerFixHistoryIssue": 6880,
+  "serverVue": "3.5.35",
+  "supportedVue": "3.6.0-rc.11",
+  "inputs": [
+    {
+      "path": "Imported.vue.txt",
+      "sha256": "f1ff6e932724b8495d68e0c2fbeed328e45815302ef0059dd904003083de1544"
+    },
+    {
+      "path": "Inline.vue.txt",
+      "sha256": "422fe9ceab07155b7a0aa2f87ae8efdf359ec58531e40ba2880a18f3f9208732"
+    },
+    {
+      "path": "Plain.vue.txt",
+      "sha256": "335aae61d86e6642c33d2c0d64cdfcd683b3504543fd1d755b41fe0033f00f06"
+    },
+    {
+      "path": "Props.ts.txt",
+      "sha256": "0e252088b2c08a58cbafc59f648d82658c69a220746f15d1c14c4e6e0e32757b"
+    }
+  ],
+  "initialProps": {
+    "title": "Refresh <panels>&",
+    "ariaLabel": "Reload \"feed\"&"
+  },
+  "updatedProps": {
+    "title": "Updated!",
+    "ariaLabel": "Update",
+    "enabled": "",
+    "decorative": false
+  },
+  "expected": {
+    "initial": "<button aria-label=\"Reload &quot;feed&quot;&amp;\" data-enabled=\"false\" data-decorative=\"false\">Refresh &lt;panels&gt;&amp;</button>",
+    "updated": "<button aria-label=\"Update\" data-enabled=\"true\" data-decorative=\"false\">Updated!</button>",
+    "unmounted": ""
+  }
+}

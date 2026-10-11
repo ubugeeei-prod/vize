@@ -28,8 +28,8 @@ pub fn validate(packet: &Value) -> Test {
     check(
         field(packet, "summary")?
             == &json!({
-                "fixtures":14,"outcomes":84,"positive":76,"lowerRefusals":6,
-                "targetRefusals":2
+                "fixtures":14,"outcomes":84,"positive":78,"lowerRefusals":6,
+                "targetRefusals":0
             }),
         "complete positive/refusal outcome counts",
     )?;
@@ -88,15 +88,7 @@ pub fn validate(packet: &Value) -> Test {
         let result = field(row, "result")?;
         let l3 = field(row, "l3")?;
         if text(row, "id")? == "original-regression-11" {
-            positive(
-                row,
-                observation,
-                file,
-                result,
-                l3,
-                source,
-                text(row, "target")? != "vapor",
-            )?;
+            positive(row, observation, file, result, l3, source, true)?;
         } else if text(row, "disposition")? == "positive" {
             positive(row, observation, file, result, l3, source, true)?;
         } else {

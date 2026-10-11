@@ -93,7 +93,7 @@ export function classAnchorDeletion7502(packet: any, codec: any) {
   );
   assert.deepEqual(
     rows.map((row: any) => row.target),
-    ["dom", "ssr"],
+    ["dom", "ssr", "vapor"],
   );
   for (const row of rows) {
     const attribute = row.l3.values.find(
@@ -103,7 +103,7 @@ export function classAnchorDeletion7502(packet: any, codec: any) {
       (link: any) =>
         link.segment &&
         link.authored.start === attribute.span.start &&
-        link.authored.end === attribute.span.end,
+        link.authored.end === (row.target === "vapor" ? attribute.span.start : attribute.span.end),
     );
     assert(anchor >= 0, "actual captured class anchor required");
     const changed = {

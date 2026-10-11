@@ -64,9 +64,15 @@ test("failed source preflights block every source build and cannot pass the sour
     "pr-tooling-scripts",
     "pr-playground-test",
   ]) {
-    assert.equal(source.jobs[lane].needs, "pr-source-plan", lane);
+    assert.deepEqual(
+      source.jobs[lane].needs,
+      lane === "pr-tooling-scripts" ? ["pr-source-plan", "pr-source-cli"] : "pr-source-plan",
+      lane,
+    );
     assert.equal(source.jobs[lane].if, plan.if, `${lane} retains implicit success() gating`);
   }
+  assert.equal(source.jobs["pr-source-cli"].needs, "pr-source-plan");
+  assert.equal(source.jobs["pr-source-cli"].if, undefined, "producer retains implicit success()");
   const report = source.jobs["source-report"];
   const dependencies = typeof report.needs === "string" ? [report.needs] : (report.needs ?? []);
   assert.equal(report.if, "${{ always() }}");

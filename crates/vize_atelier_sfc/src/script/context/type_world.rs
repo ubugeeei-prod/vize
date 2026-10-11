@@ -15,6 +15,8 @@ mod snapshot_cache_tests;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
+mod union_props_tests;
+#[cfg(test)]
 mod with_defaults_tests;
 
 use oxc_span::SourceType;

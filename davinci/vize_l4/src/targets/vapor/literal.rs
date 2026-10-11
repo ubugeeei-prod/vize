@@ -14,7 +14,12 @@ pub(super) fn html_part<L: LinkSink>(writer: &mut Writer<L>, part: &VaporPart<'_
                 writer.anchor(attribute.span.start);
                 writer.push(attribute.name);
                 writer.push("=\\\"");
-                html(writer, attribute.value.unwrap_or_default(), true);
+                if attribute.name == "class" {
+                    let value = crate::targets::static_class::value(attribute);
+                    html(writer, value.as_str(), true);
+                } else {
+                    html(writer, attribute.value.unwrap_or_default(), true);
+                }
                 writer.push("\\\"");
             }
             writer.push(">");

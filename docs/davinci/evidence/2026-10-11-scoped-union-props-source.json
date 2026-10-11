@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "originalSourceActions": "https://github.com/ubugeeei-prod/vize/actions/runs/38112877041",
+  "strictReceiptActions": "https://github.com/ubugeeei-prod/vize/actions/runs/38113703526",
+  "before": "2eed646c3293d83bf14d005c02b068e81909867f",
+  "after": "6a279bc77f531c95abb58ee5b90c634354ef5f3f",
+  "beforeBinding": {
+    "head": "2eed646c3293d83bf14d005c02b068e81909867f",
+    "expected": "/home/runner/_work/vize/vize/npm/native/vize-vitrine.linux-x64-gnu.node",
+    "loaded": ["/home/runner/_work/vize/vize/npm/native/vize-vitrine.linux-x64-gnu.node"],
+    "sha256": "de9d8c41b04db0d100afafe62df91394e33573bfde2cd93fbcf0cec776d716bb"
+  },
+  "afterBinding": {
+    "head": "6a279bc77f531c95abb58ee5b90c634354ef5f3f",
+    "expected": "/home/runner/_work/vize/vize/npm/native/vize-vitrine.linux-x64-gnu.node",
+    "loaded": ["/home/runner/_work/vize/vize/npm/native/vize-vitrine.linux-x64-gnu.node"],
+    "sha256": "b9c5f92d0dc93571431bdd2bfb7f4691d73836c7d9e0054c9e0782750bdd38fe"
+  },
+  "receiptEvaluatorBinding": {
+    "head": "6a279bc77f531c95abb58ee5b90c634354ef5f3f",
+    "expected": "/home/runner/_work/vize/vize/npm/native/vize-vitrine.linux-x64-gnu.node",
+    "loaded": ["/home/runner/_work/vize/vize/npm/native/vize-vitrine.linux-x64-gnu.node"],
+    "sha256": "b9c5f92d0dc93571431bdd2bfb7f4691d73836c7d9e0054c9e0782750bdd38fe"
+  },
+  "summary": {
+    "before": {
+      "supported": {
+        "ssrRendered": 533,
+        "mount": {
+          "passed": 508,
+          "failedRows": 25,
+          "knownEntries": 25,
+          "stale": [],
+          "unknown": []
+        },
+        "hydrate": {
+          "passed": 485,
+          "failedRows": 48,
+          "knownEntries": 48,
+          "stale": [],
+          "unknown": []
+        }
+      },
+      "reference": {
+        "ssrRendered": 533,
+        "mount": {
+          "passed": 471,
+          "failedRows": 62,
+          "knownEntries": 60,
+          "stale": [],
+          "unknown": []
+        },
+        "hydrate": {
+          "passed": 369,
+          "failedRows": 164,
+          "knownEntries": 158,
+          "stale": [],
+          "unknown": [
+            "progress-bar-wide-range",
+            "progress-bar-wide-endpoint",
+            "progress-bar-collapsed-positive",
+            "progress-bar-collapsed-negative"
+          ]
+        }
+      }
+    },
+    "after": {
+      "supported": {
+        "ssrRendered": 533,
+        "mount": {
+          "passed": 510,
+          "failedRows": 23,
+          "knownEntries": 25,
+          "stale": ["icon", "icon-button"],
+          "unknown": []
+        },
+        "hydrate": {
+          "passed": 487,
+          "failedRows": 46,
+          "knownEntries": 48,
+          "stale": ["icon", "icon-button"],
+          "unknown": []
+        }
+      },
+      "reference": {
+        "ssrRendered": 533,
+        "mount": {
+          "passed": 471,
+          "failedRows": 62,
+          "knownEntries": 60,
+          "stale": [],
+          "unknown": []
+        },
+        "hydrate": {
+          "passed": 371,
+          "failedRows": 162,
+          "knownEntries": 158,
+          "stale": ["icon", "icon-button"],
+          "unknown": [
+            "progress-bar-wide-range",
+            "progress-bar-wide-endpoint",
+            "progress-bar-collapsed-positive",
+            "progress-bar-collapsed-negative"
+          ]
+        }
+      }
+    }
+  },
+  "sourceActionsBoundary": "Every original source/product guard succeeded. Only the original observer overestimated rc9 mount improvement. The corrected read-only receipt checks the immutable original raw outputs with the identical rebuilt native binding.",
+  "ratchet": {
+    "known-failures.json": {
+      "beforeSha256": "54d85c4933ec6afa8c6990789ffeeb90636ca6a8d994e53b8edbccac39e874ea",
+      "afterSha256": "b931f38c17c77798bda78ff364aecbb551521a628aa6a2a0295aea6db8c20ad0",
+      "removed": {
+        "mount": {
+          "icon": "unclassified: AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:",
+          "icon-button": "unclassified: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+        },
+        "hydrate": {
+          "icon": "unclassified: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+          "icon-button": "unclassified: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+        }
+      }
+    },
+    "reference-known-failures.json": {
+      "beforeSha256": "97ce557fb3ca4f21c2200f9d23f601cce20f822bd64dc9279e0b5ab6944b3778",
+      "afterSha256": "593e1add3fd28bb21cf6252dff79f40f0cf6c103b98cc9a8d7ba73147395ab95",
+      "removed": {
+        "hydrate": {
+          "icon": "unclassified: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+          "icon-button": "unclassified: AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:"
+        }
+      }
+    }
+  },
+  "markup": {
+    "before-supported": {
+      "fixtures": 533,
+      "assertionsPassed": 526,
+      "remainingFailures": [
+        "icon",
+        "icon-button",
+        "media-player-time-display",
+        "scrubber-preview-time",
+        "signature-pad-canvas",
+        "webcam-capture-shutter",
+        "webcam-capture-start-button"
+      ],
+      "other531FullHtmlSha256": "193b144f79af6d0489a67dc14a2141cb9ac9a25ee72a07e248d8a1187c89d6f4",
+      "targetFullOutputs": [
+        {
+          "name": "icon",
+          "sourceFile": "families/layout/icon/icon.vue",
+          "html": "<svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"decorative\" data-decorative=\"true\" data-size=\"sm\" data-title=\"missing\" data-description=\"missing\" data-v-a8f5d149 description=\"Reloads every dashboard panel\" descriptionId=\"refresh-icon-description\" title=\"Refresh panels\" titleId=\"refresh-icon-title\"><!----><!----><!--[--><path d=\"M4 12h16\"></path><!--]--></svg>",
+          "error": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /role=\"img\"/. Input:\n\n'<svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"decorative\" data-decorative=\"true\" data-size=\"sm\" data-title=\"missing\" data-description=\"missing\" data-v-a8f5d149 description=\"Reloads every dashboard panel\" descriptionId=\"refresh-icon-description\" title=\"Refresh panels\" titleId=\"refresh-icon-title\"><!----><!----><!--[--><path d=\"M4 12h16\"></path><!--]--></svg>'\n\n    at Object.assertServerMarkup (file:///home/runner/_work/vize/vize/npm/ui/src/families/layout/icon/runtime-conformance-icon-fixtures.ts:29:14)\n    at file:///tmp/ui-scoped-union-proof.mjs:184:23",
+          "assertion": "assertServerMarkup(html) {\n      assert.match(html, /^<svg/);\n      assert.match(html, /role=\"img\"/);\n      assert.match(html, /aria-labelledby=\"refresh-icon-title\"/);\n      assert.match(html, /aria-describedby=\"refresh-icon-description\"/);\n      assert.match(html, /data-vize-ui=\"icon\"/);\n      assert.match(html, /part=\"root\"/);\n      assert.match(html, /data-size=\"sm\"/);\n      assert.match(html, /data-aria-state=\"img\"/);\n      assert.match(html, /data-decorative=\"false\"/);\n      assert.match(html, /<title id=\"refresh-icon-title\"[^>]*>Refresh panels<\\/title>/);\n      assert.match(\n        html,\n        /<desc id=\"refresh-icon-description\"[^>]*>Reloads every dashboard panel<\\/desc>/,\n      );\n      assert.doesNotMatch(html, /class=|style=|tabindex=|aria-hidden=/);\n    }"
+        },
+        {
+          "name": "icon-button",
+          "sourceFile": "families/layout/icon/icon-button.vue",
+          "html": "<button type=\"button\" data-vize-ui=\"icon-button\" part=\"root\" data-state=\"idle\" data-size=\"sm\" data-tone=\"accent\" data-variant=\"soft\" data-name=\"missing\" data-v-ea5251e6 arialabel=\"Refresh feed\"><!--[--><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"decorative\" data-decorative=\"true\" data-size=\"sm\" data-title=\"missing\" data-description=\"missing\" data-v-a8f5d149 ariaHidden=\"true\"><!----><!----><!--[--><path d=\"M4 12h16\"></path><!--]--></svg><!--]--></button>",
+          "error": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /aria-label=\"Refresh feed\"/. Input:\n\n'<button type=\"button\" data-vize-ui=\"icon-button\" part=\"root\" data-state=\"idle\" data-size=\"sm\" data-tone=\"accent\" data-variant=\"soft\" data-name=\"missing\" data-v-ea5251e6 arialabel=\"Refresh feed\"><!--[--><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"decorative\" data-decorative=\"true\" data-size=\"sm\" data-title=\"missing\" data-description=\"missing\" data-v-a8f5d149 ariaHidden=\"true\"><!----><!----><!--[--><path d=\"M4 12h16\"></path><!--]--></svg><!--]--></button>'\n\n    at Object.assertServerMarkup (file:///home/runner/_work/vize/vize/npm/ui/src/families/layout/icon/runtime-conformance-icon-fixtures.ts:82:14)\n    at file:///tmp/ui-scoped-union-proof.mjs:184:23",
+          "assertion": "assertServerMarkup(html) {\n      assert.match(html, /^<button/);\n      assert.match(html, /type=\"button\"/);\n      assert.match(html, /aria-label=\"Refresh feed\"/);\n      assert.match(html, /data-vize-ui=\"icon-button\"/);\n      assert.match(html, /data-state=\"idle\"/);\n      assert.match(html, /data-size=\"sm\"/);\n      assert.match(html, /data-tone=\"accent\"/);\n      assert.match(html, /data-variant=\"soft\"/);\n      assert.match(html, /data-name=\"present\"/);\n      assert.match(html, /data-vize-ui=\"icon\"/);\n      assert.match(html, /aria-hidden=\"true\"/);\n      assert.doesNotMatch(html, /class=|style=|tabindex=|aria-busy=/);\n    }"
+        }
+      ]
+    },
+    "before-reference": {
+      "fixtures": 533,
+      "assertionsPassed": 530,
+      "remainingFailures": ["icon", "icon-button", "signature-pad-canvas"],
+      "other531FullHtmlSha256": "6f6607f01dab9055dac22543615bf00f6c8557ba1686a33005e5a8883f54c813",
+      "targetFullOutputs": [
+        {
+          "name": "icon",
+          "sourceFile": "families/layout/icon/icon.vue",
+          "html": "<svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"decorative\" data-decorative=\"true\" data-size=\"sm\" data-title=\"missing\" data-description=\"missing\" data-v-a8f5d149 description=\"Reloads every dashboard panel\" descriptionId=\"refresh-icon-description\" title=\"Refresh panels\" titleId=\"refresh-icon-title\"><!----><!----><!--[--><path d=\"M4 12h16\"></path><!--]--></svg>",
+          "error": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /role=\"img\"/. Input:\n\n'<svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"decorative\" data-decorative=\"true\" data-size=\"sm\" data-title=\"missing\" data-description=\"missing\" data-v-a8f5d149 description=\"Reloads every dashboard panel\" descriptionId=\"refresh-icon-description\" title=\"Refresh panels\" titleId=\"refresh-icon-title\"><!----><!----><!--[--><path d=\"M4 12h16\"></path><!--]--></svg>'\n\n    at Object.assertServerMarkup (file:///home/runner/_work/vize/vize/npm/ui/src/families/layout/icon/runtime-conformance-icon-fixtures.ts:29:14)\n    at file:///tmp/ui-scoped-union-proof.mjs:184:23",
+          "assertion": "assertServerMarkup(html) {\n      assert.match(html, /^<svg/);\n      assert.match(html, /role=\"img\"/);\n      assert.match(html, /aria-labelledby=\"refresh-icon-title\"/);\n      assert.match(html, /aria-describedby=\"refresh-icon-description\"/);\n      assert.match(html, /data-vize-ui=\"icon\"/);\n      assert.match(html, /part=\"root\"/);\n      assert.match(html, /data-size=\"sm\"/);\n      assert.match(html, /data-aria-state=\"img\"/);\n      assert.match(html, /data-decorative=\"false\"/);\n      assert.match(html, /<title id=\"refresh-icon-title\"[^>]*>Refresh panels<\\/title>/);\n      assert.match(\n        html,\n        /<desc id=\"refresh-icon-description\"[^>]*>Reloads every dashboard panel<\\/desc>/,\n      );\n      assert.doesNotMatch(html, /class=|style=|tabindex=|aria-hidden=/);\n    }"
+        },
+        {
+          "name": "icon-button",
+          "sourceFile": "families/layout/icon/icon-button.vue",
+          "html": "<button type=\"button\" data-vize-ui=\"icon-button\" part=\"root\" data-state=\"idle\" data-size=\"sm\" data-tone=\"accent\" data-variant=\"soft\" data-name=\"missing\" data-v-ea5251e6 arialabel=\"Refresh feed\"><!--[--><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"decorative\" data-decorative=\"true\" data-size=\"sm\" data-title=\"missing\" data-description=\"missing\" data-v-a8f5d149 ariaHidden=\"true\"><!----><!----><!--[--><path d=\"M4 12h16\"></path><!--]--></svg><!--]--></button>",
+          "error": "AssertionError [ERR_ASSERTION]: The input did not match the regular expression /aria-label=\"Refresh feed\"/. Input:\n\n'<button type=\"button\" data-vize-ui=\"icon-button\" part=\"root\" data-state=\"idle\" data-size=\"sm\" data-tone=\"accent\" data-variant=\"soft\" data-name=\"missing\" data-v-ea5251e6 arialabel=\"Refresh feed\"><!--[--><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"decorative\" data-decorative=\"true\" data-size=\"sm\" data-title=\"missing\" data-description=\"missing\" data-v-a8f5d149 ariaHidden=\"true\"><!----><!----><!--[--><path d=\"M4 12h16\"></path><!--]--></svg><!--]--></button>'\n\n    at Object.assertServerMarkup (file:///home/runner/_work/vize/vize/npm/ui/src/families/layout/icon/runtime-conformance-icon-fixtures.ts:82:14)\n    at file:///tmp/ui-scoped-union-proof.mjs:184:23",
+          "assertion": "assertServerMarkup(html) {\n      assert.match(html, /^<button/);\n      assert.match(html, /type=\"button\"/);\n      assert.match(html, /aria-label=\"Refresh feed\"/);\n      assert.match(html, /data-vize-ui=\"icon-button\"/);\n      assert.match(html, /data-state=\"idle\"/);\n      assert.match(html, /data-size=\"sm\"/);\n      assert.match(html, /data-tone=\"accent\"/);\n      assert.match(html, /data-variant=\"soft\"/);\n      assert.match(html, /data-name=\"present\"/);\n      assert.match(html, /data-vize-ui=\"icon\"/);\n      assert.match(html, /aria-hidden=\"true\"/);\n      assert.doesNotMatch(html, /class=|style=|tabindex=|aria-busy=/);\n    }"
+        }
+      ]
+    },
+    "after-supported": {
+      "fixtures": 533,
+      "assertionsPassed": 528,
+      "remainingFailures": [
+        "media-player-time-display",
+        "scrubber-preview-time",
+        "signature-pad-canvas",
+        "webcam-capture-shutter",
+        "webcam-capture-start-button"
+      ],
+      "other531FullHtmlSha256": "193b144f79af6d0489a67dc14a2141cb9ac9a25ee72a07e248d8a1187c89d6f4",
+      "targetFullOutputs": [
+        {
+          "name": "icon",
+          "sourceFile": "families/layout/icon/icon.vue",
+          "html": "<svg role=\"img\" aria-labelledby=\"refresh-icon-title\" aria-describedby=\"refresh-icon-description\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"img\" data-decorative=\"false\" data-size=\"sm\" data-title=\"present\" data-description=\"present\" data-v-a8f5d149><title id=\"refresh-icon-title\" data-v-a8f5d149>Refresh panels</title><desc id=\"refresh-icon-description\" data-v-a8f5d149>Reloads every dashboard panel</desc><!--[--><path d=\"M4 12h16\"></path><!--]--></svg>",
+          "error": null,
+          "assertion": "assertServerMarkup(html) {\n      assert.match(html, /^<svg/);\n      assert.match(html, /role=\"img\"/);\n      assert.match(html, /aria-labelledby=\"refresh-icon-title\"/);\n      assert.match(html, /aria-describedby=\"refresh-icon-description\"/);\n      assert.match(html, /data-vize-ui=\"icon\"/);\n      assert.match(html, /part=\"root\"/);\n      assert.match(html, /data-size=\"sm\"/);\n      assert.match(html, /data-aria-state=\"img\"/);\n      assert.match(html, /data-decorative=\"false\"/);\n      assert.match(html, /<title id=\"refresh-icon-title\"[^>]*>Refresh panels<\\/title>/);\n      assert.match(\n        html,\n        /<desc id=\"refresh-icon-description\"[^>]*>Reloads every dashboard panel<\\/desc>/,\n      );\n      assert.doesNotMatch(html, /class=|style=|tabindex=|aria-hidden=/);\n    }"
+        },
+        {
+          "name": "icon-button",
+          "sourceFile": "families/layout/icon/icon-button.vue",
+          "html": "<button type=\"button\" aria-label=\"Refresh feed\" data-vize-ui=\"icon-button\" part=\"root\" data-state=\"idle\" data-size=\"sm\" data-tone=\"accent\" data-variant=\"soft\" data-name=\"present\" data-v-ea5251e6><!--[--><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"decorative\" data-decorative=\"true\" data-size=\"sm\" data-title=\"missing\" data-description=\"missing\" data-v-a8f5d149><!----><!----><!--[--><path d=\"M4 12h16\"></path><!--]--></svg><!--]--></button>",
+          "error": null,
+          "assertion": "assertServerMarkup(html) {\n      assert.match(html, /^<button/);\n      assert.match(html, /type=\"button\"/);\n      assert.match(html, /aria-label=\"Refresh feed\"/);\n      assert.match(html, /data-vize-ui=\"icon-button\"/);\n      assert.match(html, /data-state=\"idle\"/);\n      assert.match(html, /data-size=\"sm\"/);\n      assert.match(html, /data-tone=\"accent\"/);\n      assert.match(html, /data-variant=\"soft\"/);\n      assert.match(html, /data-name=\"present\"/);\n      assert.match(html, /data-vize-ui=\"icon\"/);\n      assert.match(html, /aria-hidden=\"true\"/);\n      assert.doesNotMatch(html, /class=|style=|tabindex=|aria-busy=/);\n    }"
+        }
+      ]
+    },
+    "after-reference": {
+      "fixtures": 533,
+      "assertionsPassed": 532,
+      "remainingFailures": ["signature-pad-canvas"],
+      "other531FullHtmlSha256": "6f6607f01dab9055dac22543615bf00f6c8557ba1686a33005e5a8883f54c813",
+      "targetFullOutputs": [
+        {
+          "name": "icon",
+          "sourceFile": "families/layout/icon/icon.vue",
+          "html": "<svg role=\"img\" aria-labelledby=\"refresh-icon-title\" aria-describedby=\"refresh-icon-description\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"img\" data-decorative=\"false\" data-size=\"sm\" data-title=\"present\" data-description=\"present\" data-v-a8f5d149><title id=\"refresh-icon-title\" data-v-a8f5d149>Refresh panels</title><desc id=\"refresh-icon-description\" data-v-a8f5d149>Reloads every dashboard panel</desc><!--[--><path d=\"M4 12h16\"></path><!--]--></svg>",
+          "error": null,
+          "assertion": "assertServerMarkup(html) {\n      assert.match(html, /^<svg/);\n      assert.match(html, /role=\"img\"/);\n      assert.match(html, /aria-labelledby=\"refresh-icon-title\"/);\n      assert.match(html, /aria-describedby=\"refresh-icon-description\"/);\n      assert.match(html, /data-vize-ui=\"icon\"/);\n      assert.match(html, /part=\"root\"/);\n      assert.match(html, /data-size=\"sm\"/);\n      assert.match(html, /data-aria-state=\"img\"/);\n      assert.match(html, /data-decorative=\"false\"/);\n      assert.match(html, /<title id=\"refresh-icon-title\"[^>]*>Refresh panels<\\/title>/);\n      assert.match(\n        html,\n        /<desc id=\"refresh-icon-description\"[^>]*>Reloads every dashboard panel<\\/desc>/,\n      );\n      assert.doesNotMatch(html, /class=|style=|tabindex=|aria-hidden=/);\n    }"
+        },
+        {
+          "name": "icon-button",
+          "sourceFile": "families/layout/icon/icon-button.vue",
+          "html": "<button type=\"button\" aria-label=\"Refresh feed\" data-vize-ui=\"icon-button\" part=\"root\" data-state=\"idle\" data-size=\"sm\" data-tone=\"accent\" data-variant=\"soft\" data-name=\"present\" data-v-ea5251e6><!--[--><svg aria-hidden=\"true\" viewBox=\"0 0 24 24\" width=\"1em\" height=\"1em\" focusable=\"false\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" data-vize-ui=\"icon\" part=\"root\" data-aria-state=\"decorative\" data-decorative=\"true\" data-size=\"sm\" data-title=\"missing\" data-description=\"missing\" data-v-a8f5d149><!----><!----><!--[--><path d=\"M4 12h16\"></path><!--]--></svg><!--]--></button>",
+          "error": null,
+          "assertion": "assertServerMarkup(html) {\n      assert.match(html, /^<button/);\n      assert.match(html, /type=\"button\"/);\n      assert.match(html, /aria-label=\"Refresh feed\"/);\n      assert.match(html, /data-vize-ui=\"icon-button\"/);\n      assert.match(html, /data-state=\"idle\"/);\n      assert.match(html, /data-size=\"sm\"/);\n      assert.match(html, /data-tone=\"accent\"/);\n      assert.match(html, /data-variant=\"soft\"/);\n      assert.match(html, /data-name=\"present\"/);\n      assert.match(html, /data-vize-ui=\"icon\"/);\n      assert.match(html, /aria-hidden=\"true\"/);\n      assert.doesNotMatch(html, /class=|style=|tabindex=|aria-busy=/);\n    }"
+        }
+      ]
+    }
+  },
+  "sources": {
+    "npm/ui/src/families/layout/icon/icon.vue": {
+      "sha256": "548b8735d33bd8a2c9a71b9e21add04f665acfcd7ccd9c80d1e2f685f5c2f11c",
+      "source": "<script setup lang=\"ts\">\nimport { computed, useTemplateRef } from \"vue\";\n\nimport { useDeterministicId } from \"../../foundations/id/deterministic-id.ts\";\nimport type {\n  IconAriaState,\n  IconElement,\n  IconExpose,\n  IconProps,\n  IconSize,\n  IconSlotState,\n} from \"./icon-types.ts\";\n\nconst {\n  as = \"svg\",\n  id = undefined,\n  viewBox = \"0 0 24 24\",\n  width = \"1em\",\n  height = \"1em\",\n  size = \"md\",\n  focusable = false,\n  fill = \"none\",\n  stroke = \"currentColor\",\n  strokeWidth = \"2\",\n  strokeLinecap = \"round\",\n  strokeLinejoin = \"round\",\n  decorative: decorativeProp = undefined,\n  ariaHidden = undefined,\n  ariaLabel = undefined,\n  ariaLabelledby = undefined,\n  ariaDescribedby = undefined,\n  title = undefined,\n  description = undefined,\n  titleId = undefined,\n  descriptionId = undefined,\n} = defineProps<IconProps>();\n\ndefineSlots<{\n  /** Renders SVG child nodes with current accessibility and styling hooks. */\n  default(props: IconSlotState): unknown;\n}>();\n\nconst element = useTemplateRef<IconElement>(\"element\");\nconst generatedTitleId = useDeterministicId({ id: () => titleId, hint: \"icon-title\" });\nconst generatedDescriptionId = useDeterministicId({\n  id: () => descriptionId,\n  hint: \"icon-description\",\n});\n\nconst viewBoxValue = computed(() => viewBox);\nconst sizeValue = computed<IconSize>(() => size);\nconst hasTitle = computed(() => hasText(title));\nconst hasDescription = computed(() => hasText(description));\nconst hasAccessibleName = computed(\n  () => hasText(ariaLabel) || hasText(ariaLabelledby) || hasTitle.value,\n);\nconst decorative = computed(\n  () => ariaHidden === true || decorativeProp === true || !hasAccessibleName.value,\n);\nconst ariaState = computed<IconAriaState>(() => (decorative.value ? \"decorative\" : \"img\"));\nconst titleIdValue = computed(() =>\n  ariaState.value === \"img\" && hasTitle.value ? generatedTitleId.value : undefined,\n);\nconst descriptionIdValue = computed(() =>\n  ariaState.value === \"img\" && hasDescription.value ? generatedDescriptionId.value : undefined,\n);\nconst ariaLabelValue = computed(() =>\n  ariaState.value === \"img\" && !hasText(ariaLabelledby) && hasText(ariaLabel)\n    ? ariaLabel\n    : undefined,\n);\nconst ariaLabelledbyValue = computed(() => {\n  if (ariaState.value !== \"img\") return undefined;\n  if (hasText(ariaLabelledby)) return ariaLabelledby;\n  return hasText(ariaLabel) ? undefined : titleIdValue.value;\n});\nconst ariaDescribedbyValue = computed(() => {\n  if (ariaState.value !== \"img\") return undefined;\n  if (hasText(ariaDescribedby)) return ariaDescribedby;\n  return descriptionIdValue.value;\n});\nconst slotState = computed<IconSlotState>(() => ({\n  ariaState: ariaState.value,\n  decorative: decorative.value,\n  descriptionId: descriptionIdValue.value,\n  size: sizeValue.value,\n  titleId: titleIdValue.value,\n  viewBox: viewBoxValue.value,\n}));\n\ntype IconSetupExpose = Omit<\n  IconExpose,\n  \"ariaState\" | \"decorative\" | \"descriptionId\" | \"element\" | \"size\" | \"titleId\" | \"viewBox\"\n> & {\n  readonly ariaState: typeof ariaState;\n  readonly decorative: typeof decorative;\n  readonly descriptionId: typeof descriptionIdValue;\n  readonly element: typeof element;\n  readonly size: typeof sizeValue;\n  readonly titleId: typeof titleIdValue;\n  readonly viewBox: typeof viewBoxValue;\n};\n\nconst exposed = {\n  ariaState,\n  decorative,\n  descriptionId: descriptionIdValue,\n  element,\n  size: sizeValue,\n  titleId: titleIdValue,\n  viewBox: viewBoxValue,\n} satisfies IconSetupExpose;\n\ndefineExpose(exposed);\n\nfunction hasText(value: string | undefined): boolean {\n  return value != null && value.trim().length > 0;\n}\n</script>\n\n<template>\n  <component\n    :is=\"as\"\n    :id\n    ref=\"element\"\n    :role=\"ariaState === 'img' ? 'img' : undefined\"\n    :aria-hidden=\"ariaState === 'decorative' ? 'true' : undefined\"\n    :aria-label=\"ariaLabelValue\"\n    :aria-labelledby=\"ariaLabelledbyValue\"\n    :aria-describedby=\"ariaDescribedbyValue\"\n    :viewBox\n    :width\n    :height\n    :focusable=\"focusable ? 'true' : 'false'\"\n    :fill\n    :stroke\n    :stroke-width\n    :stroke-linecap\n    :stroke-linejoin\n    data-vize-ui=\"icon\"\n    part=\"root\"\n    :data-aria-state=\"ariaState\"\n    :data-decorative=\"decorative ? 'true' : 'false'\"\n    :data-size=\"sizeValue\"\n    :data-title=\"titleIdValue === undefined ? 'missing' : 'present'\"\n    :data-description=\"descriptionIdValue === undefined ? 'missing' : 'present'\"\n  >\n    <title v-if=\"titleIdValue !== undefined\" :id=\"titleIdValue\">{{ title }}</title>\n    <desc v-if=\"descriptionIdValue !== undefined\" :id=\"descriptionIdValue\">{{ description }}</desc>\n    <slot v-bind=\"slotState\" />\n  </component>\n</template>\n\n<style scoped>\n/* Headless by design. Native CSS remains entirely consumer-owned. */\n</style>\n"
+    },
+    "npm/ui/src/families/layout/icon/icon-button.vue": {
+      "sha256": "a31f385ec46c06a97346dbc648040fd224db31b3bcd859ea2cfba461630ae21f",
+      "source": "<script setup lang=\"ts\">\nimport { computed, useTemplateRef } from \"vue\";\n\nimport type {\n  IconButtonElement,\n  IconButtonExpose,\n  IconButtonProps,\n  IconButtonSize,\n  IconButtonSlotState,\n  IconButtonState,\n  IconButtonTone,\n  IconButtonVariant,\n} from \"./icon-types.ts\";\n\ntype IconButtonKeyboardPhase = \"keydown\" | \"keyup\";\ntype IconButtonKeyboardAction = \"activate\" | \"prevent\" | \"ignore\";\n\nconst {\n  as = \"button\",\n  native = undefined,\n  type = \"button\",\n  disabled = false,\n  loading = false,\n  size = \"md\",\n  tone = \"neutral\",\n  variant = \"plain\",\n  ariaLabel = undefined,\n  ariaLabelledby = undefined,\n  ariaDescribedby = undefined,\n} = defineProps<IconButtonProps>();\n\ndefineSlots<{\n  /** Renders the icon-only contents with current availability and styling hooks. */\n  default(props: IconButtonSlotState): unknown;\n}>();\n\nconst emit = defineEmits<{\n  /**\n   * Fired when pointer or keyboard activation reaches the rendered control.\n   *\n   * Carries the resulting `MouseEvent`.\n   */\n  press: [event: MouseEvent];\n}>();\n\nconst element = useTemplateRef<IconButtonElement>(\"element\");\nconst isNativeButton = computed(() => native ?? as === \"button\");\nconst disabledValue = computed(() => disabled);\nconst loadingValue = computed(() => loading);\nconst unavailable = computed(() => disabledValue.value || loadingValue.value);\nconst sizeValue = computed<IconButtonSize>(() => size);\nconst toneValue = computed<IconButtonTone>(() => tone);\nconst variantValue = computed<IconButtonVariant>(() => variant);\nconst state = computed<IconButtonState>(() =>\n  disabledValue.value ? \"disabled\" : loadingValue.value ? \"loading\" : \"idle\",\n);\nconst tabIndex = computed(() => {\n  if (isNativeButton.value) return undefined;\n  return disabledValue.value ? -1 : 0;\n});\nconst ariaLabelValue = computed(() => (hasText(ariaLabel) ? ariaLabel : undefined));\nconst ariaLabelledbyValue = computed(() => (hasText(ariaLabelledby) ? ariaLabelledby : undefined));\nconst slotState = computed<IconButtonSlotState>(() => ({\n  disabled: disabledValue.value,\n  loading: loadingValue.value,\n  size: sizeValue.value,\n  state: state.value,\n  tone: toneValue.value,\n  unavailable: unavailable.value,\n  variant: variantValue.value,\n}));\n\nfunction onClick(event: MouseEvent): void {\n  if (unavailable.value) {\n    event.preventDefault();\n    event.stopImmediatePropagation();\n    return;\n  }\n  emit(\"press\", event);\n}\n\nfunction onKeyboard(event: KeyboardEvent, phase: IconButtonKeyboardPhase): void {\n  if (isNativeButton.value) return;\n  const action = getIconButtonKeyboardAction(event.key, phase);\n  if (action === \"ignore\") return;\n  event.preventDefault();\n  if (unavailable.value) {\n    event.stopImmediatePropagation();\n    return;\n  }\n  if (action === \"activate\" && event.currentTarget instanceof HTMLElement) {\n    event.currentTarget.click();\n  }\n}\n\nfunction onKeydown(event: KeyboardEvent): void {\n  onKeyboard(event, \"keydown\");\n}\n\nfunction onKeyup(event: KeyboardEvent): void {\n  onKeyboard(event, \"keyup\");\n}\n\nfunction getIconButtonKeyboardAction(\n  key: string,\n  phase: IconButtonKeyboardPhase,\n): IconButtonKeyboardAction {\n  if (key === \"Enter\") return phase === \"keydown\" ? \"activate\" : \"ignore\";\n  if (key === \" \") return phase === \"keydown\" ? \"prevent\" : \"activate\";\n  return \"ignore\";\n}\n\n/** Move focus to the rendered control when it exposes a focus method. */\nfunction focus(options?: FocusOptions): void {\n  focusTarget(element.value, options);\n}\n\nfunction focusTarget(target: unknown, options?: FocusOptions): void {\n  if (\n    typeof target === \"object\" &&\n    target !== null &&\n    \"focus\" in target &&\n    typeof target.focus === \"function\"\n  ) {\n    target.focus(options);\n  }\n}\n\ntype IconButtonSetupExpose = Omit<\n  IconButtonExpose,\n  \"disabled\" | \"element\" | \"loading\" | \"size\" | \"state\" | \"tone\" | \"unavailable\" | \"variant\"\n> & {\n  readonly disabled: typeof disabledValue;\n  readonly element: typeof element;\n  readonly loading: typeof loadingValue;\n  readonly size: typeof sizeValue;\n  readonly state: typeof state;\n  readonly tone: typeof toneValue;\n  readonly unavailable: typeof unavailable;\n  readonly variant: typeof variantValue;\n};\n\nconst exposed = {\n  disabled: disabledValue,\n  element,\n  focus,\n  loading: loadingValue,\n  size: sizeValue,\n  state,\n  tone: toneValue,\n  unavailable,\n  variant: variantValue,\n} satisfies IconButtonSetupExpose;\n\ndefineExpose(exposed);\n\nfunction hasText(value: string | undefined): boolean {\n  return value != null && value.trim().length > 0;\n}\n</script>\n\n<template>\n  <component\n    :is=\"as\"\n    ref=\"element\"\n    :type=\"isNativeButton ? type : undefined\"\n    :disabled=\"isNativeButton ? disabledValue : undefined\"\n    :role=\"isNativeButton ? undefined : 'button'\"\n    :tabindex=\"tabIndex\"\n    :aria-disabled=\"unavailable && (!isNativeButton || loadingValue) ? 'true' : undefined\"\n    :aria-busy=\"loadingValue ? 'true' : undefined\"\n    :aria-label=\"ariaLabelledbyValue === undefined ? ariaLabelValue : undefined\"\n    :aria-labelledby=\"ariaLabelledbyValue\"\n    :aria-describedby\n    data-vize-ui=\"icon-button\"\n    part=\"root\"\n    :data-state=\"state\"\n    :data-size=\"sizeValue\"\n    :data-tone=\"toneValue\"\n    :data-variant=\"variantValue\"\n    :data-name=\"\n      ariaLabelValue !== undefined || ariaLabelledbyValue !== undefined ? 'present' : 'missing'\n    \"\n    @click=\"onClick\"\n    @keydown=\"onKeydown\"\n    @keyup=\"onKeyup\"\n  >\n    <slot v-bind=\"slotState\" />\n  </component>\n</template>\n\n<style scoped>\n/* Headless by design. Native CSS remains entirely consumer-owned. */\n</style>\n"
+    },
+    "npm/ui/src/families/layout/icon/runtime-conformance-icon-fixtures.ts": {
+      "sha256": "0f1e6ce205cef861ec708b9f64848202febcd6a81f6426ae9224376aaae2b9af",
+      "source": "import assert from \"node:assert/strict\";\n\nimport { h } from \"vue\";\n\nimport type { RuntimeFixture } from \"../../../conformance/runtime-conformance-fixtures.ts\";\nimport Icon from \"./icon.vue\";\nimport IconButton from \"./icon-button.vue\";\n\nexport const iconRuntimeFixtures: readonly RuntimeFixture[] = [\n  {\n    name: \"icon\",\n    sourceFile: \"families/layout/icon/icon.vue\",\n    render: () =>\n      h(\n        Icon,\n        {\n          description: \"Reloads every dashboard panel\",\n          descriptionId: \"refresh-icon-description\",\n          size: \"sm\",\n          title: \"Refresh panels\",\n          titleId: \"refresh-icon-title\",\n        },\n        {\n          default: () => h(\"path\", { d: \"M4 12h16\" }),\n        },\n      ),\n    assertServerMarkup(html) {\n      assert.match(html, /^<svg/);\n      assert.match(html, /role=\"img\"/);\n      assert.match(html, /aria-labelledby=\"refresh-icon-title\"/);\n      assert.match(html, /aria-describedby=\"refresh-icon-description\"/);\n      assert.match(html, /data-vize-ui=\"icon\"/);\n      assert.match(html, /part=\"root\"/);\n      assert.match(html, /data-size=\"sm\"/);\n      assert.match(html, /data-aria-state=\"img\"/);\n      assert.match(html, /data-decorative=\"false\"/);\n      assert.match(html, /<title id=\"refresh-icon-title\"[^>]*>Refresh panels<\\/title>/);\n      assert.match(\n        html,\n        /<desc id=\"refresh-icon-description\"[^>]*>Reloads every dashboard panel<\\/desc>/,\n      );\n      assert.doesNotMatch(html, /class=|style=|tabindex=|aria-hidden=/);\n    },\n    assertHydratedDom(host) {\n      const icon = host.querySelector('[data-vize-ui=\"icon\"]');\n\n      assert.ok(icon instanceof SVGSVGElement);\n      assert.equal(icon.getAttribute(\"role\"), \"img\");\n      assert.equal(icon.getAttribute(\"aria-labelledby\"), \"refresh-icon-title\");\n      assert.equal(icon.getAttribute(\"aria-describedby\"), \"refresh-icon-description\");\n      assert.equal(icon.getAttribute(\"data-size\"), \"sm\");\n      assert.equal(icon.querySelector(\"title\")?.textContent, \"Refresh panels\");\n      assert.equal(icon.querySelector(\"desc\")?.textContent, \"Reloads every dashboard panel\");\n    },\n  },\n  {\n    name: \"icon-button\",\n    sourceFile: \"families/layout/icon/icon-button.vue\",\n    render: () =>\n      h(\n        IconButton,\n        {\n          ariaLabel: \"Refresh feed\",\n          size: \"sm\",\n          tone: \"accent\",\n          variant: \"soft\",\n        },\n        {\n          default: () =>\n            h(\n              Icon,\n              { ariaHidden: true, size: \"sm\" },\n              {\n                default: () => h(\"path\", { d: \"M4 12h16\" }),\n              },\n            ),\n        },\n      ),\n    assertServerMarkup(html) {\n      assert.match(html, /^<button/);\n      assert.match(html, /type=\"button\"/);\n      assert.match(html, /aria-label=\"Refresh feed\"/);\n      assert.match(html, /data-vize-ui=\"icon-button\"/);\n      assert.match(html, /data-state=\"idle\"/);\n      assert.match(html, /data-size=\"sm\"/);\n      assert.match(html, /data-tone=\"accent\"/);\n      assert.match(html, /data-variant=\"soft\"/);\n      assert.match(html, /data-name=\"present\"/);\n      assert.match(html, /data-vize-ui=\"icon\"/);\n      assert.match(html, /aria-hidden=\"true\"/);\n      assert.doesNotMatch(html, /class=|style=|tabindex=|aria-busy=/);\n    },\n    assertHydratedDom(host) {\n      const button = host.querySelector('[data-vize-ui=\"icon-button\"]');\n      const icon = host.querySelector('[data-vize-ui=\"icon\"]');\n\n      assert.ok(button instanceof HTMLButtonElement);\n      assert.equal(button.getAttribute(\"aria-label\"), \"Refresh feed\");\n      assert.equal(button.getAttribute(\"data-state\"), \"idle\");\n      assert.equal(button.getAttribute(\"data-size\"), \"sm\");\n      assert.equal(button.getAttribute(\"data-tone\"), \"accent\");\n      assert.equal(button.getAttribute(\"data-variant\"), \"soft\");\n      assert.ok(icon instanceof SVGSVGElement);\n      assert.equal(icon.getAttribute(\"aria-hidden\"), \"true\");\n    },\n  },\n];\n"
+    }
+  },
+  "other531HashEncoding": "SHA256 of UTF-8 Python json.dumps([{name,sourceFile,html},...], ensure_ascii=False, separators=(comma,colon)) in complete original fixture order, excluding only icon and icon-button."
+}

@@ -78,6 +78,7 @@ test("queue scope reaches the planner and every full source lane remains require
     ...lanes,
     "wit-contracts",
     "canonical-corpus",
+    "pr-source-cli",
   ]);
   assert.equal(source.jobs["source-report"].if, "${{ always() }}");
   assert.match(commands(source.jobs["source-report"]), /canonical-corpus-selection\.mjs/);
@@ -100,7 +101,15 @@ test("queue scope reaches the planner and every full source lane remains require
   assert.equal(jsHistory.runs.steps[0].if, "${{ success() && job.status == 'success' }}");
   assert.match(commands(source.jobs["pr-js-packages"]), /vp run --workspace-root test:js/);
   assert.match(commands(source.jobs["pr-tooling-scripts"]), /vp run --workspace-root test:scripts/);
-  assert.match(commands(source.jobs["pr-tooling-scripts"]), /cargo build --profile ci -p vize/);
+  const cli = parse(readRepoFile(".github", "workflows", "pr-source-cli.yml")) as {
+    jobs: Record<string, Job>;
+  };
+  assert.match(commands(cli.jobs.cli), /cargo build --profile ci -p vize/);
+  assert.ok(
+    source.jobs["pr-tooling-scripts"].steps?.some(
+      (step) => step.uses === "./.github/actions/restore-source-cli",
+    ),
+  );
   assert.match(commands(source.jobs["pr-playground-test"]), /test:browser/);
   assert.match(commands(source.jobs["pr-playground-test"]), /test:vrt/);
   const vrtFailure = source.jobs["pr-playground-test"].steps?.find(

@@ -222,10 +222,10 @@ export async function runtime7502(packet: any, mode: "development" | "production
       }
     }
     assert.equal(controls.length, 14);
-    assert.equal(executions.length, 76);
+    assert.equal(executions.length, 78);
     return {
       schema: "vize.native-attribute-values-7502.runtime",
-      version: 2,
+      version: 3,
       mode,
       capturedFromRust: true,
       acceptance: "unreviewed",
@@ -233,9 +233,9 @@ export async function runtime7502(packet: any, mode: "development" | "production
       counts: {
         originalControls: 14,
         knownIncorrectRc9Clients: 9,
-        positiveNativeExecutions: 76,
+        positiveNativeExecutions: 78,
         lowerRefusalOutcomes: 6,
-        targetRefusalOutcomes: 2,
+        targetRefusalOutcomes: 0,
       },
       controls,
       executions,

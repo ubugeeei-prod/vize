@@ -79,7 +79,9 @@ test("every isolated tooling runner regenerates its tier and retains the full me
   const pkl = steps.findIndex(
     (step) => step.name === "Prepare checksum-pinned Pkl and upstream lint dependencies",
   );
-  const build = steps.findIndex((step) => step.name === "Build and install vize CLI");
+  const build = steps.findIndex(
+    (step) => step.name === "Restore and install source-built vize CLI",
+  );
   const selected = steps.findIndex((step) => step.name === "Test selected PR tooling scripts");
   const full = steps.findIndex((step) => step.name === "Test tooling scripts");
   assert.ok(regenerate >= 0 && regenerate < build && build < selected && selected < full);
@@ -154,8 +156,19 @@ test("every isolated tooling runner regenerates its tier and retains the full me
     source.jobs["source-report"].steps?.at(-1)?.run,
     "node tools/support/compat/github/canonical-corpus-selection.mjs --check",
   );
+  assert.equal(steps[build].uses, "./.github/actions/restore-source-cli");
+  assert.equal(steps[build].with?.sha256, "${{ needs.pr-source-cli.outputs.sha256 }}");
+  const restore = parse(readRepoFile(".github", "actions", "restore-source-cli", "action.yml")) as {
+    runs: { steps: Step[] };
+  };
+  const restoreCommand = restore.runs.steps.at(-1)?.run ?? "";
+  assert.match(restoreCommand, /source-cli-artifact\.ts restore/);
+  assert.doesNotMatch(restoreCommand, /build-receipt\.ts/);
+  const producer = parse(readRepoFile(".github", "workflows", "pr-source-cli.yml")) as {
+    jobs: Record<string, Job>;
+  };
   assert.match(
-    steps[build].run ?? "",
+    producer.jobs.cli.steps?.map((step) => step.run ?? "").join("\n") ?? "",
     /cargo build --profile ci -p vize && vp exec node tests\/differential\/build-receipt\.ts/,
   );
 });

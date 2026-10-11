@@ -1,0 +1,15 @@
+<script setup>
+import { ref } from "vue";
+
+const tag = ref("div");
+const percent = ref(50);
+const style = ref({ "--percent": "50%" });
+function advance() {
+  percent.value = 75;
+  style.value = { "--percent": "75%" };
+}
+</script>
+
+<template>
+  <component :is="tag" :style="style" @click="advance">{{ percent }}%</component>
+</template>

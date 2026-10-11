@@ -9,7 +9,10 @@ export const fixtureUrl7502 = new URL(
   import.meta.url,
 );
 export const archiveOutputUrl7502 = new URL("reviewed_output.json", fixtureUrl7502);
-export const outputUrl7502 = new URL("reviewed_output_v2.json", fixtureUrl7502);
+export const previousOutputUrl7502 = new URL("reviewed_output_v2.json", fixtureUrl7502);
+export const previousOutputSha7502 =
+  "4802cc3a776f7711cbe32893858bf770407123a2745c34be9f35e9ed3b880428";
+export const outputUrl7502 = new URL("reviewed_output_v3.json", fixtureUrl7502);
 export const archiveOutputSha7502 =
   "d32b8138113cbae60ea28b82c5653fa9b5fdb40a8b9f8a90ebd7e67a88b9a2cb";
 export const baseline7502 = {
@@ -22,7 +25,13 @@ export const transition7502 = {
   originalReviewedOutputSha256: archiveOutputSha7502,
   input: "original-regression-11",
   historicalDisposition: "lower-refusal",
-  current: { dom: "positive", ssr: "positive", vapor: "target-refusal" },
+  previousReviewedOutputSha256: previousOutputSha7502,
+  previousVersion: 2,
+  changedOutcomes: [
+    { target: "vapor", linkMode: "Recorded", before: "target-refusal", after: "positive" },
+    { target: "vapor", linkMode: "NoLinks", before: "target-refusal", after: "positive" },
+  ],
+  current: { dom: "positive", ssr: "positive", vapor: "positive" },
 };
 export function disposition7502(row: any) {
   return row.id === transition7502.input
@@ -39,6 +48,16 @@ export function archivedCapture7502() {
   assert.equal(output.state, "reviewed");
   return output.capture;
 }
+export function previousCapture7502() {
+  const bytes = readFileSync(previousOutputUrl7502);
+  assert.equal(hash7502(bytes), previousOutputSha7502, "whole reviewed V2 bytes drift");
+  const output = JSON.parse(bytes.toString("utf8"));
+  exactKeys7502(output, ["schema", "version", "state", "capture"]);
+  assert.equal(output.schema, "vize.native-attribute-values-7502.reviewed-output");
+  assert.equal(output.version, 2);
+  assert.equal(output.state, "reviewed");
+  return output.capture;
+}
 export function unchangedRows7502(packet: any) {
   const archive = archivedCapture7502();
   assert.equal(packet.rows.length, archive.rows.length);
@@ -49,6 +68,17 @@ export function unchangedRows7502(packet: any) {
     assert.equal(row.linkMode, previous.linkMode);
     if (row.id !== transition7502.input)
       assert.deepEqual(row, previous, "every unaffected original whole row remains exact");
+  }
+  const previous = previousCapture7502();
+  assert.equal(packet.rows.length, previous.rows.length);
+  for (const [index, row] of packet.rows.entries()) {
+    const old = previous.rows[index];
+    if (row.id === transition7502.input && row.target === "vapor") {
+      exactKeys7502(row, Object.keys(old));
+      assert.equal(old.result.classification, "target-refusal");
+      for (const key of Object.keys(old).filter((key) => key !== "result"))
+        assert.deepEqual(row[key], old[key], `whole changed-row custody stays exact: ${key}`);
+    } else assert.deepEqual(row, old, "all 82 unaffected V2 whole rows stay exact");
   }
 }
 export const fixtureSha7502 = "130e3b247f1333f66ed1a529b7618e8de28cd926b33e6a57e2a12de640645b8f";
@@ -119,7 +149,7 @@ export function loadInputs7502(bytes = readFileSync(fixtureUrl7502)) {
 export function requireReviewed7502(actual: any, frozen: any) {
   exactKeys7502(frozen, ["schema", "version", "state", "capture"]);
   assert.equal(frozen.schema, "vize.native-attribute-values-7502.reviewed-output");
-  assert.equal(frozen.version, 2);
+  assert.equal(frozen.version, 3);
   assert.equal(frozen.state, "reviewed", "whole native code/maps remain unfrozen");
   assert(
     frozen.capture && typeof frozen.capture === "object",

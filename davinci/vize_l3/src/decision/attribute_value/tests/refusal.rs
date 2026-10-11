@@ -179,7 +179,7 @@ fn original_entity_text_and_unsupported_target_names_remain_precise_boundaries()
 }
 
 #[test]
-fn original_class_retains_complete_dom_ssr_rows_and_precise_vapor_target_refusal() -> Test {
+fn original_class_retains_complete_rows_for_all_admitted_targets() -> Test {
     let arena = Allocator::default();
     let source = r#"<template><div class="a&amp;amp;b">x</div></template>"#;
     let original = completed(&arena, source)?;
@@ -194,13 +194,22 @@ fn original_class_retains_complete_dom_ssr_rows_and_precise_vapor_target_refusal
     let vapor = vapor::build_native_vapor_file_decisions(original.view().map_err(|_| "view")?)
         .map_err(|_| "Vapor original rows")?;
     check(vapor.original_attributes().ok_or("original row")?.len() == 1)?;
-    check(
-        vapor
-            .vapor()
-            .ok_or("Vapor facts")?
-            .unsupported()
-            .iter()
-            .any(|hole| hole.reason == vapor::VaporUnsupported::AttributeSemantics),
-    )?;
+    check(vapor.vapor().ok_or("Vapor facts")?.unsupported().is_empty())?;
+    let file = original.file().ok_or("whole original File")?;
+    for facts in [
+        dom.original_attributes().ok_or("DOM whole row")?,
+        ssr.original_attributes().ok_or("SSR whole row")?,
+        vapor.original_attributes().ok_or("Vapor whole row")?,
+    ] {
+        check(core::ptr::eq(facts.file(), file))?;
+        let joined = facts
+            .value(0, element(file, 0)?, 0)
+            .ok_or("original class")?;
+        let value = joined.observation().ok_or("whole value")?;
+        check(value.raw_value() == "a&amp;amp;b" && value.source().text() == "a&amp;b")?;
+        check(value.name_span() == Span::new(15, 20))?;
+        check(value.value_span() == Span::new(22, 33))?;
+        check(value.full_value_span() == Span::new(21, 34))?;
+    }
     Ok(())
 }

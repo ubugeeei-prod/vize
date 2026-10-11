@@ -155,7 +155,11 @@ test("pulls shared foundations as their own items", () => {
 test("declares vue as the only npm dependency, as a peer", () => {
   for (const item of manifest.items) {
     for (const dependency of item.dependencies) {
-      assert.deepEqual(dependency, { name: "vue", range: "^3.5.0", kind: "peer" });
+      assert.deepEqual(dependency, {
+        name: "vue",
+        range: "^3.5.0 || ^3.6.0-rc.11",
+        kind: "peer",
+      });
     }
   }
   assert.ok(manifest.items.some((item) => item.dependencies.length > 0));

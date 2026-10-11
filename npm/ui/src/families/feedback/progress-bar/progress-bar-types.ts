@@ -38,7 +38,11 @@ export interface ProgressBarProps {
   /** Lower bound. Non-finite values fall back to 0. */
   readonly min?: number | null;
 
-  /** Upper bound. Values less than or equal to `min` are repaired to `min + 100`. */
+  /**
+   * Upper bound. Values less than or equal to `min` are repaired to `min + 100`.
+   * If that addition rounds back to `min`, the collapsed finite range reports
+   * zero ratio/percent and invalid state without changing the completion policy.
+   */
   readonly max?: number | null;
 
   /** Reading direction for inline-start fill and indeterminate motion. */
@@ -71,7 +75,7 @@ export interface ProgressBarSlotState {
   /** Finite lower bound. */
   readonly min: number;
 
-  /** Finite upper bound, always greater than `min`. */
+  /** Finite upper bound, equal to `min` only when the default repair cannot advance it. */
   readonly max: number;
 
   /** Current completion percentage from 0 to 100, or `null` when indeterminate. */
