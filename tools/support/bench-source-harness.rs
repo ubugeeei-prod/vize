@@ -768,6 +768,18 @@ fn comparable(base: &Arm, head: &Arm) -> Result<(), String> {
             == source(&head.root, &head.tree, "rust-toolchain.toml")?,
         "changed protocol toolchain"
     );
+    for file in [".cargo/config", ".cargo/config.toml"] {
+        require!(
+            base.tree.contains_key(file) == head.tree.contains_key(file),
+            "changed paired Cargo configuration"
+        );
+        if base.tree.contains_key(file) {
+            require!(
+                source(&base.root, &base.tree, file)? == source(&head.root, &head.tree, file)?,
+                "changed paired Cargo configuration"
+            );
+        }
+    }
     let mut a = toml_at(&base.workspace, &["workspace", "package"])?.clone();
     let mut b = toml_at(&head.workspace, &["workspace", "package"])?.clone();
     a.as_table_mut()

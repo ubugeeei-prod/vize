@@ -9,10 +9,11 @@ await test("source-owned comparison binds actual inheritance, metadata and libra
   const f = sourceJudgeFixture(t),
     metadataDir = path.join(f.arms.head.build, "cargo-metadata"),
     cargoDir = path.join(f.arms.head.build, "cargo");
-  const refuse = () => {
+  const refuse = (reason: RegExp) => {
     const result = sourceCompare(f);
     assert.equal(result.status, 2, result.stderr);
     assert.match(result.stderr, /source harness/);
+    assert.match(result.stderr, reason);
   };
   const original = JSON.stringify(f.arms.head.metadata);
   const variants = [
@@ -32,9 +33,15 @@ await test("source-owned comparison binds actual inheritance, metadata and libra
       ],
     })),
   ];
-  for (const variant of variants) {
+  for (const [index, variant] of variants.entries()) {
     f.rewriteStream(metadataDir, "stdout", JSON.stringify(variant));
-    refuse();
+    refuse(
+      index === 0
+        ? /foreign Cargo metadata workspace/
+        : index < 3
+          ? /missing or duplicate harness metadata/
+          : /metadata differs from actual source inheritance/,
+    );
   }
   f.rewriteStream(metadataDir, "stdout", original);
   const artifacts = fs.readFileSync(path.join(cargoDir, "stdout.bin"), "utf8");
@@ -52,7 +59,7 @@ await test("source-owned comparison binds actual inheritance, metadata and libra
     ],
   ]) {
     f.rewriteStream(cargoDir, "stdout", variant.map((x) => JSON.stringify(x)).join("\n") + "\n");
-    refuse();
+    refuse(/missing or foreign compiled harness library/);
   }
   f.rewriteStream(cargoDir, "stdout", artifacts);
   const workspace = path.join(f.arms.head.root, "Cargo.toml"),
@@ -60,7 +67,7 @@ await test("source-owned comparison binds actual inheritance, metadata and libra
   fs.writeFileSync(workspace, body.toString().replaceAll('"0.442.0"', '"0.443.0"'));
   f.refresh("head");
   f.save();
-  refuse();
+  refuse(/metadata differs from actual source inheritance/);
   fs.writeFileSync(workspace, body);
   f.refresh("head");
   f.save();
@@ -72,7 +79,7 @@ await test("source-owned comparison binds actual inheritance, metadata and libra
   );
   f.refresh("head");
   f.save();
-  refuse();
+  refuse(/missing TOML workspace/);
   fs.writeFileSync(manifest, manifestBody);
   f.refresh("head");
   f.save();
@@ -81,10 +88,11 @@ await test("source-owned comparison binds actual inheritance, metadata and libra
 
 await test("source-owned comparison refuses source pins, source roots and completed-process substitutions", (t) => {
   const f = sourceJudgeFixture(t);
-  const refuse = () => {
+  const refuse = (reason: RegExp) => {
     const result = sourceCompare(f);
     assert.equal(result.status, 2, result.stderr);
     assert.match(result.stderr, /source harness/);
+    assert.match(result.stderr, reason);
   };
   const witness = f.measurement.source_harness.head;
   for (const field of [
@@ -100,7 +108,13 @@ await test("source-owned comparison refuses source pins, source roots and comple
       [field]: field === "root" ? f.arms.base.root : "foreign",
     };
     f.save();
-    refuse();
+    refuse(
+      field === "root"
+        ? /foreign or changed provider image/
+        : field === "workspace_manifest_sha256"
+          ? /source witness digest differs/
+          : /source witness differs from metadata\/artifact/,
+    );
   }
   f.measurement.source_harness.head = witness;
   f.save();
@@ -110,17 +124,17 @@ await test("source-owned comparison refuses source pins, source roots and comple
     const changed = JSON.parse(pin.toString());
     changed.files[0][field] = "foreign";
     f.write(before, changed);
-    refuse();
+    refuse(/missing or changed pre-build source pin/);
   }
   fs.writeFileSync(before, pin);
   const source = f.arms.head.library,
     body = fs.readFileSync(source);
   fs.appendFileSync(source, "\n// unpinned source\n");
-  refuse();
+  refuse(/source differs from exact Git blob/);
   fs.writeFileSync(source, body);
   const head = path.join(f.arms.head.provenance, "head");
   f.rewriteStream(head, "stdout", "3".repeat(40) + "\n");
-  refuse();
+  refuse(/foreign source revision/);
   f.refresh("head");
   f.save();
   for (const relative of ["cargo-metadata", "cargo", "rustc", "resolve-rustc", "resolve-cargo"]) {
@@ -133,14 +147,28 @@ await test("source-owned comparison refuses source pins, source roots and comple
       { args: [] },
     ]) {
       f.write(file, { ...JSON.parse(original.toString()), ...change });
-      refuse();
+      refuse(
+        "signal" in change
+          ? /incomplete or failed process/
+          : "pid" in change
+            ? /missing process PID/
+            : relative === "cargo-metadata"
+              ? "cwd" in change
+                ? /foreign source Cargo process/
+                : /changed Cargo metadata recipe/
+              : relative === "cargo"
+                ? "cwd" in change
+                  ? /foreign source Cargo process/
+                  : /changed provider build recipe/
+                : /foreign process recipe or source root/,
+      );
     }
     fs.writeFileSync(file, original);
   }
   const stderr = path.join(f.arms.head.build, "cargo-metadata/stderr.bin"),
     raw = fs.readFileSync(stderr);
   fs.unlinkSync(stderr);
-  refuse();
+  refuse(/cargo-metadata\/stderr\.bin/);
   fs.writeFileSync(stderr, raw);
   const normal = path.join(f.out, "head/run-1/suite-0/process/process.json"),
     normalBody = fs.readFileSync(normal);
@@ -151,7 +179,13 @@ await test("source-owned comparison refuses source pins, source roots and comple
     { recipeEnvironment: {} },
   ]) {
     f.write(normal, { ...JSON.parse(normalBody.toString()), ...change });
-    refuse();
+    refuse(
+      "status" in change
+        ? /incomplete or failed process/
+        : "args" in change
+          ? /foreign process recipe or source root/
+          : /missing or extra fields/,
+    );
   }
   fs.writeFileSync(normal, normalBody);
   assert.equal(sourceCompare(f).status, 0);
@@ -159,10 +193,11 @@ await test("source-owned comparison refuses source pins, source roots and comple
 
 await test("source-owned comparison retains complete protocol, dependencies and raw report custody", (t) => {
   const f = sourceJudgeFixture(t);
-  const refuse = () => {
+  const refuse = (reason: RegExp) => {
     const result = sourceCompare(f);
     assert.equal(result.status, 2, result.stderr);
     assert.match(result.stderr, /source harness/);
+    assert.match(result.stderr, reason);
   };
   for (const relative of [
     "tools/benchmarks/crates/davinci_harness/src/alloc.rs",
@@ -175,7 +210,7 @@ await test("source-owned comparison retains complete protocol, dependencies and 
     fs.appendFileSync(file, "\n// altered protocol body\n");
     f.refresh("head");
     f.save();
-    refuse();
+    refuse(/changed reporter\/scenario\/provider\/protocol\/dependency/);
     fs.writeFileSync(file, original);
     f.refresh("head");
     f.save();
@@ -188,20 +223,22 @@ await test("source-owned comparison retains complete protocol, dependencies and 
   fs.unlinkSync(removed);
   f.refresh("head");
   f.save();
-  refuse();
+  refuse(/changed reporter\/scenario\/provider\/protocol\/dependency/);
   fs.writeFileSync(removed, removedBody);
   f.refresh("head");
   f.save();
   const workspace = path.join(f.arms.head.root, "Cargo.toml"),
     workspaceBody = fs.readFileSync(workspace);
-  for (const replacement of [
+  for (const [index, replacement] of [
     'vize_l0 = { path = "davinci/vize_l0", version = "9.9.9" }',
     'vize_l0 = { path = "davinci/vize_l0", version = "=0.442.0", features = ["foreign"] }',
-  ]) {
+  ].entries()) {
     fs.writeFileSync(workspace, workspaceBody.toString().replace(/^vize_l0 = .*$/m, replacement));
     f.refresh("head");
     f.save();
-    refuse();
+    refuse(
+      index === 0 ? /foreign dev-product release version/ : /changed protocol workspace dependency/,
+    );
   }
   fs.writeFileSync(workspace, workspaceBody);
   f.refresh("head");
@@ -214,7 +251,7 @@ await test("source-owned comparison retains complete protocol, dependencies and 
   );
   f.refresh("head");
   f.save();
-  refuse();
+  refuse(/changed reporter\/scenario\/provider\/protocol\/dependency/);
   fs.writeFileSync(lock, lockBody);
   f.refresh("head");
   f.save();
@@ -223,16 +260,16 @@ await test("source-owned comparison retains complete protocol, dependencies and 
   const rawFile = row.raw_file,
     raw = fs.readFileSync(rawFile);
   fs.writeFileSync(rawFile, Buffer.concat([raw, Buffer.from("\n")]));
-  refuse();
+  refuse(/changed raw report custody/);
   fs.writeFileSync(rawFile, raw);
   f.measurement.measurements.head[0].foreign = { ...row };
   f.save();
-  refuse();
+  refuse(/missing extra or wrong-plane reports/);
   delete f.measurement.measurements.head[0].foreign;
   f.save();
   f.writeReport("head", 1, id, { platform: "macos" });
   f.save();
-  refuse();
+  refuse(/report differs from own source version\/platform\/metrics/);
   f.writeReport("head", 1, id, { platform: "linux" });
   f.save();
   f.measurement.measurements.head[0][id] = {
@@ -240,7 +277,7 @@ await test("source-owned comparison retains complete protocol, dependencies and 
     identity: { ...row.identity, window: "foreign" },
   };
   f.save();
-  refuse();
+  refuse(/changed original input\/window identity/);
   f.measurement.measurements.head[0][id] = row;
   f.save();
   assert.equal(sourceCompare(f).status, 0);

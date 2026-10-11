@@ -57,6 +57,12 @@ export function sourceJudgeFixture(t) {
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       fs.copyFileSync(sourcePath(repo, suite), dest);
     }
+    for (const file of [".cargo/config", ".cargo/config.toml"]) {
+      if (!fs.existsSync(path.join(repo, file))) continue;
+      const dest = path.join(root, file);
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.copyFileSync(path.join(repo, file), dest);
+    }
     for (const file of [
       "Cargo.toml",
       "Cargo.lock",
