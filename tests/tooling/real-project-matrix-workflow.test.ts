@@ -214,6 +214,8 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     CORSA_PATH: "${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc",
     REAL_PROJECT_LSP_TIMEOUT_MS: "600000",
     VIZE_LSP_BIN: "target/ci/vize",
+    VIZE_LSP_REQUIRE_SOURCE_BUILD: "1",
+    VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci -p vize",
   });
   assert.match(lsp.run ?? "", /if \[ ! -x "\$CORSA_PATH" \]; then/);
   assert.match(lsp.run ?? "", /::error title=Missing typecheck runtime::/);

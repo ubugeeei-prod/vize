@@ -20,6 +20,16 @@ protocol requests and starts no replacement server. Existing collector byte
 limits and explicit truncation/failure markers remain unchanged. Missing,
 truncated or incomplete responses cannot qualify a native oracle successor.
 
+Before the original tests, retain a directory inventory of prior sticky-cache
+captures. An always-run read-only validator authenticates only newly created
+sessions against the actual source/binary/receipt, version probe, caller
+source bytes, all three raw stream hashes and decoded frame counts. Every new
+session must have closed, untruncated streams; missing or incomplete captures
+fail explicitly. Prior directories remain untouched and cannot satisfy this
+run. Closed failed-process evidence keeps its original status and grants no
+semantic acceptance. Original test failures and always-retained artifacts
+remain visible independently of capture integrity.
+
 A separate artifact preserves raw streams, decoded messages, process identity,
 terminal records and the CLI build receipt for each exact source and shard.
 The original shard summary artifact, selected fixture pins, all 22 shards,
@@ -27,6 +37,12 @@ contracts, assertions, timeouts, budgets and surface gates are preserved.
 Captured lifecycle timings include passive recording and are labeled separately
 from paired performance acceptance. This change grants no failure waiver,
 source fix, successful lifecycle or release credit.
+
+The first source qualification at `ce64aca` fails the existing exact LSP
+environment declaration in [tooling shard 2](https://github.com/ubugeeei-prod/vize/actions/runs/38160507141/job/114532727964).
+Retain its three original keys and require both new source-receipt keys
+explicitly. A complete frozen original workflow comparison removes only the
+named passive additions; every original field and command must remain equal.
 
 TODO: use complete native hover/reference/range packets and the unchanged
 pinned sources to diagnose each original failure. Qualify any finite semantic
