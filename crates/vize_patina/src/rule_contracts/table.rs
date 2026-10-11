@@ -47,6 +47,9 @@ const BOOLEAN_CONDITIONS: Domain = Domain::new(
 );
 const TYPES: Domain =
     Domain::new("types the Corsa session resolves for the component; unresolved types are outside");
+const RESERVED_OPTIONS: Domain = Domain::new(
+    "props/data/computed/methods/setup members of resolved Options API objects; asyncData, script-setup defineProps and ESLint suppression comments are outside",
+);
 
 /// Every Patina rule, sorted by name.
 #[rustfmt::skip]
@@ -152,7 +155,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("script/no-ref-as-operand", Complete, BINDINGS, Error),
     row!("script/no-required-prop-with-default", Exact, OPTIONS, Error),
     row!("script/no-reserved-identifiers", Exact, SCRIPT, Error),
-    row!("script/no-reserved-keys", Exact, OPTIONS, Error),
+    row!("script/no-reserved-keys", Exact, RESERVED_OPTIONS, Error),
     row!("script/no-reserved-props", Exact, OPTIONS, Error),
     row!("script/no-restricted-globals", Exact, SCRIPT, Error),
     row!("script/no-restricted-members", Exact, SCRIPT, Error),

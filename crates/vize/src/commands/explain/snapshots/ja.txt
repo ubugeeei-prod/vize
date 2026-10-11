@@ -2443,10 +2443,10 @@ Vue コンパイラーの予約識別子を使うことを禁止する
   const myData = {}
 === script/no-reserved-keys
 script/no-reserved-keys · lint ルール
-Options API の props・data・computed・methods・setup・inject のキーに Vue の予約名を使うことを禁止する
+Options API の props・data・computed・methods・setup のキーに Vue の予約名を使うことを禁止する
 
 精度: exact
-対象: Options API component definitions written as object literals
+対象: props/data/computed/methods/setup members of resolved Options API objects; asyncData, script-setup defineProps and ESLint suppression comments are outside
 重大度: エラー
 カテゴリー: script
 自動修正: なし
@@ -2454,9 +2454,9 @@ Options API の props・data・computed・methods・setup・inject のキーに 
 
 不正な例:
   export default {
-    props: ['$el'],       // reserved: starts with `$`
-    computed: { _foo() { return 1 } }, // reserved: starts with `_`
-    methods: { $emit() {} } // prefixed instance name
+    props: ['$el'],
+    data() { return { _private: 1 } },
+    methods: { $emit() {} }
   }
 === script/no-reserved-props
 script/no-reserved-props · lint ルール

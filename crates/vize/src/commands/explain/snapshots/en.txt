@@ -2492,10 +2492,10 @@ valid:
   const myData = {}
 === script/no-reserved-keys
 script/no-reserved-keys · lint rule
-Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys
+Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys
 
 tier: exact
-domain: Options API component definitions written as object literals
+domain: props/data/computed/methods/setup members of resolved Options API objects; asyncData, script-setup defineProps and ESLint suppression comments are outside
 severity: error
 category: script
 autofix: no
@@ -2503,9 +2503,9 @@ docs: docs/content/rules/type-and-script.md
 
 invalid:
   export default {
-    props: ['$el'],       // reserved: starts with `$`
-    computed: { _foo() { return 1 } }, // reserved: starts with `_`
-    methods: { $emit() {} } // prefixed instance name
+    props: ['$el'],
+    data() { return { _private: 1 } },
+    methods: { $emit() {} }
   }
 === script/no-reserved-props
 script/no-reserved-props · lint rule

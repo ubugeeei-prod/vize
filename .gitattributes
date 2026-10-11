@@ -113,3 +113,6 @@ tests/_fixtures/differential/formatter-regressions/closing-child-width-7876/** -
 
 # Authored bare-name diagnostics retain quoted Unicode and CRLF source bytes.
 tests/_fixtures/differential/lint/bare-reserved-8090/QuotedUnicode.vue.fixture -text whitespace=cr-at-eol
+
+# Reserved group controls preserve quoted Unicode and original CRLF source bytes.
+tests/_fixtures/differential/lint/reserved-prefix-8090/*.vue.fixture -text whitespace=cr-at-eol

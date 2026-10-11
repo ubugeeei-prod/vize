@@ -39,7 +39,7 @@ Every rule on this page includes its purpose, prerequisites, configuration, and 
 | [`script/no-ref-as-operand`](#script-no-ref-as-operand) | [Bad](#script-no-ref-as-operand-bad) · [Good](#script-no-ref-as-operand-good) | Require ref-bound variables to be accessed via `.value` when used as an operand |
 | [`script/no-required-prop-with-default`](#script-no-required-prop-with-default) | [Bad](#script-no-required-prop-with-default-bad) · [Good](#script-no-required-prop-with-default-good) | Disallow a prop that is both required: true and has a default |
 | [`script/no-reserved-identifiers`](#script-no-reserved-identifiers) | [Bad](#script-no-reserved-identifiers-bad) · [Good](#script-no-reserved-identifiers-good) | Disallow using Vue compiler reserved identifiers |
-| [`script/no-reserved-keys`](#script-no-reserved-keys) | [Bad](#script-no-reserved-keys-bad) · [Good](#script-no-reserved-keys-good) | Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys |
+| [`script/no-reserved-keys`](#script-no-reserved-keys) | [Bad](#script-no-reserved-keys-bad) · [Good](#script-no-reserved-keys-good) | Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys |
 | [`script/no-reserved-props`](#script-no-reserved-props) | [Bad](#script-no-reserved-props-bad) · [Good](#script-no-reserved-props-good) | Disallow reserved names in a component's props declaration |
 | [`script/no-restricted-globals`](#script-no-restricted-globals) | [Bad](#script-no-restricted-globals-bad) · [Good](#script-no-restricted-globals-good) | Disallow references to runtime-environment globals that must go through a typed wrapper |
 | [`script/no-restricted-members`](#script-no-restricted-members) | [Bad](#script-no-restricted-members-bad) · [Good](#script-no-restricted-members-good) | Disallow project-configured object.property member accesses |
@@ -2092,7 +2092,7 @@ Good avoids this rule's finding under the configuration above; other rules may s
 
 ### `script/no-reserved-keys`
 
-Disallow Vue-reserved names as Options API props/data/computed/methods/setup/inject keys
+Disallow Vue-reserved names as Options API props/data/computed/methods/setup keys
 
 [Bad](#script-no-reserved-keys-bad) · [Good](#script-no-reserved-keys-good)
 
@@ -2149,7 +2149,7 @@ export default { data() { return { elementLabel: "custom" }; } };
 
 Good avoids this rule's finding under the configuration above; other rules may still report diagnostics.
 
-[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L32) · [All rules](all.md)
+[Implementation](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/script/no_reserved_keys.rs#L30) · [All rules](all.md)
 
 ### `script/no-reserved-props`
 
