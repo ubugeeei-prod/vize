@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { sourceRevision } from "../differential/build-receipt.ts";
+import { sharedOracleAuthority } from "../../tools/support/compat/github/source-cli-identity.ts";
 import { repoRoot } from "./realworld-patch.ts";
 
 export type CompilerOutput = {
@@ -37,6 +38,7 @@ export function observeCompilerResult(
     `cli_build_result_oracle${process.platform === "win32" ? ".exe" : ""}`,
   );
   assert.ok(fs.existsSync(executable), `build the SFC API oracle beside ${cliBinary}`);
+  const producer = sharedOracleAuthority(repoRoot, executable);
   const input = {
     source: fs.readFileSync(path.join(workspaceDir, appPath), "utf8"),
     filename: path.basename(appPath),
@@ -50,10 +52,14 @@ export function observeCompilerResult(
     maxBuffer: 64 * 1024 * 1024,
     timeout: 120_000,
   });
+  if (producer) assert.deepEqual(sharedOracleAuthority(repoRoot, executable), producer);
   capture("sfc-api", {
     examplePath: path.relative(repoRoot, executable),
     exampleSha256: createHash("sha256").update(fs.readFileSync(executable)).digest("hex"),
-    buildAuthority: "same existing CI CLI build step and its complete build log",
+    buildAuthority: producer
+      ? "same-run shared source CLI producer and its complete build log"
+      : "same existing CI CLI build step and its complete build log",
+    ...(producer ? { producer } : {}),
     input,
     status: result.status,
     signal: result.signal,

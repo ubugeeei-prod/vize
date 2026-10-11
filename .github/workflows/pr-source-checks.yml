@@ -132,10 +132,14 @@ jobs:
       - name: Check UI package conformance
         if: ${{ needs.pr-source-plan.outputs.js == 'true' }}
         run: vp run --filter './npm/native' build:ci && vp run --filter './npm/ui' check
+  pr-source-cli:
+    needs: pr-source-plan
+    uses: ./.github/workflows/pr-source-cli.yml
+    with: { run-cli: "${{ needs.pr-source-plan.outputs.tooling == 'true' }}" }
   pr-tooling-scripts:
     name: PR tooling scripts (${{ matrix.index }}/${{ matrix.total }})
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
-    needs: pr-source-plan
+    needs: [pr-source-plan, pr-source-cli]
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.pr-source-plan.outputs.tooling-matrix) }}
@@ -144,6 +148,7 @@ jobs:
     env:
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"
       CARGO_BUILD_JOBS: "12"
+      VIZE_SOURCE_CLI_RECEIPT_SHA256: ${{ needs.pr-source-cli.outputs.receipt-sha256 }}
     steps:
       - name: Explain unrelated skip
         if: ${{ needs.pr-source-plan.outputs.tooling != 'true' }}
@@ -190,9 +195,10 @@ jobs:
       - name: Test fresh native SSR modules in the merge queue
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
         uses: ./.github/actions/test-native-ssr
-      - name: Build and install vize CLI
+      - name: Restore and install source-built vize CLI
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' }}
-        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts && cat target/ci/vize.differential-build.json && sudo install -m 0755 target/ci/vize /usr/local/bin/vize && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
+        uses: ./.github/actions/restore-source-cli
+        with: { sha256: "${{ needs.pr-source-cli.outputs.sha256 }}" }
       - name: Verify current-source native scoped CSS and real Vue DOM
         if: ${{ needs.pr-source-plan.outputs.tooling == 'true' && matrix.index == 1 && (github.event_name == 'merge_group' || (github.event_name == 'pull_request' && needs.pr-source-plan.outputs.native-ssr-capture == 'true')) }}
         uses: ./.github/actions/test-native-scoped-css
@@ -331,14 +337,8 @@ jobs:
   source-report:
     name: PR source report
     if: ${{ always() }}
-    needs:
-      - pr-source-plan
-      - pr-rust-source
-      - pr-js-packages
-      - pr-tooling-scripts
-      - pr-playground-test
-      - wit-contracts
-      - canonical-corpus
+    # prettier-ignore
+    needs: [pr-source-plan, pr-rust-source, pr-js-packages, pr-tooling-scripts, pr-playground-test, wit-contracts, canonical-corpus, pr-source-cli]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:

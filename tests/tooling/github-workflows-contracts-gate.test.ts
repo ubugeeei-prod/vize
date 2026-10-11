@@ -62,6 +62,7 @@ test("one parallel reusable WIT lane gates merge groups without adding a PR buil
     ...prior,
     "wit-contracts",
     "canonical-corpus",
+    "pr-source-cli",
   ]);
   assert.equal(source.jobs["source-report"].if, "${{ always() }}");
   assert.equal(

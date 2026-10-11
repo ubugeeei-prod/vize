@@ -1,0 +1,57 @@
+name: PR source CLI producer
+on:
+  workflow_call:
+    inputs:
+      run-cli: { required: true, type: boolean }
+    outputs:
+      sha256: { value: "${{ jobs.cli.outputs.sha256 }}" }
+      receipt-sha256: { value: "${{ jobs.cli.outputs.receipt-sha256 }}" }
+permissions: { contents: read }
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  cli:
+    name: Build shared source CLI and SFC oracle
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 15
+    env: { CARGO_BUILD_JOBS: "12" }
+    outputs:
+      sha256: ${{ steps.pack.outputs.sha256 }}
+      receipt-sha256: ${{ steps.pack.outputs.receipt-sha256 }}
+    steps:
+      - name: Explain unrelated skip
+        if: ${{ !inputs.run-cli }}
+        run: echo 'Shared CLI build skipped because no tooling job is selected.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        if: ${{ inputs.run-cli }}
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        if: ${{ inputs.run-cli }}
+        with: { node-version-file: "package.json", cache: false, run-install: false }
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        if: ${{ inputs.run-cli }}
+        with: { toolchain: stable }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        if: ${{ inputs.run-cli }}
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        if: ${{ inputs.run-cli }}
+        with:
+          cache-key-prefix: ${{ github.event_name == 'pull_request' && format('pr-{0}-', github.event.pull_request.number) || format('merge-{0}-', github.sha) }}
+          key: test-scripts
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - name: Build vize CLI and SFC oracle with original receipts
+        if: ${{ inputs.run-cli }}
+        run: cargo build --profile ci -p vize && vp exec node tests/differential/build-receipt.ts && cat target/ci/vize.differential-build.json && cargo build --profile ci -p vize_atelier_sfc --example cli_build_result_oracle
+      - name: Pack original source binaries and receipt
+        if: ${{ inputs.run-cli }}
+        id: pack
+        run: node tools/support/compat/github/source-cli-artifact.ts pack "$RUNNER_TEMP/source-cli.tar.gz"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ inputs.run-cli }}
+        with:
+          name: source-cli-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/source-cli.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
