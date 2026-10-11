@@ -213,7 +213,10 @@ export function loadCompilerApiManifest(manifestPath: string, repoRoot: string) 
         entrypoint = targetReference.options.entrypoint as string;
         if (fixture.currentReference) {
           assert.equal(fixture.currentReference.supersedesSha256, fixture.reference.sha256);
-          assert.match(fixture.currentReference.issue, /^https:\/\/github\.com\/ubugeeei-prod\/vize\/issues\/[1-9]\d*$/u);
+          assert.match(
+            fixture.currentReference.issue,
+            /^https:\/\/github\.com\/ubugeeei-prod\/vize\/issues\/[1-9]\d*$/u,
+          );
           const current: CompilerReference = JSON.parse(
             readPinnedArtifact(repoRoot, fixture.currentReference).toString(),
           );
