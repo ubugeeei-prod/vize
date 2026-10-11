@@ -1,0 +1,78 @@
+{
+  "schema": "vize.ssr.import-meta-guards",
+  "version": 1,
+  "source": {
+    "project": "npmx.dev",
+    "commit": "c9e8be91e61eeeae956e2068722caa09e293cc68",
+    "directGuardExamples": [
+      "app/app.vue:127",
+      "app/components/Diff/MobileSidebarDrawer.vue:26"
+    ],
+    "unprovenIndirectExample": "app/pages/package/[[org]]/[name].vue:258"
+  },
+  "files": {
+    "ClientGuards.vue.txt": {
+      "bytes": 674,
+      "sha256": "8199f63d91b3d9f2a2623579bafb11dd0829bfdea6fff674739ff662d78cfebf"
+    }
+  },
+  "decision": "Only direct static import.meta.client/server flags and their logical negation prove a client-only arm. Keep evaluating each condition and preserve unsafe opposite arms, lexical lookalikes, typeof laws, and indirect boolean/ref chains.",
+  "expectedDiagnostics": [
+    {
+      "rule_name": "ssr/no-browser-globals-in-ssr",
+      "message": "'window' is a browser-only global and is not available in SSR",
+      "severity": "warning",
+      "start": 243,
+      "end": 249,
+      "line": 9,
+      "column": 3,
+      "endLine": 9,
+      "endColumn": 9,
+      "help": null,
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "ssr/no-browser-globals-in-ssr",
+      "message": "'document' is a browser-only global and is not available in SSR",
+      "severity": "warning",
+      "start": 348,
+      "end": 356,
+      "line": 16,
+      "column": 3,
+      "endLine": 16,
+      "endColumn": 11,
+      "help": null,
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "ssr/no-browser-globals-in-ssr",
+      "message": "'document' is a browser-only global and is not available in SSR",
+      "severity": "warning",
+      "start": 543,
+      "end": 551,
+      "line": 21,
+      "column": 32,
+      "endLine": 21,
+      "endColumn": 40,
+      "help": null,
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "ssr/no-browser-globals-in-ssr",
+      "message": "'document' is a browser-only global and is not available in SSR",
+      "severity": "warning",
+      "start": 607,
+      "end": 615,
+      "line": 23,
+      "column": 1,
+      "endLine": 23,
+      "endColumn": 9,
+      "help": null,
+      "labels": [],
+      "fix": null
+    }
+  ]
+}

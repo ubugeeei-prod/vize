@@ -265,7 +265,9 @@ impl<'a> Visit<'a> for RuntimeReads<'_, 'a> {
             true,
             self.semantic,
         ));
-        self.visit_statement(&statement.consequent);
+        if !typeof_guard::client_only(&statement.test, true) {
+            self.visit_statement(&statement.consequent);
+        }
         self.guarded.truncate(depth);
         if let Some(alternate) = &statement.alternate {
             self.guarded.extend(typeof_guard::defined_name(
@@ -273,7 +275,9 @@ impl<'a> Visit<'a> for RuntimeReads<'_, 'a> {
                 false,
                 self.semantic,
             ));
-            self.visit_statement(alternate);
+            if !typeof_guard::client_only(&statement.test, false) {
+                self.visit_statement(alternate);
+            }
             self.guarded.truncate(depth);
         }
     }
@@ -286,19 +290,31 @@ impl<'a> Visit<'a> for RuntimeReads<'_, 'a> {
             true,
             self.semantic,
         ));
-        self.visit_expression(&expression.consequent);
+        if !typeof_guard::client_only(&expression.test, true) {
+            self.visit_expression(&expression.consequent);
+        }
         self.guarded.truncate(depth);
         self.guarded.extend(typeof_guard::defined_name(
             &expression.test,
             false,
             self.semantic,
         ));
-        self.visit_expression(&expression.alternate);
+        if !typeof_guard::client_only(&expression.test, false) {
+            self.visit_expression(&expression.alternate);
+        }
         self.guarded.truncate(depth);
     }
 
     fn visit_logical_expression(&mut self, expression: &LogicalExpression<'a>) {
         self.visit_expression(&expression.left);
+        let right_truth = match expression.operator {
+            oxc_syntax::operator::LogicalOperator::And => Some(true),
+            oxc_syntax::operator::LogicalOperator::Or => Some(false),
+            _ => None,
+        };
+        if right_truth.is_some_and(|truth| typeof_guard::client_only(&expression.left, truth)) {
+            return;
+        }
         let depth = self.guarded.len();
         match expression.operator {
             oxc_syntax::operator::LogicalOperator::And => self.guarded.extend(

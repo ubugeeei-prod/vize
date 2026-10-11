@@ -10,6 +10,9 @@ use vize_atelier_sfc::{
 };
 use vize_l0::Allocator;
 
+#[path = "script_import_meta_tests.rs"]
+mod import_meta_tests;
+
 #[test]
 fn typeof_probe_must_witness_the_same_runtime_global_across_called_scopes() {
     let source = "<script setup>function read() { window.innerWidth; } { const window = {}; if (typeof window !== 'undefined') read(); }</script><template />";

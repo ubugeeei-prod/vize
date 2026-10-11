@@ -4,6 +4,32 @@ use oxc_semantic::Semantic;
 use oxc_syntax::operator::BinaryOperator;
 use vize_l0::String;
 
+/// Only an actual import-meta flag proves that this arm cannot execute in SSR.
+/// Ordinary objects, aliases and computed properties do not witness the realm.
+pub(super) fn client_only(expression: &Expression<'_>, truthy: bool) -> bool {
+    match expression.get_inner_expression() {
+        Expression::StaticMemberExpression(member)
+            if !member.optional
+                && matches!(
+                    member.object.get_inner_expression(),
+                    Expression::ImportMeta(_)
+                ) =>
+        {
+            match member.property.name.as_str() {
+                "client" => truthy,
+                "server" => !truthy,
+                _ => false,
+            }
+        }
+        Expression::UnaryExpression(unary)
+            if unary.operator == oxc_syntax::operator::UnaryOperator::LogicalNot =>
+        {
+            client_only(&unary.argument, !truthy)
+        }
+        _ => false,
+    }
+}
+
 /// Only the exact `typeof name [!== / ===] "undefined"` witness establishes
 /// browser presence. Other conditions do not change execution assumptions.
 pub(super) fn defined_name(
