@@ -8,6 +8,10 @@
     const canvas = document.getElementById("vein-canvas");
     if (!canvas) return;
 
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    let frame = 0;
+
     const renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
@@ -49,6 +53,7 @@
     const updatePointer = (clientX, clientY) => {
       targetX = clientX / window.innerWidth;
       targetY = 1.0 - clientY / window.innerHeight;
+      requestStaticRender();
     };
 
     document.addEventListener(
@@ -75,6 +80,7 @@
       "scroll",
       () => {
         scrollY = window.scrollY;
+        requestStaticRender();
         if (!header || !document.body.classList.contains("entry-page")) return;
 
         if (scrollY > 100) {
@@ -91,7 +97,7 @@
       const theme = document.documentElement.getAttribute("data-theme");
       if (theme === "dark") return true;
       if (theme === "light") return false;
-      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+      return colorScheme.matches;
     };
 
     const resize = () => {
@@ -102,28 +108,37 @@
       uniforms.u_resolution.value.set(canvas.width, canvas.height);
     };
 
-    window.addEventListener("resize", resize);
+    window.addEventListener("resize", () => {
+      resize();
+      requestStaticRender();
+    });
     resize();
 
     const clock = new THREE.Clock();
     let elapsedTime = 0.0;
 
     const render = () => {
-      requestAnimationFrame(render);
+      frame = reducedMotion.matches ? 0 : requestAnimationFrame(render);
 
       const dt = clock.getDelta();
-      elapsedTime += dt;
+      if (!reducedMotion.matches) elapsedTime += dt;
       uniforms.u_time.value = elapsedTime;
       uniforms.u_scroll.value = scrollY;
       uniforms.u_dark.value = isDark() ? 1.0 : 0.0;
 
-      mouseX += (targetX - mouseX) * 0.05;
-      mouseY += (targetY - mouseY) * 0.05;
+      if (reducedMotion.matches) {
+        mouseX = targetX;
+        mouseY = targetY;
+        mouseVel = 0.0;
+      } else {
+        mouseX += (targetX - mouseX) * 0.05;
+        mouseY += (targetY - mouseY) * 0.05;
 
-      const dx = mouseX - prevMX;
-      const dy = mouseY - prevMY;
-      const speed = Math.hypot(dx, dy) / Math.max(dt, 0.001);
-      mouseVel += (speed - mouseVel) * 0.1;
+        const dx = mouseX - prevMX;
+        const dy = mouseY - prevMY;
+        const speed = Math.hypot(dx, dy) / Math.max(dt, 0.001);
+        mouseVel += (speed - mouseVel) * 0.1;
+      }
       prevMX = mouseX;
       prevMY = mouseY;
 
@@ -132,6 +147,25 @@
 
       renderer.render(scene, camera);
     };
+
+    // Keep the authored shader visible without running a time animation when
+    // motion is reduced. Native events share one repaint of the current state.
+    function requestStaticRender() {
+      if (reducedMotion.matches && !frame) frame = requestAnimationFrame(render);
+    }
+
+    reducedMotion.addEventListener("change", () => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = 0;
+      // Time spent viewing a static background must not jump the animation.
+      clock.getDelta();
+      render();
+    });
+    colorScheme.addEventListener("change", requestStaticRender);
+    new MutationObserver(requestStaticRender).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
 
     render();
   };
