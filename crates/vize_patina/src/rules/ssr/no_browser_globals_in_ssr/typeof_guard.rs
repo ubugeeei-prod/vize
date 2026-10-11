@@ -4,7 +4,10 @@ use oxc_semantic::Semantic;
 use oxc_syntax::operator::BinaryOperator;
 use vize_l0::String;
 
-/// Only an actual import-meta flag proves that this arm cannot execute in SSR.
+/// A truthy static `import.meta.client` arm does not execute in SSR: Nuxt
+/// replaces it with false, and hosts without the flag leave it undefined.
+/// The context has no framework witness, so `import.meta.server` cannot prove
+/// safety: its false arm (or negation) also executes when that flag is absent.
 /// Ordinary objects, aliases and computed properties do not witness the realm.
 pub(super) fn client_only(expression: &Expression<'_>, truthy: bool) -> bool {
     match expression.get_inner_expression() {
@@ -15,11 +18,7 @@ pub(super) fn client_only(expression: &Expression<'_>, truthy: bool) -> bool {
                     Expression::ImportMeta(_)
                 ) =>
         {
-            match member.property.name.as_str() {
-                "client" => truthy,
-                "server" => !truthy,
-                _ => false,
-            }
+            member.property.name == "client" && truthy
         }
         Expression::UnaryExpression(unary)
             if unary.operator == oxc_syntax::operator::UnaryOperator::LogicalNot =>

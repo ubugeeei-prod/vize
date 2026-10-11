@@ -16,10 +16,12 @@ fn names(source: &str) -> Vec<vize_l0::String> {
 fn direct_import_meta_branches_preserve_complete_unsafe_diagnostics() {
     for source in [CORPUS.to_owned(), CORPUS.replace('\n', "\r\n")] {
         let result = linter().lint_sfc(&source, "ClientGuards.vue");
-        assert_eq!((result.error_count, result.warning_count), (0, 4));
-        assert_eq!(result.diagnostics.len(), 4);
+        assert_eq!((result.error_count, result.warning_count), (0, 6));
+        assert_eq!(result.diagnostics.len(), 6);
         let expected = [
             ("window", 243, 9),
+            ("document", 272, 11),
+            ("navigator", 318, 14),
             ("document", 348, 16),
             ("document", 543, 21),
             ("document", 607, 23),
@@ -47,22 +49,48 @@ fn direct_import_meta_branches_preserve_complete_unsafe_diagnostics() {
 
 #[test]
 fn direct_flag_polarity_is_shared_by_if_conditional_and_short_circuit_arms() {
-    for (client, server) in [
-        ("import.meta.client", "import.meta.server"),
-        ("!import.meta.server", "!import.meta.client"),
-        ("!!(import.meta.client)", "!!(import.meta.server)"),
+    for (client, non_client) in [
+        ("import.meta.client", "!import.meta.client"),
+        ("!!(import.meta.client)", "!(import.meta.client)"),
     ] {
         let safe = format!(
-            "if ({client}) {{ window.innerWidth; }} else {{ typeof document; }} {client} ? document.title : 0; {client} && navigator.language; {server} || localStorage.length;"
+            "if ({client}) {{ window.innerWidth; }} else {{ typeof document; }} {client} ? document.title : 0; {client} && navigator.language; {non_client} || localStorage.length;"
         );
         assert!(names(&safe).is_empty(), "{safe}");
         let unsafe_source = format!(
-            "if ({client}) {{}} else {{ window.innerWidth; }} {client} ? 0 : document.title; {server} && navigator.language; {client} || localStorage.length;"
+            "if ({client}) {{}} else {{ window.innerWidth; }} {client} ? 0 : document.title; {non_client} && navigator.language; {client} || localStorage.length;"
         );
         assert_eq!(
             names(&unsafe_source),
             ["window", "document", "navigator", "localStorage"],
             "{unsafe_source}"
+        );
+    }
+}
+
+#[test]
+fn absent_server_flags_do_not_prove_either_branch_client_only() {
+    // Without Nuxt's injected flag, !import.meta.server is true during SSR.
+    // A generic SSR context therefore retains both arms and each polarity.
+    for condition in [
+        "import.meta.server",
+        "!import.meta.server",
+        "!!(import.meta.server)",
+    ] {
+        let source = format!(
+            "if ({condition}) {{ window.innerWidth; }} else {{ document.title; }} {condition} ? navigator.language : localStorage.length; {condition} && location.href; {condition} || history.length;"
+        );
+        assert_eq!(
+            names(&source),
+            [
+                "window",
+                "document",
+                "navigator",
+                "localStorage",
+                "location",
+                "history"
+            ],
+            "{source}"
         );
     }
 }

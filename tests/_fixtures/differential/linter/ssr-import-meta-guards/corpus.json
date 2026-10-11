@@ -16,7 +16,7 @@
       "sha256": "8199f63d91b3d9f2a2623579bafb11dd0829bfdea6fff674739ff662d78cfebf"
     }
   },
-  "decision": "Only direct static import.meta.client/server flags and their logical negation prove a client-only arm. Keep evaluating each condition and preserve unsafe opposite arms, lexical lookalikes, typeof laws, and indirect boolean/ref chains.",
+  "decision": "The generic SSR context has no Nuxt realm witness. Only a truthy direct static import.meta.client access and equivalent logical negations prove a client-only arm. Keep both import.meta.server arms diagnostic because the flag may be absent. Preserve condition reads, unsafe opposite arms, lexical lookalikes, typeof laws, and indirect boolean/ref chains.",
   "expectedDiagnostics": [
     {
       "rule_name": "ssr/no-browser-globals-in-ssr",
@@ -28,6 +28,34 @@
       "column": 3,
       "endLine": 9,
       "endColumn": 9,
+      "help": null,
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "ssr/no-browser-globals-in-ssr",
+      "message": "'document' is a browser-only global and is not available in SSR",
+      "severity": "warning",
+      "start": 272,
+      "end": 280,
+      "line": 11,
+      "column": 3,
+      "endLine": 11,
+      "endColumn": 11,
+      "help": null,
+      "labels": [],
+      "fix": null
+    },
+    {
+      "rule_name": "ssr/no-browser-globals-in-ssr",
+      "message": "'navigator' is a browser-only global and is not available in SSR",
+      "severity": "warning",
+      "start": 318,
+      "end": 327,
+      "line": 14,
+      "column": 3,
+      "endLine": 14,
+      "endColumn": 12,
       "help": null,
       "labels": [],
       "fix": null
