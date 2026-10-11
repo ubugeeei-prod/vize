@@ -40,6 +40,13 @@ mapping, root config, package manifest and parser diagnostics are retained;
 the literal original producer must fail parsing and the fresh projection must
 parse successfully.
 
+The dedicated essential-source qualifier is dispatch-only and authenticates
+the complete immutable target SHA. It reuses one native build for the unchanged
+original whole App E2E check row and all three required generator/native control
+groups. Normal PR and protected queue checks remain automatic and unchanged.
+The malformed-setup descriptor repair is a separate dependent producer slice;
+its complete composed source receives the single manual qualification.
+
 No source member, config field, declaration suffix, syntax error, native
 diagnostic or original consumer deadline is removed. The original whole
 TS5102 packet remains retained and its existing option-probe policy is

@@ -1,21 +1,20 @@
 name: Native syntax and semantic completion
 on:
-  pull_request:
-    paths:
-      - crates/vize_canon/src/batch/executor.rs
-      - crates/vize_canon/src/batch/executor/cli/**
-      - crates/vize_canon/tests/native_syntax_semantics.rs
-      - tests/_fixtures/differential/typechecker/native-syntax-semantic-completion/**
-      - .github/workflows/typechecker-syntax-semantic-completion.yml
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: Complete immutable commit SHA for the composed source
+        required: true
+        type: string
 permissions:
   contents: read
 concurrency:
-  group: typechecker-syntax-completion-${{ github.event.pull_request.number }}
+  group: typechecker-syntax-completion-${{ inputs.source_ref }}
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   CARGO_TERM_COLOR: always
-  QUALIFIER_SHA: ${{ github.event.pull_request.head.sha }}
+  QUALIFIER_SHA: ${{ inputs.source_ref }}
 jobs:
   native-syntax-completion:
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -27,6 +26,7 @@ jobs:
           persist-credentials: false
       - name: Authenticate the complete source
         run: |
+          [[ "$QUALIFIER_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$QUALIFIER_SHA"
           mkdir -p target/native-syntax-completion
           git rev-parse HEAD > target/native-syntax-completion/source.sha
