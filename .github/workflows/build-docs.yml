@@ -16,6 +16,11 @@ on:
   schedule:
     - cron: "41 5 * * *"
   workflow_dispatch:
+    inputs:
+      capture_timings:
+        description: Record general navigation capture operation timings
+        type: boolean
+        default: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -103,7 +108,14 @@ jobs:
         run: vp node docs/scripts/verify-navigation-render.ts --routes /blog,/ja/blog,/blog/notes,/ja/blog/notes,/blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface,/ja/blog/notes/2026-05-16-vapor-mode-and-the-next-vue-compiler-surface,/blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era,/ja/blog/notes/2026-05-16-why-musea-and-design-systems-matter-in-the-ai-era --output docs-render-evidence/ja-blog-notes
 
       - name: Verify rendered navigation and adoption guides
-        run: vp node docs/scripts/verify-navigation-render.ts --workers 2
+        env:
+          CAPTURE_TIMINGS: ${{ github.event_name == 'workflow_dispatch' && inputs.capture_timings && 'true' || 'false' }}
+        run: |
+          capture_flags=()
+          if [ "$CAPTURE_TIMINGS" = true ]; then
+            capture_flags+=(--capture-timings)
+          fi
+          vp node docs/scripts/verify-navigation-render.ts --workers 2 "${capture_flags[@]}"
 
       - name: Verify every page's Open Graph metadata and image
         run: vp node docs/scripts/verify-og-images.ts
