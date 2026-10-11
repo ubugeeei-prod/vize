@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createMissingSsrEdgeControl } from "./missing-ssr-edge-control.mjs";
 import { observeReversedCssOrder } from "./reversed-css-order.mjs";
 import fs from "node:fs";
 import path from "node:path";
@@ -150,40 +151,7 @@ try {
     // This separate negative producer removes only real top-level SSR style
     // edges after native compilation. Original/altered whole modules are kept;
     // it is not presented as the literal-H source producer.
-    const negative = {
-      name: "fixture:missing-ssr-style-edge",
-      enforce: "post",
-      transform(code, id, options) {
-        if (
-          producer !== "native-missing-ssr-edge" ||
-          !options?.ssr ||
-          !id.includes("VFHeading.vue") ||
-          !code.includes(".__vize_style_")
-        )
-          return;
-        const imports = parse(code, {
-          sourceType: "module",
-          plugins: ["typescript"],
-        }).program.body.filter(
-          (node) =>
-            node.type === "ImportDeclaration" &&
-            node.specifiers.length === 0 &&
-            node.source.value.includes(".__vize_style_"),
-        );
-        if (!imports.length) return;
-        let altered = code;
-        for (const node of [...imports].reverse())
-          altered = altered.slice(0, node.start) + altered.slice(node.end);
-        missingEdges.push({
-          id,
-          original: code,
-          altered,
-          removed: imports.map((node) => node.source.value),
-        });
-        return { code: altered, map: null };
-      },
-    };
-    let servedSsr, servedSheets;
+    const negative = createMissingSsrEdgeControl({ producer, missingEdges, parse });
     const transport = {
       name: "fixture:whole-ssr-html",
       configureServer(server) {
