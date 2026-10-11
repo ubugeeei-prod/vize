@@ -147,7 +147,7 @@ async function assertNoActiveDescendants(f) {
   }
 }
 
-test("independent real workers overlap and both complete raw outcomes precede acceptance", async (t) => {
+void test("independent real workers overlap and both complete raw outcomes precede acceptance", async (t) => {
   const f = fixture(t, "success");
   const [mixed, remaining] = await run(f);
   assert.equal(mixed.length, 2);
@@ -167,7 +167,7 @@ test("independent real workers overlap and both complete raw outcomes precede ac
 });
 
 for (const mode of ["red", "closed-leader-red", "child-cancel", "timeout"])
-  test(`actual ${mode} refuses only after the remaining branch and full raw packets settle`, async (t) => {
+  void test(`actual ${mode} refuses only after the remaining branch and full raw packets settle`, async (t) => {
     const f = fixture(t, mode);
     await assert.rejects(run(f), AggregateError);
     assert.ok(fs.existsSync(path.join(f.root, "remaining.done")));
@@ -190,7 +190,7 @@ for (const mode of ["red", "closed-leader-red", "child-cancel", "timeout"])
     await assertNoActiveDescendants(f);
   });
 
-test("real parent cancellation joins both groups and preserves evidence before exiting", async (t) => {
+void test("real parent cancellation joins both groups and preserves evidence before exiting", async (t) => {
   const f = fixture(t, "parent-cancel");
   const driver = path.join(f.root, "driver.mjs");
   const moduleUrl = (name) => JSON.stringify(new URL(name, import.meta.url).href);
@@ -237,14 +237,14 @@ try {
   await assertNoActiveDescendants(f);
 });
 
-test("fixed worker membership and production budget cannot be widened", async () => {
+void test("fixed worker membership and production budget cannot be widened", async () => {
   await assert.rejects(runQualificationBranches([], "unused"));
   await assert.rejects(runQualificationBranches([{ id: "same" }, { id: "same" }], "unused"));
   await assert.rejects(runMixedWorkers({ deadlineMs: 180_001 }));
 });
 
 for (const mode of ["deadline-prefix", "deadline-history"])
-  test(`${mode}: original500ms budget survives an adjacent real1500ms command wait`, async (t) => {
+  void test(`${mode}: original500ms budget survives an adjacent real1500ms command wait`, async (t) => {
     const f = fixture(t, mode);
     let remaining;
     const delayedCommand = async () => {

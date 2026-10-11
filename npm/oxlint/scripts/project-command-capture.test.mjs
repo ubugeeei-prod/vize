@@ -6,7 +6,7 @@ import path from "node:path";
 import test from "node:test";
 import { captureProjectCommand } from "./project-command-capture.mjs";
 
-test("same actual command/argv/cwd/env/stdin retains complete binary and UTF8 results", async (t) => {
+void test("same actual command/argv/cwd/env/stdin retains complete binary and UTF8 results", async (t) => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-command-capture-"));
   t.after(() => fs.rmSync(cwd, { recursive: true, force: true }));
   const args = [
@@ -31,7 +31,7 @@ test("same actual command/argv/cwd/env/stdin retains complete binary and UTF8 re
   }
 });
 
-test("spawn failure and combined output overflow remain fatal complete outcomes", async () => {
+void test("spawn failure and combined output overflow remain fatal complete outcomes", async () => {
   const missing = await captureProjectCommand("vize-no-such-project-command", []);
   assert.equal(missing.error.code, "ENOENT");
   assert.notEqual(missing.status, 0);
@@ -48,7 +48,7 @@ test("spawn failure and combined output overflow remain fatal complete outcomes"
   assert.notEqual(overflow.status, 0);
 });
 
-test("timeout escalates for ignored SIGTERM and drains descendants after leader closure", async () => {
+void test("timeout escalates for ignored SIGTERM and drains descendants after leader closure", async () => {
   const script = `const {spawn}=require('node:child_process');const child=spawn(process.execPath,['-e',"process.on('SIGTERM',()=>{});setInterval(()=>{},1000)"],{stdio:'ignore'});process.stdout.write(JSON.stringify({pid:process.pid,child:child.pid})+'\\n');process.on('SIGTERM',()=>{});setInterval(()=>{},1000);`;
   const result = await captureProjectCommand(process.execPath, ["-e", script], {
     timeout: 500,
@@ -80,7 +80,7 @@ test("timeout escalates for ignored SIGTERM and drains descendants after leader 
 });
 
 for (const mode of ["cancel", "missing-object", "missing-command"])
-  test(`real reference ${mode} keeps fatal cancellation separate from the pinned fetch fallback`, async (t) => {
+  void test(`real reference ${mode} keeps fatal cancellation separate from the pinned fetch fallback`, async (t) => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-reference-command-control-"));
     t.after(() => fs.rmSync(root, { recursive: true, force: true }));
     fs.mkdirSync(path.join(root, "bin"));

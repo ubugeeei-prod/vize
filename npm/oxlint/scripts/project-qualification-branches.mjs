@@ -47,7 +47,8 @@ export async function runQualificationBranches(branches, output) {
     const failures = outcomes.flatMap((outcome) =>
       outcome.status === "rejected" ? [outcome.reason] : [],
     );
-    if (interrupted) failures.push(new Error(`qualification interrupted by ${interrupted}`));
+    if (interrupted)
+      failures.push(new Error(`qualification interrupted by ${String(interrupted)}`));
     if (failures.length)
       throw new AggregateError(
         failures,
